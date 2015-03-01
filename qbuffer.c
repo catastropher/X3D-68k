@@ -198,8 +198,6 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	char side = point_valid_side(edge, &p->p[0].v);
 	char next_side;
 	
-	printf("Points: %d\n", p->total_points);
-	
 	dest->total_points = 0;
 	
 	for(point = 0; point < p->total_points; point++) {
@@ -229,8 +227,8 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 		short min_p = min(out[0], out[1]);
 		short max_p = max(out[0], out[1]);
 		
-		printf("Min out: %d\n", min_p);
-		printf("Max out: %d\n", max_p);
+		//printf("Min out: %d\n", min_p);
+		//printf("Max out: %d\n", max_p);
 	
 #if 1	
 		if(min_p == 0 && max_p == dest->total_points - 1) {
@@ -380,7 +378,7 @@ Polygon* clip_polygon(Polygon* p, Polygon* clip, Polygon* temp_a, Polygon* temp_
 	Polygon *p2 = temp_b;
 	
 	// Clip against the first edge
-	polygon_clip_edge(p, &clip->line[p->total_points - 1], p2, &center);
+	polygon_clip_edge(p, &clip->line[clip->total_points - 1], p2, &center);
 	
 	
 	for(i = 0; i < clip->total_points - 1; i++) {
