@@ -1,0 +1,24 @@
+// Header File
+// Created 3/1/2015; 9:46:21 AM
+#pragma once
+
+typedef struct {
+	long slope;
+	short b;
+	char sign;
+	char start, end;
+	char draw;
+} Line2D;
+
+#define MAX_POINTS 20
+
+typedef struct {
+	char was_clipped;
+	Vex2D v;
+} Point;
+
+typedef struct {
+	Point p[MAX_POINTS];
+	short total_points;
+	Line2D line[MAX_POINTS];
+} Polygon;

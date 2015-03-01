@@ -1086,64 +1086,6 @@ void test_cube(CBuffer* buf, Cam* cam, char outline, Vex3D* cube_angle) {
 }
 
 
-short get_int(const char *prompt) {
-	char buf[32];
-	
-	printf("%s: ", prompt);
-	gets(buf);
-	printf("\n");
-	
-	return atoi(buf);
-}
-
-void test_vector() {
-	return;
-	Vex3D v;
-	Vex3D angle;
-	Vex3D_rot out;
-	
-	clrscr();
-	
-	do {
-		printf("==========\n");
-		v.x = get_int("v.x");
-		v.y = get_int("v.y");
-		v.z = get_int("v.z");
-		
-		angle.x = get_int("angle.x");
-		angle.y = get_int("angle.y");
-		angle.z = get_int("angle.z");
-		
-		Mat3x3 mat;
-		
-		x3d_construct_mat3(&angle, &mat);
-		
-		
-		rotate_point_local(&out, &v, &mat);
-		
-		printf("\n{%d, %d, %d}\n", out.x, out.y, out.z);
-	} while(1);
-	
-	
-}
-
-void test_rotate() {
-	Mat3x3 mat;
-	Vex3D v = {40, 0, 0};
-	Vex3D angle = {0, 0, 0};
-	Vex3D_rot out;
-	
-	do {
-		x3d_construct_mat3(&angle, &mat);
-		rotate_point_local(&out, &v, &mat);
-		//clrscr();
-		DrawLine(120, 64, 120 + out.x, 64 + out.z, A_NORMAL);
-		
-		angle.y = (angle.y + 1) % 360;
-	} while(1);
-}
-
-
 
 
 
