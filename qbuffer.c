@@ -185,8 +185,79 @@ int poly_winding(poly p)
 {
 	return left_of(p->v, p->v + 1, p->v + 2);
 }
- 
 
+
+void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
+	int point;
+	int next_point;
+	char next;
+	Vex2D clip_pos;
+	short out[20];
+	short out_pos = 0;
+	
+	char side = point_valid_side(edge, &p->p[0].v);
+	char next_side;
+	
+	printf("Points: %d\n", p->total_points);
+	
+	dest->total_points = 0;
+	
+	for(point = 0; point < p->total_points; point++) {
+		Line2D* line = &p->line[point];
+		
+		next_point = (point + 1) % p->total_points;
+		next_side = point_valid_side(edge, &p->p[next_point].v);
+		
+		if(side != -1) {
+			dest->p[dest->total_points] = (Point){1, p->p[point].v};
+			dest->line[dest->total_points++] = *line;
+		}
+		
+		if(side + next_side == 0 && side) {
+			if(line2d_intersect(line, edge, &clip_pos, center)) {
+				dest->p[dest->total_points] = (Point){1, clip_pos};
+				dest->line[dest->total_points] = p->line[point];
+					
+				out[out_pos++] = dest->total_points++;
+			}
+		}
+		
+		side = next_side;
+	}
+	
+	if(out_pos == 2) {
+		short min_p = min(out[0], out[1]);
+		short max_p = max(out[0], out[1]);
+		
+		printf("Min out: %d\n", min_p);
+		printf("Max out: %d\n", max_p);
+	
+#if 1	
+		if(min_p == 0 && max_p == dest->total_points - 1) {
+			dest->line[dest->total_points - 1] = *edge;
+		}
+		else {
+			dest->line[min_p] = *edge;
+		}
+#endif
+	}
+	
+	ngetchx();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+#if 0
 void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	int i;
 	short prev = p->total_points - 1;
@@ -197,17 +268,21 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	short out[20];
 	short out_pos = 0;
 	char last_side = point_valid_side(edge, &p->p[prev].v);
-	Line first;
+	Line2D first;
+	char set_first = 0;
+	char point_first = 1;
 	
 	if(last_side != -1) {
-		dest->p[dest->total_points] = p->p[prev];
-		first = p->line[prev];
+		dest->p[dest->total_points++] = p->p[prev];
+		printf("Added point %d\n", prev);
+		point_first = 1;
 	}
 	
-	//printf("Slope: %ld, b: %d\n, sign: %d\n", edge->slope, edge->b, edge->sign);
+	printf("Egde s: %ld, b: %d\n, sign: %d\n", edge->slope, edge->b, edge->sign);
 	//ngetchx();
 	
 	for(i = 0; i < p->total_points; i++) {
+		printf("Considering point %d\n", i);
 		Line2D* line = &p->line[prev];
 		char side = point_valid_side(edge, &p->p[i].v);
 		
@@ -217,6 +292,7 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 		if(side + last_side == 0 && side) {
 			//printf("Outside\n");
 			
+			printf("We need to clip it\n");
 			if(line2d_intersect(line, edge, &clip_pos, center)) {
 				// Add the new clipped point
 				out[out_pos++] = dest->total_points;
@@ -224,27 +300,63 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 				dest->p[dest->total_points] = (Point){1, clip_pos};
 				
 				
-				dest->line[dest->total_points++] = *line;
+				if(i == 0) {
+					first = *line;
+					set_first = 1;
+					printf("Set first line case A\n");
+				}
+				else
+					dest->line[dest->total_points - 1] = *line;
+					
+				dest->total_points++;
+				
+				printf("Line clipped and point added\n");
+			}
+			else {
+				printf("...but they don't intersect\n");
 			}
 		}
 		
 		if(i != p->total_points - 1 && side != -1) {
 			dest->p[dest->total_points] = p->p[i];
-			dest->line[dest->total_points++] = *line;
+			
+			if(i == 0 && !set_first) {
+				first = *line;
+				printf("Set first line case B\n");
+				printf("First slope: %ld\n", first.slope);
+			}
+			else
+				dest->line[dest->total_points - 1] = *line;
+			
+			dest->total_points++;
+			
+			printf("Point added\n");
 		}
 		
 		prev = i;
 		last_side = side;
+		
+		ngetchx();
 	}
 	
+	if(dest->total_points != 0) {
+		if(!point_first)
+			dest->line[dest->total_points - 1] = first;
+		else
+			dest->line[0] = first;
+	}
+	
+	
 	if(out_pos != 0) {
-		return;
 		
 		short min_p = min(out[0], out[1]);
 		short max_p = max(out[0], out[1]);
 		
-		if(min_p == 0 && max_p == p->total_points - 1) {
-			dest->line[p->total_points - 1] = *edge;
+		printf("Min out: %d\n", min_p);
+		printf("Max out: %d\n", max_p);
+		
+		if(min_p == 0 && max_p == dest->total_points - 1) {
+			dest->line[dest->total_points - 1] = *edge;
 		}
 		else {
 			dest->line[min_p] = *edge;
@@ -254,6 +366,8 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	
 	//ngetchx();
 }
+
+#endif
 	
 void print_polygon(Polygon* p);
 	
@@ -266,9 +380,8 @@ Polygon* clip_polygon(Polygon* p, Polygon* clip, Polygon* temp_a, Polygon* temp_
 	Polygon *p2 = temp_b;
 	
 	// Clip against the first edge
-	polygon_clip_edge(p, &clip->line[clip->total_points - 1], p2, &center);
+	polygon_clip_edge(p, &clip->line[p->total_points - 1], p2, &center);
 	
-	//return p2;
 	
 	for(i = 0; i < clip->total_points - 1; i++) {
 		print_polygon(p2);
