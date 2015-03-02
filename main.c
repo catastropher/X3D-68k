@@ -8,6 +8,7 @@
 #include "mem.h"
 #include "3D.h"
 #include "sbuffer.h"
+#include "clip.h"
 
 #include <tigcclib.h>
 
@@ -183,13 +184,15 @@ extern short scale_factor;
 extern long seg_calls;
 
 void test_polygon_clipper();
+void save_polygon(FILE* file, Polygon* p);
+void test_polygon_clipper2();
 
 // Main Function
 void _main(void) {
 	//DrawGrayRect(50, 50, 100, 100, COLOR_DARKGRAY, RECT_FILLED);
 
-	test_polygon_clipper();
-	return 0;
+	//test_polygon_clipper();
+	//return 0;
 	
 	printf("Hello");
 	ngetchx();
@@ -214,6 +217,31 @@ void _main(void) {
 	buf.frame = 0;
 	buf.dark_plane = alloc_mem(LCD_SIZE);
 	buf.lines_left = 1000;
+	
+	Vex2D screen_clip[] = {
+		{
+			10, 10
+		},
+		{
+			230, 10
+		},
+		{
+			230, 120
+		},
+		{
+			10, 120
+		}
+	};
+	
+	Polygon clip_region;
+	
+	make_polygon(screen_clip, 4, &clip_region);
+	buf.clip = &clip_region;
+	buf.save_poly = 0;
+	
+	
+	draw_polygon(buf.clip);
+	ngetchx();
 	
 	Cam cam;
 	
@@ -306,6 +334,14 @@ void _main(void) {
 	#endif
 		//rasterize_triangle_full(&buf, 20, 20, 20, 50, 100, 100, COLOR_DARKGRAY);
 		test_cube(&buf, &cam, outline, &cube_angle);
+		
+		draw_polygon2(buf.clip, buf.dark_plane);
+		
+		if(buf.save_poly) {
+			fclose(buf.file);
+			buf.save_poly = 0;
+		}
+		
 		outline = 0;
 		buf.frame++;
 		
@@ -421,6 +457,11 @@ void _main(void) {
 				buf.height = 128;
 				buf.scale_factor = 208;
 			}
+		}
+		else if(key == 's') {
+			buf.file = fopen("poly", "wt");
+			buf.save_poly = 1;
+			save_polygon(buf.file, buf.clip);
 		}
 					
 	} while(key != KEY_ESC);

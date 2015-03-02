@@ -6,6 +6,16 @@
 #include "3D.h"
 #include "extgraph.h"
 #include "graphics.h"
+#include "clip.h"
+
+enum {
+	PLANE_BOTTOM,
+	PLANE_TOP,
+	PLANE_LEFT,
+	PLANE_RIGHT,
+	PLANE_BACK,
+	PLANE_FRONT
+};
 
 const int cube_vertex_tab[6][5] = {
 	{2, 1, 0, 3, 2},
@@ -78,6 +88,14 @@ inline long dot_product(Vex3D* a, Vex3D* b) {
 
 short scale_factor;
 extern short lcd_w, lcd_h;
+
+inline void project_3D(CBuffer* buf, Vex3D* src, Vex2D* dest) {
+	short cx = buf->width / 2;
+	short cy = buf->height / 2;
+	
+	dest->x = (((long)buf->scale_factor * src->x) / (src->z)) + cx;
+	dest->y = (((long)buf->scale_factor * src->y) / (src->z)) + cy;
+}
 
 inline char polygon_visible(Vex3D* normal, Vex3D* cam_pos, Vex3D* v) {
 	Vex3D diff = {v->x - cam_pos->x, v->y - cam_pos->y, v->z - cam_pos->z};
@@ -426,6 +444,123 @@ void project_draw_tri(CBuffer* buf, Vex3D *v, short color, char draw_01, char dr
 	//draw_clip_tri(v2[0].x, v2[0].y, v2[1].x, v2[1].y, v2[2].x, v2[2].y, Vscreen0);
 }
 
+void save_polygon(FILE* file, Polygon* p) {
+	int i;
+	
+	for(i = 0; i < p->total_points; i++) {
+		fprintf(file, "{%d,%d} s: %ld b: %d\n", p->p[i].v.x, p->p[i].v.y, p->line[i].slope, p->line[i].b);
+	}
+}
+
+Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polygon* temp_b, Polygon* clip, char save) {
+	int point;
+	int next_point;
+	char next;
+	short out[20];
+	short out_pos = 0;
+	int i;
+	Vex2D project;
+	
+	
+	
+	char side = v[0].z < MIN ? -1 : 1;
+	char next_side;
+	
+	dest->total_points = 0;
+	
+	for(point = 0; point < 4; point++) {
+		next_point = (point + 1) % 4;
+		next_side = v[next_point].z < MIN ? -1 : 1;
+		
+		if(side != -1) {
+			project_3D(buf, &v[point], &project);
+			dest->p[dest->total_points++] = (Point){0, project};
+		}
+		
+		if(side + next_side == 0 && side) {
+			Vex3D p1 = v[point];
+			Vex3D p2 = v[next_point];
+			
+			if(clip_ray(&p1, &p2)) {
+				Vex3D* po = (side == -1 ? &p1 : &p2);
+				
+				project_3D(buf, po, &project);
+				dest->p[dest->total_points] = (Point){1, project};
+					
+				out[out_pos++] = dest->total_points++;
+			}
+		}
+		
+		side = next_side;
+	}
+	
+	Vex2D center = {0, 0};
+	
+	for(i = 0; i < dest->total_points; i++) {
+		center.x += dest->p[i].v.x;
+		center.y += dest->p[i].v.y;
+	}
+	
+	if(dest->total_points != 0) {
+		center.x /= dest->total_points;
+		center.y /= dest->total_points;
+	}
+	
+	for(i = 0; i < dest->total_points; i++) {
+		short next = (i + 1) % dest->total_points;
+		
+		get_line_info(&dest->line[i], &dest->p[i].v, &dest->p[next].v, &center); 
+		dest->line[i].draw = 1;
+	}
+	
+	
+	if(out_pos == 2) {
+		short min_p = min(out[0], out[1]);
+		short max_p = max(out[0], out[1]);
+		
+		//printf("Min out: %d\n", min_p);
+		//printf("Max out: %d\n", max_p);
+	
+#if 1	
+		if(min_p == 0 && max_p == dest->total_points - 1) {
+			dest->line[dest->total_points - 1].draw = 0;
+		}
+		else {
+			dest->line[min_p].draw = 0;
+		}
+#endif
+	}
+	
+	if(out_pos != 0 && out_pos != 2)
+		error("Invalid out A\n");
+	
+	if(dest->total_points != 0) {
+		Polygon* res = clip_polygon(dest, clip, temp_a, temp_b);
+		
+		//if(res->total_points != 0)
+		//	draw_polygon2(res, buf->dark_plane);
+		
+		if(buf->save_poly && save) {
+			fprintf(buf->file, "------------------------\n");
+			fprintf(buf->file, "===Before clipping\n");
+			save_polygon(buf->file, dest);
+			fprintf(buf->file, "===After clipping\n");
+			save_polygon(buf->file, res);
+			fprintf(buf->file, "------------------------\n");
+		}
+		
+		return res;
+	}
+	else {
+		printf("removed\n");
+	}
+	
+	return dest;
+}
+
+
+
+#if 1
 void clip_triangle(CBuffer* buf, Vex3D* v, short color, char draw_a, char draw_b) {
 	int out[3];
 	int in[3];
@@ -490,6 +625,7 @@ void clip_triangle(CBuffer* buf, Vex3D* v, short color, char draw_a, char draw_b
 		//print_vex3(&v[2]);
 	}
 }
+#endif
 
 inline short get_color(Vex3D* cam_dir, Vex3D* normal) {
 	//Vex3D reverse = {-normal->x, -normal->y, -normal->z};
@@ -504,14 +640,6 @@ inline short get_color(Vex3D* cam_dir, Vex3D* normal) {
 	
 	return COLOR_DARKGRAY;
 	
-}
-
-inline void project_3D(CBuffer* buf, Vex3D* src, Vex2D* dest) {
-	short cx = buf->width / 2;
-	short cy = buf->height / 2;
-	
-	dest->x = (((long)buf->scale_factor * src->x) / (src->z)) + cx;
-	dest->y = (((long)buf->scale_factor * src->y) / (src->z)) + cy;
 }
 
 extern long seg_calls;
@@ -653,7 +781,7 @@ void build_edge_table() {
 }
 
 
-void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline) {
+void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip) {
 	Mat3x3* mat = &cam->mat;
 	Vex3D* view = &cam->dir;
 	Vex3D* cam_pos = &cam->pos;
@@ -691,6 +819,7 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline) {
 	//	edge_table[i] = 0;
 	
 	if(1) {
+	#if 0
 		for(i = 0; i < 6; i++) {
 			Vex3D_rot normal;
 			
@@ -703,20 +832,53 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline) {
 				cube_pass_edges(buf, c2, i);
 
 				if(!(c2->edge_bits & (1 << 15))) {
-					render_cube(buf, c2, cam, outline);
+					//render_cube(buf, c2, cam, outline);
 				}
 			}
 		}
+	#endif
 		
-		if(!buf->first_cube) {
+		if(1) {
 			for(i = 0; i < 6; i++) {	
+				vis[i] = polygon_visible(&c->normal[i], cam_pos, &c->v[cube_vertex_tab[i][0]]);
+				
 				if(vis[i]) {
 					//if(i != 5)
 					//	error("NOT 5");
 					
-					if(c->cube[i] == -1) {
+					if(1) {
 						Face face;
 						cube_get_face_3D(&face, output, i);
+						
+						Polygon* res;
+						Polygon temp_a, temp_b;
+						Polygon temp_c;
+						
+						
+						res = clip_quad(buf, face.v, &temp_c, &temp_a, &temp_b, clip, c->cube[i] != -1);
+						
+						if(res->total_points != 0) {
+							if(c->cube[i] == -1) {
+								draw_polygon2(res, buf->dark_plane);
+							}
+							else {
+								Cube* c2 = &cube_tab[c->cube[i]];
+				
+								if(res->total_points != 0) {
+									cube_pass_edges(buf, c2, i);
+					
+									if(!(c2->edge_bits & (1 << 15))) {										
+										if(buf->save_poly) {
+											//fprintf(buf->file, "=========CLIP AFTER\n");
+											//save_polygon(buf->file, res);
+										}
+										
+										render_cube(buf, c2, cam, outline, res);
+									}
+								}
+							}
+						}
+						
 						
 						Vex3D tri1[] = {face.v[0], face.v[1], face.v[2]};
 						Vex3D tri2[] = {face.v[0], face.v[3], face.v[2]};
@@ -731,9 +893,9 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline) {
 						char draw[4];
 							
 						
-						clip_triangle(buf, tri1, color, draw[0], draw[1]);
+						//clip_triangle(buf, tri1, color, draw[0], draw[1]);
 						
-						clip_triangle(buf, tri2, color, draw[3], draw[2]);
+						//clip_triangle(buf, tri2, color, draw[3], draw[2]);
 					}
 					
 					
@@ -789,7 +951,8 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline) {
 		}
 	#endif
 	
-		
+	
+#if 0	
 	// New edge drawing code!
 	unsigned short edge = c->edge_bits;
 	
@@ -812,6 +975,7 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline) {
 		
 		edge >>= 1;
 	}
+#endif
 	
 	
 		
@@ -920,15 +1084,6 @@ enum{
 	VEX_DTL,
 	VEX_DTR,
 	VEX_DBR
-};
-
-enum {
-	PLANE_BOTTOM,
-	PLANE_TOP,
-	PLANE_LEFT,
-	PLANE_RIGHT,
-	PLANE_BACK,
-	PLANE_FRONT
 };
 
 inline Vex3D mVex3D(int x, int y, int z) {
@@ -1042,7 +1197,7 @@ void test_cube(CBuffer* buf, Cam* cam, char outline, Vex3D* cube_angle) {
 	cube_tab[0].last_frame = buf->frame;
 	cube_tab[0].edge_bits = 0;
 	
-	render_cube(buf, &cube_tab[0], cam, outline);
+	render_cube(buf, &cube_tab[0], cam, outline, buf->clip);
 	return;
 	
 	
@@ -1078,7 +1233,7 @@ void test_cube(CBuffer* buf, Cam* cam, char outline, Vex3D* cube_angle) {
 	//	c3.v[i].z -= 200;
 	//}
 	
-	render_cube(buf, &c, cam, outline);
+	//render_cube(buf, &c, cam, outline);
 	//render_cube(&c2, cam, outline);
 	//render_cube(&c3, cam, outline);
 	

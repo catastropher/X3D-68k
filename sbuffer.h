@@ -3,6 +3,10 @@
 
 #pragma once
 
+#include <tigcclib.h>
+
+#include "clip.h"
+
 typedef struct Seg{
 	unsigned char left;
 	unsigned char right;
@@ -43,6 +47,10 @@ typedef struct {
 	char outline;
 	
 	char first_cube;
+	
+	Polygon* clip;
+	FILE* file;
+	char save_poly;
 } CBuffer;
 
 void add_seg(CBuffer* buf, short y, short left, short right, short color);

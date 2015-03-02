@@ -7,6 +7,11 @@
 #include "graphics.h"
 #include "clip.h"
 
+#include "extgraph.h"
+
+
+#define FRAC_BITS 8
+#define EVAL_BITS 5
 #define VERTICAL_LINE 0x7FFF
 
 char signof(short val);
@@ -16,7 +21,11 @@ char signof(short val);
 //}
 
 inline short eval_line(Line2D* line, short x) {
-	return (((long)line->slope * x) >> 8) + line->b;
+	return (((long)line->slope * x) >> FRAC_BITS) + line->b;
+}
+
+inline long eval_line_long(Line2D* line, long x) {
+	return ((((long)line->slope * x) >> FRAC_BITS) >> EVAL_BITS) + line->b;
 }
 
 char point_valid_side(Line2D* line, Vex2D* point) {	
@@ -27,7 +36,14 @@ char point_valid_side(Line2D* line, Vex2D* point) {
 	}
 	else {
 		sign = signof(point->y - eval_line(line, point->x));
+		
+		short dy = point->y - eval_line(line, point->x);
+		
+		if(abs(dy) < 2)
+			return 0;
 	}
+	
+	
 	
 	if(sign == 0)
 		return 0;
@@ -47,8 +63,8 @@ inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center)
 		dest->end = max(start->y, end->y);
 	}
 	else {
-		dest->slope = ((long)dy << 8) / dx;
-		dest->b = start->y - (((long)dest->slope * start->x) >> 8);
+		dest->slope = ((long)dy << FRAC_BITS) / dx;
+		dest->b = start->y - (((long)dest->slope * start->x) >> FRAC_BITS);
 		dest->sign = signof(center->y - eval_line(dest, center->x));
 		dest->start = min(start->x, end->x);
 		dest->end = max(start->x, end->x);
@@ -76,8 +92,18 @@ char line2d_intersect(Line2D* a, Line2D* b, Vex2D* res, Vex2D* center) {
 		return res->y >= a->start && res->y <= a->end;
 	}
 	else {
-		res->x = (((long)b->b - a->b) << 8) / (a->slope - b->slope);
-		res->y = eval_line(a, res->x);
+		
+		//printf("Slope a: %ld\n", a->slope);
+		//printf("Slope b: %ld\n", b->slope);
+		//ngetchx();
+		
+		//if(abs((long)a->slope - b->slope) > 32767) {
+		//	error("Slope out of bounds");
+		//}
+		
+		long x = (((long)b->b - a->b) << (FRAC_BITS + EVAL_BITS)) / ((long)a->slope - b->slope);
+		res->y = eval_line_long(a, x);
+		res->x = x >> EVAL_BITS;
 		
 		return 1;
 		return res->x >= a->start && res->x <= a->end;
@@ -87,6 +113,14 @@ char line2d_intersect(Line2D* a, Line2D* b, Vex2D* res, Vex2D* center) {
 	
 }
 
+void print_polygon2(Polygon* p) {
+	int i;
+	
+	for(i = 0; i < p->total_points; i++) {
+		printf("{%d,%d} s: %ld b: %d\n", p->p[i].v.x, p->p[i].v.y, p->line[i].slope, p->line[i].b);
+	}
+}
+
 void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	int point;
 	int next_point;
@@ -94,9 +128,11 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	Vex2D clip_pos;
 	short out[20];
 	short out_pos = 0;
+	int i;
 	
 	char side = point_valid_side(edge, &p->p[0].v);
 	char next_side;
+	char clipped;
 	
 	dest->total_points = 0;
 	
@@ -111,19 +147,43 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 			dest->line[dest->total_points++] = *line;
 		}
 		
+		clipped = 0;
 		if(side + next_side == 0 && side) {
 			if(line2d_intersect(line, edge, &clip_pos, center)) {
 				dest->p[dest->total_points] = (Point){1, clip_pos};
-				dest->line[dest->total_points] = p->line[point];
+				dest->line[dest->total_points++] = p->line[point];
 					
-				out[out_pos++] = dest->total_points++;
+				//out[out_pos++] = dest->total_points++;
+				clipped = 1;
 			}
+		}
+		
+		if(clipped || side == 0) {
+			out[out_pos++] = dest->total_points - 1;
 		}
 		
 		side = next_side;
 	}
 	
-	if(out_pos == 2) {
+	//for(i = 0; i < out_pos; i++)
+		//printf("Out: %d\n", out[i]);
+	
+	for(i = 0; i < out_pos - 1; i++) {
+		if(out[i] == out[i + 1] - 1) {
+			//printf("Case\n");
+			dest->line[out[i]] = *edge;
+			dest->line[out[i]].draw = 0;
+		}
+	}
+	
+	if(out_pos > 0 && out[0] == 0 && out[out_pos - 1] == dest->total_points - 1) {
+		dest->line[dest->total_points - 1] = *edge;
+		dest->line[dest->total_points - 1].draw = 0;
+	}
+	
+	
+	
+	/*if(out_pos == 2) {
 		short min_p = min(out[0], out[1]);
 		short max_p = max(out[0], out[1]);
 		
@@ -140,9 +200,25 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 			dest->line[min_p].draw = 0;
 		}
 #endif
-	}
+	}*/
 	
-	ngetchx();
+	//printf("Out_pos: %d\n", out_pos);
+	
+	
+#if 0
+	if(out_pos != 0 && out_pos != 2) {
+		printf("Invalid out B\n");
+		
+		print_polygon2(p);
+		printf("Edge: s: %ld b: %d\n", edge->slope, edge->b);
+		ngetchx();
+	}
+#endif
+		
+		
+		
+		
+	//	error("Invalid out B\n");
 }
 
 	
@@ -160,7 +236,7 @@ Polygon* clip_polygon(Polygon* p, Polygon* clip, Polygon* temp_a, Polygon* temp_
 	
 	
 	for(i = 0; i < clip->total_points - 1; i++) {
-		print_polygon(p2);
+		//print_polygon(p2);
 		SWAP(p1, p2);
 		
 		if(p1->total_points == 0) {
@@ -194,6 +270,20 @@ void make_polygon(Vex2D* v, int points, Polygon* p) {
 		p->p[i].was_clipped = 0;
 		get_line_info(&p->line[i], &v[i], &v[next], &center); 
 		p->line[i].draw = 1;
+	}
+}
+
+void draw_polygon2(Polygon* p, void* screen) {	
+	int i;
+	int prev = p->total_points - 1;
+	
+	for(i = 0; i < p->total_points; i++) {
+		if(p->line[prev].draw) {
+			//FastLine_Draw_R(screen, p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y);
+			draw_clip_line(p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y, screen);
+		}
+		
+		prev = i;
 	}
 }
 
@@ -248,6 +338,66 @@ void print_polygon(Polygon* p) {
 	printf("===========\n");
 	ngetchx();
 }
+
+void draw_line(Line2D* line) {
+	long i, d;
+	
+	for(i = 0; i < 240; i++) {
+		for(d = 0; d < 128; d++) {
+			if(abs(eval_line(line, i) - d) < 1)
+				DrawPix(i, d, A_NORMAL);
+		}
+	}
+}
+
+void test_polygon_clipper2() {
+	Vex2D points[] = {
+		{
+			101, 83
+		},
+		{
+			25, 86
+		},
+		{
+			3, 105
+		},
+		{
+			118, 98
+		}
+	};
+	
+	Line2D line;
+	
+	Polygon p2;
+	Vex2D center;
+	
+	line.slope = -15;
+	line.b = 106;
+	line.sign = -1;
+	
+	//line.slope = -256;
+	//line.b = 30;
+	
+	clrscr();
+	Polygon p;
+	
+	make_polygon(points, 4, &p);
+	draw_polygon(&p);
+	draw_line(&line);
+	
+	ngetchx();
+	
+	polygon_clip_edge(&p, &line, &p2, &center);
+	
+	ngetchx();
+	
+	clrscr();
+	draw_polygon(&p2);
+	ngetchx();
+	
+}
+
+
 
 void test_polygon_clipper() {
 	clrscr();
@@ -323,7 +473,7 @@ void test_polygon_clipper() {
 	short p_pos = 0;
 	
 	
-	int cx = 39, cy = 64;
+	int cx = 39, cy = 63;
 	unsigned short key;
 	
 	draw_polygon(&clipp);
@@ -345,7 +495,7 @@ void test_polygon_clipper() {
 			p[p_pos++] = (Vex2D){cx, cy};
 			
 			if(p_pos != 1)
-				DrawLine(cx, cy, p[p_pos - 2].x, p[p_pos - 2].y, A_NORMAL);
+				draw_clip_line(cx, cy, p[p_pos - 2].x, p[p_pos - 2].y, LCD_MEM);
 		}
 		
 		DrawPix(cx, cy, A_NORMAL);
