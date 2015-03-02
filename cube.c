@@ -452,7 +452,7 @@ void save_polygon(FILE* file, Polygon* p) {
 	}
 }
 
-Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polygon* temp_b, Polygon* clip, char save) {
+Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polygon* temp_b, Polygon* clip, char save, char draw) {
 	int point;
 	int next_point;
 	char next;
@@ -460,7 +460,12 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 	short out_pos = 0;
 	int i;
 	Vex2D project;
+	int pos[20];
 	
+	//draw = 0b1;
+	
+	for(i = 0; i < 20; i++)
+		pos[i] = -1;
 	
 	
 	char side = v[0].z < MIN ? -1 : 1;
@@ -475,6 +480,7 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 		if(side != -1) {
 			project_3D(buf, &v[point], &project);
 			dest->p[dest->total_points++] = (Point){0, project};
+			pos[point] = dest->total_points - 1;
 		}
 		
 		if(side + next_side == 0 && side) {
@@ -486,6 +492,8 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 				
 				project_3D(buf, po, &project);
 				dest->p[dest->total_points] = (Point){1, project};
+				
+				pos[side == -1 ? point : next_point] = dest->total_points;
 					
 				out[out_pos++] = dest->total_points++;
 			}
@@ -506,11 +514,22 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 		center.y /= dest->total_points;
 	}
 	
+	for(i = 0; i < 4; i++) {
+		if(pos[i] != -1) {
+			dest->line[pos[i]].draw = draw & 1;
+		}
+		
+		//draw >>= 1;
+	}
+	
 	for(i = 0; i < dest->total_points; i++) {
 		short next = (i + 1) % dest->total_points;
 		
-		get_line_info(&dest->line[i], &dest->p[i].v, &dest->p[next].v, &center); 
-		dest->line[i].draw = 1;
+		get_line_info(&dest->line[i], &dest->p[i].v, &dest->p[next].v, &center);
+		
+		dest->line[i].draw = draw & 1;
+		
+		draw >>= 1;
 	}
 	
 	
@@ -540,6 +559,7 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 		//if(res->total_points != 0)
 		//	draw_polygon2(res, buf->dark_plane);
 		
+	#if 0
 		if(buf->save_poly && save) {
 			fprintf(buf->file, "------------------------\n");
 			fprintf(buf->file, "===Before clipping\n");
@@ -548,6 +568,7 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 			save_polygon(buf->file, res);
 			fprintf(buf->file, "------------------------\n");
 		}
+	#endif
 		
 		return res;
 	}
@@ -780,6 +801,16 @@ void build_edge_table() {
 		error("ERR");
 }
 
+void save_bin(FILE* file, unsigned short val, char bits) {
+	int i;
+	
+	for(i = 0; i < bits; i++) {
+		fprintf(file, "%d", (val & (1 << (bits - 1))) != 0);
+		val <<= 1;
+	}
+	
+	fprintf(file, "\n");
+}
 
 void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip) {
 	Mat3x3* mat = &cam->mat;
@@ -790,6 +821,10 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip) {
 	//	return;
 		
 	c->edge_bits |= (1 << 15);
+	
+	
+	
+	
 	
 	short cx = buf->width / 2;
 	short cy = buf->height / 2;
@@ -854,14 +889,47 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip) {
 						Polygon temp_a, temp_b;
 						Polygon temp_c;
 						
+						unsigned char draw = 0;
+							
+						if(buf->save_poly) {
+							fprintf(buf->file, "face: %d\nTemplate: ", i);
+							save_bin(buf->file, edge_face_table[i], 12);
+							save_bin(buf->file, c->edge_bits, 12);
+						}
 						
-						res = clip_quad(buf, face.v, &temp_c, &temp_a, &temp_b, clip, c->cube[i] != -1);
-						
-						if(res->total_points != 0) {
-							if(c->cube[i] == -1) {
-								draw_polygon2(res, buf->dark_plane);
+						//if(c->cube[i] == -1) {
+							for(d = 0; d < 4; d++) {
+								short a = cube_vertex_tab[i][d];
+								short b = cube_vertex_tab[i][d + 1];
+								
+								draw =  (draw >> 1) | ((unsigned short)((c->edge_bits & (1 << edge_table[a][b])) == 0) << 3);
+								c->edge_bits |= (1 << edge_table[a][b]);
+								
+								
+								//printf("Draw: %u\n", draw);
+								//printf("Edge: %u\n", c->edge_bits);
+								//LCD_restore(buf->dark_plane);
+								//ngetchx();
+								
 							}
-							else {
+						//}
+						
+						if(buf->save_poly) {
+							save_bin(buf->file, c->edge_bits, 12);
+							save_bin(buf->file, draw, 4);
+							fprintf(buf->file,"-------------------\n");
+						}
+						
+						//draw = 0b00001100;
+						
+						if(c->cube[i] != -1 || draw)
+							res = clip_quad(buf, face.v, &temp_c, &temp_a, &temp_b, clip, c->cube[i] != -1, draw);
+						
+						if(res->total_points != 0) {		
+							if(draw)
+								draw_polygon2(res, buf->dark_plane);
+		
+							if(c->cube[i] != -1) {
 								Cube* c2 = &cube_tab[c->cube[i]];
 				
 								if(res->total_points != 0) {
@@ -890,7 +958,7 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip) {
 							
 						ctab[i] = color;
 						
-						char draw[4];
+						//char draw[4];
 							
 						
 						//clip_triangle(buf, tri1, color, draw[0], draw[1]);
@@ -1166,16 +1234,30 @@ void make_cube(Cube* c, int x ,int y, int z, int posx, int posy, int posz, Vex3D
 	}
 }
 
+void connect_cube(int parent, int child, int plane) {
+	cube_tab[parent].cube[plane] = child;
+	cube_tab[child].cube[get_opposite_face(plane)] = parent;
+}
+
 
 void init_cubes() {
 	Vex3D cube_angle = {0, 0, 0};
 	
 	make_cube(&cube_tab[0], 75, 75, 75, 0, 0, 0, &cube_angle);
 	make_cube(&cube_tab[1], 75, 75, 75, 0, 0, 75, &cube_angle);
+	
+	make_cube(&cube_tab[3], 75, 75, 75, 0, -75, 75, &cube_angle);
+	
 	make_cube(&cube_tab[2], 75, 75, 75, -75, 0, 75, &cube_angle);
 	
-	cube_tab[0].cube[PLANE_BACK] = 1;
-	cube_tab[1].cube[PLANE_LEFT] = 2;
+	//cube_tab[0].cube[PLANE_BACK] = 1;
+	//cube_tab[1].cube[PLANE_LEFT] = 2;
+	//cube_tab[1].cube[PLANE_TOP] = 3;
+	
+	connect_cube(0, 1, PLANE_BACK);
+	connect_cube(1, 2, PLANE_LEFT);
+	connect_cube(1, 3, PLANE_TOP);
+	
 }
 
 void invert_normals() {

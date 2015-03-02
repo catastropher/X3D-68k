@@ -279,8 +279,10 @@ void draw_polygon2(Polygon* p, void* screen) {
 	
 	for(i = 0; i < p->total_points; i++) {
 		if(p->line[prev].draw) {
-			//FastLine_Draw_R(screen, p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y);
-			draw_clip_line(p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y, screen);
+			FastLine_Draw_R(screen, p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y);
+			//draw_clip_line(p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y, screen);
+			//LCD_restore(screen);
+			//ngetchx();
 		}
 		
 		prev = i;
