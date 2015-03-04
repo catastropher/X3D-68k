@@ -213,7 +213,7 @@ void _main(void) {
 	
 	buf.width = 240;
 	buf.height = 128;
-	buf.scale_factor = 208;
+	buf.scale_factor = 128;
 	buf.seg_pos = 0;
 	buf.frame = 0;
 	buf.dark_plane = alloc_mem(LCD_SIZE);
@@ -303,7 +303,7 @@ void _main(void) {
 	
 	lcd_w = 240;
 	lcd_h = 128;
-	scale_factor = 208;
+	scale_factor = 128;
 	
 	PortSet(buf.dark_plane, 239, 127);
 	
