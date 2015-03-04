@@ -186,6 +186,7 @@ extern long seg_calls;
 void test_polygon_clipper();
 void save_polygon(FILE* file, Polygon* p);
 void test_polygon_clipper2();
+void attempt_move(CBuffer* buf, Vex3D* pos, Vex3D* add);
 
 // Main Function
 void _main(void) {
@@ -238,6 +239,7 @@ void _main(void) {
 	make_polygon(screen_clip, 4, &clip_region);
 	buf.clip = &clip_region;
 	buf.save_poly = 0;
+	buf.current_cube = 0;
 	
 	
 	draw_polygon(buf.clip);
@@ -247,7 +249,7 @@ void _main(void) {
 	
 	cam.pos.x = 0;
 	cam.pos.y = 0;
-	cam.pos.z = -100;
+	cam.pos.z = -25;
 	
 	cam.angle.x = 0;
 	cam.angle.y = 0;
@@ -359,7 +361,7 @@ void _main(void) {
 		
 		if(fps != 0) {
 		#if 1
-			sprintf(fps_str, "fps: %d, calls: %ld", fps, calls);
+			sprintf(fps_str, "fps: %d, cube: %d", fps, buf.current_cube);
 			//sprintf(fps_str, "{%d, %d, %d}", cam.dir.x, cam.dir.y, cam.dir.z);
 			//PortSet(Vscreen0, 239, 127);
 			DrawStr(0, 0, fps_str, A_NORMAL);
@@ -425,9 +427,15 @@ void _main(void) {
 			cam_update_dir(&cam);
 		}
 		else if(_keytest(6, 4)) {
-			cam.pos.x += cam.dir.x / 8192;
-			cam.pos.y += cam.dir.y / 8192;
-			cam.pos.z += cam.dir.z / 8192;
+			//cam.pos.x += cam.dir.x / 8192;
+			//cam.pos.y += cam.dir.y / 8192;
+			//cam.pos.z += cam.dir.z / 8192;
+			
+			Vex3D dir = {cam.dir.x / 8192, cam.dir.y / 8192, cam.dir.z / 8192};
+			
+			attempt_move(&buf, &cam.pos, &dir);
+			
+			
 			//cam.pos.y -= 8;
 		}
 		else if(_keytest(4, 4)) {

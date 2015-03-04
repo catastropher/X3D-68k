@@ -10,7 +10,7 @@
 #include "extgraph.h"
 
 
-#define FRAC_BITS 8
+#define FRAC_BITS 7
 #define EVAL_BITS 5
 #define VERTICAL_LINE 0x7FFF
 
@@ -55,7 +55,8 @@ inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center)
 	short dx = end->x - start->x;
 	short dy = end->y - start->y;
 	
-	if(dx == 0) {
+	if(abs(dx) < 2) {
+vertical:
 		dest->slope = VERTICAL_LINE;
 		dest->b = start->x;
 		dest->sign = signof(center->x - start->x);
@@ -64,6 +65,10 @@ inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center)
 	}
 	else {
 		dest->slope = ((long)dy << FRAC_BITS) / dx;
+		
+		if(abs(dest->slope) > 5000)//5120)
+			goto vertical;
+		
 		dest->b = start->y - (((long)dest->slope * start->x) >> FRAC_BITS);
 		dest->sign = signof(center->y - eval_line(dest, center->x));
 		dest->start = min(start->x, end->x);
@@ -78,7 +83,7 @@ char line2d_intersect(Line2D* a, Line2D* b, Vex2D* res, Vex2D* center) {
 	//get_line_info(a, x0, x1, center);
 	//get_line_info(b, y0, y1, center);
 	
-	if(a->slope == b->slope)
+	if(abs(a->slope - b->slope) < 10)
 		return 0;
 	else if(b->slope == VERTICAL_LINE) {
 		SWAP(a, b);
@@ -121,6 +126,24 @@ void print_polygon2(Polygon* p) {
 	}
 }
 
+char add_point(Polygon* p, Vex2D* point, Line2D* line) {
+	char clipped = 1;
+	
+	if(p->total_points != 0) {
+		if((point->x == p->p[0].v.x && point->y == p->p[0].v.y) ||
+			(point->x == p->p[p->total_points - 1].v.x && point->y == p->p[p->total_points - 1].v.y))
+				clipped = 2;
+	}
+	
+	
+	if(clipped != 2) {
+		p->p[p->total_points] = (Point){1, *point};
+		p->line[p->total_points++] = *line;
+	}
+	
+	return clipped;
+}
+
 void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	int point;
 	int next_point;
@@ -133,6 +156,7 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 	char side = point_valid_side(edge, &p->p[0].v);
 	char next_side;
 	char clipped;
+	char current_clipped;
 	
 	dest->total_points = 0;
 	
@@ -142,24 +166,35 @@ void polygon_clip_edge(Polygon* p, Line2D* edge, Polygon* dest, Vex2D* center) {
 		next_point = (point + 1) % p->total_points;
 		next_side = point_valid_side(edge, &p->p[next_point].v);
 		
+		current_clipped = 0;
+		
 		if(side != -1) {
-			dest->p[dest->total_points] = p->p[point];
-			dest->line[dest->total_points++] = *line;
+			//dest->p[dest->total_points] = p->p[point];
+			//dest->line[dest->total_points++] = *line;
+			
+			current_clipped = add_point(dest, &p->p[point].v, line);
 		}
 		
 		clipped = 0;
 		if(side + next_side == 0 && side) {
 			if(line2d_intersect(line, edge, &clip_pos, center)) {
-				dest->p[dest->total_points] = (Point){1, clip_pos};
-				dest->line[dest->total_points++] = p->line[point];
+				// Check if the current point is degenerate...
+				//if(dest->total_points != 0) {
+				//if(clip_pos.x != 
+				
+				
+				//dest->p[dest->total_points] = (Point){1, clip_pos};
+				//dest->line[dest->total_points++] = p->line[point];
 					
 				//out[out_pos++] = dest->total_points++;
-				clipped = 1;
+				clipped = add_point(dest, &clip_pos, &p->line[point]);
 			}
 		}
 		
-		if(clipped || side == 0) {
-			out[out_pos++] = dest->total_points - 1;
+		if(clipped != 2 && current_clipped != 2) {
+			if(clipped || side == 0) {
+				out[out_pos++] = dest->total_points - 1;
+			}
 		}
 		
 		side = next_side;
@@ -279,8 +314,8 @@ void draw_polygon2(Polygon* p, void* screen) {
 	
 	for(i = 0; i < p->total_points; i++) {
 		if(p->line[prev].draw) {
-			FastLine_Draw_R(screen, p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y);
-			//draw_clip_line(p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y, screen);
+			//FastLine_Draw_R(screen, p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y);
+			draw_clip_line(p->p[prev].v.x, p->p[prev].v.y, p->p[i].v.x, p->p[i].v.y, screen);
 			//LCD_restore(screen);
 			//ngetchx();
 		}

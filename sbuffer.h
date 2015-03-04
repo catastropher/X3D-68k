@@ -51,6 +51,8 @@ typedef struct {
 	Polygon* clip;
 	FILE* file;
 	char save_poly;
+	
+	char current_cube;
 } CBuffer;
 
 void add_seg(CBuffer* buf, short y, short left, short right, short color);
