@@ -40,7 +40,6 @@ typedef struct {
 	Vex3D v[4];
 } Face;
 
-#if 1
 typedef struct{
 	short x;
 	short pad1;
@@ -49,34 +48,14 @@ typedef struct{
 	short z;
 	short pad3;
 } Vex3D_rot;
-#else
-typedef struct{
-	short pad1;
-	short x;
-	short pad2;
-	short y;
-	short pad3;
-	short z;
-} Vex3D_rot;
-#endif
 
 short rotate_point_local(Vex3D_rot *dest asm("a3"), Vex3D *src asm("a4"), Mat3x3* mat asm("a5"));
-
-#if 0
-void cube_get_face(Face* dest, short x[], short y[], int face) {
-	int i;
-	
-	for(i = 0; i < 4; i++)
-		dest->v[i] = (Vex2D){x[cube_vertex_tab[face][i]], y[cube_vertex_tab[face][i]]};
-}
-#endif
 
 inline void cube_get_face_3D(Face* dest, Vex3D_rot v[], int face) {
 	int i;
 	
 	for(i = 0; i < 4; i++)
 		dest->v[i] = (Vex3D){v[cube_vertex_tab[face][i]].x, v[cube_vertex_tab[face][i]].y, v[cube_vertex_tab[face][i]].z};
-		//(Vex2D){x[cube_vertex_tab[face][i]], y[cube_vertex_tab[face][i]]};
 }
 
 extern void* Vscreen0;
@@ -89,6 +68,7 @@ inline long dot_product(Vex3D* a, Vex3D* b) {
 short scale_factor;
 extern short lcd_w, lcd_h;
 
+// Takes a 3D point and projects it onto the 2D screen
 inline void project_3D(CBuffer* buf, Vex3D* src, Vex2D* dest) {
 	short cx = buf->width / 2;
 	short cy = buf->height / 2;
@@ -97,53 +77,12 @@ inline void project_3D(CBuffer* buf, Vex3D* src, Vex2D* dest) {
 	dest->y = (((long)buf->scale_factor * src->y) / (src->z)) + cy;
 }
 
+// Determines whether a polygon passes the "facing test" i.e. the camera
+// lies on the visible side of the polygon
 inline char polygon_visible(Vex3D* normal, Vex3D* cam_pos, Vex3D* v) {
 	Vex3D diff = {v->x - cam_pos->x, v->y - cam_pos->y, v->z - cam_pos->z};
 	
-	long dot = (long)normal->x * diff.x + (long)normal->y * diff.y + (long)normal->z * diff.z;
-	
-	return dot < 0;
-	
-	
-	
-	//long dot = (long)view->x * normal->x + (long)view->y * normal->y + (long)view->z * normal->z;
-	
-	//printf("Dot: %ld\n", dot);
-	
-	#if 0
-	char buf[32];
-	
-	if(outline) {
-		PortSet(Vscreen0, 239, 127);
-		sprintf(buf, "%ld %d %d %d", dot, normal->x, normal->y, normal->z);
-		
-		DrawStr(0, 15 + id * 15, buf, A_NORMAL);
-	}
-	
-	if(dot == 0) {
-		
-		long d = (long)point->x * normal->x + (long)point->y * normal->y + (long)point->z * normal->z;
-		
-		d >>= 2;
-		
-		//printf("Dot is 0\n");
-		
-		//error("DOT is 0");
-		
-		long res = (((long)normal->x * cam_pos->x) >> 2) +
-			(((long)normal->y * cam_pos->y) >> 2) +
-			(((long)normal->x * cam_pos->x) >> 2) -
-			d;
-			
-		return res > 0;
-			
-	}
-	
-	// Was 6
-	
-	return dot < -21474836;
-	//return dot < 0;//dot < -1000000 * 3;
-	#endif
+	return (long)normal->x * diff.x + (long)normal->y * diff.y + (long)normal->z * diff.z < 0;
 }
 
 
@@ -183,13 +122,13 @@ char clip_ray_double(Vex3D* v1, Vex3D* v2) {
 	return 1;
 }
 
+// Clips a 3D line segment against the near clipping plane
+// Returns whether the line was actually clipped
 char clip_ray(Vex3D* v1, Vex3D* v2, short min) {
 	was_clipped = 0;
 	if(v1->z < min && v2->z < min) return 0;
 
 	if(v1->z >= min && v2->z >= min) return 1;
-
-	//cout << "Need clip" << endl;
 
 	if(v1->z < min) {
 		short dx = v1->x - v2->x;
@@ -224,65 +163,28 @@ char clip_ray(Vex3D* v1, Vex3D* v2, short min) {
 		was_clipped = 1;
 	}
 
-#if 0
-	
-		double dz = v1->z - v2->z;
-		t = ((double)MIN - v1->z) / dz;
-
-		v1->x = ((double)v1->x - v2->x) * t + v1->x;
-		v1->y = ((double)v1->y - v2->y) * t + v1->y;
-		v1->z = ((double)v1->z - v2->z) * t + v1->z;
-		was_clipped = 0;
-	}
-	else {
-		double dz = v2->z - v1->z;
-		t = ((double)MIN - v2->z) / dz;
-
-		v2->x = ((double)v2->x - v1->x) * t + v2->x;
-		v2->y = ((double)v2->y - v1->y) * t + v2->y;
-		v2->z = ((double)v2->z - v1->z) * t + v2->z;
-		was_clipped = 1;
-	}
-
-	//if(!(v1.z >= MIN*.90 && v2.z >= MIN*.90)){
-	//	cout << "Error!" << endl;
-	//}
-#endif
-
 	return 1;
 }
 
-
-/*
-typedef struct {
-	Vex2D v[3];
-} Triangle2D;
-
-short 
-
-void triangle_clip_2D_top(Triangle* t, Triangle2D dest[], short *total_tri) {
-	if(v[2].y < 0) {
-		*total_tri = 0;
-	}
-	else if(v[1].y < 0) {
-		
-	}
+// Determines the distance a point is from a plane
+// Note: this is the signed distance. If the point is on the
+// normal side of the plane, this distance will be negative.
+// If on the other side, it's positive. If on the plane, the distance
+// will be 0
+inline short plane_dist(Vex3D* normal, Vex3D* cam_pos, Vex3D* v) {
+	Vex3D diff = {v->x - cam_pos->x, v->y - cam_pos->y, v->z - cam_pos->z};
 	
+	long x = (long)normal->x * diff.x;
+	long y = (long)normal->y * diff.y;
+	long z = (long)normal->z * diff.z;
 	
-	
-
-	if(v[0].y >= 0) {
-		dest[0] = *t;
-		*total_tri = 1;
-	}
-	
-	
-	
+	return (x + y + z) >> NORMAL_BITS;//dot >> NORMAL_BITS;
 }
-*/
+
 
 void XGrayFilledTriangle_R(short x1 asm("%d0"),short y1 asm("%d1"),short x2 asm("%d2"),short y2 asm("%d3"),short x3 asm("%d4"),short y3 asm("%a1"),void *planes asm("%a0"), void(*drawfunc)(short x1 asm("%d0"), short x2 asm("%d1"), void * addrs asm("%a0")) asm("%a2"));
 
+//
 inline void line_info(Line* dest, Vex2D* start, Vex2D* end) {
 	short dx = end->x - start->x;
 	short dy = end->y - start->y;
@@ -293,195 +195,6 @@ inline void line_info(Line* dest, Vex2D* start, Vex2D* end) {
 
 short line_intersect(Line* line, short y) {
 	return line->start.x + (((long)line->slope * (y - line->start.y)) >> LINE_BITS);
-}
-
-//void(*drawfunc)(short x1 asm("%d0"), short x2 asm("%d1"), void * addrs asm("%a0")
-
-void Xasm_gray_tri(CBuffer* buf, short x1, short y1, short x2, short y2, short x3, short y3, short color) {
-	void* call_back[] = {
-		GrayDrawSpan_BLACK_R,
-		GrayDrawSpan_LGRAY_R,
-		GrayDrawSpan_DGRAY_R,
-		GrayDrawSpan_WHITE_R
-	};
-	
-	//rasterize_triangle_full(buf, x1, y1, x2, y2, x3, y3, color);
-	
-	
-	XGrayFilledTriangle_R(x1, y1, x2, y2, x3, y3, buf->dark_plane, DrawSpan_REVERSE_R);
-	
-	//draw_clip_tri(x1, y1, x2, y2, x3, y3, buf->dark_plane);
-	//XGrayFilledTriangle_R(x1, y1, x2, y2, x3, y3, Vscreen1, call_back[color]);
-}
-
-
-void project_draw_tri(CBuffer* buf, Vex3D *v, short color, char draw_01, char draw_02, char draw_12){
-	Vex2D v2[3];
-	Vex2D out;
-	int i;
-	
-	//if(buf->lines_left == 0)
-	//	return;
-	
-	short width = buf->width;
-	short cx = width / 2;
-	short cy = buf->height / 2;
-
-	for(i = 0;i < 3;i++){
-		//rot_out = v[i];
-		//project_vex3(&out);
-		//v2[i].x = out.x;
-		//v2[i].y = out.y;
-		//v2[i].z = 0;
-		
-		v2[i].x = (((long)buf->scale_factor * v[i].x) / (v[i].z)) + cx;
-		v2[i].y = (((long)buf->scale_factor * v[i].y) / (v[i].z)) + cy;
-	}
-	
-#if 0
-	v2[0] = (Vex2D){10, -10};
-	v2[1] = (Vex2D){10, 100};
-	v2[2] = (Vex2D){100, 100};
-#endif
-
-	//render_triangle(v2, 0, id);
-	
-#ifdef MODE_GRAY
-	Vscreen0 = GrayDBufGetHiddenPlane(LIGHT_PLANE);
-	Vscreen1 = GrayDBufGetHiddenPlane(DARK_PLANE);
-#endif
-	
-	//asm_gray_tri(v2[0].x, v2[0].y, v2[1].x, v2[1].y, v2[2].x, v2[2].y, color);
-	
-	char changed;
-	
-#if 0
-	if(v2[0].x < 0 && v2[1].x < 0 && v2[2].x < 0)
-		return;
-	
-	if(v2[0].x > width && v2[1].x > width && v2[2].x > width)
-		return;
-#endif
-
-	short o[] = {0, 1, 2};
-	
-	do {
-		changed = 0;
-		for(i = 0; i < 2; i++)
-			if(v2[i].y > v2[i + 1].y) {
-				changed = 1;
-				Vex2D temp = v2[i];
-				v2[i] = v2[i + 1];
-				v2[i + 1] = temp;
-			}
-	} while(changed);
-	
-	char tab[3][3];
-	
-#if 0
-	tab[o[0]][o[1]] = draw_01;
-	tab[o[1]][o[0]] = draw_01;
-	tab[o[0]][o[2]] = draw_02;
-	tab[o[2]][o[0]] = draw_02;
-	tab[o[1]][o[2]] = draw_12;
-	tab[o[2]][o[1]] = draw_12;
-	
-	
-	Vex2D v2[3];
-	
-	for(i = 0; i < 3; i++)
-		v2[i] = vx[o[i]];
-#endif
-	
-	
-	if(v2[2].y < 0)
-		return;
-	else if(v2[1].y < 0) {
-		// Two of the points are above the screen
-		Line a, b;
-		
-		line_info(&a, &v2[0], &v2[2]);
-		line_info(&b, &v2[1], &v2[2]);
-		
-		#if 1
-		v2[0].y = 1;
-		v2[0].x = line_intersect(&a, 0);
-		
-		v2[1].y = 1;
-		v2[1].x = line_intersect(&b, 0);
-		#endif
-		
-		//buf->draw[0] = 
-		
-		Xasm_gray_tri(buf, v2[0].x, v2[0].y, v2[1].x, v2[1].y, v2[2].x, v2[2].y, color);
-		
-	}
-	else if(v2[0].y < 0) {
-		// One of the points is above the screen
-		Line a, b;
-		
-		line_info(&a, &v2[0], &v2[2]);
-		line_info(&b, &v2[0], &v2[1]);
-		
-		Vex2D new_pa, new_pb;
-		
-		new_pa.y = 0;
-		new_pa.x = line_intersect(&a, 0);
-		
-		new_pb.y = 0;
-		new_pb.x = line_intersect(&b, 0);
-		
-		//asm_gray_tri(v2[0].x, v2[0].y, v2[1].x, v2[1].y, v2[2].x, v2[2].y, color);
-		//return;
-		// Ugh, we have no choice but to draw two triangles (the result of clipping gives
-		// a quadrilateral)
-		
-		//char rasterize_triangle_half(short slope_left, short slope_right, short y, short end_y, short* x_left, short* x_right, short color)
-		
-	#ifdef MODE_GRAY
-		if(!rasterize_triangle_half(buf, a.slope, b.slope, 0, v2[1].y, &new_pa.x, &new_pb.x, color)) {
-			Line c;
-			line_info(&c, &v2[1], &v2[2]);
-			
-			if(v2[1].y != v2[2].y)
-				rasterize_triangle_half(buf, a.slope, c.slope, v2[1].y, v2[2].y, &new_pa.x, &new_pb.x, color);
-		}
-	#else
-		
-		
-		//error("Above");
-		
-		Xasm_gray_tri(buf, v2[2].x, v2[2].y, new_pa.x, new_pa.y, v2[1].x, v2[1].y, color);
-		
-		//Vscreen0 = GrayDBufGetHiddenPlane(LIGHT_PLANE);
-		//Vscreen1 = GrayDBufGetHiddenPlane(DARK_PLANE);
-		Xasm_gray_tri(buf, new_pb.x, new_pb.y, new_pa.x, new_pa.y, v2[1].x, v2[1].y, color);
-		
-	#endif
-		
-	}
-	else if(v2[0].y < buf->height) {
-		Xasm_gray_tri(buf, v2[0].x, v2[0].y, v2[1].x, v2[1].y, v2[2].x, v2[2].y, color);
-	}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-	//if(v2[0].y > -10) {
-		//asm_gray_tri(v2[0].x, v2[0].y, v2[1].x, v2[1].y, v2[2].x, v2[2].y, color);
-	//}
-	//else {
-		
-	//}
-	
-	//draw_clip_tri(v2[0].x, v2[0].y, v2[1].x, v2[1].y, v2[2].x, v2[2].y, Vscreen0);
 }
 
 void save_polygon(FILE* file, Polygon* p) {
@@ -701,6 +414,9 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 			//draw_polygon_slope(buf, res);
 		}
 	#endif
+	
+		for(i = 0; i < res->total_points; i++)
+			res->line[i].draw = 1;
 		
 		return res;
 	}
@@ -711,136 +427,6 @@ Polygon* clip_quad(CBuffer* buf, Vex3D* v, Polygon* dest, Polygon* temp_a, Polyg
 	return dest;
 }
 
-
-
-#if 1
-void clip_triangle(CBuffer* buf, Vex3D* v, short color, char draw_a, char draw_b) {
-	int out[3];
-	int in[3];
-	int pos_o = 0;
-	int pos_i = 0;
-	int i;
-	
-	//if(buf->lines_left == 0)
-	//	return;
-
-	for(i = 0;i < 3;i++){
-		if(v[i].z < MIN)	out[pos_o++] = i;
-		else				in[pos_i++] = i;
-	}
-
-	if(pos_i == 3) {
-		//cout << "Case1" << endl;
-		project_draw_tri(buf, v, color, 0, 0, 0);
-	}
-	else if(pos_i == 2) {
-		//cout << "Case2" << endl;
-		Vex3D o1 = v[out[0]];
-		Vex3D o2 = v[out[0]];
-
-		//clip_ray(&o1,&v[in[0]]);
-		//clip_ray(&o2,&v[in[1]]);
-
-		Vex3D list1[3] = {o1,v[in[0]],v[in[1]]};
-		Vex3D list2[3] = {o1,o2,v[in[1]]};
-
-		
-		/*
-		 
-            /\		 
-		 ----------
-		  /    \
-		 --------
- 		 
-		 
-		*/
-		
-		
-		project_draw_tri(buf, list1, color, 0, 0, 0);
-		project_draw_tri(buf, list2, color, 0, 0 ,0);
-	}
-	else if(pos_i == 1) {
-		//cout << "Case3" << endl;
-		Vex3D o1 = v[out[0]];
-		Vex3D o2 = v[out[1]];
-
-	//	clip_ray(&o1,&v[in[0]]);
-		//clip_ray(&o2,&v[in[0]]);
-
-		Vex3D list1[3] = {o1,o2,v[in[0]]};
-
-		project_draw_tri(buf, list1, color, 0, 0, 0);
-	}
-	else{
-		//cout << "INVISIBLE" << endl;
-		//print_vex3(&v[0]);
-		//print_vex3(&v[1]);
-		//print_vex3(&v[2]);
-	}
-}
-#endif
-
-inline short get_color(Vex3D* cam_dir, Vex3D* normal) {
-	//Vex3D reverse = {-normal->x, -normal->y, -normal->z};
-	
-	long dot = dot_product(cam_dir, normal);
-	long a = 90177536;
-	
-	if(dot < -3 * a + a / 4 - a / 8)
-		return COLOR_WHITE;
-	else if(dot < -a)
-		return COLOR_LIGHTGRAY;
-	
-	return COLOR_DARKGRAY;
-	
-}
-
-extern long seg_calls;
-
-void render_ray(CBuffer* buf, Vex3D* v1,Vex3D *v2) {
-	Vex3D a = *v1, b = *v2;
-	
-	seg_calls++;
-	
-	//if(!clip_ray(&a, &b)) return;
-
-	//print_vex3(&v1);
-	//print_vex3(&v2);
-
-	Vex2D s1,s2;
-
-	//rot_out = v1;
-	//project_vex3(&s1);
-	project_3D(buf, &a, &s1);
-	project_3D(buf, &b, &s2);
-
-	//rot_out = v2;
-	//project_vex3(&s2);
-	
-	//if(s1.x < 0 || s1.y < 0 || s1.x > 239 || s1.y > 127) return;
-	//if(s2.x < 0 || s2.y < 0 || s2.x > 239 || s2.y > 127) return;
-	
-	short max_x = buf->width - 1;
-	short max_y = buf->height - 1;
-
-	if(s1.x < 0 && s2.x < 0) return;
-	if(s1.x > max_x && s2.x > max_x) return;
-
-	if(s1.y < 0 && s2.y < 0) return;
-	if(s1.y > max_y && s2.y > max_y) return;
-
-	//GrayFastDrawLine2B(s1.x, s1.y, s2.x, s2.y, COLOR_LIGHTGRAY, Vscreen0, Vscreen1);
-	
-	if(s1.x < 0 || s1.y < 0 || s1.x > max_x || s1.y > max_y || s2.x < 0 || s2.y < 0 || s2.x > max_x || s2.y > max_y) {
-		//draw_clip_line(s1.x, s1.y, s2.x, s2.y, Vscreen1);
-		draw_clip_line(s1.x, s1.y, s2.x, s2.y, buf->dark_plane);
-	}
-	else {
-		FastLine_Draw_R(buf->dark_plane, s1.x, s1.y, s2.x, s2.y);
-		//FastDrawLine(buf->dark_plane, s1.x, s1.y, s2.x, s2.y, A_NORMAL);
-		//GrayFastDrawLine2B_R(Vscreen0, Vscreen1, s1.x, s1.y, s2.x, s2.y, COLOR_BLACK);
-	}
-}
 
 #define TOTAL_CUBES 5
 
@@ -1018,6 +604,8 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip, s
 			for(i = 0; i < 6; i++) {	
 				vis[i] = polygon_visible(&c->normal[i], cam_pos, &c->v[cube_vertex_tab[i][0]]);
 				
+				long dist = plane_dist(&c->normal[i], cam_pos, &c->v[cube_vertex_tab[i][0]]);
+				
 				if(buf->save_poly)
 					fprintf(buf->file, "%d: %d\n", i, (short)vis[i]);
 				
@@ -1069,19 +657,31 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip, s
 					#endif
 						
 						//draw = 0b00001100;
+
+						char force = 0;
 						
-						if(c->cube[i] != -1 || draw)
-							res = clip_quad(buf, face.v, &temp_c, &temp_a, &temp_b, clip, c->cube[i] != -1, draw, 
-								c->cube[i] != -1 ? 10 : 10);
+
+						res = clip_quad(buf, face.v, &temp_c, &temp_a, &temp_b, clip, c->cube[i] != -1, draw, 
+							c->cube[i] != -1 ? 10 : 10);
+
+							
+						if(dist < -15)
+							res = clip_quad(buf, face.v, &temp_c, &temp_a, &temp_b, clip, c->cube[i] != -1, draw, 10);
+						else {
+							force = 1;
+						}
 						
-						if(res->total_points != 0) {		
-							if(draw)
+						if((id == 0 && i == 4) || (id == 1 && i == PLANE_FRONT))
+							printf("\n\ni: %d, DIFF: %ld\n force: %d\n", i, dist, force);
+						
+						if(res->total_points != 0 || force) {		
+							if(c->cube[i] != -1 && id == 1)
 								draw_polygon2(res, buf->dark_plane);
 		
 							if(c->cube[i] != -1) {
 								Cube* c2 = &cube_tab[c->cube[i]];
 				
-								if(res->total_points != 0) {
+								if(res->total_points != 0 || force) {
 									cube_pass_edges(buf, c2, i);
 					
 									if(!(c2->edge_bits & (1 << 15))) {										
@@ -1090,7 +690,16 @@ void render_cube(CBuffer* buf, Cube* c, Cam* cam, char outline, Polygon* clip, s
 											//save_polygon(buf->file, res);
 										}
 										
-										render_cube(buf, c2, cam, outline, res, c->cube[i]);
+									#if 1
+										if(dist < -15)
+											render_cube(buf, c2, cam, outline, res, c->cube[i]);
+										else {
+											render_cube(buf, c2, cam, outline, clip, c->cube[i]);
+											//printf("DIFF\n");
+										}
+									#endif
+										//render_cube(buf, c2, cam, outline, clip, c->cube[i]);
+										
 									}
 								}
 								
@@ -1395,14 +1004,6 @@ void make_cube(Cube* c, int x ,int y, int z, int posx, int posy, int posz, Vex3D
 void connect_cube(int parent, int child, int plane) {
 	cube_tab[parent].cube[plane] = child;
 	cube_tab[child].cube[get_opposite_face(plane)] = parent;
-}
-
-inline short plane_dist(Vex3D* normal, Vex3D* cam_pos, Vex3D* v) {
-	Vex3D diff = {v->x - cam_pos->x, v->y - cam_pos->y, v->z - cam_pos->z};
-	
-	long dot = (long)normal->x * diff.x + (long)normal->y * diff.y + (long)normal->z * diff.z;
-	
-	return dot >> NORMAL_BITS;
 }
 
 /*

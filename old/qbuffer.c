@@ -10,7 +10,7 @@
 #include "extgraph.h"
 
 
-#define FRAC_BITS 11
+#define FRAC_BITS 10
 #define EVAL_BITS 5
 #define VERTICAL_LINE 0x7FFF
 
@@ -65,6 +65,9 @@ vertical:
 	}
 	else {
 		dest->slope = ((long)dy << FRAC_BITS) / dx;
+		
+		if(abs(dest->slope) > VERTICAL_LINE)
+			goto vertical;
 		
 		//if(abs(dest->slope) > 5000)//5120)
 		//	goto vertical;
