@@ -3,12 +3,15 @@
 #pragma once
 
 #include "fix.h"
+#include "math.h"
 
-#define NORMAL_BITS 15
+#define NORMAL_BITS 15		// The number of fractional bits used to represent a normal in fixed point
+#define MAX_POINTS 20		// Mamimum number of points a polygon can have
+#define MAX_PLANES 20		// Maximum number of planes a view frustum can have
 
 
 // A 3D vertex or vector
-typedef struct {
+typedef struct Vex3D {
 	short x, y, z;
 } Vex3D;
 
@@ -24,13 +27,14 @@ typedef struct {
 	short d;
 } Plane;
 
-// Mamimum number of points a polygon can have
-#define MAX_POINTS 20
-
 // A polygon with an arbitrary number of points (with an upper bound)
 typedef struct {
-	short total_v;
 	Vex3D v[MAX_POINTS];
+	short total_v;
 } Polygon;
 
-#include "math.h"
+// The "viewing pyramid", a region of visible space bounded by a number of planes
+typedef struct {
+	Plane p[MAX_PLANES];
+	short total_p;
+} Frustum;

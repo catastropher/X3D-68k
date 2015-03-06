@@ -3,6 +3,8 @@
 
 #include <tigcclib.h>
 
+void test_console();
+
 void _main(void) {
-	
+	test_console();
 }

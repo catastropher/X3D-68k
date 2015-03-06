@@ -2,12 +2,13 @@
 // Created 3/5/2015; 8:39:09 AM
 
 #include "geo.h"
+#include "math.h"
 
 #include <tigcclib.h>
 
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
 // TODO: keep track of which edges have been clipped so we know which
-// Part of the polygon still needs to be drawn
+// part of the polygon still needs to be drawn
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short i;
 	short next_point;
@@ -47,6 +48,17 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	return dest->total_v > 2;	
 }
 
+// Clips a polygon against the entire view frustum
+// This routine requires two temporary polygons, one of which the
+// final polygon will be in. This returns the address of which one it
+// is
+Polygon* clip_polygon_to_frustum(Frustum* f, Polygon* p, Polygon* temp_a, Polygon* temp_b) {
+	int i;
+	
+	for(i = 0; i < f->total_p; i++) {
+		
+	}
+}
 
 
 
