@@ -32,13 +32,6 @@ short console_total_lines() {
 		return MAX_LINES + console_line_tail - console_line_head;
 }
 
-enum {
-	ERROR,
-	PRINT,
-	CLIP,
-	CMD,
-};
-
 const char* console_cat_name[] = {
 	"ERROR",
 	"--->",
@@ -52,7 +45,7 @@ short get_console_key(char* is_edit) {
 	*is_edit = 1;
 	
 	if(isdigit(key) || isalpha(key) || key == ' ' || key == '(' || key == ')' || key == '=' || key == '.' ||
-		key == '"' || key == ',')
+		key == '"' || key == ',' || key == '+')
 			return key;
 	
 	*is_edit = 0;
@@ -142,6 +135,8 @@ void long_as_value(Value* v, long val, short type) {
 		*((short *)v->data) = (short)val;
 	else if(type == TYPE_LONG)
 		*((long *)v->data) = val;
+		
+	v->type = type;
 }
 
 char cmd_add(char* line, Value* args, int argc, Value* dest) {
@@ -255,9 +250,7 @@ char execute_function(char* line, char* name, Value* dest, Value args[], int arg
 	
 	for(i = 0; i < total_cmd; i++) {
 		if(strcmp(cmd_tab[i].name, name) == 0) {
-			cmd_tab[i].handler(line, args, argc, dest);
-			
-			return 1;
+			return cmd_tab[i].handler(line, args, argc, dest);
 		}
 	}
 	
@@ -271,6 +264,205 @@ void consume_whitespace(char** start, char* end) {
 	}
 }
 
+char is_valid_func_char(char c) {
+	return isdigit(c) || isalpha(c);
+}
+
+char is_valid_digit(char c) {
+	return isdigit(c);
+}
+
+char is_valid_op(char c) {
+	return c == '+' || c == '-' || c == '/' || c == '*' || c == '=';
+}
+
+char* get_token(char* token, char* start, char* end, char(*is_valid)(char)) {
+	short token_pos = 0;
+	
+	while(start < end && is_valid(*start)) {
+		token[token_pos++] = *start;
+		start++;
+	}
+	
+	token[token_pos] = '\0';
+	
+	return start;
+}
+
+enum {
+	TOKEN_NONE,
+	TOKEN_NUM,
+	TOKEN_ID,
+	TOKEN_STRING,
+	TOKEN_PAR,
+	TOKEN_OP
+};
+
+#define SWAP(_a,_b) {typeof(_a) _save = _a; _a = _b; _b = _save;}
+
+char execute_statement(char* line, char* start, char *end, Value* res) {
+	char token_a[128];
+	char token_b[128];
+	
+	char* token = token_a;
+	char* last_token = token_b;
+	
+	short last_token_type = TOKEN_NONE;
+	short token_type = TOKEN_NONE;
+	
+	char last_op = 0;
+	
+	Value v[12];
+	unsigned short temp_data[VAR_SIZE * 12 / 2];
+	char first_val = 1;
+	int i;
+	Value* dest = res;
+	char func = 0;
+	
+	for(i = 0; i < 12; i++)
+		v[i].data = (unsigned char *)&temp_data[i * VAR_SIZE / 2];
+	
+	while(start < end) {
+		SWAP(token, last_token);
+		
+		consume_whitespace(&start, end);
+		
+		if(start >= end)
+			break;
+		
+		if(is_valid_op(*start)) {
+			start = get_token(token, start, end, is_valid_op);
+			
+			if(last_token == TOKEN_NONE || last_op != 0) {
+				cprintf(ERROR, "Unexpected op '%s' -> %s", token, line);
+				return 0;
+			}
+			
+			token_type = TOKEN_OP;
+			last_op = token[0];
+		}
+		else if(isdigit(*start)) {
+			start = get_token(token, start, end, is_valid_digit);
+			short type = TYPE_INT;
+			
+			if(start < end) {
+				if(*start == 'L') {
+					type = TYPE_LONG;
+					++start;
+				}
+				else if(*start == 'c') {
+					type = TYPE_CHAR;
+					++start;
+				}
+			}
+			
+			long_as_value(dest, atol(token), type);
+			token_type = TOKEN_NUM;
+		}
+		else if(isalpha(*start)) {
+			start = get_token(token, start, end, is_valid_func_char);
+			token_type = TOKEN_ID;
+		}
+		else if(*start == '(') {
+			short par = 0;
+			
+			char* begin = start + 1;
+			char* stop;
+			short arg = 0;
+			
+			do {
+				consume_whitespace(&start, end);
+				
+				if(*start == '(') {
+					par++;
+				}
+				else if((*start == ',' && par == 1) || (*start == ')' && par == 1)) {
+					stop = start;
+					
+					if(begin >= stop || !execute_statement(line, begin, stop, &v[arg++]))
+						return 0;
+					
+					begin = start + 1;
+				}
+				
+				if(*start == ')')
+					par--;
+				
+				start++;
+			} while(par != 0 && start < end);
+			
+			if(par != 0) {
+				cprintf(ERROR, "Unmatched '(' -> %s", line);
+				return 0;
+			}
+			
+			consume_whitespace(&start, end);
+			
+			if(last_token_type == TOKEN_ID) {
+				
+				if(!execute_function(line, last_token, dest, v, arg)) {
+					return 0;
+				}
+			}
+			else {
+				copy_val(&v[arg - 1], dest);
+			}
+			
+			token_type = TOKEN_PAR;
+		}
+		else if(*start == '"') {
+			++start;
+			
+			dest->type = TYPE_STRING;
+			int pos = 0;
+			
+			while(start < end && *start != '"') {
+				dest->data[pos++] = *start++;
+			}
+			
+			token_type = TOKEN_STRING;
+			dest->data[pos] = '\0';
+		}
+		else if(*start == ')') {
+			cprintf(ERROR, "Unopened ')' -> %s", line);
+			return 0;
+		}
+		else {
+			cprintf(ERROR, "Unexpected char '%c' -> %s", *start, line);
+			return 0;
+		}
+		
+		if(token_type != TOKEN_ID || last_token_type != TOKEN_NONE)
+			dest = &v[11];
+			
+		if(last_op != 0 && token_type != TOKEN_OP) {
+			if(last_op == '+') {
+				long a = value_as_long(res);
+				long b = value_as_long(dest);
+				
+				long_as_value(res, a + b, TYPE_INT);
+			}
+			
+			last_op = 0;
+		}
+		
+		last_token_type = token_type;
+	}
+	
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+#if 0
 char execute_statement(char* line, char* start, char *end, Value* res) {
 	Value v[10];
 	
@@ -401,6 +593,7 @@ char execute_statement(char* line, char* start, char *end, Value* res) {
 	
 	return 1;
 }
+#endif
 
 char execute_string(char* str) {
 	Value res;

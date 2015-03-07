@@ -3,6 +3,7 @@
 
 #include "geo.h"
 #include "math.h"
+#include "console.h"
 
 #include <tigcclib.h>
 
@@ -60,6 +61,16 @@ Polygon* clip_polygon_to_frustum(Frustum* f, Polygon* p, Polygon* temp_a, Polygo
 	}
 }
 
+// Prints the out the points of a 3D polygon
+void print_polygon(Polygon* p) {
+	int i;
+	
+	for(i = 0; i < p->total_v; i++) {
+		cprintf(PRINT, "============");
+		cprintf(PRINT, "%d: {%d, %d, %d}", i, p->v[i].x, p->v[i].y, p->v[i].z);
+		cprintf(PRINT, "============");
+	}
+}
 
 
 
