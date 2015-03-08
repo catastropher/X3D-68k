@@ -16,21 +16,24 @@ short dot_product(Vex3D* a, Vex3D* b) {
 }
 
 // Calculates the cross product of two vectors. This creates a vector that
-// is perpindicular to both vectors
+// is perpendicular to both vectors
+// Note: this routine will normalize the result
 void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
-	dest->x = ((long)a->y * b->z - (long)a->z * b->y) >> NORMAL_BITS;
-	dest->y = ((long)a->z * b->x - (long)a->x * b->z) >> NORMAL_BITS;
-	dest->z = ((long)a->x * b->y - (long)a->y * b->x) >> NORMAL_BITS;
+	dest->x = ((long)a->y * b->z - (long)a->z * b->y);
+	dest->y = ((long)a->z * b->x - (long)a->x * b->z);
+	dest->z = ((long)a->x * b->y - (long)a->y * b->x);
+	
+	normalize_vex3d(dest);
 }
 
 // Projects a 3D point onto a 2D surface i.e. a RenderContext
 // Note: make sure the z component of src is not 0 or you will get division
 // by 0!
 void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
-	short inv_z = ((long)rc->scale << NORMAL_BITS) / src->z;
+	short inv_z = ((long)rc->dist << NORMAL_BITS) / src->z;
 	
-	dest->x = ((long)src->x * inv_z) >> NORMAL_BITS;
-	dest->y = ((long)src->y * inv_z) >> NORMAL_BITS;
+	dest->x = (((long)src->x * inv_z) >> NORMAL_BITS) + rc->center_x;
+	dest->y = (((long)src->y * inv_z) >> NORMAL_BITS) + rc->center_y;
 }
 
 // Subtracts two 3D vectors: dest = a - b
@@ -38,6 +41,34 @@ void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->x = a->x - b->x;
 	dest->y = a->y - b->y;
 	dest->z = a->z - b->z;
+}
+
+// Adds two 3D vectors: dest = a + b
+void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
+	dest->x = a->x + b->x;
+	dest->y = a->y + b->y;
+	dest->z = a->z + b->z;
+}
+
+// Normalizes a 3D vector i.e. makes the length of the vector 1
+// The result is in 0:15 format
+void normalize_vex3d(Vex3D* v) {
+	short len = fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
+	
+	v->x = ((long)v->x << NORMAL_BITS) / len;
+	v->y = ((long)v->y << NORMAL_BITS) / len;
+	v->z = ((long)v->z << NORMAL_BITS) / len;
+	
+}
+
+// Rotates a Vex3D around the origin
+void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest) {
+	Vex3D_rot rot;
+	asm_rotate_vex3d(src, mat, &rot);
+	
+	dest->x = rot.x;
+	dest->y = rot.y;
+	dest->z = rot.z;
 }
 
 // Construct a plane given 3 points on the plane
@@ -52,6 +83,57 @@ void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest) {
 	
 	// D = AX + BY + CZ
 	dest->d = dot_product(&dest->normal, a);
+}
+
+// Calculates the normals of the unrotated planes of the view frustum
+void calculate_frustum_plane_normals(RenderContext* c) {
+	short w = c->w;
+	short h = c->h;
+	
+	Vex3D top_left = {-w / 2, -h / 2, c->dist};
+	Vex3D top_right = {w / 2, -h / 2, c->dist};
+	
+	Vex3D bottom_left = {-w / 2, h / 2, c->dist};
+	Vex3D bottom_right = {w / 2, h / 2, c->dist};
+	
+	Vex3D cam_pos = {0, 0, 0};
+	
+	// Top plane
+	construct_plane(&cam_pos, &top_right, &top_left, &c->frustum_unrotated.p[0]);
+	
+	// Bottom plane
+	construct_plane(&cam_pos, &bottom_left, &bottom_right, &c->frustum_unrotated.p[1]);
+	
+	// Left plane
+	construct_plane(&cam_pos, &top_left, &bottom_left, &c->frustum_unrotated.p[2]);
+	
+	// Right plane
+	construct_plane(&cam_pos, &bottom_right, &top_right, &c->frustum_unrotated.p[3]);
+	
+	// Near plane
+	construct_plane(&top_right, &top_left, &bottom_right, &c->frustum_unrotated.p[4]);
+	
+	c->frustum.total_p = 5;
+}
+
+// Calculates the distance from each plane in the view frustum to the origin
+void calculate_frustum_plane_distances(RenderContext* c) {
+	int i;
+	
+	for(i = 0; i < c->frustum.total_p; i++) {
+		c->frustum.p[i].d = dot_product(&c->frustum.p[i].normal, &c->cam.pos);
+	}
+}
+
+// Calculates the rotated plane normals of the view frustum
+void calculate_frustum_rotated_normals(RenderContext* c) {
+	int i;
+	
+	for(i = 0; i < c->frustum.total_p; i++) {
+		rotate_vex3d(&c->frustum_unrotated.p[i].normal, &c->cam.mat, &c->frustum.p[i].normal);
+	}
+	
+	c->frustum.total_p = c->frustum_unrotated.total_p;
 }
 
 // Multiplies two 3x3 matricies i.e. concatenates them
@@ -115,10 +197,71 @@ inline short cosfp(unsigned char angle) {
 // Given the input angle in DEG256, this returns the fixed-point cosine of it
 // The number is in 8:8 format
 inline short tanfp(unsigned char angle) {
-	// Precent division by 0
+	// Prevent division by 0
 	if(angle == ANG_90 || angle == ANG_180)
 		return VERTICAL_LINE_SLOPE;
 	
 	return ((long)sinfp(angle) << 8) / cosfp(angle);
 }
 
+// Constructs a cube of size (x, y, z) at position (posx, posy, posz)
+// rotated by the given angle
+void construct_cube(short x, short y, short z, short posx, short posy, short posz, Vex3Ds* angle, Cube* c) {
+	x /= 2;
+	y /= 2;
+	z /=2 ;
+
+	c->v[VEX_UBL] =  (Vex3D){-x, y, -z};
+	c->v[VEX_UTL] =  (Vex3D){-x, y, z};
+	c->v[VEX_UTR] =  (Vex3D){x, y, z};
+	c->v[VEX_UBR] =  (Vex3D){x, y, -z};
+	
+	c->v[VEX_DBL] =  (Vex3D){-x, -y, -z};
+	c->v[VEX_DTL] =  (Vex3D){-x, -y, z};
+	c->v[VEX_DTR] =  (Vex3D){x, -y, z};
+	c->v[VEX_DBR] =  (Vex3D){x, -y, -z};
+	
+	short v = -32767;
+	
+	c->normal[PLANE_BOTTOM] = (Vex3D){0, v, 0};
+	c->normal[PLANE_TOP] = (Vex3D){0, -v, 0};
+	c->normal[PLANE_FRONT] = (Vex3D){0, 0, -v};
+	c->normal[PLANE_BACK] = (Vex3D){0, 0, v};
+	c->normal[PLANE_LEFT] = (Vex3D){-v, 0, 0};
+	c->normal[PLANE_RIGHT] =(Vex3D){v, 0, 0};
+	
+	
+	int i;
+	
+	for(i = 0; i < 6; i++)
+		c->cube[i] = -1;
+	
+#if 0
+	Mat3x3 mat, mat2;
+	x3d_construct_mat3_old(angle, &mat);
+	
+	x3d_construct_mat3(angle, &mat2);
+	
+	for(i = 0; i < 8; i++) {
+		Vex3D_rot rot;
+		rotate_point_local(&rot, &c->v[i], &mat);
+		c->v[i].x = rot.x;
+		c->v[i].y = rot.y;
+		c->v[i].z = rot.z;
+	}
+	
+	for(i = 0; i < 6; i++) {
+		Vex3D_rot rot;
+		rotate_point_local(&rot, &c->normal[i], &mat);
+		c->normal[i].x = rot.x;
+		c->normal[i].y = rot.y;
+		c->normal[i].z = rot.z;
+	}
+#endif
+	
+	for(i = 0; i < 8; i++) {
+		c->v[i].x += posx;
+		c->v[i].y += posy;
+		c->v[i].z += posz;
+	}
+}

@@ -9,10 +9,25 @@
 void test_console();
 
 void _main(void) {	
+	FontSetSys(F_6x8);
+	clrscr();
+	
+	// Create and initialize the rendering context
 	RenderContext context;
 	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_90, &context);
-
-	clrscr();
-	printf("Scale: %d\n", context.scale);
+	
+	// Initialize the camera
+	set_cam_pos(&context, 0, 0, 0);
+	set_cam_angle(&context, 0, 0, 0);
+	
+	// Create a test cube
+	Cube cube;
+	Vex3Ds cube_angle = {0, 0, 0};
+	construct_cube(100, 100, 100, 0, 0, 200, &cube_angle, &cube);
+	
+	render_cube(&cube, &context);
+	
+	
+	
 	ngetchx();
 }
