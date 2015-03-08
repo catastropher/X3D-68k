@@ -54,8 +54,7 @@ void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest) {
 	dest->d = dot_product(&dest->normal, a);
 }
 
-extern short *sin_tab;
-
+// Multiplies two 3x3 matricies i.e. concatenates them
 void mul_mat3x3(Mat3x3* a, Mat3x3* b, Mat3x3* res) {
 	int i, j, k;
 	
@@ -72,38 +71,20 @@ void mul_mat3x3(Mat3x3* a, Mat3x3* b, Mat3x3* res) {
 	}
 }
 
-void x3d_construct_mat3(Vex3D *angle, Mat3x3 *dest) {
-	short cos_angle_y = 90 - angle->y;
-	
-	if(cos_angle_y < 0)
-		cos_angle_y += 360;
+// Constructs a 3D rotation matrix with the given angles
+// TODO: rewrite this to not use matrix multiplication
+void construct_mat3x3(Vex3Ds *angle, Mat3x3 *dest) {
+	short sin_y = sinfp(angle->y);
+	short cos_y = cosfp(angle->y);
 		
-	short sin_y = 0;//sin_tab[angle->y];
-	short cos_y = 0;//sin_tab[cos_angle_y];
+	short sin_x = sinfp(angle->x);
+	short cos_x = cosfp(angle->x);
 	
-	
-	short cos_angle_x = 90 - angle->x;
-	
-	if(cos_angle_x < 0)
-		cos_angle_x += 360;
-		
-	short sin_x = 0;//sin_tab[angle->x];
-	short cos_x = 0;//sin_tab[cos_angle_x];
-	
-	
-#if 0
-	Mat3x3 mat = {
-		{ cos_y, 0, -sin_y},
-		{ 0, 32767, 0 }, 
-		{ sin_y, 0, cos_y}
-	};
-#else
 	Mat3x3 mat_y = {
 		{ cos_y, 0, sin_y}, 
 		{ 0, 32767, 0}, 
 		{ -sin_y, 0, cos_y}
 	};
-#endif
 	
 	Mat3x3 mat_x = {
 		{32767, 0, 0},
@@ -117,3 +98,27 @@ void x3d_construct_mat3(Vex3D *angle, Mat3x3 *dest) {
 	
 	memcpy(dest, &mul_res, sizeof(Mat3x3));
 }
+
+// Given the input angle in DEG256, this returns the fixed-point sine of it
+// The number is in 0:15 format
+inline short sinfp(unsigned char angle) {
+	return sintab[angle];
+}
+
+// Given the input angle in DEG256, this returns the fixed-point cosine of it
+// The number is in 0:15 format
+inline short cosfp(unsigned char angle) {
+	// We exploit the fact that cos(x) = sin(90 - x)
+	return sinfp(ANG_90 - angle);
+}
+
+// Given the input angle in DEG256, this returns the fixed-point cosine of it
+// The number is in 8:8 format
+inline short tanfp(unsigned char angle) {
+	// Precent division by 0
+	if(angle == ANG_90 || angle == ANG_180)
+		return VERTICAL_LINE_SLOPE;
+	
+	return ((long)sinfp(angle) << 8) / cosfp(angle);
+}
+

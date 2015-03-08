@@ -8,8 +8,11 @@
 
 void test_console();
 
-void _main(void) {
-	init_console();
-	
-	
+void _main(void) {	
+	RenderContext context;
+	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_90, &context);
+
+	clrscr();
+	printf("Scale: %d\n", context.scale);
+	ngetchx();
 }
