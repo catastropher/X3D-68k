@@ -2,6 +2,7 @@
 // Created 3/8/2015; 8:07:15 AM
 
 #include "geo.h"
+#include "console.h"
 
 #include <tigcclib.h>
 
@@ -15,4 +16,15 @@ void print_plane(Plane* p) {
 	printf("======Plane======\nNormal: ");
 	print_vex3d(&p->normal);
 	printf("D: %d\n", p->d);
+}
+
+// Prints the out the points of a 3D polygon
+void print_polygon(Polygon* p) {
+	int i;
+	
+	for(i = 0; i < p->total_v; i++) {
+		printf("============\n");
+		printf("%d: {%d, %d, %d}\n", i, p->v[i].x, p->v[i].y, p->v[i].z);
+		printf("============\n");
+	}
 }

@@ -69,11 +69,20 @@ typedef struct {
 	short d;
 } Plane;
 
-// A polygon with an arbitrary number of points (with an upper bound)
+// A 3D polygon with an arbitrary number of points (with an upper bound)
+// TODO: rename to Polygon3D
 typedef struct {
 	Vex3D v[MAX_POINTS];
 	short total_v;
 } Polygon;
+
+typedef Polygon Polygon3D;
+
+// A 2D polygon with an arbitrary number of points
+typedef struct {
+	Vex2D v[MAX_POINTS];
+	short total_v;
+} Polygon2D;
 
 // The "viewing pyramid", a region of visible space bounded by a number of planes
 typedef struct {
@@ -91,6 +100,7 @@ typedef struct {
 	Vex3Ds angle;
 	Mat3x3 mat;
 	Vex3D dir;
+	short dist_from_origin;		// Distance from the origin
 } Camera;
 
 // A rendering context, which describes the dimensions of the screen, the view
@@ -106,6 +116,8 @@ typedef struct RenderContext {
 	Frustum frustum_unrotated;
 	
 	Camera cam;
+	
+	unsigned char* screen;
 } RenderContext;
 
 // A cube (really a convex octahedron) that is the basic unit of levels
@@ -120,8 +132,7 @@ typedef struct {
 
 
 extern const short sintab[256];
-
-
+extern const int cube_vertex_tab[6][5];
 
 // ==============================math.c==============================
 short dot_product(Vex3D* a, Vex3D* b);
@@ -130,6 +141,7 @@ void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest);
 void normalize_vex3d(Vex3D* v);
 short asm_rotate_vex3d(Vex3D *src asm("a4"), Mat3x3* mat asm("a5"), Vex3D_rot *dest asm("a3"));
 void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest);
+short get_vex3d_magnitude(Vex3D* v);
 
 void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest);
 void calculate_frustum_plane_normals(RenderContext* c);
@@ -148,22 +160,28 @@ inline short tanfp(unsigned char angle) __attribute__((pure));
 
 void construct_cube(short x, short y, short z, short posx, short posy, short posz, Vex3Ds* angle, Cube* c);
 
+void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest);
+void cube_get_face(Vex3D v[8], short face,  Vex3D dest[4]);
+
 // ==============================clip.c==============================
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest);
-void print_polygon(Polygon* p);
 
 // ==============================render.c==============================
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c);
 void render_cube(Cube* c, RenderContext* context);
 void set_cam_pos(RenderContext* c, short x, short y, short z);
 void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned char z);
+void draw_polygon(Polygon2D* p, RenderContext* context);
+extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"), register short asm("%d2"),
+	register short asm("%d3"), register void* asm("%a2"));
 
 
 // ==============================util.c==============================
 void print_vex3d(Vex3D* v);
 void print_plane(Plane* p);
+void print_polygon(Polygon* p);
 
 // ==============================fastsqrt.c==============================
-unsigned long fastsqrt(unsigned long x);
+unsigned long fastsqrt(unsigned long x) __attribute__((pure));
 
 

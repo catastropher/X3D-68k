@@ -50,7 +50,7 @@ Use Return Value=0
 Enable Error Return=0
 Save Screen=1
 [File Editing]
-Open File=C:\excel\code\68k\X3D-68k\src\math.c
+Open File=C:\excel\code\68k\X3D-68k\src\clip.c
 [Included Files]
 C File 1=main.c
 C File 2=clip.c
@@ -58,12 +58,13 @@ C File 3=math.c
 C File 4=console.c
 C File 5=sintab.c
 C File 6=render.c
+C File 7=util.c
+C File 8=fastsqrt.c
+GNU Assembler File 1=rotate.s
+Assembler File 1=clipline.asm
 Text File 1=TODO.txt
 Header File 1=geo.h
 Header File 2=fix.h
 Header File 3=math.h
 Header File 4=console.h
 Header File 5=screen.h
-C File 7=util.c
-C File 8=fastsqrt.c
-GNU Assembler File 1=rotate.s

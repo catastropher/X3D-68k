@@ -23,6 +23,8 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->y = ((long)a->z * b->x - (long)a->x * b->z);
 	dest->z = ((long)a->x * b->y - (long)a->y * b->x);
 	
+	printf("Dest->z: %d\n", dest->z);
+	
 	normalize_vex3d(dest);
 }
 
@@ -50,10 +52,14 @@ void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->z = a->z + b->z;
 }
 
+short get_vex3d_magnitude(Vex3D* v) {
+	return fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
+}
+
 // Normalizes a 3D vector i.e. makes the length of the vector 1
 // The result is in 0:15 format
 void normalize_vex3d(Vex3D* v) {
-	short len = fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
+	short len = fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z) + 1;
 	
 	v->x = ((long)v->x << NORMAL_BITS) / len;
 	v->y = ((long)v->y << NORMAL_BITS) / len;
@@ -111,7 +117,7 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	construct_plane(&cam_pos, &bottom_right, &top_right, &c->frustum_unrotated.p[3]);
 	
 	// Near plane
-	construct_plane(&top_right, &top_left, &bottom_right, &c->frustum_unrotated.p[4]);
+	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[4]);
 	
 	c->frustum.total_p = 5;
 }
@@ -265,3 +271,35 @@ void construct_cube(short x, short y, short z, short posx, short posy, short pos
 		c->v[i].z += posz;
 	}
 }
+
+// Takes a 3D polygon and projects all of the points into a 2D polygon
+void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
+	int i;
+	
+	for(i = 0; i < src->total_v; i++) {
+		project_vex3d(c, &src->v[i], &dest->v[i]);
+	}
+	
+	dest->total_v = src->total_v;
+}
+
+// Given an array of 8 3D points that define a cube, this selects those
+// points that belong to the given face
+void cube_get_face(Vex3D v[8], short face,  Vex3D dest[4]) {
+	int i;
+	
+	for(i = 0; i < 4; i++)
+		dest[i] = v[cube_vertex_tab[face][i]];
+}
+
+
+
+
+
+
+
+
+
+
+
+

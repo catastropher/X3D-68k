@@ -5,6 +5,17 @@
 
 #include <tigcclib.h>
 
+// The table of the vertex numbers for each face
+// The last vertex of each face is duplicated to make loops easy
+const int cube_vertex_tab[6][5] = {
+	{2, 1, 0, 3, 2},
+	{6, 7, 4, 5, 6},
+	{0, 1, 5, 4, 0},
+	{2, 3, 7, 6, 2},
+	{2, 6, 5, 1, 2},
+	{3, 0, 4, 7, 3}
+};
+
 // Initializes a render context
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c) {
 	c->w = w;
@@ -21,6 +32,18 @@ void init_render_context(short w, short h, short x, short y, unsigned char fov, 
 	
 	// Calculate the unrotated planes of the view frustum
 	calculate_frustum_plane_normals(c);
+}
+
+// Draws a polygon
+void draw_polygon(Polygon2D* p, RenderContext* context) {
+	int i, next;
+	
+	return;
+	
+	for(i = 0; i < p->total_v; i++) {
+		next = (i + 1) % p->total_v;
+		draw_clip_line(p->v[i].x, p->v[i].y, p->v[next].x, p->v[next].y, context->screen);
+	}
 }
 
 // Renders a single cube in writeframe
@@ -43,6 +66,25 @@ void render_cube(Cube* c, RenderContext* context) {
 		project_vex3d(context, &rot[i], &screen[i]);
 	}
 	
+	Polygon3D poly3D, poly_out;
+	Polygon2D poly2D;
+	
+	for(i = 0; i < 6; i++) {
+		//cube_get_face(rot, i, poly3D.v);
+		poly3D.total_v = 4;
+		
+		clip_polygon_to_plane(&poly3D, &context->frustum.p[4], &poly_out);
+		print_polygon(&poly3D);
+		ngetchx();
+		//project_polygon3d(&poly_out, context, &poly2D);
+		//draw_polygon(&poly2D, context);
+	}
+	
+	
+	
+	
+	
+#if 0
 	for(i = 0; i < 3; i++) {
 		DrawLine(screen[i].x, screen[i].y, screen[i + 1].x, screen[i + 1].y, A_NORMAL);
 		DrawLine(screen[i + 4].x, screen[i + 4].y, screen[i + 4 + 1].x, screen[i + 4 + 1].y, A_NORMAL);
@@ -53,7 +95,8 @@ void render_cube(Cube* c, RenderContext* context) {
 	
 	for(i = 0; i < 4; i++) {
 		DrawLine(screen[i].x, screen[i].y, screen[i + 4].x, screen[i + 4].y, A_NORMAL);
-	}	
+	}
+#endif	
 }
 
 // Sets the position of the camera and updates the plane distances
@@ -61,7 +104,16 @@ void render_cube(Cube* c, RenderContext* context) {
 void set_cam_pos(RenderContext* c, short x, short y, short z) {
 	c->cam.pos = (Vex3D){x, y, z};
 	
-	calculate_frustum_plane_distances(c);
+	//calculate_frustum_plane_distances(c);
+	
+	// Calculate the distance from the origin to the camera
+	c->cam.dist_from_origin = get_vex3d_magnitude(&c->cam.pos);
+	
+	// Update the plane equations
+	int i;
+	
+	for(i = 0; i < c->frustum.total_p; i++)
+		c->frustum.p[i].d = c->frustum_unrotated.p[i].d + c->cam.dist_from_origin;
 }
 
 // Sets the angle of the camera and updates the planes of the view
@@ -81,7 +133,9 @@ void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned 
 	
 	// Update the view frustum
 	calculate_frustum_rotated_normals(c);
-	calculate_frustum_plane_distances(c);
+	//calculate_frustum_plane_distances(c);
+	
+	set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
 	
 	
 }

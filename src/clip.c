@@ -20,6 +20,13 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	dot = dot_product(&poly->v[0], &plane->normal);
 	in = dot >= plane->d;
 	
+	printf("Dot: %d\nD: %d\n", dot, plane->d);
+	print_vex3d(&plane->normal);
+	print_vex3d(&poly->v[0]);
+	ngetchx();
+	
+	dest->total_v = 0;
+	
 	for(i = 0; i < poly->total_v; i++) {
 		next_point = (i + 1) % poly->total_v;
 		
@@ -27,8 +34,9 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		if(in)
 			dest->v[dest->total_v++] = poly->v[i];
 			
+			
 		next_dot = dot_product(&poly->v[next_point], &plane->normal);
-		next_in = dot >= plane->d;
+		next_in = next_dot >= plane->d;
 		
 		// The points are on opposite sides of the plane, so clip it
 		if(in != next_in) {
@@ -60,20 +68,6 @@ Polygon* clip_polygon_to_frustum(Frustum* f, Polygon* p, Polygon* temp_a, Polygo
 		
 	}
 }
-
-// Prints the out the points of a 3D polygon
-void print_polygon(Polygon* p) {
-	int i;
-	
-	for(i = 0; i < p->total_v; i++) {
-		cprintf(PRINT, "============");
-		cprintf(PRINT, "%d: {%d, %d, %d}", i, p->v[i].x, p->v[i].y, p->v[i].z);
-		cprintf(PRINT, "============");
-	}
-}
-
-
-
 
 #if 0
 // Clips a polygon against a plane
