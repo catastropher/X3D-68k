@@ -779,6 +779,9 @@ void show_console_chat() {
 	char has_other_name = 0;
 	short check_count = 0;
 	
+	unsigned char cmd = LINK_NOTHING;
+	char* send_str = name;
+	
 	cprintf(PRINT, "Welcome to chat!");
 	cprintf(PRINT, "Your calc ID is: %d", calc_id);
 	cprintf(PRINT, "Please enter your name:");
@@ -787,6 +790,7 @@ redraw:
 	draw_console(screen);
 	
 	do {
+draw_input:
 		DrawStr(0, LCD_HEIGHT - 12, edit_str, A_NORMAL);
 		DrawLine(0, LCD_HEIGHT - 14, LCD_WIDTH - 1, LCD_HEIGHT - 14, A_NORMAL);
 		
@@ -800,18 +804,39 @@ redraw:
 			
 			
 			if(check_count++ >= 2000 && key == 0) {
-				if(link_recv_string(temp_str)) {
+				//if(link_recv_string(temp_str)) {
+				edit_str[edit_pos] = '\0';
+					
+				if(link_handle_cmd(cmd, send_str, temp_str) == LINK_STRING) {
 					if(!has_other_name) {
 						strcpy(other_name, temp_str);
 						cprintf(PRINT, "%s has joined chat :D", other_name);
 						has_other_name = 1;
 					}
 					else {
-						cprintf(PRINT, "%s: %s\n", other_name, temp_str);
+						cprintf(PRINT, "%s: %s", other_name, temp_str);
+						//cprintf(PRINT, "recv length: %d", (short)strlen(temp_str));
 					}
 					
+					cmd = LINK_NOTHING;
 					draw_console(screen);
+					check_count = 0;
+					goto draw_input;
+					
+					//draw_console(screen);
 				}
+				
+				if(cmd == LINK_STRING) {
+					edit_pos = 0;
+					edit_str[edit_pos] = '|';
+					edit_str[edit_pos + 1] = '\0';
+					send_str = edit_str;
+					cmd = LINK_NOTHING;
+					check_count = 0;
+					goto draw_input;
+				}
+				
+				cmd = LINK_NOTHING;
 				
 				check_count = 0;
 			}
@@ -848,19 +873,17 @@ redraw:
 					strcpy(name, edit_str);
 					
 					cprintf(PRINT, "Welcome %s!");
-					link_send_string(name);
+					//link_send_string(name);
+					cmd = LINK_STRING;
 					
 					has_name = 1;
 				}
 				else {
 					cprintf(PRINT, "%s: %s", name, edit_str);
-					link_send_string(edit_str);
+					//cprintf(PRINT, "send length: %d\n", (short)strlen(edit_str));
+					//link_send_string(edit_str);
+					cmd = LINK_STRING;
 				}
-				
-				edit_pos = 0;
-				edit_str[edit_pos] = '|';
-				edit_str[edit_pos + 1] = '\0';
-				
 				
 				goto redraw;
 			}
@@ -882,6 +905,10 @@ void cprint_line(short category, char* data) {
 	ConsoleLine* line = &console_line[console_line_tail];
 	
 	strncpy(line->line, data, LINE_LENGTH - 1);
+	
+	if(strlen(data) < LINE_LENGTH - 1)
+		line->line[strlen(data)] = '\0';
+	
 	line->line[LINE_LENGTH - 1] = '\0';
 	line->cat = category;
 	

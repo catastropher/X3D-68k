@@ -40,10 +40,7 @@ char test_link() {
 	
 	char str[257];
 	
-	if(!link_send_string(send_str[(short)calc_id]))
-		return 0;
-		
-	if(!link_recv_string(str))
+	if(!link_handle_cmd(LINK_STRING, (char *)send_str[(short)calc_id], str))
 		return 0;
 		
 	printf("Calc says: %s\n", str);
@@ -56,6 +53,8 @@ void _main(void) {
 	FontSetSys(F_6x8);
 	clrscr();
 	
+	
+#if 0
 	cleanup_link();
 	
 	char connected = link_connect();
@@ -65,17 +64,27 @@ void _main(void) {
 		return;
 	}
 		
-	/*if(!test_link()) {
+	if(!test_link()) {
 		printf("Error\n");
-		ngetchx();
+		cleanup_link();
+		while(ngetchx() != 'q');
 		return;
-	}*/
+	}
+	
+	//cleanup_link();
+	//while(ngetchx() != 'q');
+	
+	
+	
+	//return;
 	
 	show_console_chat();
 	cleanup_link();
-	ngetchx();
+	
+	while(ngetchx() != 'q') ;
 	
 	return;
+#endif
 	
 	
 	// Create and initialize the rendering context

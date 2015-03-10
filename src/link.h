@@ -3,9 +3,14 @@
 #pragma once
 
 enum {
+	LINK_ERROR,
 	LINK_STRING,
 	LINK_CONNECT,
-	LINK_CONNECT_RESPOND
+	LINK_CONNECT_RESPOND,
+	LINK_QUIT,
+	
+	LINK_NOTHING
+	
 };
 
 #define NOT_CONNECTED 255
@@ -24,3 +29,5 @@ char link_connect();
 
 char link_send_string(const char* str);
 char link_recv_string(char* dest);
+
+unsigned char link_handle_cmd(unsigned char cmd, void* data_send, void* data_recv);
