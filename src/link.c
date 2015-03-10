@@ -24,6 +24,9 @@ void cleanup_link() {
 // Sends a block of data through the linkport
 // Returns whether successful
 char link_send_data(void* data, unsigned long size, unsigned char throw) {
+	// Wait until the linkport is ready...
+	while(OSCheckSilentLink() != 0) ;
+	
 	unsigned short val = LIO_SendData(data, size);
 	
 	errorif(val != 0 && throw, "Failed to send data");
@@ -33,6 +36,9 @@ char link_send_data(void* data, unsigned long size, unsigned char throw) {
 
 // Receives a block of data from the linkport
 char link_recv_data(void* data, unsigned short size, unsigned char throw) {
+	// Wait until the linkport is ready...
+	while(OSCheckSilentLink() != 0) ;
+	
 	unsigned short val = LIO_RecvData(data, size, 1);
 	
 	errorif(val != 0 && throw, "Failed to receive data");
@@ -56,6 +62,48 @@ short link_recv_byte(unsigned char throw) {
 short link_send_byte(unsigned char b, unsigned char throw) {
 	return link_send_data(&b, 1, throw);
 }
+
+// Sends a string through the linkport
+// Note: the length of the string must be < 256 characters!
+// Returns whether successful
+char link_send_string(const char* str) {
+	unsigned short length = strlen(str);
+	
+	if(length >= 256)
+		return 0;
+	
+	unsigned char string_info[] = {LINK_STRING, length};
+	
+	if(link_send_data(string_info, 2, 0))
+		if(link_send_data((void *)str, length, 0))
+			return 1;
+			
+	error("Failed to send data\n");
+	return 0;
+}
+
+// Receives a string throught the linkport
+// The destination buffer should be at least 257 bytes!
+// Returns whether successful
+char link_recv_string(char* dest) {
+	link_recv_byte(0);
+	
+	short length = link_recv_byte(0);
+	
+	if(length == -1)
+		return 0;
+		
+	char pass = 0;
+	int i;
+		
+	for(i = 0; i < 20 && !pass; i++)
+		pass = link_recv_data(dest, length, 0);
+		
+	dest[length] = '\0';
+	return pass;
+}
+
+
 
 // Attemps to connect to another calculator
 // Returns whether successful

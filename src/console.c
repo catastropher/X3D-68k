@@ -2,6 +2,7 @@
 // Created 3/5/2015; 3:48:47 PM
 
 #include "console.h"
+#include "link.h"
 
 #include <tigcclib.h>
 
@@ -40,7 +41,11 @@ const char* console_cat_name[] = {
 };
 
 short get_console_key(char* is_edit) {
-	unsigned short key = ngetchx();
+	void* kbd = kbd_queue();
+	unsigned short key;
+	
+	if(OSdequeue(&key, kbd))
+		return 0;
 	
 	*is_edit = 1;
 	
@@ -725,6 +730,151 @@ done:
 	LCD_restore(save_screen);
 	free(save_screen);
 	free(screen);
+}
+
+void draw_console(void* screen) {
+	short line;
+	short y = 0;
+	
+	line = console_line_head;
+	clrscr();
+	y = 0;
+	
+	memset(screen, 0, LCD_SIZE - (15 * LCD_WIDTH / 8));
+	
+	while(line != console_line_tail) {
+		DrawStr(0, y, console_line[line].line, console_line[line].cat != ERROR ? A_NORMAL : A_REVERSE);
+		
+		line = (line + 1) % MAX_LINES;
+		y += 8;
+	}
+	
+	LCD_restore(screen);
+}
+
+void show_console_chat() {
+	init_console();
+	
+	void* save_screen = malloc(LCD_SIZE);
+	LCD_save(save_screen);
+	
+	void* screen = malloc(LCD_SIZE);
+	PortSet(screen, 239, 127);
+	clrscr();
+	
+	unsigned char font = FontGetSys();
+	FontSetSys(F_4x6);
+	
+	unsigned short key;
+	char edit_str[70] = "|";
+	short edit_pos = 0;
+	char is_edit;
+	
+	char temp_str[257];
+	
+	char name[64];
+	char other_name[64];
+	
+	char has_name = 0;
+	char has_other_name = 0;
+	short check_count = 0;
+	
+	cprintf(PRINT, "Welcome to chat!");
+	cprintf(PRINT, "Your calc ID is: %d", calc_id);
+	cprintf(PRINT, "Please enter your name:");
+	
+redraw:
+	draw_console(screen);
+	
+	do {
+		DrawStr(0, LCD_HEIGHT - 12, edit_str, A_NORMAL);
+		DrawLine(0, LCD_HEIGHT - 14, LCD_WIDTH - 1, LCD_HEIGHT - 14, A_NORMAL);
+		
+		memset(screen + (LCD_HEIGHT - 12) * LCD_WIDTH / 8, 0, LCD_WIDTH * 8 / 8);
+		DrawStr(0, LCD_HEIGHT - 12, edit_str, A_NORMAL);
+		LCD_restore(screen);
+		
+
+		do {
+			key = get_console_key(&is_edit);
+			
+			
+			if(check_count++ >= 2000 && key == 0) {
+				if(link_recv_string(temp_str)) {
+					if(!has_other_name) {
+						strcpy(other_name, temp_str);
+						cprintf(PRINT, "%s has joined chat :D", other_name);
+						has_other_name = 1;
+					}
+					else {
+						cprintf(PRINT, "%s: %s\n", other_name, temp_str);
+					}
+					
+					draw_console(screen);
+				}
+				
+				check_count = 0;
+			}
+				
+		} while(key == 0);
+		
+		
+		if(is_edit) {
+			edit_str[edit_pos++] = key;
+			edit_str[edit_pos] = '|';
+			edit_str[edit_pos + 1] = '\0';
+		}
+		else {
+			if(key == KEY_ESC)
+				goto done;
+			else if(key == KEY_BACKSPACE) {
+				if(edit_pos != 0) {
+					edit_str[--edit_pos] = '|';
+					edit_str[edit_pos + 1] = '\0';
+				}
+			}
+			else if(key == KEY_CLEAR) {
+				edit_pos = 0;
+				edit_str[edit_pos] = '|';
+				edit_str[edit_pos + 1] = '\0';
+			}
+			else if(key == KEY_ENTER) {
+				edit_str[edit_pos] = '\0';
+				
+				//execute_cmd(edit_str);
+				//execute_string(edit_str);
+				
+				if(!has_name) {
+					strcpy(name, edit_str);
+					
+					cprintf(PRINT, "Welcome %s!");
+					link_send_string(name);
+					
+					has_name = 1;
+				}
+				else {
+					cprintf(PRINT, "%s: %s", name, edit_str);
+					link_send_string(edit_str);
+				}
+				
+				edit_pos = 0;
+				edit_str[edit_pos] = '|';
+				edit_str[edit_pos + 1] = '\0';
+				
+				
+				goto redraw;
+			}
+		}
+		
+	} while(1);
+	
+done:
+	PortRestore();
+	FontSetSys(font);
+	LCD_restore(save_screen);
+	free(save_screen);
+	free(screen);
+	free(console_line);
 }
 
 

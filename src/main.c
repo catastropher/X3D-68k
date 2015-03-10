@@ -32,15 +32,48 @@ unsigned short read_keys() {
 		
 }
 
+char test_link() {
+	const char* send_str[] = {
+		"You are talking with calc 0",
+		"You are talking with calc 1"
+	};
+	
+	char str[257];
+	
+	if(!link_send_string(send_str[(short)calc_id]))
+		return 0;
+		
+	if(!link_recv_string(str))
+		return 0;
+		
+	printf("Calc says: %s\n", str);
+	//ngetchx();
+	
+	return 1;
+}
+
 void _main(void) {	
 	FontSetSys(F_6x8);
 	clrscr();
 	
+	cleanup_link();
+	
 	char connected = link_connect();
 	
-	printf("Connected: %d\n", connected);
-	ngetchx();
+	if(!connected) {
+		cleanup_link();
+		return;
+	}
+		
+	/*if(!test_link()) {
+		printf("Error\n");
+		ngetchx();
+		return;
+	}*/
+	
+	show_console_chat();
 	cleanup_link();
+	ngetchx();
 	
 	return;
 	

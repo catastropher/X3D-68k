@@ -21,3 +21,6 @@ short link_recv_byte(unsigned char throw);
 short link_send_byte(unsigned char b, unsigned char throw);
 
 char link_connect();
+
+char link_send_string(const char* str);
+char link_recv_string(char* dest);

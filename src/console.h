@@ -3,6 +3,7 @@
 
 void cprintf_function(const char* func, short category, const char* format, ...);
 void init_console();
+void show_console_chat();
 
 #define cprintf(_cat, _format, ...) cprintf_function("", _cat, _format, ##__VA_ARGS__)
 
