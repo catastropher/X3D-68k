@@ -18,7 +18,7 @@ void init_link() {
 
 // Closes the linkport
 void cleanup_link() {
-	OSLinkClose();
+	OSLinkReset();
 }
 
 // Sends a block of data through the linkport
