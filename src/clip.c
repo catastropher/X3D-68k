@@ -20,10 +20,12 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	dot = dot_product(&poly->v[0], &plane->normal);
 	in = dot >= plane->d;
 	
+	
 	printf("Dot: %d\nD: %d\n", dot, plane->d);
 	print_vex3d(&plane->normal);
 	print_vex3d(&poly->v[0]);
-	ngetchx();
+	//ngetchx();
+	
 	
 	dest->total_v = 0;
 	
@@ -33,6 +35,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		// The vertex is inside the plane, so don't clip it
 		if(in)
 			dest->v[dest->total_v++] = poly->v[i];
+			
+		//assert(in);
 			
 			
 		next_dot = dot_product(&poly->v[next_point], &plane->normal);

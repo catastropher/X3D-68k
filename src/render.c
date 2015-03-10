@@ -38,8 +38,6 @@ void init_render_context(short w, short h, short x, short y, unsigned char fov, 
 void draw_polygon(Polygon2D* p, RenderContext* context) {
 	int i, next;
 	
-	return;
-	
 	for(i = 0; i < p->total_v; i++) {
 		next = (i + 1) % p->total_v;
 		draw_clip_line(p->v[i].x, p->v[i].y, p->v[next].x, p->v[next].y, context->screen);
@@ -63,21 +61,21 @@ void render_cube(Cube* c, RenderContext* context) {
 		// Rotate the point around the origin
 		rotate_vex3d(&temp, &context->cam.mat, &rot[i]);
 		
-		project_vex3d(context, &rot[i], &screen[i]);
+		//project_vex3d(context, &rot[i], &screen[i]);
 	}
 	
 	Polygon3D poly3D, poly_out;
 	Polygon2D poly2D;
 	
-	for(i = 0; i < 6; i++) {
-		//cube_get_face(rot, i, poly3D.v);
+	for(i = 0; i < 1; i++) {
+		cube_get_face(rot, i, poly3D.v);
 		poly3D.total_v = 4;
 		
 		clip_polygon_to_plane(&poly3D, &context->frustum.p[4], &poly_out);
-		print_polygon(&poly3D);
-		ngetchx();
-		//project_polygon3d(&poly_out, context, &poly2D);
-		//draw_polygon(&poly2D, context);
+		//print_polygon(&poly3D);
+		//ngetchx();
+		project_polygon3d(&poly_out, context, &poly2D);
+		draw_polygon(&poly2D, context);
 	}
 	
 	
@@ -104,16 +102,17 @@ void render_cube(Cube* c, RenderContext* context) {
 void set_cam_pos(RenderContext* c, short x, short y, short z) {
 	c->cam.pos = (Vex3D){x, y, z};
 	
-	//calculate_frustum_plane_distances(c);
+	calculate_frustum_plane_distances(c);
 	
 	// Calculate the distance from the origin to the camera
-	c->cam.dist_from_origin = get_vex3d_magnitude(&c->cam.pos);
+	//c->cam.dist_from_origin = get_vex3d_magnitude(&c->cam.pos);
 	
 	// Update the plane equations
 	int i;
 	
-	for(i = 0; i < c->frustum.total_p; i++)
-		c->frustum.p[i].d = c->frustum_unrotated.p[i].d + c->cam.dist_from_origin;
+	//for(i = 0; i < c->frustum.total_p; i++)
+	//	c->frustum.p[i].d = c->frustum_unrotated.p[i].d + c->cam.dist_from_origin;
+	
 }
 
 // Sets the angle of the camera and updates the planes of the view

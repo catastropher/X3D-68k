@@ -23,7 +23,7 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->y = ((long)a->z * b->x - (long)a->x * b->z);
 	dest->z = ((long)a->x * b->y - (long)a->y * b->x);
 	
-	printf("Dest->z: %d\n", dest->z);
+	//printf("Dest->z: %d\n", dest->z);
 	
 	normalize_vex3d(dest);
 }
@@ -34,8 +34,12 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
 	short inv_z = ((long)rc->dist << NORMAL_BITS) / src->z;
 	
-	dest->x = (((long)src->x * inv_z) >> NORMAL_BITS) + rc->center_x;
-	dest->y = (((long)src->y * inv_z) >> NORMAL_BITS) + rc->center_y;
+	//dest->x = (((long)src->x * inv_z) >> NORMAL_BITS) + rc->center_x;
+	//dest->y = (((long)src->y * inv_z) >> NORMAL_BITS) + rc->center_y;
+	
+	
+	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
+	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
 }
 
 // Subtracts two 3D vectors: dest = a - b
@@ -87,8 +91,8 @@ void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest) {
 	
 	cross_product(&v1, &v2, &dest->normal);
 	
-	// D = AX + BY + CZ
-	dest->d = dot_product(&dest->normal, a);
+	// D = -(AX + BY + CZ)
+	dest->d = -dot_product(&dest->normal, a);
 }
 
 // Calculates the normals of the unrotated planes of the view frustum
@@ -119,6 +123,9 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	// Near plane
 	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[4]);
 	
+	// Hack...
+	c->frustum_unrotated.p[4].d = -DIST_TO_NEAR_PLANE;
+	
 	c->frustum.total_p = 5;
 }
 
@@ -126,9 +133,31 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 void calculate_frustum_plane_distances(RenderContext* c) {
 	int i;
 	
-	for(i = 0; i < c->frustum.total_p; i++) {
-		c->frustum.p[i].d = dot_product(&c->frustum.p[i].normal, &c->cam.pos);
+	for(i = 0; i < c->frustum.total_p - 1; i++) {
+		c->frustum.p[i].d = -dot_product(&c->frustum.p[i].normal, &c->cam.pos);
 	}
+	
+	Vex3D input = {0, 0, DIST_TO_NEAR_PLANE * 4};
+	Vex3D out;
+	
+	rotate_vex3d(&input, &c->cam.mat, &out);
+	
+	out.x >>= 2;
+	out.y >>= 2;
+	out.z >>= 2;
+	
+	//out.x = out.x;
+	//out.y = -out.y;
+	//out.z = -out.z;
+	
+	out.x += c->cam.pos.x;
+	out.y += c->cam.pos.y;
+	out.z += c->cam.pos.z;
+	
+	c->frustum.p[4].d = -dot_product(&c->frustum.p[4].normal, &out);
+	
+	printf("Out: %d\n", c->frustum.p[4].d);
+	
 }
 
 // Calculates the rotated plane normals of the view frustum

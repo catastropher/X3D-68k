@@ -14,6 +14,8 @@
 
 #define VERTICAL_LINE_SLOPE 0x7FFF
 
+#define DIST_TO_NEAR_PLANE 10
+
 
 // The 8 verticies of a cube
 enum {
@@ -63,7 +65,7 @@ typedef struct {
 } Vex2D;
 
 // A 3D plane, defined by the surface normal and the distance to the
-// plane from the origin i.e. AX + BY + CZ - D = 0
+// plane from the origin i.e. AX + BY + CZ + D = 0
 typedef struct {
 	Vex3D normal;
 	short d;
