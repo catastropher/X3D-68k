@@ -89,7 +89,7 @@ void _main(void) {
 	
 	// Create and initialize the rendering context
 	RenderContext context;
-	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, 42, &context);
+	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_90, &context);
 	
 	int i;
 	for(i = 0; i < context.frustum.total_p; i++) {
@@ -122,11 +122,33 @@ void _main(void) {
 		//render_cube(&cube2, &context);
 		
 		if(key & GAME_KEY_F1) {
-			set_cam_pos(&context, context.cam.pos.x, context.cam.pos.y, context.cam.pos.z + 1);
+			set_cam_pos(&context, context.cam.pos.x + context.cam.dir.x / 4096,
+				context.cam.pos.y + context.cam.dir.y / 4096,
+				context.cam.pos.z + context.cam.dir.z / 4096);
 		}
+		
+		if(key & GAME_KEY_F2) {
+			set_cam_pos(&context, context.cam.pos.x - context.cam.dir.x / 4096,
+				context.cam.pos.y - context.cam.dir.y / 4096,
+				context.cam.pos.z - context.cam.dir.z / 4096);
+		}
+		
+		if(key & GAME_KEY_RIGHT) {
+			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y - 1, context.cam.angle.z);
+		}
+		
+		if(key & GAME_KEY_LEFT) {
+			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y + 1, context.cam.angle.z);
+		}
+	
+		short i;
+		
+		for(i = 0; i < LCD_SIZE; i++)
+			context.screen[i] = ~context.screen[i];
 	
 		LCD_restore(context.screen);
 	} while(!(key & GAME_KEY_ESC));
+		
 		
 	PortRestore();
 		

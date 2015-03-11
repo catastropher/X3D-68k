@@ -4,6 +4,7 @@
 #include "geo.h"
 #include "math.h"
 #include "console.h"
+#include "error.h"
 
 #include <tigcclib.h>
 
@@ -18,7 +19,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short t;
 	
 	dot = dot_product(&poly->v[0], &plane->normal);
-	in = dot >= plane->d;
+	in = (dot >= plane->d);
 	
 	
 	printf("Dot: %d\nD: %d\n", dot, plane->d);
@@ -26,6 +27,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	print_vex3d(&poly->v[0]);
 	//ngetchx();
 	
+	short total_outside = !in;
 	
 	dest->total_v = 0;
 	
@@ -36,20 +38,30 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		if(in)
 			dest->v[dest->total_v++] = poly->v[i];
 			
-		//assert(in);
+		//errorif(!in, "Point not in!");
 			
 			
 		next_dot = dot_product(&poly->v[next_point], &plane->normal);
-		next_in = next_dot >= plane->d;
+		next_in = (next_dot >= plane->d);
 		
 		// The points are on opposite sides of the plane, so clip it
 		if(in != next_in) {
 			// Scale factor to get the point on the plane
 			t = FIXDIV8(plane->d - dot, next_dot - dot);
 			
-			dest->v[dest->total_v].x = FIXMUL8(poly->v[i].x + (poly->v[next_point].x - poly->v[i].x), t);
-			dest->v[dest->total_v].y = FIXMUL8(poly->v[i].y + (poly->v[next_point].y - poly->v[i].y), t);
-			dest->v[dest->total_v].z = FIXMUL8(poly->v[i].z + (poly->v[next_point].z - poly->v[i].z), t);
+			//printf("Dist: %d\n", dot + plane->d);
+			//printf("T: %d Z: %d\n", t, poly->v[i].z);
+			
+			dest->v[dest->total_v].x = poly->v[i].x + FIXMUL8((poly->v[next_point].x - poly->v[i].x), t);
+			dest->v[dest->total_v].y = poly->v[i].y + FIXMUL8((poly->v[next_point].y - poly->v[i].y), t);
+			dest->v[dest->total_v].z = poly->v[i].z + FIXMUL8((poly->v[next_point].z - poly->v[i].z), t);
+			
+			//printf("Dest z: %d\n", dest->v[dest->total_v].z);
+			//printf("Should be: %d\n", -plane->d);
+			
+			//errorif(dest->v[dest->total_v].z < DIST_TO_NEAR_PLANE / 2, "Invalid clip: %d", dest->v[dest->total_v].z);
+			
+			++total_outside;
 			
 			dest->total_v++;
 		}
@@ -57,6 +69,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		dot = next_dot;
 		in = next_in;
 	}
+	
+	printf("total outside: %d\n", total_outside);
 	
 	return dest->total_v > 2;	
 }

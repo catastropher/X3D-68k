@@ -92,7 +92,7 @@ void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest) {
 	cross_product(&v1, &v2, &dest->normal);
 	
 	// D = -(AX + BY + CZ)
-	dest->d = -dot_product(&dest->normal, a);
+	dest->d = dot_product(&dest->normal, a);
 }
 
 // Calculates the normals of the unrotated planes of the view frustum
@@ -124,9 +124,9 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[4]);
 	
 	// Hack...
-	c->frustum_unrotated.p[4].d = -DIST_TO_NEAR_PLANE;
+	c->frustum_unrotated.p[4].d = c->dist;//-DIST_TO_NEAR_PLANE;
 	
-	c->frustum.total_p = 5;
+	c->frustum_unrotated.total_p = 5;
 }
 
 // Calculates the distance from each plane in the view frustum to the origin
@@ -134,27 +134,35 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	int i;
 	
 	for(i = 0; i < c->frustum.total_p - 1; i++) {
-		c->frustum.p[i].d = -dot_product(&c->frustum.p[i].normal, &c->cam.pos);
+		c->frustum.p[i].d = dot_product(&c->frustum.p[i].normal, &c->cam.pos);
 	}
 	
-	Vex3D input = {0, 0, DIST_TO_NEAR_PLANE * 4};
+	/*Vex3D input = {0, 0, c->dist};
 	Vex3D out;
 	
 	rotate_vex3d(&input, &c->cam.mat, &out);
+	
+	input.x = -input.x;
 	
 	out.x >>= 2;
 	out.y >>= 2;
 	out.z >>= 2;
 	
-	//out.x = out.x;
-	//out.y = -out.y;
-	//out.z = -out.z;
+	*/
+	
+	Vex3D out = c->cam.dir;
+	
+	short dist = c->dist - 20;
+	
+	out.x = ((long)out.x * dist) >> NORMAL_BITS;
+	out.y = ((long)out.y * dist) >> NORMAL_BITS;
+	out.z = ((long)out.z * dist) >> NORMAL_BITS;
 	
 	out.x += c->cam.pos.x;
 	out.y += c->cam.pos.y;
 	out.z += c->cam.pos.z;
 	
-	c->frustum.p[4].d = -dot_product(&c->frustum.p[4].normal, &out);
+	c->frustum.p[4].d = dot_product(&c->frustum.p[4].normal, &out);
 	
 	printf("Out: %d\n", c->frustum.p[4].d);
 	
@@ -164,9 +172,17 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 void calculate_frustum_rotated_normals(RenderContext* c) {
 	int i;
 	
-	for(i = 0; i < c->frustum.total_p; i++) {
+	for(i = 0; i < c->frustum_unrotated.total_p; i++) {
 		rotate_vex3d(&c->frustum_unrotated.p[i].normal, &c->cam.mat, &c->frustum.p[i].normal);
+		
+		c->frustum.p[i].normal.x = -c->frustum.p[i].normal.x;
+		
 	}
+
+	c->frustum.p[4].normal = c->cam.dir;
+
+	printf("P: %d\nNear plane normal: ", c->frustum_unrotated.total_p);
+	print_vex3d(&c->frustum.p[4].normal);
 	
 	c->frustum.total_p = c->frustum_unrotated.total_p;
 }

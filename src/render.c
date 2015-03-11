@@ -49,7 +49,7 @@ void draw_polygon(Polygon2D* p, RenderContext* context) {
 void render_cube(Cube* c, RenderContext* context) {
 	Vex3D rot[8];
 	Vex2D screen[8];
-	int i;
+	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
 	
 	for(i = 0; i < 8; i++) {
@@ -68,12 +68,20 @@ void render_cube(Cube* c, RenderContext* context) {
 	Polygon2D poly2D;
 	
 	for(i = 0; i < 1; i++) {
-		cube_get_face(rot, i, poly3D.v);
+		cube_get_face(c->v, i, poly3D.v);
 		poly3D.total_v = 4;
 		
 		clip_polygon_to_plane(&poly3D, &context->frustum.p[4], &poly_out);
 		//print_polygon(&poly3D);
 		//ngetchx();
+		
+		for(d = 0; d < poly_out.total_v; d++) {
+			Vex3D temp;
+			add_vex3d(&poly_out.v[d], &ncam_pos, &temp);
+			rotate_vex3d(&temp, &context->cam.mat, &poly_out.v[d]);
+		}
+			
+		
 		project_polygon3d(&poly_out, context, &poly2D);
 		draw_polygon(&poly2D, context);
 	}
