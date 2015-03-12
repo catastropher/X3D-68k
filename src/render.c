@@ -64,26 +64,30 @@ void render_cube(Cube* c, RenderContext* context) {
 		//project_vex3d(context, &rot[i], &screen[i]);
 	}
 	
-	Polygon3D poly3D, poly_out;
+	Polygon3D poly3D, poly_out, poly_out2;
 	Polygon2D poly2D;
 	
-	for(i = 0; i < 1; i++) {
+	for(i = 0; i < 6; i++) {
 		cube_get_face(c->v, i, poly3D.v);
 		poly3D.total_v = 4;
 		
-		clip_polygon_to_plane(&poly3D, &context->frustum.p[4], &poly_out);
+		//clip_polygon_to_plane(&poly3D, &context->frustum.p[0], &poly_out2);
+		//clip_polygon_to_plane(&poly_out2, &context->frustum.p[4], &poly_out);
 		//print_polygon(&poly3D);
 		//ngetchx();
 		
-		for(d = 0; d < poly_out.total_v; d++) {
-			Vex3D temp;
-			add_vex3d(&poly_out.v[d], &ncam_pos, &temp);
-			rotate_vex3d(&temp, &context->cam.mat, &poly_out.v[d]);
-		}
-			
 		
-		project_polygon3d(&poly_out, context, &poly2D);
-		draw_polygon(&poly2D, context);
+		if(clip_polygon_to_frustum(&poly3D, &context->frustum, &poly_out)) {
+			for(d = 0; d < poly_out.total_v; d++) {
+				Vex3D temp;
+				add_vex3d(&poly_out.v[d], &ncam_pos, &temp);
+				rotate_vex3d(&temp, &context->cam.mat, &poly_out.v[d]);
+			}
+				
+			
+			project_polygon3d(&poly_out, context, &poly2D);
+			draw_polygon(&poly2D, context);
+		}
 	}
 	
 	

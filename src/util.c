@@ -28,3 +28,13 @@ void print_polygon(Polygon* p) {
 		printf("============\n");
 	}
 }
+
+// Prints out a frustum
+void print_frustum(Frustum* f) {
+	int i;
+	
+	for(i = 0; i < f->total_p; i++) {
+		print_plane(&f->p[i]);
+		ngetchx();
+	}
+}

@@ -16,15 +16,15 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short next_point;
 	short in, next_in;
 	short dot, next_dot;
-	short t;
+	long t;
 	
 	dot = dot_product(&poly->v[0], &plane->normal);
 	in = (dot >= plane->d);
 	
 	
-	printf("Dot: %d\nD: %d\n", dot, plane->d);
-	print_vex3d(&plane->normal);
-	print_vex3d(&poly->v[0]);
+	//printf("Dot: %d\nD: %d\n", dot, plane->d);
+	//print_vex3d(&plane->normal);
+	//print_vex3d(&poly->v[0]);
 	//ngetchx();
 	
 	short total_outside = !in;
@@ -47,7 +47,12 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		// The points are on opposite sides of the plane, so clip it
 		if(in != next_in) {
 			// Scale factor to get the point on the plane
+			errorif(next_dot - dot == 0, "Clip div by 0");
+			
 			t = FIXDIV8(plane->d - dot, next_dot - dot);
+			
+			errorif(abs(t) > 32767, "Invalid clip t");
+			//errorif(t == 0, "t == 0");
 			
 			//printf("Dist: %d\n", dot + plane->d);
 			//printf("T: %d Z: %d\n", t, poly->v[i].z);
@@ -70,7 +75,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		in = next_in;
 	}
 	
-	printf("total outside: %d\n", total_outside);
+	//printf("total outside: %d\n", total_outside);
 	
 	return dest->total_v > 2;	
 }
@@ -79,12 +84,29 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 // This routine requires two temporary polygons, one of which the
 // final polygon will be in. This returns the address of which one it
 // is
-Polygon* clip_polygon_to_frustum(Frustum* f, Polygon* p, Polygon* temp_a, Polygon* temp_b) {
+char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest) {
+#if 1
+	Polygon temp[2];
+	int current_temp = 0;
+	Polygon* poly = src;
 	int i;
 	
-	for(i = 0; i < f->total_p; i++) {
+#if 1
+	for(i = 0; i < f->total_p - 1; i++) {
+		//errorif(poly->total_v < 3, "Invalid clip poly");
+		if(!clip_polygon_to_plane(poly, &f->p[i], &temp[current_temp])) {
+			return 0;
+		}
 		
+		poly = &temp[current_temp];
+		current_temp = !current_temp;
 	}
+#endif
+	
+	//return poly->total_v > 2;
+	return clip_polygon_to_plane(poly, &f->p[f->total_p - 1], dest);
+	
+#endif
 }
 
 #if 0

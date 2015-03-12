@@ -49,6 +49,12 @@ char test_link() {
 	return 1;
 }
 
+DEFINE_INT_HANDLER(div_by_zero) {
+	PortRestore();
+	printf("Error: div by 0");
+	while(1) ;
+}
+
 void _main(void) {	
 	FontSetSys(F_6x8);
 	clrscr();
@@ -89,16 +95,10 @@ void _main(void) {
 	
 	// Create and initialize the rendering context
 	RenderContext context;
-	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_90, &context);
+	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, 40, &context);
 	
-	int i;
-	for(i = 0; i < context.frustum.total_p; i++) {
-		//print_plane(&context.frustum_unrotated.p[i]);
-		//ngetchx();
-	}
-	
-	printf("Scale: %d\n", context.dist);
-	ngetchx();
+	//printf("Scale: %d\n", context.dist);
+	//ngetchx();
 	
 	context.screen = malloc(LCD_SIZE);
 	PortSet(context.screen, LCD_WIDTH - 1, LCD_HEIGHT - 1);
@@ -107,6 +107,8 @@ void _main(void) {
 	set_cam_pos(&context, 0, 0, 0);
 	set_cam_angle(&context, 0, 0, 0);
 	
+	//print_frustum(&context.frustum);
+	
 	// Create a test cube
 	Cube cube, cube2;
 	Vex3Ds cube_angle = {0, 0, 0};
@@ -114,6 +116,14 @@ void _main(void) {
 	construct_cube(100, 100, 100, 0, 0, 400, &cube_angle, &cube2);
 	
 	unsigned short key;
+	
+	INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
+	INT_HANDLER old_int_5 = GetIntVec(AUTO_INT_5);
+	
+	SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
+	SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+	
+	SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
 	do {
 		key = read_keys();
@@ -140,6 +150,14 @@ void _main(void) {
 		if(key & GAME_KEY_LEFT) {
 			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y + 1, context.cam.angle.z);
 		}
+		
+		if(key & GAME_KEY_UP) {
+			set_cam_angle(&context, context.cam.angle.x - 1, context.cam.angle.y, context.cam.angle.z);
+		}
+		
+		if(key & GAME_KEY_DOWN) {
+			set_cam_angle(&context, context.cam.angle.x + 1, context.cam.angle.y, context.cam.angle.z);
+		}
 	
 		short i;
 		
@@ -153,4 +171,9 @@ void _main(void) {
 	PortRestore();
 		
 	free(context.screen);
+	
+	
+	SetIntVec(AUTO_INT_1, old_int_1);
+	SetIntVec(AUTO_INT_5, old_int_5);
+	
 }

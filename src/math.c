@@ -4,6 +4,7 @@
 #include "geo.h"
 #include "math.h"
 #include "screen.h"
+#include "error.h"
 
 #include <tigcclib.h>
 
@@ -32,14 +33,23 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 // Note: make sure the z component of src is not 0 or you will get division
 // by 0!
 void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
-	short inv_z = ((long)rc->dist << NORMAL_BITS) / src->z;
+	//short inv_z = ((long)rc->dist << NORMAL_BITS) / src->z;
 	
 	//dest->x = (((long)src->x * inv_z) >> NORMAL_BITS) + rc->center_x;
 	//dest->y = (((long)src->y * inv_z) >> NORMAL_BITS) + rc->center_y;
 	
 	
+	//errorif(src->z <= 0, "Invalid Z projection: %d", src->z);
+	
+	errorif(src->z == 0, "Projection 0");
+	
+#if 0
 	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
 	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
+#else
+	dest->x = ((long)src->x * 100) / src->z + rc->center_x;
+	dest->y = ((long)src->y * 100) / src->z + rc->center_y;
+#endif
 }
 
 // Subtracts two 3D vectors: dest = a - b
@@ -100,6 +110,8 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	short w = c->w;
 	short h = c->h;
 	
+	c->dist = 120;
+	
 	Vex3D top_left = {-w / 2, -h / 2, c->dist};
 	Vex3D top_right = {w / 2, -h / 2, c->dist};
 	
@@ -109,22 +121,24 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	Vex3D cam_pos = {0, 0, 0};
 	
 	// Top plane
-	construct_plane(&cam_pos, &top_right, &top_left, &c->frustum_unrotated.p[0]);
+	construct_plane(&cam_pos, &top_right, &top_left, &c->frustum_unrotated.p[1]);
 	
 	// Bottom plane
-	construct_plane(&cam_pos, &bottom_left, &bottom_right, &c->frustum_unrotated.p[1]);
+	construct_plane(&cam_pos, &bottom_left, &bottom_right, &c->frustum_unrotated.p[2]);
 	
 	// Left plane
-	construct_plane(&cam_pos, &top_left, &bottom_left, &c->frustum_unrotated.p[2]);
+	construct_plane(&cam_pos, &top_left, &bottom_left, &c->frustum_unrotated.p[3]);
 	
 	// Right plane
-	construct_plane(&cam_pos, &bottom_right, &top_right, &c->frustum_unrotated.p[3]);
+	construct_plane(&cam_pos, &bottom_right, &top_right, &c->frustum_unrotated.p[4]);
 	
 	// Near plane
-	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[4]);
+	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[0]);
+	
+	c->frustum_unrotated.p[0].normal = (Vex3D){0, 32767, 0};
 	
 	// Hack...
-	c->frustum_unrotated.p[4].d = c->dist;//-DIST_TO_NEAR_PLANE;
+	c->frustum_unrotated.p[0].d = c->dist;//-DIST_TO_NEAR_PLANE;
 	
 	c->frustum_unrotated.total_p = 5;
 }
@@ -133,7 +147,7 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 void calculate_frustum_plane_distances(RenderContext* c) {
 	int i;
 	
-	for(i = 0; i < c->frustum.total_p - 1; i++) {
+	for(i = 1; i < c->frustum.total_p; i++) {
 		c->frustum.p[i].d = dot_product(&c->frustum.p[i].normal, &c->cam.pos);
 	}
 	
@@ -162,27 +176,43 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	out.y += c->cam.pos.y;
 	out.z += c->cam.pos.z;
 	
-	c->frustum.p[4].d = dot_product(&c->frustum.p[4].normal, &out);
+	c->frustum.p[0].d = dot_product(&c->frustum.p[0].normal, &out);
 	
-	printf("Out: %d\n", c->frustum.p[4].d);
+	//printf("Out: %d\n", c->frustum.p[4].d);
 	
 }
 
 // Calculates the rotated plane normals of the view frustum
 void calculate_frustum_rotated_normals(RenderContext* c) {
-	int i;
+	int i, d;
+	
+	Mat3x3 transpose;
+	
+	for(i = 0; i < 3; i++)
+		for(d = 0; d < 3; d++)
+			transpose[i][d] = c->cam.mat[d][i];
+	
 	
 	for(i = 0; i < c->frustum_unrotated.total_p; i++) {
-		rotate_vex3d(&c->frustum_unrotated.p[i].normal, &c->cam.mat, &c->frustum.p[i].normal);
+		Vex3D n = c->frustum_unrotated.p[i].normal;
 		
-		c->frustum.p[i].normal.x = -c->frustum.p[i].normal.x;
+		n.x >>= 1;
+		n.y >>= 1;
+		n.z >>= 1;
 		
+		rotate_vex3d(&n, &transpose, &c->frustum.p[i].normal);
+		
+		c->frustum.p[i].normal.x <<= 1;
+		c->frustum.p[i].normal.y <<= 1;
+		c->frustum.p[i].normal.z <<= 1;
 	}
+	
+	
 
-	c->frustum.p[4].normal = c->cam.dir;
+	c->frustum.p[0].normal = c->cam.dir;
 
-	printf("P: %d\nNear plane normal: ", c->frustum_unrotated.total_p);
-	print_vex3d(&c->frustum.p[4].normal);
+	//printf("P: %d\nNear plane normal: ", c->frustum_unrotated.total_p);
+	//print_vex3d(&c->frustum.p[4].normal);
 	
 	c->frustum.total_p = c->frustum_unrotated.total_p;
 }
@@ -321,9 +351,28 @@ void construct_cube(short x, short y, short z, short posx, short posy, short pos
 void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
 	int i;
 	
+	//errorif(src->total_v < 0 || src->total_v > 4, "Invalid count: %d\n", src->total_v);
+	
+	//errorif(!src || !c || !dest, "NULL PTR");
+	
+	if(src->total_v > 4) {
+		//errorif(!c, "err");
+		//printf("large vertex count...\nEnter to continue");
+		//printf("C: %ld\nSrc: %ld\nDest %ld\n", (long int)c, (long int)src, (long int)dest);
+		
+		//while(!_keytest(RR_F5)) ;
+		
+	}
+	
 	for(i = 0; i < src->total_v; i++) {
 		project_vex3d(c, &src->v[i], &dest->v[i]);
 	}
+	
+	/*if(src->total_v > 4) {
+		printf("Done project...\n");
+		while(!_keytest(RR_F5)) ;
+		
+	}*/
 	
 	dest->total_v = src->total_v;
 }

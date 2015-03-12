@@ -167,6 +167,7 @@ void cube_get_face(Vex3D v[8], short face,  Vex3D dest[4]);
 
 // ==============================clip.c==============================
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest);
+char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest);
 
 // ==============================render.c==============================
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c);
@@ -182,6 +183,7 @@ extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"),
 void print_vex3d(Vex3D* v);
 void print_plane(Plane* p);
 void print_polygon(Polygon* p);
+void print_frustum(Frustum* f);
 
 // ==============================fastsqrt.c==============================
 unsigned long fastsqrt(unsigned long x) __attribute__((pure));
