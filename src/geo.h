@@ -16,6 +16,13 @@
 
 #define DIST_TO_NEAR_PLANE 10
 
+#define FRAC_BITS 10
+#define EVAL_BITS 5
+#define VERTICAL_LINE 0x7FFF
+
+// Swaps two values
+#define SWAP(_a,_b) {typeof(_a) _save = _a; _a = _b; _b = _save;}
+
 
 // The 8 verticies of a cube
 enum {
@@ -80,9 +87,28 @@ typedef struct {
 
 typedef Polygon Polygon3D;
 
-// A 2D polygon with an arbitrary number of points
+// A 2D point
+// TODO: remove after chaning clip.c
 typedef struct {
-	Vex2D v[MAX_POINTS];
+	char clipped;
+	Vex2D v;
+} Point;
+
+// A 2D line
+typedef struct {
+	long slope;
+	short b;
+	char sign;
+	char draw;
+} Line2D;
+
+
+// A 2D polygon with an arbitrary number of points
+// TODO: we use points here only because the code in clip.c needs to be
+// updated - do this!
+typedef struct {
+	Point p[MAX_POINTS];
+	Line2D line[MAX_POINTS];
 	short total_v;
 } Polygon2D;
 
@@ -120,6 +146,8 @@ typedef struct RenderContext {
 	Camera cam;
 	
 	unsigned char* screen;
+	unsigned short frame;
+	
 } RenderContext;
 
 // A cube (really a convex octahedron) that is the basic unit of levels
@@ -132,9 +160,16 @@ typedef struct {
 	unsigned short edge_bits;
 } Cube;
 
-
 extern const short sintab[256];
 extern const int cube_vertex_tab[6][5];
+
+extern Cube cube_tab[];
+
+extern char edge_table[8][8];
+extern short edge_vertex_table[12][2];
+
+// Given the face id, this gets the bitset of the edges in that face
+extern unsigned short edge_face_table[6];
 
 // ==============================math.c==============================
 short dot_product(Vex3D* a, Vex3D* b);
@@ -164,19 +199,39 @@ void construct_cube(short x, short y, short z, short posx, short posy, short pos
 
 void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest);
 void cube_get_face(Vex3D v[8], short face,  Vex3D dest[4]);
+inline short get_opposite_face(short face);
+
+void make_polygon2d(Vex2D* v, int points, Polygon2D* p);
 
 // ==============================clip.c==============================
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest);
 char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest);
 
+char signof(short val);
+inline short eval_line(Line2D* line, short x);
+inline long eval_line_long(Line2D* line, long x);
+char point_valid_side(Line2D* line, Vex2D* point);
+inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center);
+char add_point(Polygon2D* p, Vex2D* point, Line2D* line);
+void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center);
+Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b);
+
+
+
 // ==============================render.c==============================
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c);
-void render_cube(Cube* c, RenderContext* context);
+
+void render_cube(Cube* c, RenderContext* context, Polygon2D* clip);
+void render_level(RenderContext* c);
+
 void set_cam_pos(RenderContext* c, short x, short y, short z);
 void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned char z);
 void draw_polygon(Polygon2D* p, RenderContext* context);
 extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"), register short asm("%d2"),
 	register short asm("%d3"), register void* asm("%a2"));
+	
+void build_edge_table();
+void init_render();
 
 
 // ==============================util.c==============================
@@ -187,5 +242,9 @@ void print_frustum(Frustum* f);
 
 // ==============================fastsqrt.c==============================
 unsigned long fastsqrt(unsigned long x) __attribute__((pure));
+
+// ==============================level.c==============================
+void create_test_level();
+void connect_cube(short parent, short child, short plane);
 
 

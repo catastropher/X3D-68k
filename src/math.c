@@ -365,7 +365,7 @@ void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
 	}
 	
 	for(i = 0; i < src->total_v; i++) {
-		project_vex3d(c, &src->v[i], &dest->v[i]);
+		project_vex3d(c, &src->v[i], &dest->p[i].v);
 	}
 	
 	/*if(src->total_v > 4) {
@@ -386,7 +386,37 @@ void cube_get_face(Vex3D v[8], short face,  Vex3D dest[4]) {
 		dest[i] = v[cube_vertex_tab[face][i]];
 }
 
+// Gets the face opposite to the given face
+// e.g. if you give it PLANE_LEFT it will give back PLANE_RIGHT
+inline short get_opposite_face(short face) {
+	if(face & 1)
+		return face - 1;
+	else
+		return face + 1;
+}
 
+// Creats a 2D polygon from a list of 2D points
+void make_polygon2d(Vex2D* v, int points, Polygon2D* p) {
+	p->total_v = points;
+	int i;
+	Vex2D center = {0, 0};
+	
+	for(i = 0; i < points; i++) {
+		center.x += v[i].x;
+		center.y += v[i].y;
+	}
+	
+	center.x /= points;
+	center.y /= points;
+	
+	for(i = 0; i < points; i++) {
+		short next = (i + 1) % points;
+		p->p[i].v = v[i];
+		p->p[i].clipped = 0;
+		get_line_info(&p->line[i], &v[i], &v[next], &center); 
+		p->line[i].draw = 1;
+	}
+}
 
 
 

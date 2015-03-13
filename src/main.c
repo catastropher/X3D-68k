@@ -55,6 +55,12 @@ DEFINE_INT_HANDLER(div_by_zero) {
 	while(1) ;
 }
 
+void init() {
+	init_render();
+}
+
+
+
 void _main(void) {	
 	FontSetSys(F_6x8);
 	clrscr();
@@ -92,19 +98,18 @@ void _main(void) {
 	return;
 #endif
 	
-	
 	// Create and initialize the rendering context
 	RenderContext context;
 	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, 40, &context);
 	
-	//printf("Scale: %d\n", context.dist);
-	//ngetchx();
+	init();
+	create_test_level();
 	
 	context.screen = malloc(LCD_SIZE);
 	PortSet(context.screen, LCD_WIDTH - 1, LCD_HEIGHT - 1);
 	
 	// Initialize the camera
-	set_cam_pos(&context, 0, 0, 0);
+	set_cam_pos(&context, 0, 0, -400);
 	set_cam_angle(&context, 0, 0, 0);
 	
 	//print_frustum(&context.frustum);
@@ -112,9 +117,6 @@ void _main(void) {
 	// Create a test cube
 	Cube cube, cube2;
 	Vex3Ds cube_angle = {0, 0, 0};
-	construct_cube(100, 100, 100, 0, 0, 400, &cube_angle, &cube);
-	construct_cube(100, 100, 100, 0, 0, 400, &cube_angle, &cube2);
-	
 	unsigned short key;
 	
 	INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
@@ -128,8 +130,9 @@ void _main(void) {
 	do {
 		key = read_keys();
 		clrscr();
-		render_cube(&cube, &context);
-		//render_cube(&cube2, &context);
+		
+		render_level(&context);
+		context.frame++;
 		
 		if(key & GAME_KEY_F1) {
 			set_cam_pos(&context, context.cam.pos.x + context.cam.dir.x / 4096,
@@ -144,19 +147,19 @@ void _main(void) {
 		}
 		
 		if(key & GAME_KEY_RIGHT) {
-			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y - 1, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y - 2, context.cam.angle.z);
 		}
 		
 		if(key & GAME_KEY_LEFT) {
-			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y + 1, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y + 2, context.cam.angle.z);
 		}
 		
 		if(key & GAME_KEY_UP) {
-			set_cam_angle(&context, context.cam.angle.x - 1, context.cam.angle.y, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x - 2, context.cam.angle.y, context.cam.angle.z);
 		}
 		
 		if(key & GAME_KEY_DOWN) {
-			set_cam_angle(&context, context.cam.angle.x + 1, context.cam.angle.y, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x + 2, context.cam.angle.y, context.cam.angle.z);
 		}
 	
 		short i;
