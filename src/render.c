@@ -193,8 +193,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 			
-			if(id == 0)
-				printf("Dist: %d\n", dist);
+			printf("i: %d Dist: %d\n", i, dist);
 			
 			Polygon2D* new_clip;
 			
@@ -213,9 +212,11 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			//errorif(new_clip->total_v < 3, "Too few points in clip");
 			
 			// Make sure we haven't rendered it yet
-			if(next_cube->last_frame != context->frame && draw && res->total_v > 2) {
+			if(next_cube->last_frame != context->frame && draw && new_clip->total_v > 2) {
 				render_cube(next_cube, context, new_clip, c->cube[i]);
 			}
+			
+			//printf(
 		}
 	#endif
 	}

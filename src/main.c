@@ -122,8 +122,8 @@ void _main(void) {
 	//set_cam_pos(&context, -25, 12, -85);
 	//set_cam_angle(&context, 0, 0, 0);
 	
-	set_cam_pos(&context, -367, -30, 377);
-	set_cam_angle(&context, 242, 184, 0);
+	set_cam_pos(&context, -251, -102, 326);
+	set_cam_angle(&context, 246, 194, 0);
 	
 	//print_frustum(&context.frustum);
 	
