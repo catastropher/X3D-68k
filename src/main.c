@@ -16,7 +16,7 @@ enum {
 	GAME_KEY_RIGHT = 8,
 	GAME_KEY_F1 = 16,
 	GAME_KEY_F2 = 32,
-	GAME_KEY_ESC = 64
+	GAME_KEY_ESC = 64,
 };
 
 unsigned short read_keys() {
@@ -59,7 +59,7 @@ void init() {
 	init_render();
 }
 
-
+extern long line_count;
 
 void _main(void) {	
 	FontSetSys(F_6x8);
@@ -100,7 +100,7 @@ void _main(void) {
 	
 	// Create and initialize the rendering context
 	RenderContext context;
-	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, 40, &context);
+	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_90, &context);
 	
 	init();
 	create_test_level();
@@ -109,7 +109,7 @@ void _main(void) {
 	PortSet(context.screen, LCD_WIDTH - 1, LCD_HEIGHT - 1);
 	
 	// Initialize the camera
-	set_cam_pos(&context, 0, 0, -400);
+	set_cam_pos(&context, -25, 12, -85);
 	set_cam_angle(&context, 0, 0, 0);
 	
 	//print_frustum(&context.frustum);
@@ -127,23 +127,34 @@ void _main(void) {
 	
 	SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
+	context.cam.current_cube = 0;
+	
 	do {
 		key = read_keys();
 		clrscr();
 		
+		line_count = 0;
 		render_level(&context);
+		
+		printf("Line count: %ld\n", line_count);
+		
+		
 		context.frame++;
 		
 		if(key & GAME_KEY_F1) {
-			set_cam_pos(&context, context.cam.pos.x + context.cam.dir.x / 4096,
-				context.cam.pos.y + context.cam.dir.y / 4096,
-				context.cam.pos.z + context.cam.dir.z / 4096);
+			//set_cam_pos(&context, context.cam.pos.x + context.cam.dir.x / 4096,
+			//	context.cam.pos.y + context.cam.dir.y / 4096,
+			//	context.cam.pos.z + context.cam.dir.z / 4096);
+			
+			attempt_move_cam(&context, &context.cam.dir, 10);
+			
 		}
 		
 		if(key & GAME_KEY_F2) {
-			set_cam_pos(&context, context.cam.pos.x - context.cam.dir.x / 4096,
-				context.cam.pos.y - context.cam.dir.y / 4096,
-				context.cam.pos.z - context.cam.dir.z / 4096);
+			//set_cam_pos(&context, context.cam.pos.x - context.cam.dir.x / 4096,
+			//	context.cam.pos.y - context.cam.dir.y / 4096,
+			//	context.cam.pos.z - context.cam.dir.z / 4096);
+			attempt_move_cam(&context, &context.cam.dir, -10);
 		}
 		
 		if(key & GAME_KEY_RIGHT) {
@@ -160,6 +171,12 @@ void _main(void) {
 		
 		if(key & GAME_KEY_DOWN) {
 			set_cam_angle(&context, context.cam.angle.x + 2, context.cam.angle.y, context.cam.angle.z);
+		}
+		
+		if(_keytest(RR_ENTER)) {
+			print_vex3d(&context.cam.pos);
+			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
+			printf("Cdist: %d\n", context.dist);
 		}
 	
 		short i;

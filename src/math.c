@@ -47,8 +47,8 @@ void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
 	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
 	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
 #else
-	dest->x = ((long)src->x * 100) / src->z + rc->center_x;
-	dest->y = ((long)src->y * 100) / src->z + rc->center_y;
+	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
+	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
 #endif
 }
 
@@ -110,7 +110,7 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	short w = c->w;
 	short h = c->h;
 	
-	c->dist = 120;
+	//c->dist = 120;
 	
 	Vex3D top_left = {-w / 2, -h / 2, c->dist};
 	Vex3D top_right = {w / 2, -h / 2, c->dist};
@@ -121,26 +121,26 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	Vex3D cam_pos = {0, 0, 0};
 	
 	// Top plane
-	construct_plane(&cam_pos, &top_right, &top_left, &c->frustum_unrotated.p[1]);
+	construct_plane(&cam_pos, &top_right, &top_left, &c->frustum_unrotated.p[FRUSTUM_TOP]);
 	
 	// Bottom plane
-	construct_plane(&cam_pos, &bottom_left, &bottom_right, &c->frustum_unrotated.p[2]);
+	construct_plane(&cam_pos, &bottom_left, &bottom_right, &c->frustum_unrotated.p[FRUSTUM_BOTTOM]);
 	
 	// Left plane
-	construct_plane(&cam_pos, &top_left, &bottom_left, &c->frustum_unrotated.p[3]);
+	construct_plane(&cam_pos, &top_left, &bottom_left, &c->frustum_unrotated.p[FRUSTUM_LEFT]);
 	
 	// Right plane
-	construct_plane(&cam_pos, &bottom_right, &top_right, &c->frustum_unrotated.p[4]);
+	construct_plane(&cam_pos, &bottom_right, &top_right, &c->frustum_unrotated.p[FRUSTUM_RIGHT]);
 	
 	// Near plane
-	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[0]);
+	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[FRUSTUM_NEAR]);
 	
 	c->frustum_unrotated.p[0].normal = (Vex3D){0, 32767, 0};
 	
 	// Hack...
 	c->frustum_unrotated.p[0].d = c->dist;//-DIST_TO_NEAR_PLANE;
 	
-	c->frustum_unrotated.total_p = 5;
+	c->frustum_unrotated.total_p = 1;//5;
 }
 
 // Calculates the distance from each plane in the view frustum to the origin
@@ -351,6 +351,8 @@ void construct_cube(short x, short y, short z, short posx, short posy, short pos
 void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
 	int i;
 	
+	Vex2D temp[20];
+	
 	//errorif(src->total_v < 0 || src->total_v > 4, "Invalid count: %d\n", src->total_v);
 	
 	//errorif(!src || !c || !dest, "NULL PTR");
@@ -365,7 +367,7 @@ void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
 	}
 	
 	for(i = 0; i < src->total_v; i++) {
-		project_vex3d(c, &src->v[i], &dest->p[i].v);
+		project_vex3d(c, &src->v[i], &temp[i]);
 	}
 	
 	/*if(src->total_v > 4) {
@@ -374,7 +376,10 @@ void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
 		
 	}*/
 	
-	dest->total_v = src->total_v;
+	//printf("Total v: %d\n", src->total_v);
+	make_polygon2d(temp, src->total_v, dest);
+	
+	//dest->total_v = src->total_v;
 }
 
 // Given an array of 8 3D points that define a cube, this selects those
@@ -398,6 +403,7 @@ inline short get_opposite_face(short face) {
 // Creats a 2D polygon from a list of 2D points
 void make_polygon2d(Vex2D* v, int points, Polygon2D* p) {
 	p->total_v = points;
+	
 	int i;
 	Vex2D center = {0, 0};
 	
@@ -418,7 +424,23 @@ void make_polygon2d(Vex2D* v, int points, Polygon2D* p) {
 	}
 }
 
-
+// Determines the distance a point is from a plane
+// Note: this is the signed distance. If the point is on the
+// normal side of the plane, this distance will be negative.
+// If on the other side, it's positive. If on the plane, the distance
+// will be 0
+//
+// Normal is the plane normal, v is a point on the plane, and point
+// is the point you want to test
+inline short dist_to_plane(Vex3D* normal, Vex3D* point, Vex3D* v) {
+	Vex3D diff = {v->x - point->x, v->y - point->y, v->z - point->z};
+	
+	long x = (long)normal->x * diff.x;
+	long y = (long)normal->y * diff.y;
+	long z = (long)normal->z * diff.z;
+	
+	return (x + y + z) >> NORMAL_BITS;//dot >> NORMAL_BITS;
+}
 
 
 

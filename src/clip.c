@@ -35,14 +35,20 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		next_point = (i + 1) % poly->total_v;
 		
 		// The vertex is inside the plane, so don't clip it
-		if(in)
-			dest->v[dest->total_v++] = poly->v[i];
+		if(in) {
+			dest->v[dest->total_v] = poly->v[i];
+			dest->draw[dest->total_v++] = poly->draw[i];
+		}
 			
 		//errorif(!in, "Point not in!");
 			
 			
 		next_dot = dot_product(&poly->v[next_point], &plane->normal);
 		next_in = (next_dot >= plane->d);
+		
+		total_outside += !next_in;
+		
+	//	printf("Next dot: %d\n", next_dot);
 		
 		// The points are on opposite sides of the plane, so clip it
 		if(in != next_in) {
@@ -51,31 +57,53 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 			
 			t = FIXDIV8(plane->d - dot, next_dot - dot);
 			
+			errorif(abs(plane->d - dot) > 32767, "plane->d too big");
+			errorif(abs(next_dot - dot) > 32767, "next_dot too big");
+			
 			errorif(abs(t) > 32767, "Invalid clip t");
 			//errorif(t == 0, "t == 0");
 			
 			//printf("Dist: %d\n", dot + plane->d);
-			//printf("T: %d Z: %d\n", t, poly->v[i].z);
+			//printf("T: %ld Z: %d\n", t, poly->v[i].z);
 			
-			dest->v[dest->total_v].x = poly->v[i].x + FIXMUL8((poly->v[next_point].x - poly->v[i].x), t);
-			dest->v[dest->total_v].y = poly->v[i].y + FIXMUL8((poly->v[next_point].y - poly->v[i].y), t);
-			dest->v[dest->total_v].z = poly->v[i].z + FIXMUL8((poly->v[next_point].z - poly->v[i].z), t);
+			dest->v[dest->total_v].x = poly->v[i].x + FIXMUL8(((long)poly->v[next_point].x - poly->v[i].x), t);
+			dest->v[dest->total_v].y = poly->v[i].y + FIXMUL8(((long)poly->v[next_point].y - poly->v[i].y), t);
+			dest->v[dest->total_v].z = poly->v[i].z + FIXMUL8(((long)poly->v[next_point].z - poly->v[i].z), t);
+			
+			dest->draw[dest->total_v] = poly->draw[i];
 			
 			//printf("Dest z: %d\n", dest->v[dest->total_v].z);
 			//printf("Should be: %d\n", -plane->d);
 			
 			//errorif(dest->v[dest->total_v].z < DIST_TO_NEAR_PLANE / 2, "Invalid clip: %d", dest->v[dest->total_v].z);
 			
-			++total_outside;
-			
 			dest->total_v++;
+		}
+		
+		if(dest->total_v > 1) {
+			if(!in && next_in) {
+				dest->draw[dest->total_v - 1] = 0;
+			}
 		}
 		
 		dot = next_dot;
 		in = next_in;
 	}
 	
-	//printf("total outside: %d\n", total_outside);
+	//printf("total outside: %d\ntotal: %d", total_outside, dest->total_v);
+	
+	if(dest->total_v > 4) {
+		//clrscr();
+		
+		int i;
+		
+		for(i = 0; i < dest->total_v; i++) {
+		//	print_vex3d(&dest->v[i]);
+		}
+		
+		Polygon2D out;
+		
+	}
 	
 	return dest->total_v > 2;	
 }
@@ -91,9 +119,12 @@ char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest) {
 	Polygon* poly = src;
 	int i;
 	
+	
 #if 1
 	for(i = 0; i < f->total_p - 1; i++) {
 		//errorif(poly->total_v < 3, "Invalid clip poly");
+		//return clip_polygon_to_plane(src, &f->p[FRUSTUM_TOP], dest);
+		
 		if(!clip_polygon_to_plane(poly, &f->p[i], &temp[current_temp])) {
 			return 0;
 		}
@@ -233,7 +264,7 @@ char line2d_intersect(Line2D* a, Line2D* b, Vex2D* res, Vex2D* center) {
 // Adds a point to a polygon if adding so wouldn't cause duplicate
 // points
 // Returns 2 if the points was degenerate and 1 other wise
-char add_point(Polygon2D* p, Vex2D* point, Line2D* line) {
+char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw) {
 	char clipped = 1;
 	
 	if(p->total_v != 0) {
@@ -245,7 +276,8 @@ char add_point(Polygon2D* p, Vex2D* point, Line2D* line) {
 	
 	if(clipped != 2) {
 		p->p[p->total_v] = (Point){1, *point};
-		p->line[p->total_v++] = *line;
+		p->line[p->total_v] = *line;
+		p->line[p->total_v++].draw = draw;
 	}
 	
 	return clipped;
@@ -267,6 +299,8 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	char clipped;
 	char current_clipped;
 	
+	short last_added = -1;
+	
 	dest->total_v = 0;
 	
 	for(point = 0; point < p->total_v; point++) {
@@ -281,7 +315,7 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 			//dest->p[dest->total_points] = p->p[point];
 			//dest->line[dest->total_points++] = *line;
 			
-			current_clipped = add_point(dest, &p->p[point].v, line);
+			current_clipped = add_point(dest, &p->p[point].v, line, p->line[point].draw);
 		}
 		
 		clipped = 0;
@@ -296,7 +330,7 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 				//dest->line[dest->total_points++] = p->line[point];
 					
 				//out[out_pos++] = dest->total_points++;
-				clipped = add_point(dest, &clip_pos, &p->line[point]);
+				clipped = add_point(dest, &clip_pos, &p->line[point], p->line[next_point].draw);
 			}
 		}
 		
@@ -305,6 +339,16 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 				out[out_pos++] = dest->total_v - 1;
 			}
 		}
+		
+		// If we clipped this point, we should not draw the line to the next point
+		
+	#if 1
+		if(dest->total_v > 1) {
+			if(side == -1 && next_side == 1) {
+				dest->line[dest->total_v - 1].draw = 0;
+			}
+		}
+	#endif
 		
 		side = next_side;
 	}

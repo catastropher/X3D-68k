@@ -44,9 +44,26 @@ void init_render_context(short w, short h, short x, short y, unsigned char fov, 
 	calculate_frustum_plane_normals(c);
 }
 
+long line_count;
+
+// Forces a point to be on the screen
+void clip_point(Vex2D* v) {
+	if(v->x < 0)
+		v->x = 0;
+	else if(v->x >= LCD_WIDTH)
+		v->x = LCD_WIDTH - 1;
+		
+	if(v->y < 0)
+		v->y = 0;
+	else if(v->y >= LCD_HEIGHT)
+		v->y = LCD_HEIGHT - 1;
+}
+
 // Draws a polygon
 void draw_polygon(Polygon2D* p, RenderContext* context) {
 	int i, next;
+	
+	clip_point(&p->p[0].v);
 	
 	for(i = 0; i < p->total_v; i++) {
 		//next = (i + 1) % p->total_v;
@@ -54,16 +71,22 @@ void draw_polygon(Polygon2D* p, RenderContext* context) {
 		
 		if(next == p->total_v)
 			next = 0;
+			
+		clip_point(&p->p[next].v);
 		
 		
-		//draw_clip_line(p->v[i].x, p->v[i].y, p->v[next].x, p->v[next].y, context->screen);
-		FastLine_Draw_R(context->screen, p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y);
+		//draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
+		
+		if(p->line[i].draw)
+			FastLine_Draw_R(context->screen, p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y);
 	}
+	
+	line_count += p->total_v;
 }
 
 // Renders a single cube in writeframe
 // Note: make sure the cube isn't off the screen at all!
-void render_cube(Cube* c, RenderContext* context, Polygon2D* clip) {
+void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D rot[8];
 	Vex2D screen[8];
 	int i, d;
@@ -89,14 +112,24 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip) {
 	
 	for(i = 0; i < 6; i++) {
 		cube_get_face(c->v, i, poly3D.v);
+		
 		poly3D.total_v = 4;
+		
+		for(d = 0; d< poly3D.total_v; d++) {
+			poly3D.draw[d] = 1;
+		}
 		
 		//clip_polygon_to_plane(&poly3D, &context->frustum.p[0], &poly_out2);
 		//clip_polygon_to_plane(&poly_out2, &context->frustum.p[4], &poly_out);
 		//print_polygon(&poly3D);
 		//ngetchx();
 		
+		//if(i != PLANE_RIGHT) continue;
 		
+		//printf("Draw %d: %d", i, 0);
+		
+		
+/*
 	#if 0
 		if(clip_polygon_to_frustum(&poly3D, &context->frustum, &poly_out)) {
 			for(d = 0; d < poly_out.total_v; d++) {
@@ -104,44 +137,83 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip) {
 				add_vex3d(&poly_out.v[d], &ncam_pos, &temp);
 				rotate_vex3d(&temp, &context->cam.mat, &poly_out.v[d]);
 			}
-				
 			
 			project_polygon3d(&poly_out, context, &poly2D);
+			
+			
 			draw_polygon(&poly2D, context);
 		}
 	#else
+*/
+		
+		Polygon3D poly_x;
+		Polygon2D* res = NULL;
+		
+		char draw = clip_polygon_to_frustum(&poly3D, &context->frustum, &poly_x);
+		
+		if(draw) {
 	
-		for(d = 0; d < poly3D.total_v; d++) {
-			Vex3D temp;
-			add_vex3d(&poly3D.v[d], &ncam_pos, &temp);
-			rotate_vex3d(&temp, &context->cam.mat, &poly_out.v[d]);
+			for(d = 0; d < poly_x.total_v; d++) {
+				Vex3D temp;
+				add_vex3d(&poly_x.v[d], &ncam_pos, &temp);
+				rotate_vex3d(&temp, &context->cam.mat, &poly_out.v[d]);
+			}
+			
+			//clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b);
+			
+			poly_out.total_v = poly_x.total_v;
+			
+			Polygon2D out_2d;
+			
+			project_polygon3d(&poly_out, context, &out_2d);
+			Polygon2D temp_a, temp_b;
+			
+			for(d = 0; d < poly_out.total_v; d++)
+				out_2d.line[d].draw = poly3D.draw[d];
+			
+			
+			res = clip_polygon(&out_2d, clip, &temp_a, &temp_b);
+			
+			//for(d = 0; d < res->total_v; d++) {
+			//	printf("[%d, %d]\n", res->p[d].v.x, res->p[d].v.y);
+			//}
+			
+			draw_polygon(res, context);
 		}
 		
-		//clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b);
-		
-		poly_out.total_v = poly3D.total_v;
-		
-		Polygon2D out_2d;
-		
-		project_polygon3d(&poly_out, context, &out_2d);
-		Polygon2D temp_a, temp_b;
-		
-		
-		Polygon2D* res = clip_polygon(&out_2d, clip, &temp_a, &temp_b);
-		
-		draw_polygon(res, context);
-		
-	#endif
+	//#endif
 	
 		
+	#if 1
 		// If there's a cube connected to this face
 		if(c->cube[i] != -1) {
 			Cube* next_cube = &cube_tab[c->cube[i]];
 			
+			short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
+			
+			if(id == 0)
+				printf("Dist: %d\n", dist);
+			
+			Polygon2D* new_clip;
+			
+			if(draw) {
+				new_clip = res;
+			}
+			else {
+				new_clip = NULL;
+			}
+			
+			if(dist > -120 && dist < 0 && id == context->cam.current_cube) {
+				draw = 1;
+				new_clip = clip;
+			}
+			
 			// Make sure we haven't rendered it yet
-			if(next_cube->last_frame != context->frame)
-				render_cube(next_cube, context, clip);
+			if(next_cube->last_frame != context->frame && draw) {
+				render_cube(next_cube, context, new_clip, c->cube[i]);
+			}
 		}
+	#endif
 	}
 }
 
@@ -150,16 +222,16 @@ void render_level(RenderContext* c) {
 	// Create the clipping region
 	Vex2D screen_clip[] = {
 		{
-			10, 10
+			2, 2
 		},
 		{
-			230, 10
+			LCD_WIDTH - 1, 1
 		},
 		{
-			230, 120
+			LCD_WIDTH - 3, LCD_HEIGHT - 3
 		},
 		{
-			10, 120
+			2, LCD_HEIGHT - 3
 		}
 	};
 	
@@ -167,9 +239,9 @@ void render_level(RenderContext* c) {
 	
 	make_polygon2d(screen_clip, 4, &clip_region);
 	
-	render_cube(&cube_tab[0], c, &clip_region);
+	render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
 	
-	draw_polygon(&clip_region, c);
+	//draw_polygon(&clip_region, c);
 }
 
 
@@ -286,7 +358,68 @@ void init_render() {
 	build_edge_table();
 }
 
+#define MIN_FAIL_DIST 15
 
+// Returns whether the point is inside the cube or not
+// Fail plane will contain the id of the plane it fails against
+char point_in_cube(int id, Vex3D* point, char* fail_plane) {
+	Cube* c = &cube_tab[id];
+	int i;
+	
+	for(i = 0; i < 6; i++) {
+		const Vex3D normal = c->normal[i];
+		const Vex3D p = c->v[cube_vertex_tab[i][0]];
+		
+		if(normal.x || normal.y || normal.z) {
+			long dot = (long)normal.x * p.x + (long)normal.y * p.y + (long)normal.z * p.z;
+			long val = (long)normal.x * point->x + (long)normal.y * point->y + (long)normal.z * point->z - dot;
+			
+			val >>= NORMAL_BITS;
+			
+			//printf("Val: %ld\n", val);
+			//LCD_restore(buf->dark_plane);
+			
+			if(c->cube[i] == -1) {
+				if(val < MIN_FAIL_DIST) {
+					*fail_plane = i;
+					return 0;
+				}
+			}
+			else if(val < 0) {
+				*fail_plane = i;
+				return 0;
+			}
+		}
+	}
+		
+	return 1;
+}
+
+// Attemps to move the camera and update which cube the camera is in
+void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed) {
+	char fail_plane;
+	
+	Vex3D add = {
+		((long)dir->x * speed) >> NORMAL_BITS,
+		((long)dir->y * speed) >> NORMAL_BITS,
+		((long)dir->z * speed) >> NORMAL_BITS
+	};
+	
+	Vex3D new_pos = {c->cam.pos.x + add.x, c->cam.pos.y + add.y, c->cam.pos.z + add.z}; 
+	
+	if(point_in_cube(c->cam.current_cube, &new_pos, &fail_plane)) {
+		c->cam.pos = new_pos;
+		
+		set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
+	}
+	else {
+		if(cube_tab[c->cam.current_cube].cube[(short)fail_plane] != -1) {
+			c->cam.pos = new_pos;
+			c->cam.current_cube = cube_tab[c->cam.current_cube].cube[(short)fail_plane];
+			set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
+		}
+	}
+}
 
 
 

@@ -46,6 +46,15 @@ enum {
 	PLANE_FRONT
 };
 
+// The planes of the viewing frustum
+enum {
+	FRUSTUM_NEAR,
+	FRUSTUM_TOP,
+	FRUSTUM_BOTTOM,
+	FRUSTUM_LEFT,
+	FRUSTUM_RIGHT
+};
+
 // A 3D vertex or vector with short values
 typedef struct Vex3D {
 	short x, y, z;
@@ -83,6 +92,7 @@ typedef struct {
 typedef struct {
 	Vex3D v[MAX_POINTS];
 	short total_v;
+	char draw[MAX_POINTS];
 } Polygon;
 
 typedef Polygon Polygon3D;
@@ -129,6 +139,8 @@ typedef struct {
 	Mat3x3 mat;
 	Vex3D dir;
 	short dist_from_origin;		// Distance from the origin
+	short current_cube;
+	
 } Camera;
 
 // A rendering context, which describes the dimensions of the screen, the view
@@ -202,6 +214,7 @@ void cube_get_face(Vex3D v[8], short face,  Vex3D dest[4]);
 inline short get_opposite_face(short face);
 
 void make_polygon2d(Vex2D* v, int points, Polygon2D* p);
+inline short dist_to_plane(Vex3D* normal, Vex3D* point, Vex3D* v);
 
 // ==============================clip.c==============================
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest);
@@ -212,7 +225,7 @@ inline short eval_line(Line2D* line, short x);
 inline long eval_line_long(Line2D* line, long x);
 char point_valid_side(Line2D* line, Vex2D* point);
 inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center);
-char add_point(Polygon2D* p, Vex2D* point, Line2D* line);
+char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw);
 void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center);
 Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b);
 
@@ -221,7 +234,7 @@ Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygo
 // ==============================render.c==============================
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c);
 
-void render_cube(Cube* c, RenderContext* context, Polygon2D* clip);
+void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id);
 void render_level(RenderContext* c);
 
 void set_cam_pos(RenderContext* c, short x, short y, short z);
@@ -232,6 +245,9 @@ extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"),
 	
 void build_edge_table();
 void init_render();
+
+char point_in_cube(int id, Vex3D* point, char* fail_plane);
+void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed);
 
 
 // ==============================util.c==============================
