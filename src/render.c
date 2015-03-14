@@ -210,10 +210,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				new_clip = clip;
 			}
 			
-			errorif(new_clip->total_v < 3, "Too few points in clip");
+			//errorif(new_clip->total_v < 3, "Too few points in clip");
 			
 			// Make sure we haven't rendered it yet
-			if(next_cube->last_frame != context->frame && draw) {
+			if(next_cube->last_frame != context->frame && draw && res->total_v > 2) {
 				render_cube(next_cube, context, new_clip, c->cube[i]);
 			}
 		}
