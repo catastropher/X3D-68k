@@ -18,6 +18,9 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short dot, next_dot;
 	long t;
 	
+	short out[10];
+	short out_pos = 0;
+	
 	dot = dot_product(&poly->v[0], &plane->normal);
 	in = (dot >= plane->d);
 	
@@ -80,10 +83,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 			dest->total_v++;
 		}
 		
-		if(dest->total_v > 1) {
-			if(!in && next_in) {
-				dest->draw[dest->total_v - 1] = 0;
-			}
+		if(next_in != in) {
+			out[out_pos++] = dest->total_v - 1;
 		}
 		
 		dot = next_dot;
@@ -104,6 +105,52 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		Polygon2D out;
 		
 	}
+	
+	//===============================
+	for(i = 0; i < out_pos - 1; i++) {
+		if(out[i] == out[i + 1] - 1) {
+			//printf("Case\n");
+			dest->draw[out[i]] = 0;
+		}
+		else {
+			//error("ERRORX");
+			
+			if(out[i] != 0 || out[i + 1] != dest->total_v - 1) { 
+			
+				printf("A: %d, B: %d\n", out[i], out[i + 1]);
+				
+				dest->draw[out[i]] = 0;
+				dest->draw[out[i + 1]] = 0;
+			}
+				
+			
+		}
+	}
+	
+	if(out_pos > 0 && out[0] == 0 && out[out_pos - 1] == dest->total_v - 1) {
+		dest->draw[dest->total_v - 1] = 0;
+		//printf("CASE\n");
+	}
+	
+	
+	
+	
+	if(out_pos != 0 && out_pos != 2) {
+		return 0;
+		
+		
+		PortRestore();
+		clrscr();
+		
+		print_polygon(poly);
+		printf("Total: %d\n", out_pos);
+		
+		while(1);
+	}
+	
+	
+	
+	errorif(out_pos != 0 && out_pos != 2, "Wrong out pos: %d\n", out_pos);
 	
 	return dest->total_v > 2;	
 }
@@ -334,6 +381,7 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 			}
 		}
 		
+		
 		if(clipped != 2 && current_clipped != 2) {
 			if(clipped || side == 0) {
 				out[out_pos++] = dest->total_v - 1;
@@ -342,9 +390,9 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 		
 		// If we clipped this point, we should not draw the line to the next point
 		
-	#if 1
+	#if 0
 		if(dest->total_v > 1) {
-			if(side == -1 && next_side == 1) {
+			if(side == 1 && next_side == -1) {
 				dest->line[dest->total_v - 1].draw = 0;
 			}
 		}

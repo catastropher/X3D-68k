@@ -61,6 +61,16 @@ void init() {
 
 extern long line_count;
 
+volatile INT_HANDLER old_int_1;
+volatile INT_HANDLER old_int_5;
+
+CALLBACK void reset_inthandler() {
+	SetIntVec(AUTO_INT_1, old_int_1);
+	SetIntVec(AUTO_INT_5, old_int_5);
+}
+
+
+
 void _main(void) {	
 	FontSetSys(F_6x8);
 	clrscr();
@@ -109,8 +119,11 @@ void _main(void) {
 	PortSet(context.screen, LCD_WIDTH - 1, LCD_HEIGHT - 1);
 	
 	// Initialize the camera
-	set_cam_pos(&context, -25, 12, -85);
-	set_cam_angle(&context, 0, 0, 0);
+	//set_cam_pos(&context, -25, 12, -85);
+	//set_cam_angle(&context, 0, 0, 0);
+	
+	set_cam_pos(&context, -367, -30, 377);
+	set_cam_angle(&context, 242, 184, 0);
 	
 	//print_frustum(&context.frustum);
 	
@@ -119,18 +132,21 @@ void _main(void) {
 	Vex3Ds cube_angle = {0, 0, 0};
 	unsigned short key;
 	
-	INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
-	INT_HANDLER old_int_5 = GetIntVec(AUTO_INT_5);
+	old_int_1 = GetIntVec(AUTO_INT_1);
+	old_int_5 = GetIntVec(AUTO_INT_5);
 	
 	SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
 	SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
 	
+	atexit(reset_inthandler);
+	
 	SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
-	context.cam.current_cube = 0;
+	context.cam.current_cube = 2;
 	
 	do {
 		key = read_keys();
+		
 		clrscr();
 		
 		line_count = 0;
@@ -176,7 +192,7 @@ void _main(void) {
 		if(_keytest(RR_ENTER)) {
 			print_vex3d(&context.cam.pos);
 			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
-			printf("Cdist: %d\n", context.dist);
+			printf("Cube: %d\n", context.cam.current_cube);
 		}
 	
 		short i;

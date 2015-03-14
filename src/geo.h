@@ -12,13 +12,17 @@
 #define ANG_90 64
 #define ANG_180 128
 
-#define VERTICAL_LINE_SLOPE 0x7FFF
-
-#define DIST_TO_NEAR_PLANE 10
+#define DIST_TO_NEAR_PLANE 30
 
 #define FRAC_BITS 10
 #define EVAL_BITS 5
-#define VERTICAL_LINE 0x7FFF
+
+
+#define VERTICAL_LINE_SLOPE 0x7FFFFFFF
+#define VERTICAL_LINE VERTICAL_LINE_SLOPE
+
+
+
 
 // Swaps two values
 #define SWAP(_a,_b) {typeof(_a) _save = _a; _a = _b; _b = _save;}

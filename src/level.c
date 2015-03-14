@@ -12,7 +12,7 @@ Cube cube_tab[10];
 void create_test_level() {
 	Vex3Ds cube_angle = {0, 0, 0};
 	
-	int s = 200;
+	int s = 400;
 	
 	construct_cube(s, s, s, 0, 0, 0, &cube_angle, &cube_tab[0]);
 	construct_cube(s, s, s, 0, 0, s, &cube_angle, &cube_tab[1]);

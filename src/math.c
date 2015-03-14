@@ -138,9 +138,9 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	c->frustum_unrotated.p[0].normal = (Vex3D){0, 32767, 0};
 	
 	// Hack...
-	c->frustum_unrotated.p[0].d = c->dist;//-DIST_TO_NEAR_PLANE;
+	c->frustum_unrotated.p[0].d = c->dist - DIST_TO_NEAR_PLANE;
 	
-	c->frustum_unrotated.total_p = 1;//5;
+	c->frustum_unrotated.total_p = 5;
 }
 
 // Calculates the distance from each plane in the view frustum to the origin
@@ -166,7 +166,7 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	
 	Vex3D out = c->cam.dir;
 	
-	short dist = c->dist - 20;
+	short dist = c->dist - DIST_TO_NEAR_PLANE;
 	
 	out.x = ((long)out.x * dist) >> NORMAL_BITS;
 	out.y = ((long)out.y * dist) >> NORMAL_BITS;

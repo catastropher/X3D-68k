@@ -3,6 +3,7 @@
 
 #include "geo.h"
 #include "extgraph.h"
+#include "error.h"
 
 #include <tigcclib.h>
 
@@ -78,6 +79,7 @@ void draw_polygon(Polygon2D* p, RenderContext* context) {
 		//draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
 		
 		if(p->line[i].draw)
+			//draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
 			FastLine_Draw_R(context->screen, p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y);
 	}
 	
@@ -168,11 +170,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			project_polygon3d(&poly_out, context, &out_2d);
 			Polygon2D temp_a, temp_b;
 			
-			for(d = 0; d < poly_out.total_v; d++)
-				out_2d.line[d].draw = poly3D.draw[d];
-			
-			
 			res = clip_polygon(&out_2d, clip, &temp_a, &temp_b);
+			
+			for(d = 0; d < poly_out.total_v; d++)
+				res->line[d].draw = poly_x.draw[d];
 			
 			//for(d = 0; d < res->total_v; d++) {
 			//	printf("[%d, %d]\n", res->p[d].v.x, res->p[d].v.y);
@@ -188,6 +189,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		// If there's a cube connected to this face
 		if(c->cube[i] != -1) {
 			Cube* next_cube = &cube_tab[c->cube[i]];
+			
 			
 			short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 			
@@ -207,6 +209,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				draw = 1;
 				new_clip = clip;
 			}
+			
+			errorif(new_clip->total_v < 3, "Too few points in clip");
 			
 			// Make sure we haven't rendered it yet
 			if(next_cube->last_frame != context->frame && draw) {
@@ -358,7 +362,7 @@ void init_render() {
 	build_edge_table();
 }
 
-#define MIN_FAIL_DIST 15
+//#define MIN_FAIL_DIST 20
 
 // Returns whether the point is inside the cube or not
 // Fail plane will contain the id of the plane it fails against
@@ -380,7 +384,7 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 			//LCD_restore(buf->dark_plane);
 			
 			if(c->cube[i] == -1) {
-				if(val < MIN_FAIL_DIST) {
+				if(val < DIST_TO_NEAR_PLANE) {
 					*fail_plane = i;
 					return 0;
 				}
