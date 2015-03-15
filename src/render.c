@@ -136,10 +136,14 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 
 		// If the angle between the view directions and the polygon normal < 45 deg,
 		// we're going to assume that the polygon isn't visible
-		
 		if(dot_product(&c->normal[i], &context->cam.dir) > 23170)
 			continue;
-				
+			
+		// If we're on the wrong side of the plane, it must be invisible (backface culling)
+		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
+		
+		if(dist > 0)
+			continue;
 
 		for(d = 0; d < 4; d++) {
 			short a = cube_vertex_tab[i][d];
@@ -224,9 +228,6 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		// If there's a cube connected to this face
 		if(c->cube[i] != -1) {
 			Cube* next_cube = &cube_tab[c->cube[i]];
-			
-			
-			short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 			
 			//printf("i: %d Dist: %d\n", i, dist);
 			
