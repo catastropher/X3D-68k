@@ -128,8 +128,8 @@ void _main(void) {
 	//set_cam_pos(&context, -197, -98, 326);
 	//set_cam_angle(&context, 26, 192, 0);
 	
-	set_cam_pos(&context, 101, -646, 304);
-	set_cam_angle(&context, 6, 194, 0);
+	set_cam_pos(&context, -146, -80, 398);
+	set_cam_angle(&context, 252, 138, 0);
 	
 	//print_frustum(&context.frustum);
 	
@@ -148,7 +148,7 @@ void _main(void) {
 	
 	//SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
-	context.cam.current_cube = 4;
+	context.cam.current_cube = 1;
 	
 	do {
 		key = read_keys();
@@ -159,6 +159,8 @@ void _main(void) {
 		render_level(&context);
 		
 		printf("Line count: %ld\n", line_count);
+		
+		//print_plane(&context.frustum.p[0]);
 		
 		
 		context.frame++;

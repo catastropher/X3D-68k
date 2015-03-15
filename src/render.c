@@ -86,6 +86,8 @@ void draw_polygon(Polygon2D* p, RenderContext* context) {
 	line_count += p->total_v;
 }
 
+short cube_id;
+
 // Renders a single cube in writeframe
 // Note: make sure the cube isn't off the screen at all!
 void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
@@ -94,13 +96,16 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
 	
-	printf("Visit %d\n", id);
+	
+	cube_id = id;
+	
+	//printf("Visit %d\n", id);
 	
 	// Make this cube as visited
 	c->last_frame = context->frame;
 	
 	if(id == 5) {
-		print_polygon2d(clip);
+		//print_polygon2d(clip);
 	}
 	
 	for(i = 0; i < 8; i++) {

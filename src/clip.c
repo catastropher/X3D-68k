@@ -8,6 +8,8 @@
 
 #include <tigcclib.h>
 
+extern short cube_id;
+
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
 // TODO: keep track of which edges have been clipped so we know which
 // part of the polygon still needs to be drawn
@@ -63,7 +65,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 			errorif(abs(plane->d - dot) > 32767, "plane->d too big");
 			errorif(abs(next_dot - dot) > 32767, "next_dot too big");
 			
-			errorif(abs(t) > 32767, "Invalid clip t");
+			//errorif(abs(t) > 32767, "Invalid clip t");
 			//errorif(t == 0, "t == 0");
 			
 			//printf("Dist: %d\n", dot + plane->d);

@@ -209,7 +209,7 @@ void calculate_frustum_rotated_normals(RenderContext* c) {
 	
 	
 
-	c->frustum.p[0].normal = c->cam.dir;
+	c->frustum.p[FRUSTUM_NEAR].normal = c->cam.dir;
 
 	//printf("P: %d\nNear plane normal: ", c->frustum_unrotated.total_p);
 	//print_vex3d(&c->frustum.p[4].normal);
