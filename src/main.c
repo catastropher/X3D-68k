@@ -112,18 +112,24 @@ void _main(void) {
 	RenderContext context;
 	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_90, &context);
 	
+	context.screen = LCD_MEM;
+	//test_polygon_clipper(&context);
+	
 	init();
 	create_test_level();
 	
 	context.screen = malloc(LCD_SIZE);
-	PortSet(context.screen, LCD_WIDTH - 1, LCD_HEIGHT - 1);
+	PortSet(context.screen, 239, 127);
 	
 	// Initialize the camera
 	//set_cam_pos(&context, -25, 12, -85);
 	//set_cam_angle(&context, 0, 0, 0);
 	
-	set_cam_pos(&context, -251, -102, 326);
-	set_cam_angle(&context, 246, 194, 0);
+	//set_cam_pos(&context, -197, -98, 326);
+	//set_cam_angle(&context, 26, 192, 0);
+	
+	set_cam_pos(&context, 101, -646, 304);
+	set_cam_angle(&context, 6, 194, 0);
 	
 	//print_frustum(&context.frustum);
 	
@@ -140,9 +146,9 @@ void _main(void) {
 	
 	atexit(reset_inthandler);
 	
-	SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
+	//SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
-	context.cam.current_cube = 2;
+	context.cam.current_cube = 4;
 	
 	do {
 		key = read_keys();
@@ -173,6 +179,16 @@ void _main(void) {
 			attempt_move_cam(&context, &context.cam.dir, -10);
 		}
 		
+		
+		if(_keytest(RR_F3)) {
+			attempt_move_cam(&context, &context.cam.straif_dir, -10);
+		}
+		
+		if(_keytest(RR_F4)) {
+			attempt_move_cam(&context, &context.cam.straif_dir, 10);
+		}
+		
+		
 		if(key & GAME_KEY_RIGHT) {
 			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y - 2, context.cam.angle.z);
 		}
@@ -197,8 +213,8 @@ void _main(void) {
 	
 		short i;
 		
-		for(i = 0; i < LCD_SIZE; i++)
-			context.screen[i] = ~context.screen[i];
+		//for(i = 0; i < LCD_SIZE; i++)
+		//	context.screen[i] = ~context.screen[i];
 	
 		LCD_restore(context.screen);
 	} while(!(key & GAME_KEY_ESC));

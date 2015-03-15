@@ -18,8 +18,8 @@
 #define EVAL_BITS 5
 
 
-#define VERTICAL_LINE_SLOPE 0x7FFFFFFF
-#define VERTICAL_LINE VERTICAL_LINE_SLOPE
+#define VERTICAL_LINE_SLOPE 0x7FFF
+#define VERTICAL_LINE 0x7FFF
 
 
 
@@ -142,6 +142,9 @@ typedef struct {
 	Vex3Ds angle;
 	Mat3x3 mat;
 	Vex3D dir;
+	Vex3D straif_dir;
+	
+	
 	short dist_from_origin;		// Distance from the origin
 	short current_cube;
 	
@@ -224,7 +227,7 @@ inline short dist_to_plane(Vex3D* normal, Vex3D* point, Vex3D* v);
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest);
 char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest);
 
-char signof(short val);
+short signof(short x);
 inline short eval_line(Line2D* line, short x);
 inline long eval_line_long(Line2D* line, long x);
 char point_valid_side(Line2D* line, Vex2D* point);
@@ -232,6 +235,8 @@ inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center)
 char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw);
 void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center);
 Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b);
+
+void test_polygon_clipper(RenderContext* context);
 
 
 
@@ -259,6 +264,9 @@ void print_vex3d(Vex3D* v);
 void print_plane(Plane* p);
 void print_polygon(Polygon* p);
 void print_frustum(Frustum* f);
+void print_vex2d(Vex2D* v);
+void print_polygon2d(Polygon2D* p);
+
 
 // ==============================fastsqrt.c==============================
 unsigned long fastsqrt(unsigned long x) __attribute__((pure));

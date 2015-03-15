@@ -51,12 +51,12 @@ long line_count;
 void clip_point(Vex2D* v) {
 	if(v->x < 0)
 		v->x = 0;
-	else if(v->x >= LCD_WIDTH)
+	else if(v->x >= (short)LCD_WIDTH)
 		v->x = LCD_WIDTH - 1;
 		
 	if(v->y < 0)
 		v->y = 0;
-	else if(v->y >= LCD_HEIGHT)
+	else if(v->y >= (short)LCD_HEIGHT)
 		v->y = LCD_HEIGHT - 1;
 }
 
@@ -79,8 +79,8 @@ void draw_polygon(Polygon2D* p, RenderContext* context) {
 		//draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
 		
 		if(p->line[i].draw)
-			//draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
-			FastLine_Draw_R(context->screen, p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y);
+			draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
+			//FastLine_Draw_R(context->screen, p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y);
 	}
 	
 	line_count += p->total_v;
@@ -94,8 +94,14 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
 	
+	printf("Visit %d\n", id);
+	
 	// Make this cube as visited
 	c->last_frame = context->frame;
+	
+	if(id == 5) {
+		print_polygon2d(clip);
+	}
 	
 	for(i = 0; i < 8; i++) {
 		Vex3D temp;
@@ -153,6 +159,16 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		
 		char draw = clip_polygon_to_frustum(&poly3D, &context->frustum, &poly_x);
 		
+		//if(id == 1 && i == PLANE_FRONT)
+		//	printf("SHOULD DRAW: %d\n", draw);
+		
+		//if(id == 1 && i == PLANE_FRONT)
+		//	print_polygon(&poly3D);
+		
+		if(id == 5) {
+			//printf("Draw %d: %d\n", i, draw);
+		}
+		
 		if(draw) {
 	
 			for(d = 0; d < poly_x.total_v; d++) {
@@ -170,16 +186,26 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			project_polygon3d(&poly_out, context, &out_2d);
 			Polygon2D temp_a, temp_b;
 			
+			//if(id == 1 && i == PLANE_FRONT)
+			//	print_polygon2d(&out_2d);
+			
+			for(d = 0; d < poly_x.total_v; d++)
+				out_2d.line[d].draw = poly_x.draw[d];
+			
 			res = clip_polygon(&out_2d, clip, &temp_a, &temp_b);
 			
-			for(d = 0; d < poly_out.total_v; d++)
-				res->line[d].draw = poly_x.draw[d];
+			
+			
+
+			//for(d = 0; d < poly_out.total_v; d++)
+			//	res->line[d].draw = poly_x.draw[d];
 			
 			//for(d = 0; d < res->total_v; d++) {
 			//	printf("[%d, %d]\n", res->p[d].v.x, res->p[d].v.y);
 			//}
 			
-			draw_polygon(res, context);
+			//if(c->cube[i] != -1)
+				draw_polygon(res, context);
 		}
 		
 	//#endif
@@ -193,7 +219,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 			
-			printf("i: %d Dist: %d\n", i, dist);
+			//printf("i: %d Dist: %d\n", i, dist);
 			
 			Polygon2D* new_clip;
 			
@@ -207,6 +233,13 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			if(dist > -120 && dist < 0 && id == context->cam.current_cube) {
 				draw = 1;
 				new_clip = clip;
+			}
+			
+			if(id == 1) {
+				//printf("ONE: %d i: %d\n", new_clip == clip, i);
+				
+				//if(i == PLANE_FRONT)
+				//	print_polygon2d(clip);
 			}
 			
 			//errorif(new_clip->total_v < 3, "Too few points in clip");
@@ -230,13 +263,13 @@ void render_level(RenderContext* c) {
 			2, 2
 		},
 		{
-			LCD_WIDTH - 1, 1
+			LCD_WIDTH - 3, 2
 		},
 		{
-			LCD_WIDTH - 3, LCD_HEIGHT - 3
+			LCD_WIDTH - 3, LCD_HEIGHT - 5
 		},
 		{
-			2, LCD_HEIGHT - 3
+			2, LCD_HEIGHT - 5
 		}
 	};
 	
@@ -282,6 +315,10 @@ void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned 
 	c->cam.dir.x = c->cam.mat[2][0];
 	c->cam.dir.y = c->cam.mat[2][1];
 	c->cam.dir.z = c->cam.mat[2][2];
+	
+	c->cam.straif_dir.x = c->cam.mat[0][0];
+	c->cam.straif_dir.y = c->cam.mat[0][1];
+	c->cam.straif_dir.z = c->cam.mat[0][2];
 	
 	// Update the view frustum
 	calculate_frustum_rotated_normals(c);

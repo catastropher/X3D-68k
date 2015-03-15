@@ -191,8 +191,9 @@ char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest) {
 //=========================================================================
 
 // Returns the sign of a value
-char signof(short val) {
-	return (val < 0 ? -1 : val > 0);
+short signof(short x) {
+	if(x == 0) return 0;
+	return (x < 0 ? -1 : 1);
 }
 
 // Evalulates the line y=mx + b at the given x
@@ -250,7 +251,7 @@ vertical:
 	else {
 		dest->slope = ((long)dy << FRAC_BITS) / dx;
 		
-		if(abs(dest->slope) > VERTICAL_LINE)
+		if(abs(dest->slope) > 0x6FFF)
 			goto vertical;
 		
 		//if(abs(dest->slope) > 5000)//5120)
@@ -377,7 +378,7 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 				//dest->line[dest->total_points++] = p->line[point];
 					
 				//out[out_pos++] = dest->total_points++;
-				clipped = add_point(dest, &clip_pos, &p->line[point], p->line[next_point].draw);
+				clipped = add_point(dest, &clip_pos, &p->line[point], p->line[point].draw);
 			}
 		}
 		
@@ -386,6 +387,25 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 			if(clipped || side == 0) {
 				out[out_pos++] = dest->total_v - 1;
 			}
+			
+			//if(side != next_side && min(side, next_side) <= 0) {
+			//	out[out_pos++] = dest->total_v - 1;
+			//}
+			
+			
+			/*if(side + next_side == 0 && side) {
+				printf("point: %d next_point: %d\n", point, next_point);
+				printf("side: %d next_side: %d\n", side, next_side);
+				
+				if(side == 1)
+					out[out_pos++] = dest->total_v - 1;
+				else
+					out[out_pos++] = dest->total_v - 1;
+			}*/
+			
+		}
+		else {
+			//printf("Degenerate\n");
 		}
 		
 		// If we clipped this point, we should not draw the line to the next point
@@ -404,10 +424,13 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	//for(i = 0; i < out_pos; i++)
 		//printf("Out: %d\n", out[i]);
 	
+	char a = 0;
+	
 	for(i = 0; i < out_pos - 1; i++) {
 		if(out[i] == out[i + 1] - 1) {
-			//printf("Case\n");
+			//printf("Case: %d, %d\n", out[i], out[i + 1]);
 			dest->line[out[i]] = *edge;
+			a = 1;
 			dest->line[out[i]].draw = 0;
 		}
 	}
@@ -415,7 +438,14 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	if(out_pos > 0 && out[0] == 0 && out[out_pos - 1] == dest->total_v - 1) {
 		dest->line[dest->total_v - 1] = *edge;
 		dest->line[dest->total_v - 1].draw = 0;
+		//printf("CLIP LAST\n");
+		
+		//errorif(a, "BOTH");
 	}
+	
+	//printf("out_pos: %d\n", out_pos);
+	
+	//print_polygon2d(dest);
 	
 	
 	
@@ -458,6 +488,17 @@ Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygo
 	polygon_clip_edge(p, &clip->line[clip->total_v - 1], p2, &center);
 	
 	
+	//for(i = 0; i < p2->total_v; i++)
+	//	p2->line[i].draw = 0;
+	
+	
+	//p2->line[0].draw = 1;
+	//p2->line[1].draw = 1;
+	
+	//printf("Total v: %d\n", p2->total_v);
+	
+	int d = 0;
+	
 	for(i = 0; i < clip->total_v - 1; i++) {
 		//print_polygon(p2);
 		SWAP(p1, p2);
@@ -473,4 +514,146 @@ Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygo
 	return p2;
 }
 
+// A simple interative function for debugging the polygon clipper
+void test_polygon_clipper(RenderContext* context) {
+	clrscr();
+	
+	Vex2D p[8];
+	
+	#if 0
+	do {
+		Vex2D a1 = rand_point();
+		Vex2D a2 = rand_point();
+		Vex2D b1 = rand_point();
+		Vex2D b2 = b1;//rand_point();
+		
+		b2.y = (b2.y + 30) % 128;
+		
+		clrscr();
+		DrawLine(a1.x, a1.y, a2.x, a2.y, A_NORMAL);
+		DrawLine(b1.x, b1.y, b2.x, b2.y, A_NORMAL);
+		ngetchx();
+		
+		Vex2D res;
+		Vex2D center;
+		
+		clrscr();
+		
+		if(line_sect(&a1, &a2, &b1, &b2, &res, &center)) {
+			DrawStr(0, 0, "I", A_NORMAL);
+		}
+		else {
+			DrawStr(0, 0, "N", A_NORMAL);
+		}
+		
+		if(res.x >= 0 && res.x < LCD_WIDTH && res.y >= 0 && res.y < LCD_HEIGHT) {
+			DrawPix(res.x, res.y, A_NORMAL);
+		}
+		
+	} while(ngetchx() != KEY_ESC);
+	#endif
+	
+	
+	int i;
+	for(i = 0; i < 4; i++) {
+		p[i].x = rand() % 240;
+		p[i].y = rand() % 128;
+	}
+	
+	
+	Vex2D clip[] = {
+		{
+			30, 30
+		},
+		{
+			240 - 30, 30
+		},
+		{
+			240 - 30, 128 - 30
+		},
+		{
+			30, 128 - 30
+		}
+	};
+	
+	
+	
+	Polygon2D temp_a, temp_b;
+	
+	Polygon2D pp;
+	make_polygon2d(p, 4, &pp);
+	
+	Polygon2D clipp;
+	make_polygon2d(clip, 4, &clipp);
+	
+	short p_pos = 0;
+	
+	
+	int cx = 39, cy = 63;
+	unsigned short key;
+	
+	draw_polygon(&clipp, context);
+	
+	do {
+		key = ngetchx();
+		
+		DrawPix(cx, cy, A_REVERSE);
+		
+		if(key == KEY_UP)
+			cy -= 3;
+		else if(key == KEY_DOWN)
+			cy += 3;
+		else if(key == KEY_LEFT)
+			cx -= 3;
+		else if(key == KEY_RIGHT)
+			cx += 3;
+		else if(key == KEY_ENTER) {
+			p[p_pos++] = (Vex2D){cx, cy};
+			
+			if(p_pos != 1)
+				draw_clip_line(cx, cy, p[p_pos - 2].x, p[p_pos - 2].y, LCD_MEM);
+		}
+		
+		DrawPix(cx, cy, A_NORMAL);
+	} while(key != KEY_ESC);
+	
+	make_polygon2d(p, p_pos, &pp);
+	
+	//for(i = 0; i < p_pos; i++) {
+	//	Line2D* line = &pp.line[i];
+//		printf("Slope: %ld, b: %d, sign: %d\n", line->slope, line->b, line->sign);
+//	}
 
+#if 0
+	for(i = 0; i < clipp.total_points; i++) {
+		Line2D* line = &clipp.line[i];
+		printf("Slope: %ld, b: %d, sign: %d\n", line->slope, line->b, line->sign);
+	}
+	
+	ngetchx();
+#endif
+	
+	
+	draw_polygon(&pp, context);
+	ngetchx();
+	draw_polygon(&clipp, context);
+	ngetchx();
+	
+	Polygon2D* res = clip_polygon(&pp, &clipp, &temp_a, &temp_b);
+	
+	clrscr();
+	draw_polygon(&clipp, context);
+	draw_polygon(res, context);
+	ngetchx();
+	
+	do {
+		clrscr();
+		draw_polygon(res, context);
+		//draw_polygon(&clipp);
+		ngetchx();
+		
+		clrscr();
+		draw_polygon(&pp, context);
+		draw_polygon(&clipp, context);
+	} while(ngetchx() != KEY_ESC);
+}
