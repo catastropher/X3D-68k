@@ -79,8 +79,8 @@ void draw_polygon(Polygon2D* p, RenderContext* context) {
 		//draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
 		
 		if(p->line[i].draw)
-			draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
-			//FastLine_Draw_R(context->screen, p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y);
+			//draw_clip_line(p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y, context->screen);
+			FastLine_Draw_R(context->screen, p->p[i].v.x, p->p[i].v.y, p->p[next].v.x, p->p[next].v.y);
 	}
 	
 	line_count += p->total_v;
@@ -98,6 +98,9 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	
 	
 	cube_id = id;
+	
+	//if(id != 0 && id != 1)
+	//	return;
 	
 	//printf("Visit %d\n", id);
 	
@@ -131,6 +134,9 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		for(d = 0; d< poly3D.total_v; d++) {
 			poly3D.draw[d] = 1;
 		}
+		
+		//if(id == 0 && i != PLANE_RIGHT)
+		//	continue;
 		
 		//clip_polygon_to_plane(&poly3D, &context->frustum.p[0], &poly_out2);
 		//clip_polygon_to_plane(&poly_out2, &context->frustum.p[4], &poly_out);
@@ -196,6 +202,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			for(d = 0; d < poly_x.total_v; d++)
 				out_2d.line[d].draw = poly_x.draw[d];
+				
+			//if(id == 0 && i == PLANE_RIGHT) {
+			//	print_polygon2d(&out_2d);
+			//}
 			
 			res = clip_polygon(&out_2d, clip, &temp_a, &temp_b);
 			

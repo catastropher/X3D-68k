@@ -17,9 +17,9 @@ void error(const char* format, ...) {
 	
 	PortRestore();
 	clrscr();
-	printf("Error: %s\nPress APPS to quit\n", buf);
+	printf("Error: %s\nPress Esc to quit\n", buf);
 	
-	while(!_keytest(RR_APPS)) ;
+	while(!_keytest(RR_ESC)) ;
 	
 	exit(-1);
 }

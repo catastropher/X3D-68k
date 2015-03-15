@@ -25,6 +25,8 @@ void create_test_level() {
 	construct_cube(s, s, s, 0, -2 * s, s, &cube_angle, &cube_tab[4]);
 	construct_cube(s, s, s, s, -2 * s, s, &cube_angle, &cube_tab[5]);
 	
+	construct_cube(s, s, s, 0, -3 * s, s, &cube_angle, &cube_tab[6]);
+	
 	
 	//cube_tab[0].cube[PLANE_BACK] = 1;
 	//cube_tab[1].cube[PLANE_LEFT] = 2;
@@ -36,6 +38,8 @@ void create_test_level() {
 	
 	connect_cube(3, 4, PLANE_TOP);
 	connect_cube(4, 5, PLANE_RIGHT);
+	
+	//connect_cube(4, 6, PLANE_TOP);
 }
 
 // Connects two cubes together so the renderer knows they share a face

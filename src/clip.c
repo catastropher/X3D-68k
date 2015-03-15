@@ -361,6 +361,12 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 		
 		current_clipped = 0;
 		
+		// Check for degenerate points
+		if(p->p[point].v.x == p->p[next_point].v.x && p->p[point].v.y == p->p[next_point].v.y) {
+			//side = next
+			continue;
+		}
+		
 		if(side != -1) {
 			//dest->p[dest->total_points] = p->p[point];
 			//dest->line[dest->total_points++] = *line;
