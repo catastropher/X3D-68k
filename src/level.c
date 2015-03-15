@@ -47,15 +47,3 @@ void connect_cube(short parent, short child, short plane) {
 	cube_tab[parent].cube[plane] = child;
 	cube_tab[child].cube[get_opposite_face(plane)] = parent;
 }
-
-#if 0
-void cube_pass_edges(CBuffer* buf, Cube* to, short face) {
-	if(buf->frame != to->last_frame) {
-		to->edge_bits = 0;
-		to->last_frame = buf->frame;
-	}
-	
-	
-	to->edge_bits |= edge_face_table[get_opposite_face(face)];
-}
-#endif

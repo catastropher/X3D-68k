@@ -253,6 +253,8 @@ extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"),
 	register short asm("%d3"), register void* asm("%a2"));
 	
 void build_edge_table();
+void cube_pass_edges(RenderContext* c, Cube* to, short face);
+
 void init_render();
 
 char point_in_cube(int id, Vex3D* point, char* fail_plane);
