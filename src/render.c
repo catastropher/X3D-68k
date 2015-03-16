@@ -153,6 +153,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			c->edge_bits |= (1 << edge_table[a][b]);
 		}
 		
+		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
+		if(draw_edges == 0 && c->cube[i] == -1)
+			continue;
+		
 		// Now that we know which edges need to be drawn, copy it over to the 3D polygon
 		for(d = 0; d< poly3D.total_v; d++) {
 			poly3D.draw[d] = draw_edges & 1;
@@ -205,7 +209,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			//	print_polygon2d(&out_2d);
 			//}
 			
-			res = clip_polygon(&out_2d, clip, &temp_a, &temp_b);
+			res = clip_polygon(&out_2d, clip, &temp_a, &temp_b, 0);//c->cube[i] == -1);
 			
 			
 			
@@ -292,7 +296,7 @@ void render_level(RenderContext* c) {
 	
 	make_polygon2d(screen_clip, 4, &clip_region);
 	
-	cube_tab[c->cam.current_cube].edge_bits = 0;
+	cube_tab[c->cam.current_cube].edge_bits = cube_tab[c->cam.current_cube].invisible_edges;
 	cube_tab[c->cam.current_cube].last_frame = c->frame;
 	
 	render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
@@ -304,7 +308,7 @@ void render_level(RenderContext* c) {
 // This prevents the 4x overdraw problem
 void cube_pass_edges(RenderContext* c, Cube* to, short face) {
 	if(c->frame != to->last_frame) {
-		to->edge_bits = 0;
+		to->edge_bits = to->invisible_edges;
 		to->last_frame = c->frame;
 	}
 	

@@ -69,6 +69,14 @@ CALLBACK void reset_inthandler() {
 	SetIntVec(AUTO_INT_5, old_int_5);
 }
 
+volatile short system_timer;
+
+#define TICKS_PER_SECOND 19
+
+DEFINE_INT_HANDLER(new_auto_int_5) {
+	system_timer++;
+}
+
 
 
 void _main(void) {	
@@ -142,13 +150,19 @@ void _main(void) {
 	old_int_5 = GetIntVec(AUTO_INT_5);
 	
 	SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
-	SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+	SetIntVec(AUTO_INT_5, new_auto_int_5);
 	
 	atexit(reset_inthandler);
 	
 	//SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
-	context.cam.current_cube = 1;
+	context.cam.current_cube = 0;
+	
+	short frame_count = 0;
+	char draw_fps = 0;
+	short fps = 0;
+	
+	system_timer = 0;
 	
 	do {
 		key = read_keys();
@@ -158,7 +172,21 @@ void _main(void) {
 		line_count = 0;
 		render_level(&context);
 		
-		printf("Line count: %ld\n", line_count);
+		frame_count++;
+		
+		//printf("Line count: %ld\n", line_count);
+		
+		if(draw_fps) {
+			printf("fps: %d\n", fps);
+		}
+		
+		if(system_timer >= TICKS_PER_SECOND) {
+			draw_fps = 1;
+			fps = frame_count;
+			frame_count = 0;
+			system_timer = 0;
+		}
+		
 		
 		//print_plane(&context.frustum.p[0]);
 		
@@ -192,25 +220,29 @@ void _main(void) {
 		
 		
 		if(key & GAME_KEY_RIGHT) {
-			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y - 2, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y - 3, context.cam.angle.z);
 		}
 		
 		if(key & GAME_KEY_LEFT) {
-			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y + 2, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y + 3, context.cam.angle.z);
 		}
 		
 		if(key & GAME_KEY_UP) {
-			set_cam_angle(&context, context.cam.angle.x - 2, context.cam.angle.y, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x - 3, context.cam.angle.y, context.cam.angle.z);
 		}
 		
 		if(key & GAME_KEY_DOWN) {
-			set_cam_angle(&context, context.cam.angle.x + 2, context.cam.angle.y, context.cam.angle.z);
+			set_cam_angle(&context, context.cam.angle.x + 3, context.cam.angle.y, context.cam.angle.z);
 		}
 		
 		if(_keytest(RR_ENTER)) {
 			print_vex3d(&context.cam.pos);
 			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
 			printf("Cube: %d\n", context.cam.current_cube);
+		}
+		
+		if(_keytest(RR_F5)) {
+			attempt_move_cam(&context, &context.cam.dir, 20);
 		}
 	
 		short i;

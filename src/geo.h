@@ -21,6 +21,7 @@
 #define VERTICAL_LINE_SLOPE 0x7FFF
 #define VERTICAL_LINE 0x7FFF
 
+#define CUBE_NONE -1		// There is no cube connected to the face of another cube
 
 
 
@@ -102,7 +103,7 @@ typedef struct {
 typedef Polygon Polygon3D;
 
 // A 2D point
-// TODO: remove after chaning clip.c
+// TODO: remove after changing clip.c
 typedef struct {
 	char clipped;
 	Vex2D v;
@@ -124,6 +125,7 @@ typedef struct {
 	Point p[MAX_POINTS];
 	Line2D line[MAX_POINTS];
 	short total_v;
+	Vex2D center;
 } Polygon2D;
 
 // The "viewing pyramid", a region of visible space bounded by a number of planes
@@ -177,6 +179,7 @@ typedef struct {
 	
 	unsigned short last_frame;
 	unsigned short edge_bits;
+	unsigned short invisible_edges;
 } Cube;
 
 extern const short sintab[256];
@@ -233,8 +236,8 @@ inline long eval_line_long(Line2D* line, long x);
 char point_valid_side(Line2D* line, Vex2D* point);
 inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center);
 char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw);
-void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center);
-Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b);
+void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center, char allow_extra_clip);
+Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b, char allow_extra_clip);
 
 void test_polygon_clipper(RenderContext* context);
 
@@ -276,5 +279,8 @@ unsigned long fastsqrt(unsigned long x) __attribute__((pure));
 // ==============================level.c==============================
 void create_test_level();
 void connect_cube(short parent, short child, short plane);
+
+void cube_remove_redundant_edges(Cube* c);
+void level_remove_redundant_edges(short total_cubes);
 
 

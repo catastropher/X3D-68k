@@ -335,7 +335,7 @@ char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw) {
 
 // Clips a polygon against a single edge
 // TODO: remove center as a parameter
-void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center) {
+void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center, char allow_extra_clip) {
 	int point;
 	int next_point;
 	char next;
@@ -350,6 +350,11 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	char current_clipped;
 	
 	short last_added = -1;
+	
+	char skip_next = 0;
+	short skip_point;
+	
+	short last_added_point = -1;
 	
 	dest->total_v = 0;
 	
@@ -367,15 +372,49 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 			continue;
 		}
 		
-		if(side != -1) {
+		if(side != -1 && (!skip_next || skip_next == 3)) {
 			//dest->p[dest->total_points] = p->p[point];
 			//dest->line[dest->total_points++] = *line;
 			
 			current_clipped = add_point(dest, &p->p[point].v, line, p->line[point].draw);
+			
+			if(current_clipped != 2) {
+				last_added_point = dest->total_v - 1;
+			
+				//if(skip_next == 3) {
+				//	skip_point = last_added_point;
+				//	printf("Skip point %d: \n", skip_point);
+				//}
+			}
 		}
 		
+		// If we're not drawing the line connecting the current point and the next, and we're
+		// not drawing the line connecting the next point and the next next point, we can
+		// remove it
+		if(!p->line[point].draw && !p->line[next_point].draw && p->total_v >= 4 && allow_extra_clip) {
+			// Skip over the next point
+			
+			if(last_added_point == -1) {
+				printf("uninitialized\n");
+			}
+			
+			if(!skip_next && last_added_point != -1) {
+				skip_next = 2;
+				skip_point = last_added_point;
+				
+				//if(last_added_point == 1000) {
+				//	skip_next = 3;
+				//	printf("unitialized\n");
+				//}
+			}
+			
+			//errorif(last_added_point == 1000, "Unitialized last point!");
+		}
+		
+		
+		
 		clipped = 0;
-		if(side + next_side == 0 && side) {
+		if(side + next_side == 0 && side && (!skip_next || skip_next == 3)) {
 			if(line2d_intersect(line, edge, &clip_pos, center)) {
 				// Check if the current point is degenerate...
 				//if(dest->total_points != 0) {
@@ -387,6 +426,14 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 					
 				//out[out_pos++] = dest->total_points++;
 				clipped = add_point(dest, &clip_pos, &p->line[point], p->line[point].draw);
+				
+				if(clipped != 2)
+					last_added_point = dest->total_v - 1;
+				
+				//if(skip_next == 3) {
+				//	skip_point = last_added_point;
+				//	printf("Skip point %d: \n", skip_point);
+				//}
 			}
 		}
 		
@@ -416,21 +463,26 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 			//printf("Degenerate\n");
 		}
 		
-		// If we clipped this point, we should not draw the line to the next point
-		
-	#if 0
-		if(dest->total_v > 1) {
-			if(side == 1 && next_side == -1) {
-				dest->line[dest->total_v - 1].draw = 0;
-			}
+		if(skip_next == 2) {
+			skip_next = 1;
+			continue;
 		}
-	#endif
+		
+		if(skip_next) {
+			get_line_info(&dest->line[last_added_point], &dest->p[last_added_point].v, &dest->p[next_point].v, &p->center);
+			
+			//errorif(dest->line[last_added_point].draw, "Should not draw...");
+			
+			skip_next = 0;
+		}
 		
 		side = next_side;
 	}
 	
 	//for(i = 0; i < out_pos; i++)
 		//printf("Out: %d\n", out[i]);
+	
+	//errorif((out_pos % 2), "Invalid out pos: %d\n", out_pos);
 	
 	char a = 0;
 	
@@ -450,6 +502,8 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 		
 		//errorif(a, "BOTH");
 	}
+	
+	dest->center = p->center;
 	
 	//printf("out_pos: %d\n", out_pos);
 	
@@ -486,14 +540,14 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 
 // Clips a polygon against another polygon
 // Note: both the clipping polygon and polygon to be clipped MUST be convex!
-Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b) {
+Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b, char allow_extra_clip) {
 	Vex2D center = {0, 0};
 	int i;
 	Polygon2D *p1 = temp_a;
 	Polygon2D *p2 = temp_b;
 	
 	// Clip against the first edge
-	polygon_clip_edge(p, &clip->line[clip->total_v - 1], p2, &center);
+	polygon_clip_edge(p, &clip->line[clip->total_v - 1], p2, &center, allow_extra_clip);
 	
 	
 	//for(i = 0; i < p2->total_v; i++)
@@ -516,7 +570,7 @@ Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygo
 			break;
 		}
 		
-		polygon_clip_edge(p1, &clip->line[i], p2, &center);
+		polygon_clip_edge(p1, &clip->line[i], p2, &center, allow_extra_clip);
 	}
 	
 	return p2;
@@ -647,7 +701,7 @@ void test_polygon_clipper(RenderContext* context) {
 	draw_polygon(&clipp, context);
 	ngetchx();
 	
-	Polygon2D* res = clip_polygon(&pp, &clipp, &temp_a, &temp_b);
+	Polygon2D* res = clip_polygon(&pp, &clipp, &temp_a, &temp_b, 0);
 	
 	clrscr();
 	draw_polygon(&clipp, context);

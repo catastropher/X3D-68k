@@ -415,6 +415,8 @@ void make_polygon2d(Vex2D* v, int points, Polygon2D* p) {
 	center.x /= points;
 	center.y /= points;
 	
+	p->center = center;
+	
 	for(i = 0; i < points; i++) {
 		short next = (i + 1) % points;
 		p->p[i].v = v[i];
