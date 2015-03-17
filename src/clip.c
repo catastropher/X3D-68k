@@ -26,6 +26,9 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	dot = dot_product(&poly->v[0], &plane->normal);
 	in = (dot >= plane->d);
 	
+	ADDR(poly);
+	ADDR(plane);
+	ADDR(dest);
 	
 	//printf("Dot: %d\nD: %d\n", dot, plane->d);
 	//print_vex3d(&plane->normal);
@@ -168,6 +171,10 @@ char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest) {
 	Polygon* poly = src;
 	int i;
 	
+	ADDR(src);
+	ADDR(f);
+	ADDR(dest);
+	
 	
 #if 1
 	for(i = 0; i < f->total_p - 1; i++) {
@@ -216,6 +223,9 @@ inline long eval_line_long(Line2D* line, long x) {
 char point_valid_side(Line2D* line, Vex2D* point) {	
 	char sign;
 	
+	ADDR(line);
+	ADDR(point);
+	
 	if(line->slope == VERTICAL_LINE) {
 		sign = signof(point->x - line->b);
 	}
@@ -241,6 +251,12 @@ char point_valid_side(Line2D* line, Vex2D* point) {
 inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center) {
 	short dx = end->x - start->x;
 	short dy = end->y - start->y;
+	
+	
+	ADDR(dest);
+	ADDR(start);
+	ADDR(end);
+	ADDR(center);
 	
 	if(abs(dx) < 2) {
 vertical:
@@ -272,6 +288,11 @@ vertical:
 char line2d_intersect(Line2D* a, Line2D* b, Vex2D* res, Vex2D* center) {
 	//Line2D a;
 	//Line2D b;
+	
+	ADDR(a);
+	ADDR(b);
+	ADDR(res);
+	ADDR(center);
 	
 	//get_line_info(a, x0, x1, center);
 	//get_line_info(b, y0, y1, center);
@@ -317,6 +338,10 @@ char line2d_intersect(Line2D* a, Line2D* b, Vex2D* res, Vex2D* center) {
 char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw) {
 	char clipped = 1;
 	
+	ADDR(p);
+	ADDR(point);
+	ADDR(line);
+	
 	if(p->total_v != 0) {
 		if((point->x == p->p[0].v.x && point->y == p->p[0].v.y) ||
 			(point->x == p->p[p->total_v - 1].v.x && point->y == p->p[p->total_v - 1].v.y))
@@ -344,6 +369,12 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	short out_pos = 0;
 	int i;
 	
+	ADDR(p);
+	ADDR(edge);
+	ADDR(dest);
+	ADDR(center);
+	
+	
 	char side = point_valid_side(edge, &p->p[0].v);
 	char next_side;
 	char clipped;
@@ -360,6 +391,9 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	
 	for(point = 0; point < p->total_v; point++) {
 		Line2D* line = &p->line[point];
+		
+		
+		errorif(dest->total_v >= MAX_POINTS - 1, "Too many points");
 		
 		next_point = (point + 1) % p->total_v;
 		next_side = point_valid_side(edge, &p->p[next_point].v);
@@ -538,6 +572,34 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	//	error("Invalid out B\n");
 }
 
+char clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* dest, char allow_extra_clip) {
+	int i;
+	Vex2D center = {0, 0};
+	
+	Polygon2D temp[2];
+	Polygon2D* poly = p;
+	short current_temp = 0;
+	
+	for(i = 0; i < clip->total_v - 1; i++) {
+		//errorif(poly->total_v < 3, "Invalid clip poly");
+		//return clip_polygon_to_plane(src, &f->p[FRUSTUM_TOP], dest);
+		polygon_clip_edge(poly, &clip->line[i], &temp[current_temp], &center, allow_extra_clip);
+		
+		if(temp[current_temp].total_v == 0) {
+			dest->total_v = 0;
+			return 0;
+		}
+		
+		poly = &temp[current_temp];
+		current_temp = !current_temp;
+	}
+	
+	polygon_clip_edge(poly, &clip->line[clip->total_v - 1], dest, &center, allow_extra_clip);
+	
+	return dest->total_v != 0;
+}
+
+#if 0
 // Clips a polygon against another polygon
 // Note: both the clipping polygon and polygon to be clipped MUST be convex!
 Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b, char allow_extra_clip) {
@@ -545,6 +607,11 @@ Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygo
 	int i;
 	Polygon2D *p1 = temp_a;
 	Polygon2D *p2 = temp_b;
+	
+	ADDR(temp_a);
+	ADDR(temp_b);
+	ADDR(p);
+	ADDR(clip);
 	
 	// Clip against the first edge
 	polygon_clip_edge(p, &clip->line[clip->total_v - 1], p2, &center, allow_extra_clip);
@@ -575,6 +642,7 @@ Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygo
 	
 	return p2;
 }
+#endif
 
 // A simple interative function for debugging the polygon clipper
 void test_polygon_clipper(RenderContext* context) {
@@ -701,7 +769,7 @@ void test_polygon_clipper(RenderContext* context) {
 	draw_polygon(&clipp, context);
 	ngetchx();
 	
-	Polygon2D* res = clip_polygon(&pp, &clipp, &temp_a, &temp_b, 0);
+	Polygon2D* res = NULL;// = clip_polygon(&pp, &clipp, &temp_a, &temp_b, 0);
 	
 	clrscr();
 	draw_polygon(&clipp, context);

@@ -6,7 +6,7 @@
 #include <tigcclib.h>
 
 // All of the cubes in the level
-Cube cube_tab[10];
+Cube cube_tab[20];
 
 // Creates a simple level for testing purposes
 void create_test_level() {
@@ -28,6 +28,27 @@ void create_test_level() {
 	construct_cube(s, s, s, 2 * s, -2 * s, s, &cube_angle, &cube_tab[6]);
 	construct_cube(s, s, s, 2 * s, -2 * s, 2 * s, &cube_angle, &cube_tab[7]);
 	
+	// Connect here
+	construct_cube(s, s, s, -2 * s, 0, s, &cube_angle, &cube_tab[8]);
+	
+	construct_cube(s, s, s, -2 * s, -s, s, &cube_angle, &cube_tab[9]);
+	
+	construct_cube(s, s, s, 2 * s, -2 * s, 3 * s, &cube_angle, &cube_tab[10]);
+	
+	construct_cube(s, s, s, 2 * s, -1 * s, 3 * s, &cube_angle, &cube_tab[11]);
+	
+	construct_cube(s, s, s, 1 * s, -1 * s, 3 * s, &cube_angle, &cube_tab[12]);
+	
+	construct_cube(s, s, s, 0, -1 * s, 3 * s, &cube_angle, &cube_tab[13]);
+	
+	construct_cube(s, s, s, 0, 0, 3 * s, &cube_angle, &cube_tab[14]);
+	
+	construct_cube(s, s, s, -s, 0, 3 * s, &cube_angle, &cube_tab[15]);
+	
+	construct_cube(s, s, s, -2 * s, 0, 3 * s, &cube_angle, &cube_tab[16]);
+	
+	construct_cube(s, s, s, -2 * s, 0, 2 * s, &cube_angle, &cube_tab[17]);
+	
 	
 	//cube_tab[0].cube[PLANE_BACK] = 1;
 	//cube_tab[1].cube[PLANE_LEFT] = 2;
@@ -44,7 +65,28 @@ void create_test_level() {
 	
 	connect_cube(6, 7, PLANE_BACK);
 	
-	level_remove_redundant_edges(8);
+	connect_cube(2, 8, PLANE_LEFT);
+	
+	connect_cube(8, 9, PLANE_TOP);
+	
+	connect_cube(7, 10, PLANE_BACK);
+	connect_cube(10, 11, PLANE_BOTTOM);
+	
+	connect_cube(11, 12, PLANE_LEFT);
+	
+	connect_cube(12, 13, PLANE_LEFT);
+	
+	connect_cube(13, 14, PLANE_BOTTOM);
+	
+	connect_cube(14, 15, PLANE_LEFT);
+	
+	connect_cube(15, 16, PLANE_LEFT);
+	
+	connect_cube(16, 17, PLANE_FRONT);
+	
+	connect_cube(8, 17, PLANE_BACK);
+	
+	level_remove_redundant_edges(18);
 }
 
 // Connects two cubes together so the renderer knows they share a face

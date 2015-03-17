@@ -28,6 +28,8 @@
 // Swaps two values
 #define SWAP(_a,_b) {typeof(_a) _save = _a; _a = _b; _b = _save;}
 
+#define ADDR(_addr) errorif((((long)_addr) % 2) != 0, "Invalid addr: %s, %s, %d", __FILE__, __FUNCTION__, __LINE__)
+
 
 // The 8 verticies of a cube
 enum {
@@ -237,7 +239,7 @@ char point_valid_side(Line2D* line, Vex2D* point);
 inline void get_line_info(Line2D* dest, Vex2D* start, Vex2D* end, Vex2D* center);
 char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw);
 void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center, char allow_extra_clip);
-Polygon2D* clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b, char allow_extra_clip);
+char clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* dest, char allow_extra_clip);
 
 void test_polygon_clipper(RenderContext* context);
 

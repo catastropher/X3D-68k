@@ -154,7 +154,7 @@ void _main(void) {
 	
 	atexit(reset_inthandler);
 	
-	//SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
+	SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
 	context.cam.current_cube = 0;
 	

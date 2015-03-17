@@ -28,6 +28,8 @@ unsigned short edge_face_table[6];
 
 // Initializes a render context
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c) {
+	ADDR(c);
+	
 	c->w = w;
 	c->h = h;
 	c->x = x;
@@ -49,6 +51,8 @@ long line_count;
 
 // Forces a point to be on the screen
 void clip_point(Vex2D* v) {
+	ADDR(v);
+	
 	if(v->x < 0)
 		v->x = 0;
 	else if(v->x >= (short)LCD_WIDTH)
@@ -63,6 +67,9 @@ void clip_point(Vex2D* v) {
 // Draws a polygon
 void draw_polygon(Polygon2D* p, RenderContext* context) {
 	int i, next;
+	
+	ADDR(p);
+	ADDR(context);
 	
 	clip_point(&p->p[0].v);
 	
@@ -92,10 +99,12 @@ short cube_id;
 // Note: make sure the cube isn't off the screen at all!
 void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D rot[8];
-	Vex2D screen[8];
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
 	
+	ADDR(c);
+	ADDR(context);
+	ADDR(clip);
 	
 	cube_id = id;
 	
@@ -120,13 +129,20 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		//project_vex3d(context, &rot[i], &screen[i]);
 	}
 	
-	Polygon3D poly3D, poly_out, poly_out2;
-	Polygon2D poly2D;
+	union {
+		Polygon3D poly3D;
+		Polygon2D out_2d;
+	} set_a;
+	
+	union {
+		Polygon3D poly_out;
+		Polygon2D dest;
+	} set_b;
 	
 	for(i = 0; i < 6; i++) {
-		cube_get_face(c->v, i, poly3D.v);
+		cube_get_face(c->v, i, set_a.poly3D.v);
 		
-		poly3D.total_v = 4;
+		set_a.poly3D.total_v = 4;
 		
 		//=========================================
 			
@@ -158,71 +174,39 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			continue;
 		
 		// Now that we know which edges need to be drawn, copy it over to the 3D polygon
-		for(d = 0; d< poly3D.total_v; d++) {
-			poly3D.draw[d] = draw_edges & 1;
+		for(d = 0; d< set_a.poly3D.total_v; d++) {
+			set_a.poly3D.draw[d] = draw_edges & 1;
 			draw_edges >>= 1;
 		}
 	
 		//=========================================
 		
-		Polygon3D poly_x;
 		Polygon2D* res = NULL;
 		
-		char draw_face = clip_polygon_to_frustum(&poly3D, &context->frustum, &poly_x);
-		
-		//if(id == 1 && i == PLANE_FRONT)
-		//	printf("SHOULD DRAW: %d\n", draw);
-		
-		//if(id == 1 && i == PLANE_FRONT)
-		//	print_polygon(&poly3D);
-		
-		if(id == 5) {
-			//printf("Draw %d: %d\n", i, draw);
-		}
+		char draw_face = clip_polygon_to_frustum(&set_a.poly3D, &context->frustum, &set_b.poly_out);
 		
 		if(draw_face) {
 	
 
 			
-			for(d = 0; d < poly_x.total_v; d++) {
+			for(d = 0; d < set_b.poly_out.total_v; d++) {
 				Vex3D temp;
-				add_vex3d(&poly_x.v[d], &ncam_pos, &temp);
-				rotate_vex3d(&temp, &context->cam.mat, &poly_out.v[d]);
+				add_vex3d(&set_b.poly_out.v[d], &ncam_pos, &temp);
+				rotate_vex3d(&temp, &context->cam.mat, &set_b.poly_out.v[d]);
 			}
 			
-			//clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* temp_a, Polygon2D* temp_b);
-			
-			poly_out.total_v = poly_x.total_v;
-			
-			Polygon2D out_2d;
-			
-			project_polygon3d(&poly_out, context, &out_2d);
-			Polygon2D temp_a, temp_b;
-			
-			//if(id == 1 && i == PLANE_FRONT)
-			//	print_polygon2d(&out_2d);
-			
-			for(d = 0; d < poly_x.total_v; d++)
-				out_2d.line[d].draw = poly_x.draw[d];
-				
-			//if(id == 0 && i == PLANE_RIGHT) {
-			//	print_polygon2d(&out_2d);
-			//}
-			
-			res = clip_polygon(&out_2d, clip, &temp_a, &temp_b, 0);//c->cube[i] == -1);
-			
-			
-			
+			project_polygon3d(&set_b.poly_out, context, &set_a.out_2d);
 
-			//for(d = 0; d < poly_out.total_v; d++)
-			//	res->line[d].draw = poly_x.draw[d];
+			for(d = 0; d < set_b.poly_out.total_v; d++)
+				set_a.out_2d.line[d].draw = set_b.poly_out.draw[d];
 			
-			//for(d = 0; d < res->total_v; d++) {
-			//	printf("[%d, %d]\n", res->p[d].v.x, res->p[d].v.y);
-			//}
+			res = &set_b.dest;
 			
-			//if(c->cube[i] != -1)
-				draw_polygon(res, context);
+			clip_polygon(&set_a.out_2d, clip, &set_b.dest, 0);//c->cube[i] == -1);
+			
+			
+		
+			draw_polygon(res, context);
 		}
 		
 	//#endif
@@ -276,6 +260,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 
 // Renders the level, starting from the cube the camera is currently in
 void render_level(RenderContext* c) {
+	ADDR(c);
+	
 	// Create the clipping region
 	Vex2D screen_clip[] = {
 		{
@@ -307,6 +293,9 @@ void render_level(RenderContext* c) {
 // Passes information to another cube about which edges have already been drawn
 // This prevents the 4x overdraw problem
 void cube_pass_edges(RenderContext* c, Cube* to, short face) {
+	ADDR(c);
+	ADDR(to);
+	
 	if(c->frame != to->last_frame) {
 		to->edge_bits = to->invisible_edges;
 		to->last_frame = c->frame;
@@ -320,6 +309,8 @@ void cube_pass_edges(RenderContext* c, Cube* to, short face) {
 // Sets the position of the camera and updates the plane distances
 // of the viewing frustum
 void set_cam_pos(RenderContext* c, short x, short y, short z) {
+	//ADDR(c):
+	
 	c->cam.pos = (Vex3D){x, y, z};
 	
 	calculate_frustum_plane_distances(c);
@@ -338,6 +329,8 @@ void set_cam_pos(RenderContext* c, short x, short y, short z) {
 // Sets the angle of the camera and updates the planes of the view
 // frustum
 void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned char z) {
+	ADDR(c);
+	
 	c->cam.angle = (Vex3Ds){x, y, z};
 	
 	// Construct the new rotation matrix
@@ -411,6 +404,9 @@ void init_render() {
 // Returns whether the point is inside the cube or not
 // Fail plane will contain the id of the plane it fails against
 char point_in_cube(int id, Vex3D* point, char* fail_plane) {
+	ADDR(point);
+	
+	
 	Cube* c = &cube_tab[id];
 	int i;
 	
@@ -446,6 +442,8 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 // Attemps to move the camera and update which cube the camera is in
 void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed) {
 	char fail_plane;
+	
+	
 	
 	Vex3D add = {
 		((long)dir->x * speed) >> NORMAL_BITS,
