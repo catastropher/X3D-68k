@@ -83,6 +83,10 @@ void _main(void) {
 	FontSetSys(F_6x8);
 	clrscr();
 	
+	load_level("level01");
+	ngetchx();
+	
+	
 	
 #if 0
 	cleanup_link();

@@ -265,16 +265,16 @@ void render_level(RenderContext* c) {
 	// Create the clipping region
 	Vex2D screen_clip[] = {
 		{
-			2, 2
+			0, 0
 		},
 		{
-			LCD_WIDTH - 3, 2
+			LCD_WIDTH - 1, 0
 		},
 		{
-			LCD_WIDTH - 3, LCD_HEIGHT - 5
+			LCD_WIDTH - 1, LCD_HEIGHT - 1
 		},
 		{
-			2, LCD_HEIGHT - 5
+			0, LCD_HEIGHT - 1
 		}
 	};
 	

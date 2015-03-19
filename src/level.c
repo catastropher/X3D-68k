@@ -6,7 +6,8 @@
 #include <tigcclib.h>
 
 // All of the cubes in the level
-Cube cube_tab[20];
+Cube *cube_tab; //[20];
+short total_cubes;
 
 // Creates a simple level for testing purposes
 void create_test_level() {
@@ -150,6 +151,158 @@ void level_remove_redundant_edges(short total_cubes) {
 		cube_remove_redundant_edges(&cube_tab[i]);
 	}
 }
+
+enum {
+	VEX_LFB,
+	VEX_LBB,
+	VEX_RBB,
+	VEX_RFB,
+	
+	VEX_LFT,
+	VEX_LBT,
+	VEX_RBT,
+	VEX_RFT
+};
+
+
+char load_level(const char* name) {
+	FILE* file = fopen(name, "rb");
+	
+	if(!file) {
+		printf("Couldn't open file\n");
+		return 0;
+	}
+	
+	char n[] = {0, 0, 0, 0, 0, 0, 0};
+	
+	fread(n, 1, 6, file);
+	
+	if(strcmp("X3DXDL", n) != 0) {
+		printf("Error: not a descent level v0\n");
+		return 0;
+	}
+	
+	if(fgetc(file) != 0) {
+		printf("Wrong version\n");
+		return 0;
+	}
+	
+	short cubes;
+	fread(&cubes, 2, 1, file);
+	
+	printf("Loading level...\n");
+	printf("Total cubes: %d\n", cubes);
+	total_cubes = cubes;
+	
+	cube_tab = malloc(sizeof(Cube) * cubes);
+	
+	int i;
+	int d;
+	
+/*
+	enum {
+		VEX_UBL,
+		VEX_UTL,
+		VEX_UTR,
+		VEX_UBR,
+		VEX_DBL,
+		VEX_DTL,
+		VEX_DTR,
+		VEX_DBR
+	};
+
+	c->v[VEX_UBL] =  (Vex3D){-x, y, -z};	LFB
+	c->v[VEX_UTL] =  (Vex3D){-x, y, z};		LBB
+	c->v[VEX_UTR] =  (Vex3D){x, y, z};		RBB
+	c->v[VEX_UBR] =  (Vex3D){x, y, -z};		RFB
+	
+	c->v[VEX_DBL] =  (Vex3D){-x, -y, -z};   LFT
+	c->v[VEX_DTL] =  (Vex3D){-x, -y, z};	LBT
+	c->v[VEX_DTR] =  (Vex3D){x, -y, z};		RBT
+	c->v[VEX_DBR] =  (Vex3D){x, -y, -z};	RFT
+	
+	=================================================
+	
+	LFB
+	LBB
+	RBB
+	RFB
+	
+	LFT
+	LBT
+	RBT
+	RFT
+	
+	0 - left, front, top
+	1 - left, front, bottom
+	2 - right, front, bottom
+	3 - right, front, top
+	4 - left, back, top
+	5 - left, back, bottom
+	6 - right, back, bottom
+	7 - right, back, top
+	
+	
+*/
+
+	short vex_tab[] = {
+		VEX_LFT,
+		VEX_LFB,
+		VEX_RFB,
+		VEX_RFT,
+		VEX_LBT,
+		VEX_LBB,
+		VEX_RBB,
+		VEX_RBT
+	};
+
+	short cube_plane_tab[] = {
+		PLANE_LEFT,
+		PLANE_TOP,
+		PLANE_RIGHT,
+		PLANE_BOTTOM,
+		PLANE_BACK,
+		PLANE_FRONT
+	};
+
+
+	Vex3D v;
+	
+	for(i = 0; i < cubes; i++) {
+		Cube* c = &cube_tab[i];
+		
+		// Read in the verticies
+		for(d = 0; d < 8; d++) {
+			fread(&v.x, 2, 1, file);
+			fread(&v.y, 2, 1, file);
+			fread(&v.z, 2, 1, file);
+		}
+		
+		c->v[vex_tab[d]] = v;
+		
+		// Read in the cubes that are connected to it
+		
+	}
+	
+	
+	
+	
+	
+	fclose(file);
+	
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -6,8 +6,8 @@
 #include "math.h"
 
 #define NORMAL_BITS 15		// The number of fractional bits used to represent a normal in fixed point
-#define MAX_POINTS 20		// Mamimum number of points a polygon can have
-#define MAX_PLANES 20		// Maximum number of planes a view frustum can have
+#define MAX_POINTS 10		// Mamimum number of points a polygon can have
+#define MAX_PLANES 5		// Maximum number of planes a view frustum can have
 
 #define ANG_90 64
 #define ANG_180 128
@@ -28,8 +28,8 @@
 // Swaps two values
 #define SWAP(_a,_b) {typeof(_a) _save = _a; _a = _b; _b = _save;}
 
-#define ADDR(_addr) errorif((((long)_addr) % 2) != 0, "Invalid addr: %s, %s, %d", __FILE__, __FUNCTION__, __LINE__)
-
+//#define ADDR(_addr) errorif((((long)_addr) % 2) != 0, "Invalid addr: %s, %s, %d", __FILE__, __FUNCTION__, __LINE__)
+#define ADDR(...) ;
 
 // The 8 verticies of a cube
 enum {
@@ -187,7 +187,7 @@ typedef struct {
 extern const short sintab[256];
 extern const int cube_vertex_tab[6][5];
 
-extern Cube cube_tab[];
+extern Cube* cube_tab;
 
 extern char edge_table[8][8];
 extern short edge_vertex_table[12][2];
@@ -284,5 +284,6 @@ void connect_cube(short parent, short child, short plane);
 
 void cube_remove_redundant_edges(Cube* c);
 void level_remove_redundant_edges(short total_cubes);
+char load_level(const char* name);
 
 
