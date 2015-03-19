@@ -24,6 +24,51 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->y = ((long)a->z * b->x - (long)a->x * b->z);
 	dest->z = ((long)a->x * b->y - (long)a->y * b->x);
 	
+	
+	long long x = ((long long)a->y * b->z - (long long)a->z * b->y);
+	long long y = ((long long)a->z * b->x - (long long)a->x * b->z);
+	long long z = ((long long)a->x * b->y - (long long)a->y * b->x);
+	
+	
+	//errorif(dest->x != x, "Invalid x");
+	
+	// FIXME: possible overflows in above code
+	long xx = x;
+	long xxx = ((((long)a->y * b->z) >> 1) - (((long)a->z * b->y) >> 1));
+	long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
+	long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
+	
+	
+	//long yyy = ((long)a->z * b->x - (long)a->x * b->z);
+	//long zzz = ((long)a->x * b->y - (long)a->y * b->x);
+	
+	//xassert(zzz == dest->z);
+	
+#if 0
+	float res_z = ((float)a->x * b->y - (float)a->y * b->x) / 2;
+	
+	
+	if(zzz != res_z) {
+		printf("zzz: %ld, z: %f\n", zzz, res_z);
+		ngetchx();
+	}
+#endif
+	
+	while(abs(xxx) >= 0x7FFF || abs(yyy) >= 0x7FFF || abs(zzz) >= 0x7FFF) {
+		xxx >>= 1;
+		yyy >>= 1;
+		zzz >>= 1;
+	}
+	
+	dest->x = xxx;
+	dest->y = yyy;
+	dest->z = zzz;
+	
+	//xassert(xxx == dest->x);
+	//xassert(yyy == dest->y);
+	
+	
+	
 	//printf("Dest->z: %d\n", dest->z);
 	
 	normalize_vex3d(dest);
@@ -70,10 +115,26 @@ short get_vex3d_magnitude(Vex3D* v) {
 	return fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
 }
 
+#define SIGNOF(_val) ((_val) < 0 ? -1 : 1)
+
 // Normalizes a 3D vector i.e. makes the length of the vector 1
 // The result is in 0:15 format
 void normalize_vex3d(Vex3D* v) {
-	short len = fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z) + 1;
+	long val = 
+		(((long)v->x * v->x) >> 2) + 
+		(((long)v->y * v->y) >> 2) + 
+		(((long)v->z * v->z) >> 2);
+		
+		
+	errorif(val < 0, "normalize overflow");
+	
+	
+	unsigned short len = (fastsqrt(val) << 1) + 1;
+	
+	//errorif(len < 0, "norm len overflow");
+	
+	errorif(SIGNOF(v->y) != SIGNOF(((long)v->y << NORMAL_BITS)), "Wrong sign");
+	
 	
 	v->x = ((long)v->x << NORMAL_BITS) / len;
 	v->y = ((long)v->y << NORMAL_BITS) / len;

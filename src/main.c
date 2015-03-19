@@ -84,7 +84,7 @@ void _main(void) {
 	clrscr();
 	
 	load_level("level01");
-	ngetchx();
+	//ngetchx();
 	
 	
 	
@@ -128,7 +128,7 @@ void _main(void) {
 	//test_polygon_clipper(&context);
 	
 	init();
-	create_test_level();
+	//create_test_level();
 	
 	context.screen = malloc(LCD_SIZE);
 	PortSet(context.screen, 239, 127);
@@ -140,7 +140,14 @@ void _main(void) {
 	//set_cam_pos(&context, -197, -98, 326);
 	//set_cam_angle(&context, 26, 192, 0);
 	
-	set_cam_pos(&context, 0, 0, 0);
+	Vex3D center = {0, 0, 0};
+	
+	int i;
+	for(i = 0; i < 8; i++) {
+		add_vex3d(&center, &cube_tab[0].v[i], &center);
+	}
+	
+	set_cam_pos(&context, center.x / 8, center.y / 8, center.z / 8);
 	set_cam_angle(&context, 0, 0, 0);
 	
 	//print_frustum(&context.frustum);
@@ -265,5 +272,7 @@ void _main(void) {
 	
 	SetIntVec(AUTO_INT_1, old_int_1);
 	SetIntVec(AUTO_INT_5, old_int_5);
+	
+	free(cube_tab);
 	
 }

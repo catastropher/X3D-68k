@@ -249,6 +249,7 @@ void test_polygon_clipper(RenderContext* context);
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c);
 
 void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id);
+void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id);
 void render_level(RenderContext* c);
 
 void set_cam_pos(RenderContext* c, short x, short y, short z);

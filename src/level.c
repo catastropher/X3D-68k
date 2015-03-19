@@ -281,22 +281,55 @@ char load_level(const char* name) {
 			fread(&v.x, 2, 1, file);
 			fread(&v.y, 2, 1, file);
 			fread(&v.z, 2, 1, file);
+			
+			v.x *= 100;
+			v.y *= 100;
+			v.z *= 100;
+			
+			c->v[vex_tab[d]] = v;
+			//print_vex3d(&v);
+			//ngetchx();
 		}
 		
-		c->v[vex_tab[d]] = v;
+		// Calculate the plane normals
+		Vex3D da, db;
+		Vex3D ap, bp, cp;
+		
+		for(d = 0; d < 6; d++) {
+			ap = c->v[cube_vertex_tab[d][0]];
+			bp = c->v[cube_vertex_tab[d][1]];
+			cp = c->v[cube_vertex_tab[d][2]];
+			
+			sub_vex3d(&ap, &bp, &da);
+			sub_vex3d(&cp, &bp, &db);
+			
+			cross_product(&db, &da, &c->normal[d]);
+			//print_vex3d(&c->normal[d]);
+			//ngetchx();
+		}
 		
 		// Read in the cubes that are connected to it
-		
 		for(d = 0; d < 6; d++) {
 			fread(&cube, 2, 1, file);
 			
-			if(cube < 0) {
-				//printf("Cube: %d\n", cube);
-				//ngetchx();
+			//printf("Cube: %d\n", cube);
+			//ngetchx();
+			
+			if(cube == -2)
+				cube = -1;
+			
+			c->cube[cube_plane_tab[d]] = cube;
+			
+			if(i == 2) {
+				printf("Cube %d: %d\n", d, c->cube[cube_plane_tab[d]]);
+				print_vex3d(&c->normal[d]);
 			}
+			
 		}
 	}
 	
+	printf("Removing redundant edges\n");
+	level_remove_redundant_edges(cubes);
 	
 	
 	printf("Done loading level\n");

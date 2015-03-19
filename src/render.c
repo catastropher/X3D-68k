@@ -102,6 +102,12 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
 	
+	//printf("Visit: %d\n", id);
+	//LCD_restore(context->screen);
+	
+	//while(!_keytest(RR_ENTER)) ;
+	//while(_keytest(RR_ENTER)) ;
+	
 	ADDR(c);
 	ADDR(context);
 	ADDR(clip);
@@ -152,14 +158,18 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 
 		// If the angle between the view directions and the polygon normal < 45 deg,
 		// we're going to assume that the polygon isn't visible
+	#if 0
 		if(dot_product(&c->normal[i], &context->cam.dir) > 23170)
 			continue;
+	#endif
 			
 		// If we're on the wrong side of the plane, it must be invisible (backface culling)
 		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 		
+	#if 0
 		if(dist > 0)
 			continue;
+	#endif
 
 		for(d = 0; d < 4; d++) {
 			short a = cube_vertex_tab[i][d];
@@ -169,9 +179,11 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			c->edge_bits |= (1 << edge_table[a][b]);
 		}
 		
+	#if 0
 		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
 		if(draw_edges == 0 && c->cube[i] == -1)
 			continue;
+	#endif
 		
 		// Now that we know which edges need to be drawn, copy it over to the 3D polygon
 		for(d = 0; d< set_a.poly3D.total_v; d++) {
@@ -258,6 +270,128 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	}
 }
 
+void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
+	Vex3D rot[8];
+	int i, d;
+	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
+	
+	ADDR(c);
+	ADDR(context);
+	ADDR(clip);
+	
+	cube_id = id;
+	
+	//if(id != 0 && id != 1)
+	//	return;
+	
+	//printf("Visit %d\n", id);
+	
+	if(id == 5) {
+		//print_polygon2d(clip);
+	}
+	
+	for(i = 0; i < 8; i++) {
+		Vex3D temp;
+		
+		// Translate the point to the opposite of the camera position
+		add_vex3d(&c->v[i], &ncam_pos, &temp);
+		
+		// Rotate the point around the origin
+		rotate_vex3d(&temp, &context->cam.mat, &rot[i]);
+		
+		//project_vex3d(context, &rot[i], &screen[i]);
+	}
+	
+	union {
+		Polygon3D poly3D;
+		Polygon2D out_2d;
+	} set_a;
+	
+	union {
+		Polygon3D poly_out;
+		Polygon2D dest;
+	} set_b;
+	
+	for(i = 0; i < 6; i++) {
+		cube_get_face(c->v, i, set_a.poly3D.v);
+		
+		set_a.poly3D.total_v = 4;
+		
+		//=========================================
+			
+		// Which edges of the current face we need to draw
+		unsigned char draw_edges = 0;
+
+
+		// If the angle between the view directions and the polygon normal < 45 deg,
+		// we're going to assume that the polygon isn't visible
+	#if 0
+		if(dot_product(&c->normal[i], &context->cam.dir) > 23170)
+			continue;
+	#endif
+			
+		// If we're on the wrong side of the plane, it must be invisible (backface culling)
+		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
+		
+	#if 0
+		if(dist > 0)
+			continue;
+	#endif
+
+		for(d = 0; d < 4; d++) {
+			short a = cube_vertex_tab[i][d];
+			short b = cube_vertex_tab[i][d + 1];
+			
+			draw_edges = (draw_edges >> 1) | ((unsigned short)((c->edge_bits & (1 << edge_table[a][b])) == 0) << 3);
+			c->edge_bits |= (1 << edge_table[a][b]);
+		}
+		
+		draw_edges = 0b1111;
+		
+	#if 0
+		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
+		if(draw_edges == 0 && c->cube[i] == -1)
+			continue;
+	#endif
+		
+		// Now that we know which edges need to be drawn, copy it over to the 3D polygon
+		for(d = 0; d< set_a.poly3D.total_v; d++) {
+			set_a.poly3D.draw[d] = draw_edges & 1;
+			draw_edges >>= 1;
+		}
+	
+		//=========================================
+		
+		Polygon2D* res = NULL;
+		
+		char draw_face = clip_polygon_to_frustum(&set_a.poly3D, &context->frustum, &set_b.poly_out);
+		
+		if(draw_face) {
+	
+
+			
+			for(d = 0; d < set_b.poly_out.total_v; d++) {
+				Vex3D temp;
+				add_vex3d(&set_b.poly_out.v[d], &ncam_pos, &temp);
+				rotate_vex3d(&temp, &context->cam.mat, &set_b.poly_out.v[d]);
+			}
+			
+			project_polygon3d(&set_b.poly_out, context, &set_a.out_2d);
+
+			for(d = 0; d < set_b.poly_out.total_v; d++)
+				set_a.out_2d.line[d].draw = set_b.poly_out.draw[d];
+			
+			res = &set_b.dest;
+			
+			clip_polygon(&set_a.out_2d, clip, &set_b.dest, 0);//c->cube[i] == -1);
+			
+			
+		
+			draw_polygon(res, context);
+		}
+	}
+}
+
 // Renders the level, starting from the cube the camera is currently in
 void render_level(RenderContext* c) {
 	ADDR(c);
@@ -282,10 +416,19 @@ void render_level(RenderContext* c) {
 	
 	make_polygon2d(screen_clip, 4, &clip_region);
 	
+#if 1
 	cube_tab[c->cam.current_cube].edge_bits = cube_tab[c->cam.current_cube].invisible_edges;
 	cube_tab[c->cam.current_cube].last_frame = c->frame;
+#endif
 	
 	render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
+	
+#if 0
+	int i;
+	for(i = 0; i < 20; i++) {
+		render_cube_wireframe(&cube_tab[i], c, &clip_region, i);
+	}
+#endif
 	
 	//draw_polygon(&clip_region, c);
 }
@@ -439,7 +582,7 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 	return 1;
 }
 
-// Attemps to move the camera and update which cube the camera is in
+// Attempts to move the camera and update which cube the camera is in
 void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed) {
 	char fail_plane;
 	
