@@ -1,2 +1,4 @@
 	-In clip.c, make it so that 2D clipping can remove points if 1) it's allowed to do so and
 		2) there are two consecutive lines that are not being drawn. There is currently a bug with this.
+
+	-Move Descent vertex/plane order conversion to the PC level converter
