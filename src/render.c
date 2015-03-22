@@ -95,6 +95,9 @@ void draw_polygon(Polygon2D* p, RenderContext* context) {
 
 short cube_id;
 
+short recursion_depth;
+short max_recursion_depth;
+
 // Renders a single cube in writeframe
 // Note: make sure the cube isn't off the screen at all!
 void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
@@ -102,11 +105,33 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
 	
+	if(recursion_depth > max_recursion_depth)
+		max_recursion_depth = recursion_depth;
+		
+	if(recursion_depth > 20) {
+		return;
+	}
+	
+	if(id == 14) {
+		printf("Here now at 14...\n");
+	}
+	
 	//printf("Visit: %d\n", id);
 	//LCD_restore(context->screen);
 	
 	//while(!_keytest(RR_ENTER)) ;
 	//while(_keytest(RR_ENTER)) ;
+	
+	if(id == 15) {
+		//printf("Visit 15\n");
+	}
+	
+//	if(id == 12)
+	//	printf("Visit 12\n");
+		
+	
+	if(id > 20)
+		return;
 	
 	ADDR(c);
 	ADDR(context);
@@ -166,6 +191,14 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		// If we're on the wrong side of the plane, it must be invisible (backface culling)
 		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 		
+		if(id == 12 && c->cube[i] == 14) {
+			printf("Dist: %d\n", dist);
+		}
+		
+		if(id == 12) {
+			//printf("Dist: %d\n", dist);
+		}
+		
 	#if 0
 		if(dist > 0)
 			continue;
@@ -185,6 +218,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			continue;
 	#endif
 		
+		draw_edges = 0b1111;
+		
 		// Now that we know which edges need to be drawn, copy it over to the 3D polygon
 		for(d = 0; d< set_a.poly3D.total_v; d++) {
 			set_a.poly3D.draw[d] = draw_edges & 1;
@@ -196,6 +231,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		Polygon2D* res = NULL;
 		
 		char draw_face = clip_polygon_to_frustum(&set_a.poly3D, &context->frustum, &set_b.poly_out);
+		
+		if(id == 14) {
+			printf("Face14 %d: %d\n", i, draw_face);
+		}
 		
 		if(draw_face) {
 	
@@ -225,8 +264,20 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	
 		
 	#if 1
+		//if(id == 12)
+		//	printf("12 children\n");
+		
 		// If there's a cube connected to this face
 		if(c->cube[i] != -1) {
+		
+			if(id == 12 && c->cube[i] == 14) {
+				printf("Here14\n");
+			}
+		
+			if(id == 12) {
+				//printf("Found cube %d: %d\n", i, c->cube[i]);
+			}
+		
 			Cube* next_cube = &cube_tab[c->cube[i]];
 			
 			//printf("i: %d Dist: %d\n", i, dist);
@@ -237,13 +288,16 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				new_clip = res;
 			}
 			else {
-				new_clip = NULL;
-			}
-			
-			if(dist > -120 && dist < 0 && id == context->cam.current_cube) {
-				draw_face = 1;
 				new_clip = clip;
 			}
+			
+			if(dist > -200 && dist < 0 && id == context->cam.current_cube) {
+				draw_face = 1;
+				new_clip = clip;
+				
+			}
+			
+			//xassert(new_clip != NULL);
 			
 			if(id == 1) {
 				//printf("ONE: %d i: %d\n", new_clip == clip, i);
@@ -252,15 +306,30 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				//	print_polygon2d(clip);
 			}
 			
+		#if 1
+			if(id == 12 && c->cube[i] == 14) {
+			//	printf("Last frame: %d\n", next_cube->last_frame);
+				//printf("Frame: %d\n", context->frame);
+				//printf("Face: %d\n", draw_face);
+			}
+		#endif
+			
 			//errorif(new_clip->total_v < 3, "Too few points in clip");
 			
+			//if(id == 
+			
 			// Make sure we haven't rendered it yet
-			if(next_cube->last_frame != context->frame && draw_face && new_clip->total_v > 2) {
+			if(next_cube->last_frame != context->frame && draw_face && clip->total_v > 2 && recursion_depth < 20) {
 				// Pass over which edges have already been drawn
 				cube_pass_edges(context, next_cube, i);
 				
+				if(id == 12 && c->cube[i] == 14)
+					printf("Visit 14\n");
+				
 				if(!(next_cube->edge_bits & (1 << 15))) {
-					render_cube(next_cube, context, new_clip, c->cube[i]);
+					++recursion_depth;
+					render_cube(next_cube, context, clip, c->cube[i]);
+					--recursion_depth;
 				}
 			}
 			
@@ -411,6 +480,9 @@ void render_level(RenderContext* c) {
 			0, LCD_HEIGHT - 1
 		}
 	};
+	
+	max_recursion_depth = 0;
+	recursion_depth = 0;
 	
 	Polygon2D clip_region;
 	
@@ -566,13 +638,19 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 			//printf("Val: %ld\n", val);
 			//LCD_restore(buf->dark_plane);
 			
+			
 			if(c->cube[i] == -1) {
 				if(val < DIST_TO_NEAR_PLANE) {
+					
+					printf("CASE: %d\n", i);
+					printf("Val: %ld\n", val);
+					print_vex3d(&c->normal[i]);
 					*fail_plane = i;
 					return 0;
 				}
 			}
 			else if(val < 0) {
+				printf("Case\n");
 				*fail_plane = i;
 				return 0;
 			}

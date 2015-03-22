@@ -77,6 +77,7 @@ DEFINE_INT_HANDLER(new_auto_int_5) {
 	system_timer++;
 }
 
+extern short max_recursion_depth;
 
 
 void _main(void) {	
@@ -188,8 +189,10 @@ void _main(void) {
 		//printf("Line count: %ld\n", line_count);
 		
 		if(draw_fps) {
-			printf("fps: %d\n", fps);
+			printf("fps: %d\ndepth: %d\n", fps, max_recursion_depth);
 		}
+		
+		print_vex3d(&context.cam.dir);
 		
 		if(system_timer >= TICKS_PER_SECOND) {
 			draw_fps = 1;
@@ -253,7 +256,7 @@ void _main(void) {
 		}
 		
 		if(_keytest(RR_F5)) {
-			attempt_move_cam(&context, &context.cam.dir, 20);
+			attempt_move_cam(&context, &context.cam.dir, 60);
 		}
 	
 		short i;

@@ -248,6 +248,21 @@ char load_level(const char* name) {
 	// Descent stores the verticies in a different order; this tables maps their
 	// order to X3D's order
 	short vex_tab[] = {
+		VEX_RFT,
+		VEX_RBT,
+		VEX_LBT,
+		VEX_LFT,
+		VEX_RFB,
+		VEX_RBB,
+		VEX_LBB,
+		VEX_LFB
+		
+		
+		
+		
+		
+		/*
+		
 		VEX_LFT,
 		VEX_LFB,
 		VEX_RFB,
@@ -256,11 +271,29 @@ char load_level(const char* name) {
 		VEX_LBB,
 		VEX_RBB,
 		VEX_RBT
+		
+	*/
 	};
 
 	// Unfortunately, Descent also stores their faces in a different order too
 	// TODO: this conversion should be done in the level editor
-	short cube_plane_tab[] = {
+	short cube_plane_tab[] = {		
+		PLANE_BACK,
+		PLANE_FRONT,
+		PLANE_RIGHT,
+		PLANE_LEFT,
+		PLANE_BOTTOM,
+		PLANE_TOP
+		
+		/*PLANE_LEFT,
+		PLANE_TOP,
+		PLANE_RIGHT,
+		PLANE_BOTTOM,
+		PLANE_BACK,
+		PLANE_FRONT*/
+	};
+	
+	short cube_plane_tab2[] = {
 		PLANE_LEFT,
 		PLANE_TOP,
 		PLANE_RIGHT,
@@ -282,12 +315,18 @@ char load_level(const char* name) {
 			fread(&v.y, 2, 1, file);
 			fread(&v.z, 2, 1, file);
 			
-			v.x *= 100;
-			v.y *= 100;
-			v.z *= 100;
+			v.x *= 10;
+			v.y *= 10;
+			v.z *= 10;
+			
+			v.y = -v.y;
+			v.x = -v.x;
 			
 			c->v[vex_tab[d]] = v;
-			//print_vex3d(&v);
+			
+			
+			if(i == 0)
+				print_vex3d(&v);
 			//ngetchx();
 		}
 		
@@ -304,7 +343,9 @@ char load_level(const char* name) {
 			sub_vex3d(&cp, &bp, &db);
 			
 			cross_product(&db, &da, &c->normal[d]);
-			//print_vex3d(&c->normal[d]);
+			
+			//if(i == 0)
+			//	print_vex3d(&c->normal[d]);
 			//ngetchx();
 		}
 		
@@ -318,18 +359,29 @@ char load_level(const char* name) {
 			if(cube == -2)
 				cube = -1;
 			
-			c->cube[cube_plane_tab[d]] = cube;
+			c->cube[cube_plane_tab2[cube_plane_tab[d]]] = cube;
 			
-			if(i == 2) {
-				printf("Cube %d: %d\n", d, c->cube[cube_plane_tab[d]]);
-				print_vex3d(&c->normal[d]);
+			if(i == 0) {
+				//printf("Cube %d: %d\n", d, c->cube[cube_plane_tab[d]]);
+				//print_vex3d(&c->normal[d]);
+				
+				if(d == 5) {
+					int k;
+					
+					for(k = 0; k < 6; k++) {
+						//print_vex3d(&c->v[cube_vertex_tab[cube_plane_tab[d]][k]]);
+						//print_vex3d(&c->normal[k]);
+					}
+				}
 			}
 			
 		}
+		
+		c->invisible_edges = 0;
 	}
 	
 	printf("Removing redundant edges\n");
-	level_remove_redundant_edges(cubes);
+	//level_remove_redundant_edges(cubes);
 	
 	
 	printf("Done loading level\n");

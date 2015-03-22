@@ -61,15 +61,23 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		// The points are on opposite sides of the plane, so clip it
 		if(in != next_in) {
 			// Scale factor to get the point on the plane
-			errorif(next_dot - dot == 0, "Clip div by 0");
+			errorif((long)next_dot - dot == 0, "Clip div by 0");
 			
 			t = FIXDIV8(plane->d - dot, next_dot - dot);
 			
-			errorif(abs(plane->d - dot) > 32767, "plane->d too big");
-			errorif(abs(next_dot - dot) > 32767, "next_dot too big");
+			errorif(abs((long)plane->d - dot) > 32767, "plane->d too big");
+			errorif(abs((long)next_dot - dot) > 32767, "next_dot too big");
 			
-			//errorif(abs(t) > 32767, "Invalid clip t");
+			errorif(abs(t) > 32767, "Invalid clip t");
 			//errorif(t == 0, "t == 0");
+			
+			if(t == 0) {
+				//printf("T == 0\n");
+			}
+			
+			if(cube_id == 12) {
+				//printf("T: %ld\n", t);
+			}
 			
 			//printf("Dist: %d\n", dot + plane->d);
 			//printf("T: %ld Z: %d\n", t, poly->v[i].z);
@@ -77,6 +85,17 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 			dest->v[dest->total_v].x = poly->v[i].x + FIXMUL8(((long)poly->v[next_point].x - poly->v[i].x), t);
 			dest->v[dest->total_v].y = poly->v[i].y + FIXMUL8(((long)poly->v[next_point].y - poly->v[i].y), t);
 			dest->v[dest->total_v].z = poly->v[i].z + FIXMUL8(((long)poly->v[next_point].z - poly->v[i].z), t);
+			
+			
+			
+			
+			
+			
+			// Use floats to make sure we're not overflowing
+			
+			
+			
+			
 			
 			dest->draw[dest->total_v] = poly->draw[i];
 			
@@ -181,6 +200,9 @@ char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest) {
 		//errorif(poly->total_v < 3, "Invalid clip poly");
 		//return clip_polygon_to_plane(src, &f->p[FRUSTUM_TOP], dest);
 		
+		//if(i == PLANE_LEFT || i == PLANE_RIGHT)
+		//	continue;
+			
 		if(!clip_polygon_to_plane(poly, &f->p[i], &temp[current_temp])) {
 			return 0;
 		}
@@ -374,7 +396,6 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	ADDR(dest);
 	ADDR(center);
 	
-	
 	char side = point_valid_side(edge, &p->p[0].v);
 	char next_side;
 	char clipped;
@@ -393,7 +414,10 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 		Line2D* line = &p->line[point];
 		
 		
-		errorif(dest->total_v >= MAX_POINTS - 1, "Too many points");
+		if(dest->total_v == MAX_POINTS - 1)
+			return;
+		
+		//errorif(dest->total_v >= MAX_POINTS - 1, "Too many points");
 		
 		next_point = (point + 1) % p->total_v;
 		next_side = point_valid_side(edge, &p->p[next_point].v);

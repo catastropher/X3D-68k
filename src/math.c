@@ -44,7 +44,7 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	
 	//xassert(zzz == dest->z);
 	
-#if 0
+#if 1
 	float res_z = ((float)a->x * b->y - (float)a->y * b->x) / 2;
 	
 	
@@ -52,6 +52,27 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 		printf("zzz: %ld, z: %f\n", zzz, res_z);
 		ngetchx();
 	}
+	
+	float res_y = ((float)a->z * b->x - (float)a->x * b->z) / 2.0;
+	
+	
+	if(res_y != yyy) {
+		printf("zzz: %ld, z: %f\n", zzz, res_z);
+		ngetchx();
+	}
+	
+	float res_x = ((float)a->y * b->z - (float)a->z * b->y) / 2;
+	
+	
+	if(res_x != xxx) {
+		printf("zzz: %ld, z: %f\n", zzz, res_z);
+		ngetchx();
+	}
+	
+	xassert(res_x == xxx);
+	xassert(res_y == yyy);
+	xassert(res_z == zzz);
+	
 #endif
 	
 	while(abs(xxx) >= 0x7FFF || abs(yyy) >= 0x7FFF || abs(zzz) >= 0x7FFF) {
@@ -86,7 +107,15 @@ void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
 	
 	//errorif(src->z <= 0, "Invalid Z projection: %d", src->z);
 	
+#if 0
 	errorif(src->z == 0, "Projection 0");
+#else
+	if(src->z == 0) {
+		dest->x = 0;
+		dest->y = 0;
+		return;
+	}
+#endif
 	
 #if 0
 	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
@@ -131,9 +160,18 @@ void normalize_vex3d(Vex3D* v) {
 	
 	unsigned short len = (fastsqrt(val) << 1) + 1;
 	
+	//xassert(len < 32767 * 2);
+	
 	//errorif(len < 0, "norm len overflow");
 	
 	errorif(SIGNOF(v->y) != SIGNOF(((long)v->y << NORMAL_BITS)), "Wrong sign");
+	
+	
+	//float length = sqrt((float)v->x * v->x + (float)v->y * v->y + (float)v->z * v->z);
+	
+	//v->x = ((float)v->x / length) * 32768.0;
+	//v->y = ((float)v->y / length) * 32768.0;
+	//v->z = ((float)v->z / length) * 32768.0;
 	
 	
 	v->x = ((long)v->x << NORMAL_BITS) / len;
@@ -196,12 +234,12 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	// Near plane
 	construct_plane(&bottom_right, &top_right, &top_left, &c->frustum_unrotated.p[FRUSTUM_NEAR]);
 	
-	c->frustum_unrotated.p[0].normal = (Vex3D){0, 32767, 0};
+	c->frustum_unrotated.p[0].normal = (Vex3D){0, 0, 32767};
 	
 	// Hack...
-	c->frustum_unrotated.p[0].d = 20;//c->dist - DIST_TO_NEAR_PLANE;
+	c->frustum_unrotated.p[0].d = 5;//c->dist - DIST_TO_NEAR_PLANE;
 	
-	c->frustum_unrotated.total_p = 5;
+	c->frustum_unrotated.total_p = 1;
 }
 
 // Calculates the distance from each plane in the view frustum to the origin
@@ -227,7 +265,7 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	
 	Vex3D out = c->cam.dir;
 	
-	short dist = 20;//c->dist - DIST_TO_NEAR_PLANE;
+	short dist = 5;//c->dist - DIST_TO_NEAR_PLANE;
 	
 	out.x = ((long)out.x * dist) >> NORMAL_BITS;
 	out.y = ((long)out.y * dist) >> NORMAL_BITS;
@@ -239,7 +277,7 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	
 	c->frustum.p[0].d = dot_product(&c->frustum.p[0].normal, &out);
 	
-	//printf("Out: %d\n", c->frustum.p[4].d);
+	//printf("Out: %d\n", c->frustum.p[0].d);
 	
 }
 
