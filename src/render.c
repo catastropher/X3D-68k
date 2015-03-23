@@ -232,8 +232,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		
 		char draw_face = clip_polygon_to_frustum(&set_a.poly3D, &context->frustum, &set_b.poly_out);
 		
+		short total_v = set_b.poly_out.total_v;
+		
 		if(id == 14) {
-			printf("Face14 %d: %d\n", i, draw_face);
+			/////printf("Face14 %d: %d\n", i, draw_face);
 		}
 		
 		if(draw_face) {
@@ -262,6 +264,9 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		
 	//#endif
 	
+		if(id == 14) {
+			/////printf("Total v: %d\n", total_v);
+		}
 		
 	#if 1
 		//if(id == 12)
@@ -642,15 +647,15 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 			if(c->cube[i] == -1) {
 				if(val < DIST_TO_NEAR_PLANE) {
 					
-					printf("CASE: %d\n", i);
-					printf("Val: %ld\n", val);
+					//printf("CASE: %d\n", i);
+					//printf("Val: %ld\n", val);
 					print_vex3d(&c->normal[i]);
 					*fail_plane = i;
 					return 0;
 				}
 			}
 			else if(val < 0) {
-				printf("Case\n");
+				//printf("Case\n");
 				*fail_plane = i;
 				return 0;
 			}

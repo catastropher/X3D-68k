@@ -143,9 +143,11 @@ void _main(void) {
 	
 	Vex3D center = {0, 0, 0};
 	
+	short start_cube = 0;
+	
 	int i;
 	for(i = 0; i < 8; i++) {
-		add_vex3d(&center, &cube_tab[0].v[i], &center);
+		add_vex3d(&center, &cube_tab[start_cube].v[i], &center);
 	}
 	
 	set_cam_pos(&context, center.x / 8, center.y / 8, center.z / 8);
@@ -190,6 +192,7 @@ void _main(void) {
 		
 		if(draw_fps) {
 			printf("fps: %d\ndepth: %d\n", fps, max_recursion_depth);
+			printf("DDDD: %d\n", context.frustum.p[0].d);
 		}
 		
 		print_vex3d(&context.cam.dir);
@@ -257,6 +260,12 @@ void _main(void) {
 		
 		if(_keytest(RR_F5)) {
 			attempt_move_cam(&context, &context.cam.dir, 60);
+		}
+		
+		if(_keytest(RR_F6)) {			
+			set_cam_angle(&context, 0, ((context.cam.angle.y + 64) / 64) * 64, 0);
+			
+			while(_keytest(RR_F6)) ;
 		}
 	
 		short i;

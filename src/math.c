@@ -13,6 +13,12 @@
 short dot_product(Vex3D* a, Vex3D* b) {
 	long prod = (long)a->x * b->x + (long)a->y * b->y + (long)a->z * b->z;
 	
+	//float prod_float = ((float)a->x * b->x + (float)a->y * b->y + (float)a->z * b->z;
+	
+	//errorif(prod != prod_float, "Dot float error: %ld, %f\n", prod, prod_float);
+	
+	//xassert(abs(prod >> NORMAL_BITS) < 32767);
+	
 	return prod >> NORMAL_BITS;
 }
 
@@ -237,9 +243,9 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	c->frustum_unrotated.p[0].normal = (Vex3D){0, 0, 32767};
 	
 	// Hack...
-	c->frustum_unrotated.p[0].d = 5;//c->dist - DIST_TO_NEAR_PLANE;
+	c->frustum_unrotated.p[0].d = 15;//c->dist - DIST_TO_NEAR_PLANE;
 	
-	c->frustum_unrotated.total_p = 1;
+	c->frustum_unrotated.total_p = 2;
 }
 
 // Calculates the distance from each plane in the view frustum to the origin
@@ -265,7 +271,7 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	
 	Vex3D out = c->cam.dir;
 	
-	short dist = 5;//c->dist - DIST_TO_NEAR_PLANE;
+	short dist = 15;//c->dist - DIST_TO_NEAR_PLANE;
 	
 	out.x = ((long)out.x * dist) >> NORMAL_BITS;
 	out.y = ((long)out.y * dist) >> NORMAL_BITS;

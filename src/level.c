@@ -290,9 +290,9 @@ char load_level(const char* name) {
 	// Unfortunately, Descent also stores their faces in a different order too
 	// TODO: this conversion should be done in the level editor
 	short cube_plane_tab[] = {
-		PLANE_LEFT,
-		PLANE_TOP,
 		PLANE_RIGHT,
+		PLANE_TOP,
+		PLANE_LEFT,
 		PLANE_BOTTOM,
 		PLANE_BACK,
 		PLANE_FRONT
@@ -316,7 +316,7 @@ char load_level(const char* name) {
 			v.z *= 10;
 			
 			v.y = -v.y;
-			v.x = -v.x;
+			//v.x = -v.x;
 			
 			c->v[vex_tab[d]] = v;
 			
@@ -339,7 +339,7 @@ char load_level(const char* name) {
 			sub_vex3d(&ap, &bp, &da);
 			sub_vex3d(&cp, &bp, &db);
 			
-			cross_product(&db, &da, &c->normal[d]);
+			cross_product(&da, &db, &c->normal[d]);
 			
 			//if(i == 0)
 			//	print_vex3d(&c->normal[d]);
@@ -357,6 +357,11 @@ char load_level(const char* name) {
 				cube = -1;
 			
 			c->cube[cube_plane_tab[d]] = cube;
+			
+			if(i == 12 && cube == 14) {
+				//c->cube[cube_plane_tab[d]] = -1;
+				//printf("RESET\n");
+			}
 			
 			if(i == 0) {
 				//printf("Cube %d: %d\n", d, c->cube[cube_plane_tab[d]]);
@@ -380,6 +385,13 @@ char load_level(const char* name) {
 	printf("Removing redundant edges\n");
 	//level_remove_redundant_edges(cubes);
 	
+	short this_cube = 12;
+	
+	for(i = 0; i < 6; i++) {
+		printf("Normal %d: ", i);
+		print_vex3d(&cube_tab[this_cube].normal[i]);
+		printf("Child: %d\n", cube_tab[this_cube].cube[i]);
+	}
 	
 	printf("Done loading level\n");
 	ngetchx();

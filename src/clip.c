@@ -9,6 +9,7 @@
 #include <tigcclib.h>
 
 extern short cube_id;
+extern short plane_id;
 
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
 // TODO: keep track of which edges have been clipped so we know which
@@ -160,6 +161,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	
 	
 	if(out_pos != 0 && out_pos != 2) {
+		//printf("CASE<----\n");
+		error("Wrong out pos\n");
 		return 0;
 		
 		
@@ -176,7 +179,11 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	
 	errorif(out_pos != 0 && out_pos != 2, "Wrong out pos: %d\n", out_pos);
 	
-	return dest->total_v > 2;	
+	if(cube_id == 14) {
+		//printf("Total outside: %d\n", total_outside);
+	}
+	
+	return dest->total_v > 1;	
 }
 
 // Clips a polygon against the entire view frustum
@@ -204,6 +211,7 @@ char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest) {
 		//	continue;
 			
 		if(!clip_polygon_to_plane(poly, &f->p[i], &temp[current_temp])) {
+			dest->total_v = 0;
 			return 0;
 		}
 		
