@@ -383,7 +383,7 @@ char load_level(const char* name) {
 	}
 	
 	printf("Removing redundant edges\n");
-	//level_remove_redundant_edges(cubes);
+	level_remove_redundant_edges(cubes);
 	
 	short this_cube = 12;
 	

@@ -182,6 +182,8 @@ typedef struct {
 	unsigned short last_frame;
 	unsigned short edge_bits;
 	unsigned short invisible_edges;
+	
+	unsigned char render_bits;		// 
 } Cube;
 
 extern const short sintab[256];

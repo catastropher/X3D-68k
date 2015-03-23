@@ -130,8 +130,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	//	printf("Visit 12\n");
 		
 	
-	if(id > 20)
-		return;
+	//if(id > 20)
+	//	return;
 	
 	ADDR(c);
 	ADDR(context);
@@ -218,8 +218,6 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			continue;
 	#endif
 		
-		draw_edges = 0b1111;
-		
 		// Now that we know which edges need to be drawn, copy it over to the 3D polygon
 		for(d = 0; d< set_a.poly3D.total_v; d++) {
 			set_a.poly3D.draw[d] = draw_edges & 1;
@@ -237,6 +235,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		if(id == 14) {
 			/////printf("Face14 %d: %d\n", i, draw_face);
 		}
+		
+		draw_face = 1;
 		
 		if(draw_face) {
 	
@@ -324,7 +324,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			//if(id == 
 			
 			// Make sure we haven't rendered it yet
-			if(next_cube->last_frame != context->frame && draw_face && clip->total_v > 2 && recursion_depth < 20) {
+			if(next_cube->last_frame != context->frame && draw_face && new_clip->total_v > 2 && recursion_depth < 20) {
 				// Pass over which edges have already been drawn
 				cube_pass_edges(context, next_cube, i);
 				
@@ -333,7 +333,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				
 				if(!(next_cube->edge_bits & (1 << 15))) {
 					++recursion_depth;
-					render_cube(next_cube, context, clip, c->cube[i]);
+					render_cube(next_cube, context, new_clip, c->cube[i]);
 					--recursion_depth;
 				}
 			}
@@ -399,7 +399,7 @@ void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, sho
 
 		// If the angle between the view directions and the polygon normal < 45 deg,
 		// we're going to assume that the polygon isn't visible
-	#if 0
+	#if 1
 		if(dot_product(&c->normal[i], &context->cam.dir) > 23170)
 			continue;
 	#endif
@@ -407,7 +407,7 @@ void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, sho
 		// If we're on the wrong side of the plane, it must be invisible (backface culling)
 		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 		
-	#if 0
+	#if 1
 		if(dist > 0)
 			continue;
 	#endif
@@ -422,7 +422,7 @@ void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, sho
 		
 		draw_edges = 0b1111;
 		
-	#if 0
+	#if 1
 		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
 		if(draw_edges == 0 && c->cube[i] == -1)
 			continue;
