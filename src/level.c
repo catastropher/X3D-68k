@@ -248,14 +248,26 @@ char load_level(const char* name) {
 	// Descent stores the verticies in a different order; this tables maps their
 	// order to X3D's order
 	short vex_tab[] = {
+		VEX_LFT,
+		VEX_LFB,
+		VEX_RFB,
 		VEX_RFT,
+		VEX_LBT,
+		VEX_LBB,
+		VEX_RBB,
+		VEX_RBT
+		
+		
+		
+		
+		/*VEX_RFT,
 		VEX_RBT,
 		VEX_LBT,
 		VEX_LFT,
 		VEX_RFB,
 		VEX_RBB,
 		VEX_LBB,
-		VEX_LFB
+		VEX_LFB*/
 		
 		
 		
@@ -277,23 +289,7 @@ char load_level(const char* name) {
 
 	// Unfortunately, Descent also stores their faces in a different order too
 	// TODO: this conversion should be done in the level editor
-	short cube_plane_tab[] = {		
-		PLANE_BACK,
-		PLANE_FRONT,
-		PLANE_RIGHT,
-		PLANE_LEFT,
-		PLANE_BOTTOM,
-		PLANE_TOP
-		
-		/*PLANE_LEFT,
-		PLANE_TOP,
-		PLANE_RIGHT,
-		PLANE_BOTTOM,
-		PLANE_BACK,
-		PLANE_FRONT*/
-	};
-	
-	short cube_plane_tab2[] = {
+	short cube_plane_tab[] = {
 		PLANE_LEFT,
 		PLANE_TOP,
 		PLANE_RIGHT,
@@ -324,9 +320,10 @@ char load_level(const char* name) {
 			
 			c->v[vex_tab[d]] = v;
 			
-			
-			if(i == 0)
+			if(i == 0) {
+				printf("%d: ", d);
 				print_vex3d(&v);
+			}
 			//ngetchx();
 		}
 		
@@ -359,7 +356,7 @@ char load_level(const char* name) {
 			if(cube == -2)
 				cube = -1;
 			
-			c->cube[cube_plane_tab2[cube_plane_tab[d]]] = cube;
+			c->cube[cube_plane_tab[d]] = cube;
 			
 			if(i == 0) {
 				//printf("Cube %d: %d\n", d, c->cube[cube_plane_tab[d]]);
