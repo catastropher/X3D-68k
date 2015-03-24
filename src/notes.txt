@@ -1,0 +1,1 @@
+It appears that it's possible to enter a cube and draw it from more than one angle... this must be accounted for
