@@ -412,6 +412,11 @@ void Level::save(string file_name) {
 		// Write the neighbors
 		for(int d = 0; d < 6; d++) {
 			//fwrite(&cubes[i].cube[i], sizeof(short), 1, file);
+			
+			if(i == 5 || i == 9) {
+				cout << "Child of cube " << i << ": " << cubes[i].cube[d] << endl;
+			}
+			
 			w.writeShort(cubes[i].cube[d]);
 		}
 	}

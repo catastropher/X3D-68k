@@ -393,6 +393,16 @@ char load_level(const char* name) {
 		printf("Child: %d\n", cube_tab[this_cube].cube[i]);
 	}
 	
+	printf("===================\n");
+	
+	for(i = 0; i < cubes; i++) {
+		for(d = 0; d < 6; d++) {
+			if(cube_tab[i].cube[d] == 10) {
+				printf("Child %d, face %d\n", i, d);
+			}
+		}
+	}
+	
 	printf("Done loading level\n");
 	ngetchx();
 	

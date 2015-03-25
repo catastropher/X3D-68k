@@ -1,1 +1,14 @@
-It appears that it's possible to enter a cube and draw it from more than one angle... this must be accounted for
+It appears that it's possible to enter a cube and draw it from more than one angle... this must be accounted for.
+
+It turns out that the problem may be that I assumed that the e.g. the back face of one cube would always be
+connected to the front, which is simply not the case in a Descent level... my solution to this involves storing
+which face the cube is connected to
+
+unsigned short cube[6];
+
+CCCCCCCCCCFFF
+
+F -> 3 bits for face id
+C -> 10 bits for child cube
+
+Note that it's still -1 if the cube has no child connected to it

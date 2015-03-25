@@ -183,7 +183,7 @@ typedef struct {
 	unsigned short edge_bits;
 	unsigned short invisible_edges;
 	
-	unsigned char render_bits;		// 
+	unsigned char render_bits;		// Keep track of through which face we've drawn the cube
 } Cube;
 
 extern const short sintab[256];
@@ -261,7 +261,7 @@ extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"),
 	register short asm("%d3"), register void* asm("%a2"));
 	
 void build_edge_table();
-void cube_pass_edges(RenderContext* c, Cube* to, short face);
+char cube_pass_edges(RenderContext* c, Cube* to, short face);
 
 void init_render();
 

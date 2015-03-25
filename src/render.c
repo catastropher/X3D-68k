@@ -112,40 +112,16 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		return;
 	}
 	
-	if(id == 14) {
-		printf("Here now at 14...\n");
-	}
+	int visit = 0;
 	
-	//printf("Visit: %d\n", id);
-	//LCD_restore(context->screen);
-	
-	//while(!_keytest(RR_ENTER)) ;
-	//while(_keytest(RR_ENTER)) ;
-	
-	if(id == 15) {
-		//printf("Visit 15\n");
-	}
-	
-//	if(id == 12)
-	//	printf("Visit 12\n");
-		
-	
-	//if(id > 20)
-	//	return;
-	
-	ADDR(c);
-	ADDR(context);
-	ADDR(clip);
-	
+	// Used for debugging purposes to determine the current cube being rendered
 	cube_id = id;
 	
-	//if(id != 0 && id != 1)
-	//	return;
-	
-	//printf("Visit %d\n", id);
-	
 	if(id == 5) {
-		//print_polygon2d(clip);
+		for(i = 0; i < 6; i++) {
+			//if(c->cube[i] != -1)
+				//printf("Child->%d\n", c->cube[i]);
+		}
 	}
 	
 	for(i = 0; i < 8; i++) {
@@ -160,6 +136,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		//project_vex3d(context, &rot[i], &screen[i]);
 	}
 	
+	// Originally I didn't put these in a union, but I was getting stack overflows so
+	// I really had no choice
 	union {
 		Polygon3D poly3D;
 		Polygon2D out_2d;
@@ -174,8 +152,6 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		cube_get_face(c->v, i, set_a.poly3D.v);
 		
 		set_a.poly3D.total_v = 4;
-		
-		//=========================================
 			
 		// Which edges of the current face we need to draw
 		unsigned char draw_edges = 0;
@@ -191,19 +167,12 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		// If we're on the wrong side of the plane, it must be invisible (backface culling)
 		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 		
-		if(id == 12 && c->cube[i] == 14) {
-			printf("Dist: %d\n", dist);
-		}
-		
-		if(id == 12) {
-			//printf("Dist: %d\n", dist);
-		}
-		
-	#if 0
+	#if 1
 		if(dist > 0)
 			continue;
 	#endif
 
+		// Determine which of the edges need to be drawn
 		for(d = 0; d < 4; d++) {
 			short a = cube_vertex_tab[i][d];
 			short b = cube_vertex_tab[i][d + 1];
@@ -223,31 +192,23 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			set_a.poly3D.draw[d] = draw_edges & 1;
 			draw_edges >>= 1;
 		}
-	
-		//=========================================
+		
+		// Clip the face against the viewing frustum
+		char draw_face = clip_polygon_to_frustum(&set_a.poly3D, &context->frustum, &set_b.poly_out);
 		
 		Polygon2D* res = NULL;
 		
-		char draw_face = clip_polygon_to_frustum(&set_a.poly3D, &context->frustum, &set_b.poly_out);
-		
-		short total_v = set_b.poly_out.total_v;
-		
-		if(id == 14) {
-			/////printf("Face14 %d: %d\n", i, draw_face);
-		}
-		
-		draw_face = 1;
-		
 		if(draw_face) {
 	
-
-			
+			// Is this code being duplicated??? Hmm....
+			// Rotate the points of the face
 			for(d = 0; d < set_b.poly_out.total_v; d++) {
 				Vex3D temp;
 				add_vex3d(&set_b.poly_out.v[d], &ncam_pos, &temp);
 				rotate_vex3d(&temp, &context->cam.mat, &set_b.poly_out.v[d]);
 			}
 			
+			// Project the points onto the screen
 			project_polygon3d(&set_b.poly_out, context, &set_a.out_2d);
 
 			for(d = 0; d < set_b.poly_out.total_v; d++)
@@ -255,37 +216,20 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			res = &set_b.dest;
 			
+			// Clip the edges to the bounds of the clipping region
 			clip_polygon(&set_a.out_2d, clip, &set_b.dest, 0);//c->cube[i] == -1);
 			
-			
-		
+			// Draw the polygon
 			draw_polygon(res, context);
 		}
 		
-	//#endif
-	
-		if(id == 14) {
-			/////printf("Total v: %d\n", total_v);
-		}
-		
-	#if 1
-		//if(id == 12)
-		//	printf("12 children\n");
-		
-		// If there's a cube connected to this face
+		// If this face has a child cube, we may need to render it
 		if(c->cube[i] != -1) {
-		
-			if(id == 12 && c->cube[i] == 14) {
-				printf("Here14\n");
-			}
-		
-			if(id == 12) {
-				//printf("Found cube %d: %d\n", i, c->cube[i]);
-			}
-		
 			Cube* next_cube = &cube_tab[c->cube[i]];
 			
-			//printf("i: %d Dist: %d\n", i, dist);
+			if(id == 10 && c->cube[i] == 5) {
+				error("ERRRRRRROR\n");
+			}
 			
 			Polygon2D* new_clip;
 			
@@ -296,42 +240,42 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				new_clip = clip;
 			}
 			
+			if(id == 5)
+				++visit;
+			
+			// If we're really close to the portal, go ahead and just use the original clipping
+			// region (the new clipping region may have singularaties)
 			if(dist > -200 && dist < 0 && id == context->cam.current_cube) {
 				draw_face = 1;
 				new_clip = clip;
 				
 			}
 			
-			//xassert(new_clip != NULL);
-			
-			if(id == 1) {
-				//printf("ONE: %d i: %d\n", new_clip == clip, i);
-				
-				//if(i == PLANE_FRONT)
-				//	print_polygon2d(clip);
-			}
-			
-		#if 1
-			if(id == 12 && c->cube[i] == 14) {
-			//	printf("Last frame: %d\n", next_cube->last_frame);
-				//printf("Frame: %d\n", context->frame);
-				//printf("Face: %d\n", draw_face);
-			}
-		#endif
-			
-			//errorif(new_clip->total_v < 3, "Too few points in clip");
-			
-			//if(id == 
-			
-			// Make sure we haven't rendered it yet
-			if(next_cube->last_frame != context->frame && draw_face && new_clip->total_v > 2 && recursion_depth < 20) {
+			if(draw_face && new_clip->total_v > 2 && recursion_depth < 20) {
 				// Pass over which edges have already been drawn
-				cube_pass_edges(context, next_cube, i);
 				
-				if(id == 12 && c->cube[i] == 14)
-					printf("Visit 14\n");
 				
-				if(!(next_cube->edge_bits & (1 << 15))) {
+				if(c->cube[i] == 10) {
+					printf("Made it to here\n");
+				}
+				
+				if(cube_pass_edges(context, next_cube, i)) {// || (id == 5 && i == PLANE_BOTTOM)) {
+				
+					if(id == 5) {
+						printf("Visit->%d\n", c->cube[i]);
+					}
+					
+					if(id == 5 && c->cube[i] == 10) {
+						printf("SHOULD DRAW: %d\n", draw_face);
+						printf("Total_v: %d\n", new_clip->total_v);
+						printf("Depth: %d\n", recursion_depth);
+						printf("Render bits: %d\n", c->render_bits);
+						printf("Other bits: %d\n", cube_tab[c->cube[i]].render_bits);
+					}
+					
+				
+				//if(!(next_cube->edge_bits & (1 << 15))) {
+					c->render_bits |= (1 << i);
 					++recursion_depth;
 					render_cube(next_cube, context, new_clip, c->cube[i]);
 					--recursion_depth;
@@ -340,8 +284,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			//printf(
 		}
-	#endif
 	}
+	
+	if(id == 5)
+		printf("Visit: %d\n", visit);
 }
 
 void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
@@ -496,6 +442,7 @@ void render_level(RenderContext* c) {
 #if 1
 	cube_tab[c->cam.current_cube].edge_bits = cube_tab[c->cam.current_cube].invisible_edges;
 	cube_tab[c->cam.current_cube].last_frame = c->frame;
+	cube_tab[c->cam.current_cube].render_bits = 0;
 #endif
 	
 	render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
@@ -512,17 +459,38 @@ void render_level(RenderContext* c) {
 
 // Passes information to another cube about which edges have already been drawn
 // This prevents the 4x overdraw problem
-void cube_pass_edges(RenderContext* c, Cube* to, short face) {
+//
+// Returns whether the cube should be drawn or not
+char cube_pass_edges(RenderContext* c, Cube* to, short face) {
 	ADDR(c);
 	ADDR(to);
 	
 	if(c->frame != to->last_frame) {
 		to->edge_bits = to->invisible_edges;
 		to->last_frame = c->frame;
+		to->render_bits = 0;
+		
+		if(to - cube_tab == 10) {
+			printf("RESET 10, side: %d\n", face);
+		}
+		
 	}
 	
+	unsigned char should_draw = !(to->render_bits & (1 << get_opposite_face(face)));
+	
+	
+	if(to - cube_tab == 10) {
+		printf("Should draw10: %d\n", should_draw);
+		printf("Render bitsXX %d: \n", to->render_bits);
+	}
 	
 	to->edge_bits |= edge_face_table[get_opposite_face(face)];
+	
+	// Mark that we've drawn this cube through the face connecting
+	// the parent cube
+	to->render_bits |= (1 << get_opposite_face(face));
+	
+	return should_draw;
 }
 
 
