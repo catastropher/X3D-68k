@@ -225,11 +225,13 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		
 		// If this face has a child cube, we may need to render it
 		if(c->cube[i] != -1) {
-			Cube* next_cube = &cube_tab[c->cube[i]];
+			short cube_face = i;// & 0b111;
+			short child_id = c->cube[i];//c->cube[i] >> 3;
+			Cube* next_cube = &cube_tab[child_id];
 			
-			if(id == 10 && c->cube[i] == 5) {
-				error("ERRRRRRROR\n");
-			}
+			//if(id == 10 && c->cube[i] == 5) {
+			//	error("ERRRRRRROR\n");
+			//}
 			
 			Polygon2D* new_clip;
 			
@@ -255,29 +257,29 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				// Pass over which edges have already been drawn
 				
 				
-				if(c->cube[i] == 10) {
-					printf("Made it to here\n");
-				}
+				//if(c->cube[i] == 10) {
+				//	printf("Made it to here\n");
+				//}
 				
-				if(cube_pass_edges(context, next_cube, i)) {// || (id == 5 && i == PLANE_BOTTOM)) {
+				if(cube_pass_edges(context, next_cube, cube_face)) {// || (id == 5 && i == PLANE_BOTTOM)) {
 				
-					if(id == 5) {
-						printf("Visit->%d\n", c->cube[i]);
-					}
+					//if(id == 5) {
+					//	printf("Visit->%d\n", c->cube[i]);
+					//}
 					
-					if(id == 5 && c->cube[i] == 10) {
+					/*if(id == 5 && c->cube[i] == 10) {
 						printf("SHOULD DRAW: %d\n", draw_face);
 						printf("Total_v: %d\n", new_clip->total_v);
 						printf("Depth: %d\n", recursion_depth);
 						printf("Render bits: %d\n", c->render_bits);
 						printf("Other bits: %d\n", cube_tab[c->cube[i]].render_bits);
-					}
+					}*/
 					
 				
 				//if(!(next_cube->edge_bits & (1 << 15))) {
 					c->render_bits |= (1 << i);
 					++recursion_depth;
-					render_cube(next_cube, context, new_clip, c->cube[i]);
+					render_cube(next_cube, context, new_clip, child_id);
 					--recursion_depth;
 				}
 			}
@@ -470,25 +472,25 @@ char cube_pass_edges(RenderContext* c, Cube* to, short face) {
 		to->last_frame = c->frame;
 		to->render_bits = 0;
 		
-		if(to - cube_tab == 10) {
-			printf("RESET 10, side: %d\n", face);
-		}
+		//if(to - cube_tab == 10) {
+		//	printf("RESET 10, side: %d\n", face);
+		//}
 		
 	}
 	
-	unsigned char should_draw = !(to->render_bits & (1 << get_opposite_face(face)));
+	unsigned char should_draw = !(to->render_bits & (1 << face));
 	
 	
-	if(to - cube_tab == 10) {
-		printf("Should draw10: %d\n", should_draw);
-		printf("Render bitsXX %d: \n", to->render_bits);
-	}
+	//if(to - cube_tab == 10) {
+	//	printf("Should draw10: %d\n", should_draw);
+	//	printf("Render bitsXX %d: \n", to->render_bits);
+	//}
 	
-	to->edge_bits |= edge_face_table[get_opposite_face(face)];
+	to->edge_bits |= face;
 	
 	// Mark that we've drawn this cube through the face connecting
 	// the parent cube
-	to->render_bits |= (1 << get_opposite_face(face));
+	to->render_bits |= (1 << face);
 	
 	return should_draw;
 }

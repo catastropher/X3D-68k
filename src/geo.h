@@ -289,4 +289,6 @@ void cube_remove_redundant_edges(Cube* c);
 void level_remove_redundant_edges(short total_cubes);
 char load_level(const char* name);
 
+void level_set_children_faces(short cubes);
+
 

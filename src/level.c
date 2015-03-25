@@ -2,6 +2,7 @@
 // Created 3/12/2015; 10:40:21 AM
 
 #include "geo.h"
+#include "error.h"
 
 #include <tigcclib.h>
 
@@ -163,6 +164,52 @@ enum {
 	VEX_RBT,
 	VEX_RFT
 };
+
+#define MAX_CUBES 800
+
+// For each cube in the level, this determines the face id through which the child
+// is connected to the parent
+void level_set_children_faces(short cubes) {
+	int i, d, k;
+	short* temp_mem = malloc(sizeof(short) * 6 * MAX_CUBES);
+	
+	xassert(temp_mem);
+	
+	for(i = 0; i < cubes; i++) {
+		Cube* c = &cube_tab[i];
+		
+		for(d = 0; d < 6; d++) {
+			short cube_face = -1;
+			
+			if(c->cube[d] != -1) {
+				Cube* child = &cube_tab[c->cube[d]];
+				
+				// Find through which face the parent is
+				for(k = 0; k < 6; k++) {
+					if(child->cube[k] == i) {
+						cube_face = k;
+						break;
+					}
+				}
+				
+				xassert(cube_face != -1);
+				
+				//c->cube[d] = (c->cube[d] << 3) | cube_face;
+			}
+			
+			temp_mem[6 * i + d] = cube_face;
+		}
+	}
+	
+	for(i = 0; i < cubes; i++) {
+		for(d = 0; d < 6; d++) {
+			cube_tab[i].cube[d] = temp_mem[6 * i + d];
+		}
+	}
+	
+	free(temp_mem);
+}
+
 
 
 char load_level(const char* name) {
@@ -385,8 +432,12 @@ char load_level(const char* name) {
 	printf("Removing redundant edges\n");
 	level_remove_redundant_edges(cubes);
 	
+	printf("Setting child cube faces\n");
+	//level_set_children_faces(cubes);
+	
 	short this_cube = 12;
 	
+#if 0
 	for(i = 0; i < 6; i++) {
 		printf("Normal %d: ", i);
 		print_vex3d(&cube_tab[this_cube].normal[i]);
@@ -402,6 +453,7 @@ char load_level(const char* name) {
 			}
 		}
 	}
+#endif
 	
 	printf("Done loading level\n");
 	ngetchx();
