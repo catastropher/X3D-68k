@@ -268,6 +268,8 @@ void init_render();
 char point_in_cube(int id, Vex3D* point, char* fail_plane);
 void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed);
 
+inline short cube_get_child(Cube* c, short face);
+
 
 // ==============================util.c==============================
 void print_vex3d(Vex3D* v);

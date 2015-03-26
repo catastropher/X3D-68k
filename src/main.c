@@ -143,7 +143,7 @@ void _main(void) {
 	
 	Vex3D center = {0, 0, 0};
 	
-	short start_cube = 0;
+	short start_cube = 4;
 	
 	int i;
 	for(i = 0; i < 8; i++) {
@@ -170,7 +170,7 @@ void _main(void) {
 	
 	SetIntVec(INT_VEC_STACK_OVERFLOW, div_by_zero);
 	
-	context.cam.current_cube = 0;
+	context.cam.current_cube = 4;
 	
 	short frame_count = 0;
 	char draw_fps = 0;

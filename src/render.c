@@ -25,6 +25,12 @@ short edge_vertex_table[12][2];
 // Given the face id, this gets the bitset of the edges in that face
 unsigned short edge_face_table[6];
 
+// Gets the child connected to the given face of a cube
+inline short cube_get_child(Cube* c, short face) {
+	return c->cube[face] >> 3;
+}
+
+
 
 // Initializes a render context
 void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c) {
@@ -112,6 +118,9 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		return;
 	}
 	
+	if(id == 10)
+		printf("Render10\n");
+	
 	int visit = 0;
 	
 	// Used for debugging purposes to determine the current cube being rendered
@@ -148,6 +157,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		Polygon2D dest;
 	} set_b;
 	
+	short faces_drawn = 0;
+	
 	for(i = 0; i < 6; i++) {
 		cube_get_face(c->v, i, set_a.poly3D.v);
 		
@@ -180,6 +191,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			draw_edges = (draw_edges >> 1) | ((unsigned short)((c->edge_bits & (1 << edge_table[a][b])) == 0) << 3);
 			c->edge_bits |= (1 << edge_table[a][b]);
 		}
+		
+		draw_edges = 0b1111;
 		
 	#if 0
 		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
@@ -220,13 +233,20 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			clip_polygon(&set_a.out_2d, clip, &set_b.dest, 0);//c->cube[i] == -1);
 			
 			// Draw the polygon
-			draw_polygon(res, context);
+			//if(id == 5 || id == 10)
+				draw_polygon(res, context);
+			
+			if(id == 10) {
+				//printf("Drew: %d\n", i);
+			}
+			
+			++faces_drawn;
 		}
 		
 		// If this face has a child cube, we may need to render it
 		if(c->cube[i] != -1) {
-			short cube_face = i;// & 0b111;
-			short child_id = c->cube[i];//c->cube[i] >> 3;
+			short cube_face = c->cube[i] & 0b111;
+			short child_id = cube_get_child(c, i);
 			Cube* next_cube = &cube_tab[child_id];
 			
 			//if(id == 10 && c->cube[i] == 5) {
@@ -247,21 +267,34 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			// If we're really close to the portal, go ahead and just use the original clipping
 			// region (the new clipping region may have singularaties)
+		#if 1
 			if(dist > -200 && dist < 0 && id == context->cam.current_cube) {
 				draw_face = 1;
 				new_clip = clip;
 				
 			}
+		#endif
 			
 			if(draw_face && new_clip->total_v > 2 && recursion_depth < 20) {
 				// Pass over which edges have already been drawn
-				
 				
 				//if(c->cube[i] == 10) {
 				//	printf("Made it to here\n");
 				//}
 				
-				if(cube_pass_edges(context, next_cube, cube_face)) {// || (id == 5 && i == PLANE_BOTTOM)) {
+				cube_pass_edges(context, next_cube, cube_face);
+				
+				if(1) {// || (id == 5 && i == PLANE_BOTTOM)) {
+					if(id == 5) {
+						//printf("CUBEFACE: %d\n", cube_face);
+						printf("Render %d through %d (%d)\n", child_id, cube_face, i);
+						printf("Clip: %d\n", new_clip->total_v);
+						
+						if(child_id == 10) {
+							//print_polygon2d(new_clip);
+						}
+					}
+				
 				
 					//if(id == 5) {
 					//	printf("Visit->%d\n", c->cube[i]);
@@ -288,8 +321,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		}
 	}
 	
-	if(id == 5)
-		printf("Visit: %d\n", visit);
+	//if(id == 10)
+	//	printf("DRAWN: %d\n", faces_drawn);
 }
 
 void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
@@ -486,7 +519,7 @@ char cube_pass_edges(RenderContext* c, Cube* to, short face) {
 	//	printf("Render bitsXX %d: \n", to->render_bits);
 	//}
 	
-	to->edge_bits |= face;
+	to->edge_bits |= edge_face_table[face];
 	
 	// Mark that we've drawn this cube through the face connecting
 	// the parent cube
@@ -657,7 +690,8 @@ void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed) {
 	else {
 		if(cube_tab[c->cam.current_cube].cube[(short)fail_plane] != -1) {
 			c->cam.pos = new_pos;
-			c->cam.current_cube = cube_tab[c->cam.current_cube].cube[(short)fail_plane];
+			c->cam.current_cube = cube_get_child(&cube_tab[c->cam.current_cube], fail_plane);
+			//error("Move to: %d\n", c->cam.current_cube);
 			set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
 		}
 	}

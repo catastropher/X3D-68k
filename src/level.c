@@ -178,6 +178,12 @@ void level_set_children_faces(short cubes) {
 	for(i = 0; i < cubes; i++) {
 		Cube* c = &cube_tab[i];
 		
+		if(i == 1) {
+			for(k = 0; k < 6; k++) {
+				printf("Cube->%d\n", c->cube[k]);
+			}
+		}
+		
 		for(d = 0; d < 6; d++) {
 			short cube_face = -1;
 			
@@ -192,12 +198,13 @@ void level_set_children_faces(short cubes) {
 					}
 				}
 				
-				xassert(cube_face != -1);
-				
 				//c->cube[d] = (c->cube[d] << 3) | cube_face;
 			}
 			
-			temp_mem[6 * i + d] = cube_face;
+			if(cube_face == -1)
+				temp_mem[6 * i + d] = -1;
+			else
+				temp_mem[6 * i + d] = (c->cube[d] << 3) | cube_face;
 		}
 	}
 	
@@ -433,7 +440,7 @@ char load_level(const char* name) {
 	level_remove_redundant_edges(cubes);
 	
 	printf("Setting child cube faces\n");
-	//level_set_children_faces(cubes);
+	level_set_children_faces(cubes);
 	
 	short this_cube = 12;
 	
