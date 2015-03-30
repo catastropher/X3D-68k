@@ -140,7 +140,7 @@ void cube_remove_redundant_edges(Cube* c) {
 						invisible_edges |= (portal_edges & face_edges);
 					
 					if(id == 4 && (c2 - cube_tab) == 5) {
-						printf("REMOVE %d\n", d);
+						//printf("REMOVE %d\n", d);
 					}
 					
 					//}

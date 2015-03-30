@@ -186,6 +186,10 @@ typedef struct {
 	unsigned char render_bits;		// Keep track of through which face we've drawn the cube
 } Cube;
 
+//==================================================================
+// Global variables
+//==================================================================
+
 extern const short sintab[256];
 extern const int cube_vertex_tab[6][5];
 
@@ -196,6 +200,13 @@ extern short edge_vertex_table[12][2];
 
 // Given the face id, this gets the bitset of the edges in that face
 extern unsigned short edge_face_table[6];
+
+// Table of reciprocals
+short* recip_tab;
+
+//==================================================================
+// Functions
+//==================================================================
 
 // ==============================math.c==============================
 short dot_product(Vex3D* a, Vex3D* b);
@@ -293,4 +304,7 @@ char load_level(const char* name);
 
 void level_set_children_faces(short cubes);
 
-
+// ==============================fastdiv.c==============================
+inline short fast_recip(short den);
+inline short fast_div_fix(short n, short d, short shift);
+void gen_recip_tab();

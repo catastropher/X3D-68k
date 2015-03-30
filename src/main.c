@@ -86,6 +86,9 @@ void _main(void) {
 	
 	cube_tab = malloc(sizeof(Cube) * 30);
 	
+	printf("Generating recip tab...\n");
+	gen_recip_tab();
+	
 	load_level("level01");
 	//ngetchx();
 	
