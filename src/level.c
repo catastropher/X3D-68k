@@ -88,6 +88,7 @@ void create_test_level() {
 	
 	connect_cube(8, 17, PLANE_BACK);
 	
+	level_set_children_faces(18);
 	level_remove_redundant_edges(18);
 }
 
@@ -103,14 +104,17 @@ void connect_cube(short parent, short child, short plane) {
 void cube_remove_redundant_edges(Cube* c) {
 	int i, d;
 	
+	short id = c - cube_tab;
+	
 	// Initially assume that all edges are visible
 	unsigned short invisible_edges = 0;
 	
 	for(i = 0; i < 6; i++) {
 		// If there's a cube connected to this face...
 		if(c->cube[i] != CUBE_NONE) {
-			short opposite_face = get_opposite_face(i);
-			Cube* c2 = &cube_tab[c->cube[i]];
+			short face = c->cube[i] & 0b111;
+			short opposite_face = get_opposite_face(face);
+			Cube* c2 = &cube_tab[cube_get_child(c, i)];//&cube_tab[c->cube[i]];
 			
 			// Consider every face except the one that connects them and its opposite
 			// i.e. if a cube A is connected to cube B by the back plane, the edges that
@@ -119,11 +123,12 @@ void cube_remove_redundant_edges(Cube* c) {
 			// Also, we need to not remove edges from 
 			
 			for(d = 0; d < 6; d++) {
-				if(d != i && d != opposite_face && c2->cube[d] == CUBE_NONE && c->cube[d] == CUBE_NONE) {
+				if(d != face && d != opposite_face && ((c2->cube[d] == CUBE_NONE && c->cube[d] == CUBE_NONE) ||
+					(c2->cube[d] != CUBE_NONE && c->cube[d] != CUBE_NONE))) {
 					// If the normals between the corresponding faces are roughly the same,
 					// remove the edge between them
-					if(abs(c->normal[d].x - c2->normal[d].x) < 5 && abs(c->normal[d].y - c2->normal[d].y) < 5 &&
-						abs(c->normal[d].z - c2->normal[d].z) < 5) {
+					//if(abs(c->normal[d].x - c2->normal[d].x) < 30 && abs(c->normal[d].y - c2->normal[d].y) < 30 &&
+					//	abs(c->normal[d].z - c2->normal[d].z) < 30) {
 						
 						// The edges that compose the portal
 						unsigned short portal_edges = edge_face_table[i];
@@ -133,7 +138,12 @@ void cube_remove_redundant_edges(Cube* c) {
 						
 						// Find the one edge they have in common and mark it invisible
 						invisible_edges |= (portal_edges & face_edges);
+					
+					if(id == 4 && (c2 - cube_tab) == 5) {
+						printf("REMOVE %d\n", d);
 					}
+					
+					//}
 				}
 			}
 			
@@ -436,11 +446,11 @@ char load_level(const char* name) {
 		c->invisible_edges = 0;
 	}
 	
-	printf("Removing redundant edges\n");
-	level_remove_redundant_edges(cubes);
-	
 	printf("Setting child cube faces\n");
 	level_set_children_faces(cubes);
+	
+	printf("Removing redundant edges\n");
+	level_remove_redundant_edges(cubes);
 	
 	short this_cube = 12;
 	

@@ -192,7 +192,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			c->edge_bits |= (1 << edge_table[a][b]);
 		}
 		
-		draw_edges = 0b1111;
+		//draw_edges = 0b1111;
 		
 	#if 0
 		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
