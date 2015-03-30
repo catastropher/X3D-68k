@@ -291,5 +291,6 @@ void _main(void) {
 	SetIntVec(AUTO_INT_5, old_int_5);
 	
 	free(cube_tab);
+	free(recip_tab);
 	
 }

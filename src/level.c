@@ -227,8 +227,7 @@ void level_set_children_faces(short cubes) {
 	free(temp_mem);
 }
 
-
-
+// Loads a Descent 1 level in X3DXDL format
 char load_level(const char* name) {
 	FILE* file = fopen(name, "rb");
 	
@@ -254,8 +253,7 @@ char load_level(const char* name) {
 	short cubes;
 	fread(&cubes, 2, 1, file);
 	
-	printf("Loading level...\n");
-	printf("Total cubes: %d\n", cubes);
+	printf("Loading level (%d cubes)\n", cubes);
 	total_cubes = cubes;
 	
 	cube_tab = malloc(sizeof(Cube) * cubes);
@@ -366,6 +364,10 @@ char load_level(const char* name) {
 	Vex3D v;
 	short cube;
 	
+	// Keep track of how many dots we've already printed
+	short dots = 0;
+	short printed = 0;
+	
 	for(i = 0; i < cubes; i++) {
 		Cube* c = &cube_tab[i];
 		
@@ -384,10 +386,11 @@ char load_level(const char* name) {
 			
 			c->v[vex_tab[d]] = v;
 			
-			if(i == 0) {
+			/*if(i == 0) {
 				printf("%d: ", d);
 				print_vex3d(&v);
 			}
+			*/
 			//ngetchx();
 		}
 		
@@ -443,10 +446,19 @@ char load_level(const char* name) {
 			
 		}
 		
+		dots = (38 * (i + 1) / cubes);
+		
+		if(dots > printed) {
+			while(printed < dots) {
+				printf(".");
+				++printed;
+			}
+		}
+		
 		c->invisible_edges = 0;
 	}
 	
-	printf("Setting child cube faces\n");
+	printf("\nSetting child cube faces\n");
 	level_set_children_faces(cubes);
 	
 	printf("Removing redundant edges\n");
