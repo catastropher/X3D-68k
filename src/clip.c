@@ -162,7 +162,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	
 	if(out_pos != 0 && out_pos != 2) {
 		//printf("CASE<----\n");
-		error("Wrong out pos\n");
+		//error("Wrong out pos\n");
 		return 0;
 		
 		

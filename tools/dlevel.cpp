@@ -50,6 +50,7 @@ struct Level {
 
 	bool loadFromHog(HogFile &f);
 	void save(string file);
+	bool convertRegistered(HogFile& f, HogFile& dest, string name);
 };
 
 struct Reader {
@@ -96,143 +97,208 @@ struct Reader {
 	
 };
 
-#if 0
-bool Level::loadFromHog(HogFile &f) {
-	cout << "Loading level from: " << f.name << endl;
+struct VectorWriter {
+	vector<unsigned char>* data;
+	
+	void writeByte(unsigned char b) {
+		data->push_back(b);
+	}
+	
+	void writeShort(unsigned short s) {
+		writeByte(s & 0xFF);
+		writeByte(s >> 8);
+	}
+	
+	void writeInt(unsigned int i) {
+		writeShort(i & 0xFFFF);
+		writeShort(i >> 16);
+	}
+};
+
+bool Level::convertRegistered(HogFile& f, HogFile& dest, string name) {
+	Reader r(&f.data, 0);
+	VectorWriter w;
+	w.data = &dest.data;
 	
 	if(f.data[0] != 'L' || f.data[1] != 'V' || f.data[2] != 'L' || f.data[3] != 'P') {
 		cout << "Error: file is not a Descent 1 Level" << endl;
 		return false;
 	}
 	
-	Reader r(&f.data, 0);
-	
-	for(int i = 0;i < f.data.size();i++) {
-		//cout << i << "\t" << (int)f.data[i] << endl;
-	}
-	
 	r.pos = 4;
 	
-	cout << "Version: " << (int)r.readInt() << endl;
+	cout << "File version: " << (int)r.readInt() << endl;
 	
 	int mine_offset = r.readInt();
+	
+	printf("Offset: %d\n", mine_offset);
+	
 	int object_offset = r.readInt();
 	int file_size = r.readInt();
 	
-	cout << "Mine offset: " << mine_offset << endl;
-	cout << "Object offset: " << object_offset << endl;
-	cout << "File size: " << file_size << endl << endl;
-	
-	cout << "Reading mine..." << endl;
 	r.pos = mine_offset;
 	
-	cout << "Mine version: " << r.getc() << endl;
+	unsigned char version = r.readByte();
+	unsigned short total_v = r.readShort();
 	
-	unsigned short vertex_count = r.readShort();
-	unsigned short cube_count = r.readShort();
+	// Number of cubes
+	unsigned short total_c = r.readShort();
 	
-	cout << "Vertex count: " << vertex_count << endl;
-	cout << "Cube count: " << cube_count << endl;
+	vector<Vex3D> v;
 	
-	system("pause");
 	
-	for(int i = 0;i < vertex_count;i++) {
-		Vertex v;
+	
+	// Read in the vertices
+	for(int i = 0; i < total_v; i++) {
+		int x = r.readInt();
+		int y = r.readInt();
+		int z = r.readInt();
 		
-		v.x = r.readInt();
-		v.y = r.readInt();
-		v.z = r.readInt();
-		
-		//cout << "Read vertex: " << (v.x/65536.0) << ", " << (v.y/65536.0) << ", " << (v.z/65536.0) << endl;
-		
-		//system("pause");
-		
-		vertex.push_back(v);
+		v.push_back(Vex3D(x, y, z));
 	}
 	
-	cout << "Read verticies" << endl;
+	w.writeByte('L');
+	w.writeByte('V');
+	w.writeByte('L');
+	w.writeByte('P');
 	
-	for(int i = 0;i < cube_count;i++) {
-		cout << "----------------------------------------" << "Cube " << i << endl << endl;
-		
-		Cube c;
-		unsigned char mask = r.getc();
-		int count = 0;
-		
-		cout << "Mask: " << (int)mask << endl;
-		
-		for(int i = 0;i < 6;i++) {
-			if(mask & 1) {
-				c.n[i] = r.readShort();
-				count++;
-				cout << "Neighbor: " << c.n[i] << endl;
-			}
-			else {
-				c.n[i] = -64;
-			}
-			
-			mask >>= 1;
-		}
-		
-		cout << "Rpos: " << r.pos << endl;
-		for(int i = 0;i < 8;i++) {
-			c.v[i] = r.readShort();
-			
-			if(c.v[i] >= vertex_count) {
-				cout << "Error: invalid vertex" << endl;
-			}
-			
-			cout << "Vertex: " << c.v[i] << endl;
-			cout << "V value: " << vertex[c.v[i]].x / 65536.0 << " " << vertex[c.v[i]].y / 65536.0 << " " << vertex[c.v[i]].z / 65536.0 << endl;
-			
-			
-			//cout << "x: " << (vertex[c.v[i]].x/65536.0) << " y: " << (vertex[c.v[i]].y/65536.0) << " z: " << (vertex[c.v[i]].z/65536.0) << endl;
-		}
-		
-		if(mask & 1) {
-			r.pos += 4;
-			cout << "Energy charge" << endl;
-		}
-		
-		cout << "Light value: " << (r.readShort() / 8192.0) << endl;
-		
-		mask = r.getc();
-		
-		cout << "New mask: " << (int)mask << endl;
-		
-		for(int i = 0;i < 6;i++) {
-			if(mask & 1) {
-				c.w[i] = r.getc();
-			}
-			else {
-				c.w[i] = -64;
-			}
-			
-			mask >>= 1;
-		}
-		
-		cout << "Count: " << count << endl;
-		
-		for(int i = 0;i < 6 - count;i++) {
-			unsigned short t = r.readShort();
-			
-			if(t & (1 << 15)) {
-				r.pos += 2;
-			}
-			
-			r.pos += (32 + 16) * 4;
-		}
-		
-		system("read");
-		
-		//break;
-		//if(i > 0) break;
+	// File version
+	w.writeInt(0);
+	
+	// Mine offset (TODO: determine)
+	w.writeInt(w.data->size() + 8 + 4);
+	
+	// Object offset
+	w.writeInt(0);
+	
+	// File size
+	w.writeInt(0);
+	
+	// Mine version
+	w.writeByte(0);
+	
+	// Total vertices
+	w.writeInt(total_v);
+	
+	// Total cubes
+	printf("TOTAL CUBES: %d\n", total_c);
+	
+	w.writeInt(total_c);
+	
+	// Write the vertices
+	for(int i = 0; i < total_v; i++) {
+		w.writeInt(v[i].x);
+		w.writeInt(v[i].y);
+		w.writeInt(v[i].z);
 	}
 	
+	// Write the cubes
+	for(int i = 0; i < total_c; i++) {
+		// Mask describing which cubes have a side attached
+		unsigned char mask = r.readByte();
+		short children[6];
+		
+		
+		// Read each child, if there is one
+		for(int d = 0; d < 6; d++) {
+			if(mask & (1 << d)) {
+				children[d] = r.readShort();
+				w.writeShort(children[d]);
+				
+			}
+			else {
+				// No child...
+				w.writeShort(-1);
+				children[d] = -1;
+			}
+		}
+		
+		// Vertex id's
+		for(int d = 0; d < 8; d++) {
+			short v = r.readShort();
+			
+			//printf("Vertex id: %d\n", v);
+			//system("read");
+			
+			w.writeShort(v);
+		}
+		
+		unsigned char special;
+		char matcen;
+		unsigned short value;
+		
+		if(mask & (1 << 6)) {
+			// We don't use these values
+			special = r.readByte();
+			matcen = r.readByte();
+			value = r.readShort();
+		}
+		else {
+			special = 0;
+			matcen = -1;
+			value = 0;
+		}
+		
+		w.writeByte(special);
+		w.writeByte(matcen);
+		w.writeShort(value);
+		
+		unsigned short light = r.readShort();
+		
+		w.writeShort(light);
+		
+		// Wall bitmask
+		unsigned char wall_mask = r.readByte();
+		
+		short wall_num[6];
+		unsigned char wall_num_byte[6];
+		
+		for(int d = 0; d < 6; d++) {
+			if(wall_mask & (1 << d)) {
+				wall_num_byte[d] = r.readByte();
+				
+				if(wall_num_byte[d] == 255)
+					wall_num[d] = -1;
+				else
+					wall_num[d] = wall_num_byte[d];
+				
+			}
+			else {
+				wall_num[d] = -1;
+				wall_num_byte[d] = 255;
+			}
+			
+			// Save the wall number
+			w.writeByte(wall_num_byte[d]);
+		}
+		
+		for(int d = 0; d < 6; d++) {
+			if(children[d] == -1 || wall_num[d] != -1) {
+				unsigned short temp_ushort = r.readShort();
+				
+				// tmap
+				w.writeShort(temp_ushort);
+				
+				// tmap2
+				if(temp_ushort & 0x8000) {
+					w.writeShort(r.readShort());
+				}
+				else {
+					w.writeShort(0);
+				}
+				
+				// uvl values
+				for(int k = 0; k < 4; k++) {
+					w.writeShort(r.readShort());
+					w.writeShort(r.readShort());
+					w.writeShort(r.readShort());
+				}
+			}
+		}
+	}
 	
 	return true;
 }
-#endif
 
 bool Level::loadFromHog(HogFile &f) {
 	Reader r(&f.data, 0);
@@ -267,8 +333,6 @@ bool Level::loadFromHog(HogFile &f) {
 	cout << "Total vertices: " << total_v << endl;
 	cout << "Total cubes: " << total_cubes << endl;
 	
-	system("read");
-	
 	vector<Vex3D> v;
 	
 	// Read in the vertices
@@ -279,7 +343,7 @@ bool Level::loadFromHog(HogFile &f) {
 		
 		//printf("Vex3D: {%f, %f, %f}\n", x / 65536.0, y / 65536.0, z / 65536.0);
 		
-		//system("pause");
+		//system("read");
 		
 		v.push_back(Vex3D(x, y, z));
 	}
@@ -297,7 +361,8 @@ bool Level::loadFromHog(HogFile &f) {
 			
 			c.cube[d] = children[d];
 			
-			printf("Children %d: %d\n", d, children[d]);
+			//printf("Children %d: %d\n", d, children[d]);
+			//system("read");
 		}
 		
 		// Read in the vertices that make up the cube
@@ -315,12 +380,12 @@ bool Level::loadFromHog(HogFile &f) {
 		
 		unsigned char special = r.readByte();		// Skip special byte
 		
-		printf("Special: %d\n", special);
+		/////printf("Special: %d\n", special);
 		
 		r.readByte();		// Skip matcen_num
 		r.readShort();		// Skip value
 		
-		r.readShort();	// Skip light value
+		r.readShort();		// Skip light value
 		
 		// Skip the 6 walls
 		for(int d = 0; d < 6; d++) {
@@ -412,11 +477,6 @@ void Level::save(string file_name) {
 		// Write the neighbors
 		for(int d = 0; d < 6; d++) {
 			//fwrite(&cubes[i].cube[i], sizeof(short), 1, file);
-			
-			if(i == 5 || i == 9) {
-				cout << "Child of cube " << i << ": " << cubes[i].cube[d] << endl;
-			}
-			
 			w.writeShort(cubes[i].cube[d]);
 		}
 	}
@@ -537,6 +597,21 @@ int main() {
 			found_level = true;
 			break;
 		}
+		else if(i->name == name + ".rdl") {
+			HogFile converted;
+			
+			if(!level.convertRegistered(*i, converted, name))
+				return 0;
+			
+			if(!level.loadFromHog(converted)) {
+				return 0;
+			}
+		
+			cout << "Successfully loaded registered Descent 1 level" << endl;
+			
+			found_level = true;
+			break;
+		}
 	}
 	
 	if(!found_level) {
@@ -545,7 +620,12 @@ int main() {
 	}
 
 	level.save(name + ".xdl");
-	cout << "File saved to: " << name << ".xdl" << endl;	
+	cout << "File saved to: " << name << ".xdl" << endl;
+	
+	cout << "Wrapping in calc variable..." << endl;
+	
+	system(("./tovar -92 XDL " + name + ".xdl " + name).c_str());
+	
 	
 	return 0;
 }

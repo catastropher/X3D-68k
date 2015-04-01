@@ -170,7 +170,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 
 		// If the angle between the view directions and the polygon normal < 45 deg,
 		// we're going to assume that the polygon isn't visible
-	#if 0
+	#if 1
 		if(dot_product(&c->normal[i], &context->cam.dir) > 23170)
 			continue;
 	#endif
@@ -189,12 +189,15 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			short b = cube_vertex_tab[i][d + 1];
 			
 			draw_edges = (draw_edges >> 1) | ((unsigned short)((c->edge_bits & (1 << edge_table[a][b])) == 0) << 3);
+			
+			//draw_edges = (draw_edges >> 1) | ((!((c->invisible_edges >> edge_table[a][b]) & 1)) << 3);
+			
 			c->edge_bits |= (1 << edge_table[a][b]);
 		}
 		
-		draw_edges = 0b1111;
+		//draw_edges = 0b1111;
 		
-	#if 0
+	#if 1
 		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
 		if(draw_edges == 0 && c->cube[i] == -1)
 			continue;
@@ -309,11 +312,12 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 					}*/
 					
 				
-				//if(!(next_cube->edge_bits & (1 << 15))) {
+				if(!(next_cube->edge_bits & (1 << 15))) {
 					c->render_bits |= (1 << i);
 					++recursion_depth;
 					render_cube(next_cube, context, new_clip, child_id);
 					--recursion_depth;
+				}
 				}
 			}
 			

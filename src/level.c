@@ -127,8 +127,8 @@ void cube_remove_redundant_edges(Cube* c) {
 					(c2->cube[d] != CUBE_NONE && c->cube[d] != CUBE_NONE))) {
 					// If the normals between the corresponding faces are roughly the same,
 					// remove the edge between them
-					//if(abs(c->normal[d].x - c2->normal[d].x) < 30 && abs(c->normal[d].y - c2->normal[d].y) < 30 &&
-					//	abs(c->normal[d].z - c2->normal[d].z) < 30) {
+					if(abs(c->normal[d].x - c2->normal[d].x) < 30 && abs(c->normal[d].y - c2->normal[d].y) < 30 &&
+						abs(c->normal[d].z - c2->normal[d].z) < 30) {
 						
 						// The edges that compose the portal
 						unsigned short portal_edges = edge_face_table[i];
@@ -139,11 +139,11 @@ void cube_remove_redundant_edges(Cube* c) {
 						// Find the one edge they have in common and mark it invisible
 						invisible_edges |= (portal_edges & face_edges);
 					
-					if(id == 4 && (c2 - cube_tab) == 5) {
-						//printf("REMOVE %d\n", d);
-					}
+						if(id == 4 && (c2 - cube_tab) == 5) {
+							//printf("REMOVE %d\n", d);
+						}
 					
-					//}
+					}
 				}
 			}
 			

@@ -90,6 +90,7 @@ void _main(void) {
 	gen_recip_tab();
 	
 	load_level("level01");
+	//create_test_level();
 	//ngetchx();
 	
 	
@@ -196,11 +197,11 @@ void _main(void) {
 		//printf("Line count: %ld\n", line_count);
 		
 		if(draw_fps) {
-			printf("fps: %d\ndepth: %d\n", fps, max_recursion_depth);
-			printf("DDDD: %d\n", context.frustum.p[0].d);
+			printf("fps: %d\n", fps);//\ndepth: %d\n", fps, max_recursion_depth);
+			//printf("DDDD: %d\n", context.frustum.p[0].d);
 		}
 		
-		print_vex3d(&context.cam.dir);
+		//print_vex3d(&context.cam.dir);
 		
 		if(system_timer >= TICKS_PER_SECOND) {
 			draw_fps = 1;
