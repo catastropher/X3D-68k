@@ -19,7 +19,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short next_point;
 	short in, next_in;
 	short dot, next_dot;
-	long t;
+	short t;
 	
 	short out[10];
 	short out_pos = 0;
@@ -65,6 +65,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 			errorif((long)next_dot - dot == 0, "Clip div by 0");
 			
 			t = FIXDIV8(plane->d - dot, next_dot - dot);
+			//t = fast_div_fix(plane->d - dot, next_dot - dot, 15 - 8);
+			
 			
 			errorif(abs((long)plane->d - dot) > 32767, "plane->d too big");
 			errorif(abs((long)next_dot - dot) > 32767, "next_dot too big");

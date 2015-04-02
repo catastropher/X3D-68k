@@ -6,6 +6,9 @@ TODO before UASIS
 	-Sliding along walls
 	-Friction
 	-Lava?
+	-Disable error messages/screen overlays
+	-Bug where everything disappears
+	-Bug where where you can see through walls (possibly because the portal is of size 0?)
 
 
 

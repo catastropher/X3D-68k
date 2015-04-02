@@ -148,23 +148,6 @@ void cube_remove_redundant_edges(Cube* c) {
 								
 								// Find the one edge they have in common and mark it invisible
 								invisible_edges |= (portal_edges & face_edges);
-								
-								if(id == 0 && d == PLANE_LEFT) {// && invisible_edges) {
-									//printf("Removed %d\n", invisible_edges);
-									
-									//if(d == PLANE_LEFT && k == PLANE_LEFT) {
-										printf("Here\n");
-										printf("Portal: %d Face: %d\n", portal_edges, face_edges);
-										printf("Portal: %d Face: %d\n", d, k);
-										printf("Child: %d\n", c2->cube[k]);
-										print_vex3d(&c->normal[d]);
-										print_vex3d(&c2->normal[k]);
-									//}
-								}
-							
-								if(id == 4 && (c2 - cube_tab) == 5) {
-									//printf("REMOVE %d\n", d);
-								}
 							}
 						}
 					}
@@ -195,11 +178,6 @@ void cube_remove_redundant_edges(Cube* c) {
 						
 						// Find the one edge they have in common and mark it invisible
 						invisible_edges |= (portal_edges & face_edges);
-					
-						if(id == 4 && (c2 - cube_tab) == 5) {
-							//printf("REMOVE %d\n", d);
-						}
-					
 					}
 				}
 			}

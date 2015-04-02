@@ -137,10 +137,10 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		Vex3D temp;
 		
 		// Translate the point to the opposite of the camera position
-		add_vex3d(&c->v[i], &ncam_pos, &temp);
+		/////add_vex3d(&c->v[i], &ncam_pos, &temp);
 		
 		// Rotate the point around the origin
-		rotate_vex3d(&temp, &context->cam.mat, &rot[i]);
+		/////rotate_vex3d(&temp, &context->cam.mat, &rot[i]);
 		
 		//project_vex3d(context, &rot[i], &screen[i]);
 	}

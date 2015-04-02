@@ -5,6 +5,8 @@
 
 #include <tigcclib.h>
 
+#ifndef NDEBUG
+
 // Throws an error, prints out the message, and then quits the program
 void error(const char* format, ...) {
 	char buf[512];
@@ -23,3 +25,5 @@ void error(const char* format, ...) {
 	
 	exit(-1);
 }
+
+#endif
