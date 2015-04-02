@@ -23,6 +23,9 @@
 
 #define CUBE_NONE -1		// There is no cube connected to the face of another cube
 
+#define MOVE_AXIS_ALL 0b111		// We're allowed to move along all three axes
+#define MOVE_AXIS_NOT_Y 0b101	// Allow moving along X and Z, but not Y
+
 
 
 // Swaps two values
@@ -81,6 +84,11 @@ typedef struct{
 typedef struct Vex3Ds {
 	unsigned char x, y, z;
 } Vex3Ds;
+
+// A 3D vector with long values
+typedef struct Vex3DL {
+	long x, y, z;
+} Vex3DL;
 
 // A 2D vertex or vector
 typedef struct {
@@ -148,9 +156,13 @@ typedef struct {
 	Vex3D dir;
 	Vex3D straif_dir;
 	
+	Vex3DL velocity;
+	Vex3DL pos_long;
 	
 	short dist_from_origin;		// Distance from the origin
 	short current_cube;
+	
+	unsigned char on_ground;	// Whether the player is on the ground
 	
 } Camera;
 
@@ -277,7 +289,7 @@ char cube_pass_edges(RenderContext* c, Cube* to, short face);
 void init_render();
 
 char point_in_cube(int id, Vex3D* point, char* fail_plane);
-void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed);
+void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed, unsigned char move_mask);
 
 inline short cube_get_child(Cube* c, short face);
 

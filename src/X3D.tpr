@@ -9,7 +9,7 @@ Copy Data Variable if Archived=1
 Pack=0
 Packed Variable=
 Project Name=X3D
-GCC Switches=-O4 -Wall -W -Wwrite-strings -ffunction-sections -fdata-sections
+GCC Switches=-O3 -Wall -W -Wwrite-strings -ffunction-sections -fdata-sections
 GNU Assembler Switches=
 Assembler Switches=-g -t
 Debug Info=0
@@ -50,7 +50,7 @@ Use Return Value=0
 Enable Error Return=0
 Save Screen=1
 [File Editing]
-Open File=C:\excel\code\68k\X3D-68k\src\clip.c
+Open File=C:\excel\code\X3D-68k\src\main.c
 [Included Files]
 C File 1=clip.c
 C File 2=console.c

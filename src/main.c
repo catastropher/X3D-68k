@@ -133,6 +133,9 @@ void _main(void) {
 	init_render_context(LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_90, &context);
 	
 	context.screen = LCD_MEM;
+	
+	context.cam.on_ground = 0;
+	
 	//test_polygon_clipper(&context);
 	
 	//create_test_level();
@@ -158,6 +161,10 @@ void _main(void) {
 	
 	set_cam_pos(&context, center.x / 8, center.y / 8, center.z / 8);
 	set_cam_angle(&context, 0, 0, 0);
+	
+	context.cam.pos_long.x = (long)context.cam.pos.x << NORMAL_BITS;
+	context.cam.pos_long.y = (long)context.cam.pos.y << NORMAL_BITS;
+	context.cam.pos_long.z = (long)context.cam.pos.z << NORMAL_BITS;
 	
 	//print_frustum(&context.frustum);
 	
@@ -221,7 +228,7 @@ void _main(void) {
 			//	context.cam.pos.y + context.cam.dir.y / 4096,
 			//	context.cam.pos.z + context.cam.dir.z / 4096);
 			
-			attempt_move_cam(&context, &context.cam.dir, 10);
+			attempt_move_cam(&context, &context.cam.dir, 10, MOVE_AXIS_NOT_Y);
 			
 		}
 		
@@ -229,16 +236,16 @@ void _main(void) {
 			//set_cam_pos(&context, context.cam.pos.x - context.cam.dir.x / 4096,
 			//	context.cam.pos.y - context.cam.dir.y / 4096,
 			//	context.cam.pos.z - context.cam.dir.z / 4096);
-			attempt_move_cam(&context, &context.cam.dir, -10);
+			attempt_move_cam(&context, &context.cam.dir, -10, MOVE_AXIS_NOT_Y);
 		}
 		
 		
 		if(_keytest(RR_F3)) {
-			attempt_move_cam(&context, &context.cam.straif_dir, -10);
+			attempt_move_cam(&context, &context.cam.straif_dir, -10, MOVE_AXIS_NOT_Y);
 		}
 		
 		if(_keytest(RR_F4)) {
-			attempt_move_cam(&context, &context.cam.straif_dir, 10);
+			attempt_move_cam(&context, &context.cam.straif_dir, 10, MOVE_AXIS_NOT_Y);
 		}
 		
 		
@@ -265,7 +272,7 @@ void _main(void) {
 		}
 		
 		if(_keytest(RR_F5)) {
-			attempt_move_cam(&context, &context.cam.dir, 60);
+			attempt_move_cam(&context, &context.cam.dir, 60, MOVE_AXIS_NOT_Y);
 		}
 		
 		if(_keytest(RR_F6)) {			
@@ -273,6 +280,8 @@ void _main(void) {
 			
 			while(_keytest(RR_F6)) ;
 		}
+		
+		attempt_move_cam(&context, &(Vex3D){0, 32767, 0}, 10, MOVE_AXIS_ALL);
 	
 		short i;
 		

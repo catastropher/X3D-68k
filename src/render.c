@@ -651,8 +651,8 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 			//LCD_restore(buf->dark_plane);
 			
 			
-			if(c->cube[i] == -1) {
-				if(val < DIST_TO_NEAR_PLANE) {
+			if(c->cube[i] == CUBE_NONE) {
+				if((i == PLANE_BOTTOM && val < DIST_TO_NEAR_PLANE * 3) || val < DIST_TO_NEAR_PLANE) {
 					
 					//printf("CASE: %d\n", i);
 					//printf("Val: %ld\n", val);
@@ -673,23 +673,33 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 }
 
 // Attempts to move the camera and update which cube the camera is in
-void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed) {
+// Move mask determines which axes we're allowed to move along
+void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed, unsigned char move_mask) {
 	char fail_plane;
+	Vex3DL add = {0, 0, 0};
 	
 	
+	if(move_mask & 1)
+		add.x = ((long)dir->x * speed);
 	
-	Vex3D add = {
-		((long)dir->x * speed) >> NORMAL_BITS,
-		((long)dir->y * speed) >> NORMAL_BITS,
-		((long)dir->z * speed) >> NORMAL_BITS
-	};
+	if(move_mask & 2)
+		add.y = ((long)dir->y * speed);
 	
-	Vex3D new_pos = {c->cam.pos.x + add.x, c->cam.pos.y + add.y, c->cam.pos.z + add.z}; 
+	if(move_mask & 4)
+		add.z = ((long)dir->z * speed);
+		
+	
+	Vex3DL new_pos_long = {c->cam.pos_long.x + add.x, c->cam.pos_long.y + add.y, c->cam.pos_long.z + add.z};
+	Vex3D new_pos = {new_pos_long.x >> NORMAL_BITS, new_pos_long.y >> NORMAL_BITS, new_pos_long.z >> NORMAL_BITS};
+	
+	
+	//Vex3D new_pos = {c->cam.pos.x + add.x, c->cam.pos.y + add.y, c->cam.pos.z + add.z}; 
 	
 	if(point_in_cube(c->cam.current_cube, &new_pos, &fail_plane)) {
 		c->cam.pos = new_pos;
 		
 		set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
+		c->cam.pos_long = new_pos_long;
 	}
 	else {
 		if(cube_tab[c->cam.current_cube].cube[(short)fail_plane] != -1) {
@@ -697,6 +707,11 @@ void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed) {
 			c->cam.current_cube = cube_get_child(&cube_tab[c->cam.current_cube], fail_plane);
 			//error("Move to: %d\n", c->cam.current_cube);
 			set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
+			
+			c->cam.pos_long = new_pos_long;
+		}
+		else if(fail_plane == PLANE_BOTTOM) {
+			c->cam.on_ground = 1;
 		}
 	}
 }
