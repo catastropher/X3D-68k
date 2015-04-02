@@ -89,6 +89,7 @@ void _main(void) {
 	printf("Generating recip tab...\n");
 	gen_recip_tab();
 	
+	init();
 	load_level("level01");
 	//create_test_level();
 	//ngetchx();
@@ -134,7 +135,6 @@ void _main(void) {
 	context.screen = LCD_MEM;
 	//test_polygon_clipper(&context);
 	
-	init();
 	//create_test_level();
 	
 	context.screen = malloc(LCD_SIZE);

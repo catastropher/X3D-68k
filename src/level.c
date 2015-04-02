@@ -102,19 +102,28 @@ void connect_cube(short parent, short child, short plane) {
 // if the plane normals of the cube with its neighbors are the same, it makes
 // them as invisible.
 void cube_remove_redundant_edges(Cube* c) {
-	int i, d;
+	int i, d, k;
 	
 	short id = c - cube_tab;
 	
 	// Initially assume that all edges are visible
 	unsigned short invisible_edges = 0;
 	
+	//if(id != 0)
+	//	return;
+	
 	for(i = 0; i < 6; i++) {
 		// If there's a cube connected to this face...
 		if(c->cube[i] != CUBE_NONE) {
 			short face = c->cube[i] & 0b111;
 			short opposite_face = get_opposite_face(face);
-			Cube* c2 = &cube_tab[cube_get_child(c, i)];//&cube_tab[c->cube[i]];
+			short opposite_i = get_opposite_face(i);
+			short child = cube_get_child(c, i);
+			Cube* c2 = &cube_tab[child];//&cube_tab[c->cube[i]];
+			
+			if(c - cube_tab == 0) {
+				printf("For face %d: %d (child %d)\n", i, face, cube_get_child(c, i));
+			}
 			
 			// Consider every face except the one that connects them and its opposite
 			// i.e. if a cube A is connected to cube B by the back plane, the edges that
@@ -122,9 +131,57 @@ void cube_remove_redundant_edges(Cube* c) {
 			// So, we should consider every plane except the front and back plane.
 			// Also, we need to not remove edges from 
 			
+			
 			for(d = 0; d < 6; d++) {
-				if(d != face && d != opposite_face && ((c2->cube[d] == CUBE_NONE && c->cube[d] == CUBE_NONE) ||
-					(c2->cube[d] != CUBE_NONE && c->cube[d] != CUBE_NONE))) {
+				for(k = 0; k < 6; k++) {
+					if(d != i && k != face && d != opposite_i && k != opposite_face && c->cube[d] == CUBE_NONE && c2->cube[k] == CUBE_NONE) {
+						if((edge_face_table[d] & edge_face_table[i]) && (edge_face_table[k] & edge_face_table[face])) {
+						
+							if(abs((long)c->normal[d].x - c2->normal[k].x) < 30 && abs((long)c->normal[d].y - c2->normal[k].y) < 30 &&
+							abs((long)c->normal[d].z - c2->normal[k].z) < 30) {
+								
+								// The edges that compose the portal
+								unsigned short portal_edges = edge_face_table[i];
+								
+								// The edges that compose the face we're checking
+								unsigned short face_edges = edge_face_table[d];
+								
+								// Find the one edge they have in common and mark it invisible
+								invisible_edges |= (portal_edges & face_edges);
+								
+								if(id == 0 && d == PLANE_LEFT) {// && invisible_edges) {
+									//printf("Removed %d\n", invisible_edges);
+									
+									//if(d == PLANE_LEFT && k == PLANE_LEFT) {
+										printf("Here\n");
+										printf("Portal: %d Face: %d\n", portal_edges, face_edges);
+										printf("Portal: %d Face: %d\n", d, k);
+										printf("Child: %d\n", c2->cube[k]);
+										print_vex3d(&c->normal[d]);
+										print_vex3d(&c2->normal[k]);
+									//}
+								}
+							
+								if(id == 4 && (c2 - cube_tab) == 5) {
+									//printf("REMOVE %d\n", d);
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			
+			
+			
+			
+	#if 0
+			for(d = 0; d < 6; d++) {
+				///if(d != face && d != opposite_face && ((c2->cube[d] == CUBE_NONE && c->cube[d] == CUBE_NONE) ||
+				///	(c2->cube[d] != CUBE_NONE && c->cube[d] != CUBE_NONE))) {
+					
+					
+				if(d != face && d != opposite_face && ((c2->cube[d] == CUBE_NONE && c->cube[d] == CUBE_NONE))) {
 					// If the normals between the corresponding faces are roughly the same,
 					// remove the edge between them
 					if(abs(c->normal[d].x - c2->normal[d].x) < 30 && abs(c->normal[d].y - c2->normal[d].y) < 30 &&
@@ -147,6 +204,9 @@ void cube_remove_redundant_edges(Cube* c) {
 				}
 			}
 			
+	#endif
+			
+			
 		}
 	}
 	
@@ -156,11 +216,30 @@ void cube_remove_redundant_edges(Cube* c) {
 // Removes redundant edges for the entire level
 // See cube_remove_redundant_edges() for rationale
 void level_remove_redundant_edges(short total_cubes) {
-	int i;
+	int i, d, k;
 	
 	for(i =  0; i < total_cubes; i++) {
 		cube_remove_redundant_edges(&cube_tab[i]);
 	}
+	
+#if 0
+	for(i = 0; i < total_cubes; i++) {
+		Cube* c = &cube_tab[i];
+		
+		for(d = 0; d < 6; d++) {
+			if(c->cube[d] != CUBE_NONE) {
+				Cube* child = &cube_tab[cube_get_child(c, d)];
+				unsigned short edge
+				
+				
+				
+				for(k = 0; k < 4; k++) {
+					
+				}
+			}
+		}
+	}
+#endif
 }
 
 enum {
