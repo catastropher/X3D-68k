@@ -13,13 +13,16 @@
 short dot_product(Vex3D* a, Vex3D* b) {
 	long prod = (long)a->x * b->x + (long)a->y * b->y + (long)a->z * b->z;
 	
-	//float prod_float = ((float)a->x * b->x + (float)a->y * b->y + (float)a->z * b->z;
-	
-	//errorif(prod != prod_float, "Dot float error: %ld, %f\n", prod, prod_float);
-	
-	//xassert(abs(prod >> NORMAL_BITS) < 32767);
-	
 	return prod >> NORMAL_BITS;
+}
+
+// Calculates the dot product of two vectors, which can be interpreted
+// as the cosine of the angle between them
+// Returns as a fixed point in 15.15 format
+long dot_product_long(Vex3D* a, Vex3D* b) {
+	long prod = (long)a->x * b->x + (long)a->y * b->y + (long)a->z * b->z;
+	
+	return prod;
 }
 
 // Calculates the cross product of two vectors. This creates a vector that

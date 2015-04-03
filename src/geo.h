@@ -222,6 +222,7 @@ short* recip_tab;
 
 // ==============================math.c==============================
 short dot_product(Vex3D* a, Vex3D* b);
+long dot_product_long(Vex3D* a, Vex3D* b);
 void cross_product(Vex3D* a, Vex3D* b, struct Vex3D* dest);
 void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest);
 void normalize_vex3d(Vex3D* v);
@@ -289,7 +290,7 @@ char cube_pass_edges(RenderContext* c, Cube* to, short face);
 void init_render();
 
 char point_in_cube(int id, Vex3D* point, char* fail_plane);
-void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed, unsigned char move_mask);
+void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char move_mask);
 
 inline short cube_get_child(Cube* c, short face);
 

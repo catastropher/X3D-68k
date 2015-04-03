@@ -288,15 +288,6 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				cube_pass_edges(context, next_cube, cube_face);
 				
 				if(1) {// || (id == 5 && i == PLANE_BOTTOM)) {
-					if(id == 5) {
-						//printf("CUBEFACE: %d\n", cube_face);
-						printf("Render %d through %d (%d)\n", child_id, cube_face, i);
-						printf("Clip: %d\n", new_clip->total_v);
-						
-						if(child_id == 10) {
-							//print_polygon2d(new_clip);
-						}
-					}
 				
 				
 					//if(id == 5) {
@@ -655,8 +646,8 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 				if((i == PLANE_BOTTOM && val < DIST_TO_NEAR_PLANE * 3) || val < DIST_TO_NEAR_PLANE) {
 					
 					//printf("CASE: %d\n", i);
-					//printf("Val: %ld\n", val);
-					print_vex3d(&c->normal[i]);
+					printf("Val: %ld\n", val);
+					//print_vex3d(&c->normal[i]);
 					*fail_plane = i;
 					return 0;
 				}
@@ -674,7 +665,7 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 
 // Attempts to move the camera and update which cube the camera is in
 // Move mask determines which axes we're allowed to move along
-void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed, unsigned char move_mask) {
+void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char move_mask) {
 	char fail_plane;
 	Vex3DL add = {0, 0, 0};
 	
@@ -695,23 +686,62 @@ void attempt_move_cam(RenderContext* c, Vex3D* dir, short speed, unsigned char m
 	
 	//Vex3D new_pos = {c->cam.pos.x + add.x, c->cam.pos.y + add.y, c->cam.pos.z + add.z}; 
 	
-	if(point_in_cube(c->cam.current_cube, &new_pos, &fail_plane)) {
-		c->cam.pos = new_pos;
-		
-		set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
-		c->cam.pos_long = new_pos_long;
-	}
-	else {
-		if(cube_tab[c->cam.current_cube].cube[(short)fail_plane] != -1) {
+	int i;
+	
+	char first = 1;
+	
+	for(i = 0; i < 10; i++) {	
+		if(point_in_cube(c->cam.current_cube, &new_pos, &fail_plane)) {
 			c->cam.pos = new_pos;
-			c->cam.current_cube = cube_get_child(&cube_tab[c->cam.current_cube], fail_plane);
-			//error("Move to: %d\n", c->cam.current_cube);
-			set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
 			
+			set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
 			c->cam.pos_long = new_pos_long;
+			printf("Pass\n");
+			return;
 		}
-		else if(fail_plane == PLANE_BOTTOM) {
-			c->cam.on_ground = 1;
+		else {
+			if(cube_tab[c->cam.current_cube].cube[(short)fail_plane] != -1) {
+				c->cam.pos = new_pos;
+				c->cam.current_cube = cube_get_child(&cube_tab[c->cam.current_cube], fail_plane);
+				//error("Move to: %d\n", c->cam.current_cube);
+				set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
+				
+				c->cam.pos_long = new_pos_long;
+				return;
+			}
+			else if(fail_plane == PLANE_BOTTOM) {
+				c->cam.on_ground = 1;
+			}
+		}
+		
+		if(i == 0 && fail_plane == PLANE_BOTTOM) {
+			// Calculate the equation of the plane
+			Cube* cube = &cube_tab[c->cam.current_cube];
+			Vex3D* normal = &cube->normal[PLANE_BOTTOM];
+			
+			print_vex3d(&cube->v[cube_vertex_tab[PLANE_TOP][0]]);
+			print_vex3d(normal);
+			
+			short d = dot_product(normal, &cube->v[cube_vertex_tab[PLANE_BOTTOM][0]]);
+				
+			// Evalutate the y coordinate of the plane
+			long top = ((-(long)normal->x * c->cam.pos.x - (long)normal->z * c->cam.pos.z) >> NORMAL_BITS) + d;
+			
+			
+			
+			
+			short y =  ((long)top << NORMAL_BITS) / normal->y;
+			
+			new_pos.y = y - 4 * DIST_TO_NEAR_PLANE;
+			new_pos_long.y = (long)new_pos.y << NORMAL_BITS;
+			
+			//printf("Y: %d\n", d);
+			
+		}
+		else {
+			//printf("y is now: %d\n", new_pos.y);
+			new_pos.y--;
+			new_pos_long.y -= 1L << NORMAL_BITS;
 		}
 	}
 }

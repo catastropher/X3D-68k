@@ -159,6 +159,8 @@ void _main(void) {
 		add_vex3d(&center, &cube_tab[start_cube].v[i], &center);
 	}
 	
+	context.cam.velocity.y = 0;
+	
 	set_cam_pos(&context, center.x / 8, center.y / 8, center.z / 8);
 	set_cam_angle(&context, 0, 0, 0);
 	
@@ -223,31 +225,28 @@ void _main(void) {
 		
 		context.frame++;
 		
-		if(key & GAME_KEY_F1) {
-			//set_cam_pos(&context, context.cam.pos.x + context.cam.dir.x / 4096,
-			//	context.cam.pos.y + context.cam.dir.y / 4096,
-			//	context.cam.pos.z + context.cam.dir.z / 4096);
-			
-			attempt_move_cam(&context, &context.cam.dir, 10, MOVE_AXIS_NOT_Y);
-			
+		
+		// Reset X and Z velocity, which will be set based upon which keys are held down
+		context.cam.velocity.x = 0;
+		context.cam.velocity.z = 0;
+		
+		context.cam.velocity.y = 32768L * 30;
+		
+		const long MOVE_SPEED = 10;
+		const long FAST_SPEED = MOVE_SPEED * 3;
+		
+		if(_keytest(RR_F1)) {
+			context.cam.velocity.x = MOVE_SPEED * context.cam.dir.x;
+			context.cam.velocity.z = MOVE_SPEED * context.cam.dir.z;
 		}
-		
-		if(key & GAME_KEY_F2) {
-			//set_cam_pos(&context, context.cam.pos.x - context.cam.dir.x / 4096,
-			//	context.cam.pos.y - context.cam.dir.y / 4096,
-			//	context.cam.pos.z - context.cam.dir.z / 4096);
-			attempt_move_cam(&context, &context.cam.dir, -10, MOVE_AXIS_NOT_Y);
+		else if(_keytest(RR_F2)) {
+			context.cam.velocity.x = -MOVE_SPEED * context.cam.dir.x;
+			context.cam.velocity.z = -MOVE_SPEED * context.cam.dir.z;
 		}
-		
-		
-		if(_keytest(RR_F3)) {
-			attempt_move_cam(&context, &context.cam.straif_dir, -10, MOVE_AXIS_NOT_Y);
+		else if(_keytest(RR_F5)) {
+			context.cam.velocity.x = FAST_SPEED * context.cam.dir.x;
+			context.cam.velocity.z = FAST_SPEED * context.cam.dir.z;
 		}
-		
-		if(_keytest(RR_F4)) {
-			attempt_move_cam(&context, &context.cam.straif_dir, 10, MOVE_AXIS_NOT_Y);
-		}
-		
 		
 		if(key & GAME_KEY_RIGHT) {
 			set_cam_angle(&context, context.cam.angle.x, context.cam.angle.y - 3, context.cam.angle.z);
@@ -266,6 +265,20 @@ void _main(void) {
 		}
 		
 		if(_keytest(RR_ENTER)) {
+			context.cam.velocity.y = 32768L * 30;
+		}
+		
+		
+	#if 0
+		if(_keytest(RR_F3)) {
+			attempt_move_cam(&context, &context.cam.straif_dir, -10, MOVE_AXIS_NOT_Y);
+		}
+		
+		if(_keytest(RR_F4)) {
+			attempt_move_cam(&context, &context.cam.straif_dir, 10, MOVE_AXIS_NOT_Y);
+		}
+				
+		if(_keytest(RR_ENTER)) {
 			print_vex3d(&context.cam.pos);
 			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
 			printf("Cube: %d\n", context.cam.current_cube);
@@ -280,8 +293,10 @@ void _main(void) {
 			
 			while(_keytest(RR_F6)) ;
 		}
+	#endif
 		
-		attempt_move_cam(&context, &(Vex3D){0, 32767, 0}, 10, MOVE_AXIS_ALL);
+		attempt_move_cam(&context, &context.cam.velocity, 1, MOVE_AXIS_ALL);
+		//attempt_move_cam(&context, &(Vex3D){0, 32767, 0}, 10, MOVE_AXIS_ALL);
 	
 		short i;
 		
