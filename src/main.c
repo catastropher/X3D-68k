@@ -1,11 +1,11 @@
 // C Source File
 // Created 3/4/2015; 10:41:26 PM
 
+#include <tigcclib.h>
+
 #include "console.h"
 #include "geo.h"
 #include "link.h"
-
-#include <tigcclib.h>
 
 void test_console();
 
@@ -78,12 +78,14 @@ DEFINE_INT_HANDLER(new_auto_int_5) {
 }
 
 extern short max_recursion_depth;
+extern unsigned short clip_count;
 
 
 void _main(void) {	
 	FontSetSys(F_6x8);
 	clrscr();
 	
+#if 1
 	cube_tab = malloc(sizeof(Cube) * 30);
 	
 	printf("Generating recip tab...\n");
@@ -93,7 +95,7 @@ void _main(void) {
 	load_level("level01");
 	//create_test_level();
 	//ngetchx();
-	
+#endif
 	
 	
 #if 0
@@ -199,6 +201,7 @@ void _main(void) {
 		clrscr();
 		
 		line_count = 0;
+		clip_count = 0;
 		render_level(&context);
 		
 		frame_count++;
@@ -206,7 +209,7 @@ void _main(void) {
 		//printf("Line count: %ld\n", line_count);
 		
 		if(draw_fps) {
-			printf("fps: %d\n", fps);//\ndepth: %d\n", fps, max_recursion_depth);
+			printf("fps: %d\nClip count: %u\nCube count: %ld\n", fps, clip_count, line_count);//\ndepth: %d\n", fps, max_recursion_depth);
 			//printf("DDDD: %d\n", context.frustum.p[0].d);
 		}
 		

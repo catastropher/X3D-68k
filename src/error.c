@@ -1,9 +1,9 @@
 // C Source File
 // Created 3/9/2015; 11:23:36 AM
 
-#include "link.h"
-
 #include <tigcclib.h>
+
+#include "link.h"
 
 #ifndef NDEBUG
 

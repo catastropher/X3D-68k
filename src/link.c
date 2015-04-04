@@ -1,10 +1,10 @@
 // C Source File
 // Created 3/9/2015; 11:07:00 AM
 
+#include <tigcclib.h>
+
 #include "error.h"
 #include "link.h"
-
-#include <tigcclib.h>
 
 unsigned char calc_id;
 

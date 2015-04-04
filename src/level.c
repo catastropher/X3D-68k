@@ -1,10 +1,10 @@
 // C Source File
 // Created 3/12/2015; 10:40:21 AM
 
+#include <tigcclib.h>
+
 #include "geo.h"
 #include "error.h"
-
-#include <tigcclib.h>
 
 // All of the cubes in the level
 Cube *cube_tab; //[20];

@@ -1,12 +1,12 @@
 // C Source File
 // Created 3/5/2015; 9:25:21 AM
 
+#include <tigcclib.h>
+
 #include "geo.h"
 #include "math.h"
 #include "screen.h"
 #include "error.h"
-
-#include <tigcclib.h>
 
 // Calculates the dot product of two vectors, which can be interpreted
 // as the cosine of the angle between them
@@ -107,15 +107,7 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 // Projects a 3D point onto a 2D surface i.e. a RenderContext
 // Note: make sure the z component of src is not 0 or you will get division
 // by 0!
-void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
-	//short inv_z = ((long)rc->dist << NORMAL_BITS) / src->z;
-	
-	//dest->x = (((long)src->x * inv_z) >> NORMAL_BITS) + rc->center_x;
-	//dest->y = (((long)src->y * inv_z) >> NORMAL_BITS) + rc->center_y;
-	
-	
-	//errorif(src->z <= 0, "Invalid Z projection: %d", src->z);
-	
+inline void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
 #if 0
 	errorif(src->z == 0, "Projection 0");
 #else
@@ -125,31 +117,26 @@ void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
 		return;
 	}
 #endif
-	
-#if 0
+
 	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
 	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
-#else
-	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
-	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
-#endif
 }
 
 // Subtracts two 3D vectors: dest = a - b
-void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
+inline void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->x = a->x - b->x;
 	dest->y = a->y - b->y;
 	dest->z = a->z - b->z;
 }
 
 // Adds two 3D vectors: dest = a + b
-void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
+inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->x = a->x + b->x;
 	dest->y = a->y + b->y;
 	dest->z = a->z + b->z;
 }
 
-short get_vex3d_magnitude(Vex3D* v) {
+inline short get_vex3d_magnitude(Vex3D* v) {
 	return fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
 }
 
@@ -157,7 +144,7 @@ short get_vex3d_magnitude(Vex3D* v) {
 
 // Normalizes a 3D vector i.e. makes the length of the vector 1
 // The result is in 0:15 format
-void normalize_vex3d(Vex3D* v) {
+inline void normalize_vex3d(Vex3D* v) {
 	long val = 
 		(((long)v->x * v->x) >> 2) + 
 		(((long)v->y * v->y) >> 2) + 
@@ -190,7 +177,7 @@ void normalize_vex3d(Vex3D* v) {
 }
 
 // Rotates a Vex3D around the origin
-void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest) {
+inline void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest) {
 	Vex3D_rot rot;
 	asm_rotate_vex3d(src, mat, &rot);
 	

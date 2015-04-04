@@ -2,6 +2,9 @@
 // Created 3/4/2015; 10:42:27 PM
 #pragma once
 
+#undef printf
+#define printf(...) ;
+
 #include "fix.h"
 #include "math.h"
 
@@ -224,19 +227,19 @@ short* recip_tab;
 short dot_product(Vex3D* a, Vex3D* b);
 long dot_product_long(Vex3D* a, Vex3D* b);
 void cross_product(Vex3D* a, Vex3D* b, struct Vex3D* dest);
-void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest);
-void normalize_vex3d(Vex3D* v);
+inline void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest);
+inline void normalize_vex3d(Vex3D* v);
 short asm_rotate_vex3d(Vex3D *src asm("a4"), Mat3x3* mat asm("a5"), Vex3D_rot *dest asm("a3"));
-void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest);
-short get_vex3d_magnitude(Vex3D* v);
+inline void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest);
+inline short get_vex3d_magnitude(Vex3D* v);
 
 void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest);
 void calculate_frustum_plane_normals(RenderContext* c);
 void calculate_frustum_plane_distances(RenderContext* c);
 void calculate_frustum_rotated_normals(RenderContext* c);
 
-void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
-void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
+inline void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
+inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
 
 void construct_mat3x3(Vex3Ds *angle, Mat3x3 *dest);
 void mul_mat3x3(Mat3x3* a, Mat3x3* b, Mat3x3* res);

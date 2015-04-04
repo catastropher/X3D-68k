@@ -1,11 +1,10 @@
 // C Source File
 // Created 3/30/2015; 10:27:05 AM
 
-#include "geo.h"
-#include "error.h"
-
 #include <tigcclib.h>
 
+#include "geo.h"
+#include "error.h"
 
 short* recip_tab;
 

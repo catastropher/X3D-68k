@@ -1,12 +1,12 @@
 // C Source File
 // Created 3/5/2015; 8:39:09 AM
 
+#include <tigcclib.h>
+
 #include "geo.h"
 #include "math.h"
 #include "console.h"
 #include "error.h"
-
-#include <tigcclib.h>
 
 extern short cube_id;
 extern short plane_id;
@@ -390,6 +390,8 @@ char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw) {
 	return clipped;
 }
 
+unsigned short clip_count;
+
 // Clips a polygon against a single edge
 // TODO: remove center as a parameter
 void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center, char allow_extra_clip) {
@@ -423,6 +425,7 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 	for(point = 0; point < p->total_v; point++) {
 		Line2D* line = &p->line[point];
 		
+		++clip_count;
 		
 		if(dest->total_v == MAX_POINTS - 1)
 			return;

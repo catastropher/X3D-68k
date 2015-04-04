@@ -1,10 +1,10 @@
 // C Source File
 // Created 3/8/2015; 8:07:15 AM
 
+#include <tigcclib.h>
+
 #include "geo.h"
 #include "console.h"
-
-#include <tigcclib.h>
 
 // Prints out a 3D vertex/vector
 void print_vex3d(Vex3D* v) {

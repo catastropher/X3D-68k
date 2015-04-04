@@ -1,11 +1,11 @@
 // C Source File
 // Created 3/7/2015; 6:28:25 PM
 
+#include <tigcclib.h>
+
 #include "geo.h"
 #include "extgraph.h"
 #include "error.h"
-
-#include <tigcclib.h>
 
 // The table of the vertex numbers for each face
 // The last vertex of each face is duplicated to make loops easy
@@ -110,6 +110,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D rot[8];
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
+	
+	//++line_count;
 	
 	if(recursion_depth > max_recursion_depth)
 		max_recursion_depth = recursion_depth;
@@ -315,9 +317,6 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			//printf(
 		}
 	}
-	
-	//if(id == 10)
-	//	printf("DRAWN: %d\n", faces_drawn);
 }
 
 void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
