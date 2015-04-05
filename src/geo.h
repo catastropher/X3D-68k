@@ -29,6 +29,7 @@
 #define MOVE_AXIS_ALL 0b111		// We're allowed to move along all three axes
 #define MOVE_AXIS_NOT_Y 0b101	// Allow moving along X and Z, but not Y
 
+#define PLAYER_HEIGHT 60
 
 
 // Swaps two values

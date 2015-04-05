@@ -223,6 +223,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			for(d = 0; d < set_b.poly_out.total_v; d++) {
 				Vex3D temp;
 				add_vex3d(&set_b.poly_out.v[d], &ncam_pos, &temp);
+				
 				rotate_vex3d(&temp, &context->cam.mat, &set_b.poly_out.v[d]);
 			}
 			
@@ -474,7 +475,13 @@ void render_level(RenderContext* c) {
 	cube_tab[c->cam.current_cube].render_bits = 0;
 #endif
 	
+	short old_y = c->cam.pos.y;
+	
+	c->cam.pos.y -= PLAYER_HEIGHT;
+	
 	render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
+	
+	c->cam.pos.y = old_y;
 	
 #if 0
 	int i;
@@ -642,11 +649,13 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 			
 			
 			if(c->cube[i] == CUBE_NONE) {
-				if((i == PLANE_BOTTOM && val < DIST_TO_NEAR_PLANE * 3) || val < DIST_TO_NEAR_PLANE) {
+				if(/*(i == PLANE_BOTTOM && val < DIST_TO_NEAR_PLANE * 3) || */val < DIST_TO_NEAR_PLANE) {
 					
 					//printf("CASE: %d\n", i);
-					printf("Val: %ld\n", val);
+					//printf("Val: %ld\n", val);
 					//print_vex3d(&c->normal[i]);
+					
+					//printf("Fail %d\n", i);
 					*fail_plane = i;
 					return 0;
 				}
@@ -713,7 +722,7 @@ void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char 
 			}
 		}
 		
-		if(i == 0 && fail_plane == PLANE_BOTTOM) {
+		if(fail_plane == PLANE_BOTTOM) {
 			// Calculate the equation of the plane
 			Cube* cube = &cube_tab[c->cam.current_cube];
 			Vex3D* normal = &cube->normal[PLANE_BOTTOM];
@@ -731,17 +740,32 @@ void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char 
 			
 			short y =  ((long)top << NORMAL_BITS) / normal->y;
 			
-			new_pos.y = y - 4 * DIST_TO_NEAR_PLANE;
+			//new_pos.y = y - DIST_TO_NEAR_PLANE - 5;// - 4 * DIST_TO_NEAR_PLANE;
+			
+			short add = -DIST_TO_NEAR_PLANE - dist_to_plane(&cube->normal[PLANE_BOTTOM], &new_pos, &cube->v[cube_vertex_tab[PLANE_BOTTOM][0]]);
+			
+			if(add >= 0) {
+				add = -1;
+			}
+			
+			new_pos.y += add;
+			
 			new_pos_long.y = (long)new_pos.y << NORMAL_BITS;
+			
+			printf("new_pos: %d\n", new_pos.y);
+			//printf("dist to plane: %d\n",  dist_to_plane(&cube->normal[PLANE_BOTTOM], &new_pos, &cube->v[cube_vertex_tab[PLANE_BOTTOM][0]]));
 			
 			//printf("Y: %d\n", d);
 			
 		}
-		else {
+		
+		
+		/*else {
 			//printf("y is now: %d\n", new_pos.y);
 			new_pos.y--;
 			new_pos_long.y -= 1L << NORMAL_BITS;
 		}
+		*/
 	}
 }
 

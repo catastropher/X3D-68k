@@ -242,8 +242,10 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 void calculate_frustum_plane_distances(RenderContext* c) {
 	int i;
 	
+	Vex3D eye_cam_pos = {c->cam.pos.x, c->cam.pos.y - PLAYER_HEIGHT, c->cam.pos.z};
+	
 	for(i = 1; i < c->frustum.total_p; i++) {
-		c->frustum.p[i].d = dot_product(&c->frustum.p[i].normal, &c->cam.pos);
+		c->frustum.p[i].d = dot_product(&c->frustum.p[i].normal, &eye_cam_pos);
 	}
 	
 	/*Vex3D input = {0, 0, c->dist};
@@ -268,7 +270,7 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	out.z = ((long)out.z * dist) >> NORMAL_BITS;
 	
 	out.x += c->cam.pos.x;
-	out.y += c->cam.pos.y;
+	out.y += c->cam.pos.y - PLAYER_HEIGHT;
 	out.z += c->cam.pos.z;
 	
 	c->frustum.p[0].d = dot_product(&c->frustum.p[0].normal, &out);
