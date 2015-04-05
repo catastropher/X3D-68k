@@ -268,8 +268,14 @@ void _main(void) {
 		}
 		
 		if(_keytest(RR_ENTER)) {
-			context.cam.velocity.y = 32768L * 30;
+			print_vex3d(&context.cam.pos);
+			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
+			printf("Cube: %d\n", context.cam.current_cube);
 		}
+		
+		char plane;
+		
+		printf("In cube: %d\n", point_in_cube(context.cam.current_cube, &context.cam.pos, &plane));
 		
 		
 	#if 0
@@ -279,12 +285,6 @@ void _main(void) {
 		
 		if(_keytest(RR_F4)) {
 			attempt_move_cam(&context, &context.cam.straif_dir, 10, MOVE_AXIS_NOT_Y);
-		}
-				
-		if(_keytest(RR_ENTER)) {
-			print_vex3d(&context.cam.pos);
-			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
-			printf("Cube: %d\n", context.cam.current_cube);
 		}
 		
 		if(_keytest(RR_F5)) {

@@ -120,9 +120,6 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		return;
 	}
 	
-	if(id == 10)
-		printf("Render10\n");
-	
 	int visit = 0;
 	
 	// Used for debugging purposes to determine the current cube being rendered
@@ -181,7 +178,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
 		
 	#if 1
-		if(dist > 0)
+		if(dist > 10)
 			continue;
 	#endif
 
@@ -273,8 +270,13 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			// If we're really close to the portal, go ahead and just use the original clipping
 			// region (the new clipping region may have singularaties)
+		
+			if(i == PLANE_LEFT && id == 8) {
+				printf("dddddDist: %d\n", dist);
+			}
+		
 		#if 1
-			if(dist > -200 && dist < 0 && id == context->cam.current_cube) {
+			if(dist > -120 && dist <= 10 && id == context->cam.current_cube) {
 				draw_face = 1;
 				new_clip = clip;
 				
@@ -307,6 +309,15 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 					
 				
 				if(!(next_cube->edge_bits & (1 << 15))) {
+					
+					int j;
+					
+					for(j = 0; j < new_clip->total_v; j++) {
+						new_clip->line[j].draw = 1;
+					}
+					
+					//draw_polygon(new_clip, context);
+					
 					c->render_bits |= (1 << i);
 					++recursion_depth;
 					render_cube(next_cube, context, new_clip, child_id);
@@ -635,21 +646,31 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 	int i;
 	
 	for(i = 0; i < 6; i++) {
-		const Vex3D normal = c->normal[i];
-		const Vex3D p = c->v[cube_vertex_tab[i][0]];
+		Vex3D normal = c->normal[i];
+		Vex3D p = c->v[cube_vertex_tab[i][0]];
 		
 		if(normal.x || normal.y || normal.z) {
-			long dot = (long)normal.x * p.x + (long)normal.y * p.y + (long)normal.z * p.z;
-			long val = (long)normal.x * point->x + (long)normal.y * point->y + (long)normal.z * point->z - dot;
+			//long dot = (long)normal.x * p.x + (long)normal.y * p.y + (long)normal.z * p.z;
+			//long val = (long)normal.x * point->x + (long)normal.y * point->y + (long)normal.z * point->z - dot;
 			
-			val >>= NORMAL_BITS;
+			short dist = dist_to_plane(&normal, point, &p);
+			
+			//val >>= NORMAL_BITS;
 			
 			//printf("Val: %ld\n", val);
 			//LCD_restore(buf->dark_plane);
 			
+			if(i == PLANE_BACK) {
+				//printf("Dist: %ld\n", val);
+			}
+			
+			if(id == 8 && i == PLANE_LEFT) {
+				printf("dist: %d\n", dist);
+				print_vex3d(&normal);
+			}
 			
 			if(c->cube[i] == CUBE_NONE) {
-				if(/*(i == PLANE_BOTTOM && val < DIST_TO_NEAR_PLANE * 3) || */val < DIST_TO_NEAR_PLANE) {
+				if(/*(i == PLANE_BOTTOM && val < DIST_TO_NEAR_PLANE * 3) || */dist > -DIST_TO_NEAR_PLANE) {
 					
 					//printf("CASE: %d\n", i);
 					//printf("Val: %ld\n", val);
@@ -660,9 +681,10 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 					return 0;
 				}
 			}
-			else if(val < 0) {
+			else if(dist > 0) {
 				//printf("Case\n");
 				*fail_plane = i;
+				
 				return 0;
 			}
 		}
@@ -698,13 +720,13 @@ void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char 
 	
 	char first = 1;
 	
-	for(i = 0; i < 10; i++) {	
+	for(i = 0; i < 15; i++) {	
 		if(point_in_cube(c->cam.current_cube, &new_pos, &fail_plane)) {
 			c->cam.pos = new_pos;
 			
 			set_cam_pos(c, c->cam.pos.x, c->cam.pos.y, c->cam.pos.z);
 			c->cam.pos_long = new_pos_long;
-			printf("Pass\n");
+			//printf("Pass\n");
 			return;
 		}
 		else {
@@ -727,8 +749,8 @@ void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char 
 			Cube* cube = &cube_tab[c->cam.current_cube];
 			Vex3D* normal = &cube->normal[PLANE_BOTTOM];
 			
-			print_vex3d(&cube->v[cube_vertex_tab[PLANE_TOP][0]]);
-			print_vex3d(normal);
+			//print_vex3d(&cube->v[cube_vertex_tab[PLANE_TOP][0]]);
+			//print_vex3d(normal);
 			
 			short d = dot_product(normal, &cube->v[cube_vertex_tab[PLANE_BOTTOM][0]]);
 				
@@ -752,7 +774,7 @@ void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char 
 			
 			new_pos_long.y = (long)new_pos.y << NORMAL_BITS;
 			
-			printf("new_pos: %d\n", new_pos.y);
+			//printf("new_pos: %d\n", new_pos.y);
 			//printf("dist to plane: %d\n",  dist_to_plane(&cube->normal[PLANE_BOTTOM], &new_pos, &cube->v[cube_vertex_tab[PLANE_BOTTOM][0]]));
 			
 			//printf("Y: %d\n", d);
