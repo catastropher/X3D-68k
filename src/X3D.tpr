@@ -29,9 +29,9 @@ Binary Output=0
 Command Line=
 Post-Build Process=
 [Library Options]
-Use TI-89=1
+Use TI-89=0
 Use TI-92 Plus=1
-Use V200=1
+Use V200=0
 Optimize Calc Consts=1
 Use Kernel=0
 Use PreOS=0
@@ -50,7 +50,7 @@ Use Return Value=0
 Enable Error Return=0
 Save Screen=1
 [File Editing]
-Open File=C:\excel\code\X3D-68k\src\util.c
+Open File=C:\excel\code\X3D-68k\src\main.c
 [Included Files]
 C File 1=clip.c
 C File 2=console.c
@@ -77,3 +77,5 @@ Header File 5=screen.h
 Header File 6=link.h
 Header File 7=error.h
 Header File 8=extgraph.h
+C File 13=timer.c
+Header File 9=timer.h

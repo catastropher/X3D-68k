@@ -235,7 +235,7 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	// Hack...
 	c->frustum_unrotated.p[0].d = 15;//c->dist - DIST_TO_NEAR_PLANE;
 	
-	c->frustum_unrotated.total_p = 5;
+	c->frustum_unrotated.total_p = 1;
 }
 
 // Calculates the distance from each plane in the view frustum to the origin

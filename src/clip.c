@@ -11,6 +11,9 @@
 extern short cube_id;
 extern short plane_id;
 
+short plane_clip;
+char invert_screen;
+
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
 // TODO: keep track of which edges have been clipped so we know which
 // part of the polygon still needs to be drawn
@@ -42,6 +45,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	
 	for(i = 0; i < poly->total_v; i++) {
 		next_point = (i + 1) % poly->total_v;
+		
+		++plane_clip;
 		
 		// The vertex is inside the plane, so don't clip it
 		if(in) {
@@ -165,6 +170,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	if(out_pos != 0 && out_pos != 2) {
 		//printf("CASE<----\n");
 		//error("Wrong out pos\n");
+		invert_screen = 1;
 		return 0;
 		
 		
