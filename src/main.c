@@ -7,6 +7,8 @@
 #include "geo.h"
 #include "link.h"
 
+#include "extgraph.h"
+
 void test_console();
 
 enum {
@@ -79,6 +81,18 @@ DEFINE_INT_HANDLER(new_auto_int_5) {
 
 extern short max_recursion_depth;
 extern unsigned short clip_count;
+extern short plane_clip;
+extern char invert_screen;
+
+char cinematic_mode;
+char cinematic_size;
+
+enum {
+	CINEMATIC_DISABLED,
+	CINEMATIC_ENABLED
+};
+
+#define CINEMATIC_MAX 20
 
 
 void _main(void) {	
@@ -138,19 +152,9 @@ void _main(void) {
 	
 	context.cam.on_ground = 0;
 	
-	//test_polygon_clipper(&context);
-	
-	//create_test_level();
 	
 	context.screen = malloc(LCD_SIZE);
 	PortSet(context.screen, 239, 127);
-	
-	// Initialize the camera
-	//set_cam_pos(&context, -25, 12, -85);
-	//set_cam_angle(&context, 0, 0, 0);
-	
-	//set_cam_pos(&context, -197, -98, 326);
-	//set_cam_angle(&context, 26, 192, 0);
 	
 	Vex3D center = {0, 0, 0};
 	
@@ -170,11 +174,6 @@ void _main(void) {
 	context.cam.pos_long.y = (long)context.cam.pos.y << NORMAL_BITS;
 	context.cam.pos_long.z = (long)context.cam.pos.z << NORMAL_BITS;
 	
-	//print_frustum(&context.frustum);
-	
-	// Create a test cube
-	Cube cube, cube2;
-	Vex3Ds cube_angle = {0, 0, 0};
 	unsigned short key;
 	
 	old_int_1 = GetIntVec(AUTO_INT_1);
@@ -195,6 +194,10 @@ void _main(void) {
 	
 	system_timer = 0;
 	
+	// Reset cinematic mode
+	cinematic_mode = 0;
+	cinematic_size = 0;
+	
 	do {
 		key = read_keys();
 		
@@ -202,14 +205,32 @@ void _main(void) {
 		
 		line_count = 0;
 		clip_count = 0;
+		plane_clip = 0;
+		invert_screen = 0;
+		
+		if(cinematic_mode == CINEMATIC_ENABLED) {
+			if(cinematic_size < CINEMATIC_MAX)
+				cinematic_size += 4;
+		}
+		
+		if(cinematic_size > 0) {
+			FastFilledRect_Draw_R(context.screen, 0, 0, LCD_WIDTH - 1, cinematic_size - 1);
+			FastFilledRect_Draw_R(context.screen, 0, LCD_HEIGHT - cinematic_size, LCD_WIDTH - 1, LCD_HEIGHT - 1);
+		}
+		
 		render_level(&context);
+		
+		if(invert_screen) {
+			for(i = 0; i < LCD_SIZE; i++)
+				context.screen[i] = ~context.screen[i];
+		}
 		
 		frame_count++;
 		
 		//printf("Line count: %ld\n", line_count);
 		
 		if(draw_fps) {
-			printf("fps: %d\nClip count: %u\nCube count: %ld\n", fps, clip_count, line_count);//\ndepth: %d\n", fps, max_recursion_depth);
+			printf("fps: %d\nClip count: %u\nCube count: %ld\nPlane clip: %d\n", fps, clip_count, line_count, plane_clip);//\ndepth: %d\n", fps, max_recursion_depth);
 			//printf("DDDD: %d\n", context.frustum.p[0].d);
 		}
 		
@@ -271,6 +292,10 @@ void _main(void) {
 			print_vex3d(&context.cam.pos);
 			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
 			printf("Cube: %d\n", context.cam.current_cube);
+		}
+		
+		if(_keytest(RR_APPS)) {
+			cinematic_mode = CINEMATIC_ENABLED;
 		}
 		
 		char plane;

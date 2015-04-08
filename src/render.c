@@ -104,6 +104,42 @@ short cube_id;
 short recursion_depth;
 short max_recursion_depth;
 
+// Draws a transparent 3D polygon
+void draw_clipped_polygon3D(Polygon3D* poly, RenderContext* context, Polygon2D* clip) {
+	Polygon3D clipped, rotated;
+	Polygon2D projected, final;
+	clip_polygon_to_frustum(poly, &context->frustum, &clipped);
+	
+	//print_polygon(&clipped);
+	
+	int i;
+	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
+	
+	for(i = 0; i < clipped.total_v; i++) {
+		Vex3D temp;
+		add_vex3d(&clipped.v[i], &ncam_pos, &temp);
+		rotate_vex3d(&temp, &context->cam.mat, &rotated.v[i]);
+	
+		rotated.draw[i] = clipped.draw[i];
+	}
+	
+	rotated.total_v = clipped.total_v;
+	
+	project_polygon3d(&rotated, context, &projected);
+	
+	for(i = 0; i < projected.total_v; i++)
+		projected.line[i].draw = rotated.draw[i];
+	
+	clip_polygon(&projected, clip, &final, 0);
+	
+	//printf("Total v: %d\nX: %d Y: %d", final.total_v, final.p[0].v.x, final.p[0].v.y);
+	
+	//print_vex2d(&final.p[0].v);
+	
+	if(final.total_v > 1)
+		draw_polygon(&final, context);
+}
+
 // Renders a single cube in writeframe
 // Note: make sure the cube isn't off the screen at all!
 void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
@@ -329,6 +365,49 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			//printf(
 		}
 	}
+	
+#if 1
+	if(id == 36) {
+		// Draw the light brigde switch
+		Vex3D center = {0, 0, 0};
+		
+		for(i = 0; i < 8; i++) {
+			center.x += c->v[i].x;
+			center.y += c->v[i].y;
+			center.z += c->v[i].z;
+		}
+		
+		center.x /= 8;
+		center.y /= 8;
+		center.z /= 8;
+		
+		center.x -= 70;
+		center.y += 20;
+		center.z -= 100;
+		
+		printf("Center: ");
+		print_vex3d(&center);
+		
+		Polygon3D poly;
+		
+		poly.total_v = 4;
+		
+		const int WIDTH = 40;
+		const int HEIGHT = 40;
+		
+		poly.v[0] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z - WIDTH / 2};
+		poly.v[1] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[2] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[3] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z - WIDTH / 2};
+		
+		for(i = 0; i < 4; i++) {
+			poly.draw[i] = 1;
+		}
+		
+		draw_clipped_polygon3D(&poly, context, clip);
+		
+	}
+#endif
 }
 
 void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
