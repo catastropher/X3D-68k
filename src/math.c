@@ -141,6 +141,12 @@ inline short get_vex3d_magnitude(Vex3D* v) {
 	return fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
 }
 
+void param_vex3d(Vex3D* start, Vex3D* end, short t, Vex3D* dest) {
+	dest->x = (((long)(end->x - start->x) * t) >> 8) + start->x;
+	dest->y = (((long)(end->y - start->y) * t) >> 8) + start->y;
+	dest->z = (((long)(end->z - start->z) * t) >> 8) + start->z;
+}
+
 // Returns the distance between two points
 inline short dist(Vex3D* a, Vex3D* b) {
 	short dx = a->x - b->x;

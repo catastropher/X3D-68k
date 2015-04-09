@@ -6,6 +6,7 @@
 #include "console.h"
 #include "geo.h"
 #include "link.h"
+#include "timer.h"
 
 #include "extgraph.h"
 
@@ -59,6 +60,7 @@ DEFINE_INT_HANDLER(div_by_zero) {
 
 void init() {
 	init_render();
+	init_timers();
 }
 
 extern long line_count;
@@ -87,6 +89,14 @@ extern char invert_screen;
 char cinematic_mode;
 char cinematic_size;
 
+char enable_gravity;
+char shake;
+
+Vex3D bridge_left_start;
+Vex3D bridge_left_end;
+Vex3D bridge_right_start;
+Vex3D bridge_right_end;
+
 enum {
 	CINEMATIC_DISABLED,
 	CINEMATIC_ENABLED
@@ -94,8 +104,20 @@ enum {
 
 #define CINEMATIC_MAX 20
 
+#define BRIDGE_WIDTH 200
+
+#define SHAKE_MAX 10
+
 Vex3D switch_pos;
 char switch_active;
+
+char enable_movement;
+
+short bridge_t;
+char extend_bridge;
+short bridge_shimmer_t;
+
+Camera save_cam;
 
 void cube_center(short id, Vex3D* center) {
 	center->x = 0;
@@ -110,6 +132,51 @@ void cube_center(short id, Vex3D* center) {
 	center->x /= 8;
 	center->y /= 8;
 	center->z /= 8;
+}
+
+void stop_shake(void *data) {
+	shake = 0;
+	
+	static char visited = 0;
+	
+	++visited;
+	
+	if(visited != 1)
+		exit(-1);
+	
+	RenderContext* context = data;
+	
+	save_cam = context->cam;
+	
+	context->cam.pos.x = -885;
+	context->cam.pos.y = -418;
+	context->cam.pos.z = -1310;
+	
+	set_cam_pos(context, -885, -418, 1310);
+	
+	set_cam_angle(context, 42, 105, 0);
+	enable_movement = 0;
+	
+	context->cam.current_cube = 38;
+	cinematic_mode = 1;
+}
+
+void restore_cam(void* data) {
+	RenderContext* context = data;
+	
+	cinematic_mode = 0;
+	enable_gravity = 1;
+	enable_movement = 1;
+	
+	context->cam = save_cam;
+	
+	set_cam_pos(context, context->cam.pos.x, context->cam.pos.y, context->cam.pos.z);
+	set_cam_angle(context, context->cam.angle.x, context->cam.angle.y, context->cam.angle.z);
+}
+
+void begin_shake(void* data) {
+	shake = 1;
+	add_timer(50, 0, stop_shake, data);
 }
 
 
@@ -185,10 +252,28 @@ void _main(void) {
 	cube_center(36, &switch_pos);
 	switch_pos.x -= 70;
 	switch_pos.y += 20;
-	switch_pos.z -= 100;
+	switch_pos.z -= 150;
 	
 	switch_active = 0;
 	
+	// Calculate the position of the bridge sides
+	bridge_left_start.x = cube_tab[36].v[cube_vertex_tab[PLANE_RIGHT][0]].x;
+	bridge_left_start.z = (cube_tab[36].v[cube_vertex_tab[PLANE_RIGHT][0]].z + cube_tab[36].v[cube_vertex_tab[PLANE_RIGHT][1]].z) / 2 -
+		BRIDGE_WIDTH / 2;
+		
+	bridge_left_start.y = cube_tab[36].v[cube_vertex_tab[PLANE_RIGHT][0]].y;
+	
+	bridge_left_end = bridge_left_start;
+	bridge_left_end.x = cube_tab[21].v[cube_vertex_tab[PLANE_LEFT][0]].x;
+	
+	bridge_right_start = bridge_left_start;
+	bridge_right_start.z += BRIDGE_WIDTH;
+	bridge_right_end = bridge_left_end;
+	bridge_right_end.z += BRIDGE_WIDTH;
+	
+	bridge_t = 0;
+	extend_bridge = 0;
+	bridge_shimmer_t = -1;
 	
 	context.cam.velocity.y = 0;
 	
@@ -217,38 +302,90 @@ void _main(void) {
 	char draw_fps = 0;
 	short fps = 0;
 	
+	short cx = context.center_x;
+	short cy = context.center_y;
+	
 	system_timer = 0;
 	
 	// Reset cinematic mode
 	cinematic_mode = 0;
 	cinematic_size = 0;
 	
+	enable_gravity = 1;
+	enable_movement = 1;
+	
+	shake = 0;
+	
+	char added_restore_timer = 0;
+	
 	do {
 		key = read_keys();
 		
 		clrscr();
+		
+		if(extend_bridge && context.cam.pos.x <= bridge_left_start.x + 15 && 
+			context.cam.pos.x >= bridge_left_end.x - 15 &&
+			context.cam.pos.z >= bridge_left_start.z && 
+			context.cam.pos.z <= bridge_right_start.z) {
+			//context.cam.pos.y - PLAYER_HEIGHT + 10 < bridge_left_start.y) {
+				
+				enable_gravity = 0;
+		} else {
+			enable_gravity = 1;
+		}
 		
 		line_count = 0;
 		clip_count = 0;
 		plane_clip = 0;
 		invert_screen = 0;
 		
+		process_timers();
+		
+		if(extend_bridge) {
+			if(bridge_t < 256) {
+				bridge_t += 8;
+			}
+			else {
+				if(!added_restore_timer) {
+					add_timer(20, 0, restore_cam, &context);
+					added_restore_timer = 1;
+					bridge_shimmer_t = 0;
+				}
+			}
+		}
+		
+		if(shake) {
+			context.center_x = cx + (rand() % (2 * SHAKE_MAX)) - SHAKE_MAX;
+			context.center_y = cy + (rand() % (2 * SHAKE_MAX)) - SHAKE_MAX;
+		}
+		
 		if(cinematic_mode == CINEMATIC_ENABLED) {
 			if(cinematic_size < CINEMATIC_MAX)
 				cinematic_size += 4;
+			else
+				extend_bridge = 1;
 		}
 		
-		if(cinematic_size > 0) {
+		if(cinematic_mode && cinematic_size > 0) {
 			FastFilledRect_Draw_R(context.screen, 0, 0, LCD_WIDTH - 1, cinematic_size - 1);
 			FastFilledRect_Draw_R(context.screen, 0, LCD_HEIGHT - cinematic_size, LCD_WIDTH - 1, LCD_HEIGHT - 1);
 		}
 		
 		render_level(&context);
 		
+		if(bridge_shimmer_t >= 0) {
+			bridge_shimmer_t += 8;
+			
+			if(bridge_shimmer_t >= 256)
+				bridge_shimmer_t = 0;
+		}
+		
+	#if 0
 		if(invert_screen) {
 			for(i = 0; i < LCD_SIZE; i++)
 				context.screen[i] = ~context.screen[i];
 		}
+	#endif
 		
 		frame_count++;
 		
@@ -279,7 +416,10 @@ void _main(void) {
 		context.cam.velocity.x = 0;
 		context.cam.velocity.z = 0;
 		
-		context.cam.velocity.y = 32768L * 30;
+		if(enable_gravity)
+			context.cam.velocity.y = 32768L * 30;
+		else
+			context.cam.velocity.y = 0;
 		
 		const long MOVE_SPEED = 10;
 		const long FAST_SPEED = MOVE_SPEED * 3;
@@ -320,9 +460,33 @@ void _main(void) {
 		}
 		
 		if(_keytest(RR_HAND)) {
+			while(_keytest(RR_HAND)) ;
+			
 			if(dist(&context.cam.pos, &switch_pos) < 100) {
-				cinematic_mode = 1;
-				switch_active = 1;
+				if(!switch_active) {
+					switch_active = 1;
+					add_timer(20, 0, begin_shake, &context);
+				}
+			}
+		}
+		
+		if(_keytest(RR_F6)) {
+			while(_keytest(RR_F6)) ;
+			
+			enable_gravity = !enable_gravity;
+		}
+		
+		if(_keytest(RR_F7)) {
+			while(_keytest(RR_F7)) ;
+			
+			shake = !shake;
+			
+			if(!shake) {
+				context.center_x = cx;
+				context.center_y = cy;
+			}
+			else {
+				add_timer(60, 0, stop_shake, NULL);
 			}
 		}
 		
@@ -355,7 +519,8 @@ void _main(void) {
 		}
 	#endif
 		
-		attempt_move_cam(&context, &context.cam.velocity, 1, MOVE_AXIS_ALL);
+		if(enable_movement)
+			attempt_move_cam(&context, &context.cam.velocity, 1, MOVE_AXIS_ALL);
 		//attempt_move_cam(&context, &(Vex3D){0, 32767, 0}, 10, MOVE_AXIS_ALL);
 	
 		short i;

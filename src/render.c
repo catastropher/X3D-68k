@@ -140,8 +140,36 @@ void draw_clipped_polygon3D(Polygon3D* poly, RenderContext* context, Polygon2D* 
 		draw_polygon(&final, context);
 }
 
+// Draws a 3D line
+// Currently this uses a terrible method; it makes a triangle with one edge visible
+// and throws it at draw_clipped_polygon3D(!)
+void draw_3D_line(Vex3D* a, Vex3D* b, RenderContext* context, Polygon2D* clip) {
+	Polygon3D p;
+	
+	p.total_v = 3;
+	p.v[0] = *a;
+	p.v[1] = *b;
+	p.v[2] = *a;
+	
+	p.v[2].x += 100;
+	p.v[2].y  += 100;
+	
+	p.draw[0] = 1;
+	p.draw[1] = 0;
+	p.draw[2] = 0;
+	
+	draw_clipped_polygon3D(&p, context, clip);
+}
+
 extern Vex3D switch_pos;
 extern char switch_active;
+extern Vex3D bridge_left_start;
+extern Vex3D bridge_left_end;
+extern Vex3D bridge_right_start;
+extern Vex3D bridge_right_end;
+extern short bridge_t;
+extern char extend_bridge;
+extern short bridge_shimmer_t;
 
 // Renders a single cube in writeframe
 // Note: make sure the cube isn't off the screen at all!
@@ -428,9 +456,28 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			poly.draw[3] = 0;
 			
 			draw_clipped_polygon3D(&poly, context, clip);
+			
+		}
+	}
+	else if(id == 37) {
+		if(extend_bridge) {
+			Vex3D end_left, end_right;
+			
+			param_vex3d(&bridge_left_end, &bridge_left_start, bridge_t, &end_left);
+			param_vex3d(&bridge_right_start, &bridge_right_end, bridge_t, &end_right);
+			
+			draw_3D_line(&bridge_left_end, &end_left, context, clip);
+			draw_3D_line(&bridge_right_start, &end_right, context, clip);
 		}
 		
-		
+		if(bridge_shimmer_t >= 0) {
+			Vex3D left, right;
+			
+			param_vex3d(&bridge_left_start, &bridge_left_end, bridge_shimmer_t, &left);
+			param_vex3d(&bridge_right_start, &bridge_right_end, bridge_shimmer_t, &right);
+			
+			draw_3D_line(&left, &right, context, clip);
+		}
 	}
 #endif
 }
