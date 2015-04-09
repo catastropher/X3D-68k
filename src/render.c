@@ -140,6 +140,9 @@ void draw_clipped_polygon3D(Polygon3D* poly, RenderContext* context, Polygon2D* 
 		draw_polygon(&final, context);
 }
 
+extern Vex3D switch_pos;
+extern char switch_active;
+
 // Renders a single cube in writeframe
 // Note: make sure the cube isn't off the screen at all!
 void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
@@ -148,6 +151,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
 	
 	//++line_count;
+	
+	c->edge_bits |= (1 << 15);
 	
 	if(recursion_depth > max_recursion_depth)
 		max_recursion_depth = recursion_depth;
@@ -328,6 +333,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 				
 				cube_pass_edges(context, next_cube, cube_face);
 				
+				char should_draw = !(next_cube->edge_bits & (1 << 15));
+				
 				if(1) {// || (id == 5 && i == PLANE_BOTTOM)) {
 				
 				
@@ -344,7 +351,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 					}*/
 					
 				
-				if(!(next_cube->edge_bits & (1 << 15))) {
+				if(should_draw) {
 					
 					int j;
 					
@@ -369,21 +376,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 #if 1
 	if(id == 36) {
 		// Draw the light brigde switch
-		Vex3D center = {0, 0, 0};
-		
-		for(i = 0; i < 8; i++) {
-			center.x += c->v[i].x;
-			center.y += c->v[i].y;
-			center.z += c->v[i].z;
-		}
-		
-		center.x /= 8;
-		center.y /= 8;
-		center.z /= 8;
-		
-		center.x -= 70;
-		center.y += 20;
-		center.z -= 100;
+		Vex3D center = switch_pos;
 		
 		printf("Center: ");
 		print_vex3d(&center);
@@ -392,8 +385,8 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		
 		poly.total_v = 4;
 		
-		const int WIDTH = 40;
-		const int HEIGHT = 40;
+		int WIDTH = 40;
+		int HEIGHT = 40;
 		
 		poly.v[0] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z - WIDTH / 2};
 		poly.v[1] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z + WIDTH / 2};
@@ -405,6 +398,38 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 		}
 		
 		draw_clipped_polygon3D(&poly, context, clip);
+		
+		WIDTH = 20;
+		HEIGHT = 20;
+		
+		poly.v[0] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z - WIDTH / 2};
+		poly.v[1] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[2] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[3] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z - WIDTH / 2};
+		
+		for(i = 0; i < 4; i++) {
+			poly.draw[i] = 1;
+		}
+		
+		draw_clipped_polygon3D(&poly, context, clip);
+		
+		if(switch_active) {
+			WIDTH = 15;
+			HEIGHT = 15;
+			
+			poly.v[0] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z - WIDTH / 2};
+			poly.v[1] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z + WIDTH / 2};
+			poly.v[2] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z - WIDTH / 2};
+			poly.v[3] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z + WIDTH / 2};
+			
+			poly.draw[0] = 1;
+			poly.draw[1] = 0;
+			poly.draw[2] = 1;
+			poly.draw[3] = 0;
+			
+			draw_clipped_polygon3D(&poly, context, clip);
+		}
+		
 		
 	}
 #endif
@@ -560,7 +585,7 @@ void render_level(RenderContext* c) {
 	make_polygon2d(screen_clip, 4, &clip_region);
 	
 #if 1
-	cube_tab[c->cam.current_cube].edge_bits = cube_tab[c->cam.current_cube].invisible_edges;
+	cube_tab[c->cam.current_cube].edge_bits = cube_tab[c->cam.current_cube].invisible_edges | (1 << 15);
 	cube_tab[c->cam.current_cube].last_frame = c->frame;
 	cube_tab[c->cam.current_cube].render_bits = 0;
 #endif

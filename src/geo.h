@@ -233,6 +233,7 @@ inline void normalize_vex3d(Vex3D* v);
 short asm_rotate_vex3d(Vex3D *src asm("a4"), Mat3x3* mat asm("a5"), Vex3D_rot *dest asm("a3"));
 inline void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest);
 inline short get_vex3d_magnitude(Vex3D* v);
+inline short dist(Vex3D* a, Vex3D* b);
 
 void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest);
 void calculate_frustum_plane_normals(RenderContext* c);

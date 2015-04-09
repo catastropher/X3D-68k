@@ -136,8 +136,18 @@ inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->z = a->z + b->z;
 }
 
+// Calculates the magnitude (length) of a vector
 inline short get_vex3d_magnitude(Vex3D* v) {
 	return fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
+}
+
+// Returns the distance between two points
+inline short dist(Vex3D* a, Vex3D* b) {
+	short dx = a->x - b->x;
+	short dy = a->y - b->y;
+	short dz = a->z - b->z;
+	
+	return fastsqrt((long)dx * dx + (long)dy * dy + (long)dz * dz);
 }
 
 #define SIGNOF(_val) ((_val) < 0 ? -1 : 1)

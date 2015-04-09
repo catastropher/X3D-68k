@@ -94,10 +94,30 @@ enum {
 
 #define CINEMATIC_MAX 20
 
+Vex3D switch_pos;
+char switch_active;
+
+void cube_center(short id, Vex3D* center) {
+	center->x = 0;
+	center->y = 0;
+	center->z = 0;
+	
+	int i;
+	for(i = 0; i < 8; i++) {
+		add_vex3d(center, &cube_tab[id].v[i], center);
+	}
+	
+	center->x /= 8;
+	center->y /= 8;
+	center->z /= 8;
+}
+
 
 void _main(void) {	
 	FontSetSys(F_6x8);
 	clrscr();
+	
+	int i;
 	
 #if 1
 	cube_tab = malloc(sizeof(Cube) * 30);
@@ -156,18 +176,23 @@ void _main(void) {
 	context.screen = malloc(LCD_SIZE);
 	PortSet(context.screen, 239, 127);
 	
-	Vex3D center = {0, 0, 0};
+	Vex3D center;
 	
 	short start_cube = 0;
+	cube_center(start_cube, &center);
 	
-	int i;
-	for(i = 0; i < 8; i++) {
-		add_vex3d(&center, &cube_tab[start_cube].v[i], &center);
-	}
+	// Calculate the position of the switch for the light bridge
+	cube_center(36, &switch_pos);
+	switch_pos.x -= 70;
+	switch_pos.y += 20;
+	switch_pos.z -= 100;
+	
+	switch_active = 0;
+	
 	
 	context.cam.velocity.y = 0;
 	
-	set_cam_pos(&context, center.x / 8, center.y / 8, center.z / 8);
+	set_cam_pos(&context, center.x, center.y, center.z);
 	set_cam_angle(&context, 0, 0, 0);
 	
 	context.cam.pos_long.x = (long)context.cam.pos.x << NORMAL_BITS;
@@ -292,6 +317,13 @@ void _main(void) {
 			print_vex3d(&context.cam.pos);
 			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
 			printf("Cube: %d\n", context.cam.current_cube);
+		}
+		
+		if(_keytest(RR_HAND)) {
+			if(dist(&context.cam.pos, &switch_pos) < 100) {
+				cinematic_mode = 1;
+				switch_active = 1;
+			}
 		}
 		
 		if(_keytest(RR_APPS)) {
