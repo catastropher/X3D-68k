@@ -137,13 +137,6 @@ void cube_center(short id, Vex3D* center) {
 void stop_shake(void *data) {
 	shake = 0;
 	
-	static char visited = 0;
-	
-	++visited;
-	
-	if(visited != 1)
-		exit(-1);
-	
 	RenderContext* context = data;
 	
 	save_cam = context->cam;
@@ -405,6 +398,10 @@ void _main(void) {
 			system_timer = 0;
 		}
 		
+		if(!switch_active && dist(&context.cam.pos, &switch_pos) < 100) {
+			FastFilledRect_Draw_R(context.screen, 0, 0, LCD_WIDTH - 1, 10);
+			DrawStr(0, 1, "Press HAND to enable light bridge", A_REVERSE);
+		}
 		
 		//print_plane(&context.frustum.p[0]);
 		
@@ -470,6 +467,7 @@ void _main(void) {
 			}
 		}
 		
+	#if 0
 		if(_keytest(RR_F6)) {
 			while(_keytest(RR_F6)) ;
 			
@@ -493,6 +491,7 @@ void _main(void) {
 		if(_keytest(RR_APPS)) {
 			cinematic_mode = CINEMATIC_ENABLED;
 		}
+	#endif
 		
 		char plane;
 		

@@ -3,6 +3,8 @@
 
 #include <tigcclib.h>
 
+#define ALLOW_PRINTF
+
 #include "geo.h"
 #include "error.h"
 
@@ -122,7 +124,7 @@ void cube_remove_redundant_edges(Cube* c) {
 			Cube* c2 = &cube_tab[child];//&cube_tab[c->cube[i]];
 			
 			if(c - cube_tab == 0) {
-				printf("For face %d: %d (child %d)\n", i, face, cube_get_child(c, i));
+				//printf("For face %d: %d (child %d)\n", i, face, cube_get_child(c, i));
 			}
 			
 			// Consider every face except the one that connects them and its opposite
@@ -247,7 +249,7 @@ void level_set_children_faces(short cubes) {
 		
 		if(i == 1) {
 			for(k = 0; k < 6; k++) {
-				printf("Cube->%d\n", c->cube[k]);
+				//printf("Cube->%d\n", c->cube[k]);
 			}
 		}
 		
@@ -287,6 +289,8 @@ void level_set_children_faces(short cubes) {
 // Loads a Descent 1 level in X3DXDL format
 char load_level(const char* name) {
 	FILE* file = fopen(name, "rb");
+	
+	printf("X3D v1.0 by Michael Wilder\n");
 	
 	if(!file) {
 		printf("Couldn't open file\n");

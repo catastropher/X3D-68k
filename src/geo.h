@@ -2,8 +2,11 @@
 // Created 3/4/2015; 10:42:27 PM
 #pragma once
 
+
+#ifndef ALLOW_PRINTF
 #undef printf
 #define printf(...) ;
+#endif
 
 #include "fix.h"
 #include "math.h"
