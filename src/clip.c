@@ -849,13 +849,36 @@ void construct_frustum_from_polygon3D(Polygon3D* poly, RenderContext* context, F
 		if(next_point == poly->total_v)
 			next_point = 0;
 		
-		construct_plane(&context->cam.pos, &poly->v[i], &poly->v[next_point], &dest->p[i]);
+		construct_plane(&context->cam.pos, &poly->v[next_point], &poly->v[i], &dest->p[i]);
 		
 	}	
 }
 
 
-
+// A simple test function for construct_frustum_from_polygon3D()
+void test_construct_frustum_from_polygon3D(RenderContext* c, Frustum* dest) {
+	short w = c->w;
+	short h = c->h;
+	
+	//c->dist = 120;
+	
+	Vex3D top_left = {-w / 2, -h / 2, c->dist};
+	Vex3D top_right = {w / 2, -h / 2, c->dist};
+	
+	Vex3D bottom_left = {-w / 2, h / 2, c->dist};
+	Vex3D bottom_right = {w / 2, h / 2, c->dist};
+	
+	Polygon3D poly;
+	poly.total_v = 4;
+	
+	poly.v[0] = top_left;
+	poly.v[1] = top_right;
+	poly.v[2] = bottom_right;
+	poly.v[3] = bottom_left;
+	
+	construct_frustum_from_polygon3D(&poly, c, dest);
+	
+}
 
 
 

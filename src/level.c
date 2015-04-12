@@ -293,7 +293,7 @@ char load_level(const char* name) {
 	printf("X3D v1.0 by Michael Wilder\n");
 	
 	if(!file) {
-		printf("Couldn't open file\n");
+		error("Couldn't open file\n");
 		return 0;
 	}
 	

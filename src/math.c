@@ -217,6 +217,9 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	
 	Vex3D cam_pos = {0, 0, 0};
 	
+	//error("ERROR\n");
+	
+#if 0
 	// Top plane
 	construct_plane(&cam_pos, &top_right, &top_left, &c->frustum_unrotated.p[FRUSTUM_TOP]);
 	
@@ -236,6 +239,18 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	
 	// Hack...
 	c->frustum_unrotated.p[0].d = 15;//c->dist - DIST_TO_NEAR_PLANE;
+#else
+	test_construct_frustum_from_polygon3D(c, &c->frustum_unrotated);
+	c->frustum_unrotated.p[4].normal = (Vex3D){0, 0, 32767};
+	c->frustum_unrotated.p[0].d = 15;
+	//exit(-1);
+#endif
+	
+
+
+
+
+
 	
 	c->frustum_unrotated.total_p = 5;
 }

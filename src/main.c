@@ -191,8 +191,8 @@ void _main(void) {
 #if 1
 	cube_tab = malloc(sizeof(Cube) * 30);
 	
-	printf("Generating recip tab...\n");
-	gen_recip_tab();
+	//printf("Generating recip tab...\n");
+	//gen_recip_tab();
 	
 	init();
 	load_level("level01");

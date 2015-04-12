@@ -4,8 +4,8 @@
 
 
 #ifndef ALLOW_PRINTF
-#undef printf
-#define printf(...) ;
+//#undef printf
+//#define printf(...) ;
 #endif
 
 #include "fix.h"
@@ -281,6 +281,10 @@ void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* cente
 char clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* dest, char allow_extra_clip);
 
 void test_polygon_clipper(RenderContext* context);
+
+void construct_frustum_from_polygon3D(Polygon3D* poly, RenderContext* context, Frustum* dest);
+void test_construct_frustum_from_polygon3D(RenderContext* c, Frustum* dest);
+
 
 
 
