@@ -830,3 +830,71 @@ void test_polygon_clipper(RenderContext* context) {
 		draw_polygon(&clipp, context);
 	} while(ngetchx() != KEY_ESC);
 }
+
+
+
+// Takes a 3D polygon and constructs the planes of the view frustum
+// such that the points on the polygon form the bounds. Each plane
+// consits of two points on the polygon and one on the camera
+//
+// With any luck, this will remove the need for a 2D polygon clipper!
+void construct_frustum_from_polygon3D(Polygon3D* poly, RenderContext* context, Frustum* dest) {
+	short i;
+	
+	dest->total_p = poly->total_v;
+	
+	for(i = 0; i < poly->total_v; i++) {
+		short next_point = i + 1;
+		
+		if(next_point == poly->total_v)
+			next_point = 0;
+		
+		construct_plane(&context->cam.pos, &poly->v[i], &poly->v[next_point], &dest->p[i]);
+		
+	}
+	
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
