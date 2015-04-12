@@ -108,15 +108,12 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 // Note: make sure the z component of src is not 0 or you will get division
 // by 0!
 inline void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
-#if 0
-	errorif(src->z == 0, "Projection 0");
-#else
+	// Just to make sure we don't divide by zero...
 	if(src->z == 0) {
 		dest->x = 0;
 		dest->y = 0;
 		return;
 	}
-#endif
 
 	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
 	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
@@ -141,6 +138,8 @@ inline short get_vex3d_magnitude(Vex3D* v) {
 	return fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
 }
 
+// Parameterizes the line between start and end, with t being the
+// scale factor
 void param_vex3d(Vex3D* start, Vex3D* end, short t, Vex3D* dest) {
 	dest->x = (((long)(end->x - start->x) * t) >> 8) + start->x;
 	dest->y = (((long)(end->y - start->y) * t) >> 8) + start->y;
@@ -156,8 +155,6 @@ inline short dist(Vex3D* a, Vex3D* b) {
 	return fastsqrt((long)dx * dx + (long)dy * dy + (long)dz * dz);
 }
 
-#define SIGNOF(_val) ((_val) < 0 ? -1 : 1)
-
 // Normalizes a 3D vector i.e. makes the length of the vector 1
 // The result is in 0:15 format
 inline void normalize_vex3d(Vex3D* v) {
@@ -172,18 +169,7 @@ inline void normalize_vex3d(Vex3D* v) {
 	
 	unsigned short len = (fastsqrt(val) << 1) + 1;
 	
-	//xassert(len < 32767 * 2);
-	
-	//errorif(len < 0, "norm len overflow");
-	
 	errorif(SIGNOF(v->y) != SIGNOF(((long)v->y << NORMAL_BITS)), "Wrong sign");
-	
-	
-	//float length = sqrt((float)v->x * v->x + (float)v->y * v->y + (float)v->z * v->z);
-	
-	//v->x = ((float)v->x / length) * 32768.0;
-	//v->y = ((float)v->y / length) * 32768.0;
-	//v->z = ((float)v->z / length) * 32768.0;
 	
 	
 	v->x = ((long)v->x << NORMAL_BITS) / len;
@@ -212,7 +198,7 @@ void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest) {
 	
 	cross_product(&v1, &v2, &dest->normal);
 	
-	// D = -(AX + BY + CZ)
+	// D = (AX + BY + CZ)
 	dest->d = dot_product(&dest->normal, a);
 }
 
@@ -264,19 +250,6 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 		c->frustum.p[i].d = dot_product(&c->frustum.p[i].normal, &eye_cam_pos);
 	}
 	
-	/*Vex3D input = {0, 0, c->dist};
-	Vex3D out;
-	
-	rotate_vex3d(&input, &c->cam.mat, &out);
-	
-	input.x = -input.x;
-	
-	out.x >>= 2;
-	out.y >>= 2;
-	out.z >>= 2;
-	
-	*/
-	
 	Vex3D out = c->cam.dir;
 	
 	short dist = 15;//c->dist - DIST_TO_NEAR_PLANE;
@@ -290,9 +263,6 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 	out.z += c->cam.pos.z;
 	
 	c->frustum.p[0].d = dot_product(&c->frustum.p[0].normal, &out);
-	
-	//printf("Out: %d\n", c->frustum.p[0].d);
-	
 }
 
 // Calculates the rotated plane normals of the view frustum
@@ -463,36 +433,13 @@ void construct_cube(short x, short y, short z, short posx, short posy, short pos
 // Takes a 3D polygon and projects all of the points into a 2D polygon
 void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
 	int i;
-	
-	Vex2D temp[20];
-	
-	//errorif(src->total_v < 0 || src->total_v > 4, "Invalid count: %d\n", src->total_v);
-	
-	//errorif(!src || !c || !dest, "NULL PTR");
-	
-	if(src->total_v > 4) {
-		//errorif(!c, "err");
-		//printf("large vertex count...\nEnter to continue");
-		//printf("C: %ld\nSrc: %ld\nDest %ld\n", (long int)c, (long int)src, (long int)dest);
-		
-		//while(!_keytest(RR_F5)) ;
-		
-	}
+	Vex2D temp[MAX_POINTS];
 	
 	for(i = 0; i < src->total_v; i++) {
 		project_vex3d(c, &src->v[i], &temp[i]);
 	}
 	
-	/*if(src->total_v > 4) {
-		printf("Done project...\n");
-		while(!_keytest(RR_F5)) ;
-		
-	}*/
-	
-	//printf("Total v: %d\n", src->total_v);
 	make_polygon2d(temp, src->total_v, dest);
-	
-	//dest->total_v = src->total_v;
 }
 
 // Given an array of 8 3D points that define a cube, this selects those
@@ -554,13 +501,5 @@ inline short dist_to_plane(Vex3D* normal, Vex3D* point, Vex3D* v) {
 	long y = (long)normal->y * diff.y;
 	long z = (long)normal->z * diff.z;
 	
-	return (x + y + z) >> NORMAL_BITS;//dot >> NORMAL_BITS;
+	return (x + y + z) >> NORMAL_BITS;
 }
-
-
-
-
-
-
-
-

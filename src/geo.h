@@ -38,6 +38,9 @@
 // Swaps two values
 #define SWAP(_a,_b) {typeof(_a) _save = _a; _a = _b; _b = _save;}
 
+// Determines the sign of a value
+#define SIGNOF(_val) ((_val) < 0 ? -1 : 1)
+
 //#define ADDR(_addr) errorif((((long)_addr) % 2) != 0, "Invalid addr: %s, %s, %d", __FILE__, __FUNCTION__, __LINE__)
 #define ADDR(...) ;
 
@@ -304,6 +307,7 @@ void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char 
 
 inline short cube_get_child(Cube* c, short face);
 
+void draw_clipped_polygon3D(Polygon3D* poly, RenderContext* context, Polygon2D* clip);
 void draw_3D_line(Vex3D* a, Vex3D* b, RenderContext* context, Polygon2D* clip);
 
 
