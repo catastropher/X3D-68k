@@ -1,20 +1,14 @@
-TODO before UASIS
-	-Doors
-	-Weapon
-	-Test level
-	-Gravity
-	-Sliding along walls
-	-Friction
-	-Lava?
-	-Disable error messages/screen overlays
-	-Bug where everything disappears
-	-Bug where where you can see through walls (possibly because the portal is of size 0?)
+TODO
+	-Test construct_frustum_from_polygon3D()
+	-Write function to clip a single line against the viewing frustum
+	-Work out full details of algorithm to clip all 12 edges of the cube and propagate the edges
+		instead of duplicating work and clipping each polygon (which leads to 24 clips)
+	
 
+	-Move code for the light bridge into a data structure instead of loose global variables
+	-Remove sanity code in cross_product()
+	-Remove the unnecessary debug statements
+	-Change render_cube() to solely use 3D clipping instead of a hybrid 2D/3D
 
-
-
-General TODO:
-	-In clip.c, make it so that 2D clipping can remove points if 1) it's allowed to do so and
-		2) there are two consecutive lines that are not being drawn. There is currently a bug with this.
-
-	-Move Descent vertex/plane order conversion to the PC level converter
+	-Modify engine to allow for generalized convex segments instead of just cubes -
+		will require a significant engine rewrite

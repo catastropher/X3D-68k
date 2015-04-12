@@ -851,11 +851,7 @@ void construct_frustum_from_polygon3D(Polygon3D* poly, RenderContext* context, F
 		
 		construct_plane(&context->cam.pos, &poly->v[i], &poly->v[next_point], &dest->p[i]);
 		
-	}
-	
-	
-	
-	
+	}	
 }
 
 
