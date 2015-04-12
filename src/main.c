@@ -102,7 +102,11 @@ enum {
 	CINEMATIC_ENABLED
 };
 
+#ifdef TI89
+#define CINEMATIC_MAX 15
+#else
 #define CINEMATIC_MAX 20
+#endif
 
 #define BRIDGE_WIDTH 200
 
@@ -174,7 +178,12 @@ void begin_shake(void* data) {
 
 
 void _main(void) {	
+#ifdef TI89
+	FontSetSys(F_4x6);
+#else
 	FontSetSys(F_6x8);
+#endif
+
 	clrscr();
 	
 	int i;
@@ -399,8 +408,14 @@ void _main(void) {
 		}
 		
 		if(!switch_active && dist(&context.cam.pos, &switch_pos) < 100) {
+			
+#ifdef TI89
+			FastFilledRect_Draw_R(context.screen, 0, 0, LCD_WIDTH - 1, 7);
+#else
 			FastFilledRect_Draw_R(context.screen, 0, 0, LCD_WIDTH - 1, 10);
-			DrawStr(0, 1, "Press HAND to enable light bridge", A_REVERSE);
+#endif
+
+			DrawStr(0, 1, "Press APPS to enable light bridge", A_REVERSE);
 		}
 		
 		//print_plane(&context.frustum.p[0]);
@@ -456,7 +471,7 @@ void _main(void) {
 			printf("Cube: %d\n", context.cam.current_cube);
 		}
 		
-		if(_keytest(RR_HAND)) {
+		if(_keytest(RR_APPS)) {
 			while(_keytest(RR_HAND)) ;
 			
 			if(dist(&context.cam.pos, &switch_pos) < 100) {
