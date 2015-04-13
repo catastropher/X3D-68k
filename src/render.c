@@ -161,8 +161,7 @@ extern short bridge_t;
 extern char extend_bridge;
 extern short bridge_shimmer_t;
 
-// Renders a single cube in writeframe
-// Note: make sure the cube isn't off the screen at all!
+
 void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D rot[8];
 	int i, d;
@@ -301,6 +300,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 			
 			if(id == 5)
 				++visit;
+				
 			
 			// If we're really close to the portal, go ahead and just use the original clipping
 			// region (the new clipping region may have singularaties)
@@ -423,6 +423,308 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	}
 #endif
 }
+
+//======================================================================================
+void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id) {
+	Vex3D rot[8];
+	int i, d;
+	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z}; 
+	
+	Frustum new_frustum;
+	
+	
+	//++line_count;
+	
+	c->edge_bits |= (1 << 15);
+	
+	if(recursion_depth > max_recursion_depth)
+		max_recursion_depth = recursion_depth;
+		
+	if(recursion_depth > 20) {
+		return;
+	}
+	
+	int visit = 0;
+	
+	// Used for debugging purposes to determine the current cube being rendered
+	cube_id = id;
+	
+	// Originally I didn't put these in a union, but I was getting stack overflows so
+	// I really had no choice
+	union {
+		Polygon3D poly3D;
+		Polygon2D out_2d;
+	} set_a;
+	
+	union {
+		Polygon3D poly_out;
+		Polygon2D dest;
+	} set_b;
+	
+	short faces_drawn = 0;
+	
+	for(i = 0; i < 6; i++) {
+		cube_get_face(c->v, i, set_a.poly3D.v);
+		
+		set_a.poly3D.total_v = 4;
+			
+		// Which edges of the current face we need to draw
+		unsigned char draw_edges = 0;
+
+
+		// If the angle between the view directions and the polygon normal < 45 deg,
+		// we're going to assume that the polygon isn't visible
+	#if 1
+		if(dot_product(&c->normal[i], &context->cam.dir) > 23170)
+			continue;
+	#endif
+			
+		// If we're on the wrong side of the plane, it must be invisible (backface culling)
+		short dist = dist_to_plane(&c->normal[i], &context->cam.pos, &c->v[cube_vertex_tab[i][0]]);
+		
+	#if 1
+		if(dist > 10)
+			continue;
+	#endif
+
+		// Determine which of the edges need to be drawn
+		for(d = 0; d < 4; d++) {
+			short a = cube_vertex_tab[i][d];
+			short b = cube_vertex_tab[i][d + 1];
+			
+			draw_edges = (draw_edges >> 1) | ((unsigned short)((c->edge_bits & (1 << edge_table[a][b])) == 0) << 3);
+			
+			//draw_edges = (draw_edges >> 1) | ((!((c->invisible_edges >> edge_table[a][b]) & 1)) << 3);
+			
+			c->edge_bits |= (1 << edge_table[a][b]);
+		}
+		
+	#if 1
+		// If none of the edges need to be drawn and this isn't a portal, we can skip clipping it
+		if(draw_edges == 0 && c->cube[i] == -1)
+			continue;
+	#endif
+		
+		// Now that we know which edges need to be drawn, copy it over to the 3D polygon
+		for(d = 0; d< set_a.poly3D.total_v; d++) {
+			set_a.poly3D.draw[d] = draw_edges & 1;
+			draw_edges >>= 1;
+		}
+		
+		// Clip the face against the viewing frustum
+		char draw_face = clip_polygon_to_frustum(&set_a.poly3D, clip, &set_b.poly_out);
+		
+		Polygon2D* res = NULL;
+		
+		Polygon3D copy = set_b.poly_out;
+		
+		if(draw_face) {
+	
+			// Is this code being duplicated??? Hmm....
+			// Rotate the points of the face
+			for(d = 0; d < set_b.poly_out.total_v; d++) {
+				Vex3D temp;
+				add_vex3d(&set_b.poly_out.v[d], &ncam_pos, &temp);
+				
+				rotate_vex3d(&temp, &context->cam.mat, &set_b.poly_out.v[d]);
+			}
+			
+			// Project the points onto the screen
+			project_polygon3d(&set_b.poly_out, context, &set_a.out_2d);
+
+			for(d = 0; d < set_b.poly_out.total_v; d++)
+				set_a.out_2d.line[d].draw = set_b.poly_out.draw[d];
+			
+			res = &set_b.dest;
+			
+			// Clip the edges to the bounds of the clipping region
+			// EDIT: no longer necessary
+			// clip_polygon(&set_a.out_2d, clip, &set_b.dest, 0);
+			
+			// Draw the polygon
+			draw_polygon(&set_a.out_2d, context);
+			
+			//LCD_restore(context->screen);
+			
+			if(id == 10) {
+				//printf("Drew: %d\n", i);
+			}
+			
+			++faces_drawn;
+		}
+		
+		// If this face has a child cube, we may need to render it
+		if(c->cube[i] != -1) {
+			short cube_face = c->cube[i] & 0b111;
+			short child_id = cube_get_child(c, i);
+			Cube* next_cube = &cube_tab[child_id];
+			
+			Polygon2D* new_clip;
+			Frustum* frustum;
+			
+		#if 1
+			if(draw_face) {
+				frustum = &new_frustum;
+			}
+			else {
+				frustum = clip;
+			}
+			
+			if(id == 5)
+				++visit;
+		#endif
+				
+			
+			// If we're really close to the portal, go ahead and just use the original clipping
+			// region (the new clipping region may have singularaties)
+		#if 1
+			if(dist > -120 && dist <= 10 && id == context->cam.current_cube) {
+				draw_face = 1;
+				/////new_clip = clip;
+				
+			}
+		#endif
+			
+			if(draw_face && /*new_clip->total_v > 2 && */recursion_depth < 20) {
+				// Pass over which edges have already been drawn
+				
+				//if(c->cube[i] == 10) {
+				//	printf("Made it to here\n");
+				//}
+				
+				cube_pass_edges(context, next_cube, cube_face);
+				
+				char should_draw = !(next_cube->edge_bits & (1 << 15));
+					
+				
+				if(should_draw) {
+					
+					int j;
+					
+					//for(j = 0; j < new_clip->total_v; j++) {
+						//new_clip->line[j].draw = 1;
+					//}
+					
+					//draw_polygon(new_clip, context);
+					
+					c->render_bits |= (1 << i);
+					++recursion_depth;
+					
+					if(copy.total_v > 2) {
+						construct_frustum_from_polygon3D(&copy, context, &new_frustum);
+					
+						render_cube_clip3D(next_cube, context, frustum, child_id);
+						--recursion_depth;
+					}
+				}
+			}
+		}
+	}
+	
+#if 0
+	if(id == 36) {
+		// Draw the light brigde switch
+		Vex3D center = switch_pos;
+		
+		printf("Center: ");
+		print_vex3d(&center);
+		
+		Polygon3D poly;
+		
+		poly.total_v = 4;
+		
+		int WIDTH = 40;
+		int HEIGHT = 40;
+		
+		poly.v[0] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z - WIDTH / 2};
+		poly.v[1] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[2] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[3] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z - WIDTH / 2};
+		
+		for(i = 0; i < 4; i++) {
+			poly.draw[i] = 1;
+		}
+		
+		draw_clipped_polygon3D(&poly, context, clip);
+		
+		WIDTH = 20;
+		HEIGHT = 20;
+		
+		poly.v[0] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z - WIDTH / 2};
+		poly.v[1] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[2] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z + WIDTH / 2};
+		poly.v[3] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z - WIDTH / 2};
+		
+		for(i = 0; i < 4; i++) {
+			poly.draw[i] = 1;
+		}
+		
+		draw_clipped_polygon3D(&poly, context, clip);
+		
+		if(switch_active) {
+			WIDTH = 15;
+			HEIGHT = 15;
+			
+			poly.v[0] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z - WIDTH / 2};
+			poly.v[1] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z + WIDTH / 2};
+			poly.v[2] = (Vex3D){center.x, center.y + HEIGHT / 2, center.z - WIDTH / 2};
+			poly.v[3] = (Vex3D){center.x, center.y - HEIGHT / 2, center.z + WIDTH / 2};
+			
+			poly.draw[0] = 1;
+			poly.draw[1] = 0;
+			poly.draw[2] = 1;
+			poly.draw[3] = 0;
+			
+			draw_clipped_polygon3D(&poly, context, clip);
+			
+		}
+	}
+	else if(id == 37) {
+		if(extend_bridge) {
+			Vex3D end_left, end_right;
+			
+			param_vex3d(&bridge_left_end, &bridge_left_start, bridge_t, &end_left);
+			param_vex3d(&bridge_right_start, &bridge_right_end, bridge_t, &end_right);
+			
+			draw_3D_line(&bridge_left_end, &end_left, context, clip);
+			draw_3D_line(&bridge_right_start, &end_right, context, clip);
+		}
+		
+		if(bridge_shimmer_t >= 0) {
+			Vex3D left, right;
+			
+			param_vex3d(&bridge_left_start, &bridge_left_end, bridge_shimmer_t, &left);
+			param_vex3d(&bridge_right_start, &bridge_right_end, bridge_shimmer_t, &right);
+			
+			draw_3D_line(&left, &right, context, clip);
+		}
+	}
+#endif
+}
+
+
+
+
+
+
+
+
+//======================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D rot[8];
@@ -584,7 +886,9 @@ void render_level(RenderContext* c) {
 	// Move the camera up to eye level for rendering... not that this method
 	// is buggy and should be replaced
 	c->cam.pos.y -= PLAYER_HEIGHT;
-	render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
+	//render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
+	render_cube_clip3D(&cube_tab[c->cam.current_cube], c, &c->frustum, c->cam.current_cube);
+	
 	c->cam.pos.y = old_y;
 }
 

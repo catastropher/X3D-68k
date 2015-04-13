@@ -34,15 +34,15 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	dest->z = ((long)a->x * b->y - (long)a->y * b->x);
 	
 	
-	long long x = ((long long)a->y * b->z - (long long)a->z * b->y);
-	long long y = ((long long)a->z * b->x - (long long)a->x * b->z);
-	long long z = ((long long)a->x * b->y - (long long)a->y * b->x);
+	//long long x = ((long long)a->y * b->z - (long long)a->z * b->y);
+	//long long y = ((long long)a->z * b->x - (long long)a->x * b->z);
+	//long long z = ((long long)a->x * b->y - (long long)a->y * b->x);
 	
 	
 	//errorif(dest->x != x, "Invalid x");
 	
 	// FIXME: possible overflows in above code
-	long xx = x;
+	//long xx = x;
 	long xxx = ((((long)a->y * b->z) >> 1) - (((long)a->z * b->y) >> 1));
 	long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
 	long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
@@ -53,7 +53,7 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	
 	//xassert(zzz == dest->z);
 	
-#if 1
+#if 0
 	float res_z = ((float)a->x * b->y - (float)a->y * b->x) / 2;
 	
 	
