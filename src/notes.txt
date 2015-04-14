@@ -12,3 +12,18 @@ F -> 3 bits for face id
 C -> 10 bits for child cube
 
 Note that it's still -1 if the cube has no child connected to it
+
+
+
+
+
+
+
+The 3D clipper is suffering from problems with bizzare clipping effects (lines being drawn
+all over the screen). This usually indicates that geometry is behind you, which leads to a
+negative Z. Perhaps this is being cause because the camera can get too close to the wall.
+
+
+
+
+Embedding in walls...

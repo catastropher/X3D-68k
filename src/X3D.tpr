@@ -50,7 +50,7 @@ Use Return Value=0
 Enable Error Return=0
 Save Screen=1
 [File Editing]
-Open File=C:\excel\code\68k\X3D-68k\src\render.c
+Open File=C:\excel\code\68k\X3D-68k\src\TODO.txt
 [Included Files]
 C File 1=clip.c
 C File 2=console.c

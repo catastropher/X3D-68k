@@ -4,8 +4,8 @@
 
 
 #ifndef ALLOW_PRINTF
-//#undef printf
-//#define printf(...) ;
+#undef printf
+#define printf(...) ;
 #endif
 
 #include "fix.h"
@@ -13,7 +13,7 @@
 
 #define NORMAL_BITS 15		// The number of fractional bits used to represent a normal in fixed point
 #define MAX_POINTS 10		// Mamimum number of points a polygon can have
-#define MAX_PLANES 5		// Maximum number of planes a view frustum can have
+#define MAX_PLANES 10		// Maximum number of planes a view frustum can have
 
 #define ANG_90 64
 #define ANG_180 128
