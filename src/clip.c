@@ -22,7 +22,7 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short next_point;
 	short in, next_in;
 	short dot, next_dot;
-	short t;
+	long t;
 	
 	short out[10];
 	short out_pos = 0;
@@ -42,6 +42,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short total_outside = !in;
 	
 	dest->total_v = 0;
+	
+	xassert(poly->total_v > 1);
 	
 	for(i = 0; i < poly->total_v; i++) {
 		next_point = (i + 1) % poly->total_v;
@@ -191,6 +193,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		//printf("Total outside: %d\n", total_outside);
 	}
 	
+	xassert(dest->total_v < MAX_POINTS);
+	
 	return dest->total_v > 1;	
 }
 
@@ -208,6 +212,15 @@ char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest) {
 	ADDR(src);
 	ADDR(f);
 	ADDR(dest);
+	
+	//xassert(f->total_p != 0);
+	
+	//xassert(f->total_p < MAX_PLANES);
+	
+	errorif(f->total_p >= MAX_PLANES, "Total p: %d\n", f->total_p);
+	
+	if(f->total_p == 0)
+		return 0;
 	
 	
 #if 1

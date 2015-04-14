@@ -176,6 +176,28 @@ void begin_shake(void* data) {
 	add_timer(50, 0, stop_shake, data);
 }
 
+char status_text[100];
+char show_status_text;
+
+void status_text_timer(void* data) {
+	show_status_text = 0;
+}
+
+void show_temp_status(const char* status) {
+	strcpy(status_text, status);
+	show_status_text = 1;
+	add_timer(20, 0, status_text_timer, NULL);
+}
+
+
+
+
+
+
+
+
+
+char render_method;
 
 void _main(void) {	
 #ifdef TI89
@@ -318,7 +340,11 @@ void _main(void) {
 	
 	shake = 0;
 	
+	render_method = 0;
+	
 	char added_restore_timer = 0;
+	
+	show_temp_status("Welcome to X3D");
 	
 	do {
 		key = read_keys();
@@ -382,7 +408,7 @@ void _main(void) {
 				bridge_shimmer_t = 0;
 		}
 		
-	#if 0
+	#if 1
 		if(invert_screen) {
 			for(i = 0; i < LCD_SIZE; i++)
 				context.screen[i] = ~context.screen[i];
@@ -416,6 +442,16 @@ void _main(void) {
 #endif
 
 			DrawStr(0, 1, "Press APPS to enable light bridge", A_REVERSE);
+		}
+		
+		if(show_status_text) {
+#ifdef TI89
+			FastFilledRect_Draw_R(context.screen, 0, 0, LCD_WIDTH - 1, 7);
+#else
+			FastFilledRect_Draw_R(context.screen, 0, 0, LCD_WIDTH - 1, 10);
+#endif
+
+			DrawStr(0, 1, status_text, A_REVERSE);
 		}
 		
 		//print_plane(&context.frustum.p[0]);
@@ -480,6 +516,14 @@ void _main(void) {
 					add_timer(20, 0, begin_shake, &context);
 				}
 			}
+		}
+		
+		if(_keytest(RR_2ND)) {
+			while(_keytest(RR_2ND)) ;
+			
+			render_method = !render_method;
+			
+			show_temp_status(render_method == 0 ? "Switched to hybrid 2D/3D clipper" : "Switched to 3D clipper");
 		}
 		
 	#if 0

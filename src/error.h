@@ -1,7 +1,7 @@
 // Header File
 // Created 3/9/2015; 11:22:22 AM
 
-//#define NDEBUG
+#define NDEBUG
 
 #ifdef NDEBUG
 #define error(...) ;

@@ -432,7 +432,6 @@ void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id
 	
 	Frustum new_frustum;
 	
-	
 	//++line_count;
 	
 	c->edge_bits |= (1 << 15);
@@ -440,7 +439,7 @@ void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id
 	if(recursion_depth > max_recursion_depth)
 		max_recursion_depth = recursion_depth;
 		
-	if(recursion_depth > 20) {
+	if(recursion_depth > 7) {
 		return;
 	}
 	
@@ -580,8 +579,7 @@ void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id
 		#if 1
 			if(dist > -120 && dist <= 10 && id == context->cam.current_cube) {
 				draw_face = 1;
-				/////new_clip = clip;
-				
+				frustum = clip;
 			}
 		#endif
 			
@@ -595,7 +593,6 @@ void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id
 				cube_pass_edges(context, next_cube, cube_face);
 				
 				char should_draw = !(next_cube->edge_bits & (1 << 15));
-					
 				
 				if(should_draw) {
 					
@@ -610,12 +607,14 @@ void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id
 					c->render_bits |= (1 << i);
 					++recursion_depth;
 					
-					if(copy.total_v > 2) {
-						construct_frustum_from_polygon3D(&copy, context, &new_frustum);
+					if(frustum == clip || copy.total_v > 2) {
+						if(frustum != clip)
+							construct_frustum_from_polygon3D(&copy, context, &new_frustum);
 					
 						render_cube_clip3D(next_cube, context, frustum, child_id);
-						--recursion_depth;
 					}
+					
+					--recursion_depth;
 				}
 			}
 		}
@@ -710,10 +709,6 @@ void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id
 
 
 //======================================================================================
-
-
-
-
 
 
 
@@ -848,6 +843,8 @@ void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, sho
 	}
 }
 
+extern char render_method;
+
 // Renders the level, starting from the cube the camera is currently in
 void render_level(RenderContext* c) {
 	ADDR(c);
@@ -886,8 +883,11 @@ void render_level(RenderContext* c) {
 	// Move the camera up to eye level for rendering... not that this method
 	// is buggy and should be replaced
 	c->cam.pos.y -= PLAYER_HEIGHT;
-	//render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
-	render_cube_clip3D(&cube_tab[c->cam.current_cube], c, &c->frustum, c->cam.current_cube);
+	
+	if(render_method == 0)
+		render_cube(&cube_tab[c->cam.current_cube], c, &clip_region, c->cam.current_cube);
+	else
+		render_cube_clip3D(&cube_tab[c->cam.current_cube], c, &c->frustum, c->cam.current_cube);
 	
 	c->cam.pos.y = old_y;
 }

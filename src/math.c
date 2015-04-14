@@ -29,9 +29,9 @@ long dot_product_long(Vex3D* a, Vex3D* b) {
 // is perpendicular to both vectors
 // Note: this routine will normalize the result
 void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
-	dest->x = ((long)a->y * b->z - (long)a->z * b->y);
-	dest->y = ((long)a->z * b->x - (long)a->x * b->z);
-	dest->z = ((long)a->x * b->y - (long)a->y * b->x);
+	//dest->x = ((long)a->y * b->z - (long)a->z * b->y);
+	//dest->y = ((long)a->z * b->x - (long)a->x * b->z);
+	//dest->z = ((long)a->x * b->y - (long)a->y * b->x);
 	
 	
 	//long long x = ((long long)a->y * b->z - (long long)a->z * b->y);
@@ -219,7 +219,7 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 	
 	//error("ERROR\n");
 	
-#if 0
+#if 1
 	// Top plane
 	construct_plane(&cam_pos, &top_right, &top_left, &c->frustum_unrotated.p[FRUSTUM_TOP]);
 	
