@@ -870,7 +870,8 @@ void render_level(RenderContext* c) {
 	
 	Polygon2D clip_region;
 	
-	make_polygon2d(screen_clip, 4, &clip_region);
+	if(render_method == 0)
+		make_polygon2d(screen_clip, 4, &clip_region);
 	
 #if 1
 	cube_tab[c->cam.current_cube].edge_bits = cube_tab[c->cam.current_cube].invisible_edges | (1 << 15);

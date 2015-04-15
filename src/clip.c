@@ -13,16 +13,15 @@ extern short plane_id;
 
 short plane_clip;
 char invert_screen;
+short plane_clipped_saved;
 
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
-// TODO: keep track of which edges have been clipped so we know which
-// part of the polygon still needs to be drawn
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	short i;
 	short next_point;
 	short in, next_in;
 	short dot, next_dot;
-	long t;
+	short t;
 	
 	short out[10];
 	short out_pos = 0;
@@ -45,8 +44,31 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 	
 	xassert(poly->total_v > 1);
 	
+	short clipped = 0;
+	
 	for(i = 0; i < poly->total_v; i++) {
-		next_point = (i + 1) % poly->total_v;
+		if(clipped == 2) {
+			// A convex polygon can at most have two edges clipped, so if we've reached it
+			// just copy over the other ones (assuming we're back to being inside the poly)
+			
+			if(in) {
+				plane_clipped_saved += poly->total_v - i;
+				
+				for(; i < poly->total_v; i++) {
+					dest->v[dest->total_v] = poly->v[i];
+					dest->draw[dest->total_v++] = poly->draw[i];
+				}
+			}
+			
+			break;
+			
+			//plane_clipped_saved++;
+		}
+		
+		
+		next_point = i + 1;
+		if(next_point == poly->total_v)
+			next_point = 0;
 		
 		++plane_clip;
 		
@@ -68,6 +90,8 @@ char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest) {
 		
 		// The points are on opposite sides of the plane, so clip it
 		if(in != next_in) {
+			++clipped;
+			
 			// Scale factor to get the point on the plane
 			errorif((long)next_dot - dot == 0, "Clip div by 0");
 			

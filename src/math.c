@@ -475,7 +475,7 @@ inline short get_opposite_face(short face) {
 		return face + 1;
 }
 
-// Creats a 2D polygon from a list of 2D points
+// Creates a 2D polygon from a list of 2D points
 void make_polygon2d(Vex2D* v, int points, Polygon2D* p) {
 	p->total_v = points;
 	
@@ -493,7 +493,13 @@ void make_polygon2d(Vex2D* v, int points, Polygon2D* p) {
 	p->center = center;
 	
 	for(i = 0; i < points; i++) {
-		short next = (i + 1) % points;
+		short next = i + 1;
+		
+		if(next == points)
+			next = 0;
+		
+		
+		
 		p->p[i].v = v[i];
 		p->p[i].clipped = 0;
 		get_line_info(&p->line[i], &v[i], &v[next], &center); 

@@ -198,6 +198,7 @@ void show_temp_status(const char* status) {
 
 
 char render_method;
+extern short plane_clipped_saved;
 
 void _main(void) {	
 #ifdef TI89
@@ -366,6 +367,7 @@ void _main(void) {
 		clip_count = 0;
 		plane_clip = 0;
 		invert_screen = 0;
+		plane_clipped_saved = 0;
 		
 		process_timers();
 		
@@ -420,7 +422,7 @@ void _main(void) {
 		//printf("Line count: %ld\n", line_count);
 		
 		if(draw_fps) {
-			printf("fps: %d\nClip count: %u\nCube count: %ld\nPlane clip: %d\n", fps, clip_count, line_count, plane_clip);//\ndepth: %d\n", fps, max_recursion_depth);
+			printf("fps: %d\nClip count: %u\nCube count: %ld\nPlane clip: %d\nClip saved: %d\n", fps, clip_count, line_count, plane_clip, plane_clipped_saved);//\ndepth: %d\n", fps, max_recursion_depth);
 			//printf("DDDD: %d\n", context.frustum.p[0].d);
 		}
 		
