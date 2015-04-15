@@ -475,35 +475,49 @@ inline short get_opposite_face(short face) {
 		return face + 1;
 }
 
+extern char render_method;
+
 // Creates a 2D polygon from a list of 2D points
 void make_polygon2d(Vex2D* v, int points, Polygon2D* p) {
-	p->total_v = points;
-	
-	int i;
-	Vex2D center = {0, 0};
-	
-	for(i = 0; i < points; i++) {
-		center.x += v[i].x;
-		center.y += v[i].y;
+	if(render_method == 0) {
+		p->total_v = points;
+		
+		int i;
+		Vex2D center = {0, 0};
+		
+		for(i = 0; i < points; i++) {
+			center.x += v[i].x;
+			center.y += v[i].y;
+		}
+		
+		center.x /= points;
+		center.y /= points;
+		
+		p->center = center;
+		
+		for(i = 0; i < points; i++) {
+			short next = i + 1;
+			
+			if(next == points)
+				next = 0;
+			
+			
+			
+			p->p[i].v = v[i];
+			p->p[i].clipped = 0;
+			get_line_info(&p->line[i], &v[i], &v[next], &center); 
+			p->line[i].draw = 1;
+		}
 	}
-	
-	center.x /= points;
-	center.y /= points;
-	
-	p->center = center;
-	
-	for(i = 0; i < points; i++) {
-		short next = i + 1;
+	else {
+		short i;
 		
-		if(next == points)
-			next = 0;
+		p->total_v = points;
 		
-		
-		
-		p->p[i].v = v[i];
-		p->p[i].clipped = 0;
-		get_line_info(&p->line[i], &v[i], &v[next], &center); 
-		p->line[i].draw = 1;
+		for(i = 0; i < points; i++) {
+			p->line[i].draw = 1;
+			p->p[i].v = v[i];
+		}
 	}
 }
 

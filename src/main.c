@@ -347,6 +347,9 @@ void _main(void) {
 	
 	show_temp_status("Welcome to X3D");
 	
+	char fps_text[10] = {0};
+	char fps_status = 0;
+	
 	do {
 		key = read_keys();
 		
@@ -368,6 +371,10 @@ void _main(void) {
 		plane_clip = 0;
 		invert_screen = 0;
 		plane_clipped_saved = 0;
+		
+		if(fps_status) {
+			show_status_text = 1;
+		}
 		
 		process_timers();
 		
@@ -433,6 +440,10 @@ void _main(void) {
 			fps = frame_count;
 			frame_count = 0;
 			system_timer = 0;
+			
+			if(fps_status) {
+				sprintf(status_text, "FPS: %d", fps);
+			}
 		}
 		
 		if(!switch_active && dist(&context.cam.pos, &switch_pos) < 100) {
@@ -507,6 +518,12 @@ void _main(void) {
 			print_vex3d(&context.cam.pos);
 			printf("{%d, %d, %d}\n", context.cam.angle.x, context.cam.angle.y, context.cam.angle.z);
 			printf("Cube: %d\n", context.cam.current_cube);
+		}
+		
+		if(_keytest(RR_F7)) {
+			fps_status = !fps_status;
+			
+			while(_keytest(RR_F7)) ;
 		}
 		
 		if(_keytest(RR_APPS)) {
@@ -588,7 +605,8 @@ void _main(void) {
 		//for(i = 0; i < LCD_SIZE; i++)
 		//	context.screen[i] = ~context.screen[i];
 	
-		LCD_restore(context.screen);
+		//LCD_restore(context.screen);
+		FastCopyScreen_R(context.screen, LCD_MEM);
 	} while(!(key & GAME_KEY_ESC));
 		
 		
