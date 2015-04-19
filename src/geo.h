@@ -2,6 +2,7 @@
 // Created 3/4/2015; 10:42:27 PM
 #pragma once
 
+#include "geo/vector.h"
 
 #ifndef ALLOW_PRINTF
 #undef printf
@@ -74,36 +75,6 @@ enum {
 	FRUSTUM_LEFT,
 	FRUSTUM_RIGHT
 };
-
-// A 3D vertex or vector with short values
-typedef struct Vex3D {
-	short x, y, z;
-} Vex3D;
-
-// A special padded 3D vector for the output of a 3D rotation
-typedef struct{
-	short x;
-	short pad1;
-	short y;
-	short pad2;
-	short z;
-	short pad3;
-} Vex3D_rot;
-
-// A 3D vertex or vector with char (small) values
-typedef struct Vex3Ds {
-	unsigned char x, y, z;
-} Vex3Ds;
-
-// A 3D vector with long values
-typedef struct Vex3DL {
-	long x, y, z;
-} Vex3DL;
-
-// A 2D vertex or vector
-typedef struct {
-	short x, y;
-} Vex2D;
 
 // A 3D plane, defined by the surface normal and the distance to the
 // plane from the origin i.e. AX + BY + CZ + D = 0

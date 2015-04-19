@@ -1,3 +1,21 @@
+// This file is part of X3D.
+
+// X3D is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// X3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with X3D. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+
 // C Source File
 // Created 3/5/2015; 9:25:21 AM
 
@@ -7,131 +25,6 @@
 #include "math.h"
 #include "screen.h"
 #include "error.h"
-
-// Calculates the dot product of two vectors, which can be interpreted
-// as the cosine of the angle between them
-short dot_product(Vex3D* a, Vex3D* b) {
-	long prod = (long)a->x * b->x + (long)a->y * b->y + (long)a->z * b->z;
-	
-	return prod >> NORMAL_BITS;
-}
-
-// Calculates the dot product of two vectors, which can be interpreted
-// as the cosine of the angle between them
-// Returns as a fixed point in 15.15 format
-long dot_product_long(Vex3D* a, Vex3D* b) {
-	long prod = (long)a->x * b->x + (long)a->y * b->y + (long)a->z * b->z;
-	
-	return prod;
-}
-
-// Calculates the cross product of two vectors. This creates a vector that
-// is perpendicular to both vectors
-// Note: this routine will normalize the result
-void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
-	//dest->x = ((long)a->y * b->z - (long)a->z * b->y);
-	//dest->y = ((long)a->z * b->x - (long)a->x * b->z);
-	//dest->z = ((long)a->x * b->y - (long)a->y * b->x);
-	
-	
-	//long long x = ((long long)a->y * b->z - (long long)a->z * b->y);
-	//long long y = ((long long)a->z * b->x - (long long)a->x * b->z);
-	//long long z = ((long long)a->x * b->y - (long long)a->y * b->x);
-	
-	
-	//errorif(dest->x != x, "Invalid x");
-	
-	// FIXME: possible overflows in above code
-	//long xx = x;
-	
-	long x_prod = (long)a->y * b->z;
-	
-	
-	long xxx, yyy = 0, zzz = 0;
-	
-	
-	//long xxx = ((((long)a->y * (short)b->z) >> 1) - (((long)a->z * b->y) >> 1));
-	//long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
-	//long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
-	
-	
-	//long xxx = ((((long)a->y * (short)b->z) >> 1) - (((long)a->z * b->y) >> 1));
-	{
-		long ay_bz = (long)a->y * b->z;
-		long az_by = (long)a->z * b->y;
-		xxx = (ay_bz >> 1) - (az_by >> 1);
-	}
-	
-	//long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
-	{
-		long az_bx = (long)a->z * b->x;
-		long ax_bz = (long)a->x * b->z;
-		yyy = (az_bx >> 1) - (ax_bz >> 1);
-	}
-	
-	//long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
-	//long ax_by = (long)a->x * b->y;
-	//long ay_bx = (long)a->y * b->x;
-	//zzz = (ax_by >> 1) - (ay_bx >> 1);
-	
-	
-	
-	
-	//long yyy = ((long)a->z * b->x - (long)a->x * b->z);
-	//long zzz = ((long)a->x * b->y - (long)a->y * b->x);
-	
-	//xassert(zzz == dest->z);
-	
-#if 0
-	float res_z = ((float)a->x * b->y - (float)a->y * b->x) / 2;
-	
-	
-	if(zzz != res_z) {
-		printf("zzz: %ld, z: %f\n", zzz, res_z);
-		ngetchx();
-	}
-	
-	float res_y = ((float)a->z * b->x - (float)a->x * b->z) / 2.0;
-	
-	
-	if(res_y != yyy) {
-		printf("zzz: %ld, z: %f\n", zzz, res_z);
-		ngetchx();
-	}
-	
-	float res_x = ((float)a->y * b->z - (float)a->z * b->y) / 2;
-	
-	
-	if(res_x != xxx) {
-		printf("zzz: %ld, z: %f\n", zzz, res_z);
-		ngetchx();
-	}
-	
-	xassert(res_x == xxx);
-	xassert(res_y == yyy);
-	xassert(res_z == zzz);
-	
-#endif
-	
-	while(abs(xxx) >= 0x7FFF || abs(yyy) >= 0x7FFF || abs(zzz) >= 0x7FFF) {
-		xxx >>= 1;
-		yyy >>= 1;
-		zzz >>= 1;
-	}
-	
-	dest->x = xxx;
-	dest->y = yyy;
-	dest->z = zzz;
-	
-	//xassert(xxx == dest->x);
-	//xassert(yyy == dest->y);
-	
-	
-	
-	//printf("Dest->z: %d\n", dest->z);
-	
-	normalize_vex3d(dest);
-}
 
 // Projects a 3D point onto a 2D surface i.e. a RenderContext
 // Note: make sure the z component of src is not 0 or you will get division
