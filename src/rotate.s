@@ -196,3 +196,66 @@ asm_rotate_vex3d:
 	
 	rts
 	
+|=================================================================
+|calculates the cross product of two vectors
+|inputs:	a1 = Vex3D* a
+|		a2 = Vex3D* b
+|		a3 = Vex3D* dest
+|=================================================================	
+asm_cross_product:
+	movem.l %d0-%d7,-(%sp)
+	
+	| Load in the first Vex3D
+	move.w	(%a1)+,%d0	| a->x
+	move.w	(%a1)+,%d1	| a->y
+	move.w	(%a1)+,%d2	| a->z
+	
+	| Load in the second Vex3D
+	move.w	(%a2)+,%d3	| b->x
+	move.w	(%a2)+,%d4	| b->y
+	move.w	(%a2)+,%d5	| b->z
+	
+	| long xxx = ((((long)a->y * b->z) >> 1) - (((long)a->z * b->y) >> 1));
+	move.w	%d1,%d6		| d6 = a->y
+	muls.w	%d5,%d6		| a->y * b->z
+	asr.l	#1,%d6
+	
+	move.w	%d2,%d7		| d7 = a->z
+	muls.w	%d4,%d7
+	asr.l	#1,%d7
+	
+	sub.l	%d7,%d6		| d6 = dest->x
+	
+	
+	| long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
+	
+	| we've already used b->z the other time, so it's ok to destroy it
+	|muls.w %
+	
+	
+	
+	
+	
+	| long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

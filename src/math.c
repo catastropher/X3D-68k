@@ -43,9 +43,38 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	
 	// FIXME: possible overflows in above code
 	//long xx = x;
-	long xxx = ((((long)a->y * b->z) >> 1) - (((long)a->z * b->y) >> 1));
-	long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
-	long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
+	
+	long x_prod = (long)a->y * b->z;
+	
+	
+	long xxx, yyy = 0, zzz = 0;
+	
+	
+	//long xxx = ((((long)a->y * (short)b->z) >> 1) - (((long)a->z * b->y) >> 1));
+	//long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
+	//long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
+	
+	
+	//long xxx = ((((long)a->y * (short)b->z) >> 1) - (((long)a->z * b->y) >> 1));
+	{
+		long ay_bz = (long)a->y * b->z;
+		long az_by = (long)a->z * b->y;
+		xxx = (ay_bz >> 1) - (az_by >> 1);
+	}
+	
+	//long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
+	{
+		long az_bx = (long)a->z * b->x;
+		long ax_bz = (long)a->x * b->z;
+		yyy = (az_bx >> 1) - (ax_bz >> 1);
+	}
+	
+	//long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
+	//long ax_by = (long)a->x * b->y;
+	//long ay_bx = (long)a->y * b->x;
+	//zzz = (ax_by >> 1) - (ay_bx >> 1);
+	
+	
 	
 	
 	//long yyy = ((long)a->z * b->x - (long)a->x * b->z);
