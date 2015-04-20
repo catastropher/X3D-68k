@@ -236,8 +236,6 @@ inline short get_opposite_face(short face);
 void make_polygon2d(Vex2D* v, int points, Polygon2D* p);
 inline short dist_to_plane(Vex3D* normal, Vex3D* point, Vex3D* v);
 
-void param_vex3d(Vex3D* start, Vex3D* end, short t, Vex3D* dest);
-
 // ==============================clip.c==============================
 char clip_polygon_to_plane(Polygon* poly, Plane* plane, Polygon* dest);
 char clip_polygon_to_frustum(Polygon* src, Frustum* f, Polygon* dest);

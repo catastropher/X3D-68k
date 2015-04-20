@@ -18,11 +18,16 @@
 // Header File
 // Created 4/19/2015; 4:40:24 PM
 
+#pragma once
+#include "fix.h"
+
+
 //=============================================================================
 // Defines
 //=============================================================================
 
 /// The number of fractional bits used to represent a normal in fixed point.
+/// All normals are in 0.15 format.
 #define NORMAL_BITS 15
 
 
@@ -86,4 +91,4 @@ inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
 inline short get_vex3d_magnitude(Vex3D* v);
 inline void normalize_vex3d(Vex3D* v);
 
-void param_vex3d(Vex3D* start, Vex3D* end, short t, Vex3D* dest);
+void param_vex3d(Vex3D* start, Vex3D* end, Fixed8x8 t, Vex3D* dest);

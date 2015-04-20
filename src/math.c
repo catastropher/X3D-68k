@@ -26,40 +26,6 @@
 #include "screen.h"
 #include "error.h"
 
-// Projects a 3D point onto a 2D surface i.e. a RenderContext
-// Note: make sure the z component of src is not 0 or you will get division
-// by 0!
-inline void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
-	// Just to make sure we don't divide by zero...
-	if(src->z == 0) {
-		dest->x = 0;
-		dest->y = 0;
-		return;
-	}
-
-	dest->x = ((long)src->x * rc->dist) / src->z + rc->center_x;
-	dest->y = ((long)src->y * rc->dist) / src->z + rc->center_y;
-}
-
-// Subtracts two 3D vectors: dest = a - b
-inline void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
-	dest->x = a->x - b->x;
-	dest->y = a->y - b->y;
-	dest->z = a->z - b->z;
-}
-
-// Adds two 3D vectors: dest = a + b
-inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
-	dest->x = a->x + b->x;
-	dest->y = a->y + b->y;
-	dest->z = a->z + b->z;
-}
-
-// Calculates the magnitude (length) of a vector
-inline short get_vex3d_magnitude(Vex3D* v) {
-	return fastsqrt((long)v->x * v->x + (long)v->y * v->y + (long)v->z * v->z);
-}
-
 // Parameterizes the line between start and end, with t being the
 // scale factor
 void param_vex3d(Vex3D* start, Vex3D* end, short t, Vex3D* dest) {
