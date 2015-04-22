@@ -149,7 +149,7 @@ typedef struct {
 
 // A rendering context, which describes the dimensions of the screen, the view
 // frustum, and information about the camera
-typedef struct RenderContext {
+typedef struct X3D_RenderContext {
 	short w, h;
 	short x, y;
 	short dist;
@@ -164,7 +164,7 @@ typedef struct RenderContext {
 	unsigned char* screen;
 	unsigned short frame;
 
-} RenderContext;
+} X3D_RenderContext;
 
 // A cube (really a convex octahedron) that is the basic unit of levels
 typedef struct {
@@ -205,7 +205,7 @@ short* recip_tab;
 short dot_product(Vex3D* a, Vex3D* b);
 long dot_product_long(Vex3D* a, Vex3D* b);
 void cross_product(Vex3D* a, Vex3D* b, struct Vex3D* dest);
-inline void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest);
+inline void project_vex3d(X3D_RenderContext* rc, Vex3D* src, Vex2D* dest);
 inline void normalize_vex3d(Vex3D* v);
 short asm_rotate_vex3d(Vex3D *src asm("a4"), Mat3x3* mat asm("a5"), Vex3D_rot *dest asm("a3"));
 inline void rotate_vex3d(Vex3D* src, Mat3x3* mat, Vex3D* dest);
@@ -213,9 +213,9 @@ inline short get_vex3d_magnitude(Vex3D* v);
 inline short dist(Vex3D* a, Vex3D* b);
 
 void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest);
-void calculate_frustum_plane_normals(RenderContext* c);
-void calculate_frustum_plane_distances(RenderContext* c);
-void calculate_frustum_rotated_normals(RenderContext* c);
+void calculate_frustum_plane_normals(X3D_RenderContext* c);
+void calculate_frustum_plane_distances(X3D_RenderContext* c);
+void calculate_frustum_rotated_normals(X3D_RenderContext* c);
 
 inline void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
 inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
@@ -229,7 +229,7 @@ inline short tanfp(unsigned char angle) __attribute__((pure));
 
 void construct_cube(short x, short y, short z, short posx, short posy, short posz, Vex3Ds* angle, Cube* c);
 
-void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest);
+void project_polygon3d(Polygon3D* src, X3D_RenderContext* c, Polygon2D* dest);
 void cube_get_face(Vex3D v[8], short face,  Vex3D dest[4]);
 inline short get_opposite_face(short face);
 
@@ -249,39 +249,39 @@ char add_point(Polygon2D* p, Vex2D* point, Line2D* line, char draw);
 void polygon_clip_edge(Polygon2D* p, Line2D* edge, Polygon2D* dest, Vex2D* center, char allow_extra_clip);
 char clip_polygon(Polygon2D* p, Polygon2D* clip, Polygon2D* dest, char allow_extra_clip);
 
-void test_polygon_clipper(RenderContext* context);
+void test_polygon_clipper(X3D_RenderContext* context);
 
-void construct_frustum_from_polygon3D(Polygon3D* poly, RenderContext* context, Frustum* dest);
-void test_construct_frustum_from_polygon3D(RenderContext* c, Frustum* dest);
+void construct_frustum_from_polygon3D(Polygon3D* poly, X3D_RenderContext* context, Frustum* dest);
+void test_construct_frustum_from_polygon3D(X3D_RenderContext* c, Frustum* dest);
 
 
 
 
 // ==============================render.c==============================
-void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c);
+void init_render_context(short w, short h, short x, short y, unsigned char fov, X3D_RenderContext* c);
 
-void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id);
-void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id);
-void render_level(RenderContext* c);
+void render_cube(Cube* c, X3D_RenderContext* context, Polygon2D* clip, short id);
+void render_cube_wireframe(Cube* c, X3D_RenderContext* context, Polygon2D* clip, short id);
+void render_level(X3D_RenderContext* c);
 
-void set_cam_pos(RenderContext* c, short x, short y, short z);
-void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned char z);
-void draw_polygon(Polygon2D* p, RenderContext* context);
+void set_cam_pos(X3D_RenderContext* c, short x, short y, short z);
+void set_cam_angle(X3D_RenderContext* c, unsigned char x, unsigned char y, unsigned char z);
+void draw_polygon(Polygon2D* p, X3D_RenderContext* context);
 extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"), register short asm("%d2"),
 	register short asm("%d3"), register void* asm("%a2"));
 
 void build_edge_table();
-char cube_pass_edges(RenderContext* c, Cube* to, short face);
+char cube_pass_edges(X3D_RenderContext* c, Cube* to, short face);
 
 void init_render();
 
 char point_in_cube(int id, Vex3D* point, char* fail_plane);
-void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char move_mask);
+void attempt_move_cam(X3D_RenderContext* c, Vex3DL* dir, short speed, unsigned char move_mask);
 
 inline short cube_get_child(Cube* c, short face);
 
-void draw_clipped_polygon3D(Polygon3D* poly, RenderContext* context, Polygon2D* clip);
-void draw_3D_line(Vex3D* a, Vex3D* b, RenderContext* context, Polygon2D* clip);
+void draw_clipped_polygon3D(Polygon3D* poly, X3D_RenderContext* context, Polygon2D* clip);
+void draw_3D_line(Vex3D* a, Vex3D* b, X3D_RenderContext* context, Polygon2D* clip);
 
 
 // ==============================util.c==============================

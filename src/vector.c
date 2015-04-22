@@ -204,7 +204,7 @@ inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
  *		happens, it should be considered a bug because it should have been clipped
  *		by the near plane of the view frustum.
  */
-inline void project_vex3d(RenderContext* rc, Vex3D* src, Vex2D* dest) {
+inline void project_vex3d(X3D_RenderContext* rc, Vex3D* src, Vex2D* dest) {
 	if(src->z == 0) {
 		dest->x = 0;
 		dest->y = 0;

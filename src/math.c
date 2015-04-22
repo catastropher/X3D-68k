@@ -60,7 +60,7 @@ void construct_plane(Vex3D* a, Vex3D* b, Vex3D* c, Plane* dest) {
 }
 
 // Calculates the normals of the unrotated planes of the view frustum
-void calculate_frustum_plane_normals(RenderContext* c) {
+void calculate_frustum_plane_normals(X3D_RenderContext* c) {
 	short w = c->w;
 	short h = c->h;
 
@@ -113,7 +113,7 @@ void calculate_frustum_plane_normals(RenderContext* c) {
 }
 
 // Calculates the distance from each plane in the view frustum to the origin
-void calculate_frustum_plane_distances(RenderContext* c) {
+void calculate_frustum_plane_distances(X3D_RenderContext* c) {
 	int i;
 
 	Vex3D eye_cam_pos = {c->cam.pos.x, c->cam.pos.y - PLAYER_HEIGHT, c->cam.pos.z};
@@ -138,7 +138,7 @@ void calculate_frustum_plane_distances(RenderContext* c) {
 }
 
 // Calculates the rotated plane normals of the view frustum
-void calculate_frustum_rotated_normals(RenderContext* c) {
+void calculate_frustum_rotated_normals(X3D_RenderContext* c) {
 	int i, d;
 
 	Mat3x3 transpose;
@@ -303,7 +303,7 @@ void construct_cube(short x, short y, short z, short posx, short posy, short pos
 }
 
 // Takes a 3D polygon and projects all of the points into a 2D polygon
-void project_polygon3d(Polygon3D* src, RenderContext* c, Polygon2D* dest) {
+void project_polygon3d(Polygon3D* src, X3D_RenderContext* c, Polygon2D* dest) {
 	int i;
 	Vex2D temp[MAX_POINTS];
 

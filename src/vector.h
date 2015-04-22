@@ -36,7 +36,7 @@
 //=============================================================================
 
 // Forward declarations
-struct RenderContext;
+struct X3D_RenderContext;
 struct Mat3x3;
 
 
@@ -83,7 +83,7 @@ typedef struct {
 inline short dot_product(Vex3D* a, Vex3D* b);
 void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest);
 
-inline void project_vex3d(struct RenderContext* rc, Vex3D* src, Vex2D* dest);
+inline void project_vex3d(struct X3D_RenderContext* rc, Vex3D* src, Vex2D* dest);
 
 inline void sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);
 inline void add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest);

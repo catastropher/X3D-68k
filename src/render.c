@@ -44,7 +44,7 @@ inline short cube_get_child(Cube* c, short face) {
  *
  * @return nothing
  */
-void init_render_context(short w, short h, short x, short y, unsigned char fov, RenderContext* c) {
+void init_render_context(short w, short h, short x, short y, unsigned char fov, X3D_RenderContext* c) {
 	ADDR(c);
 
 	c->w = w;
@@ -91,7 +91,7 @@ void clamp_point(Vex2D* v) {
 }
 
 // Draws a polygon
-void draw_polygon(Polygon2D* p, RenderContext* context) {
+void draw_polygon(Polygon2D* p, X3D_RenderContext* context) {
 	int i, next;
 
 	ADDR(p);
@@ -120,7 +120,7 @@ short recursion_depth;
 short max_recursion_depth;
 
 // Draws a transparent 3D polygon and clips it against the clipping region
-void draw_clipped_polygon3D(Polygon3D* poly, RenderContext* context, Polygon2D* clip) {
+void draw_clipped_polygon3D(Polygon3D* poly, X3D_RenderContext* context, Polygon2D* clip) {
 	Polygon3D clipped, rotated;
 	Polygon2D projected, final;
 	clip_polygon_to_frustum(poly, &context->frustum, &clipped);
@@ -152,7 +152,7 @@ void draw_clipped_polygon3D(Polygon3D* poly, RenderContext* context, Polygon2D* 
 // Draws a 3D line
 // Currently this uses a terrible method; it makes a triangle with one edge visible
 // and throws it at draw_clipped_polygon3D(!)
-void draw_3D_line(Vex3D* a, Vex3D* b, RenderContext* context, Polygon2D* clip) {
+void draw_3D_line(Vex3D* a, Vex3D* b, X3D_RenderContext* context, Polygon2D* clip) {
 	Polygon3D p;
 
 	p.total_v = 3;
@@ -182,7 +182,7 @@ extern char extend_bridge;
 extern short bridge_shimmer_t;
 
 
-void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
+void render_cube(Cube* c, X3D_RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D rot[8];
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z};
@@ -445,7 +445,7 @@ void render_cube(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
 }
 
 //======================================================================================
-void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id) {
+void render_cube_clip3D(Cube* c, X3D_RenderContext* context, Frustum* clip, short id) {
 	Vex3D rot[8];
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z};
@@ -741,7 +741,7 @@ void render_cube_clip3D(Cube* c, RenderContext* context, Frustum* clip, short id
 
 
 
-void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, short id) {
+void render_cube_wireframe(Cube* c, X3D_RenderContext* context, Polygon2D* clip, short id) {
 	Vex3D rot[8];
 	int i, d;
 	Vex3D ncam_pos = {-context->cam.pos.x, -context->cam.pos.y, -context->cam.pos.z};
@@ -866,7 +866,7 @@ void render_cube_wireframe(Cube* c, RenderContext* context, Polygon2D* clip, sho
 extern char render_method;
 
 // Renders the level, starting from the cube the camera is currently in
-void render_level(RenderContext* c) {
+void render_level(X3D_RenderContext* c) {
 	ADDR(c);
 
 	// Create the clipping region
@@ -917,7 +917,7 @@ void render_level(RenderContext* c) {
 // This prevents the 4x overdraw problem
 //
 // Returns whether the cube should be drawn or not
-char cube_pass_edges(RenderContext* c, Cube* to, short face) {
+char cube_pass_edges(X3D_RenderContext* c, Cube* to, short face) {
 	ADDR(c);
 	ADDR(to);
 
@@ -941,7 +941,7 @@ char cube_pass_edges(RenderContext* c, Cube* to, short face) {
 
 // Sets the position of the camera and updates the plane distances
 // of the viewing frustum
-void set_cam_pos(RenderContext* c, short x, short y, short z) {
+void set_cam_pos(X3D_RenderContext* c, short x, short y, short z) {
 	c->cam.pos = (Vex3D){x, y, z};
 
 	calculate_frustum_plane_distances(c);
@@ -950,7 +950,7 @@ void set_cam_pos(RenderContext* c, short x, short y, short z) {
 
 // Sets the angle of the camera and updates the planes of the view
 // frustum
-void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned char z) {
+void set_cam_angle(X3D_RenderContext* c, unsigned char x, unsigned char y, unsigned char z) {
 	c->cam.angle = (Vex3Ds){x, y, z};
 
 	// Construct the new rotation matrix
@@ -1054,7 +1054,7 @@ char point_in_cube(int id, Vex3D* point, char* fail_plane) {
 
 // Attempts to move the camera and update which cube the camera is in
 // Move mask determines which axes we're allowed to move along
-void attempt_move_cam(RenderContext* c, Vex3DL* dir, short speed, unsigned char move_mask) {
+void attempt_move_cam(X3D_RenderContext* c, Vex3DL* dir, short speed, unsigned char move_mask) {
 	char fail_plane;
 	Vex3DL add = {0, 0, 0};
 
