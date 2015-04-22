@@ -1,8 +1,9 @@
 // C Source File
 // Created 4/19/2015; 6:13:35 PM
 
-#include "geo/vector.h"
+#include "vector.h"
 #include "geo.h"
+#include "error.h"
 
 #include <tigcclib.h>
 
@@ -19,7 +20,7 @@
  */
 inline short dot_product(Vex3D* a, Vex3D* b) {
 	long prod = (long)a->x * b->x + (long)a->y * b->y + (long)a->z * b->z;
-	
+
 	return prod >> NORMAL_BITS;
 }
 
@@ -35,13 +36,13 @@ inline short dot_product(Vex3D* a, Vex3D* b) {
  */
 long dot_product_long(Vex3D* a, Vex3D* b) {
 	long prod = (long)a->x * b->x + (long)a->y * b->y + (long)a->z * b->z;
-	
+
 	return prod;
 }
 
 /**
  * Calculates the cross product of two 3D vectors. This creates a 3D vector
- *	that is perpendicular to both vectors. 
+ *	that is perpendicular to both vectors.
  *
  * @param a		- pointer to the first 3D vector
  * @param b		- pointer to the second 3D vector
@@ -58,104 +59,104 @@ void cross_product(Vex3D* a, Vex3D* b, Vex3D* dest) {
 	//dest->x = ((long)a->y * b->z - (long)a->z * b->y);
 	//dest->y = ((long)a->z * b->x - (long)a->x * b->z);
 	//dest->z = ((long)a->x * b->y - (long)a->y * b->x);
-	
-	
+
+
 	//long long x = ((long long)a->y * b->z - (long long)a->z * b->y);
 	//long long y = ((long long)a->z * b->x - (long long)a->x * b->z);
 	//long long z = ((long long)a->x * b->y - (long long)a->y * b->x);
-	
-	
+
+
 	//errorif(dest->x != x, "Invalid x");
-	
+
 	// FIXME: possible overflows in above code
 	//long xx = x;
-	
+
 	long x_prod = (long)a->y * b->z;
-	
-	
+
+
 	long xxx, yyy = 0, zzz = 0;
-	
-	
+
+
 	//long xxx = ((((long)a->y * (short)b->z) >> 1) - (((long)a->z * b->y) >> 1));
 	//long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
 	//long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
-	
-	
+
+
 	//long xxx = ((((long)a->y * (short)b->z) >> 1) - (((long)a->z * b->y) >> 1));
 	{
 		long ay_bz = (long)a->y * b->z;
 		long az_by = (long)a->z * b->y;
 		xxx = (ay_bz >> 1) - (az_by >> 1);
 	}
-	
+
 	//long yyy = ((((long)a->z * b->x) >> 1) - (((long)a->x * b->z) >> 1));
 	{
 		long az_bx = (long)a->z * b->x;
 		long ax_bz = (long)a->x * b->z;
 		yyy = (az_bx >> 1) - (ax_bz >> 1);
 	}
-	
+
 	//long zzz = ((((long)a->x * b->y) >> 1) - (((long)a->y * b->x) >> 1));
 	//long ax_by = (long)a->x * b->y;
 	//long ay_bx = (long)a->y * b->x;
 	//zzz = (ax_by >> 1) - (ay_bx >> 1);
-	
-	
-	
-	
+
+
+
+
 	//long yyy = ((long)a->z * b->x - (long)a->x * b->z);
 	//long zzz = ((long)a->x * b->y - (long)a->y * b->x);
-	
+
 	//xassert(zzz == dest->z);
-	
+
 #if 0
 	float res_z = ((float)a->x * b->y - (float)a->y * b->x) / 2;
-	
-	
+
+
 	if(zzz != res_z) {
 		printf("zzz: %ld, z: %f\n", zzz, res_z);
 		ngetchx();
 	}
-	
+
 	float res_y = ((float)a->z * b->x - (float)a->x * b->z) / 2.0;
-	
-	
+
+
 	if(res_y != yyy) {
 		printf("zzz: %ld, z: %f\n", zzz, res_z);
 		ngetchx();
 	}
-	
+
 	float res_x = ((float)a->y * b->z - (float)a->z * b->y) / 2;
-	
-	
+
+
 	if(res_x != xxx) {
 		printf("zzz: %ld, z: %f\n", zzz, res_z);
 		ngetchx();
 	}
-	
+
 	xassert(res_x == xxx);
 	xassert(res_y == yyy);
 	xassert(res_z == zzz);
-	
+
 #endif
-	
+
 	while(abs(xxx) >= 0x7FFF || abs(yyy) >= 0x7FFF || abs(zzz) >= 0x7FFF) {
 		xxx >>= 1;
 		yyy >>= 1;
 		zzz >>= 1;
 	}
-	
+
 	dest->x = xxx;
 	dest->y = yyy;
 	dest->z = zzz;
-	
+
 	//xassert(xxx == dest->x);
 	//xassert(yyy == dest->y);
-	
-	
-	
+
+
+
 	//printf("Dest->z: %d\n", dest->z);
-	
+
 	normalize_vex3d(dest);
 }
 
@@ -245,4 +246,35 @@ void param_vex3d(Vex3D* start, Vex3D* end, Fixed8x8 t, Vex3D* dest) {
 	dest->x = (((long)(end->x - start->x) * t) >> 8) + start->x;
 	dest->y = (((long)(end->y - start->y) * t) >> 8) + start->y;
 	dest->z = (((long)(end->z - start->z) * t) >> 8) + start->z;
+}
+
+/**
+ * Normalizes a 3D vector (makes the entire length 1). The result is in 0.15
+ *		format.
+ * @param v - pointer to the 3D vector to normalize
+ *
+ * @return nothing
+ *
+ * @note If src->x, src->y, and src->z are all zero, this cause a division by
+ *		zero (since we divide by the length).
+ */
+inline void normalize_vex3d(Vex3D* v) {
+	long val =
+		(((long)v->x * v->x) >> 2) +
+		(((long)v->y * v->y) >> 2) +
+		(((long)v->z * v->z) >> 2);
+
+
+	errorif(val < 0, "normalize overflow");
+
+
+	unsigned short len = (fastsqrt(val) << 1) + 1;
+
+	errorif(SIGNOF(v->y) != SIGNOF(((long)v->y << NORMAL_BITS)), "Wrong sign");
+
+
+	v->x = ((long)v->x << NORMAL_BITS) / len;
+	v->y = ((long)v->y << NORMAL_BITS) / len;
+	v->z = ((long)v->z << NORMAL_BITS) / len;
+
 }

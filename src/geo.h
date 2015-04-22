@@ -2,7 +2,7 @@
 // Created 3/4/2015; 10:42:27 PM
 #pragma once
 
-#include "geo/vector.h"
+#include "vector.h"
 
 #ifndef ALLOW_PRINTF
 #undef printf
@@ -136,15 +136,15 @@ typedef struct {
 	Mat3x3 mat;
 	Vex3D dir;
 	Vex3D straif_dir;
-	
+
 	Vex3DL velocity;
 	Vex3DL pos_long;
-	
+
 	short dist_from_origin;		// Distance from the origin
 	short current_cube;
-	
+
 	unsigned char on_ground;	// Whether the player is on the ground
-	
+
 } Camera;
 
 // A rendering context, which describes the dimensions of the screen, the view
@@ -155,15 +155,15 @@ typedef struct RenderContext {
 	short dist;
 	short fov;
 	short center_x, center_y;
-	
+
 	Frustum frustum;
 	Frustum frustum_unrotated;
-	
+
 	Camera cam;
-	
+
 	unsigned char* screen;
 	unsigned short frame;
-	
+
 } RenderContext;
 
 // A cube (really a convex octahedron) that is the basic unit of levels
@@ -171,11 +171,11 @@ typedef struct {
 	Vex3D v[8];
 	Vex3D normal[8];
 	short cube[6];
-	
+
 	unsigned short last_frame;
 	unsigned short edge_bits;
 	unsigned short invisible_edges;
-	
+
 	unsigned char render_bits;		// Keep track of through which face we've drawn the cube
 } Cube;
 
@@ -269,7 +269,7 @@ void set_cam_angle(RenderContext* c, unsigned char x, unsigned char y, unsigned 
 void draw_polygon(Polygon2D* p, RenderContext* context);
 extern void draw_clip_line(register short asm("%d0"), register short asm("%d1"), register short asm("%d2"),
 	register short asm("%d3"), register void* asm("%a2"));
-	
+
 void build_edge_table();
 char cube_pass_edges(RenderContext* c, Cube* to, short face);
 
