@@ -5,8 +5,8 @@
 #include <factorial.h>
 
 long factorial(long input) {
-	if(input < 1)
-		return 1;
-	else
-		return input * factorial(input - 1);
+  if (input < 1)
+    return 1;
+  else
+    return input * factorial(input - 1);
 }
