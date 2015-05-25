@@ -1,8 +1,7 @@
 #include <tigcclib.h>
+#include <factorial.h>
 
 #define _GENERIC_ARCHIVE
-
-#include <factorial.h>
 
 long factorial(long input) {
   if (input < 1)
