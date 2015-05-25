@@ -3,12 +3,14 @@ CFLAGS=-I../headers -c
 
 all: X3D.a
 
-X3D.a: factorial.o
-	$(CC) factorial.o -ar -o X3D.a
+X3D.a: factorial.o error.o
+	$(CC) factorial.o error.o -ar -o X3D.a
 	
 factorial.o: factorial.c
 	$(CC) $(CFLAGS) factorial.c
 	
+error.o: error.c 
+	$(CC) $(CFLAGS) error.c
 	
 install:
 	rm -rf "C:\\Program Files (x86)\\TIGCC\\Lib\\X3D.a"
