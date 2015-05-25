@@ -3,6 +3,10 @@
 
 //#define NDEBUG
 
+#ifdef _WIN32
+#define __attribute__(...) 
+#endif
+
 #ifdef NDEBUG
 #define x3d_error(...) ;
 #define x3d_assert(...) ;
