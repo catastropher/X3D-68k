@@ -3,11 +3,14 @@ CFLAGS=-I../headers -c
 
 all: X3D.a
 
-X3D.a: factorial.o
-	$(CC) factorial.o -ar -o X3D.a
+X3D.a: factorial.o fix.c
+	$(CC) factorial.o fix.o -ar -o X3D.a
 	
 factorial.o: factorial.c
 	$(CC) $(CFLAGS) factorial.c
+
+fix.o: fix.c
+	$(CC) $(CFLAGS) fix.c
 	
 	
 install:
