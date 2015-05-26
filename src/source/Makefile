@@ -1,19 +1,14 @@
 CC=tigcc
-CFLAGS=-I../headers -c
+C_FILES=$(wildcard *.c)
+OBJ_FILES=$(addprefix ,$(notdir $(C_FILES:.c=.o)))
+LD_FLAGS=
+CC_FLAGS=-I../headers
 
-all: X3D.a
+X3D.a: $(OBJ_FILES)
+	$(CC) $(LD_FLAGS) -o $@ $^
 
-X3D.a: factorial.o fix.o error.o
-	$(CC) factorial.o fix.o error.o -ar -o X3D.a
-	
-factorial.o: factorial.c
-	$(CC) $(CFLAGS) factorial.c
-
-fix.o: fix.c
-	$(CC) $(CFLAGS) fix.c
-	
-error.o: error.c 
-	$(CC) $(CFLAGS) error.c
+%.o: %.c
+	$(CC) $(CC_FLAGS) -c -o $@ $<
 	
 install:
 	rm -rf "C:\\Program Files (x86)\\TIGCC\\Lib\\X3D.a"
