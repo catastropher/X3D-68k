@@ -4,3 +4,5 @@
 *.v2z
 *.exe
 *.a
+docs/html
+docs/latex
