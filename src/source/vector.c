@@ -26,6 +26,7 @@
 * @return dot product of a and b as an int32
 */
 int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
+#if 0
 #ifdef X3D_CHECK_OVERFLOW
 
   int32 x = (int32)a->x * b->y;
@@ -48,6 +49,8 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   return a->x * b->x + (int32)a->y * b->y + (int32)a->z * b->z;
 
 #endif
+#endif
+  return 0;
 }
 
 // @todo comment
