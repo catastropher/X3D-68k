@@ -9,10 +9,12 @@ int _ti92plus;
 void _main() {
   clrscr();
   X3D_Vex3D_int16 a = { 5, 10, 15 };
-  X3D_Vex3D_int16 b = { 10, 20, 30 };
+  X3D_Vex3D_fp0x16 b = { 10, 20, 30 };
 
   long dot = x3d_vex3d_int16_dot(&a, &b);
 
+  X3D_Vex3D_int16 res = x3d_vex3d_int16_add(&a, &b);
+  
   printf("%ld\n", dot);
   ngetchx();
 }

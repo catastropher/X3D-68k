@@ -44,11 +44,6 @@ typedef struct Vex2D {
   int16 y;
 } Vex2D;
 
-int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b);
-inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v);
-
-#if 0
-
 //=============================================================================
 // Function declarations
 //=============================================================================
@@ -69,10 +64,8 @@ int16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b);
  *
  *  @return nothing
  */
-static void x3d_add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
-  dest->x = a->x + b->x;
-  dest->y = a->y + b->y;
-  dest->z = a->z + b->z;
+static inline X3D_Vex3D_int16 x3d_vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
+  return (X3D_Vex3D_int16){a->x + b->x, a->y + b->y, a->z + b->z};
 }
 
 /**
@@ -84,13 +77,9 @@ static void x3d_add_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
 *
 *  @return nothing
 */
-static void x3d_sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
-  dest->x = a->x - b->x;
-  dest->y = a->y - b->y;
-  dest->z = a->z - b->z;
+static inline X3D_Vex3D_int16 x3d_vex3d_int16_sub(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
+  return (X3D_Vex3D_int16){a->x - b->x, a->y - b->y, a->z - b->z};
 }
-
-#endif
 
 #endif
 
