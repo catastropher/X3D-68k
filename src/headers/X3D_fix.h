@@ -21,6 +21,12 @@ typedef long int32;
 /// A 32-bit unsigned integer
 typedef unsigned long uint32;
 
+/// A 64-bit signed integer
+typedef long long int64;
+
+/// A 64-bit unsigned integer
+typedef unsigned long long uint64;
+
 /// An 8.8 fixed point number
 typedef int16 fp8x8;
 

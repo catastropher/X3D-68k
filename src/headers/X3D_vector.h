@@ -23,23 +23,30 @@
 //=============================================================================
 
 /// The number of fractional bits used to represent a normal in fixed point.
-/// All normals are in 0.15 format.
-#define NORMAL_BITS 15
+/// All normals are in 0.16 format.
+#define X3D_NORMAL_BITS 15
 
 //=============================================================================
 // Structures
 //=============================================================================
 
-typedef struct Vex3D {
+typedef struct X3D_Vex3D_int16 {
   int16 x;
   int16 y;
   int16 z;
-} Vex3D;
+} X3D_Vex3D_int16;
+
+typedef X3D_Vex3D_int16 X3D_Vex3D_fp8x8;
+typedef X3D_Vex3D_int16 X3D_Vex3D_fp0x16;
 
 typedef struct Vex2D {
   int16 x;
   int16 y;
 } Vex2D;
+
+int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b);
+
+#if 0
 
 //=============================================================================
 // Function declarations
@@ -80,6 +87,8 @@ static void x3d_sub_vex3d(Vex3D* a, Vex3D* b, Vex3D* dest) {
   dest->y = a->y - b->y;
   dest->z = a->z - b->z;
 }
+
+#endif
 
 #endif
 
