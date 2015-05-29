@@ -1,2 +1,1 @@
-#include <tigcclib.h>
-
+#include "X3D_config.h"

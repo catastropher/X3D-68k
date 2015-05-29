@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "X3D_config.h"
 #include "X3D_fix.h"
 #include "X3D_vector.h"
 #include "X3D_error.h"
@@ -45,14 +46,11 @@ int16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
 #if 1
 
 /**
-* Normalizes a 3D vector (makes the entire length 1). The result is in 0.15
-*		format.
+* Normalizes an fp0x16 3D vector (makes the entire length 1).
+*
 * @param v - pointer to the 3D vector to normalize
 *
 * @return nothing
-*
-* @note If src->x, src->y, and src->z are all zero, this cause a division by
-*		zero (since we divide by the length).
 */
 inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
   // Calculate x^2 + y^2 + z^2 for the distance formula.
@@ -97,7 +95,13 @@ inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
   v->z = ((int32)v->z << X3D_NORMAL_SHIFT) / len;
 }
 
-// @todo comment
+/**
+* Prints out an int16 Vex3D on the screen.
+*
+* @param v - pointer to the 3D vector to normalize
+*
+* @return nothing
+*/
 void x3d_print_vex3d_int16(X3D_Vex3D_int16* v) {
   printf("{%d, %d, %d}\n", v->x, v->y, v->z);
 }

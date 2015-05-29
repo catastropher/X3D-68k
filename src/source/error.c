@@ -1,7 +1,7 @@
 // C Source File
 // Created 3/9/2015; 11:23:36 AM
 
-#include <tigcclib.h>
+#include "X3D_config.h"
 
 #ifndef NDEBUG
 
