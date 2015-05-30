@@ -17,6 +17,7 @@
 #include "X3D_fix.h"
 #include "X3D_vector.h"
 #include "X3D_error.h"
+#include "X3D_fastsqrt.h"
 
 /**
 * Calculates the dot product of two 16-bit integer 3D vectors.
@@ -98,7 +99,7 @@ inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
 /**
 * Prints out an int16 Vex3D on the screen.
 *
-* @param v - pointer to the 3D vector to normalize
+* @param v - pointer to the 3D vector to print.
 *
 * @return nothing
 */

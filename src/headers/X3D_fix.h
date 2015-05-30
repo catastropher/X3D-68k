@@ -1,6 +1,7 @@
 #pragma once
 #define X3D_CHECK_OVERFLOW
 
+#include "X3D_config.h"
 #include "x3d_error.h"
 
 /// An 8-bit signed integer
