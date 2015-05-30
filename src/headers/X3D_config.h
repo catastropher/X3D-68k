@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __CYGWIN32__
+#if defined(__CYGWIN__)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,7 +12,7 @@
 
 #endif
 
-#ifdef __TIGCC
+#ifdef __TIGCC_HEADERS__
 
 #include <tigcclib.h>
 

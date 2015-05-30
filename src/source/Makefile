@@ -45,13 +45,13 @@ tigcc/X3D.a: $(TIGCC_OBJ_FILES)
 	
 tigcc/%.o: %.c
 	@echo Compiling $<...
-	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC
+	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__
 	
 install:
 	@rm -rf "C:\\Program Files (x86)\\TIGCC\\Lib\\X3D.a"
 	@rm -rf "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
 	@echo Copying X3D.a to TIGCC lib directory...
-	@cp -f X3D.a "C:\\Program Files (x86)\\TIGCC\\Lib\\"
+	@cp -f ./tigcc/X3D.a "C:\\Program Files (x86)\\TIGCC\\Lib\\"
 	@echo Copying header files to TIGCC include file directory... 
 	@cp -rf ../headers "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
 	@echo X3D installed.
