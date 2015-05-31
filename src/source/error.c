@@ -40,6 +40,8 @@ static _Bool parse_fp(const char** str, int16* whole, int16* frac) {
     *whole = hex_digit_to_int16(s[2]);
     *frac = hex_digit_to_int16(s[4]);
 
+    printf("W: %d, f: %d\n", *whole, *frac);
+
     *str += 5;
     return 1;
   }
@@ -63,19 +65,37 @@ void x3d_sprintf(char* buf, const char* format, ...) {
     if(*str == '@' && str[1] != '@') {
       ++str;
 
-      if(parse_fp(&str, &frac_bits, &whole_bits)) {
+      _Bool is_signed = 1;
+      if(*str == 'u') {
+        is_signed = 0;
+        ++str;
+      }
+
+      if(parse_fp(&str, &whole_bits, &frac_bits)) {
         int16 total_bits = frac_bits + whole_bits;
         int32 value = 0;
 
+        if(is_signed)
+          --frac_bits;
+
         if(total_bits > 8 && total_bits <= 16) {
+          if(is_signed) {
 #ifdef __TIGCC__
-          value = va_arg(list, int16);
+            value = va_arg(list, int16);
 #else
-          value = va_arg(list, int32);
+            value = va_arg(list, int32);
 #endif
+          }
+          else {
+#ifdef __TIGCC__
+            value = va_arg(list, uint16);
+#else
+            value = va_arg(list, uint32);
+#endif
+          }
         }
 
-        sprintf(buf, "%f", ((float)value / (1 << frac_bits)));
+        sprintf(buf, "%f", ((float)value / (1L << frac_bits)));
         
         while(*buf)
           ++buf;
@@ -89,6 +109,8 @@ normal_char:
       *buf++ = *str++;
     }
   }
+
+  *buf = 0;
 
 }
 
