@@ -67,7 +67,7 @@ void x3d_sprintf(char* buf, const char* format, ...) {
         int16 total_bits = frac_bits + whole_bits;
         int32 value = 0;
 
-        if(total_bits > 8 && total_bits < 16) {
+        if(total_bits > 8 && total_bits <= 16) {
 #ifdef __TIGCC__
           value = va_arg(list, int16);
 #else

@@ -15,15 +15,22 @@ CC_FLAGS=-I../headers
 .PHONY: tigcc
 .PHONY: gcc
 .PHONY: all
+.PHONE: test
+
 
 all:
 	@make --no-print-directory tigcc
 	@make --no-print-directory gcc
+	@make --no-print-directory install
+	@make --no-print-directory test
 
 tigcc:
 	@echo Building X3D for tigcc
 	@mkdir -p tigcc
 	@make --no-print-directory tigcc/X3D.a
+
+test:
+	@make --no-print-directory -C ../../test/
 
 gcc:
 	@echo Building X3D for gcc
@@ -39,7 +46,7 @@ gcc/%.o: %.c
 	@$(CC) $(CC_FLAGS) -c -o $@ $<
 	
 tigcc/X3D.a: $(TIGCC_OBJ_FILES)
-	@ar rcs $(LD_FLAGS) -o tigcc/X3D.a $^
+	@$(CC) $(LD_FLAGS) -o $@ $^ -ar
 	@echo X3D built successfully for tigcc
 	@echo
 	
