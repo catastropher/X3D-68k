@@ -89,12 +89,10 @@ static _Bool parse_fp(const char** str, int16* whole, int16* frac) {
  * @note This advances *str if it matches the format.
  * @note For internal use only.
  */
-void x3d_sprintf(char* buf, const char* format, ...) {
+void x3d_vsprintf(char* buf, const char* format, va_list list) {
   const char* str = format;
   char* save_buf = buf;
 
-  va_list list;
-  va_start(list, format);
   while(*str) {  
     if(*str == '@') {
       _Bool is_signed = 1;
@@ -214,12 +212,25 @@ normal_char:
     }
   }
 
-  va_end(list);
-
   return;
 
 error:
   sprintf(buf, "@FORMAT ERR@");
+}
 
+void x3d_sprintf(char* buf, const char* format, ...) {
+  va_list list;
+  va_start(list, format);
+  x3d_vsprintf(buf, format, list);
+  va_end(list);
+}
+
+void x3d_printf(const char* format, ...) {
+  va_list list;
+  char buf[500];
+
+  va_start(list, format);
+  x3d_vsprintf(buf, format, list);
+  printf("%s", buf);
   va_end(list);
 }
