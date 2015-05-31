@@ -218,6 +218,7 @@ error:
   sprintf(buf, "@FORMAT ERR@");
 }
 
+/// @todo Document
 void x3d_sprintf(char* buf, const char* format, ...) {
   va_list list;
   va_start(list, format);
@@ -225,6 +226,7 @@ void x3d_sprintf(char* buf, const char* format, ...) {
   va_end(list);
 }
 
+/// @todo Document
 void x3d_printf(const char* format, ...) {
   va_list list;
   char buf[500];
@@ -234,3 +236,4 @@ void x3d_printf(const char* format, ...) {
   printf("%s", buf);
   va_end(list);
 }
+

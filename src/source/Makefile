@@ -21,21 +21,25 @@ CC_FLAGS=-I../headers
 all:
 	@make --no-print-directory tigcc
 	@make --no-print-directory gcc
-	@make --no-print-directory install
-	@make --no-print-directory test
 
 tigcc:
 	@echo Building X3D for tigcc
 	@mkdir -p tigcc
 	@make --no-print-directory tigcc/X3D.a
 
+	@rm -rf ../../test/tigcc
+
 test:
+	@make --no-print-directory install
+	@echo ""
 	@make --no-print-directory -C ../../test/
 
 gcc:
 	@echo Building X3D for gcc
 	@mkdir -p gcc
 	@make --no-print-directory gcc/X3D.a
+
+	@rm -rf ../../test/gcc
 	
 gcc/X3D.a: $(GCC_OBJ_FILES)
 	@ar rcs $(LD_FLAGS) -o gcc/X3D.a $^
@@ -55,12 +59,14 @@ tigcc/%.o: %.c
 	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__
 	
 install:
-	@rm -rf "C:\\Program Files (x86)\\TIGCC\\Lib\\X3D.a"
-	@rm -rf "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
-	@echo Copying X3D.a to TIGCC lib directory...
+	@echo Installing X3D for tigcc...
 	@cp -f ./tigcc/X3D.a "C:\\Program Files (x86)\\TIGCC\\Lib\\"
-	@echo Copying header files to TIGCC include file directory... 
 	@cp -rf ../headers "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
+
+	@echo Installing X3D for gcc
+	@cp -rf ../headers /usr/include/X3D
+	@cp gcc/X3D.a /usr/lib/libX3D.a
+
 	@echo X3D installed.
 	
 clean:

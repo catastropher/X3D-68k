@@ -3,6 +3,7 @@
 *.89z
 *.v2z
 *.exe
+*exe.stackdump
 *.a
 docs/html
 docs/latex
