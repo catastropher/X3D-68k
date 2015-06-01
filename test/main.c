@@ -2,7 +2,7 @@
 
 #include <X3D/X3D.h>
 
-#ifdef __TIGCC__
+#ifdef __TIGCC_HEADERS__
 
 #include <tigcclib.h>
 
@@ -31,8 +31,10 @@ int main() {
 
   run_tests();
 
-  x3d_printf("All tests passed! :D\n");
+  x3d_printf("All tests passed! :D");
+  
   ngetchx();
+ 
 
 #ifndef __TIGCC__
   return 0;

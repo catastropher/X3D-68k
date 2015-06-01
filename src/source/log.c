@@ -212,6 +212,8 @@ normal_char:
     }
   }
 
+  *buf = '\0';
+  
   return;
 
 error:
