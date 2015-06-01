@@ -35,4 +35,26 @@ void test_vector() {
 
     x3d_assert(res.x == -1 && res.y == -1 && res.z == -1);
   }
+  
+  // Test case for x3d_vex3d_int16_dot()
+  {
+    X3D_Vex3D_int16 a = { 5, 10, 15 };
+    X3D_Vex3D_int16 b = { 2, 3, 4 };
+
+    int32 res = x3d_vex3d_int16_dot(&a, &b);
+
+    x3d_assert(res == 10 + 30 + 60);
+  }
+  
+  // Test case for x3d_vex3d_int16_dot()
+  {
+    X3D_Vex3D_int16 a = { 16384, 8192, 4096 };
+    X3D_Vex3D_int16 b = { 4096, 2048, 1024 };
+
+    int32 res = x3d_vex3d_fp0x16_dot(&a, &b);
+
+    x3d_assert(res == 2688);
+  }
+  
+  
 }

@@ -38,9 +38,9 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
 * @param a - pointer to the first 3D vector
 * @param b - pointer to the second 3D vector
 *
-* @return dot product of a and b as a long
+* @return dot product of a and b as an fp0x16
 */
-int16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
+fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_SHIFT;
 }
 
