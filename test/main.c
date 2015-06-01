@@ -30,9 +30,11 @@ int _ti92plus;
 
 
 void test_vector();
+void test_fastsqrt();
 
 void run_tests() {
   // Add calls to test functions
+  test_fastsqrt();
   test_vector();
 }
 

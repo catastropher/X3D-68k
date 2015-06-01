@@ -50,7 +50,7 @@ gcc/test.exe: $(GCC_OBJ_FILES)
 
 gcc/%.o: %.c
 	@echo Compiling $<...
-	@$(CC) $(CC_FLAGS) -c -o $@ $<
+	@$(CC) $(CC_FLAGS) -c -o $@ $< -O3
 
 clean:
 	@rm -rf gcc
