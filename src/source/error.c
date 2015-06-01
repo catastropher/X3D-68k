@@ -14,11 +14,16 @@ void x3d_error(const char* format, ...) {
   va_start(list, format);
   vsprintf(buf, format, list);
 
+#ifdef __TIGCC__
   PortRestore();
   clrscr();
+
+#endif
   printf("Error: %s\nPress Esc to quit\n", buf);
 
+#ifdef __TIGCC__
   while(!_keytest(RR_ESC));
+#endif
 
   exit(-1);
 }

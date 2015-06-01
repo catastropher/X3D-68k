@@ -36,7 +36,7 @@ gcc:
 	@make --no-print-directory gcc/test.exe
 
 tigcc/test.9xz: $(TIGCC_OBJ_FILES)
-	@$(CC) -o "test" $< X3D.a
+	$(CC) -o "test" $(TIGCC_OBJ_FILES) X3D.a
 	@mv test.9xz tigcc/test.9xz
 	@echo X3D test suite built successfully for tigcc
 
@@ -45,7 +45,7 @@ tigcc/%.o: %.c
 	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__
 
 gcc/test.exe: $(GCC_OBJ_FILES)
-	@$(CC) -o "gcc/test" $< -lX3D
+	@$(CC) -o "gcc/test" $(GCC_OBJ_FILES) -lX3D
 	@echo X3D test suite built successfully for gcc
 
 gcc/%.o: %.c
