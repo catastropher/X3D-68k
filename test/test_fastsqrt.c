@@ -59,3 +59,4 @@ void test_fastsqrt_accuracy() {
 void test_fastsqrt() {
   //test_fastsqrt_accuracy();
 }
+

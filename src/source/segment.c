@@ -21,10 +21,17 @@ typedef struct {
 } X3D_EdgeClip;
 
 typedef struct {
+  uint8 from_edge, to_edge;
+} X3D_ConnectEdge;
+
+typedef struct {
   uint8 total_v;
   
-  //uint16 v[];           // Vertex ID's that make up the face
   uint32 edge_bits;     // For edge propogration
+
+  uint16 v[0];           // Vertex ID's that make up the face
+  X3D_ConnectEdge connect_edge[0];
+
 } X3D_Face;
   
 
@@ -39,7 +46,4 @@ typedef struct {
   
   X3D_EdgeClip* clipped_edges[];
 } X3D_Segment;
-  
-  
-  
-  
+

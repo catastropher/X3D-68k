@@ -15,6 +15,8 @@
 
 #include "X3D_config.h"
 #include "X3D_fix.h"
+#include "X3D_segment.h"
+#include "X3D_vector.h"
 
 typedef struct {
   int16 size;
@@ -31,6 +33,18 @@ typedef struct X3D_RenderContext {
   X3D_Stack stack;    /// Render stack
   
 } X3D_RenderContext;
+
+typedef struct X3D_Hashentry_Vex3D {
+  X3D_Vex3D_int16 v;
+  uint16 key;
+  uint16 frame;
+} X3D_Hashentry_Vex3D;
+
+#define X3D_RENDER_HASHTABLE_SIZE 32
+
+typedef struct X3D_Hashtable_Vex3D {
+  X3D_Hashentry_Vex3D v[X3D_RENDER_HASHTABLE_SIZE];
+} X3D_Hashtable_Vex3D;
 
 
 static inline void* x3d_stack_alloc(X3D_Stack* stack, uint16 bytes) {
@@ -51,4 +65,12 @@ static inline void x3d_stack_create(X3D_Stack* stack, uint16 size) {
   stack->base = malloc(size);
   stack->size = size;
   stack->ptr = stack->base + size;
+}
+
+void x3d_segment_render(X3D_Segment* seg, X3D_RenderContext* context) {
+  void* save_stack = x3d_stack_save(&context->stack);
+
+
+
+  x3d_stack_restore(&context->stack, save_stack);
 }
