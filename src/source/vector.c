@@ -20,26 +20,26 @@
 #include "X3D_fastsqrt.h"
 
 /**
-* Calculates the dot product of two 16-bit integer 3D vectors.
-*
-* @param a - pointer to the first 3D vector
-* @param b - pointer to the the second 3D vector
-*
-* @return dot product of a and b as an int32
-* @todo add overflow detection
-*/
+ * Calculates the dot product of two 16-bit integer 3D vectors.
+ *
+ * @param a - pointer to the first 3D vector
+ * @param b - pointer to the the second 3D vector
+ *
+ * @return dot product of a and b as an int32
+ * @todo add overflow detection
+ */
 int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   return a->x * b->x + (int32)a->y * b->y + (int32)a->z * b->z;
 }
 
 /**
-* Calculates the dot product of two 0x16 fixed-point 3D vectors.
-*
-* @param a - pointer to the first 3D vector
-* @param b - pointer to the second 3D vector
-*
-* @return dot product of a and b as an fp0x16
-*/
+ * Calculates the dot product of two 0x16 fixed-point 3D vectors.
+ *
+ * @param a - pointer to the first 3D vector
+ * @param b - pointer to the second 3D vector
+ *
+ * @return dot product of a and b as an fp0x16
+ */
 fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_SHIFT;
 }
@@ -47,12 +47,12 @@ fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
 #if 1
 
 /**
-* Normalizes an fp0x16 3D vector (makes the entire length 1).
-*
-* @param v - pointer to the 3D vector to normalize
-*
-* @return nothing
-*/
+ * Normalizes an fp0x16 3D vector (makes the entire length 1).
+ *
+ * @param v - pointer to the 3D vector to normalize
+ *
+ * @return nothing
+ */
 inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
   // Calculate x^2 + y^2 + z^2 for the distance formula.
   //
@@ -85,7 +85,7 @@ inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
   // an int16)
   uint16 len = (x3d_fastsqrt(distance_squared) << 1) + 1;
 
-  
+
   /// @todo Add check to make sure the sign of the components is the same after
   /// dividing?
 
@@ -97,12 +97,12 @@ inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
 }
 
 /**
-* Prints out an int16 Vex3D on the screen.
-*
-* @param v - pointer to the 3D vector to print.
-*
-* @return nothing
-*/
+ * Prints out an int16 Vex3D on the screen.
+ *
+ * @param v - pointer to the 3D vector to print.
+ *
+ * @return nothing
+ */
 void x3d_print_vex3d_int16(X3D_Vex3D_int16* v) {
   printf("{%d, %d, %d}\n", v->x, v->y, v->z);
 }
