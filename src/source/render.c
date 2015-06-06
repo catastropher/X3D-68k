@@ -143,3 +143,4 @@ void x3d_segment_render(X3D_Segment* seg, X3D_RenderContext* context) {
 
   x3d_stack_restore(&context->stack, save_stack);
 }
+

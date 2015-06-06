@@ -46,3 +46,4 @@ typedef struct {
   
   X3D_EdgeClip* clipped_edges[];
 } X3D_Segment;
+
