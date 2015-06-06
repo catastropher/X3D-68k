@@ -26,6 +26,8 @@
 /// All normals are in 0.16 format.
 #define X3D_NORMAL_SHIFT 15
 
+#define INT16_MAX 32767
+
 //=============================================================================
 // Structures
 //=============================================================================
@@ -38,6 +40,14 @@ typedef struct X3D_Vex3D_int16 {
 
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp8x8;
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp0x16;
+
+typedef struct X3D_Vex3D_uint8 {
+  uint8 x;
+  uint8 y;
+  uint8 z;
+} X3D_Vex3D_uint8;
+
+typedef struct X3D_Vex3D_uint8 X3D_Vex3D_angle;
 
 typedef struct Vex2D {
   int16 x;

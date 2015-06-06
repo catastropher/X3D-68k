@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <string.h>
 
 #define _keytest(...) 1
 #define ngetchx() ;

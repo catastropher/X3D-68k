@@ -13,26 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "X3D_config.h"
 #include "X3D_fix.h"
+#include "X3D_vector.h"
 #include "X3D_matrix.h"
 
-/// Temporary fixed point multiplication until Jason completes his work
+/// Temporary fixed point multiplication until Jason completes his work.
 static fp0x16 temp_x3d_fp0x16_mul(fp0x16 a, fp0x16 b) {
   return ((int32)a * b) >> 16;
 }
 
-// Multiplies two 3x3 matricies i.e. concatenates them
-
 /**
-* Multiplies two fp0x16 matricies together (aka matrix concatenation).
-*
-* @param res - pointer to the destination matrix
-* @param a   - pointer to the first matrix to multiply
-* @param b   - pointer to the second matrix to multiply
-*
-* @return nothing
-* @note dest must not be an alias for a or b
-*/
+ * Multiplies two fp0x16 matricies together (aka matrix concatenation).
+ *
+ * @param dest - pointer to the destination matrix
+ * @param a    - pointer to the first matrix to multiply
+ * @param b    - pointer to the second matrix to multiply
+ *
+ * @return nothing
+ * @note dest must not be an alias for a or b
+ */
 void x3d_mat3x3_fp0x16_mul(X3D_Mat3x3_fp0x16* dest, X3D_Mat3x3_fp0x16* a, X3D_Mat3x3_fp0x16* b) {
   int i, j, k;
 
@@ -47,5 +47,47 @@ void x3d_mat3x3_fp0x16_mul(X3D_Mat3x3_fp0x16* dest, X3D_Mat3x3_fp0x16* a, X3D_Ma
       }
     }
   }
+}
+
+/**
+ * Constructs an fp0x16 3D rotation matrix from a set of Euler anglers.
+ *
+ * @param dest    - pointer to the destination matrix
+ * @param angle   - pointer to Vex3D of angles describing rotation around
+ *		x, y, and z axis.
+ *
+ * @return nothing
+ * @todo Add support for rotation around Z axis.
+ * @todo Construct matrix using product-to-sum identities instead of matrix
+ *		multiplication.
+ */
+void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle *angle) {
+  fp0x16 sin_y = sinfp(angle->y);
+  fp0x16 cos_y = cosfp(angle->y);
+
+  fp0x16 sin_x = sinfp(angle->x);
+  fp0x16 cos_x = cosfp(angle->x);
+
+  X3D_Mat3x3_fp0x16 mat_y = {
+    {
+      cos_y, 0, sin_y,
+      0, INT16_MAX, 0,
+      -sin_y, 0, cos_y
+    }
+  };
+
+  X3D_Mat3x3_fp0x16 mat_x = {
+    {
+      INT16_MAX, 0, 0,
+      0, cos_x, -sin_x,
+      0, sin_x, cos_x,
+    }
+  };
+
+  X3D_Mat3x3_fp0x16 mul_res;
+
+  mul_mat3x3(&mul_res, &mat_x, &mat_y);
+
+  memcpy(dest, &mul_res, sizeof(X3D_Mat3x3_fp0x16));
 }
 
