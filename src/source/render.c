@@ -27,12 +27,81 @@ typedef struct {
 typedef struct X3D_RenderContext {
   uint8 flags;
   uint8 fov;
-  int16 x, y;
-  int16 w, h;
+  uint16 x, y;
+  uint16 w, h;
+
+  int16 scale;
+
+  uint16 center_x;
+  uint16 center_y;
   
   X3D_Stack stack;    /// Render stack
   
+  uint8* screen;
+  uint16 screen_w;
+  uint16 screen_h;
+
 } X3D_RenderContext;
+
+typedef struct X3D_EngineState {
+  uint16 frame;
+  uint16 render_delta;
+} X3D_EngineState;
+
+
+void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w, uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags) {
+  context->screen = screen;
+  context->screen_w = screen_w;
+  context->screen_h = screen_h;
+
+  context->w = context_w;
+  context->h = context_h;
+  context->x = context_x;
+  context_y = context_y;
+
+  context->fov = fov;
+  context->flags = flags;
+
+  // Default center of the render context
+  context->center_x = context->x + context->w / 2;
+  context->center_y = context->y + context->h / 2;
+
+  // Calculate the screen scaling factor (distance to the near plane)
+  // dist = (w / 2) / tan(fov / 2)
+  //c->dist = FIXDIV8(w / 2, tanfp(fov / 2));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 typedef struct X3D_Hashentry_Vex3D {
   X3D_Vex3D_int16 v;
