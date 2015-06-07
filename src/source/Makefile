@@ -30,6 +30,7 @@ tigcc:
 	@rm -rf ../../test/tigcc
 
 test:
+	@echo ""
 	@make --no-print-directory install
 	@echo ""
 	@make --no-print-directory -C ../../test/
@@ -60,10 +61,12 @@ tigcc/%.o: %.c
 	
 install:
 	@echo Installing X3D for tigcc...
+	@rm -rf "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
 	@cp -f ./tigcc/X3D.a "C:\\Program Files (x86)\\TIGCC\\Lib\\"
 	@cp -rf ../headers "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
 
 	@echo Installing X3D for gcc
+	@rm -rf /usr/include/X3D
 	@cp -rf ../headers /usr/include/X3D
 	@cp gcc/X3D.a /usr/lib/libX3D.a
 
