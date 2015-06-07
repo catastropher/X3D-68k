@@ -62,6 +62,7 @@ void x3d_mat3x3_fp0x16_mul(X3D_Mat3x3_fp0x16* dest, X3D_Mat3x3_fp0x16* a, X3D_Ma
  *		multiplication.
  */
 void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle *angle) {
+#if 0
   fp0x16 sin_y = sinfp(angle->y);
   fp0x16 cos_y = cosfp(angle->y);
 
@@ -89,5 +90,6 @@ void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle *angle
   mul_mat3x3(&mul_res, &mat_x, &mat_y);
 
   memcpy(dest, &mul_res, sizeof(X3D_Mat3x3_fp0x16));
+#endif
 }
 
