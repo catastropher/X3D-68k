@@ -19,6 +19,7 @@ CC_FLAGS=-I../headers
 
 all:
 	@make --no-print-directory tigcc
+	@echo ""
 	@make --no-print-directory gcc
 
 	@echo ""

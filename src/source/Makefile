@@ -59,11 +59,11 @@ tigcc/%.o: %.c
 	@echo Compiling $<...
 	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__
 	
-install:
+install: check-tigcc
 	@echo Installing X3D for tigcc...
-	@rm -rf "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
-	@cp -f ./tigcc/X3D.a "C:\\Program Files (x86)\\TIGCC\\Lib\\"
-	@cp -rf ../headers "C:\\Program Files (x86)\\TIGCC\\Include\\C\\X3D"
+	@rm -rf "$(TIGCC)/Include/C/X3D"
+	@cp -f ./tigcc/X3D.a "$(TIGCC)/lib"
+	@cp -rf ../headers "$(TIGCC)/Include/C/X3D"
 
 	@echo Installing X3D for gcc
 	@rm -rf /usr/include/X3D
@@ -71,6 +71,11 @@ install:
 	@cp gcc/X3D.a /usr/lib/libX3D.a
 
 	@echo X3D installed.
+	
+check-tigcc:
+ifndef TIGCC
+	$(error TIGCC is not set to TIGCC directory)
+endif
 	
 clean:
 	@rm -rf *.a
