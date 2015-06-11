@@ -26,7 +26,9 @@
 /// All normals are in 0.16 format.
 #define X3D_NORMAL_SHIFT 15
 
+#ifdef __TIGCC__
 #define INT16_MAX 32767
+#endif
 
 //=============================================================================
 // Structures
