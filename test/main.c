@@ -38,7 +38,7 @@ void run_tests() {
   test_vector();
 }
 
-
+void test_a();
 
 #ifdef __TIGCC__
 void _main() {
@@ -46,12 +46,15 @@ void _main() {
 int main() {
 #endif
 
+  X3D_STACK_TRACE;
+
   run_tests();
 
   x3d_printf("All tests passed! :D");
   
   ngetchx();
  
+  test_a();
 
 #ifndef __TIGCC__
   return 0;

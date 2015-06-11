@@ -83,11 +83,12 @@ typedef int16 fp0x16;
  *
  * @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows.
  */
-static inline fp8x8 x3d_add_fp8x8(fp8x8 a, fp8x8 b) {
-#ifdef X3D_CHECK_OVERFLOW
-  x3d_errorif(a + b != (long)a + b, "%d, %d", a, b);
-#endif
 
-  return a + b;
+static inline add_int16_overflow(int16 a, int16 b) {
+	if((int32)a + b != a + b) {
+
+	}
 }
+
+
 

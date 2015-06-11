@@ -18,6 +18,45 @@
 
 #ifndef NDEBUG
 
+typedef struct {
+  uint16 type;
+  void* addr;
+} X3D_Param;
+
+typedef struct {
+  const char* name;
+  uint16 total_p;
+  X3D_Param p[8];
+} X3D_FunctionCall;
+
+X3D_FunctionCall x3d_call_stack[32];
+short x3d_call_stack_top = -1;
+
+enum {
+  TYPE_INT8,
+  TYPE_UINT8,
+  TYPE_INT16,
+  TYPE_UNT16,
+  TYPE_INT32,
+  TYPE_UINT32,
+  TYPE_PTR
+};
+
+void* x3d_functioncall_enter(const char* name) {
+  x3d_call_stack[++x3d_call_stack_top].name = name;
+  x3d_call_stack[x3d_call_stack_top].total_p = 0;
+
+  return &x3d_call_stack[x3d_call_stack_top];
+}
+
+void x3d_functioncall_return(void* ptr) {
+  --x3d_call_stack_top;
+}
+
+void x3d_functioncall_param_add(void* callentry, int type, void* param_ptr) {
+
+}
+
 // Throws an error, prints out the message, and then quits the program
 void x3d_error(const char* format, ...) {
   char buf[512];
@@ -41,4 +80,30 @@ void x3d_error(const char* format, ...) {
 }
 
 #endif
+
+
+void x3d_print_stacktrace() {
+  int16 i;
+
+  printf("========Stack Trace========\n");
+  printf("\nEntries: %d\n", x3d_call_stack_top);
+
+  for(i = x3d_call_stack_top; i >= 0; --i) {
+    printf("-%s\n", x3d_call_stack[i].name);
+  }
+}
+
+
+
+void test_b() {
+  X3D_STACK_TRACE;
+
+  x3d_print_stacktrace();
+}
+
+void test_a() {
+  X3D_STACK_TRACE;
+
+  test_b();
+}
 
