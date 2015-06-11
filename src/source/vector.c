@@ -29,6 +29,8 @@
  * @todo add overflow detection
  */
 int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
+  X3D_STACK_TRACE;
+  
   return a->x * b->x + (int32)a->y * b->y + (int32)a->z * b->z;
 }
 
@@ -41,6 +43,8 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
  * @return dot product of a and b as an fp0x16
  */
 fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
+  X3D_STACK_TRACE;
+  
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_SHIFT;
 }
 
@@ -54,6 +58,8 @@ fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
  * @return nothing
  */
 inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
+  X3D_STACK_TRACE;
+  
   // Calculate x^2 + y^2 + z^2 for the distance formula.
   //
   // We divide each term by 4 to prevent overflow (if x, y, and z are all 0x7FFF,

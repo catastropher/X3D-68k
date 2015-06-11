@@ -49,12 +49,14 @@ int main() {
   X3D_STACK_TRACE;
 
   run_tests();
-
-  x3d_printf("All tests passed! :D");
   
   ngetchx();
  
-  test_a();
+  test_a(50);
+
+  add_int16_overflow(-32767, -5);
+
+  x3d_printf("All tests passed! :D\n");
 
 #ifndef __TIGCC__
   return 0;

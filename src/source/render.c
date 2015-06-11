@@ -50,6 +50,8 @@ typedef struct X3D_EngineState {
 
 
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w, uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags) {
+  X3D_STACK_TRACE;
+
   context->screen = screen;
   context->screen_w = screen_w;
   context->screen_h = screen_h;

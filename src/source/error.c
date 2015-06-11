@@ -21,6 +21,7 @@
 typedef struct {
   uint16 type;
   void* addr;
+  const char* name;
 } X3D_Param;
 
 typedef struct {
@@ -31,16 +32,6 @@ typedef struct {
 
 X3D_FunctionCall x3d_call_stack[32];
 short x3d_call_stack_top = -1;
-
-enum {
-  TYPE_INT8,
-  TYPE_UINT8,
-  TYPE_INT16,
-  TYPE_UNT16,
-  TYPE_INT32,
-  TYPE_UINT32,
-  TYPE_PTR
-};
 
 void* x3d_functioncall_enter(const char* name) {
   x3d_call_stack[++x3d_call_stack_top].name = name;
@@ -53,8 +44,41 @@ void x3d_functioncall_return(void* ptr) {
   --x3d_call_stack_top;
 }
 
-void x3d_functioncall_param_add(void* callentry, int type, void* param_ptr) {
+void x3d_functioncall_param_add(void* callentry, const char* name, int type, void* param_ptr) {
+  X3D_FunctionCall* f = callentry;
 
+  f->p[f->total_p].name = name;
+  f->p[f->total_p].type = type;
+  f->p[f->total_p].addr = param_ptr;
+  f->total_p++;
+}
+
+void x3d_print_stacktrace() {
+  int16 i, d;
+
+  printf("========Stack Trace========\n");
+  printf("Entries: %d\n\n", x3d_call_stack_top + 1);
+
+  for(i = x3d_call_stack_top; i >= 0; --i) {
+    printf("-%s\n", x3d_call_stack[i].name);
+
+    for(d = 0; d < x3d_call_stack[i].total_p; d++) {
+      printf("    %s: ", x3d_call_stack[i].p[d].name);
+
+      switch(x3d_call_stack[i].p[d].type) {
+      case PARAM_INT16:
+        printf("%d", *((int16*)x3d_call_stack[i].p[d].addr));
+        break;
+      default:
+        printf("<unknown type>");
+        break;
+      }
+
+      printf("\n");
+    }
+  }
+
+  printf("===========================\n");
 }
 
 // Throws an error, prints out the message, and then quits the program
@@ -70,7 +94,9 @@ void x3d_error(const char* format, ...) {
   clrscr();
 
 #endif
-  printf("Error: %s\nPress Esc to quit\n", buf);
+  printf("Error: %s\nPress Esc to quit\n\n", buf);
+
+  x3d_print_stacktrace();
 
 #ifdef __TIGCC__
   while(!_keytest(RR_ESC));
@@ -82,28 +108,20 @@ void x3d_error(const char* format, ...) {
 #endif
 
 
-void x3d_print_stacktrace() {
-  int16 i;
 
-  printf("========Stack Trace========\n");
-  printf("\nEntries: %d\n", x3d_call_stack_top);
-
-  for(i = x3d_call_stack_top; i >= 0; --i) {
-    printf("-%s\n", x3d_call_stack[i].name);
-  }
-}
-
-
-
-void test_b() {
+void test_b(int16 x) {
   X3D_STACK_TRACE;
 
-  x3d_print_stacktrace();
+  X3D_PARAM(PARAM_INT16, x);
+
+  add_int16_overflow(-32767, -50);
 }
 
-void test_a() {
+void test_a(int16 x) {
   X3D_STACK_TRACE;
 
-  test_b();
+  X3D_PARAM(PARAM_INT16, x);
+
+  test_b(x);
 }
 
