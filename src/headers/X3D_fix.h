@@ -74,6 +74,10 @@ typedef int16 fp0x16;
 /// @todo Look into implementing as (_val >> ((sizeof(_val) * 8 - 1)
 #define X3D_SIGNOF(_val) (_val < 0 ? -1 : (_val > 0 ? 1 : 0))
 
+
+/// An angle that goes from 0-255 instead of 0-359
+typedef uint8 angle256;
+
 //=============================================================================
 // Inline functions
 //=============================================================================
@@ -216,4 +220,7 @@ static inline uint32 add_uint32_overflow(uint32 a, uint32 b) {
   return a + b;
 }
 
+static inline fp8x8 inline div_fp0x16_by_fp0x16(fp0x16 n, fp0x16 d) {
+  return ((int32)n << 8) / d;
+}
 

@@ -27,32 +27,31 @@
 #define ANG_270 192
 #define ANG_360 256
 
+#define VERTICAL_LINE_SLOPE INT16_MAX
+
 extern const int16 sintab[256];
 
 // Given the input angle in DEG256, this returns the fixed-point sine of it
 // The number is in 0:15 format
-static inline fp0x16 x3d_sinfp(uint8 angle) {
+static inline fp0x16 x3d_sinfp(angle256 angle) {
   return sintab[(uint16)angle];
 }
 
 // Given the input angle in DEG256, this returns the fixed-point cosine of it
 // The number is in 0:15 format
-static inline fp0x16 x3d_cosfp(uint8 angle) {
+static inline fp0x16 x3d_cosfp(angle256 angle) {
   // We exploit the fact that cos(x) = sin(90 - x)
   return x3d_sinfp(ANG_90 - angle);
 }
 
 // Given the input angle in DEG256, this returns the fixed-point cosine of it
 // The number is in 8:8 format
-static inline short tanfp(unsigned char angle) {
+static inline fp8x8 x3d_tanfp(angle256 angle) {
   // Prevent division by 0
-#if 0
   if(angle == ANG_90 || angle == ANG_180)
     return VERTICAL_LINE_SLOPE;
 
-  return ((long)sinfp(angle) << 8) / cosfp(angle);
-#endif
 
-  return 0;
+  return div_fp0x16_by_fp0x16(x3d_sinfp(angle), x3d_cosfp(angle));
 }
 
