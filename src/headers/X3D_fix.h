@@ -74,16 +74,15 @@ typedef int16 fp0x16;
 #define X3D_SIGNOF(_val) (_val < 0 ? -1 : (_val > 0 ? 1 : 0))
 
 /**
- * Adds two 8x8 fixed point numbers.
+ * Adds two int8 numbers, possibly checking for overflow.
  *
  * @param a   - first fixed point number
  * @param b   - second fixed point number
  *
  * @return sum of a and b as an fp8x8
  *
- * @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows.
+ * @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows/underflows.
  */
-
 static inline int8 add_int8_overflow(int16 a, int16 b) {
   X3D_STACK_TRACE;
 
@@ -97,6 +96,16 @@ static inline int8 add_int8_overflow(int16 a, int16 b) {
   return a + b;
 }
 
+/**
+* Adds two uint8 numbers, possibly checking for overflow.
+*
+* @param a   - first fixed point number
+* @param b   - second fixed point number
+*
+* @return sum of a and b as an fp8x8
+*
+* @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows/underflows.
+*/
 static inline int8 add_uint8_overflow(int16 a, int16 b) {
   X3D_STACK_TRACE;
 
@@ -110,6 +119,16 @@ static inline int8 add_uint8_overflow(int16 a, int16 b) {
   return a + b;
 }
 
+/**
+* Adds two int16 numbers, possibly checking for overflow.
+*
+* @param a   - first fixed point number
+* @param b   - second fixed point number
+*
+* @return sum of a and b as an fp8x8
+*
+* @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows/underflows.
+*/
 static inline int16 add_int16_overflow(int16 a, int16 b) {
   X3D_STACK_TRACE;
 
@@ -123,6 +142,16 @@ static inline int16 add_int16_overflow(int16 a, int16 b) {
   return a + b;
 }
 
+/**
+* Adds two uint16 numbers, possibly checking for overflow.
+*
+* @param a   - first fixed point number
+* @param b   - second fixed point number
+*
+* @return sum of a and b as an fp8x8
+*
+* @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows/underflows.
+*/
 static inline uint16 add_uint16_overflow(uint16 a, uint16 b) {
   X3D_STACK_TRACE;
 
@@ -136,6 +165,16 @@ static inline uint16 add_uint16_overflow(uint16 a, uint16 b) {
   return a + b;
 }
 
+/**
+* Adds two int32 numbers, possibly checking for overflow.
+*
+* @param a   - first fixed point number
+* @param b   - second fixed point number
+*
+* @return sum of a and b as an fp8x8
+*
+* @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows/underflows.
+*/
 static inline int32 add_int32_overflow(int32 a, int32 b) {
   X3D_STACK_TRACE;
 
@@ -149,6 +188,16 @@ static inline int32 add_int32_overflow(int32 a, int32 b) {
   return a + b;
 }
 
+/**
+* Adds two uint32 numbers, possibly checking for overflow.
+*
+* @param a   - first fixed point number
+* @param b   - second fixed point number
+*
+* @return sum of a and b as an fp8x8
+*
+* @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows/underflows.
+*/
 static inline uint32 add_uint32_overflow(uint32 a, uint32 b) {
   X3D_STACK_TRACE;
 
