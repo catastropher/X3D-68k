@@ -18,6 +18,7 @@
 #include "X3D_config.h"
 #include "X3D_fix.h"
 
+/// @todo document
 #define ANG_0 0
 #define ANG_30 21
 #define ANG_45 32
@@ -27,18 +28,23 @@
 #define ANG_270 192
 #define ANG_360 256
 
+/// @todo document
 #define VERTICAL_LINE_SLOPE INT16_MAX
 
 extern const int16 sintab[256];
 
 // Given the input angle in DEG256, this returns the fixed-point sine of it
 // The number is in 0:15 format
+/// @todo update documentation
+/// @todo add tests
 static inline fp0x16 x3d_sinfp(angle256 angle) {
   return sintab[(uint16)angle];
 }
 
 // Given the input angle in DEG256, this returns the fixed-point cosine of it
 // The number is in 0:15 format
+/// @todo update documentation
+/// @todo add tests
 static inline fp0x16 x3d_cosfp(angle256 angle) {
   // We exploit the fact that cos(x) = sin(90 - x)
   return x3d_sinfp(ANG_90 - angle);
@@ -46,11 +52,12 @@ static inline fp0x16 x3d_cosfp(angle256 angle) {
 
 // Given the input angle in DEG256, this returns the fixed-point cosine of it
 // The number is in 8:8 format
+/// @todo update documentation
+/// @todo add tests
 static inline fp8x8 x3d_tanfp(angle256 angle) {
   // Prevent division by 0
   if(angle == ANG_90 || angle == ANG_180)
     return VERTICAL_LINE_SLOPE;
-
 
   return div_fp0x16_by_fp0x16(x3d_sinfp(angle), x3d_cosfp(angle));
 }

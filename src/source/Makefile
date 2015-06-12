@@ -57,7 +57,7 @@ tigcc/X3D.a: $(TIGCC_OBJ_FILES)
 	
 tigcc/%.o: %.c
 	@echo Compiling $<...
-	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__
+	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__ -O2
 	
 install: check-tigcc
 	@echo Installing X3D for tigcc...

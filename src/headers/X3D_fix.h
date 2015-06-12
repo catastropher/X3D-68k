@@ -220,6 +220,7 @@ static inline uint32 add_uint32_overflow(uint32 a, uint32 b) {
   return a + b;
 }
 
+/// @todo document
 static inline fp8x8 inline div_fp0x16_by_fp0x16(fp0x16 n, fp0x16 d) {
   return ((int32)n << 8) / d;
 }
