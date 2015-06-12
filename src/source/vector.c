@@ -18,6 +18,7 @@
 #include "X3D_vector.h"
 #include "X3D_error.h"
 #include "X3D_fastsqrt.h"
+#include "X3D_render.h"
 
 /**
  * Calculates the dot product of two 16-bit integer 3D vectors.
@@ -31,7 +32,7 @@
 int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   X3D_STACK_TRACE;
   
-  return a->x * b->x + (int32)a->y * b->y + (int32)a->z * b->z;
+  return (int32)a->x * b->x + (int32)a->y * b->y + (int32)a->z * b->z;
 }
 
 /**
@@ -113,4 +114,9 @@ void x3d_print_vex3d_int16(X3D_Vex3D_int16* v) {
   printf("{%d, %d, %d}\n", v->x, v->y, v->z);
 }
 
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src) {
+
+}
+
 #endif
+

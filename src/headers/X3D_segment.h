@@ -16,6 +16,9 @@
 #include "X3D_config.h"
 #include "X3D_fix.h"
 
+
+#if 0
+
 typedef struct {
 
 } X3D_EdgeClip;
@@ -46,4 +49,6 @@ typedef struct {
   
   X3D_EdgeClip* clipped_edges[];
 } X3D_Segment;
+
+#endif
 

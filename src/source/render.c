@@ -17,39 +17,12 @@
 #include "X3D_fix.h"
 #include "X3D_segment.h"
 #include "X3D_vector.h"
-
-typedef struct {
-  int16 size;
-  uint8* ptr;
-  uint8* base;
-} X3D_Stack;
-
-typedef struct X3D_RenderContext {
-  uint8 flags;
-  uint8 fov;
-  uint16 x, y;
-  uint16 w, h;
-
-  int16 scale;
-
-  uint16 center_x;
-  uint16 center_y;
-  
-  X3D_Stack stack;    /// Render stack
-  
-  uint8* screen;
-  uint16 screen_w;
-  uint16 screen_h;
-
-} X3D_RenderContext;
-
-typedef struct X3D_EngineState {
-  uint16 frame;
-  uint16 render_delta;
-} X3D_EngineState;
+#include "X3D_render.h"
 
 
-void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w, uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags) {
+void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
+  uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags) {
+
   X3D_STACK_TRACE;
 
   context->screen = screen;
@@ -138,6 +111,7 @@ static inline void x3d_stack_create(X3D_Stack* stack, uint16 size) {
   stack->ptr = stack->base + size;
 }
 
+#if 0
 void x3d_segment_render(X3D_Segment* seg, X3D_RenderContext* context) {
   void* save_stack = x3d_stack_save(&context->stack);
 
@@ -145,4 +119,6 @@ void x3d_segment_render(X3D_Segment* seg, X3D_RenderContext* context) {
 
   x3d_stack_restore(&context->stack, save_stack);
 }
+
+#endif
 

@@ -32,8 +32,22 @@ int _ti92plus;
 void test_vector();
 void test_fastsqrt();
 
+
+void test_types() {
+  x3d_assert(sizeof(int8) == 1);
+  x3d_assert(sizeof(uint8) == 1);
+  x3d_assert(sizeof(int16) == 2);
+  x3d_assert(sizeof(uint16) == 2);
+  x3d_assert(sizeof(int32) == 4);
+  x3d_assert(sizeof(uint32) == 4);
+  x3d_assert(sizeof(int64) == 8);
+  x3d_assert(sizeof(uint64) == 8);
+}
+
+
 void run_tests() {
   // Add calls to test functions
+  test_types();
   test_fastsqrt();
   test_vector();
 }
@@ -44,6 +58,10 @@ void test_a();
 void _main() {
 #else
 int main() {
+#endif
+
+#ifdef __TIGCC__
+  FontSetSys(F_4x6);
 #endif
 
   X3D_STACK_TRACE;

@@ -51,10 +51,10 @@ typedef struct X3D_Vex3D_uint8 {
 
 typedef struct X3D_Vex3D_uint8 X3D_Vex3D_angle;
 
-typedef struct Vex2D {
+typedef struct X3D_Vex2D_int16 {
   int16 x;
   int16 y;
-} Vex2D;
+} X3D_Vex2D_int16;
 
 //=============================================================================
 // Function declarations
