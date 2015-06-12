@@ -22,3 +22,5 @@
 #include "X3D_log.h"
 #include "X3D_matrix.h"
 #include "X3D_render.h"
+#include "X3D_trig.h"
+

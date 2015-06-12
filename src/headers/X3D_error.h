@@ -27,7 +27,8 @@ enum {
   PARAM_UINT16,
   PARAM_INT32,
   PARAM_UINT32,
-  PARAM_PTR
+  PARAM_PTR,
+  PARAM_VEX3D_INT16
 };
 
 #define X3D_STACK_TRACE void* x3d_functioncall_entry __attribute__ ((__cleanup__(x3d_functioncall_return))) = x3d_functioncall_enter(__FUNCTION__)

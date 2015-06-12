@@ -79,6 +79,9 @@ void x3d_print_vex3d_int16(X3D_Vex3D_int16* v);
  *  @return nothing
  */
 static inline X3D_Vex3D_int16 x3d_vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
+  X3D_STACK_TRACE;
+  
+  
   return (X3D_Vex3D_int16){a->x + b->x, a->y + b->y, a->z + b->z};
 }
 

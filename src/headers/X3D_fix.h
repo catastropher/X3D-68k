@@ -60,7 +60,6 @@ typedef uint64_t uint64;
 
 #endif
 
-
 /// An 8.8 fixed point number
 typedef int16 fp8x8;
 
@@ -69,9 +68,15 @@ typedef int32 fp16x16;
 
 /// A 0.16 fixed point number
 typedef int16 fp0x16;
+
+
 /// Returns the sign of a value
 /// @todo Look into implementing as (_val >> ((sizeof(_val) * 8 - 1)
 #define X3D_SIGNOF(_val) (_val < 0 ? -1 : (_val > 0 ? 1 : 0))
+
+//=============================================================================
+// Inline functions
+//=============================================================================
 
 /**
  * Adds two int8 numbers, possibly checking for overflow.
@@ -210,4 +215,5 @@ static inline uint32 add_uint32_overflow(uint32 a, uint32 b) {
 
   return a + b;
 }
+
 
