@@ -69,6 +69,9 @@ void x3d_print_stacktrace() {
       case PARAM_INT16:
         printf("%d", *((int16*)x3d_call_stack[i].p[d].addr));
         break;
+      case PARAM_INT32:
+        printf("%ld", *((int32*)x3d_call_stack[i].p[d].addr));
+        break;
       default:
         printf("<unknown type>");
         break;

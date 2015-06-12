@@ -114,7 +114,7 @@ void x3d_print_vex3d_int16(X3D_Vex3D_int16* v) {
   printf("{%d, %d, %d}\n", v->x, v->y, v->z);
 }
 
-void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src) {
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, X3D_RenderContext* context) {
 
 }
 

@@ -84,16 +84,81 @@ typedef int16 fp0x16;
  * @note If @ref X3D_CHECK_OVERFLOW is defined, this will throw an error, if a + b overflows.
  */
 
+static inline int8 add_int8_overflow(int16 a, int16 b) {
+  X3D_STACK_TRACE;
+
+  X3D_PARAM(PARAM_INT8, a);
+  X3D_PARAM(PARAM_INT8, b);
+
+#ifdef X3D_CHECK_OVERFLOW
+  x3d_errorif((int16)a + b != (int8)(a + b), "int8 overflow");
+#endif
+
+  return a + b;
+}
+
+static inline int8 add_uint8_overflow(int16 a, int16 b) {
+  X3D_STACK_TRACE;
+
+  X3D_PARAM(PARAM_UINT8, a);
+  X3D_PARAM(PARAM_UINT8, b);
+
+#ifdef X3D_CHECK_OVERFLOW
+  x3d_errorif((uint16)a + b != (uint8)(a + b), "uint8 overflow");
+#endif
+
+  return a + b;
+}
+
 static inline int16 add_int16_overflow(int16 a, int16 b) {
   X3D_STACK_TRACE;
 
   X3D_PARAM(PARAM_INT16, a);
   X3D_PARAM(PARAM_INT16, b);
 
-  x3d_errorif((int32)a + b != (int16)(a + b), "overflow");
+#ifdef X3D_CHECK_OVERFLOW
+  x3d_errorif((int32)a + b != (int16)(a + b), "int16 overflow");
+#endif
 
   return a + b;
 }
 
+static inline uint16 add_uint16_overflow(uint16 a, uint16 b) {
+  X3D_STACK_TRACE;
 
+  X3D_PARAM(PARAM_UINT16, a);
+  X3D_PARAM(PARAM_UINT16, b);
+
+#ifdef X3D_CHECK_OVERFLOW
+  x3d_errorif((uint32)a + b != (uint16)(a + b), "uint16 overflow");
+#endif
+
+  return a + b;
+}
+
+static inline int32 add_int32_overflow(int32 a, int32 b) {
+  X3D_STACK_TRACE;
+
+  X3D_PARAM(PARAM_INT32, a);
+  X3D_PARAM(PARAM_INT32, b);
+
+#ifdef X3D_CHECK_OVERFLOW
+  x3d_errorif((int64)a + b != (int32)(a + b), "int32 overflow");
+#endif
+
+  return a + b;
+}
+
+static inline uint32 add_uint32_overflow(uint32 a, uint32 b) {
+  X3D_STACK_TRACE;
+
+  X3D_PARAM(PARAM_UINT32, a);
+  X3D_PARAM(PARAM_UINT32, b);
+
+#ifdef X3D_CHECK_OVERFLOW
+  x3d_errorif((uint64)a + b != (uint32)(a + b), "uint32 overflow");
+#endif
+
+  return a + b;
+}
 
