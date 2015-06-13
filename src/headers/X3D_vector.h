@@ -16,15 +16,12 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
+#include "X3D_const.h"
 #include "X3D_fix.h"
 
 //=============================================================================
 // Defines
 //=============================================================================
-
-/// The number of fractional bits used to represent a normal in fixed point.
-/// All normals are in 0.16 format.
-#define X3D_NORMAL_SHIFT 15
 
 #ifdef __TIGCC__
 #define INT16_MAX 32767
@@ -49,7 +46,7 @@ typedef struct X3D_Vex3D_uint8 {
   uint8 z;
 } X3D_Vex3D_uint8;
 
-typedef struct X3D_Vex3D_uint8 X3D_Vex3D_angle;
+typedef struct X3D_Vex3D_uint8 X3D_Vex3D_angle256;
 
 typedef struct X3D_Vex2D_int16 {
   int16 x;

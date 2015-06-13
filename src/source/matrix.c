@@ -61,7 +61,7 @@ void x3d_mat3x3_fp0x16_mul(X3D_Mat3x3_fp0x16* dest, X3D_Mat3x3_fp0x16* a, X3D_Ma
  * @todo Construct matrix using product-to-sum identities instead of matrix
  *		multiplication.
  */
-void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle *angle) {
+void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *angle) {
 #if 0
   fp0x16 sin_y = sinfp(angle->y);
   fp0x16 cos_y = cosfp(angle->y);

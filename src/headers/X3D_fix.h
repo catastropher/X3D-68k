@@ -69,6 +69,9 @@ typedef int32 fp16x16;
 /// A 0.16 fixed point number
 typedef int16 fp0x16;
 
+/// An unsigned 8.8 fixed point number
+typedef uint16 ufp8x8;
+
 
 /// Returns the sign of a value
 /// @todo Look into implementing as (_val >> ((sizeof(_val) * 8 - 1)
@@ -77,6 +80,22 @@ typedef int16 fp0x16;
 
 /// An angle that goes from 0-255 instead of 0-359
 typedef uint8 angle256;
+
+/// @todo comment
+static inline uint8 uint16_lower(uint16 i) {
+  return i & 0xFF;
+}
+
+/// @todo comment
+static inline uint8 uint16_upper(uint16 i) {
+  return i >> 8;
+}
+
+static inline mul_fp0x16_by_int16_as_int16(fp0x16 a, int16 b) {
+  return ((int16)a * b) >> 15;
+}
+
+
 
 //=============================================================================
 // Inline functions

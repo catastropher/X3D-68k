@@ -16,6 +16,8 @@
 #include "X3D_config.h"
 #include "X3D_fix.h"
 #include "X3D_vector.h"
+#include "X3D_segment.h"
+#include "X3D_trig.h"
 
 typedef struct {
 
@@ -52,8 +54,26 @@ typedef struct {
 
 
 
+// Constructs a prism with regular polygons as the base
+/// @todo document
+X3D_Prism* x3d_prism_construct(uint16 steps, uint16 r, uint16 h, X3D_Vex3D_angle256 rot_angle) {
+  X3D_Prism* s = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex2D_int16) * steps * 2);
 
-X3D_Segment* x3d_segment_construct(uint16 steps, uint16 r) {
-  X3D_Segment* s = malloc(sizeof(X3D_Segment)+sizeof(X3D_Vex2D_int16)* steps * 2);
+  ufp8x8 angle = 0;
+  ufp8x8 angle_step = 65536 / steps;
+  uint16 i;
+
+  for(i = 0; i < steps; ++i) {
+    s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cosfp(uint16_upper(angle)), r);
+    s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sinfp(uint16_upper(angle)), r);
+    s->v[i].y = -h / 2;
+  }
+
+  for(i = 0; i < steps; ++i) {
+    s->v[i + steps].x = s->v[i].x;
+    s->v[i + steps].z = s->v[i].y;
+    s->v[i + steps].y = h / 2;
+  }
 
 }
+
