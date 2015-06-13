@@ -20,6 +20,12 @@
 #include "X3D_render.h"
 #include "X3D_trig.h"
 
+/// @todo document
+void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16 v1, X3D_Vex2D_int16 v2) {
+#ifdef __TIGCC__
+  DrawLine(v1.x, v1.y, v2.x, v2.y, A_NORMAL);
+#endif
+}
 
 /// @todo rename context_x and context_y to pos_x and pos_y
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,

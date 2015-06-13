@@ -18,6 +18,7 @@
 #include "X3D_vector.h"
 #include "X3D_segment.h"
 #include "X3D_trig.h"
+#include "X3D_render.h"
 
 typedef struct {
 
@@ -75,5 +76,28 @@ X3D_Prism* x3d_prism_construct(uint16 steps, uint16 r, uint16 h, X3D_Vex3D_angle
     s->v[i + steps].y = h / 2;
   }
 
+  s->base_v = steps;
+
+  return s;
+}
+
+void x3d_prism_render(X3D_Prism* prism, X3D_RenderContext* context) {
+  uint16 i, d;
+
+  for(i = 0; i < 2; ++i) {
+    uint16 start = prism->base_v * i;
+
+    for(d = 0; d < prism->base_v; ++d) {
+      uint16 v = prism->base_v + start;
+      uint16 next = (start + d + 1) % prism->base_v;
+
+      X3D_Vex2D_int16 v_project, next_project;
+      
+      x3d_vex3d_int16_project(&v_project, &prism->v[v], context);
+      x3d_vex3d_int16_project(&next_project, &prism->v[v], context);
+
+      x3d_draw_line_black(context, v_project, next_project);
+    }
+  }
 }
 

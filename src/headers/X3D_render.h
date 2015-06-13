@@ -15,6 +15,7 @@
 
 #include "X3D_fix.h"
 #include "X3D_vector.h"
+#include "X3D_matrix.h"
 
 //=============================================================================
 // Structures
@@ -25,6 +26,11 @@ typedef struct {
   uint8* ptr;
   uint8* base;
 } X3D_Stack;
+
+typedef struct {
+  X3D_Mat3x3_fp0x16 mat;
+  X3D_Vex3D_angle256 angle;
+} X3D_Camera;
 
 typedef struct X3D_RenderContext {
   uint8 flags;
@@ -42,6 +48,8 @@ typedef struct X3D_RenderContext {
   uint16 screen_w;
   uint16 screen_h;
 
+  X3D_Camera cam;
+
 } X3D_RenderContext;
 
 typedef struct X3D_EngineState {
@@ -52,6 +60,8 @@ typedef struct X3D_EngineState {
 //=============================================================================
 // Function declarations
 //=============================================================================
+
+void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16 v1, X3D_Vex2D_int16 v2);
 
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags);

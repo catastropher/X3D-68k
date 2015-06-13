@@ -95,5 +95,9 @@ static inline X3D_Vex3D_int16 x3d_vex3d_int16_sub(X3D_Vex3D_int16* a, X3D_Vex3D_
   return (X3D_Vex3D_int16){a->x - b->x, a->y - b->y, a->z - b->z};
 }
 
+struct X3D_RenderContext;
+
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, struct X3D_RenderContext* context);
+
 #endif
 
