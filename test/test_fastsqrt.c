@@ -16,6 +16,8 @@
 #include <X3D/X3D.h>
 #include <math.h>
 
+#if 0
+
 // Average error: 1.5833322e-10
 // Max error: 0.0625
 void test_fastsqrt_accuracy() {
@@ -54,6 +56,8 @@ void test_fastsqrt_accuracy() {
   
   printf("Max error: %.20f (%ul)\n", max_error, max_error_input);
 }
+
+#endif
 
 
 void test_fastsqrt() {

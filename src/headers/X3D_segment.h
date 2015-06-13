@@ -15,6 +15,14 @@
 
 #include "X3D_config.h"
 #include "X3D_fix.h"
+#include "X3D_vector.h"
+
+
+typedef struct {
+  uint16 base_v;     // Number of vertices in a base
+  X3D_Vex3D_int16 v[0];
+} X3D_Prism;
+
 
 
 #if 0

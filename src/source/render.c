@@ -18,8 +18,10 @@
 #include "X3D_segment.h"
 #include "X3D_vector.h"
 #include "X3D_render.h"
+#include "X3D_trig.h"
 
 
+/// @todo rename context_x and context_y to pos_x and pos_y
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags) {
 
@@ -31,19 +33,19 @@ void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 sc
 
   context->w = context_w;
   context->h = context_h;
-  context->x = context_x;
-  context_y = context_y;
+  context->pos.x = context_x;
+  context->pos.y = context_y;
 
   context->fov = fov;
   context->flags = flags;
 
   // Default center of the render context
-  context->center_x = context->x + context->w / 2;
-  context->center_y = context->y + context->h / 2;
+  context->center.x = context->pos.x + context->w / 2;
+  context->center.y = context->pos.y + context->h / 2;
 
   // Calculate the screen scaling factor (distance to the near plane)
   // dist = (w / 2) / tan(fov / 2)
-  //c->dist = FIXDIV8(w / 2, tanfp(fov / 2));
+  context->scale = div_int16_by_fp0x16(screen_w / 2, x3d_tanfp(fov / 2));
 }
 
 
@@ -71,7 +73,7 @@ void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 sc
 
 
 
-
+#if 0
 
 
 
@@ -111,7 +113,6 @@ static inline void x3d_stack_create(X3D_Stack* stack, uint16 size) {
   stack->ptr = stack->base + size;
 }
 
-#if 0
 void x3d_segment_render(X3D_Segment* seg, X3D_RenderContext* context) {
   void* save_stack = x3d_stack_save(&context->stack);
 

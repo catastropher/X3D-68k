@@ -15,10 +15,13 @@
 
 #include "X3D_config.h"
 #include "X3D_fix.h"
+#include "X3D_vector.h"
 
 typedef struct {
 
 } X3D_EdgeClip;
+
+
 
 typedef struct {
   uint8 from_edge, to_edge;
@@ -47,3 +50,10 @@ typedef struct {
   X3D_EdgeClip* clipped_edges[];
 } X3D_Segment;
 
+
+
+
+X3D_Segment* x3d_segment_construct(uint16 steps, uint16 r) {
+  X3D_Segment* s = malloc(sizeof(X3D_Segment)+sizeof(X3D_Vex2D_int16)* steps * 2);
+
+}

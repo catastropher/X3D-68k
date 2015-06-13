@@ -14,6 +14,7 @@
 #pragma once
 
 #include "X3D_fix.h"
+#include "X3D_vector.h"
 
 //=============================================================================
 // Structures
@@ -28,13 +29,12 @@ typedef struct {
 typedef struct X3D_RenderContext {
   uint8 flags;
   uint8 fov;
-  uint16 x, y;
+  X3D_Vex2D_int16 pos;
   uint16 w, h;
 
   int16 scale;
 
-  uint16 center_x;
-  uint16 center_y;
+  X3D_Vex2D_int16 center;
 
   X3D_Stack stack;    /// Render stack
 

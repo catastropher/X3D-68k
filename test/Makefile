@@ -25,6 +25,8 @@ all:
 	@echo ""
 	@echo "=======Running tests for gcc======="
 	@gcc/test
+	
+	@make --no-print-directory -C ./game
 
 tigcc:
 	@echo Building X3D test suite for tigcc

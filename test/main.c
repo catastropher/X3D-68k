@@ -69,10 +69,10 @@ int main() {
   run_tests();
  
 
-  add_int8_overflow(127, 5);
+  //add_int8_overflow(127, 5);
 
   x3d_printf("All tests passed! :D\n");
-  ngetchx();
+  //ngetchx();
 
 #ifndef __TIGCC__
   return 0;
