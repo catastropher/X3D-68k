@@ -16,7 +16,18 @@
 #include "X3D_config.h"
 #include "X3D_fix.h"
 
-
+/**
+* Parses a positive integer.
+*
+* @param str  - pointer to a c string pointer that contains the string to parse
+* @param i    - where to write the integer result
+*
+* @return always 1
+* @note This advances *str after the integer
+* @note For internal use only.
+*
+* @todo This shouldn't return anything.
+*/
 static _Bool parse_int(const char** str, int16* i) {
   int16 res = 0;
 
@@ -78,16 +89,11 @@ static _Bool parse_fp(const char** str, int16* whole, int16* frac) {
  *   <li><code>\@i[B]</code> - an integer with B bits. Example: <code>\@i32</code></li>
  * </ul>
  *
- * @param str    - pointer to a c string pointer that contains the string to parse
- * @param whole  - pointer to where the number of whole bits should be written
- *   (if it's actually an fp)
+ * @param buf    - where to store the resulting string
+ * @param format - format string
+ * @param list   - va_list of parameters
  *
- * @param frac   - pointer to where the number of frac bits should be written
- *   (if it's actually an fp)
- *
- * @return Whether the string is in fixed point format
- * @note This advances *str if it matches the format.
- * @note For internal use only.
+ * @return nothing
  */
 void x3d_vsprintf(char* buf, const char* format, va_list list) {
   const char* str = format;
@@ -220,7 +226,14 @@ error:
   sprintf(buf, "@FORMAT ERR@");
 }
 
-/// @todo Document
+/**
+* Sends formatted input to a string. See @ref x3d_vsprintf for format types.
+*
+* @param buf    - pointer to a c string pointer that contains the string to parse
+* @param format - format string
+*
+* @return nothing
+*/
 void x3d_sprintf(char* buf, const char* format, ...) {
   va_list list;
   va_start(list, format);
@@ -228,7 +241,13 @@ void x3d_sprintf(char* buf, const char* format, ...) {
   va_end(list);
 }
 
-/// @todo Document
+/**
+* Prints out a formatted string. See @ref x3d_vsprintf for format types.
+*
+* @param format - format string
+*
+* @return nothing
+*/
 void x3d_printf(const char* format, ...) {
   va_list list;
   char buf[500];

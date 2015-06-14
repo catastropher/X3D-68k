@@ -55,6 +55,7 @@ typedef struct X3D_Vex2D_int16 {
 //=============================================================================
 // Function declarations
 //=============================================================================
+
 int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b);
 int16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b);
 inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v);
