@@ -20,10 +20,15 @@
 #include "X3D_render.h"
 #include "X3D_trig.h"
 
+#ifdef __TIGCC__
+#include <extgraph/extgraph.h>
+#endif
+
 /// @todo document
 void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16 v1, X3D_Vex2D_int16 v2) {
 #ifdef __TIGCC__
-  DrawLine(v1.x, v1.y, v2.x, v2.y, A_NORMAL);
+  //DrawLine(v1.x, v1.y, v2.x, v2.y, A_NORMAL);
+  FastLine_Draw_R(context->screen, v1.x, v1.y, v2.x, v2.y);
 #endif
 }
 
