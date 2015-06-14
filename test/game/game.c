@@ -23,6 +23,21 @@ int _ti92plus;
 void _main() {
   FontSetSys(F_4x6);
 
+  X3D_Mat3x3_fp0x16 mat;
+
+  clrscr();
+  x3d_mat3x3_fp0x16_construct(&mat, 0, 0, 0);
+  x3d_mat3x3_fp0x16_print(&mat);
+
+  X3D_Vex3D_int16 in = { 50, 100, 150 };
+  X3D_Vex3D_int16 out;
+
+  x3d_vex3d_int16_rotate(&out, &in, &mat);
+  x3d_vex3d_int16_print(&in);
+  x3d_vex3d_int16_print(&out);
+
+  ngetchx();
+
   X3D_RenderContext context;
 
   uint8* screen = malloc(LCD_SIZE);
@@ -33,6 +48,8 @@ void _main() {
 
   X3D_Prism* prism = x3d_prism_construct(8, 25, 50, (X3D_Vex3D_angle256){ 0, 0, 0 });
   x3d_prism_render(prism, &context);
+
+  free(prism);
 
   ngetchx();
 

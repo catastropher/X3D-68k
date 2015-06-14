@@ -17,10 +17,11 @@
 #include "X3D_fix.h"
 #include "X3D_vector.h"
 #include "X3D_matrix.h"
+#include "X3D_trig.h"
 
 /// Temporary fixed point multiplication until Jason completes his work.
 static fp0x16 temp_x3d_fp0x16_mul(fp0x16 a, fp0x16 b) {
-  return ((int32)a * b) >> 16;
+  return ((int32)a * b) >> 15;
 }
 
 /**
@@ -62,12 +63,12 @@ void x3d_mat3x3_fp0x16_mul(X3D_Mat3x3_fp0x16* dest, X3D_Mat3x3_fp0x16* a, X3D_Ma
  *		multiplication.
  */
 void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *angle) {
-#if 0
-  fp0x16 sin_y = sinfp(angle->y);
-  fp0x16 cos_y = cosfp(angle->y);
+#if 1
+  fp0x16 sin_y = x3d_sinfp(angle->y);
+  fp0x16 cos_y = x3d_cosfp(angle->y);
 
-  fp0x16 sin_x = sinfp(angle->x);
-  fp0x16 cos_x = cosfp(angle->x);
+  fp0x16 sin_x = x3d_sinfp(angle->x);
+  fp0x16 cos_x = x3d_cosfp(angle->x);
 
   X3D_Mat3x3_fp0x16 mat_y = {
     {
@@ -87,9 +88,18 @@ void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *an
 
   X3D_Mat3x3_fp0x16 mul_res;
 
-  mul_mat3x3(&mul_res, &mat_x, &mat_y);
+  x3d_mat3x3_fp0x16_mul(&mul_res, &mat_x, &mat_y);
 
   memcpy(dest, &mul_res, sizeof(X3D_Mat3x3_fp0x16));
 #endif
+}
+
+/// @todo document
+void x3d_mat3x3_fp0x16_print(X3D_Mat3x3_fp0x16* mat) {
+  uint16 r;
+
+  for(r = 0; r < 3; ++r) {
+    printf("%d %d %d\n", mat->data[MAT3x3(r, 0)], mat->data[MAT3x3(r, 1)], mat->data[MAT3x3(r, 2)]);
+  }
 }
 
