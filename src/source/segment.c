@@ -21,48 +21,27 @@
 #include "X3D_render.h"
 #include "X3D_matrix.h"
 
-typedef struct {
-
-} X3D_EdgeClip;
-
-
-
-typedef struct {
-  uint8 from_edge, to_edge;
-} X3D_ConnectEdge;
-
-typedef struct {
-  uint8 total_v;
-  
-  uint32 edge_bits;     // For edge propogration
-
-  uint16 v[0];           // Vertex ID's that make up the face
-  X3D_ConnectEdge connect_edge[0];
-
-} X3D_Face;
-  
-
-
-typedef struct {
-  uint8 total_e;        // Total number of edges
-  uint8 total_v;         // Total number of veritices
-  uint8 total_f;        // Total number of faces
-  
-  uint16 engine_delta;  // Last delta the segment was rendered
-  uint32 drawn_edges;    // Which edges have already been drawn
-  
-  X3D_EdgeClip* clipped_edges[];
-} X3D_Segment;
-
-
-
-// Constructs a prism with regular polygons as the base
-/// @todo document
+/**
+* Constructs a prism with regular polygons as the base.
+*
+* @param s          - pointer to the dest prism
+* @param steps      - number of "steps" i.e. points on the polygon base
+* @param r          - radius of the base
+* @param h          - height of the rism
+* @param rot_angle  - angles of rotation around its origin
+*
+* @return nothing
+* @note @ref X3D_Prism is a variable-sized data structure. Make sure @ref s is
+*     at least sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * steps * 2 bytes big!
+*/
 void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
   ufp8x8 angle = 0;
   ufp8x8 angle_step = 65536L / steps;
   uint16 i;
 
+  s->base_v = steps;
+
+  // Construct the first base (a regular polygon)
   for(i = 0; i < steps; ++i) {
     s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cosfp(uint16_upper(angle)), r);
     s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sinfp(uint16_upper(angle)), r);
@@ -71,40 +50,48 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3
     angle += angle_step;
   }
 
+  // Construct the second base perpendicular to the first
   for(i = 0; i < steps; ++i) {
     s->v[i + steps].x = s->v[i].x;
     s->v[i + steps].z = s->v[i].z;
     s->v[i + steps].y = h / 2;
   }
 
-  // Rotate the prism
+  // Rotate the prism around its center
   X3D_Mat3x3_fp0x16 mat;
   x3d_mat3x3_fp0x16_construct(&mat, &rot_angle);
 
   for(i = 0; i < steps * 2; ++i) {
     X3D_Vex3D_int16 rot;
+
     x3d_vex3d_int16_rotate(&rot, &s->v[i], &mat);
     s->v[i] = rot;
-
     s->v[i].z += 200;
   }
-
-  s->base_v = steps;
 }
 
+/**
+* Renders a prism in wireframe.
+*
+* @param prism - pointer to the prism
+* @param context - render context to render to
+*
+* @return nothing
+* @note No clipping is performed, nor is the position of the camera taken into
+*     account when rendering.
+* @todo Add clipping and take into position of the camera.
+*/
 void x3d_prism_render(X3D_Prism* prism, X3D_RenderContext* context) {
   uint16 i, d;
-
-  //printf("Steps: %d\n", prism->base_v);
-  //ngetchx();
-
-
   X3D_Vex2D_int16 screen[prism->base_v * 2];
 
+  // Project all of the points on the screenee
   for(i = 0; i < prism->base_v * 2; ++i) {
     x3d_vex3d_int16_project(&screen[i], &prism->v[i], context);
   }
 
+  // Draw the prism bases
+  /// @todo Rewrite to not use modulus
   for(i = 0; i < 2; ++i) {
     uint16 start = prism->base_v * i;
 
@@ -116,6 +103,7 @@ void x3d_prism_render(X3D_Prism* prism, X3D_RenderContext* context) {
     }
   }
 
+  // Draw the connecting lines between the bases
   for(i = 0; i < prism->base_v; ++i) {
     x3d_draw_line_black(context, screen[i], screen[i + prism->base_v]);
   }
