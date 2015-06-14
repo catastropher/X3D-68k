@@ -49,8 +49,6 @@ fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_SHIFT;
 }
 
-#if 1
-
 /**
  * Normalizes an fp0x16 3D vector (makes the entire length 1).
  *
@@ -119,7 +117,6 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, X3D_Re
   if(src->z == 0) {
     dest->x = 0;
     dest->y = 0;
-    printf("src->z zero\n");
   }
   else {
     dest->x = ((int32)src->x * context->scale) / src->z + context->center.x;
@@ -127,5 +124,15 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, X3D_Re
   }
 }
 
-#endif
+/// @todo document
+void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_RenderContext* context) {
+  fp0x16* m = context->cam.mat.data;
+  
+  X3D_Vex3D_int16 x = (X3D_Vex3D_int16){ m[MAT3x3(0, 0)], m[MAT3x3(0, 1)], m[MAT3x3(0, 2)] };
+  X3D_Vex3D_int16 y = (X3D_Vex3D_int16){ m[MAT3x3(1, 0)], m[MAT3x3(1, 1)], m[MAT3x3(1, 2)] };
+  X3D_Vex3D_int16 z = (X3D_Vex3D_int16){ m[MAT3x3(2, 0)], m[MAT3x3(2, 1)], m[MAT3x3(2, 2)] };
 
+  dest->x = x3d_vex3d_fp0x16_dot(&x, &src);
+  dest->y = x3d_vex3d_fp0x16_dot(&y, &src);
+  dest->z = x3d_vex3d_fp0x16_dot(&z, &src);
+}
