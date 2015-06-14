@@ -127,7 +127,14 @@ void x3d_print_stacktrace() {
   printf("===========================\n");
 }
 
-// Throws an error, prints out the message, and then quits the program
+/**
+* Throws an error, prints out the error message, and aborts.
+*
+* @param format - format string in printf format
+*
+* @return nothing
+* @todo Allow errors to be caught in try/catch block?
+*/
 void x3d_error(const char* format, ...) {
   char buf[512];
   va_list list;
@@ -152,22 +159,3 @@ void x3d_error(const char* format, ...) {
 }
 
 #endif
-
-
-
-void test_b(int16 x) {
-  X3D_STACK_TRACE;
-
-  X3D_PARAM(PARAM_INT16, x);
-
-  add_int16_overflow(-32767, -50);
-}
-
-void test_a(int16 x) {
-  X3D_STACK_TRACE;
-
-  X3D_PARAM(PARAM_INT16, x);
-
-  test_b(x);
-}
-

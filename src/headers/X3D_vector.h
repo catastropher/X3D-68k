@@ -13,8 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 #include "X3D_const.h"
 #include "X3D_fix.h"
@@ -101,6 +100,4 @@ struct X3D_Mat3x3_fp0x16;
 void x3d_vex3d_int16_print(X3D_Vex3D_int16* v);
 void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, struct X3D_RenderContext* context);
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, struct X3D_Mat3x3_fp0x16* mat);
-
-#endif
 

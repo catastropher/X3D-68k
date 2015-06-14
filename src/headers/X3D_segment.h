@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include "X3D_config.h"
 #include "X3D_fix.h"
 #include "X3D_vector.h"
