@@ -119,10 +119,12 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, X3D_Re
   if(src->z == 0) {
     dest->x = 0;
     dest->y = 0;
+    printf("src->z zero\n");
   }
-
-  dest->x = ((int32)src->x * context->scale) / src->z + context->center.x;
-  dest->y = ((int32)src->y * context->scale) / src->z + context->center.y;
+  else {
+    dest->x = ((int32)src->x * context->scale) / src->z + context->center.x;
+    dest->y = ((int32)src->y * context->scale) / src->z + context->center.y;
+  }
 }
 
 #endif

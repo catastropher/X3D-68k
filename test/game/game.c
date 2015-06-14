@@ -1,8 +1,8 @@
+#define SAVE_SCREEN
+
 #include <X3D/X3D.h>
 
 #ifdef __TIGCC__
-
-#define SAVE_SCREEN
 
 #include <tigcclib.h>
 
@@ -21,11 +21,20 @@ int _ti92plus;
 //  uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags)
 
 void _main() {
+  FontSetSys(F_4x6);
+
   X3D_RenderContext context;
 
   uint8* screen = malloc(LCD_SIZE);
 
   x3d_rendercontext_init(&context, screen, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
+
+  clrscr();
+
+  X3D_Prism* prism = x3d_prism_construct(8, 25, 50, (X3D_Vex3D_angle256){ 0, 0, 0 });
+  x3d_prism_render(prism, &context);
+
+  ngetchx();
 
 
 }

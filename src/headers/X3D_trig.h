@@ -31,7 +31,7 @@
 /// @todo document
 #define VERTICAL_LINE_SLOPE INT16_MAX
 
-extern const int16 sintab[256];
+extern const fp0x16 sintab[256];
 
 // Given the input angle in DEG256, this returns the fixed-point sine of it
 // The number is in 0:15 format

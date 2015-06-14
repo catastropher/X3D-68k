@@ -91,8 +91,9 @@ static inline uint8 uint16_upper(uint16 i) {
   return i >> 8;
 }
 
-static inline mul_fp0x16_by_int16_as_int16(fp0x16 a, int16 b) {
-  return ((int16)a * b) >> 15;
+/// @todo comment
+static inline int16 mul_fp0x16_by_int16_as_int16(fp0x16 a, int16 b) {
+  return ((int32)a * b) >> 15;
 }
 
 

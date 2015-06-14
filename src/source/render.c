@@ -23,6 +23,7 @@
 /// @todo document
 void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16 v1, X3D_Vex2D_int16 v2) {
 #ifdef __TIGCC__
+  x3d_assert(v1.x != v2.x || v1.y != v2.y);
   DrawLine(v1.x, v1.y, v2.x, v2.y, A_NORMAL);
 #endif
 }
@@ -52,6 +53,9 @@ void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 sc
   // Calculate the screen scaling factor (distance to the near plane)
   // dist = (w / 2) / tan(fov / 2)
   context->scale = div_int16_by_fp0x16(screen_w / 2, x3d_tanfp(fov / 2));
+
+  //printf("Scale: %d\n", context->scale);
+  //ngetchx();
 }
 
 
