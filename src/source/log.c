@@ -129,7 +129,7 @@ void x3d_vsprintf(char* buf, const char* format, va_list list) {
 process:
       switch(*str) {
       
-        /// @TODO - having @@ is broken
+        /// @todo - having @@ is broken
       case '@':
         goto normal_char;
         break;

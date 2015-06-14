@@ -71,9 +71,8 @@ void x3d_print_vex3d_int16(X3D_Vex3D_int16* v);
  *
  *  @param a     - pointer to the first 3D vector
  *  @param b     - pointer to the second 3D vector
- *  @param dest  - pointer to the destination 3D vector
  *
- *  @return nothing
+ *  @return a + b as an X3D_Vex3D_int16
  */
 static inline X3D_Vex3D_int16 x3d_vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   X3D_STACK_TRACE;
@@ -87,9 +86,8 @@ static inline X3D_Vex3D_int16 x3d_vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_
 *
 *  @param a     - pointer to the first 3D vector
 *  @param b     - pointer to the second 3D vector
-*  @param dest  - pointer to the destination 3D vector
 *
-*  @return nothing
+*  @return a + b as an X3D_Vex3D_int16
 */
 static inline X3D_Vex3D_int16 x3d_vex3d_int16_sub(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   return (X3D_Vex3D_int16){a->x - b->x, a->y - b->y, a->z - b->z};

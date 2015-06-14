@@ -31,7 +31,7 @@
 * @param rot_angle  - angles of rotation around its origin
 *
 * @return nothing
-* @note @ref X3D_Prism is a variable-sized data structure. Make sure @ref s is
+* @note @ref X3D_Prism is a variable-sized data structure. Make sure s is
 *     at least sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * steps * 2 bytes big!
 */
 void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
