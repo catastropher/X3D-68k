@@ -15,7 +15,7 @@
 
 #include "X3D_fix.h"
 
-/// @todo document
+/// A table of fp0x16 sin values for angle256
 const fp0x16 sintab[256] = {
   0, 804, 1607, 2410, 3211, 4011, 4808, 5602, 6392, 7179,
   7961, 8739, 9512, 10278, 11039, 11793, 12539, 13278, 14010, 14732,

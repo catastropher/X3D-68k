@@ -18,17 +18,19 @@
 #include "X3D_config.h"
 #include "X3D_fix.h"
 
-/// @todo document
-#define ANG_0 0
-#define ANG_30 21
-#define ANG_45 32
-#define ANG_60 42
-#define ANG_90 64
-#define ANG_180 128
-#define ANG_270 192
-#define ANG_360 256
+///< Quick angle360 to angle256 conversion constants
+enum {
+  ANG_0 = 0,
+  ANG_30 = 21,
+  ANG_45 = 32,
+  ANG_60 = 42,
+  ANG_90 = 64,
+  ANG_180 = 128,
+  ANG_270 = 192,
+  ANG_360 = 256
+};
 
-/// @todo document
+///< The slope of a vertical line in fp8x8 format (faking infinity)
 #define VERTICAL_LINE_SLOPE INT16_MAX
 
 extern const fp0x16 sintab[256];
@@ -37,26 +39,42 @@ extern const fp0x16 sintab[256];
 // The number is in 0:15 format
 /// @todo update documentation
 /// @todo add tests
+
+
+/**
+* Calculates the sine of an angle.
+*
+* @param angle - the angle as an angle256
+*
+* @return The sine of the angle in fp0x16 format
+*/
 static inline fp0x16 x3d_sinfp(angle256 angle) {
   return sintab[(uint16)angle];
 }
 
-// Given the input angle in DEG256, this returns the fixed-point cosine of it
-// The number is in 0:15 format
-/// @todo update documentation
-/// @todo add tests
+/**
+* Calculates the cosine of an angle.
+*
+* @param angle - the angle as an angle256
+*
+* @return The cosine of the angle in fp0x16 format
+*/
 static inline fp0x16 x3d_cosfp(angle256 angle) {
   // We exploit the fact that cos(x) = sin(90 - x)
   return x3d_sinfp(ANG_90 - angle);
 }
 
-// Given the input angle in DEG256, this returns the fixed-point cosine of it
-// The number is in 8:8 format
-/// @todo update documentation
-/// @todo add tests
+/**
+* Calculates the tangent of an angle.
+*
+* @param angle - the angle as an angle256
+*
+* @return The tangent of the angle in fp8x8 format
+* @note If angle is ANG_90 or ANG_270, this returns @ref VERTICAL_LINE_SLOPE
+*/
 static inline fp8x8 x3d_tanfp(angle256 angle) {
   // Prevent division by 0
-  if(angle == ANG_90 || angle == ANG_180)
+  if(angle == ANG_90 || angle == ANG_270)
     return VERTICAL_LINE_SLOPE;
 
   return div_fp0x16_by_fp0x16(x3d_sinfp(angle), x3d_cosfp(angle));
