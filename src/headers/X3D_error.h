@@ -20,7 +20,7 @@ void x3d_sprintf(char* buf, const char* format, ...);
 
 #endif
 
-enum {
+typedef enum {
   PARAM_INT8,
   PARAM_UINT8,
   PARAM_INT16,
@@ -29,7 +29,7 @@ enum {
   PARAM_UINT32,
   PARAM_PTR,
   PARAM_VEX3D_INT16
-};
+} X3D_ParamType;
 
 #define X3D_STACK_TRACE void* x3d_functioncall_entry __attribute__ ((__cleanup__(x3d_functioncall_return))) = x3d_functioncall_enter(__FUNCTION__)
 #define X3D_PARAM(_type, _param) x3d_functioncall_param_add(x3d_functioncall_entry,#_param,_type, &_param);

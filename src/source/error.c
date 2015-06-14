@@ -15,24 +15,40 @@
 
 #include "X3D_config.h"
 #include "X3D_fix.h"
+#include "X3D_error.h"
 
 #ifndef NDEBUG
 
+/// A function call parameter used for debugging
 typedef struct {
-  uint16 type;
-  void* addr;
-  const char* name;
+  X3D_ParamType type;           ///< Type of the parameter
+  void* addr;                   ///< Address of where the valus is stored
+  const char* name;             ///< Name of the parameter
 } X3D_Param;
 
+/// A function call type used for stack tracing
 typedef struct {
-  const char* name;
-  uint16 total_p;
-  X3D_Param p[8];
+  const char* name;             ///< Name of the function being called
+  uint16 total_p;               ///< Total number of parameters
+  X3D_Param p[8];               ///< Information for each parameter
 } X3D_FunctionCall;
 
-X3D_FunctionCall x3d_call_stack[32];
-short x3d_call_stack_top = -1;
+/// Stack of function calls for stack tracing
+static X3D_FunctionCall x3d_call_stack[32];
 
+/// Top index for the stack trace
+static int16 x3d_call_stack_top = -1;
+
+/**
+* Adds a function call entry to the stack trace.
+*
+* @param name - name of the function
+*
+* @return A pointer to the call entry.
+* @note For internal use only. See @ref X3D_STACK_TRACE to enable stack tracing
+*     for a particular function. This function is called from the @ref X3D_STACK_TRACE
+*     macro.
+*/
 void* x3d_functioncall_enter(const char* name) {
   x3d_call_stack[++x3d_call_stack_top].name = name;
   x3d_call_stack[x3d_call_stack_top].total_p = 0;
@@ -40,10 +56,31 @@ void* x3d_functioncall_enter(const char* name) {
   return &x3d_call_stack[x3d_call_stack_top];
 }
 
+/**
+* Removes a function call from the stack trace.
+*
+* @param ptr - a dummy pointer variable
+*
+* @return nothing
+* @note For internal use only. This is called automatically as a destructor for
+*     stack tracing.
+*/
 void x3d_functioncall_return(void* ptr) {
   --x3d_call_stack_top;
 }
 
+/**
+* Adds a parameter to a stack trace entry.
+*
+* @param callentry  - pointer to the stack trace function call entry
+* @param name       - name of the parameter
+* @param type       - type of the parameter
+* @param param_ptr  - pointer to the paramater value
+*
+* @return nothing
+* @note For internal use only. See @ref X3D_PARAM to add a paramter to a function call
+*     stack trace entry.
+*/
 void x3d_functioncall_param_add(void* callentry, const char* name, int type, void* param_ptr) {
   X3D_FunctionCall* f = callentry;
 
@@ -53,6 +90,12 @@ void x3d_functioncall_param_add(void* callentry, const char* name, int type, voi
   f->total_p++;
 }
 
+/**
+* Prints out the stack trace.
+*
+* @return nothing
+* @todo Implement more parameter types that can be printed 
+*/
 void x3d_print_stacktrace() {
   int16 i, d;
 
