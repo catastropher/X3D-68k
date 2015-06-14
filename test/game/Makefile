@@ -44,7 +44,7 @@ tigcc/test.9xz: $(TIGCC_OBJ_FILES)
 
 tigcc/%.o: %.c
 	@echo Compiling $<...
-	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__
+	@$(CC) $(CC_FLAGS) -Wall -c -o $@ $< -D__TIGCC_HEADERS__
 
 gcc/test.exe: $(GCC_OBJ_FILES)
 	@$(CC) -o "gcc/test" $(GCC_OBJ_FILES) -lX3D

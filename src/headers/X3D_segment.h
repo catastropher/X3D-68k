@@ -25,7 +25,7 @@ typedef struct {
 
 struct X3D_RenderContext;
 
-X3D_Prism* x3d_prism_construct(uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
+void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
 void x3d_prism_render(X3D_Prism* prism, struct X3D_RenderContext* context);
 
 #if 0

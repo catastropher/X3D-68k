@@ -23,22 +23,9 @@ int _ti92plus;
 void _main() {
   FontSetSys(F_4x6);
 
-  X3D_Mat3x3_fp0x16 mat;
-
-  clrscr();
-  x3d_mat3x3_fp0x16_construct(&mat, &(X3D_Vex3D_angle256){ANG_45, ANG_90, 0});
-  x3d_mat3x3_fp0x16_print(&mat);
-
-  X3D_Vex3D_int16 in = { 0, 0, 200 };
-  X3D_Vex3D_int16 out;
-
-  x3d_vex3d_int16_rotate(&out, &in, &mat);
-  x3d_vex3d_int16_print(&in);
-  x3d_vex3d_int16_print(&out);
-
-  ngetchx();
-
   X3D_RenderContext context;
+  X3D_Vex3D_angle256 angle = { 0, 0, 0 };
+  int16 steps = 3;
 
   uint8* screen = malloc(LCD_SIZE);
 
@@ -46,8 +33,42 @@ void _main() {
 
   clrscr();
 
-  X3D_Prism* prism = x3d_prism_construct(8, 25, 50, (X3D_Vex3D_angle256){ 0, 0, 0 });
-  x3d_prism_render(prism, &context);
+  X3D_Prism* prism = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * 32 * 2);
+  
+  void* kbd = kbd_queue();
+  uint16 key;
+
+  do {
+    if(!OSdequeue(&key, kbd)) {
+      if(key == KEY_UP) {
+        angle.x += 3;
+      }
+      else if(key == KEY_DOWN) {
+        angle.x -= 3;
+      }
+      else if(key == KEY_LEFT) {
+        angle.y += 3;
+      }
+      else if(key == KEY_RIGHT) {
+        angle.y -= 3;
+      }
+      else if(key == KEY_F1) {
+        --steps;
+      }
+      else if(key == KEY_F2) {
+        ++steps;
+      }
+      else if(key == KEY_ESC) {
+        break;
+      }
+      
+      clrscr();
+
+      x3d_prism_construct(prism, steps, 25, 50, angle);
+      x3d_prism_render(prism, &context);
+
+    }
+  } while(1);
 
   free(prism);
 

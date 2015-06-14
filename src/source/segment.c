@@ -19,6 +19,7 @@
 #include "X3D_segment.h"
 #include "X3D_trig.h"
 #include "X3D_render.h"
+#include "X3D_matrix.h"
 
 typedef struct {
 
@@ -57,41 +58,38 @@ typedef struct {
 
 // Constructs a prism with regular polygons as the base
 /// @todo document
-X3D_Prism* x3d_prism_construct(uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
-  X3D_Prism* s = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * steps * 2);
-
+void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
   ufp8x8 angle = 0;
   ufp8x8 angle_step = 65536L / steps;
   uint16 i;
 
-  //printf("Angle step: %u\n", angle_step);
-
   for(i = 0; i < steps; ++i) {
-    //printf("cos: %d\n", x3d_cosfp(uint16_upper(angle)));
     s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cosfp(uint16_upper(angle)), r);
-    s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sinfp(uint16_upper(angle)), r) + 200;
+    s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sinfp(uint16_upper(angle)), r);
     s->v[i].y = -h / 2;
-
-    //printf("%d %d %d\n", s->v[i].x, s->v[i].y, s->v[i].z);
 
     angle += angle_step;
   }
 
-  //printf("DONE\n");
-
-  //ngetchx();
-
-#if 1
   for(i = 0; i < steps; ++i) {
     s->v[i + steps].x = s->v[i].x;
     s->v[i + steps].z = s->v[i].z;
     s->v[i + steps].y = h / 2;
   }
-#endif
+
+  // Rotate the prism
+  X3D_Mat3x3_fp0x16 mat;
+  x3d_mat3x3_fp0x16_construct(&mat, &rot_angle);
+
+  for(i = 0; i < steps * 2; ++i) {
+    X3D_Vex3D_int16 rot;
+    x3d_vex3d_int16_rotate(&rot, &s->v[i], &mat);
+    s->v[i] = rot;
+
+    s->v[i].z += 200;
+  }
 
   s->base_v = steps;
-
-  return s;
 }
 
 void x3d_prism_render(X3D_Prism* prism, X3D_RenderContext* context) {
