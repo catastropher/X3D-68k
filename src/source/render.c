@@ -62,6 +62,29 @@ void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 sc
   //ngetchx();
 }
 
+/// @todo document
+/// @todo make cross platform
+void x3d_renderdevice_init(X3D_RenderDevice* d, uint16 w, uint16 h) {
+#ifdef __TIGCC__
+  d->dbuf = malloc(LCD_SIZE);   /// @todo replace with new memory management
+  PortSet(d->dbuf, LCD_WIDTH - 1, LCD_HEIGHT - 1);
+#endif
+}
+
+/// @todo document
+void x3d_renderdevice_cleanup(X3D_RenderDevice* d) {
+#ifdef __TIGCC__
+  free(d->dbuf);
+  PortRestore();
+#endif
+}
+
+/// @todo document
+void x3d_renderdevice_flip(X3D_RenderDevice* d) {
+#ifdef __TIGCC__
+  FastCopyScreen_R(d->dbuf, LCD_MEM);
+#endif
+}
 
 
 

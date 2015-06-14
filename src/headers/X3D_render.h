@@ -52,6 +52,10 @@ typedef struct X3D_RenderContext {
 
 } X3D_RenderContext;
 
+typedef struct X3D_RenderDevice {
+  uint8* dbuf;
+} X3D_RenderDevice;
+
 typedef struct X3D_EngineState {
   uint16 frame;
   uint16 render_delta;
@@ -65,3 +69,7 @@ void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16 v1, X3D_Vex
 
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags);
+
+void x3d_renderdevice_init(X3D_RenderDevice* d, uint16 w, uint16 h);
+void x3d_renderdevice_cleanup(X3D_RenderDevice* d);
+void x3d_renderdevice_flip(X3D_RenderDevice* d);

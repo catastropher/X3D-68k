@@ -27,9 +27,11 @@ void _main() {
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   int16 steps = 3;
 
-  uint8* screen = malloc(LCD_SIZE);
+  X3D_RenderDevice device;
 
-  x3d_rendercontext_init(&context, screen, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
+  x3d_renderdevice_init(&device, 240, 128);
+
+  x3d_rendercontext_init(&context, device.dbuf, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
 
   clrscr();
 
@@ -67,12 +69,13 @@ void _main() {
       x3d_prism_construct(prism, steps, 25, 50, angle);
       x3d_prism_render(prism, &context);
 
+      x3d_renderdevice_flip(&device);
     }
   } while(1);
 
   free(prism);
-
-  ngetchx();
+  
+  x3d_renderdevice_cleanup(&device);
 
 
 }
