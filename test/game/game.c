@@ -47,10 +47,10 @@ void _main() {
         angle.x -= 3;
       }
       else if(key == KEY_LEFT) {
-        angle.y += 3;
+        angle.y -= 3;
       }
       else if(key == KEY_RIGHT) {
-        angle.y -= 3;
+        angle.y += 3;
       }
       else if(key == KEY_F1) {
         --steps;
