@@ -26,10 +26,10 @@ void _main() {
   X3D_Mat3x3_fp0x16 mat;
 
   clrscr();
-  x3d_mat3x3_fp0x16_construct(&mat, 0, 0, 0);
+  x3d_mat3x3_fp0x16_construct(&mat, &(X3D_Vex3D_angle256){ANG_45, ANG_90, 0});
   x3d_mat3x3_fp0x16_print(&mat);
 
-  X3D_Vex3D_int16 in = { 50, 100, 150 };
+  X3D_Vex3D_int16 in = { 0, 0, 200 };
   X3D_Vex3D_int16 out;
 
   x3d_vex3d_int16_rotate(&out, &in, &mat);
