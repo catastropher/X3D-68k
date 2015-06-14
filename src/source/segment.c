@@ -58,7 +58,7 @@ typedef struct {
 // Constructs a prism with regular polygons as the base
 /// @todo document
 X3D_Prism* x3d_prism_construct(uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
-  X3D_Prism* s = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex2D_int16) * steps * 2);
+  X3D_Prism* s = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * steps * 2);
 
   ufp8x8 angle = 0;
   ufp8x8 angle_step = 65536L / steps;
