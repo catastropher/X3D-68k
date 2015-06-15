@@ -35,12 +35,6 @@ enum {
 
 extern const fp0x16 sintab[256];
 
-// Given the input angle in DEG256, this returns the fixed-point sine of it
-// The number is in 0:15 format
-/// @todo update documentation
-/// @todo add tests
-
-
 /**
 * Calculates the sine of an angle.
 *

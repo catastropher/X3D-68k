@@ -4,7 +4,15 @@
 #include "X3D_config.h"
 #include "x3d_error.h"
 
+//=============================================================================
+// Types
+//=============================================================================
+
 #ifdef __TIGCC__
+
+/// Returns the sign of a value
+/// @todo Look into implementing as (_val >> ((sizeof(_val) * 8 - 1)
+#define X3D_SIGNOF(_val) (_val < 0 ? -1 : (_val > 0 ? 1 : 0))
 
 /// An 8-bit signed integer
 typedef char int8;
@@ -72,31 +80,8 @@ typedef int16 fp0x16;
 /// An unsigned 8.8 fixed point number
 typedef uint16 ufp8x8;
 
-
-/// Returns the sign of a value
-/// @todo Look into implementing as (_val >> ((sizeof(_val) * 8 - 1)
-#define X3D_SIGNOF(_val) (_val < 0 ? -1 : (_val > 0 ? 1 : 0))
-
-
 /// An angle that goes from 0-255 instead of 0-359
 typedef uint8 angle256;
-
-/// @todo comment
-static inline uint8 uint16_lower(uint16 i) {
-  return i & 0xFF;
-}
-
-/// @todo comment
-static inline uint8 uint16_upper(uint16 i) {
-  return i >> 8;
-}
-
-/// @todo comment
-static inline int16 mul_fp0x16_by_int16_as_int16(fp0x16 a, int16 b) {
-  return ((int32)a * b) >> 15;
-}
-
-
 
 //=============================================================================
 // Inline functions
@@ -240,13 +225,61 @@ static inline uint32 add_uint32_overflow(uint32 a, uint32 b) {
   return a + b;
 }
 
-/// @todo document
+/**
+* Divides an fp0x16 by an fp0x16.
+*
+* @param n - numerator
+* @param d - denominator
+*
+* @return a / b as an fp8x8
+*/
 static inline fp8x8 div_fp0x16_by_fp0x16(fp0x16 n, fp0x16 d) {
   return ((int32)n << 8) / d;
 }
 
-/// @todo document
+/**
+* Divides an int16 by an fp0x16.
+*
+* @param n - numerator
+* @param d - denominator
+*
+* @return a / b as an int16
+*/
 static inline int16 div_int16_by_fp0x16(int16 n, fp0x16 d) {
   return ((int32)n << 8) / d;
+}
+
+/**
+* Rotates the lower byte of a uint16.
+*
+* @param i - input
+*
+* @return The lower byte
+*/
+static inline uint8 uint16_lower(uint16 i) {
+  return i & 0xFF;
+}
+
+/**
+* Rotates the upper byte of a uint16.
+*
+* @param i - input
+*
+* @return The upper byte
+*/
+static inline uint8 uint16_upper(uint16 i) {
+  return i >> 8;
+}
+
+/**
+* Multiplies an fp0x16 by an int16.
+*
+* @param a - the fp0x16
+* @param b - the int16
+*
+* @return a * b as an int16
+*/
+static inline int16 mul_fp0x16_by_int16_as_int16(fp0x16 a, int16 b) {
+  return ((int32)a * b) >> 15;
 }
 
