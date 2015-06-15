@@ -27,26 +27,40 @@
 #endif
 
 //=============================================================================
+// Forward declarations
+//=============================================================================
+
+struct X3D_RenderContext;
+struct X3D_Mat3x3_fp0x16;
+
+//=============================================================================
 // Structures
 //=============================================================================
 
+/// A 3D vector with int16 components.
 typedef struct X3D_Vex3D_int16 {
   int16 x;
   int16 y;
   int16 z;
 } X3D_Vex3D_int16;
 
+/// A 3D vector with fp8x8 components.
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp8x8;
+
+/// A 3D vector with fp0x16 components.
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp0x16;
 
+/// A 3D vector with uint8 components.
 typedef struct X3D_Vex3D_uint8 {
   uint8 x;
   uint8 y;
   uint8 z;
 } X3D_Vex3D_uint8;
 
+/// A 3D vector with angle256 components.
 typedef struct X3D_Vex3D_uint8 X3D_Vex3D_angle256;
 
+/// A 2D vector with int16 components.
 typedef struct X3D_Vex2D_int16 {
   int16 x;
   int16 y;
@@ -60,6 +74,10 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b);
 int16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b);
 inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v);
 void x3d_print_vex3d_int16(X3D_Vex3D_int16* v);
+
+void x3d_vex3d_int16_print(X3D_Vex3D_int16* v);
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, struct X3D_RenderContext* context);
+void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, struct X3D_Mat3x3_fp0x16* mat);
 
 
 //=============================================================================
@@ -77,7 +95,6 @@ void x3d_print_vex3d_int16(X3D_Vex3D_int16* v);
 static inline X3D_Vex3D_int16 x3d_vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   X3D_STACK_TRACE;
   
-  
   return (X3D_Vex3D_int16){a->x + b->x, a->y + b->y, a->z + b->z};
 }
 
@@ -90,13 +107,8 @@ static inline X3D_Vex3D_int16 x3d_vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_
 *  @return a + b as an X3D_Vex3D_int16
 */
 static inline X3D_Vex3D_int16 x3d_vex3d_int16_sub(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
+  X3D_STACK_TRACE;
+  
   return (X3D_Vex3D_int16){a->x - b->x, a->y - b->y, a->z - b->z};
 }
-
-struct X3D_RenderContext;
-struct X3D_Mat3x3_fp0x16;
-
-void x3d_vex3d_int16_print(X3D_Vex3D_int16* v);
-void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, struct X3D_RenderContext* context);
-void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, struct X3D_Mat3x3_fp0x16* mat);
 
