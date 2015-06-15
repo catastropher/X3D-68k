@@ -112,7 +112,17 @@ void x3d_vex3d_int16_print(X3D_Vex3D_int16* v) {
   printf("{%d, %d, %d}\n", v->x, v->y, v->z);
 }
 
-/// @todo document
+/**
+* Projects a 3D point onto a render context.
+*
+* @param dest - destination vector
+* @param src - source vector
+* @param context - rendering context
+*
+* @return nothing
+* @note If src->z is zero, dest->x and dest->y are set to 0 to prevent division
+*     by 0.
+*/
 void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, X3D_RenderContext* context) {
   // To prevent division by zero
   if(src->z == 0) {
@@ -120,12 +130,22 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, X3D_Re
     dest->y = 0;
   }
   else {
+    // @todo Replace division by src->z with fixed point multiply
     dest->x = ((int32)src->x * context->scale) / src->z + context->center.x;
     dest->y = ((int32)src->y * context->scale) / src->z + context->center.y;
   }
 }
 
-/// @todo document
+/**
+* Rotates a 3D vector around the origin.
+*
+* @param dest - destination vector
+* @param src - source vector
+* @param mat - fp0x16 rotation matrix
+*
+* @return nothing
+* @todo Replace with assembly version
+*/
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat3x3_fp0x16* mat) {
   fp0x16* m = mat->data;
   
