@@ -2,6 +2,8 @@
 
 #include <X3D/X3D.h>
 
+#include <tigcclib.h>
+
 #ifdef __TIGCC__
 
 #include <tigcclib.h>
@@ -35,47 +37,57 @@ void _main() {
 
   clrscr();
 
-  X3D_Prism* prism = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * 32 * 2);
+  X3D_Prism* prism = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   
-  void* kbd = kbd_queue();
-  uint16 key;
+  INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
+  INT_HANDLER old_int_5 = GetIntVec(AUTO_INT_5);
+
+  SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
+  SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
 
   do {
-    if(!OSdequeue(&key, kbd)) {
-      if(key == KEY_UP) {
-        angle.x += 3;
-      }
-      else if(key == KEY_DOWN) {
-        angle.x -= 3;
-      }
-      else if(key == KEY_LEFT) {
-        angle.y -= 3;
-      }
-      else if(key == KEY_RIGHT) {
-        angle.y += 3;
-      }
-      else if(key == KEY_F1) {
-        --steps;
-      }
-      else if(key == KEY_F2) {
-        ++steps;
-      }
-      else if(key == KEY_ESC) {
-        break;
-      }
-      
-      clrscr();
-
-      x3d_prism_construct(prism, steps, 25, 50, angle);
-      x3d_prism_render(prism, &context);
-
-      x3d_renderdevice_flip(&device);
+    if(_keytest(RR_UP)) {
+      angle.x += 3;
     }
+    if(_keytest(RR_DOWN)) {
+      angle.x -= 3;
+    }
+    if(_keytest(RR_LEFT)) {
+      angle.y -= 3;
+    }
+    if(_keytest(RR_RIGHT)) {
+      angle.y += 3;
+    }
+    if(_keytest(RR_F1)) {
+      if(steps > 1)
+        --steps;
+
+      while(_keytest(RR_F1));
+    }
+    if(_keytest(RR_F2)) {
+      if(steps < 50)
+        ++steps;
+
+      while(_keytest(RR_F2));
+    }
+    if(_keytest(RR_ESC)) {
+      break;
+    }
+
+    clrscr();
+    x3d_prism_construct(prism, steps, 25, 50, angle);
+    x3d_prism_render(prism, &context);
+
+    x3d_renderdevice_flip(&device);
   } while(1);
 
   free(prism);
   
   x3d_renderdevice_cleanup(&device);
 
+  SetIntVec(AUTO_INT_1, old_int_1);
+  SetIntVec(AUTO_INT_5, old_int_5);
+
 
 }
+
