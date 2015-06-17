@@ -20,6 +20,7 @@
 #include "X3D_trig.h"
 #include "X3D_render.h"
 #include "X3D_matrix.h"
+#include "X3D_geo.h"
 
 /**
 * Constructs a prism with regular polygons as the base.
