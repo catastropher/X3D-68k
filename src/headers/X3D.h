@@ -24,4 +24,4 @@
 #include "X3D_render.h"
 #include "X3D_trig.h"
 #include "X3D_segment.h"
-
+#include "X3D_clip.h"
