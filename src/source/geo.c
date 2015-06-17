@@ -18,12 +18,23 @@
 #include "X3D_vector.h"
 #include "X3D_geo.h"
 
+/**
+* Constructs a plane from 3 points on the plane.
+*
+* @param p - plane
+* @param a - first point
+* @param b - middle point
+* @param c - end point
+*
+* @return nothing
+* @todo Add tests
+*/
 void construct_plane(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c) {
   // Calculate the normal of the plane
   X3D_Vex3D_int16 v1 = vex3d_int16_sub(a, b);
   X3D_Vex3D_int16 v2 = vex3d_int16_sub(c, b);
 
-  cross_product(&v1, &v2, &p->normal);
+  x3d_vex3d_int16_cross(&v1, &v2, &p->normal);
 
   // D = (AX + BY + CZ)
   p->d = x3d_vex3d_int16_dot(&p->normal, a);

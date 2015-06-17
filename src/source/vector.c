@@ -158,3 +158,24 @@ void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat
   dest->z = x3d_vex3d_fp0x16_dot(&z, src);
 }
 
+// Calculates the cross product of two vectors. This creates a vector that
+// is perpendicular to both vectors
+// Note: this routine will normalize the result
+void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
+  int32 xxx = ((((int32)a->y * b->z) >> 1) - (((int32)a->z * b->y) >> 1));
+  int32 yyy = ((((int32)a->z * b->x) >> 1) - (((int32)a->x * b->z) >> 1));
+  int32 zzz = ((((int32)a->x * b->y) >> 1) - (((int32)a->y * b->x) >> 1));
+
+  while(abs(xxx) >= 0x7FFF || abs(yyy) >= 0x7FFF || abs(zzz) >= 0x7FFF) {
+    xxx >>= 1;
+    yyy >>= 1;
+    zzz >>= 1;
+  }
+
+  dest->x = xxx;
+  dest->y = yyy;
+  dest->z = zzz;
+
+  x3d_vex3d_fp0x16_normalize(dest);
+}
+
