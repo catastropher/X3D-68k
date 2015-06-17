@@ -21,44 +21,44 @@
 // Structures
 //=============================================================================
 
-typedef struct {
-  int16 size;
-  uint8* ptr;
-  uint8* base;
-} X3D_Stack;
+//typedef struct {
+//  int16 size;
+//  uint8* ptr;
+//  uint8* base;
+//} X3D_Stack;
 
+/// A moveable camera
 typedef struct {
-  X3D_Mat3x3_fp0x16 mat;
-  X3D_Vex3D_angle256 angle;
+  X3D_Mat3x3_fp0x16 mat;        ///< Rotation matrix based on angle
+  X3D_Vex3D_angle256 angle;     ///< Angle the camera is facing
 } X3D_Camera;
 
 typedef struct X3D_RenderContext {
-  uint8 flags;
-  uint8 fov;
-  X3D_Vex2D_int16 pos;
-  uint16 w, h;
+  uint8 flags;                ///< Flags (currently unused)
+  uint8 fov;                  ///< Camera field of view (should this be moved to camera?)
+  X3D_Vex2D_int16 pos;        ///< Position on the screen where to render
+  uint16 w, h;                ///< Size of the render context
 
-  int16 scale;
+  int16 scale;                ///< Scaling factor for rendering
 
-  X3D_Vex2D_int16 center;
+  X3D_Vex2D_int16 center;     ///< Logical center of the rendering context
 
-  X3D_Stack stack;    /// Render stack
+  uint8* screen;              ///< Screen to render to (monochrome)
+  uint16 screen_w;            ///< Full witdth of the screen
+  uint16 screen_h;            ///< Full height of the screen
 
-  uint8* screen;
-  uint16 screen_w;
-  uint16 screen_h;
-
-  X3D_Camera cam;
+  X3D_Camera cam;             ///< Camera
 
 } X3D_RenderContext;
 
+/// A physical device to render to
 typedef struct X3D_RenderDevice {
-  uint8* dbuf;
+  uint8* dbuf;    ///< Double buffer
 } X3D_RenderDevice;
 
 typedef struct X3D_EngineState {
-  uint16 frame;
-  uint16 render_delta;
+  uint16 frame;             ///< Current frame the engine is on
+  uint16 render_step;       ///< Which step the renderer is on
 } X3D_EngineState;
 
 //=============================================================================
