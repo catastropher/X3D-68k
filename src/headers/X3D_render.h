@@ -29,13 +29,18 @@
 
 /// A moveable camera
 typedef struct {
-  X3D_Mat3x3_fp0x16 mat;        ///< Rotation matrix based on angle
-  X3D_Vex3D_angle256 angle;     ///< Angle the camera is facing
+  X3D_Mat3x3_fp0x16 mat;          ///< Rotation matrix based on angle
+  X3D_Vex3D_angle256 angle;       ///< Angle the camera is facing
+
+  X3D_Vex3D_fp16x16 pos;          ///< Position of the camera
+  X3D_Vex3D_fp16x16 velocity;     ///< Velocity
 } X3D_Camera;
 
 typedef struct X3D_RenderContext {
   uint8 flags;                ///< Flags (currently unused)
-  uint8 fov;                  ///< Camera field of view (should this be moved to camera?)
+
+  /// @todo (should this be moved to camera ? )
+  uint8 fov;                  ///< Camera field of view
   X3D_Vex2D_int16 pos;        ///< Position on the screen where to render
   uint16 w, h;                ///< Size of the render context
 
@@ -47,6 +52,7 @@ typedef struct X3D_RenderContext {
   uint16 screen_w;            ///< Full witdth of the screen
   uint16 screen_h;            ///< Full height of the screen
 
+  /// @todo (should this be a 1-1 relationship?)
   X3D_Camera cam;             ///< Camera
 
 } X3D_RenderContext;
