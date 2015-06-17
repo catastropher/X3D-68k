@@ -38,6 +38,7 @@ typedef struct {
   X3D_Vex3D_fp16x16 velocity;     ///< Velocity
 } X3D_Camera;
 
+/// A logical screen that is rendered to.
 typedef struct X3D_RenderContext {
   uint8 flags;                ///< Flags (currently unused)
 
@@ -64,6 +65,7 @@ typedef struct X3D_RenderDevice {
   uint8* dbuf;    ///< Double buffer
 } X3D_RenderDevice;
 
+/// Holds global information for the engine.
 typedef struct X3D_EngineState {
   uint16 frame;             ///< Current frame the engine is on
   uint16 render_step;       ///< Which step the renderer is on
