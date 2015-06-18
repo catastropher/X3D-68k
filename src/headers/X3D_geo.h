@@ -61,6 +61,7 @@ typedef struct X3D_Frustum {
 /// of the engine and both bases have to have the same number of points.
 /// @note This is a variable-sized data structure!
 typedef struct {
+  uint32 draw_edges;        ///< Bitfield of which edges should be drawn
   uint16 base_v;            ///< Number of vertices in each base
   X3D_Vex3D_int16 v[0];     ///< Vertices (variable number)
 } X3D_Prism;

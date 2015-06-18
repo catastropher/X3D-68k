@@ -69,6 +69,8 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3
     s->v[i] = rot;
     s->v[i].z += 200;
   }
+
+  s->draw_edges = 0xFFFFFFFF;
 }
 
 /**
@@ -86,27 +88,38 @@ void x3d_prism_render(X3D_Prism* prism, X3D_RenderContext* context) {
   uint16 i, d;
   X3D_Vex2D_int16 screen[prism->base_v * 2];
 
-  // Project all of the points on the screenee
+  // Project all of the points on the screen
   for(i = 0; i < prism->base_v * 2; ++i) {
     x3d_vex3d_int16_project(&screen[i], &prism->v[i], context);
   }
 
   // Draw the prism bases
   /// @todo Rewrite to not use modulus
+
+  uint32 edges = prism->draw_edges;
+
   for(i = 0; i < 2; ++i) {
-    uint16 start = prism->base_v * i;
+    if(edges & 1) {
+      uint16 start = prism->base_v * i;
 
-    for(d = 0; d < prism->base_v; ++d) {
-      uint16 v = start + d;
-      uint16 next = start + ((start + d + 1) % prism->base_v);
+      for(d = 0; d < prism->base_v; ++d) {
+        uint16 v = start + d;
+        uint16 next = start + ((start + d + 1) % prism->base_v);
 
-      x3d_draw_line_black(context, screen[v], screen[next]);
+        x3d_draw_line_black(context, screen[v], screen[next]);
+      }
     }
+
+    edges >>= 1;
   }
 
   // Draw the connecting lines between the bases
   for(i = 0; i < prism->base_v; ++i) {
-    x3d_draw_line_black(context, screen[i], screen[i + prism->base_v]);
+    if(edges & 1) {
+      x3d_draw_line_black(context, screen[i], screen[i + prism->base_v]);
+    }
+
+    edges >>= 1;
   }
 }
 
