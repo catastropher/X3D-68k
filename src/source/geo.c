@@ -34,7 +34,7 @@ void construct_plane(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_V
   X3D_Vex3D_int16 v1 = vex3d_int16_sub(a, b);
   X3D_Vex3D_int16 v2 = vex3d_int16_sub(c, b);
 
-  x3d_vex3d_int16_cross(&v1, &v2, &p->normal);
+  x3d_vex3d_fp0x16_cross(&v1, &v2, &p->normal);
 
   // D = (AX + BY + CZ)
   p->d = x3d_vex3d_int16_dot(&p->normal, a);

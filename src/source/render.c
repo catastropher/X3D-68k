@@ -86,6 +86,19 @@ void x3d_renderdevice_flip(X3D_RenderDevice* d) {
 #endif
 }
 
+/// @todo document
+void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* context) {
+  if(v->x < context->pos.x)
+    v->x = context->pos.x;
+  else if(v->x >= context->pos.x + context->w)
+    v->x = context->pos.x + context->w - 1;
+
+  if(v->y < context->pos.y)
+    v->y = context->pos.y;
+  else if(v->y >= context->pos.y + context->h)
+    v->y = context->pos.y + context->h - 1;
+}
+
 
 
 

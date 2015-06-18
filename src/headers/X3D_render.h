@@ -83,3 +83,5 @@ void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 sc
 void x3d_renderdevice_init(X3D_RenderDevice* d, uint16 w, uint16 h);
 void x3d_renderdevice_cleanup(X3D_RenderDevice* d);
 void x3d_renderdevice_flip(X3D_RenderDevice* d);
+
+void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* context);
