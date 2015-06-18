@@ -16,7 +16,7 @@
 #include <X3D/X3D.h>
 
 void test_vector() {
-  // Test case for x3d_vex3d_int16_add()
+  // Test case for vex3d_int16_add()
   {
     X3D_Vex3D_int16 a = { 1, 2, 3 };
     X3D_Vex3D_int16 b = { 2, 3, 4 };
@@ -26,7 +26,7 @@ void test_vector() {
     x3d_assert(res.x == 3 && res.y == 5 && res.z == 7);
   }
 
-  // Test case for x3d_vex3d_int16_sub()
+  // Test case for vex3d_int16_sub()
   {
     X3D_Vex3D_int16 a = { 1, 2, 3 };
     X3D_Vex3D_int16 b = { 2, 3, 4 };
@@ -54,6 +54,20 @@ void test_vector() {
     int32 res = x3d_vex3d_fp0x16_dot(&a, &b);
 
     x3d_assert(res == 2688);
+  }
+
+  // Test case for x3d_vex3d_int16_cross
+  {
+    X3D_Vex3D_fp0x16 a = { .5 * 32767, .75 * 32767, .25 * 32767 };
+    X3D_Vex3D_fp0x16 b = { .625 * 32767, .8 * 32767, .8125 * 32767 };
+
+    X3D_Vex3D_fp0x16 cross;
+
+    x3d_vex3d_fp0x16_cross(&cross, &a, &b);
+
+    uint16 mag = x3d_vex3d_int16_mag(&cross);
+
+    x3d_assert(abs(32767 - (int32)mag) < 5);
   }
   
   

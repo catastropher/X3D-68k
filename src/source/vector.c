@@ -179,3 +179,13 @@ void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex
   x3d_vex3d_fp0x16_normalize(dest);
 }
 
+/// @todo document
+uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v) {
+  int32 distance_squared =
+    (((int32)v->x * v->x) >> 2) +
+    (((int32)v->y * v->y) >> 2) +
+    (((int32)v->z * v->z) >> 2);
+
+  return (x3d_fastsqrt(distance_squared) << 1) + 1;
+}
+
