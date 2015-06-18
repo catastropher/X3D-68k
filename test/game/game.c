@@ -53,12 +53,14 @@ void _main() {
   clrscr();
 
   X3D_Prism* prism = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * 50 * 2);
-  
+
   INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
   INT_HANDLER old_int_5 = GetIntVec(AUTO_INT_5);
 
   SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+
+  uint32 edges = 0xFFFFFFFF;
 
   do {
     if(_keytest(RR_UP)) {
@@ -89,15 +91,39 @@ void _main() {
       break;
     }
 
+    if(_keytest(RR_F3)) {
+      while(_keytest(RR_F3));
+
+      SetIntVec(AUTO_INT_1, old_int_1);
+      SetIntVec(AUTO_INT_5, old_int_5);
+
+      x3d_renderdevice_cleanup(&device);
+      printf("Edge to toggle: ");
+      char input[20];
+
+      gets(input);
+
+      edges ^= (1 << atoi(input));
+
+      x3d_renderdevice_init(&device, 240, 128);
+
+      SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
+      SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+    }
+
     clrscr();
+
     x3d_prism_construct(prism, steps, 25, 50, angle);
+    prism->draw_edges = edges;
     x3d_prism_render(prism, &context);
+
+   
 
     x3d_renderdevice_flip(&device);
   } while(1);
 
   free(prism);
-  
+
   x3d_renderdevice_cleanup(&device);
 
   SetIntVec(AUTO_INT_1, old_int_1);

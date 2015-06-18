@@ -99,18 +99,18 @@ void x3d_prism_render(X3D_Prism* prism, X3D_RenderContext* context) {
   uint32 edges = prism->draw_edges;
 
   for(i = 0; i < 2; ++i) {
-    if(edges & 1) {
-      uint16 start = prism->base_v * i;
+    uint16 start = prism->base_v * i;
 
-      for(d = 0; d < prism->base_v; ++d) {
+    for(d = 0; d < prism->base_v; ++d) {
+      if(edges & 1) {
         uint16 v = start + d;
         uint16 next = start + ((start + d + 1) % prism->base_v);
 
         x3d_draw_line_black(context, screen[v], screen[next]);
       }
-    }
 
-    edges >>= 1;
+      edges >>= 1;
+    }
   }
 
   // Draw the connecting lines between the bases
