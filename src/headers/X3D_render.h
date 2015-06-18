@@ -23,11 +23,11 @@
 // Structures
 //=============================================================================
 
-//typedef struct {
-//  int16 size;
-//  uint8* ptr;
-//  uint8* base;
-//} X3D_Stack;
+typedef struct {
+  uint16 size;
+  uint8* ptr;
+  uint8* base;
+} X3D_Stack;
 
 /// A moveable camera
 typedef struct {
@@ -55,6 +55,8 @@ typedef struct X3D_RenderContext {
   uint16 screen_w;            ///< Full witdth of the screen
   uint16 screen_h;            ///< Full height of the screen
 
+  X3D_Stack stack;            ///< Rendering stack
+
   /// @todo (should this be a 1-1 relationship?)
   X3D_Camera cam;             ///< Camera
 
@@ -70,13 +72,6 @@ typedef struct X3D_EngineState {
   uint16 frame;             ///< Current frame the engine is on
   uint16 render_step;       ///< Which step the renderer is on
 } X3D_EngineState;
-
-/// @todo document
-typedef struct X3D_Stack {
-  uint8* ptr;
-  uint8* base;
-  uint16 size;
-} X3D_Stack;
 
 //=============================================================================
 // Function declarations
@@ -99,12 +94,12 @@ void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* 
 
 /// @todo document
 static inline void* x3d_stack_alloc(X3D_Stack* stack, uint16 bytes) {
-  stack->ptr -= bytes;
+  stack->ptr -= (bytes + (bytes & 1));      // Guarantees we allocate an even number of bytes
   return stack->ptr;
 }
 
 /// @todo document
-void* x3d_stack_save(X3D_Stack* stack) {
+static void* x3d_stack_save(X3D_Stack* stack) {
   return stack->ptr;
 }
 
