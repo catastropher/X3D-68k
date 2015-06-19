@@ -40,12 +40,15 @@ int _ti92plus;
 void _main() {
   FontSetSys(F_4x6);
 
+  X3D_EngineState state;
+
   X3D_RenderContext context;
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   int16 steps = 3;
 
   X3D_RenderDevice device;
 
+  x3d_enginestate_init(&state, 5, 1000);
   x3d_renderdevice_init(&device, 240, 128);
 
   x3d_rendercontext_init(&context, device.dbuf, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
@@ -125,6 +128,7 @@ void _main() {
   free(prism);
 
   x3d_renderdevice_cleanup(&device);
+  x3d_enginestate_cleanup(&state);
 
   SetIntVec(AUTO_INT_1, old_int_1);
   SetIntVec(AUTO_INT_5, old_int_5);
