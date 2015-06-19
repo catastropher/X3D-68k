@@ -44,7 +44,7 @@ tigcc/test.9xz: $(TIGCC_OBJ_FILES)
 
 tigcc/%.o: %.c
 	@echo Compiling $<...
-	@$(CC) $(CC_FLAGS) -Wall -c -o $@ $< -D__TIGCC_HEADERS__
+	@$(CC) $(CC_FLAGS) -Wall -c -o $@ $< -D__TIGCC_HEADERS__ -O2 -fomit-frame-pointer -mno-bss -Wa,--all-relocs -mregparm=5 -Wa,-l --optimize-code --cut-ranges --reorder-sections --merge-constants -ffunction-sections -fdata-sections -fmerge-all-constants -mpcrel
 
 gcc/test.exe: $(GCC_OBJ_FILES)
 	@$(CC) -o "gcc/test" $(GCC_OBJ_FILES) -lX3D
