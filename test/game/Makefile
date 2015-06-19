@@ -1,7 +1,7 @@
-ifeq ($(MAKECMDGOALS),gcc/test.9xz)
+ifeq ($(MAKECMDGOALS),gcc/prism.9xz)
 CC=gcc
 else
-ifeq ($(MAKECMDGOALS),tigcc/test.9xz)
+ifeq ($(MAKECMDGOALS),tigcc/prism.9xz)
 CC=tigcc
 endif
 endif
@@ -28,16 +28,16 @@ all:
 	#@gcc/test
 
 tigcc:
-	@echo Building X3D test suite for tigcc
+	@echo Building prism for tigcc
 	@mkdir -p tigcc
-	@make --no-print-directory tigcc/test.9xz
+	@make --no-print-directory tigcc/prism.9xz
 
 gcc:
-	@echo Building X3D test suite for gcc
+	@echo Building prism for gcc
 	@mkdir -p gcc
-	@make --no-print-directory gcc/test.exe
+	@make --no-print-directory gcc/prism.exe
 
-tigcc/test.9xz: $(TIGCC_OBJ_FILES)
+tigcc/prism.9xz: $(TIGCC_OBJ_FILES)
 	@$(CC) -o "test" $(TIGCC_OBJ_FILES) X3D.a extgraph.a
 	@mv test.9xz tigcc/test.9xz
 	@echo X3D test suite built successfully for tigcc
@@ -46,7 +46,7 @@ tigcc/%.o: %.c
 	@echo Compiling $<...
 	@$(CC) $(CC_FLAGS) -Wall -c -o $@ $< -D__TIGCC_HEADERS__ -O2 -fomit-frame-pointer -mno-bss -Wa,--all-relocs -mregparm=5 -Wa,-l --optimize-code --cut-ranges --reorder-sections --merge-constants -ffunction-sections -fdata-sections -fmerge-all-constants -mpcrel
 
-gcc/test.exe: $(GCC_OBJ_FILES)
+gcc/prism.exe: $(GCC_OBJ_FILES)
 	@$(CC) -o "gcc/test" $(GCC_OBJ_FILES) -lX3D
 	@echo X3D test suite built successfully for gcc
 
