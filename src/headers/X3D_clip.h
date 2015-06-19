@@ -19,16 +19,33 @@
 
 #pragma once
 
+typedef struct X3D_FailPlane {
+  uint16 plane;
+  int16 dot;
+} X3D_FailPlane;
+
+//=============================================================================
+// Structures
+//=============================================================================
+
 /// @todo document
 // Holds which planes in a frustum a vertex is outside of
 // Note: this is a variable sized data structure
 typedef struct X3D_VertexClip {
   X3D_Vex3D_int16 v;
-  uint16 outside_planes[0];
+
+  uint16 total_fp;
+  X3D_FailPlane fp[0];
 } X3D_VertexClip;
 
 typedef struct X3D_Edge {
   X3D_Vex3D_int16 a;
   X3D_Vex3D_int16 b;
 } X3D_Edge;
+
+//=============================================================================
+// Function declarations
+//=============================================================================
+
+void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f);
 

@@ -19,8 +19,21 @@
 #include "X3D_geo.h"
 #include "X3D_clip.h"
 
-void x3d_get_fail_planes(X3D_VertexClip* c, X3D_Vex3D_int16* v, X3D_Frustum* f) {
+/// @todo document
+void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f) {
+  uint16 i;
 
+  vc->total_fp = 0;
+
+  for(i = 0; i < f->total_p; ++i) {
+    int16 dot = x3d_vex3d_fp0x16_dot(v, &f->p[i].normal);
+
+    // If the point is outside the plane, add the plane to the list
+    if(dot < f->p[i].d) {
+      vc->fp[vc->total_fp].dot = dot;
+      vc->fp[vc->total_fp].plane = i;
+    }
+  }
 }
 
 void x3d_edge_clip(X3D_Edge* e, X3D_VertexClip* a, X3D_VertexClip* b, X3D_Frustum* f) {
