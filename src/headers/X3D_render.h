@@ -99,7 +99,7 @@ static inline void* x3d_stack_alloc(X3D_Stack* stack, uint16 bytes) {
 }
 
 /// @todo document
-static void* x3d_stack_save(X3D_Stack* stack) {
+static inline void* x3d_stack_save(X3D_Stack* stack) {
   return stack->ptr;
 }
 
