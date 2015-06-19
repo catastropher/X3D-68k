@@ -77,7 +77,7 @@ typedef struct X3D_EngineState {
 // Function declarations
 //=============================================================================
 
-void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16 v1, X3D_Vex2D_int16 v2);
+void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16* v1, X3D_Vex2D_int16* v2);
 
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags);

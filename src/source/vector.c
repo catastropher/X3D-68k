@@ -123,7 +123,7 @@ void x3d_vex3d_int16_print(X3D_Vex3D_int16* v) {
 * @note If src->z is zero, dest->x and dest->y are set to 0 to prevent division
 *     by 0.
 */
-void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, X3D_RenderContext* context) {
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src, X3D_RenderContext* context) {
   // To prevent division by zero
   if(src->z == 0) {
     dest->x = 0;

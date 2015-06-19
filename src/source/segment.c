@@ -42,20 +42,17 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3
 
   s->base_v = steps;
 
-  // Construct the first base (a regular polygon)
+  // Construct the two bases (regular polygons)
   for(i = 0; i < steps; ++i) {
     s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cosfp(uint16_upper(angle)), r);
     s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sinfp(uint16_upper(angle)), r);
     s->v[i].y = -h / 2;
 
-    angle += angle_step;
-  }
-
-  // Construct the second base perpendicular to the first
-  for(i = 0; i < steps; ++i) {
     s->v[i + steps].x = s->v[i].x;
     s->v[i + steps].z = s->v[i].z;
     s->v[i + steps].y = h / 2;
+
+    angle += angle_step;
   }
 
   // Rotate the prism around its center
@@ -84,39 +81,42 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3
 *     account when rendering.
 * @todo Add clipping and take into position of the camera.
 */
-void x3d_prism_render(X3D_Prism* prism, X3D_RenderContext* context) {
+void x3d_prism_render(const X3D_Prism* prism, X3D_RenderContext* context) {
   uint16 i, d;
   X3D_Vex2D_int16 screen[prism->base_v * 2];
 
   // Project all of the points on the screen
-  for(i = 0; i < prism->base_v * 2; ++i) {
-    x3d_vex3d_int16_project(&screen[i], &prism->v[i], context);
+  for(i = prism->base_v * 2; (i--);) {
+    x3d_vex3d_int16_project(screen + i, prism->v + i, context);
   }
-
-  // Draw the prism bases
-  /// @todo Rewrite to not use modulus
 
   uint32 edges = prism->draw_edges;
 
+  // Draw the bases
+  X3D_Vex2D_int16* base = screen;
+
   for(i = 0; i < 2; ++i) {
-    uint16 start = prism->base_v * i;
+    x3d_draw_line_black(context, base, base + prism->base_v - 1);
 
-    for(d = 0; d < prism->base_v; ++d) {
+    for(d = 0; d < prism->base_v - 1; ++d) {
       if(edges & 1) {
-        uint16 v = start + d;
-        uint16 next = start + ((start + d + 1) % prism->base_v);
-
-        x3d_draw_line_black(context, screen[v], screen[next]);
+        x3d_draw_line_black(context, base, base + 1);
       }
 
+      ++base;
       edges >>= 1;
     }
+
+    ++base;
   }
+
+  X3D_Vex2D_int16* base_a = screen;
+  X3D_Vex2D_int16* base_b = screen + prism->base_v;
 
   // Draw the connecting lines between the bases
   for(i = 0; i < prism->base_v; ++i) {
     if(edges & 1) {
-      x3d_draw_line_black(context, screen[i], screen[i + prism->base_v]);
+      x3d_draw_line_black(context, base_a + i, base_b + i);
     }
 
     edges >>= 1;

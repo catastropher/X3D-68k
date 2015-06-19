@@ -86,7 +86,7 @@ inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v);
 void x3d_print_vex3d_int16(X3D_Vex3D_int16* v);
 
 void x3d_vex3d_int16_print(X3D_Vex3D_int16* v);
-void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, X3D_Vex3D_int16* src, struct X3D_RenderContext* context);
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src, struct X3D_RenderContext* context);
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, struct X3D_Mat3x3_fp0x16* mat);
 void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b);
 uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v);
