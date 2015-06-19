@@ -13,5 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "X3D_config.h"
+#include "X3D_fix.h"
+#include "X3D_vector.h"
+
 #pragma once
+
+/// @todo document
+// Holds which planes in a frustum a vertex is outside of
+// Note: this is a variable sized data structure
+typedef struct X3D_VertexClip {
+  X3D_Vex3D_int16 v;
+  uint16 outside_planes[0];
+} X3D_VertexClip;
+
+typedef struct X3D_Edge {
+  X3D_Vex3D_int16 a;
+  X3D_Vex3D_int16 b;
+} X3D_Edge;
 

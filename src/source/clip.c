@@ -15,4 +15,15 @@
 
 #include "X3D_config.h"
 #include "X3D_fix.h"
+#include "X3D_vector.h"
+#include "X3D_geo.h"
+#include "X3D_clip.h"
+
+void x3d_get_fail_planes(X3D_VertexClip* c, X3D_Vex3D_int16* v, X3D_Frustum* f) {
+
+}
+
+void x3d_edge_clip(X3D_Edge* e, X3D_VertexClip* a, X3D_VertexClip* b, X3D_Frustum* f) {
+
+}
 
