@@ -62,6 +62,17 @@ static inline X3D_SegmentFace* x3d_segment_get_face(X3D_Segment* s) {
 
 /// @todo document
 static inline uint16 x3d_segment_total_v(X3D_Segment* s) {
-  return s->base_v << 1;
+  return s->base_v * 2;
+}
+
+/// @todo document
+static inline uint16 x3d_segment_total_f(X3D_Segment* s) {
+  return s->base_v + 2;
+}
+
+/// @todo document
+static inline uint16 x3d_segment_size(X3D_Segment* s) {
+  return sizeof(X3D_Segment) + x3d_segment_total_v(s) * sizeof(X3D_Vex3D_int16) +
+    x3d_segment_total_f(s) * sizeof(X3D_SegmentFace);
 }
 
