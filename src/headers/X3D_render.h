@@ -144,3 +144,10 @@ static inline uint16 x3d_list_uint16_add(X3D_List_uint16* list, uint16 value) {
   return list->size++;
 }
 
+/// @todo document
+static inline void x3d_list_uint16_create(X3D_List_uint16* list, uint16 size) {
+  list->base = malloc(size);
+  list->size = 0;
+  list->capacity = size;
+}
+
