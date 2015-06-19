@@ -33,6 +33,7 @@ void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16* v1, X3D_Ve
 }
 
 /// @todo rename context_x and context_y to pos_x and pos_y
+/// @todo document
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags) {
 
@@ -60,6 +61,21 @@ void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 sc
 
   //printf("Scale: %d\n", context->scale);
   //ngetchx();
+}
+
+/// @todo document
+void x3d_enginestate_init(X3D_EngineState* state, uint16 max_segments, uint16 seg_pool_size) {
+  x3d_stack_create(&state->table.segment_data, seg_pool_size);
+  x3d_list_uint16_create(&state->table.segment_offset, max_segments);
+
+  state->render_step = 0;
+  state->frame = 0;
+}
+
+/// @todo document
+void x3d_enginestate_cleanup(X3D_EngineState* state) {
+  free(state->table.segment_data.base);
+  free(state->table.segment_offset.base);
 }
 
 /// @todo document
