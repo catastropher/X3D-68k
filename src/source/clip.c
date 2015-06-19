@@ -36,7 +36,14 @@ void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f)
   }
 }
 
+/// @todo document
 void x3d_edge_clip(X3D_Edge* e, X3D_VertexClip* a, X3D_VertexClip* b, X3D_Frustum* f) {
+  uint16 i, d;
 
+  for(i = 0; i < 2; ++i) {
+    X3D_VertexClip* v = (X3D_VertexClip*[]){ a, b }[i];
+
+
+  }
 }
 
