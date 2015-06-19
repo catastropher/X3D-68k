@@ -123,3 +123,14 @@ void x3d_prism_render(const X3D_Prism* prism, X3D_RenderContext* context) {
   }
 }
 
+// Creates a new segment
+/// @todo document properly
+X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
+  X3D_STACK_TRACE;
+  
+  uint8* s = x3d_stack_alloc(&state->table.segment_data, x3d_segment_needed_size(base_v));
+
+  x3d_list_uint16_add(&state->table.segment_offset, s - state->table.segment_data.base);
+  return (X3D_Segment *)s;
+}
+

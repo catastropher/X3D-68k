@@ -23,11 +23,26 @@
 // Structures
 //=============================================================================
 
+/// @todo document
+/// @todo rename to X3D_RenderStack
 typedef struct {
   uint16 size;
   uint8* ptr;
   uint8* base;
 } X3D_Stack;
+
+/// @todo document
+typedef struct X3D_List_uint16 {
+  uint16* base;
+  uint16 size;
+  uint16 capacity;
+} X3D_List_uint16;
+
+/// @todo document
+typedef struct X3D_SegmentTable {
+  X3D_List_uint16 segment_offset;
+  X3D_Stack segment_data;
+} X3D_SegmentTable;
 
 /// A moveable camera
 typedef struct {
@@ -37,6 +52,14 @@ typedef struct {
   X3D_Vex3D_fp16x16 pos;          ///< Position of the camera
   X3D_Vex3D_fp16x16 velocity;     ///< Velocity
 } X3D_Camera;
+
+/// Holds global information for the engine.
+typedef struct X3D_EngineState {
+  uint16 frame;             ///< Current frame the engine is on
+  uint16 render_step;       ///< Which step the renderer is on
+
+  X3D_SegmentTable table;
+} X3D_EngineState;
 
 /// A logical screen that is rendered to.
 typedef struct X3D_RenderContext {
@@ -60,18 +83,14 @@ typedef struct X3D_RenderContext {
   /// @todo (should this be a 1-1 relationship?)
   X3D_Camera cam;             ///< Camera
 
+  X3D_EngineState* state;
+
 } X3D_RenderContext;
 
 /// A physical device to render to
 typedef struct X3D_RenderDevice {
   uint8* dbuf;    ///< Double buffer
 } X3D_RenderDevice;
-
-/// Holds global information for the engine.
-typedef struct X3D_EngineState {
-  uint16 frame;             ///< Current frame the engine is on
-  uint16 render_step;       ///< Which step the renderer is on
-} X3D_EngineState;
 
 //=============================================================================
 // Function declarations
@@ -114,5 +133,14 @@ static inline void x3d_stack_create(X3D_Stack* stack, uint16 size) {
   stack->base = malloc(size);
   stack->size = size;
   stack->ptr = stack->base + size;
+}
+
+/// @todo document
+/// @todo check if capacity is exceeded
+static inline uint16 x3d_list_uint16_add(X3D_List_uint16* list, uint16 value) {
+  X3D_STACK_TRACE;
+
+  list->base[list->size] = value;
+  return list->size++;
 }
 
