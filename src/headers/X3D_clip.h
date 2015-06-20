@@ -25,6 +25,13 @@ typedef struct X3D_FailPlane {
 } X3D_FailPlane;
 
 //=============================================================================
+// Forward declarations
+//=============================================================================
+
+struct X3D_Frustum;
+struct X3D_RenderContext;
+
+//=============================================================================
 // Structures
 //=============================================================================
 
@@ -48,4 +55,5 @@ typedef struct X3D_Edge {
 //=============================================================================
 
 void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f);
+void x3d_frustum_from_rendercontext(struct X3D_Frustum* f, struct X3D_RenderContext* context);
 

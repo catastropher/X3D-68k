@@ -18,6 +18,7 @@
 #include "X3D_vector.h"
 #include "X3D_geo.h"
 #include "X3D_clip.h"
+#include "X3D_render.h"
 
 /// @todo document
 void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f) {
@@ -43,7 +44,48 @@ void x3d_edge_clip(X3D_Edge* e, X3D_VertexClip* a, X3D_VertexClip* b, X3D_Frustu
   for(i = 0; i < 2; ++i) {
     X3D_VertexClip* v = (X3D_VertexClip*[]){ a, b }[i];
 
+    for(d = 0; d < v->total_fp; ++d) {
 
+    }
   }
+}
+
+/// @todo document
+void x3d_frustum_from_rendercontext(X3D_Frustum* f, X3D_RenderContext* context) {
+  // Calculates the normals of the unrotated planes of the view frustum
+  int16 w = context->w;
+  int16 h = context->h;
+
+  //c->dist = 120;
+
+  X3D_Vex3D_int16 top_left = { -w / 2, -h / 2, context->scale };
+  X3D_Vex3D_int16 top_right = { w / 2, -h / 2, context->scale };
+
+  X3D_Vex3D_int16 bottom_left = { -w / 2, h / 2, context->scale };
+  X3D_Vex3D_int16 bottom_right = { w / 2, h / 2, context->scale };
+
+  X3D_Vex3D_int16 cam_pos = { 0, 0, 0 };
+
+  // Top plane
+  construct_plane(&cam_pos, &top_right, &top_left, f->p + 1);
+
+  // Bottom plane
+  construct_plane(&cam_pos, &bottom_left, &bottom_right, f->p + 2);
+
+  // Left plane
+  construct_plane(&cam_pos, &top_left, &bottom_left, f->p + 3);
+
+  // Right plane
+  construct_plane(&cam_pos, &bottom_right, &top_right, f->p + 4);
+
+  // Near plane
+  construct_plane(&bottom_right, &top_right, &top_left, f->p + 5);
+
+  f->p[0].normal = (X3D_Vex3D_int16){ 0, 0, INT16_MAX };
+
+  // Hack...
+  f->p[0].d = 15;//c->dist - DIST_TO_NEAR_PLANE;
+
+  f->total_p = 5;
 }
 
