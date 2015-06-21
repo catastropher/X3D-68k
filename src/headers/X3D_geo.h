@@ -66,3 +66,7 @@ typedef struct {
   X3D_Vex3D_int16 v[0];     ///< Vertices (variable number)
 } X3D_Prism;
 
+
+
+void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
+

@@ -17,9 +17,7 @@
 
 #include <X3D/X3D.h>
 
-#include <tigcclib.h>
-
-#ifdef __TIGCC__
+#ifdef __TIGCC_HEADERS__
 
 #include <tigcclib.h>
 
@@ -55,6 +53,8 @@ void _main() {
 
   clrscr();
 
+  X3D_Frustum* f = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 5);
+
   X3D_Prism* prism = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * 50 * 2);
 
   INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
@@ -62,6 +62,12 @@ void _main() {
 
   SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+
+  x3d_frustum_from_rendercontext(f, &context);
+  x3d_frustum_print(f);
+  x3d_renderdevice_flip(&device);
+  
+  while(!_keytest(RR_ENTER));
 
   uint32 edges = 0xFFFFFFFF;
 

@@ -13,30 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X3D_config.h"
-#include "X3D_fix.h"
-#include "X3D_vector.h"
-#include "X3D_geo.h"
+#pragma once
 
-/**
-* Constructs a plane from 3 points on the plane.
-*
-* @param p - plane
-* @param a - first point
-* @param b - middle point
-* @param c - end point
-*
-* @return nothing
-* @todo Add tests
-*/
-void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c) {
-  // Calculate the normal of the plane
-  X3D_Vex3D_int16 v1 = vex3d_int16_sub(a, b);
-  X3D_Vex3D_int16 v2 = vex3d_int16_sub(c, b);
+struct X3D_Frustum;
+struct X3D_RenderContext;
 
-  x3d_vex3d_fp0x16_cross(&p->normal, &v1, &v2);
-
-  // D = (AX + BY + CZ)
-  p->d = x3d_vex3d_int16_dot(&p->normal, a);
-}
+void x3d_frustum_print(struct X3D_Frustum* f);
+void x3d_frustum_from_rendercontext(X3D_Frustum* f, struct X3D_RenderContext* context);
 
