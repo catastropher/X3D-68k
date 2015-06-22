@@ -19,11 +19,6 @@
 
 #pragma once
 
-typedef struct X3D_FailPlane {
-  uint16 plane;
-  int16 dot;
-} X3D_FailPlane;
-
 //=============================================================================
 // Forward declarations
 //=============================================================================
@@ -34,6 +29,11 @@ struct X3D_RenderContext;
 //=============================================================================
 // Structures
 //=============================================================================
+
+typedef struct X3D_FailPlane {
+  int16 plane_d;
+  int16 dot;
+} X3D_FailPlane;
 
 /// @todo document
 // Holds which planes in a frustum a vertex is outside of
@@ -46,8 +46,7 @@ typedef struct X3D_VertexClip {
 } X3D_VertexClip;
 
 typedef struct X3D_Edge {
-  X3D_Vex3D_int16 a;
-  X3D_Vex3D_int16 b;
+  X3D_Vex3D_int16 v[2];
 } X3D_Edge;
 
 //=============================================================================

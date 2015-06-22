@@ -35,8 +35,25 @@ int _ti92plus;
 //x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
 //  uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags)
 
+void test_clip(X3D_RenderContext* context);
+
+void test() {
+  X3D_RenderContext context;
+
+  x3d_rendercontext_init(&context, LCD_MEM, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
+
+  clrscr();
+  test_clip(&context);
+
+  ngetchx();
+
+  exit(-1);
+}
+
 void _main() {
   FontSetSys(F_4x6);
+
+  test();
 
   X3D_EngineState state;
 

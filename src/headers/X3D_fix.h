@@ -298,3 +298,8 @@ static inline int16 mul_fp0x16_by_int16_as_int16(fp0x16 a, int16 b) {
   return ((int32)a * b) >> 15;
 }
 
+/// @todo document
+static inline fp8x8 div_int16_by_int16_as_fp8x8(int16 n, int16 d) {
+  return ((int32)n << 8) / d;
+}
+

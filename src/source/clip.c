@@ -19,6 +19,7 @@
 #include "X3D_geo.h"
 #include "X3D_clip.h"
 #include "X3D_render.h"
+#include "X3D_frustum.h"
 
 /// @todo document
 void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f) {
@@ -32,7 +33,7 @@ void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f)
     // If the point is outside the plane, add the plane to the list
     if(dot < f->p[i].d) {
       vc->fp[vc->total_fp].dot = dot;
-      vc->fp[vc->total_fp].plane = i;
+      vc->fp[vc->total_fp++].plane_d = f->p[i].d;
     }
   }
 }
@@ -40,13 +41,37 @@ void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f)
 /// @todo document
 void x3d_edge_clip(X3D_Edge* e, X3D_VertexClip* a, X3D_VertexClip* b, X3D_Frustum* f) {
   uint16 i, d;
+  X3D_VertexClip* arr[2] = { a, b };
+  X3D_VertexClip* v;
+  X3D_VertexClip* v_other;
 
   for(i = 0; i < 2; ++i) {
-    X3D_VertexClip* v = (X3D_VertexClip*[]){ a, b }[i];
+    v = arr[i];
+    v_other = arr[i ^ 1];
 
     for(d = 0; d < v->total_fp; ++d) {
-
+      //fp8x8 t = div_int16_by_int16_as_fp8x8(v->fp[i].dot - v->fp[i].plane_d, v_other->fp[i]. );
     }
   }
+}
+
+void test_clip(X3D_RenderContext* context) {
+  X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 10);
+  X3D_VertexClip* clip_a = malloc(sizeof(X3D_VertexClip) + sizeof(X3D_FailPlane) * 10);
+
+  X3D_Vex3D_int16 v_a = { 100, 0, 20 };
+
+  x3d_frustum_from_rendercontext(frustum, context);
+  x3d_get_fail_planes(clip_a, &v_a, frustum);
+
+
+  printf("Fail planes:\n");
+
+  uint16 i;
+  for(i = 0; i < clip_a->total_fp; ++i) {
+    //printf("%u\n", clip_a->fp[i].plane);
+  }
+
+  free(frustum);
 }
 
