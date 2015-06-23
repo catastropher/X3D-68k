@@ -52,6 +52,31 @@ typedef struct X3D_ClipRegion {
   X3D_ParamLine2D pl[0];
 } X3D_ClipRegion;
 
+inline void get_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
+  if(id < p->base_v) {
+    *a = id;
+    
+    if(id != p->base_v)
+      *b = id;
+    else
+      *b = 0;
+  }
+  else if(id < p->base_v * 2) {
+    *a = id;
+    
+    if(id != p->base_v * 2 - 1)
+      *b = id;
+    else
+      *b = p->base_v;
+  }
+  else {
+    *a = id - p->base_v * 2;
+    *b = id - p->base_v;
+  }
+}
+
+#define SWAP(_a, _b) {typeof(_a) temp = _a; _a = _b; _b = temp;}
+
 void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip) {
   // Check each point against each bounding line
   uint16 i, d;
@@ -60,6 +85,52 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip) {
   for(i = 0; i < clip->total_pl; ++i) {
     for(d = 0; d < prism->base_v * 2; ++d) {
       dist[i][d] = clip->pl[i].normal.x * prism->v[i].x + clip->pl[i].normal.y * prism->v[i].y - clip->pl[i].d;
+    }
+  }
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    uint16 a, b;    // Edge vertices
+    uint16 clip_v;
+    
+    int16 a_min_scale = 0xFFFF;
+    int16 b_min_scale = 0xFFFF;
+    
+    get_edge(prism, i, &a, &b);
+    
+    // Check each bounding line to see if a or b is outside
+    for(d = 0; d < clip->total_pl; ++d) {
+      _Bool a_out = dist[d][a] < 0;
+      _Bool b_out = dist[d][b] < 0;
+      
+      if(a_out != b_out) {
+        if(b_out) {
+          SWAP(a, b);
+          SWAP(a_min_scale, b_min_scale);
+        }
+        
+        int16 scale = ((int32)dist[d][a] << 15) / (dist[d][b] + dist[d][a]);
+        
+        if(scale < a_min_scale) {
+          a_min_scale = scale;
+        }
+      }
+      else if(a_out) {
+        break;
+      }
+    }
+    
+    X3D_Vex2D_int16 v_a = prism->v[a];
+    X3D_Vex2D_int16 v_b = prism->v[b];
+    
+    
+    if(a_min_scale != 0xFFFF) {
+      v_a.x += (((int32)prism->v[b].x - prism->v[a].x) * a_min_scale) >> 15;
+      v_a.y += (((int32)prism->v[b].y - prism->v[a].y) * a_min_scale) >> 15;
+    }
+    
+    if(b_min_scale != 0xFFFF) {
+      v_b.x += (((int32)prism->v[a].x - prism->v[b].x) * a_min_scale) >> 15;
+      v_b.y += (((int32)prism->v[a].y - prism->v[b].y) * a_min_scale) >> 15;
     }
   }
 }
