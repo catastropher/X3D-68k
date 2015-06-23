@@ -21,6 +21,49 @@
 #include "X3D_render.h"
 #include "X3D_frustum.h"
 
+typedef struct X3D_ParamLine2D {
+  X3D_Vex2D_int16 start;
+  X3D_Vex2D_int16 normal;
+  int16 d;
+} X3D_ParamLine2D;
+
+typedef struct X3D_Prism2D {
+  uint32 draw_edges;        ///< Bitfield of which edges should be drawn
+  uint16 base_v;            ///< Number of vertices in each base
+  X3D_Vex2D_int16 v[0];     ///< Vertices (variable number)
+} X3D_Prism2D;
+
+
+// Parameterizes the line between two points
+void x3d_param_line2d(X3D_ParamLine2D* line, X3D_Vex2D_int16* a, X3D_Vex2D_int16* b) {
+  int16 dx = b->x - a->x;
+  int16 dy = b->y - a->y;
+  
+  // Calculate the normal for the line
+  line->normal = (X3D_Vex2D_int16){ -dy, dx };
+  
+  // Calculate the distance to the origin
+  /// @todo add overflow checking
+  line->d = (line->normal.x * a->x + line->normal.y * a->y);
+}
+
+typedef struct X3D_ClipRegion {
+  uint16 total_pl;
+  X3D_ParamLine2D pl[0];
+} X3D_ClipRegion;
+
+void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip) {
+  // Check each point against each bounding line
+  uint16 i, d;
+  int16 dist[clip->total_pl][prism->base_v * 2];
+  
+  for(i = 0; i < clip->total_pl; ++i) {
+    for(d = 0; d < prism->base_v * 2; ++d) {
+      dist[i][d] = clip->pl[i].normal.x * prism->v[i].x + clip->pl[i].normal.y * prism->v[i].y - clip->pl[i].d;
+    }
+  }
+}
+
 /// @todo document
 void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f) {
   uint16 i;

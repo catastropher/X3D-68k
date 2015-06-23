@@ -53,7 +53,7 @@ void test() {
 void _main() {
   FontSetSys(F_4x6);
 
-  test();
+  //test();
 
   X3D_EngineState state;
 
