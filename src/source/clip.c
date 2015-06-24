@@ -83,11 +83,13 @@ inline void get_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
 void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContext* context) {
   // Check each point against each bounding line
   uint16 i, d;
-  int16 dist[clip->total_pl][prism->base_v * 2];
+  int32 dist[clip->total_pl][prism->base_v * 2];
   
   for(i = 0; i < clip->total_pl; ++i) {
     for(d = 0; d < prism->base_v * 2; ++d) {
-      dist[i][d] = clip->pl[i].normal.x * prism->v[i].x + clip->pl[i].normal.y * prism->v[i].y - clip->pl[i].d;
+      dist[i][d] = (int32)clip->pl[i].normal.x * prism->v[d].x + (int32)clip->pl[i].normal.y * prism->v[d].y - clip->pl[i].d;
+      //printf("Dist: %ld\n", dist[i][d]);
+      //ngetchx();
     }
   }
   
@@ -95,10 +97,12 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContex
     uint16 a, b;    // Edge vertices
     uint16 clip_v;
     
-    int16 a_min_scale = 0xFFFF;
-    int16 b_min_scale = 0xFFFF;
+    int16 a_min_scale = 0x7FFF;
+    int16 b_min_scale = 0x7FFF;
     
     get_edge(prism, i, &a, &b);
+    
+    _Bool need_clip = 1;
     
     // Check each bounding line to see if a or b is outside
     for(d = 0; d < clip->total_pl; ++d) {
@@ -107,8 +111,8 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContex
       _Bool b_out = dist[d][b] < 0;
       
       if(a_out || b_out) {
-        printf("ERROR OUT\n");
-        ngetchx();
+        //printf("ERROR OUT\n");
+        //ngetchx();
       }
       
       if(a_out != b_out) {
@@ -117,38 +121,47 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContex
           SWAP(a_min_scale, b_min_scale);
         }
         
-        int16 scale = ((int32)dist[d][a] << 15) / (dist[d][b] + dist[d][a]);
+        int16 scale = ((int32)abs(dist[d][a]) << 15) / (abs(dist[d][b]) + abs(dist[d][a]));
+        
+        printf("Scale: %d\n", scale);
         
         if(scale < a_min_scale) {
           a_min_scale = scale;
         }
       }
       else if(!a_out) {
-        X3D_Vex2D_int16 v_a = prism->v[a];
-        X3D_Vex2D_int16 v_b = prism->v[b];
+        //X3D_Vex2D_int16 v_a = prism->v[a];
+        //X3D_Vex2D_int16 v_b = prism->v[b];
         
-        x3d_draw_line_black(context, &v_a, &v_b);
-        break;
+        //x3d_draw_line_black(context, &v_a, &v_b);
+        //need_clip = 0;
+        //break;
+        continue;
       }
       else {
+        need_clip = 0;
         break;
       }
     }
     
-    X3D_Vex2D_int16 v_a = prism->v[a];
-    X3D_Vex2D_int16 v_b = prism->v[b];
-    
-    if(a_min_scale != 0xFFFF) {
-      v_a.x += (((int32)prism->v[b].x - prism->v[a].x) * a_min_scale) >> 15;
-      v_a.y += (((int32)prism->v[b].y - prism->v[a].y) * a_min_scale) >> 15;
+    if(need_clip) {
+      X3D_Vex2D_int16 v_a = prism->v[a];
+      X3D_Vex2D_int16 v_b = prism->v[b];
+      
+      if(a_min_scale != 0x7FFF) {
+        v_a.x += (((int32)prism->v[b].x - prism->v[a].x) * a_min_scale) >> 15;
+        v_a.y += (((int32)prism->v[b].y - prism->v[a].y) * a_min_scale) >> 15;
+        //printf("CLIP A\n");
+      }
+      
+      if(b_min_scale != 0x7FFF) {
+        v_b.x += (((int32)prism->v[a].x - prism->v[b].x) * b_min_scale) >> 15;
+        v_b.y += (((int32)prism->v[a].y - prism->v[b].y) * b_min_scale) >> 15;
+        //printf("CLIP B\n");
+      }
+      
+      x3d_draw_line_black(context, &v_a, &v_b);
     }
-    
-    if(b_min_scale != 0xFFFF) {
-      v_b.x += (((int32)prism->v[a].x - prism->v[b].x) * a_min_scale) >> 15;
-      v_b.y += (((int32)prism->v[a].y - prism->v[b].y) * a_min_scale) >> 15;
-    }
-    
-    x3d_draw_line_black(context, &v_a, &v_b);
   }
 }
 

@@ -58,20 +58,45 @@ void test() {
   
   prism2d->base_v = prism3d->base_v;
   
-  X3D_Vex2D_int16 clip[4] = {
-    { 0, 0 },
-    { LCD_WIDTH - 1, 0 },
-    { LCD_WIDTH - 1, LCD_HEIGHT - 1 },
-    { 0, LCD_HEIGHT - 1 }
-  };
   
+  /*{
+    
+    X3D_Vex2D_int16 clip[4] = {
+      { 0, 0 },
+      { LCD_WIDTH - 1, 0 },
+      { LCD_WIDTH - 1, LCD_HEIGHT - 1 },
+      { 0, LCD_HEIGHT - 1 }
+    };
+    
+    
+    X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
+    clrscr();
+    x3d_prism2d_clip(prism2d, r, &context);
+    
+    ngetchx();
+  }*/
   
-  X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
-  clrscr();
-  x3d_prism2d_clip(prism2d, r, &context);
-  
-
-  ngetchx();
+  {
+    
+    X3D_Vex2D_int16 clip[4] = {
+      { 0, LCD_HEIGHT - 20 },
+      { LCD_WIDTH - 1, 0 },
+      { LCD_WIDTH - 1, LCD_HEIGHT - 70 },
+      { 0, LCD_HEIGHT - 1 }
+    };
+    
+    
+    X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
+    clrscr();
+    
+    for(i = 0; i < 4; i++) {
+      x3d_draw_line_black(&context, clip + i, clip + ((i + 1) % 4));
+    }
+    
+    x3d_prism2d_clip(prism2d, r, &context);
+    
+    ngetchx();
+  }
 
   exit(-1);
 }
