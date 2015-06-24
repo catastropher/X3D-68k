@@ -37,13 +37,39 @@ int _ti92plus;
 
 void test_clip(X3D_RenderContext* context);
 
+void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContext* context);
+X3D_ClipRegion* x3d_construct_clipregion(X3D_Vex2D_int16* v, uint16 total_v);
+
+
 void test() {
   X3D_RenderContext context;
 
   x3d_rendercontext_init(&context, LCD_MEM, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
-
+  
+  X3D_Prism* prism3d = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+  X3D_Prism2D* prism2d = malloc(sizeof(X3D_Prism2D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+  
+  x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){0, 0, 0});
+  
+  uint16 i;
+  for(i = 0; i < prism3d->base_v * 2; ++i) {
+    x3d_vex3d_int16_project(prism2d->v + i, prism3d->v + i, &context);
+  }
+  
+  prism2d->base_v = prism3d->base_v;
+  
+  X3D_Vex2D_int16 clip[4] = {
+    { 0, 0 },
+    { LCD_WIDTH - 1, 0 },
+    { LCD_WIDTH - 1, LCD_HEIGHT - 1 },
+    { 0, LCD_HEIGHT - 1 }
+  };
+  
+  
+  X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
   clrscr();
-  test_clip(&context);
+  x3d_prism2d_clip(prism2d, r, &context);
+  
 
   ngetchx();
 
@@ -52,8 +78,11 @@ void test() {
 
 void _main() {
   FontSetSys(F_4x6);
+  
+  
+  //X3D_ClipRegion* region = x3d_construct_clipregion(clip, total_v);
 
-  //test();
+  test();
 
   X3D_EngineState state;
 
@@ -141,7 +170,8 @@ void _main() {
 
     x3d_prism_construct(prism, steps, 25, 50, angle);
     prism->draw_edges = edges;
-    x3d_prism_render(prism, &context);
+    //x3d_prism_render(prism, &context);
+   
 
    
 

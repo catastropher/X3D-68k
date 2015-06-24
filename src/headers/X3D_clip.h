@@ -49,6 +49,23 @@ typedef struct X3D_Edge {
   X3D_Vex3D_int16 v[2];
 } X3D_Edge;
 
+typedef struct X3D_ParamLine2D {
+  X3D_Vex2D_int16 start;
+  X3D_Vex2D_int16 normal;
+  int32 d;
+} X3D_ParamLine2D;
+
+typedef struct X3D_ClipRegion {
+  uint16 total_pl;
+  X3D_ParamLine2D pl[0];
+} X3D_ClipRegion;
+
+typedef struct X3D_Prism2D {
+  uint32 draw_edges;        ///< Bitfield of which edges should be drawn
+  uint16 base_v;            ///< Number of vertices in each base
+  X3D_Vex2D_int16 v[0];     ///< Vertices (variable number)
+} X3D_Prism2D;
+
 //=============================================================================
 // Function declarations
 //=============================================================================

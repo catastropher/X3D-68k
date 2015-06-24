@@ -21,18 +21,6 @@
 #include "X3D_render.h"
 #include "X3D_frustum.h"
 
-typedef struct X3D_ParamLine2D {
-  X3D_Vex2D_int16 start;
-  X3D_Vex2D_int16 normal;
-  int16 d;
-} X3D_ParamLine2D;
-
-typedef struct X3D_Prism2D {
-  uint32 draw_edges;        ///< Bitfield of which edges should be drawn
-  uint16 base_v;            ///< Number of vertices in each base
-  X3D_Vex2D_int16 v[0];     ///< Vertices (variable number)
-} X3D_Prism2D;
-
 
 // Parameterizes the line between two points
 void x3d_param_line2d(X3D_ParamLine2D* line, X3D_Vex2D_int16* a, X3D_Vex2D_int16* b) {
@@ -47,17 +35,32 @@ void x3d_param_line2d(X3D_ParamLine2D* line, X3D_Vex2D_int16* a, X3D_Vex2D_int16
   line->d = (line->normal.x * a->x + line->normal.y * a->y);
 }
 
-typedef struct X3D_ClipRegion {
-  uint16 total_pl;
-  X3D_ParamLine2D pl[0];
-} X3D_ClipRegion;
+
+
+X3D_ClipRegion* x3d_construct_clipregion(X3D_Vex2D_int16* v, uint16 total_v) {
+  uint16 i;
+  
+  X3D_ClipRegion* r = malloc(sizeof(X3D_ClipRegion) + sizeof(X3D_ParamLine2D) * total_v);
+  
+  for(i = 0; i < total_v; ++i) {
+    uint16 next = (i + 1) % total_v;
+    
+    x3d_param_line2d(&r->pl[i], v + i, v + next);
+  }
+  
+  r->total_pl = total_v;
+  
+  ngetchx();
+  
+  return r;
+}
 
 inline void get_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
   if(id < p->base_v) {
     *a = id;
     
-    if(id != p->base_v)
-      *b = id;
+    if(id != p->base_v - 1)
+      *b = id + 1;
     else
       *b = 0;
   }
@@ -65,7 +68,7 @@ inline void get_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
     *a = id;
     
     if(id != p->base_v * 2 - 1)
-      *b = id;
+      *b = id + 1;
     else
       *b = p->base_v;
   }
@@ -77,7 +80,7 @@ inline void get_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
 
 #define SWAP(_a, _b) {typeof(_a) temp = _a; _a = _b; _b = temp;}
 
-void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip) {
+void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContext* context) {
   // Check each point against each bounding line
   uint16 i, d;
   int16 dist[clip->total_pl][prism->base_v * 2];
@@ -99,8 +102,14 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip) {
     
     // Check each bounding line to see if a or b is outside
     for(d = 0; d < clip->total_pl; ++d) {
+      
       _Bool a_out = dist[d][a] < 0;
       _Bool b_out = dist[d][b] < 0;
+      
+      if(a_out || b_out) {
+        printf("ERROR OUT\n");
+        ngetchx();
+      }
       
       if(a_out != b_out) {
         if(b_out) {
@@ -114,14 +123,20 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip) {
           a_min_scale = scale;
         }
       }
-      else if(a_out) {
+      else if(!a_out) {
+        X3D_Vex2D_int16 v_a = prism->v[a];
+        X3D_Vex2D_int16 v_b = prism->v[b];
+        
+        x3d_draw_line_black(context, &v_a, &v_b);
+        break;
+      }
+      else {
         break;
       }
     }
     
     X3D_Vex2D_int16 v_a = prism->v[a];
     X3D_Vex2D_int16 v_b = prism->v[b];
-    
     
     if(a_min_scale != 0xFFFF) {
       v_a.x += (((int32)prism->v[b].x - prism->v[a].x) * a_min_scale) >> 15;
@@ -132,6 +147,8 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip) {
       v_b.x += (((int32)prism->v[a].x - prism->v[b].x) * a_min_scale) >> 15;
       v_b.y += (((int32)prism->v[a].y - prism->v[b].y) * a_min_scale) >> 15;
     }
+    
+    x3d_draw_line_black(context, &v_a, &v_b);
   }
 }
 
