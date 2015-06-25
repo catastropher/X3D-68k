@@ -20,7 +20,76 @@
 #include "X3D_clip.h"
 #include "X3D_render.h"
 #include "X3D_frustum.h"
+#include "X3D_trig.h"
 
-void x3d_test() {
+#ifdef __TIGCC_HEADERS__
+#include <tigcclib.h>
+#endif
+
+
+#ifdef __TIGCC__
+
+typedef X3D_Prism X3D_Prism3D;
+
+typedef struct X3D_TestContext {
+  X3D_RenderContext context;
+  X3D_EngineState state;
+  X3D_RenderDevice device;
+} X3D_TestContext;
+
+void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_RenderContext* context) {
+  uint16 i;
+  for(i = 0; i < p->base_v * 2; ++i) {
+    x3d_vex3d_int16_project(dest->v + i, p->v + i, context);
+  }
+
+  dest->base_v = p->base_v;
 }
 
+static void x3d_test_init_screen(X3D_TestContext* context) {
+  x3d_enginestate_init(&context->state, 5, 1000);
+  x3d_renderdevice_init(&context->device, 240, 128);
+
+  x3d_rendercontext_init(&context->context, context->device.dbuf, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
+}
+
+void x3d_test() {
+  FontSetSys(F_4x6);
+
+  X3D_TestContext test;
+
+  x3d_test_init_screen(&test);
+
+  X3D_Camera* cam = &test.context.cam;
+
+  cam->pos = (X3D_Vex3D_fp16x16){ 0, 0, 0 };
+  cam->angle = (X3D_Vex3D_angle256){ 0, 0, 0 };
+
+  X3D_Vex3D_angle256 angle = { 0, 0, 0 };
+  int16 steps = 3;
+
+  INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
+  INT_HANDLER old_int_5 = GetIntVec(AUTO_INT_5);
+
+  SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
+  SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+
+  X3D_Prism* prism3d = malloc(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+  X3D_Prism2D* prism2d = malloc(sizeof(X3D_Prism2D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+
+  X3D_Prism2D* prism2d_copy = malloc(sizeof(X3D_Prism2D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+
+
+
+  x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
+
+  x3d_renderdevice_cleanup(&test.device);
+  x3d_enginestate_cleanup(&test.state);
+
+  SetIntVec(AUTO_INT_1, old_int_1);
+  SetIntVec(AUTO_INT_5, old_int_5);
+
+  
+}
+
+#endif
