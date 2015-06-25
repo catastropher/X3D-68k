@@ -54,6 +54,9 @@ typedef struct X3D_Vex3D_int32 {
 /// A 3D vector with fp8x8 components.
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp8x8;
 
+/// A shorthand for X3D_Vex3D_int16
+typedef X3D_Vex3D_int16 X3D_Vex3D;
+
 /// A 3D vector with fp0x16 components.
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp0x16;
 
@@ -75,6 +78,9 @@ typedef struct X3D_Vex2D_int16 {
   int16 x;
   int16 y;
 } X3D_Vex2D_int16;
+
+/// A shorthand for X3D_Vex2D_int16
+typedef X3D_Vex2D_int16 X3D_Vex2D;
 
 //=============================================================================
 // Function declarations
