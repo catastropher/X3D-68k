@@ -50,8 +50,6 @@ X3D_ClipRegion* x3d_construct_clipregion(X3D_Vex2D_int16* v, uint16 total_v) {
   
   r->total_pl = total_v;
   
-  ngetchx();
-  
   return r;
 }
 
@@ -122,9 +120,7 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContex
         }
         
         int16 scale = ((int32)abs(dist[d][a]) << 15) / (abs(dist[d][b]) + abs(dist[d][a]));
-        
-        printf("Scale: %d\n", scale);
-        
+
         if(scale < a_min_scale) {
           a_min_scale = scale;
         }

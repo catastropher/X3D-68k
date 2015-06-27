@@ -101,9 +101,14 @@ void test() {
   exit(-1);
 }
 
+void x3d_test();
+
 void _main() {
   FontSetSys(F_4x6);
   
+  x3d_test();
+
+  return;
   
   //X3D_ClipRegion* region = x3d_construct_clipregion(clip, total_v);
 

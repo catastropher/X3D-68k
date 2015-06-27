@@ -21,6 +21,8 @@
 #include "X3D_render.h"
 #include "X3D_frustum.h"
 #include "X3D_trig.h"
+#include "X3D_segment.h"
+#include "X3D_matrix.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -69,7 +71,12 @@ static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
 #define DUMMY_HANDLER 0
 #define SetIntVec(...) ;
 #define FontSetSys(...) ;
+#define LCD_WIDTH 240
+#define LCD_HEIGHT 128
 #endif
+
+void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContext* context);
+X3D_ClipRegion* x3d_construct_clipregion(X3D_Vex2D_int16* v, uint16 total_v);
 
 void x3d_test() {
   FontSetSys(F_4x6);
@@ -90,9 +97,6 @@ void x3d_test() {
   cam->pos = (X3D_Vex3D_fp16x16){ 0, 0, 0 };
   cam->angle = (X3D_Vex3D_angle256){ 0, 0, 0 };
 
-  X3D_Vex3D_angle256 angle = { 0, 0, 0 };
-  int16 steps = 3;
-
   // Allocate some prisms
   X3D_Prism* prism3d = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   X3D_Prism* prism3d_temp = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
@@ -100,8 +104,76 @@ void x3d_test() {
 
   x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
+  X3D_Vex2D_int16 clip[4] = {
+    { 0, LCD_HEIGHT - 20 },
+    { LCD_WIDTH - 1, 0 },
+    { LCD_WIDTH - 1, LCD_HEIGHT - 70 },
+    { 0, LCD_HEIGHT - 1 }
+  };
+
+
+  X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
+  clrscr();
 
   do {
+    x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
+    x3d_test_copy_prism3d(prism3d_temp, prism3d);
+
+    prism3d_temp->draw_edges = 0xFFFFFFFF;
+
+    // Move the prism relative to the camera
+    X3D_Vex3D_int16 cam_pos = { cam->pos.x >> 16, cam->pos.y >> 16, cam->pos.z >> 16 };
+
+
+    uint16 i;
+    for(i = 0; i < prism3d_temp->base_v * 2; ++i) {
+      prism3d_temp->v[i] = vex3d_int16_sub(prism3d_temp->v + i, &cam_pos);
+
+      X3D_Vex3D_int16 temp;
+      x3d_vex3d_int16_rotate(&temp, prism3d_temp->v + i, &cam->mat);
+
+      prism3d_temp->v[i] = temp;
+    }
+
+    for(i = 0; i < prism3d->base_v * 2; ++i) {
+      x3d_vex3d_int16_project(prism2d->v + i, prism3d_temp->v + i, &test.context);
+    }
+
+    prism2d->base_v = prism3d->base_v;
+
+    clrscr();
+    //x3d_prism_render(prism3d_temp, &test.context);
+
+    for(i = 0; i < 4; i++) {
+      x3d_draw_line_black(&test.context, clip + i, clip + ((i + 1) % 4));
+    }
+
+    x3d_prism2d_clip(prism2d, r, &test.context);
+    x3d_renderdevice_flip(&test.device);
+
+    X3D_Vex3D_int16 dir = { cam->mat.data[6], cam->mat.data[7], cam->mat.data[8] };
+
+    if(_keytest(RR_UP)) {
+      cam->pos.x += dir.x;
+      cam->pos.y += dir.y;
+      cam->pos.z += dir.z;
+    }
+    else if(_keytest(RR_DOWN)) {
+      cam->pos.x -= dir.x;
+      cam->pos.y -= dir.y;
+      cam->pos.z -= dir.z;
+    }
+
+    if(_keytest(RR_LEFT)) {
+      cam->angle.y -= 1;
+    }
+    else if(_keytest(RR_RIGHT)) {
+      cam->angle.y += 1;
+    }
+    if(_keytest(RR_ESC)) {
+      break;
+    }
+
 
 
   } while(1);
