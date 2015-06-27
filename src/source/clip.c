@@ -32,7 +32,7 @@ void x3d_param_line2d(X3D_ParamLine2D* line, X3D_Vex2D_int16* a, X3D_Vex2D_int16
   
   // Calculate the distance to the origin
   /// @todo add overflow checking
-  line->d = (line->normal.x * a->x + line->normal.y * a->y);
+  line->d = ((int32)line->normal.x * a->x + (int32)line->normal.y * a->y);
 }
 
 
@@ -119,7 +119,7 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContex
           SWAP(a_min_scale, b_min_scale);
         }
         
-        int16 scale = ((int32)abs(dist[d][a]) << 15) / (abs(dist[d][b]) + abs(dist[d][a]));
+        int16 scale = ((int32)abs(dist[d][a]) << 8) / (abs(dist[d][b]) + abs(dist[d][a]));
 
         if(scale < a_min_scale) {
           a_min_scale = scale;
@@ -145,14 +145,14 @@ void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContex
       X3D_Vex2D_int16 v_b = prism->v[b];
       
       if(a_min_scale != 0x7FFF) {
-        v_a.x += (((int32)prism->v[b].x - prism->v[a].x) * a_min_scale) >> 15;
-        v_a.y += (((int32)prism->v[b].y - prism->v[a].y) * a_min_scale) >> 15;
+        v_a.x += (((int32)prism->v[b].x - prism->v[a].x) * a_min_scale) >> 8;
+        v_a.y += (((int32)prism->v[b].y - prism->v[a].y) * a_min_scale) >> 8;
         //printf("CLIP A\n");
       }
       
       if(b_min_scale != 0x7FFF) {
-        v_b.x += (((int32)prism->v[a].x - prism->v[b].x) * b_min_scale) >> 15;
-        v_b.y += (((int32)prism->v[a].y - prism->v[b].y) * b_min_scale) >> 15;
+        v_b.x += (((int32)prism->v[a].x - prism->v[b].x) * b_min_scale) >> 8;
+        v_b.y += (((int32)prism->v[a].y - prism->v[b].y) * b_min_scale) >> 8;
         //printf("CLIP B\n");
       }
       
