@@ -268,10 +268,10 @@ void x3d_test() {
   //x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
   X3D_Vex2D_int16 clip[4] = {
-    { 0, LCD_HEIGHT - 20 },
-    { LCD_WIDTH - 1, 0 },
-    { LCD_WIDTH - 1, LCD_HEIGHT - 70 },
-    { 0, LCD_HEIGHT - 1 }
+    { 30, LCD_HEIGHT - 20 },
+    { LCD_WIDTH - 20, 0 },
+    { LCD_WIDTH - 20, LCD_HEIGHT - 70 },
+    { 30, LCD_HEIGHT - 1 }
   };
 
 
