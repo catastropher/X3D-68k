@@ -81,9 +81,84 @@ void test_clip(X3D_ClipRegion* clip, X3D_Vex3D_int16 v[], int16 total_v, Edge e[
     }
   }
   
+  // If both vertices of an edge fail by the same boundary line, it's invisible
+  for(i = 0; i < total_e; ++i) {
+    for(d = 0; d < clip->total_pl; ++d) {
+      if(dist[d][e[i].v[0]] < 0 && dist[d][e[i].v[1]] < 0) {
+        vis[i] = INVISIBLE;
+        break;
+      }
+    }
+  }
 }
 
-
+_Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
+  // List of PL id's that each vertex is outside of
+  int16 outside[2][clip->total_pl];
+  
+  // Position in the outside list for each vertex
+  int16 outside_pos[2] = {0, 0};
+  
+  // Distance between each vertex and each line
+  int32 dist[2][clip->total_pl];
+  
+  int16 line, vertex, i;
+  
+  // Calculate the distance between each vertex and each line
+  for(line = 0; line < clip->total_pl; ++line) {
+    for(vertex = 0; vertex < 2; ++vertex) {
+      dist[vertex][line] = (int32)clip->pl[line].normal.x * v[vertex].x + (int32)clip->pl[line].normal.y * v[vertex].y - clip->pl[line].d;
+    }
+    
+    if(dist[0][line] < 0) {
+      if(dist[1][line] < 0) {
+        // If both vertices fail by the same line, the line is invisible
+        return 0;
+      }
+      else {
+        outside[0][outside_pos[0]++] = line;
+      }
+    }
+    else if(dist[1][line] < 0) {
+      outside[1][outside_pos[1]++] = line;
+    }
+  }
+  
+  // If both points are totally inside, the line is visible
+  if((outside_pos[0] | outside_pos[1]) == 0)
+    return 1;
+    
+  // Minumum scale needed to scale the line by to get the point inside the boundary
+  int16 min_scale[2] = {0, 0};
+  X3D_Vex2D_int16 clipped[2] = {v[0], v[1]};
+    
+  // We now have a list of lines that each vertex fails against
+  for(vertex = 0; vertex < 2; ++vertex) {
+    for(i = 0; i < outside_pos[vertex]; ++i) {
+      int16 scale = ((int32)abs(dist[vertex][outside[vertex][i]]) << 8) / abs(dist[vertex ^ 1][outside[vertex][i]] + dist[vertex][outside[vertex][i]]);
+      
+      if(scale < min_scale[vertex]) {
+        min_scale[vertex] = scale;
+      }
+    }
+    
+    clipped[vertex].x += (((int32)v[vertex ^ 1].x - v[vertex].x) * min_scale[vertex]) >> 8;
+    clipped[vertex].y += (((int32)v[vertex ^ 1].y - v[vertex].y) * min_scale[vertex]) >> 8;
+  }
+  
+  // If both of the points were outside, we need to check that the new clip is actually valid
+  if(outside_pos[0] != 0 && outside_pos[1] != 0) {
+    X3D_Vex2D_int16 mid = {(clipped[0].x + clipped[1].x) >> 1, (clipped[0].y + clipped[1].y) >> 1};
+    
+    for(line = 0; line < clip->total_pl; ++line) {
+       if(((int32)clip->pl[line].normal.x * mid.x + (int32)clip->pl[line].normal.y * mid.y - clip->pl[line].d) < 0)
+        return 0;
+    }
+  }
+  
+  v[0] = clipped[0];
+  v[1] = clipped[1];
+}
 
 
 
