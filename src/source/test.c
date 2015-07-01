@@ -29,6 +29,86 @@
 #endif
 
 
+
+typedef struct {
+  int16 v[2];
+} Edge;
+
+
+enum {
+  UNKNOWN,
+  VISIBLE,
+  INVISIBLE
+};
+
+void test_clip(X3D_ClipRegion* clip, X3D_Vex3D_int16 v[], int16 total_v, Edge e[], int16 total_e) {
+  // Distance from each point to each line in the clip region
+  int32 dist[clip->total_pl][total_v];
+  int16 i, d, k;
+  
+  // List of vertices that have been determined to be visible i.e. totally inside the clip region
+  int16 vis_v[total_v];
+  int16 total_vis_v = 0;
+  
+  for(d = 0; d < total_v; ++d) {
+    _Bool is_visible = 1;
+    
+    for(i = 0; i < clip->total_pl; ++i) {
+      dist[i][d] = (int32)clip->pl[i].normal.x * v[d].x + (int32)clip->pl[i].normal.y * v[d].y - clip->pl[i].d;
+      
+      if(dist[i][d] < 0)
+        is_visible = 0;
+    }
+    
+    if(is_visible) {
+      vis_v[total_vis_v++] = d;
+    }
+  }
+  
+  // The determined visibility of each edge
+  uint8 vis[total_e];
+  
+  for(i = 0; i < total_e; ++i) {
+    vis[i] = UNKNOWN;
+  }
+  
+  for(i = 0; i < total_vis_v; ++i) {
+    for(d = 0; d < total_e; ++d) {
+      // If an edge contains at least one visible vertex, it is visible
+      if(e[d].v[0] == vis_v[i] || e[d].v[1] == vis_v[i]) {
+        vis[d] = VISIBLE;
+      }
+    }
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #if defined(__TIGCC__) || defined(WIN32)
 
 typedef X3D_Prism X3D_Prism3D;
