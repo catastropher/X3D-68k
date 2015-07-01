@@ -129,21 +129,25 @@ _Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
     return 1;
     
   // Minumum scale needed to scale the line by to get the point inside the boundary
-  int16 min_scale[2] = {0, 0};
+  int16 min_scale[2] = {0x7FFF, 0x7FFF};
   X3D_Vex2D_int16 clipped[2] = {v[0], v[1]};
     
   // We now have a list of lines that each vertex fails against
   for(vertex = 0; vertex < 2; ++vertex) {
-    for(i = 0; i < outside_pos[vertex]; ++i) {
-      int16 scale = ((int32)abs(dist[vertex][outside[vertex][i]]) << 8) / abs(dist[vertex ^ 1][outside[vertex][i]] + dist[vertex][outside[vertex][i]]);
-      
-      if(scale < min_scale[vertex]) {
-        min_scale[vertex] = scale;
+    if(outside_pos[vertex] != 0) {
+      for(i = 0; i < outside_pos[vertex]; ++i) {
+        int16 scale = ((int32)abs(dist[vertex][outside[vertex][i]]) << 8) / (abs(dist[vertex ^ 1][outside[vertex][i]]) + abs(dist[vertex][outside[vertex][i]]));
+        
+        if(scale < min_scale[vertex]) {
+          min_scale[vertex] = scale;
+        }
+        
+        printf("Scale: %d\n", scale);
       }
+      
+      clipped[vertex].x -= (((int32)v[vertex].x - v[vertex ^ 1].x) * min_scale[vertex]) >> 8;
+      clipped[vertex].y -= (((int32)v[vertex].y - v[vertex ^ 1].y) * min_scale[vertex]) >> 8;
     }
-    
-    clipped[vertex].x += (((int32)v[vertex ^ 1].x - v[vertex].x) * min_scale[vertex]) >> 8;
-    clipped[vertex].y += (((int32)v[vertex ^ 1].y - v[vertex].y) * min_scale[vertex]) >> 8;
   }
   
   // If both of the points were outside, we need to check that the new clip is actually valid
@@ -158,6 +162,8 @@ _Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
   
   v[0] = clipped[0];
   v[1] = clipped[1];
+  
+  return 1;
 }
 
 
@@ -235,6 +241,8 @@ X3D_ClipRegion* x3d_construct_clipregion(X3D_Vex2D_int16* v, uint16 total_v);
 
 void x3d_test() {
   FontSetSys(F_4x6);
+  
+  clrscr();
 
   // Redirect interrupt handlers
   INT_HANDLER old_int_1 = GetIntVec(AUTO_INT_1);
@@ -257,7 +265,7 @@ void x3d_test() {
   X3D_Prism* prism3d_temp = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   X3D_Prism2D* prism2d = malloc(sizeof(X3D_Prism2D) + sizeof(X3D_Vex2D_int16) * 50 * 2);
 
-  x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
+  //x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
   X3D_Vex2D_int16 clip[4] = {
     { 0, LCD_HEIGHT - 20 },
@@ -269,6 +277,83 @@ void x3d_test() {
 
   X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
   clrscr();
+  
+  _Bool has_first = 0, has_second = 0;
+  
+  int16 cx = LCD_WIDTH / 2, cy = LCD_HEIGHT / 2;
+  
+  X3D_Vex2D first, second;
+  int16 inside;
+  
+  // Test the new line clipping algorithm
+  do {
+    clrscr();
+    
+    // Draw the clipping region
+    uint16 i;
+    for(i = 0; i < 4; i++) {
+      x3d_draw_line_black(&test.context, clip + i, clip + ((i + 1) % 4));
+    }
+    
+    // Draw the cursor
+    DrawPix(cx, cy, A_NORMAL);
+    
+    if(has_first && has_second) {
+      x3d_draw_line_black(&test.context, &first, &second);
+      printf("clip_line reports %s\n", inside ? "INSIDE" : "OUTSIDE");
+    }
+    
+    x3d_renderdevice_flip(&test.device);
+    
+    if(_keytest(RR_UP))
+      --cy;
+    else if(_keytest(RR_DOWN))
+      ++cy;
+    else if(_keytest(RR_LEFT))
+      --cx;
+    else if(_keytest(RR_RIGHT))
+      ++cx;
+    else if(_keytest(RR_ESC))
+      goto done;
+    else if(_keytest(RR_F1)) {
+      has_first = 0;
+      has_second = 0;
+    }
+    else if(_keytest(RR_ENTER)) {
+      if(!has_first) {
+        first.x = cx;
+        first.y = cy;
+        has_first = 1;
+      }
+      else if(!has_second) {
+        second.x = cx;
+        second.y = cy;
+        has_second = 1;
+        
+        X3D_Vex2D_int16 vc[2] = {first, second};
+        
+        inside = clip_line(r, vc);
+        
+        first = vc[0];
+        second = vc[1];
+        
+        x3d_renderdevice_flip(&test.device);
+        
+      }
+      
+      while(_keytest(RR_ENTER)) ;
+    }
+  } while(1);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
   do {
     x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
@@ -334,7 +419,7 @@ void x3d_test() {
   } while(1);
 
 
-
+done:
 
 
   x3d_renderdevice_cleanup(&test.device);
