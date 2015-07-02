@@ -166,7 +166,31 @@ _Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
   return 1;
 }
 
-
+// Returns the list of point id's that are part of the given face
+void get_face(int16* dest, int16* total_v, X3D_Prism2D* prism, int16 face) {
+  int16 i;
+  
+  if(face == 0) {
+    *total_v = prism->base_v;
+    
+    for(i = 0; i < prism->base_v; ++i)
+      dest[i] = i;
+  }
+  else if(face == 1) {
+    *total_v = prism->base_v;
+    
+    for(i = 0; i < prism->base_v; ++i)
+      dest[i] = i + prism->base_v;
+  }
+  else {
+    *total_v = 4;
+    
+    dest[0] = i - 2;
+    dest[1] = i - 2 + 1;
+    dest[2] = i - 2 + prism->base_v;
+    dest[3] = i - 2 + 1 + prism->base_v;
+  }
+}
 
 
 
