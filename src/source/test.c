@@ -28,71 +28,22 @@
 #include <tigcclib.h>
 #endif
 
+enum {
+  INSIDE,
+  BOUNDARY,
+  OUTSIDE
+};
 
-
+/// @todo This should be reorganized into an array of two vertices instead of separate arrays
 typedef struct {
-  int16 v[2];
+  _Bool vis;
+  uint16 clip_edge[2];
+  X3D_Vex2D_int16 v[2];
 } Edge;
 
 
-enum {
-  UNKNOWN,
-  VISIBLE,
-  INVISIBLE
-};
 
-void test_clip(X3D_ClipRegion* clip, X3D_Vex3D_int16 v[], int16 total_v, Edge e[], int16 total_e) {
-  // Distance from each point to each line in the clip region
-  int32 dist[clip->total_pl][total_v];
-  int16 i, d, k;
-  
-  // List of vertices that have been determined to be visible i.e. totally inside the clip region
-  int16 vis_v[total_v];
-  int16 total_vis_v = 0;
-  
-  for(d = 0; d < total_v; ++d) {
-    _Bool is_visible = 1;
-    
-    for(i = 0; i < clip->total_pl; ++i) {
-      dist[i][d] = (int32)clip->pl[i].normal.x * v[d].x + (int32)clip->pl[i].normal.y * v[d].y - clip->pl[i].d;
-      
-      if(dist[i][d] < 0)
-        is_visible = 0;
-    }
-    
-    if(is_visible) {
-      vis_v[total_vis_v++] = d;
-    }
-  }
-  
-  // The determined visibility of each edge
-  uint8 vis[total_e];
-  
-  for(i = 0; i < total_e; ++i) {
-    vis[i] = UNKNOWN;
-  }
-  
-  for(i = 0; i < total_vis_v; ++i) {
-    for(d = 0; d < total_e; ++d) {
-      // If an edge contains at least one visible vertex, it is visible
-      if(e[d].v[0] == vis_v[i] || e[d].v[1] == vis_v[i]) {
-        vis[d] = VISIBLE;
-      }
-    }
-  }
-  
-  // If both vertices of an edge fail by the same boundary line, it's invisible
-  for(i = 0; i < total_e; ++i) {
-    for(d = 0; d < clip->total_pl; ++d) {
-      if(dist[d][e[i].v[0]] < 0 && dist[d][e[i].v[1]] < 0) {
-        vis[i] = INVISIBLE;
-        break;
-      }
-    }
-  }
-}
-
-_Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
+_Bool clip_line(X3D_ClipRegion* clip, Edge* edge) {
   // List of PL id's that each vertex is outside of
   int16 outside[2][clip->total_pl];
   
@@ -102,12 +53,12 @@ _Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
   // Distance between each vertex and each line
   int32 dist[2][clip->total_pl];
   
-  int16 line, vertex, i;
+  uint16 line, vertex, i;
   
   // Calculate the distance between each vertex and each line
   for(line = 0; line < clip->total_pl; ++line) {
     for(vertex = 0; vertex < 2; ++vertex) {
-      dist[vertex][line] = (int32)clip->pl[line].normal.x * v[vertex].x + (int32)clip->pl[line].normal.y * v[vertex].y - clip->pl[line].d;
+      dist[vertex][line] = (int32)clip->pl[line].normal.x * edge->v[vertex].x + (int32)clip->pl[line].normal.y * edge->v[vertex].y - clip->pl[line].d;
     }
     
     if(dist[0][line] < 0) {
@@ -130,23 +81,28 @@ _Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
     
   // Minumum scale needed to scale the line by to get the point inside the boundary
   int16 min_scale[2] = {0x7FFF, 0x7FFF};
-  X3D_Vex2D_int16 clipped[2] = {v[0], v[1]};
+  X3D_Vex2D_int16 clipped[2] = {edge->v[0], edge->v[1]};
     
   // We now have a list of lines that each vertex fails against
   for(vertex = 0; vertex < 2; ++vertex) {
     if(outside_pos[vertex] != 0) {
+      int16 min_scale_index = 0;
+      
       for(i = 0; i < outside_pos[vertex]; ++i) {
         int16 scale = ((int32)abs(dist[vertex][outside[vertex][i]]) << 8) / (abs(dist[vertex ^ 1][outside[vertex][i]]) + abs(dist[vertex][outside[vertex][i]]));
         
         if(scale < min_scale[vertex]) {
           min_scale[vertex] = scale;
+          min_scale_index = outside[vertex][i];
         }
-        
-        printf("Scale: %d\n", scale);
       }
       
-      clipped[vertex].x -= (((int32)v[vertex].x - v[vertex ^ 1].x) * min_scale[vertex]) >> 8;
-      clipped[vertex].y -= (((int32)v[vertex].y - v[vertex ^ 1].y) * min_scale[vertex]) >> 8;
+      clipped[vertex].x -= (((int32)edge->v[vertex].x - edge->v[vertex ^ 1].x) * min_scale[vertex]) >> 8;
+      clipped[vertex].y -= (((int32)edge->v[vertex].y - edge->v[vertex ^ 1].y) * min_scale[vertex]) >> 8;
+      edge->clip_edge[vertex] = min_scale_index;
+    }
+    else {
+      edge->clip_edge[vertex] = 0xFFFF;
     }
   }
   
@@ -160,8 +116,8 @@ _Bool clip_line(X3D_ClipRegion* clip, X3D_Vex2D_int16 v[2]) {
     }
   }
   
-  v[0] = clipped[0];
-  v[1] = clipped[1];
+  edge->v[0] = clipped[0];
+  edge->v[1] = clipped[1];
   
   return 1;
 }
@@ -192,7 +148,24 @@ void get_face(int16* dest, int16* total_v, X3D_Prism2D* prism, int16 face) {
   }
 }
 
+void clip_prism2d(X3D_Prism2D* prism, X3D_ClipRegion* r, X3D_RenderContext* context) {
+  Edge e[prism->base_v * 3];
+  uint16 i;
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    int16 a, b;
 
+    get_edge(prism, i, &a, &b);
+    e[i].v[0] = prism->v[a];
+    e[i].v[1] = prism->v[b];
+    
+    e[i].vis = clip_line(r, e + i);
+    
+    if(e[i].vis)
+      x3d_draw_line_black(context, &e[i].v[0], &e[i].v[1]);
+  }
+  
+}
 
 
 
@@ -289,7 +262,7 @@ void x3d_test() {
   X3D_Prism* prism3d_temp = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   X3D_Prism2D* prism2d = malloc(sizeof(X3D_Prism2D) + sizeof(X3D_Vex2D_int16) * 50 * 2);
 
-  //x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
+  x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
   X3D_Vex2D_int16 clip[4] = {
     { 30, LCD_HEIGHT - 20 },
@@ -308,6 +281,10 @@ void x3d_test() {
   
   X3D_Vex2D first, second;
   int16 inside;
+  
+  Edge edge;
+  
+  goto test2;
   
   // Test the new line clipping algorithm
   do {
@@ -354,12 +331,13 @@ void x3d_test() {
         second.y = cy;
         has_second = 1;
         
-        X3D_Vex2D_int16 vc[2] = {first, second};
+        edge.v[0] = first;
+        edge.v[1] = second;
         
-        inside = clip_line(r, vc);
+        inside = clip_line(r, &edge);
         
-        first = vc[0];
-        second = vc[1];
+        first = edge.v[0];
+        second = edge.v[1];
         
         x3d_renderdevice_flip(&test.device);
         
@@ -378,7 +356,7 @@ void x3d_test() {
   
   
   
-
+test2:
   do {
     x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
     x3d_test_copy_prism3d(prism3d_temp, prism3d);
@@ -412,7 +390,8 @@ void x3d_test() {
       x3d_draw_line_black(&test.context, clip + i, clip + ((i + 1) % 4));
     }
 
-    x3d_prism2d_clip(prism2d, r, &test.context);
+    //x3d_prism2d_clip(prism2d, r, &test.context);
+    clip_prism2d(prism2d, r, &test.context);
     x3d_renderdevice_flip(&test.device);
 
     X3D_Vex3D_int16 dir = { cam->mat.data[6], cam->mat.data[7], cam->mat.data[8] };
