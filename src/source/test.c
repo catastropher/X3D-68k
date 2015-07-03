@@ -270,11 +270,8 @@ void x3d_test() {
 
   x3d_frustum_from_rendercontext(frustum, &test.context);
 
-  x3d_frustum_print(frustum);
-  X3D_LOG_WAIT(&test.context, "");
 
-
-  x3d_prism_construct(prism3d, 8, 25 * 3, 50 * 3, (X3D_Vex3D_uint8){ 0, 0, 0 });
+  x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
   X3D_Vex2D_int16 clip[4] = {
     { 30, LCD_HEIGHT - 20 },

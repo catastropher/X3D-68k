@@ -281,7 +281,7 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
       if(dist[vertex][plane] < 0) {
         outside[vertex][outside_total[vertex]++] = plane;
         
-        //printf("Dist: %ld\n", dist[vertex][plane]);
+        //printf("Dist: %d\n", dist[vertex][plane]);
         //X3D_LOG_WAIT(context, "Neg!: %ld\n", dist[vertex][plane]);
       }
     }
@@ -300,7 +300,7 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
     int16 min_scale[2] = { 0x7FFF, 0x7FFF };
     X3D_Vex3D_int16 clipped[2] = { prism->v[a], prism->v[b] };
 
-    // If both points are inside are planes, the line is totally visible!
+    // If both points are inside all planes, the line is totally visible!
     if((outside_total[a] | outside_total[b]) == 0) {
       goto project_and_draw;
     }
@@ -311,14 +311,16 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
         int16 min_scale_index = 0;
 
         for(i = 0; i < outside_total[a]; ++i) {
-          int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]) + 1;
+          int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
+          int16 n = abs(dist[b][outside[a][i]]);
 
-          
-
-          if(d < 2)
+          if(n == d)
             continue;
 
-          int16 scale = ((int32)abs(dist[a][outside[a][i]]) << 15) / (d);
+          if(d < 1)
+            continue;
+
+          int16 scale = ((int32)n << 8) / (d);
 
           //printf("Scale: %d\n", scale);
 
@@ -328,9 +330,11 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
           }
         }
 
-        clipped[vertex].x += (((int32)prism->v[b].x - prism->v[a].x) * min_scale[vertex]) >> 15;
-        clipped[vertex].y += (((int32)prism->v[b].y - prism->v[a].y) * min_scale[vertex]) >> 15;
-        clipped[vertex].z += (((int32)prism->v[b].z - prism->v[a].z) * min_scale[vertex]) >> 15;
+        if(min_scale[vertex] != 0x7FFF) {
+          clipped[vertex].x = prism->v[b].x + ((((int32)prism->v[a].x - prism->v[b].x) * min_scale[vertex]) >> 8);
+          clipped[vertex].y = prism->v[b].y + ((((int32)prism->v[a].y - prism->v[b].y) * min_scale[vertex]) >> 8);
+          clipped[vertex].z = prism->v[b].z + ((((int32)prism->v[a].z - prism->v[b].z) * min_scale[vertex]) >> 8);
+        }
       }
 
       SWAP(a, b);
@@ -352,7 +356,7 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
 project_and_draw:
     for(vertex = 0; vertex < 2; ++vertex) {
 
-      if(was_projected[a]) {
+      if(was_projected[a] && 0) {
         if(outside_total[a] == 0) {
           p[vertex] = project[a];
         }
