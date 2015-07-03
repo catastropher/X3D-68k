@@ -270,8 +270,11 @@ void x3d_test() {
 
   x3d_frustum_from_rendercontext(frustum, &test.context);
 
+  x3d_frustum_print(frustum);
+  X3D_LOG_WAIT(&test.context, "");
 
-  x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
+
+  x3d_prism_construct(prism3d, 8, 25 * 4, 50 * 4, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
   X3D_Vex2D_int16 clip[4] = {
     { 30, LCD_HEIGHT - 20 },
@@ -410,7 +413,7 @@ test2:
 
     x3d_renderdevice_flip(&test.device);
 
-    X3D_Vex3D_int32 dir = { cam->mat.data[2], cam->mat.data[5], cam->mat.data[8] };
+    X3D_Vex3D_int32 dir = { (int32)cam->mat.data[2] * 3, (int32)cam->mat.data[5] * 3, (int32)cam->mat.data[8] * 3 };
 
     if(_keytest(RR_UP)) {
       cam->pos.x += dir.x;

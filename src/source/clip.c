@@ -266,7 +266,7 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
   uint16 outside_mask[TOTAL_V];
 
   // Calculate the distance between every point and every edge
-  int32 dist[TOTAL_V][frustum->total_p];
+  int16 dist[TOTAL_V][frustum->total_p];
 
   for(vertex = 0; vertex < TOTAL_V; ++vertex) {
     outside_total[vertex] = 0;
@@ -280,6 +280,8 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
 
       if(dist[vertex][plane] < 0) {
         outside[vertex][outside_total[vertex]++] = plane;
+        
+        //printf("Dist: %ld\n", dist[vertex][plane]);
         //X3D_LOG_WAIT(context, "Neg!: %ld\n", dist[vertex][plane]);
       }
     }
@@ -295,7 +297,7 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
     if((outside_mask[a] & outside_mask[b]) != 0)
       continue;
 
-    int16 min_scale[2];
+    int16 min_scale[2] = { 0x7FFF, 0x7FFF };
     X3D_Vex3D_int16 clipped[2] = { prism->v[a], prism->v[b] };
 
     // If both points are inside are planes, the line is totally visible!
@@ -303,13 +305,22 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
       goto project_and_draw;
     }
 
-#if 0
+#if 1
     for(vertex = 0; vertex < 2; ++vertex) {
       if(outside_total[a] != 0) {
         int16 min_scale_index = 0;
 
         for(i = 0; i < outside_total[a]; ++i) {
-          int16 scale = ((int32)abs(dist[a][outside[a][i]]) << 8) / (abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]));
+          int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]) + 1;
+
+          
+
+          if(d < 2)
+            continue;
+
+          int16 scale = ((int32)abs(dist[a][outside[a][i]]) << 15) / (d);
+
+          //printf("Scale: %d\n", scale);
 
           if(scale < min_scale[vertex]) {
             min_scale[vertex] = scale;
@@ -317,19 +328,19 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
           }
         }
 
-        clipped[vertex].x -= (((int32)prism->v[a].x - prism->v[b].x) * min_scale[vertex]) >> 8;
-        clipped[vertex].y -= (((int32)prism->v[a].y - prism->v[b].y) * min_scale[vertex]) >> 8;
-        clipped[vertex].z -= (((int32)prism->v[a].z - prism->v[b].z) * min_scale[vertex]) >> 8;
+        clipped[vertex].x += (((int32)prism->v[b].x - prism->v[a].x) * min_scale[vertex]) >> 15;
+        clipped[vertex].y += (((int32)prism->v[b].y - prism->v[a].y) * min_scale[vertex]) >> 15;
+        clipped[vertex].z += (((int32)prism->v[b].z - prism->v[a].z) * min_scale[vertex]) >> 15;
       }
 
       SWAP(a, b);
     }
 #endif
 
-#if 0
+#if 1
     // If both of the points were outside, we need to check that the new clip is actually valid
     if(outside_total[a] != 0 && outside_total[b] != 0) {
-      X3D_Vex3D_int16 mid = { (clipped[a].x + clipped[b].x) >> 1, (clipped[a].y + clipped[b].y) >> 1, (clipped[a].z + clipped[b].z) >> 1 };
+      X3D_Vex3D_int16 mid = { (clipped[0].x + clipped[1].x) >> 1, (clipped[0].y + clipped[1].y) >> 1, (clipped[0].z + clipped[1].z) >> 1 };
 
       for(plane = 0; plane < frustum->total_p; ++plane) {
         if(x3d_vex3d_fp0x16_dot(&frustum->p[plane].normal, &mid) - frustum->p[plane].d < 0)
