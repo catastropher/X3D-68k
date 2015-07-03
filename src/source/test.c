@@ -257,7 +257,7 @@ void x3d_test() {
 
   // Initialize the camera
   X3D_Camera* cam = &test.context.cam;
-  cam->pos = (X3D_Vex3D_fp16x16){ 0, -500, 0 };
+  cam->pos = (X3D_Vex3D_fp16x16){ 0, 0, 0 };
   cam->angle = (X3D_Vex3D_angle256){ 0, 0, 0 };
 
   // Allocate some prisms
@@ -274,7 +274,7 @@ void x3d_test() {
   X3D_LOG_WAIT(&test.context, "");
 
 
-  x3d_prism_construct(prism3d, 8, 25 * 4, 50 * 4, (X3D_Vex3D_uint8){ 0, 0, 0 });
+  x3d_prism_construct(prism3d, 8, 25 * 3, 50 * 3, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
   X3D_Vex2D_int16 clip[4] = {
     { 30, LCD_HEIGHT - 20 },
@@ -378,7 +378,7 @@ test2:
     prism3d_temp->draw_edges = 0xFFFFFFFF;
 
     // Move the prism relative to the camera
-    X3D_Vex3D_int16 cam_pos = { cam->pos.x >> 16, cam->pos.y >> 16, cam->pos.z >> 16 };
+    X3D_Vex3D_int16 cam_pos = { cam->pos.x >> 15, cam->pos.y >> 15, cam->pos.z >> 15 };
 
 
     uint16 i;
@@ -413,7 +413,7 @@ test2:
 
     x3d_renderdevice_flip(&test.device);
 
-    X3D_Vex3D_int32 dir = { (int32)cam->mat.data[2] * 3, (int32)cam->mat.data[5] * 3, (int32)cam->mat.data[8] * 3 };
+    X3D_Vex3D_int32 dir = { (int32)cam->mat.data[2] * 4, (int32)cam->mat.data[5] * 4, (int32)cam->mat.data[8] * 4 };
 
     if(_keytest(RR_UP)) {
       cam->pos.x += dir.x;
