@@ -215,3 +215,54 @@ void test_clip(X3D_RenderContext* context) {
   free(frustum);
 }
 
+
+/**
+  Draws a wireframe 3D prism, clipped against a frustum.
+  
+  @param prism      - prism to draw
+  @param frustum    - frustum to clip against
+  @param context    - rendering context to draw to
+*/
+
+#define DIST(_vertex, _plane) dist[_vertex][plane]
+
+void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, X3D_RenderContext* context) {
+	uint16 i, j, k, vertex, plane;
+	const int TOTAL_V = prism->base_v * 2;
+
+	// A list for each vertex that holds which planes it's outside of
+  uint16 outside[TOTAL_V][frustum->total_p];
+	uint16 outside_total[TOTAL_V];
+
+	// Calculate the distance between every point and every edge
+	int32 dist[frustum->total_p][TOTAL_V];
+
+	for(vertex = 0; vertex < TOTAL_V; ++vertex) {
+		outside_total[vertex] = 0;
+
+		for(plane = 0; plane < frustum->total_p; ++plane) {
+      dist[vertex][plane] = x3d_vex3d_int16_dot(&frustum->p[plane].normal, &prism->v[vertex]) + frustum->p[plane].d;
+
+      if(dist[vertex][plane] < 0)
+        outside[vertex][outside_total[vertex]++] = plane;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
