@@ -25,6 +25,7 @@
 #include "X3D_trig.h"
 #include "X3D_segment.h"
 #include "X3D_matrix.h"
+#include "X3D_error.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -256,13 +257,19 @@ void x3d_test() {
 
   // Initialize the camera
   X3D_Camera* cam = &test.context.cam;
-  cam->pos = (X3D_Vex3D_fp16x16){ 0, 0, 0 };
+  cam->pos = (X3D_Vex3D_fp16x16){ 0, -500, 0 };
   cam->angle = (X3D_Vex3D_angle256){ 0, 0, 0 };
 
   // Allocate some prisms
   X3D_Prism* prism3d = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   X3D_Prism* prism3d_temp = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   X3D_Prism2D* prism2d = malloc(sizeof(X3D_Prism2D) + sizeof(X3D_Vex2D_int16) * 50 * 2);
+
+  // Construct the viewing frustum
+  X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 20);
+
+  x3d_frustum_from_rendercontext(frustum, &test.context);
+
 
   x3d_prism_construct(prism3d, 8, 25, 50, (X3D_Vex3D_uint8){ 0, 0, 0 });
 
@@ -359,6 +366,8 @@ void x3d_test() {
   
   
 test2:
+  //X3D_LOG_WAIT(&test.context, "Enter loop\n");
+
   do {
     x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
     x3d_test_copy_prism3d(prism3d_temp, prism3d);
@@ -388,15 +397,20 @@ test2:
     clrscr();
     //x3d_prism_render(prism3d_temp, &test.context);
 
-    for(i = 0; i < 4; i++) {
-      x3d_draw_line_black(&test.context, clip + i, clip + ((i + 1) % 4));
-    }
+    //for(i = 0; i < 4; i++) {
+    //  x3d_draw_line_black(&test.context, clip + i, clip + ((i + 1) % 4));
+    //}
+
+    //X3D_LOG_WAIT(&test.context, "Draw lines\n");
 
     //x3d_prism2d_clip(prism2d, r, &test.context);
-    clip_prism2d(prism2d, r, &test.context);
+    //clip_prism2d(prism2d, r, &test.context);
+
+    x3d_draw_clipped_prism3d_wireframe(prism3d_temp, frustum);
+
     x3d_renderdevice_flip(&test.device);
 
-    X3D_Vex3D_int16 dir = { cam->mat.data[6], cam->mat.data[7], cam->mat.data[8] };
+    X3D_Vex3D_int32 dir = { cam->mat.data[2], cam->mat.data[5], cam->mat.data[8] };
 
     if(_keytest(RR_UP)) {
       cam->pos.x += dir.x;

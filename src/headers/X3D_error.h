@@ -29,6 +29,8 @@
 #define X3D_STACK_TRACE ;
 #define X3D_PARAM(...) ;
 
+#define X3D_LOG_WAIT(_context, _format, ...) {printf(_format, ##__VA_ARGS__); LCD_restore((_context)->screen); while(!_keytest(RR_APPS)); while(_keytest(RR_APPS));}
+
 #else
 
 //=============================================================================
@@ -46,6 +48,9 @@
 
 ///< Put under @ref X3D_STACK_TRACE to add a paramater to the stack trace 
 #define X3D_PARAM(_type, _param) x3d_functioncall_param_add(x3d_functioncall_entry,#_param,_type, &_param);
+
+/// @todo document
+#define X3D_LOG_WAIT(_context, _format, ...) {printf(_format, ##__VA_ARGS__); LCD_restore(_context->screen); while(!_keytest(RR_APPS)); while(_keytest(RR_APPS));}
 
 //=============================================================================
 // Types
