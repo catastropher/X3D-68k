@@ -72,4 +72,5 @@ typedef struct X3D_Prism2D {
 
 void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f);
 void x3d_frustum_from_rendercontext(struct X3D_Frustum* f, struct X3D_RenderContext* context);
+void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, struct X3D_RenderContext* context);
 

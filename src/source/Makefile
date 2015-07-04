@@ -57,7 +57,7 @@ tigcc/X3D.a: $(TIGCC_OBJ_FILES)
 	
 tigcc/%.o: %.c
 	@echo Compiling $<...
-	@$(CC) $(CC_FLAGS) -c -o $@ $< -D__TIGCC_HEADERS__ -O2 -fomit-frame-pointer -mno-bss -Wa,--all-relocs -mregparm=5 -Wa,-l --optimize-code --cut-ranges --reorder-sections --merge-constants -ffunction-sections -fdata-sections -fmerge-all-constants -mpcrel
+	@$(CC) $(CC_FLAGS) -Wall -c -o $@ $< -D__TIGCC_HEADERS__ -O2 -fomit-frame-pointer -mno-bss -Wa,--all-relocs -mregparm=5 -Wa,-l --optimize-code --cut-ranges --reorder-sections --merge-constants -ffunction-sections -fdata-sections -fmerge-all-constants -mpcrel
 	
 install: check-tigcc
 	@echo Installing X3D for tigcc...
