@@ -34,7 +34,7 @@ struct X3D_EngineState;
 typedef struct X3D_Segment {
   uint16 base_v;
   uint16 face_offset;
-  X3D_Vex3D_int16 v[0];
+  X3D_Prism prism;
 } X3D_Segment;
 
 typedef struct X3D_SegmentFace {
@@ -56,7 +56,7 @@ X3D_Segment* x3d_segment_add(struct X3D_EngineState* state, uint16 base_v);
 
 /// @todo document
 static inline X3D_Vex3D_int16* x3d_segment_get_v(X3D_Segment* s) {
-  return s->v;
+  return s->prism.v;
 }
 
 /// @todo document

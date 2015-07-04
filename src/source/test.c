@@ -31,163 +31,6 @@
 #include <tigcclib.h>
 #endif
 
-enum {
-  INSIDE,
-  BOUNDARY,
-  OUTSIDE
-};
-
-/// @todo This should be reorganized into an array of two vertices instead of separate arrays
-typedef struct {
-  _Bool vis;
-  uint16 clip_edge[2];
-  X3D_Vex2D_int16 v[2];
-} Edge;
-
-
-
-_Bool clip_line(X3D_ClipRegion* clip, Edge* edge) {
-  // List of PL id's that each vertex is outside of
-  int16 outside[2][clip->total_pl];
-  
-  // Position in the outside list for each vertex
-  int16 outside_pos[2] = {0, 0};
-  
-  // Distance between each vertex and each line
-  int32 dist[2][clip->total_pl];
-  
-  uint16 line, vertex, i;
-  
-  // Calculate the distance between each vertex and each line
-  for(line = 0; line < clip->total_pl; ++line) {
-    for(vertex = 0; vertex < 2; ++vertex) {
-      dist[vertex][line] = (int32)clip->pl[line].normal.x * edge->v[vertex].x + (int32)clip->pl[line].normal.y * edge->v[vertex].y - clip->pl[line].d;
-    }
-    
-    if(dist[0][line] < 0) {
-      if(dist[1][line] < 0) {
-        // If both vertices fail by the same line, the line is invisible
-        return 0;
-      }
-      else {
-        outside[0][outside_pos[0]++] = line;
-      }
-    }
-    else if(dist[1][line] < 0) {
-      outside[1][outside_pos[1]++] = line;
-    }
-  }
-  
-  // If both points are totally inside, the line is visible
-  if((outside_pos[0] | outside_pos[1]) == 0)
-    return 1;
-    
-  // Minumum scale needed to scale the line by to get the point inside the boundary
-  int16 min_scale[2] = {0x7FFF, 0x7FFF};
-  X3D_Vex2D_int16 clipped[2] = {edge->v[0], edge->v[1]};
-    
-  // We now have a list of lines that each vertex fails against
-  for(vertex = 0; vertex < 2; ++vertex) {
-    if(outside_pos[vertex] != 0) {
-      int16 min_scale_index = 0;
-      
-      for(i = 0; i < outside_pos[vertex]; ++i) {
-        int16 scale = ((int32)abs(dist[vertex][outside[vertex][i]]) << 8) / (abs(dist[vertex ^ 1][outside[vertex][i]]) + abs(dist[vertex][outside[vertex][i]]));
-        
-        if(scale < min_scale[vertex]) {
-          min_scale[vertex] = scale;
-          min_scale_index = outside[vertex][i];
-        }
-      }
-      
-      clipped[vertex].x -= (((int32)edge->v[vertex].x - edge->v[vertex ^ 1].x) * min_scale[vertex]) >> 8;
-      clipped[vertex].y -= (((int32)edge->v[vertex].y - edge->v[vertex ^ 1].y) * min_scale[vertex]) >> 8;
-      edge->clip_edge[vertex] = min_scale_index;
-    }
-    else {
-      edge->clip_edge[vertex] = 0xFFFF;
-    }
-  }
-  
-  // If both of the points were outside, we need to check that the new clip is actually valid
-  if(outside_pos[0] != 0 && outside_pos[1] != 0) {
-    X3D_Vex2D_int16 mid = {(clipped[0].x + clipped[1].x) >> 1, (clipped[0].y + clipped[1].y) >> 1};
-    
-    for(line = 0; line < clip->total_pl; ++line) {
-       if(((int32)clip->pl[line].normal.x * mid.x + (int32)clip->pl[line].normal.y * mid.y - clip->pl[line].d) < 0)
-        return 0;
-    }
-  }
-  
-  edge->v[0] = clipped[0];
-  edge->v[1] = clipped[1];
-  
-  return 1;
-}
-
-// Returns the list of point id's that are part of the given face
-void get_face(int16* dest, int16* total_v, X3D_Prism2D* prism, int16 face) {
-  int16 i;
-  
-  if(face == 0) {
-    *total_v = prism->base_v;
-    
-    for(i = 0; i < prism->base_v; ++i)
-      dest[i] = i;
-  }
-  else if(face == 1) {
-    *total_v = prism->base_v;
-    
-    for(i = 0; i < prism->base_v; ++i)
-      dest[i] = i + prism->base_v;
-  }
-  else {
-    *total_v = 4;
-    
-    dest[0] = i - 2;
-    dest[1] = i - 2 + 1;
-    dest[2] = i - 2 + prism->base_v;
-    dest[3] = i - 2 + 1 + prism->base_v;
-  }
-}
-
-void clip_prism2d(X3D_Prism2D* prism, X3D_ClipRegion* r, X3D_RenderContext* context) {
-  Edge e[prism->base_v * 3];
-  uint16 i;
-  
-  for(i = 0; i < prism->base_v * 3; ++i) {
-    int16 a, b;
-
-    get_edge(prism, i, &a, &b);
-    e[i].v[0] = prism->v[a];
-    e[i].v[1] = prism->v[b];
-    
-    e[i].vis = clip_line(r, e + i);
-    
-    if(e[i].vis)
-      x3d_draw_line_black(context, &e[i].v[0], &e[i].v[1]);
-  }
-  
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #if defined(__TIGCC__) || defined(WIN32)
@@ -198,6 +41,9 @@ typedef struct X3D_TestContext {
   X3D_RenderContext context;
   X3D_EngineState state;
   X3D_RenderDevice device;
+
+  INT_HANDLER old_int_1;
+  INT_HANDLER old_int_5;
 } X3D_TestContext;
 
 void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_RenderContext* context) {
@@ -236,8 +82,7 @@ static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
 #define LCD_HEIGHT 128
 #endif
 
-void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContext* context);
-X3D_ClipRegion* x3d_construct_clipregion(X3D_Vex2D_int16* v, uint16 total_v);
+
 
 void x3d_test() {
   FontSetSys(F_4x6);
@@ -281,7 +126,7 @@ void x3d_test() {
   };
 
 
-  X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
+  //X3D_ClipRegion* r = x3d_construct_clipregion(clip, 4);
   clrscr();
   
   _Bool has_first = 0, has_second = 0;
@@ -290,83 +135,6 @@ void x3d_test() {
   
   X3D_Vex2D first, second;
   int16 inside;
-  
-  Edge edge;
-  
-  goto test2;
-  
-  // Test the new line clipping algorithm
-  do {
-    clrscr();
-    
-    // Draw the clipping region
-    uint16 i;
-    for(i = 0; i < 4; i++) {
-      x3d_draw_line_black(&test.context, clip + i, clip + ((i + 1) % 4));
-    }
-    
-    // Draw the cursor
-    DrawPix(cx, cy, A_NORMAL);
-    
-    if(has_first && has_second) {
-      x3d_draw_line_black(&test.context, &first, &second);
-      printf("clip_line reports %s\n", inside ? "INSIDE" : "OUTSIDE");
-    }
-    
-    x3d_renderdevice_flip(&test.device);
-    
-    if(_keytest(RR_UP))
-      --cy;
-    else if(_keytest(RR_DOWN))
-      ++cy;
-    else if(_keytest(RR_LEFT))
-      --cx;
-    else if(_keytest(RR_RIGHT))
-      ++cx;
-    else if(_keytest(RR_ESC))
-      goto done;
-    else if(_keytest(RR_F1)) {
-      has_first = 0;
-      has_second = 0;
-    }
-    else if(_keytest(RR_ENTER)) {
-      if(!has_first) {
-        first.x = cx;
-        first.y = cy;
-        has_first = 1;
-      }
-      else if(!has_second) {
-        second.x = cx;
-        second.y = cy;
-        has_second = 1;
-        
-        edge.v[0] = first;
-        edge.v[1] = second;
-        
-        inside = clip_line(r, &edge);
-        
-        first = edge.v[0];
-        second = edge.v[1];
-        
-        x3d_renderdevice_flip(&test.device);
-        
-      }
-      
-      while(_keytest(RR_ENTER)) ;
-    }
-  } while(1);
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-test2:
-  //X3D_LOG_WAIT(&test.context, "Enter loop\n");
 
   do {
     x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
