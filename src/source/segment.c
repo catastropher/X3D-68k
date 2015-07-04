@@ -136,7 +136,7 @@ X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
 
   // Initialize all of the faces to not be connected to anything
   s->face_offset = offsetof(X3D_Segment, prism) + sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * base_v * 2;
-  
+
   uint16 i;
   X3D_SegmentFace* f = x3d_segment_get_face(s);
 

@@ -250,7 +250,7 @@ inline void x3d_get_prism3d_edge(X3D_Prism3D* p, uint16 id, uint16* a, uint16* b
   @param frustum    - frustum to clip against
   @param context    - rendering context to draw to
 */
-void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, X3D_RenderContext* context) {
+void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, X3D_RenderContext* context, uint16 select_a, uint16 select_b) {
   //X3D_LOG_WAIT(context, "Planes: %d\n", frustum->total_p);
   
   uint16 i, d, vertex, plane, edge;
@@ -289,9 +289,21 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
 
   //X3D_LOG_WAIT(context, "Dist");
 
-  for(edge = 0; edge < prism->base_v * 3; ++edge) {
+  for(edge = 0; edge < prism->base_v * 3 + 1; ++edge) {
     uint16 a, b;
-    x3d_get_prism3d_edge(prism, edge, &a, &b);
+    
+    if(edge < prism->base_v * 3)
+      x3d_get_prism3d_edge(prism, edge, &a, &b);
+    else {
+      // Draw the selection spinner, if enabled
+      if(select_a != select_b) {
+        a = select_a;
+        b = select_b;
+      }
+      else {
+        break;
+      }
+    }
 
     // If two edges fail by the same plane, we can skip it
     if((outside_mask[a] & outside_mask[b]) != 0)

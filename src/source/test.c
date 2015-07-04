@@ -155,6 +155,12 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   if(_keytest(RR_ESC)) {
     context->quit = 1;
   }
+
+  if(_keytest(RR_F5)) {
+    x3d_selectspinner_select(&context->state.spinner, &context->state, context->state.spinner.selected_segment, context->state.spinner.selected_face + 1);
+    
+    while(_keytest(RR_F5));
+  }
 }
 
 void x3d_test_cleanup(X3D_TestContext* context) {
@@ -179,7 +185,7 @@ void x3d_test() {
 
   // Make some prisms
 
-  X3D_Segment* seg = x3d_segment_add(&test.state, 50);
+  X3D_Segment* seg = x3d_segment_add(&test.state, 8);
 
   X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
@@ -187,7 +193,7 @@ void x3d_test() {
   x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { 0, 0, 0 });
   x3d_prism_construct(&seg2->prism, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { ANG_90, 0, 0 });
 
-  x3d_segment_get_face(seg)->connect_id = 1;
+  //x3d_segment_get_face(seg)->connect_id = 1;
 
   //X3D_Prism* prism3d_rotated = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
 
@@ -197,23 +203,29 @@ void x3d_test() {
 
   //X3D_LOG_WAIT(&test.context, "DIFF: %ld\n", ((void *)seg) - ((void*)seg2));
 
-  if(seg2 == seg || ((void *)seg) - ((void*) seg2) != x3d_segment_needed_size(8)) {
-    X3D_LOG_WAIT(&test.context, "ERROR");
-  }
+  x3d_selectspinner_select(&test.state.spinner, &test.state, 0, 0);
+
+  uint16 last_spin = x3d_get_clock();
 
   do {
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
 
+
     clrscr();
     //x3d_draw_clipped_prism3d_wireframe(prism3d_rotated, frustum, &test.context);
-    
+
     test.context.render_clock = 0;
     x3d_render_segment_wireframe(0, frustum, &test.state, &test.context);
-    printf("Render clock: %d\n", test.context.render_clock);
-
+    printf("%d\n", test.context.render_clock);
+    printf("Face: %d\n", test.state.spinner.selected_face);
 
     x3d_renderdevice_flip(&test.device);
+
+    if(test.state.spinner.selected_segment != SEGMENT_NONE && x3d_get_clock() - last_spin >= 75) {
+      x3d_selectspinner_spin(&test.state.spinner);
+      last_spin = x3d_get_clock();
+    }
 
     x3d_test_handle_keys(&test);
   } while(!test.quit);

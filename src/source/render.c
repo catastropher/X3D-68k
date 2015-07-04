@@ -131,7 +131,13 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
   x3d_test_rotate_prism3d(temp, &seg->prism, &context->cam);
 
   // Draw the prism
-  x3d_draw_clipped_prism3d_wireframe(temp, frustum, context);
+  uint16 select_a = 0, select_b = 0;
+
+  if(id == state->spinner.selected_segment) {
+    x3d_get_selectspinner_selected(&state->spinner, &select_a, &select_b);
+  }
+
+  x3d_draw_clipped_prism3d_wireframe(temp, frustum, context, select_a, select_b);
 
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
@@ -147,3 +153,25 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
   context->render_clock += x3d_get_clock() - start;
 
 }
+
+void x3d_selectspinner_select(X3D_SelectSpinner* spinner, X3D_EngineState* state, uint16 segment, uint16 face) {
+  X3D_Segment* s = x3d_get_segment(state, segment);
+
+  face = x3d_single_wrap(face, s->base_v + 2);
+
+  spinner->selected_segment = segment;
+  spinner->selected_face = face;
+
+  spinner->base_v = (face < 2 ? s->base_v : 4);
+
+  if(face > 1) {
+    spinner->select_data[0] = face - 2;
+    spinner->select_data[1] = x3d_single_wrap(face - 2 + 1, s->base_v);
+    spinner->select_data[2] = x3d_single_wrap(face - 2 + 1, s->base_v) + s->base_v;
+    spinner->select_data[3] = face - 2 + s->base_v;
+  }
+
+  spinner->select_a = 0;
+  spinner->select_b = spinner->base_v / 2;
+}
+

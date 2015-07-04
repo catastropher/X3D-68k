@@ -53,12 +53,25 @@ typedef struct {
   X3D_Vex3D_fp16x16 velocity;     ///< Velocity
 } X3D_Camera;
 
+typedef struct X3D_SelectSpinner {
+  uint16 selected_segment;
+  uint16 selected_face;
+
+  uint16 select_a;
+  uint16 select_b;
+
+  uint16 select_data[4];
+  uint16 base_v;
+} X3D_SelectSpinner;
+
 /// Holds global information for the engine.
 typedef struct X3D_EngineState {
   uint16 frame;             ///< Current frame the engine is on
   uint16 render_step;       ///< Which step the renderer is on
 
   X3D_SegmentTable table;
+
+  X3D_SelectSpinner spinner;
 } X3D_EngineState;
 
 /// A logical screen that is rendered to.
@@ -119,6 +132,8 @@ void x3d_render_segment_wireframe(uint16 id, struct X3D_Frustum* frustum, X3D_En
 
 uint16 x3d_get_clock();
 
+void x3d_selectspinner_select(X3D_SelectSpinner* spinner, X3D_EngineState* state, uint16 segment, uint16 face);
+
 //=============================================================================
 // Static inline functions
 //=============================================================================
@@ -161,5 +176,33 @@ static inline void x3d_list_uint16_create(X3D_List_uint16* list, uint16 size) {
   list->base = malloc(size);
   list->size = 0;
   list->capacity = size;
+}
+
+static inline void x3d_get_selectspinner_selected(X3D_SelectSpinner* spinner, uint16* a, uint16* b) {
+  if(spinner->selected_face == 0) {
+    *a = spinner->select_a;
+    *b = spinner->select_b;
+  }
+  else if(spinner->selected_face == 1) {
+    *a = spinner->select_a + spinner->base_v;
+    *b = spinner->select_b + spinner->base_v;
+  }
+  else {
+    *a = spinner->select_data[spinner->select_a];
+    *b = spinner->select_data[spinner->select_b];
+  }
+}
+
+static inline uint16 x3d_single_wrap(uint16 v, uint16 max) {
+  if(v >= max) {
+    return v - max;
+  }
+
+  return v;
+}
+
+static inline void x3d_selectspinner_spin(X3D_SelectSpinner* spinner) {
+  spinner->select_a = x3d_single_wrap(spinner->select_a + 1, spinner->base_v);
+  spinner->select_b = x3d_single_wrap(spinner->select_b + 1, spinner->base_v);
 }
 
