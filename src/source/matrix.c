@@ -89,7 +89,7 @@ void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *an
 
   X3D_Mat3x3_fp0x16 mul_res;
 
-  x3d_mat3x3_fp0x16_mul(&mul_res, &mat_x, &mat_y);
+  x3d_mat3x3_fp0x16_mul(&mul_res, &mat_y, &mat_x);
 
   memcpy(dest, &mul_res, sizeof(X3D_Mat3x3_fp0x16));
 #endif

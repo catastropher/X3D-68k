@@ -412,15 +412,22 @@ test2:
 
     X3D_Vex3D_int32 dir = { (int32)cam->mat.data[2] * 4, (int32)cam->mat.data[5] * 4, (int32)cam->mat.data[8] * 4 };
 
-    if(_keytest(RR_UP)) {
+    if(_keytest(RR_F1)) {
       cam->pos.x += dir.x;
       cam->pos.y += dir.y;
       cam->pos.z += dir.z;
     }
-    else if(_keytest(RR_DOWN)) {
+    else if(_keytest(RR_F2)) {
       cam->pos.x -= dir.x;
       cam->pos.y -= dir.y;
       cam->pos.z -= dir.z;
+    }
+
+    if(_keytest(RR_UP)) {
+      cam->angle.x++;
+    }
+    else if(_keytest(RR_DOWN)) {
+      cam->angle.x--;
     }
 
     if(_keytest(RR_LEFT)) {
