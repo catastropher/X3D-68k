@@ -33,9 +33,18 @@ struct X3D_EngineState;
 // Structures
 //=============================================================================
 
+typedef struct X3D_BoundSphere {
+  X3D_Vex3D_int16 center;
+  int16 radius;
+} X3D_BoundSphere;
+
+
 /// @todo document
 typedef struct X3D_Segment {
   uint16 base_v;
+
+  X3D_BoundSphere bound;
+
   uint16 face_offset;
   X3D_Prism prism;
 } X3D_Segment;

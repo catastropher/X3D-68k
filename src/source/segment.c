@@ -130,10 +130,12 @@ X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
   
   X3D_Segment* s = (X3D_Segment* )x3d_stack_alloc(&state->table.segment_data, x3d_segment_needed_size(base_v));
 
+  s->base_v = base_v;
+
   x3d_list_uint16_add(&state->table.segment_offset, (uint8* )s - state->table.segment_data.base);
 
   // Initialize all of the faces to not be connected to anything
-  s->face_offset = sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * base_v * 2;
+  s->face_offset = offsetof(X3D_Segment, prism) + sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * base_v * 2;
   
   uint16 i;
   X3D_SegmentFace* f = x3d_segment_get_face(s);
@@ -147,7 +149,8 @@ X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
 
 /**
 * Returns a pointer to a segment given its id.
-* @param
+* @param state  - engine state
+* @param id     - id of the segment
 */
 inline X3D_Segment* x3d_get_segment(X3D_EngineState* state, int id) {
   return (X3D_Segment*)(state->table.segment_data.base + state->table.segment_offset.base[id]);

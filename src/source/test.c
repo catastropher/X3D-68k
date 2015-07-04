@@ -57,6 +57,18 @@ void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_RenderConte
   dest->base_v = p->base_v;
 }
 
+#define TICKS_PER_SECONDS 350
+
+volatile uint16 hardware_timer;
+
+DEFINE_INT_HANDLER(new_auto_int_1) {
+  ++hardware_timer;
+}
+
+uint16 x3d_get_clock() {
+  return hardware_timer;
+}
+
 static void x3d_test_init(X3D_TestContext* context) {
   x3d_enginestate_init(&context->state, 5, 1000);
   x3d_renderdevice_init(&context->device, 240, 128);
@@ -66,8 +78,10 @@ static void x3d_test_init(X3D_TestContext* context) {
   context->old_int_1 = GetIntVec(AUTO_INT_1);
   context->old_int_5 = GetIntVec(AUTO_INT_5);
 
-  SetIntVec(AUTO_INT_1, DUMMY_HANDLER);
+  SetIntVec(AUTO_INT_1, new_auto_int_1);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+
+  hardware_timer = 0;
 
   // We don't want to quit yet!
   context->quit = 0;
@@ -151,6 +165,7 @@ void x3d_test_cleanup(X3D_TestContext* context) {
   SetIntVec(AUTO_INT_5, context->old_int_5);
 }
 
+
 void x3d_test() {
   X3D_TestContext test;
   x3d_test_init(&test);
@@ -164,26 +179,39 @@ void x3d_test() {
 
   // Make some prisms
 
-  X3D_Segment* seg = x3d_segment_add(&test.state, 8);
+  X3D_Segment* seg = x3d_segment_add(&test.state, 50);
 
   X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
   X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { 0, 0, 0 });
+  x3d_prism_construct(&seg2->prism, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { ANG_90, 0, 0 });
 
-  X3D_Prism* prism3d_rotated = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+  x3d_segment_get_face(seg)->connect_id = 1;
+
+  //X3D_Prism* prism3d_rotated = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
 
   // Construct the viewing frustum
   X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 20);
   x3d_frustum_from_rendercontext(frustum, &test.context);
+
+  //X3D_LOG_WAIT(&test.context, "DIFF: %ld\n", ((void *)seg) - ((void*)seg2));
+
+  if(seg2 == seg || ((void *)seg) - ((void*) seg2) != x3d_segment_needed_size(8)) {
+    X3D_LOG_WAIT(&test.context, "ERROR");
+  }
 
   do {
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
 
     clrscr();
-    x3d_test_rotate_prism3d(prism3d_rotated, prism3d, cam);
-    x3d_draw_clipped_prism3d_wireframe(prism3d_rotated, frustum, &test.context);
+    //x3d_draw_clipped_prism3d_wireframe(prism3d_rotated, frustum, &test.context);
+    
+    test.context.render_clock = 0;
+    x3d_render_segment_wireframe(0, frustum, &test.state, &test.context);
+    printf("Render clock: %d\n", test.context.render_clock);
+
 
     x3d_renderdevice_flip(&test.device);
 
@@ -192,7 +220,7 @@ void x3d_test() {
 
   free(frustum);
   //free(prism3d);
-  free(prism3d_rotated);
+  //free(prism3d_rotated);
 
   x3d_test_cleanup(&test);
 }

@@ -85,12 +85,17 @@ typedef struct X3D_RenderContext {
 
   X3D_EngineState* state;
 
+  uint16 render_clock;
+
 } X3D_RenderContext;
 
 /// A physical device to render to
 typedef struct X3D_RenderDevice {
   uint8* dbuf;    ///< Double buffer
 } X3D_RenderDevice;
+
+struct X3D_Segment;
+struct X3D_Frustum;
 
 //=============================================================================
 // Function declarations
@@ -109,6 +114,10 @@ void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* 
 
 void x3d_enginestate_init(X3D_EngineState* state, uint16 max_segments, uint16 seg_pool_size);
 void x3d_enginestate_cleanup(X3D_EngineState* state);
+
+void x3d_render_segment_wireframe(uint16 id, struct X3D_Frustum* frustum, X3D_EngineState* state, X3D_RenderContext* context);
+
+uint16 x3d_get_clock();
 
 //=============================================================================
 // Static inline functions

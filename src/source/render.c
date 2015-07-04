@@ -19,6 +19,7 @@
 #include "X3D_vector.h"
 #include "X3D_render.h"
 #include "X3D_trig.h"
+#include "X3D_clip.h"
 
 #ifdef __TIGCC__
 #include <extgraph/extgraph.h>
@@ -115,3 +116,34 @@ void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* 
     v->y = context->pos.y + context->h - 1;
 }
 
+void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
+
+void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineState* state, X3D_RenderContext* context) {
+  uint16 i;
+
+  //X3D_LOG_WAIT(context, "Enter %d\n", id);
+
+  uint16 start = x3d_get_clock();
+
+  X3D_Segment* seg = x3d_get_segment(state, id);
+  X3D_Prism* temp = alloca(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * seg->prism.base_v * 2);
+  
+  x3d_test_rotate_prism3d(temp, &seg->prism, &context->cam);
+
+  // Draw the prism
+  x3d_draw_clipped_prism3d_wireframe(temp, frustum, context);
+
+  X3D_SegmentFace* face = x3d_segment_get_face(seg);
+
+  for(i = 0; i < x3d_segment_total_f(seg); ++i) {
+    if(face[i].connect_id != SEGMENT_NONE ) {
+
+      //X3D_LOG_WAIT(context, "FACE ID: %d\n", face[i].connect_id);
+
+      x3d_render_segment_wireframe(face[i].connect_id, frustum, state, context);
+    }
+  }
+
+  context->render_clock += x3d_get_clock() - start;
+
+}
