@@ -134,3 +134,11 @@ X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
   return (X3D_Segment *)s;
 }
 
+/**
+* Returns a pointer to a segment given its id.
+* @param
+*/
+inline X3D_Segment* x3d_get_segment(X3D_EngineState* state, int id) {
+  return (X3D_Segment*)(state->table.segment_data.base + state->table.segment_offset.base[id]);
+}
+

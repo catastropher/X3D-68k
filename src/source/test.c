@@ -166,6 +166,8 @@ void x3d_test() {
 
   X3D_Segment* seg = x3d_segment_add(&test.state, 8);
 
+  X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
+
   X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { 0, 0, 0 });
 
@@ -175,6 +177,9 @@ void x3d_test() {
   X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 20);
   x3d_frustum_from_rendercontext(frustum, &test.context);
 
+  if(x3d_get_segment(&test.state, 0) != seg || x3d_get_segment(&test.state, 1) != seg2) {
+    X3D_LOG_WAIT(&test.context, "Error getting seg");
+  }
 
   do {
     // Construct the rotation matrix
@@ -197,3 +202,4 @@ void x3d_test() {
 }
 
 #endif
+

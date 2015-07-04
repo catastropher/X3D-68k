@@ -49,6 +49,7 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3
 void x3d_prism_render(const X3D_Prism* prism, struct X3D_RenderContext* context);
 
 X3D_Segment* x3d_segment_add(struct X3D_EngineState* state, uint16 base_v);
+X3D_Segment* x3d_get_segment(struct X3D_EngineState* state, int id);
 
 //=============================================================================
 // Static inline functions
