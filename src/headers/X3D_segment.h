@@ -20,6 +20,9 @@
 #include "X3D_vector.h"
 #include "X3D_geo.h"
 
+///< Indicates no segment (used to indicate no segment is connected to a face)
+#define SEGMENT_NONE 0xFFFF
+
 //=============================================================================
 // Forward declarations
 //=============================================================================

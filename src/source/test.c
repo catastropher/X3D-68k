@@ -177,10 +177,6 @@ void x3d_test() {
   X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 20);
   x3d_frustum_from_rendercontext(frustum, &test.context);
 
-  if(x3d_get_segment(&test.state, 0) != seg || x3d_get_segment(&test.state, 1) != seg2) {
-    X3D_LOG_WAIT(&test.context, "Error getting seg");
-  }
-
   do {
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
