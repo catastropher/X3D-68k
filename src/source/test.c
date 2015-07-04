@@ -143,6 +143,14 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   }
 }
 
+void x3d_test_cleanup(X3D_TestContext* context) {
+  x3d_renderdevice_cleanup(&context->device);
+  x3d_enginestate_cleanup(&context->state);
+
+  SetIntVec(AUTO_INT_1, context->old_int_1);
+  SetIntVec(AUTO_INT_5, context->old_int_5);
+}
+
 void x3d_test() {
   X3D_TestContext test;
   x3d_test_init(&test);
@@ -155,7 +163,10 @@ void x3d_test() {
   cam->angle = (X3D_Vex3D_angle256){ 0, 0, 0 };
 
   // Make some prisms
-  X3D_Prism* prism3d = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+
+  X3D_Segment* seg = x3d_segment_add(&test.state, 8);
+
+  X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
   x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { 0, 0, 0 });
 
   X3D_Prism* prism3d_rotated = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
@@ -163,6 +174,7 @@ void x3d_test() {
   // Construct the viewing frustum
   X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 20);
   x3d_frustum_from_rendercontext(frustum, &test.context);
+
 
   do {
     // Construct the rotation matrix
@@ -177,13 +189,11 @@ void x3d_test() {
     x3d_test_handle_keys(&test);
   } while(!test.quit);
 
-  x3d_renderdevice_cleanup(&test.device);
-  x3d_enginestate_cleanup(&test.state);
+  free(frustum);
+  //free(prism3d);
+  free(prism3d_rotated);
 
-  SetIntVec(AUTO_INT_1, test.old_int_1);
-  SetIntVec(AUTO_INT_5, test.old_int_5);
-
-  
+  x3d_test_cleanup(&test);
 }
 
 #endif

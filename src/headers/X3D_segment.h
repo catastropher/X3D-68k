@@ -76,7 +76,7 @@ static inline uint16 x3d_segment_total_f(X3D_Segment* s) {
 
 /// @todo document
 static inline uint16 x3d_segment_needed_size(uint16 base_v) {
-  return sizeof(X3D_Segment) + base_v * 2 * sizeof(X3D_Vex3D_int16) +
+  return sizeof(X3D_Segment) + sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * base_v * 2 +
     (base_v + 2) * sizeof(X3D_SegmentFace);
 }
 
