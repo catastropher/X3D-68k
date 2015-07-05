@@ -218,8 +218,6 @@ void test_clip(X3D_RenderContext* context) {
   free(frustum);
 }
 
-typedef X3D_Prism X3D_Prism3D;
-
 inline void x3d_get_prism3d_edge(X3D_Prism3D* p, uint16 id, uint16* a, uint16* b) {
   if(id < p->base_v) {
     *a = id;

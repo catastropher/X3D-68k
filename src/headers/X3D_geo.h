@@ -17,9 +17,10 @@
 
 #include "X3D_fix.h"
 #include "X3D_vector.h"
+#include "X3D_prism.h"
 
 //=============================================================================
-// Structures
+// Types
 //=============================================================================
 
 /// A 3D polygon with a variable number of points.
@@ -52,19 +53,6 @@ typedef struct X3D_Frustum {
   uint16 total_p;     ///< Total number of planes
   X3D_Plane p[0];     ///< Planes (variable number)
 } X3D_Frustum;
-
-/// A prism i.e. a variable-sized 3D shape with two bases that have the same
-/// number of points.
-/// @note Despite the name, an X3D_Prism doesn't have to have congruent,
-/// parallel bases like the mathematical definition. The only constraint
-/// is that the prism must remain convex for it to work properly with the rest
-/// of the engine and both bases have to have the same number of points.
-/// @note This is a variable-sized data structure!
-typedef struct {
-  uint32 draw_edges;        ///< Bitfield of which edges should be drawn
-  uint16 base_v;            ///< Number of vertices in each base
-  X3D_Vex3D_int16 v[0];     ///< Vertices (variable number)
-} X3D_Prism;
 
 
 

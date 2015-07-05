@@ -35,8 +35,6 @@
 
 #if defined(__TIGCC__) || defined(WIN32)
 
-typedef X3D_Prism X3D_Prism3D;
-
 typedef struct X3D_TestContext {
   X3D_RenderContext context;
   X3D_EngineState state;
