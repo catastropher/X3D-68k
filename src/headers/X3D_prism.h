@@ -29,7 +29,7 @@
 /// is that the prism must remain convex for it to work properly with the rest
 /// of the engine and both bases have to have the same number of points.
 /// @note This is a variable-sized data structure!
-typedef struct {
+typedef struct X3D_Prism3D {
   uint32 draw_edges;        ///< Bitfield of which edges should be drawn
   uint16 base_v;            ///< Number of vertices in each base
   X3D_Vex3D_int16 v[0];     ///< Vertices (variable number)
@@ -44,7 +44,12 @@ enum {
   SIDE_FACE_0 = 2
 };
 
+struct X3D_Polygon3D;
+
 //=============================================================================
 // Prototypes
 //=============================================================================
+
+void x3d_get_prism3d_face(struct X3D_Polygon3D* dest, X3D_Prism3D* prism, uint16 face);
+void x3d_set_prism3d_face(struct X3D_Polygon3D* src, X3D_Prism3D* prism, uint16 face);
 
