@@ -37,7 +37,7 @@ typedef struct X3D_Polygon2D {
   X3D_Vex2D_int16 v[0];   ///< Vertices (variable number)
 } X3D_Polygon2D;
 
-/// A plane described by the equation ax + by + cz + d = 0, where <a, b, c>
+/// A plane described by the equation ax + by + cz - d = 0, where <a, b, c>
 /// is the surface normal and d is the perpendicular distance from the origin.
 typedef struct X3D_Plane {
   X3D_Vex3D_fp0x16 normal;    ///< Surface normal (a vector perpendicular to the plane)

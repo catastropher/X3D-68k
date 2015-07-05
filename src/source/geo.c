@@ -40,3 +40,13 @@ void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X
   p->d = x3d_vex3d_int16_dot(&p->normal, a);
 }
 
+/**
+* Returns the (signed) distance from a point to a plane. A positive distance
+* means the point is on the normal facing side. A positive sign means it's on
+* the opposite side.
+*
+
+*/
+int16 x3d_distance_to_plane(X3D_Plane* plane, X3D_Vex3D_int16* v) {
+  return x3d_vex3d_fp0x16_dot(&plane->normal, v) - plane->d;
+}

@@ -84,12 +84,18 @@ void x3d_set_prism3d_face(X3D_Polygon3D* src, X3D_Prism3D* prism, uint16 face) {
 *
 * @param p      - the polygon to move
 * @param dist   - the signed distance to move the polygon
+*
+* @return nothing
 */
 void x3d_move_polygon3d_along_normal(X3D_Polygon3D* p, int16 dist) {
   X3D_Plane plane;
   uint16 i;
 
   x3d_plane_construct(&plane, p->v, p->v + 1, p->v + 2);
+
+  // Make sure out normal points toward the center
+
+  //if(SIGNOF(plane.normal.x) != SIGNOF(plane.normal)
 
   X3D_Vex3D_int16 add = {
     ((int32)dist * plane.normal.x) >> X3D_NORMAL_SHIFT,
@@ -102,4 +108,3 @@ void x3d_move_polygon3d_along_normal(X3D_Polygon3D* p, int16 dist) {
     p->v[i] = vex3d_int16_add(p->v + i, &add);
   }
 }
-

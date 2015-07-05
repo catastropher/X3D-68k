@@ -175,6 +175,22 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     while(_keytest(RR_F6));
 
   }
+
+  if(_keytest(RR_F7)) {
+    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 20);
+
+    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_Prism* prism = &s->prism;
+
+    x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_move_polygon3d_along_normal(poly, -100);
+    x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
+
+    free(poly);
+
+    while(_keytest(RR_F6));
+
+  }
 }
 
 void x3d_test_cleanup(X3D_TestContext* context) {
