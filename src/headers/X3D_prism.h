@@ -53,5 +53,6 @@ struct X3D_Polygon3D;
 void x3d_get_prism3d_face(struct X3D_Polygon3D* dest, X3D_Prism3D* prism, uint16 face);
 void x3d_set_prism3d_face(struct X3D_Polygon3D* src, X3D_Prism3D* prism, uint16 face);
 
-void x3d_move_polygon3d_along_normal(struct X3D_Polygon3D* p, int16 dist);
+void x3d_move_polygon3d_along_normal(struct X3D_Polygon3D* p, int16 dist, X3D_Vex3D_int16* center);
+void x3d_get_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D_int16* dest);
 

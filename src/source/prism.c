@@ -87,15 +87,18 @@ void x3d_set_prism3d_face(X3D_Polygon3D* src, X3D_Prism3D* prism, uint16 face) {
 *
 * @return nothing
 */
-void x3d_move_polygon3d_along_normal(X3D_Polygon3D* p, int16 dist) {
+void x3d_move_polygon3d_along_normal(X3D_Polygon3D* p, int16 dist, X3D_Vex3D_int16* center) {
   X3D_Plane plane;
   uint16 i;
 
   x3d_plane_construct(&plane, p->v, p->v + 1, p->v + 2);
 
   // Make sure out normal points toward the center
-
-  //if(SIGNOF(plane.normal.x) != SIGNOF(plane.normal)
+  if(x3d_distance_to_plane(&plane, center) < 0) {
+    plane.normal.x = -plane.normal.x;
+    plane.normal.y = -plane.normal.y;
+    plane.normal.z = -plane.normal.z;
+  }
 
   X3D_Vex3D_int16 add = {
     ((int32)dist * plane.normal.x) >> X3D_NORMAL_SHIFT,
@@ -108,3 +111,28 @@ void x3d_move_polygon3d_along_normal(X3D_Polygon3D* p, int16 dist) {
     p->v[i] = vex3d_int16_add(p->v + i, &add);
   }
 }
+
+/**
+* Calculates the center of a prism.
+*
+* @param prism    - prism
+* @param dest     - vector to write center to
+*
+* @return nothing
+*/
+void x3d_get_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D_int16* dest) {
+  uint16 i;
+  
+  X3D_Vex3D_int32 center =  { 0, 0, 0 };
+
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    center.x += prism->v[i].x;
+    center.y += prism->v[i].y;
+    center.z += prism->v[i].z;
+  }
+
+  dest->x = center.x / (prism->base_v * 2);
+  dest->y = center.y / (prism->base_v * 2);
+  dest->z = center.z / (prism->base_v * 2);
+}
+

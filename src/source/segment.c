@@ -64,7 +64,6 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3
 
     x3d_vex3d_int16_rotate(&rot, &s->v[i], &mat);
     s->v[i] = rot;
-    s->v[i].z += 200;
   }
 
   s->draw_edges = 0xFFFFFFFF;

@@ -37,16 +37,20 @@ void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X
   x3d_vex3d_fp0x16_cross(&p->normal, &v1, &v2);
 
   // D = (AX + BY + CZ)
-  p->d = x3d_vex3d_int16_dot(&p->normal, a);
+  p->d = x3d_vex3d_int16_dot(&p->normal, a) >> X3D_NORMAL_SHIFT;
 }
 
 /**
 * Returns the (signed) distance from a point to a plane. A positive distance
 * means the point is on the normal facing side. A positive sign means it's on
-* the opposite side.
+* the opposite side. 0 means that the point is directly on the plane.
 *
-
+* @param plane    - the plane
+* @param v        - point to test
+*
+* @return The distance to the plane
 */
 int16 x3d_distance_to_plane(X3D_Plane* plane, X3D_Vex3D_int16* v) {
   return x3d_vex3d_fp0x16_dot(&plane->normal, v) - plane->d;
 }
+

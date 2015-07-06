@@ -57,4 +57,4 @@ typedef struct X3D_Frustum {
 
 
 void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
-
+int16 x3d_distance_to_plane(X3D_Plane* plane, X3D_Vex3D_int16* v);
