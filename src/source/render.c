@@ -141,6 +141,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
 
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
+#if 0
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
     if(face[i].connect_id != SEGMENT_NONE ) {
 
@@ -149,6 +150,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
       x3d_render_segment_wireframe(face[i].connect_id, frustum, state, context);
     }
   }
+#endif
 
   context->render_clock += x3d_get_clock() - start;
 

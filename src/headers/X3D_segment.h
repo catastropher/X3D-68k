@@ -42,6 +42,7 @@ typedef struct X3D_BoundSphere {
 /// @todo document
 typedef struct X3D_Segment {
   uint16 base_v;
+  uint16 id;
 
   X3D_BoundSphere bound;
 

@@ -131,7 +131,7 @@ X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
 
   s->base_v = base_v;
 
-  x3d_list_uint16_add(&state->table.segment_offset, (uint8* )s - state->table.segment_data.base);
+  s->id = x3d_list_uint16_add(&state->table.segment_offset, (uint8* )s - state->table.segment_data.base);
 
   // Initialize all of the faces to not be connected to anything
   s->face_offset = offsetof(X3D_Segment, prism) + sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * base_v * 2;
