@@ -155,3 +155,8 @@ inline X3D_Segment* x3d_get_segment(X3D_EngineState* state, int id) {
   return (X3D_Segment*)(state->table.segment_data.base + state->table.segment_offset.base[id]);
 }
 
+// Returns the total number of segments in an enginestate
+uint16 x3d_get_total_segments(X3D_EngineState* state) {
+  return state->table.segment_offset.size;
+}
+
