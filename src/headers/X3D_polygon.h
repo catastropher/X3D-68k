@@ -33,3 +33,11 @@ typedef struct X3D_Polygon2D {
   X3D_Vex2D_int16 v[0];   ///< Vertices (variable number)
 } X3D_Polygon2D;
 
+
+//=============================================================================
+// Function prototypes
+//=============================================================================
+
+void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D_int16* center);
+void x3d_translate_polygon(X3D_Polygon3D* poly, X3D_Vex3D_int16* v);
+
