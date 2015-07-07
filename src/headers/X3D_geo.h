@@ -18,24 +18,11 @@
 #include "X3D_fix.h"
 #include "X3D_vector.h"
 #include "X3D_prism.h"
+#include "X3D_polygon.h"
 
 //=============================================================================
 // Types
 //=============================================================================
-
-/// A 3D polygon with a variable number of points.
-/// @note This is a variable-sized data structure!
-typedef struct X3D_Polygon3D {
-  uint16 total_v;         ///< Total number of vertices
-  X3D_Vex3D_int16 v[0];   ///< Vertices (variable number)
-} X3D_Polygon3D;
-
-/// A 2D polygon with a variable number of points.
-/// @note This is a variable-sized data structure!
-typedef struct X3D_Polygon2D {
-  uint16 total_v;         ///< Total number of vertices
-  X3D_Vex2D_int16 v[0];   ///< Vertices (variable number)
-} X3D_Polygon2D;
 
 /// A plane described by the equation ax + by + cz - d = 0, where <a, b, c>
 /// is the surface normal and d is the perpendicular distance from the origin.
