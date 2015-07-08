@@ -52,6 +52,7 @@ typedef struct X3D_Segment {
 
 typedef struct X3D_SegmentFace {
   uint16 connect_id;
+  X3D_Plane plane;
 } X3D_SegmentFace;
 
 

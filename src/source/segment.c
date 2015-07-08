@@ -160,3 +160,15 @@ uint16 x3d_get_total_segments(X3D_EngineState* state) {
   return state->table.segment_offset.size;
 }
 
+// Calculates the plane equations for every face in a Segment
+void x3d_calculate_segment_normals(X3D_Segment* s) {
+  uint16 i;
+
+  // Create a polygon that big enough to hold the segment's largest face
+  X3D_Polygon3D* poly = ALLOCA_POLYGON3D(s->base_v);
+
+  for(i = 0; i < x3d_segment_total_f(s); ++i) {
+    //x3d_get_prism3d_face(poly, s);
+  }
+}
+

@@ -54,3 +54,4 @@ int16 x3d_distance_to_plane(X3D_Plane* plane, X3D_Vex3D_int16* v) {
   return x3d_vex3d_fp0x16_dot(&plane->normal, v) - plane->d;
 }
 
+

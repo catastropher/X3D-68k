@@ -21,6 +21,13 @@
 #include "X3D_polygon.h"
 
 //=============================================================================
+// Defines
+//=============================================================================
+
+#define ALLOCA_POLYGON3D(_total_v) alloca(x3d_polygon3d_needed_size(_total_v))
+
+
+//=============================================================================
 // Types
 //=============================================================================
 
@@ -42,6 +49,19 @@ typedef struct X3D_Frustum {
 } X3D_Frustum;
 
 
+//=============================================================================
+// Function prototypes
+//=============================================================================
 
 void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
 int16 x3d_distance_to_plane(X3D_Plane* plane, X3D_Vex3D_int16* v);
+
+
+//=============================================================================
+// Static inline functions
+//=============================================================================
+
+// Returns the size needed to store a Polygon3D with the given number of points
+static inline uint16 x3d_polygon3d_needed_size(uint16 total_v) {
+  return sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * total_v;
+}
