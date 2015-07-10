@@ -51,7 +51,7 @@ void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D_int16* center) {
 *
 * @return nothing
 */
-void x3d_translate_polygon(X3D_Polygon3D* poly, X3D_Vex3D_int16* v) {
+void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Vex3D_int16* v) {
   uint16 i;
   
   for(i = 0; i < poly->total_v; ++i) {
@@ -59,3 +59,10 @@ void x3d_translate_polygon(X3D_Polygon3D* poly, X3D_Vex3D_int16* v) {
   }
 }
 
+void x3d_scale_polygon3d(X3D_Polygon3D* poly, fp8x8 scale) {
+  X3D_Vex3D_int16 center;
+
+  // Move the polygon to its relative center
+  x3d_polygon3d_center(poly, &center);
+
+}

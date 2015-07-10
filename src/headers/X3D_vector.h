@@ -51,6 +51,8 @@ typedef struct X3D_Vex3D_int32 {
   int32 z;
 } X3D_Vex3D_int32;
 
+typedef X3D_Vex3D_int16 Vex3D;
+
 /// A 3D vector with fp8x8 components.
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp8x8;
 
@@ -128,5 +130,9 @@ static inline X3D_Vex3D_int16 vex3d_int16_sub(X3D_Vex3D_int16* a, X3D_Vex3D_int1
   X3D_STACK_TRACE;
   
   return (X3D_Vex3D_int16){a->x - b->x, a->y - b->y, a->z - b->z};
+}
+
+static inline X3D_Vex3D_int16 vneg16(Vex3D* v) {
+  return (Vex3D) { -v->x, -v->y, -v->z };
 }
 

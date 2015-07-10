@@ -39,5 +39,5 @@ typedef struct X3D_Polygon2D {
 //=============================================================================
 
 void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D_int16* center);
-void x3d_translate_polygon(X3D_Polygon3D* poly, X3D_Vex3D_int16* v);
+void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Vex3D_int16* v);
 
