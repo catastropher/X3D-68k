@@ -212,9 +212,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
     x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
-
     x3d_polygon3d_scale(poly, 225);
-
     x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
 
     free(poly);
@@ -234,35 +232,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
     x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
-
-    uint16 i;
-
-    X3D_Vex3D_int32 poly_center = { 0, 0, 0 };
-
-    for(i = 0; i < poly->total_v; ++i) {
-      poly_center.x += poly->v[i].x;
-      poly_center.y += poly->v[i].y;
-      poly_center.z += poly->v[i].z;
-    }
-
-    poly_center.x /= poly->total_v;
-    poly_center.y /= poly->total_v;
-    poly_center.z /= poly->total_v;
-
-    for(i = 0; i < poly->total_v; ++i) {
-      poly->v[i].x -= poly_center.x;
-      poly->v[i].y -= poly_center.y;
-      poly->v[i].z -= poly_center.z;
-
-      poly->v[i].x = ((int32)poly->v[i].x * (256 + (256 - 225))) >> 8;
-      poly->v[i].y = ((int32)poly->v[i].y * (256 + (256 - 225))) >> 8;
-      poly->v[i].z = ((int32)poly->v[i].z * (256 + (256 - 225))) >> 8;
-
-      poly->v[i].x += poly_center.x;
-      poly->v[i].y += poly_center.y;
-      poly->v[i].z += poly_center.z;
-    }
-
+    x3d_polygon3d_scale(poly, 256 + (256 - 225));
     x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
 
     free(poly);
