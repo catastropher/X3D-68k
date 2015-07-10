@@ -59,10 +59,30 @@ void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Vex3D_int16* v) {
   }
 }
 
-void x3d_scale_polygon3d(X3D_Polygon3D* poly, fp8x8 scale) {
-  X3D_Vex3D_int16 center;
+
+/**
+* Scales a polygon, relative to its center.
+*
+* @param poly     - polygon
+* @param scale    - scaling factor between 0 and 1 (as an fp8x8)
+*
+* @return nothing
+*/
+void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale) {
+  X3D_Vex3D_int16 center, ncenter;
+  uint16 i;
 
   // Move the polygon to its relative center
   x3d_polygon3d_center(poly, &center);
+  ncenter = vneg16(&center);
+  x3d_polygon3d_translate(poly, &ncenter);
 
+  // Scale each vertex
+  for(i = 0; i < poly->total_v; ++i) {
+    poly->v[i] = vscale16(poly->v + i, scale);
+  }
+
+  // Move it back to its absolute center
+  x3d_polygon3d_translate(poly, &center);
 }
+

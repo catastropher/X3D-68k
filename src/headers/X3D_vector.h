@@ -114,8 +114,8 @@ uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v);
  */
 static inline X3D_Vex3D_int16 vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   X3D_STACK_TRACE;
-  
-  return (X3D_Vex3D_int16){a->x + b->x, a->y + b->y, a->z + b->z};
+
+  return (X3D_Vex3D_int16) { a->x + b->x, a->y + b->y, a->z + b->z };
 }
 
 /**
@@ -128,11 +128,19 @@ static inline X3D_Vex3D_int16 vex3d_int16_add(X3D_Vex3D_int16* a, X3D_Vex3D_int1
 */
 static inline X3D_Vex3D_int16 vex3d_int16_sub(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
   X3D_STACK_TRACE;
-  
-  return (X3D_Vex3D_int16){a->x - b->x, a->y - b->y, a->z - b->z};
+
+  return (X3D_Vex3D_int16) { a->x - b->x, a->y - b->y, a->z - b->z };
 }
 
 static inline X3D_Vex3D_int16 vneg16(Vex3D* v) {
   return (Vex3D) { -v->x, -v->y, -v->z };
+}
+
+static inline X3D_Vex3D_int16 vscale16(Vex3D* v, fp8x8 scale) {
+  return (Vex3D) {
+    ((int32)scale * v->x) >> 8,
+    ((int32)scale * v->y) >> 8,
+    ((int32)scale * v->z) >> 8
+  };
 }
 
