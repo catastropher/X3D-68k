@@ -67,7 +67,7 @@ typedef struct X3D_CustomKey {
 } X3D_KeyLocation;
 
 /// A custom key mapper that maps an X3D key to a keymatrix 
-typedef struct X3D_KeyMapper {
+typedef struct X3D_KeyState {
   X3D_KeyLocation keys[16];
   uint16 state;
 } X3D_KeyState;

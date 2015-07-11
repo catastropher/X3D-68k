@@ -26,6 +26,7 @@
 #include "X3D_segment.h"
 #include "X3D_matrix.h"
 #include "X3D_error.h"
+#include "X3D_keys.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -40,9 +41,29 @@
 #define FontSetSys(...) ;
 #define LCD_WIDTH 240
 #define LCD_HEIGHT 128
+#define RR_LEFT 0,0
+#define RR_RIGHT 0,0
+#define RR_UP 0,0
+#define RR_DOWN 0,0
+#define RR_F1 0,0
+#define RR_F2 0,0
+#define RR_F5 0,0
+#define RR_F7 0,0
+#define RR_ESC 0,0
+#define RR_Q 0,0
+#define RR_W 0,0
+#define RR_E 0,0
+#define RR_R 0,0
 #endif
 
-
+enum {
+  KEY_SCALE_UP = XKEY_CUSTOM1,
+  KEY_SCALE_DOWN = XKEY_CUSTOM2,
+  KEY_TRANSLATE_UP = XKEY_CUSTOM3,
+  KEY_TRANSLATE_DOWN = XKEY_CUSTOM4,
+  KEY_CYCLE_SEGMENT = XKEY_CUSTOM5,
+  KEY_ADD_SEGMENT = XKEY_CUSTOM6
+};
 
 #if defined(__TIGCC__) || defined(WIN32)
 
@@ -51,6 +72,7 @@ typedef struct X3D_TestContext {
   X3D_RenderContext context;
   X3D_EngineState state;
   X3D_RenderDevice device;
+  X3D_KeyState keys;
 
   INT_HANDLER old_int_1;
   INT_HANDLER old_int_5;
@@ -90,6 +112,23 @@ static void x3d_test_init(X3D_TestContext* context) {
 
   SetIntVec(AUTO_INT_1, new_auto_int_1);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+
+  x3d_keystate_map(&context->keys, XKEY_MAP_LEFT, RR_LEFT);
+  x3d_keystate_map(&context->keys, XKEY_MAP_RIGHT, RR_RIGHT);
+  x3d_keystate_map(&context->keys, XKEY_MAP_UP, RR_UP);
+  x3d_keystate_map(&context->keys, XKEY_MAP_DOWN, RR_DOWN);
+  x3d_keystate_map(&context->keys, XKEY_MAP_FORWARD, RR_F1);
+  x3d_keystate_map(&context->keys, XKEY_MAP_BACK, RR_F2);
+  x3d_keystate_map(&context->keys, XKEY_MAP_QUIT, RR_ESC);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM1, RR_Q);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM2, RR_W);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM3, RR_E);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM4, RR_R);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM5, RR_F5);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM6, RR_F7);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM7, RR_ESC);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM8, RR_ESC);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM9, RR_ESC);
 
   hardware_timer = 0;
 
