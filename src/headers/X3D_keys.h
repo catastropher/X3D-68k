@@ -76,6 +76,7 @@ typedef struct X3D_KeyState {
 //=============================================================================
 // Function Prototypes
 //=============================================================================
+void x3d_keystate_update(X3D_KeyState* state);
 _Bool x3d_keystate_down_wait(X3D_KeyState* state, X3D_Key key);
 
 //=============================================================================
