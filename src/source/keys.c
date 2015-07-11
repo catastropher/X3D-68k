@@ -15,6 +15,14 @@
 
 #include "X3D_keys.h"
 
+/**
+* Reads the physical keys on the keypad and updates the keystate.
+*
+* @param    - state to update
+*
+* @return nothing
+* @note Make sure to call this before calling x3d_keystate_down!
+*/
 void x3d_keystate_update(X3D_KeyState* state) {
   uint16 i;
 
@@ -23,5 +31,27 @@ void x3d_keystate_update(X3D_KeyState* state) {
   for(i = 15; i >= 0; --i) {
     state->state = (state->state << 1) | _keytest(state->keys[i].row, state->keys[i].col);
   }
+}
+
+/**
+* Checks if a key is being held down; if it is, it waits until the key is released.
+*
+* @param state    - keystate
+* @param key      - key to check
+*
+* @return nothing
+* @note This calls @ref x3d_keystate_update.
+*/
+_Bool x3d_keystate_down_wait(X3D_KeyState* state, X3D_Key key) {
+  _Bool down;
+  _Bool was_down = 0;
+
+  do {
+    down = x3d_keystate_down(state, key);
+    was_down |= down;
+    x3d_keystate_update(state);
+  } while(down);
+
+  return was_down;
 }
 

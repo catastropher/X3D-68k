@@ -30,6 +30,15 @@ typedef enum {
   XKEY_FORWARD = 16,
   XKEY_BACK = 32,
   XKEY_QUIT = 64,
+  XKEY_CUSTOM1 = 128,
+  XKEY_CUSTOM2 = 256,
+  XKEY_CUSTOM3 = 512,
+  XKEY_CUSTOM4 = 1024,
+  XKEY_CUSTOM5 = 2048,
+  XKEY_CUSTOM6 = 4096,
+  XKEY_CUSTOM7 = 8192,
+  XKEY_CUSTOM8 = 16384,
+  XKEY_CUSTOM9 = 32768,
 } X3D_Key;
 
 typedef enum {
@@ -38,7 +47,17 @@ typedef enum {
   XKEY_MAP_UP = 2,
   XKEY_MAP_DOWN = 3,
   XKEY_MAP_FORWARD = 4,
-  XKEY_MAP_BACKWARD = 5
+  XKEY_MAP_BACK = 5,
+  XKEY_MAP_QUIT = 6,
+  XKEY_MAP_CUSTOM1 = 7,
+  XKEY_MAP_CUSTOM2 = 8,
+  XKEY_MAP_CUSTOM3 = 9,
+  XKEY_MAP_CUSTOM4 = 10,
+  XKEY_MAP_CUSTOM5 = 11,
+  XKEY_MAP_CUSTOM6 = 12,
+  XKEY_MAP_CUSTOM7 = 13,
+  XKEY_MAP_CUSTOM8 = 14,
+  XKEY_MAP_CUSTOM9 = 15,
 } X3D_KeyMap;
 
 /// A custom key, which holds the row and column in the keypad matrix.
@@ -57,7 +76,7 @@ typedef struct X3D_KeyMapper {
 //=============================================================================
 // Function Prototypes
 //=============================================================================
-
+_Bool x3d_keystate_down_wait(X3D_KeyState* state, X3D_Key key);
 
 //=============================================================================
 // Static Inline Functions
