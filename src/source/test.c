@@ -183,10 +183,8 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     X3D_Vex3D_int16 center;
     x3d_get_prism3d_center(prism, &center);
 
-    //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
-
     x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
-    x3d_move_polygon3d_along_normal(poly, -5, &center);
+    x3d_move_polygon3d_along_normal(poly, 5, &center);
     x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
 
     free(poly);
@@ -201,8 +199,6 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     // Get the center of the prism
     X3D_Vex3D_int16 center;
     x3d_get_prism3d_center(prism, &center);
-
-    //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
     x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
     x3d_move_polygon3d_along_normal(poly, -5, &center);
