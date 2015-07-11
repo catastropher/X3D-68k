@@ -31,9 +31,21 @@
 #include <tigcclib.h>
 #endif
 
+// Stuff to make visual studio shut up
+#ifdef WIN32
+#define INT_HANDLER int
+#define GetIntVec(...) 0
+#define DUMMY_HANDLER 0
+#define SetIntVec(...) ;
+#define FontSetSys(...) ;
+#define LCD_WIDTH 240
+#define LCD_HEIGHT 128
+#endif
+
 
 
 #if defined(__TIGCC__) || defined(WIN32)
+
 
 typedef struct X3D_TestContext {
   X3D_RenderContext context;
@@ -94,17 +106,6 @@ static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
   }
 }
 
-// Stuff to make visual studio shut up
-#ifdef WIN32
-#define INT_HANDLER int
-#define GetIntVec(...) 0
-#define DUMMY_HANDLER 0
-#define SetIntVec(...) ;
-#define FontSetSys(...) ;
-#define LCD_WIDTH 240
-#define LCD_HEIGHT 128
-#endif
-
 void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* cam) {
   // Move the prism relative to the camera
   X3D_Vex3D_int16 cam_pos = { cam->pos.x >> 15, cam->pos.y >> 15, cam->pos.z >> 15 };
@@ -121,6 +122,18 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 
   dest->base_v = src->base_v;
 }
+
+#define KEYSHIFT(_key, _shift) ((uint16)_keytest(_key) << (_shift))
+
+enum {
+  XKEY_LEFT = 1,
+  XKEY_RIGHT = 2,
+  XKEY_UP = 4,
+  XKEY_DOWN = 8,
+  XKEY_FORWARD = 16,
+  XKEY_BACK = 32,
+  XKEY_QUIT = 64,
+};
 
 void x3d_test_handle_keys(X3D_TestContext* context) {
   X3D_Camera* cam = &context->context.cam;
