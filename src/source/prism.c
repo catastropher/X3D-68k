@@ -28,7 +28,7 @@
  *
  * @return nothing
 */
-void x3d_get_prism3d_face(X3D_Polygon3D* dest, X3D_Prism3D* prism, uint16 face) {
+void x3d_prism3d_get_face(X3D_Polygon3D* dest, X3D_Prism3D* prism, uint16 face) {
   uint16 i;
   uint16 offset = 0;
 
@@ -60,7 +60,7 @@ void x3d_get_prism3d_face(X3D_Polygon3D* dest, X3D_Prism3D* prism, uint16 face) 
 *
 * @return nothing
 */
-void x3d_set_prism3d_face(X3D_Polygon3D* src, X3D_Prism3D* prism, uint16 face) {
+void x3d_prism3d_set_face(X3D_Polygon3D* src, X3D_Prism3D* prism, uint16 face) {
   uint16 i;
   uint16 offset = 0;
 
@@ -120,7 +120,7 @@ void x3d_move_polygon3d_along_normal(X3D_Polygon3D* p, int16 dist, X3D_Vex3D_int
 *
 * @return nothing
 */
-void x3d_get_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D_int16* dest) {
+void x3d_prism3d_get_center(X3D_Prism3D* prism, X3D_Vex3D_int16* dest) {
   uint16 i;
   
   X3D_Vex3D_int32 center =  { 0, 0, 0 };
