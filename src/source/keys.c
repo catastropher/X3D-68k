@@ -12,3 +12,16 @@
 
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
+
+#include "X3D_keys.h"
+
+void x3d_keystate_update(X3D_KeyState* state) {
+  uint16 i;
+
+  state->state = 0;
+
+  for(i = 15; i >= 0; --i) {
+    state->state = (state->state << 1) | _keytest(state->keys[i].row, state->keys[i].col);
+  }
+}
+

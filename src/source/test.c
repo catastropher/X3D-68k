@@ -125,15 +125,7 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 
 #define KEYSHIFT(_key, _shift) ((uint16)_keytest(_key) << (_shift))
 
-enum {
-  XKEY_LEFT = 1,
-  XKEY_RIGHT = 2,
-  XKEY_UP = 4,
-  XKEY_DOWN = 8,
-  XKEY_FORWARD = 16,
-  XKEY_BACK = 32,
-  XKEY_QUIT = 64,
-};
+
 
 void x3d_test_handle_keys(X3D_TestContext* context) {
   X3D_Camera* cam = &context->context.cam;
