@@ -26,6 +26,7 @@
 #include "X3D_segment.h"
 #include "X3D_matrix.h"
 #include "X3D_error.h"
+#include "X3D_keys.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -40,9 +41,29 @@
 #define FontSetSys(...) ;
 #define LCD_WIDTH 240
 #define LCD_HEIGHT 128
+#define RR_LEFT 0,0
+#define RR_RIGHT 0,0
+#define RR_UP 0,0
+#define RR_DOWN 0,0
+#define RR_F1 0,0
+#define RR_F2 0,0
+#define RR_F5 0,0
+#define RR_F7 0,0
+#define RR_ESC 0,0
+#define RR_Q 0,0
+#define RR_W 0,0
+#define RR_E 0,0
+#define RR_R 0,0
 #endif
 
-
+enum {
+  KEY_SCALE_UP = XKEY_CUSTOM1,
+  KEY_SCALE_DOWN = XKEY_CUSTOM2,
+  KEY_TRANSLATE_UP = XKEY_CUSTOM3,
+  KEY_TRANSLATE_DOWN = XKEY_CUSTOM4,
+  KEY_CYCLE_SEGMENT = XKEY_CUSTOM5,
+  KEY_ADD_SEGMENT = XKEY_CUSTOM6
+};
 
 #if defined(__TIGCC__) || defined(WIN32)
 
@@ -51,6 +72,7 @@ typedef struct X3D_TestContext {
   X3D_RenderContext context;
   X3D_EngineState state;
   X3D_RenderDevice device;
+  X3D_KeyState keys;
 
   INT_HANDLER old_int_1;
   INT_HANDLER old_int_5;
@@ -91,6 +113,23 @@ static void x3d_test_init(X3D_TestContext* context) {
   SetIntVec(AUTO_INT_1, new_auto_int_1);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
 
+  x3d_keystate_map(&context->keys, XKEY_MAP_LEFT, RR_LEFT);
+  x3d_keystate_map(&context->keys, XKEY_MAP_RIGHT, RR_RIGHT);
+  x3d_keystate_map(&context->keys, XKEY_MAP_UP, RR_UP);
+  x3d_keystate_map(&context->keys, XKEY_MAP_DOWN, RR_DOWN);
+  x3d_keystate_map(&context->keys, XKEY_MAP_FORWARD, RR_F1);
+  x3d_keystate_map(&context->keys, XKEY_MAP_BACK, RR_F2);
+  x3d_keystate_map(&context->keys, XKEY_MAP_QUIT, RR_ESC);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM1, RR_Q);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM2, RR_W);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM3, RR_E);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM4, RR_R);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM5, RR_F5);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM6, RR_F7);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM7, RR_ESC);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM8, RR_ESC);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM9, RR_ESC);
+
   hardware_timer = 0;
 
   // We don't want to quit yet!
@@ -125,55 +164,46 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 
 #define KEYSHIFT(_key, _shift) ((uint16)_keytest(_key) << (_shift))
 
-enum {
-  XKEY_LEFT = 1,
-  XKEY_RIGHT = 2,
-  XKEY_UP = 4,
-  XKEY_DOWN = 8,
-  XKEY_FORWARD = 16,
-  XKEY_BACK = 32,
-  XKEY_QUIT = 64,
-};
+
 
 void x3d_test_handle_keys(X3D_TestContext* context) {
   X3D_Camera* cam = &context->context.cam;
   X3D_Vex3D_int32 dir = { (int32)cam->mat.data[2] * 6, (int32)cam->mat.data[5] * 6, (int32)cam->mat.data[8] * 6 };
+  x3d_keystate_update(&context->keys);
 
-  if(_keytest(RR_F1)) {
+  if(x3d_keystate_down(&context->keys, XKEY_FORWARD)) {
     cam->pos.x += dir.x;
     cam->pos.y += dir.y;
     cam->pos.z += dir.z;
   }
-  else if(_keytest(RR_F2)) {
+  else if (x3d_keystate_down(&context->keys, XKEY_BACK)) {
     cam->pos.x -= dir.x;
     cam->pos.y -= dir.y;
     cam->pos.z -= dir.z;
   }
 
-  if(_keytest(RR_UP)) {
+  if (x3d_keystate_down(&context->keys, XKEY_UP)) {
     cam->angle.x += 3;
   }
-  else if(_keytest(RR_DOWN)) {
+  else if (x3d_keystate_down(&context->keys, XKEY_DOWN)) {
     cam->angle.x -= 3;
   }
 
-  if(_keytest(RR_LEFT)) {
+  if (x3d_keystate_down(&context->keys, XKEY_LEFT)) {
     cam->angle.y -= 3;
   }
-  else if(_keytest(RR_RIGHT)) {
+  else if (x3d_keystate_down(&context->keys, XKEY_RIGHT)) {
     cam->angle.y += 3;
   }
-  if(_keytest(RR_ESC)) {
+  if (x3d_keystate_down(&context->keys, XKEY_QUIT)) {
     context->quit = 1;
   }
 
-  if(_keytest(RR_F5)) {
+  if (x3d_keystate_down_wait(&context->keys, KEY_CYCLE_SEGMENT)) {
     x3d_selectspinner_select(&context->state.spinner, &context->state, context->state.spinner.selected_segment, context->state.spinner.selected_face + 1);
-    
-    while(_keytest(RR_F5));
   }
 
-  if(_keytest(RR_E)) {
+  if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_UP)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -181,18 +211,16 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     // Get the center of the prism
     X3D_Vex3D_int16 center;
-    x3d_get_prism3d_center(prism, &center);
+    x3d_prism3d_get_center(prism, &center);
 
-    //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
-
-    x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
-    x3d_move_polygon3d_along_normal(poly, -5, &center);
-    x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
+    x3d_move_polygon3d_along_normal(poly, 5, &center);
+    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
 
     free(poly);
   }
 
-  if(_keytest(RR_R)) {
+  if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_DOWN)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -200,19 +228,17 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     // Get the center of the prism
     X3D_Vex3D_int16 center;
-    x3d_get_prism3d_center(prism, &center);
+    x3d_prism3d_get_center(prism, &center);
 
-    //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
-
-    x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
     x3d_move_polygon3d_along_normal(poly, -5, &center);
-    x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
 
     free(poly);
 
   }
 
-  if(_keytest(RR_W)) {
+  if (x3d_keystate_down(&context->keys, KEY_SCALE_DOWN)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -220,19 +246,19 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     // Get the center of the prism
     X3D_Vex3D_int16 center;
-    x3d_get_prism3d_center(prism, &center);
+    x3d_prism3d_get_center(prism, &center);
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
-    x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
     x3d_polygon3d_scale(poly, 225);
-    x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
 
     free(poly);
 
   }
 
-  if(_keytest(RR_Q)) {
+  if (x3d_keystate_down(&context->keys, KEY_SCALE_UP)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -240,31 +266,30 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     // Get the center of the prism
     X3D_Vex3D_int16 center;
-    x3d_get_prism3d_center(prism, &center);
+    x3d_prism3d_get_center(prism, &center);
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
-    x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
     x3d_polygon3d_scale(poly, 256 + (256 - 225));
-    x3d_set_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
 
     free(poly);
 
   }
 
-#if 1
-  if(_keytest(RR_F7)) {
+  if (x3d_keystate_down_wait(&context->keys, KEY_ADD_SEGMENT)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
     X3D_Prism* prism = &s->prism;
 
     X3D_Vex3D_int16 center;
-    x3d_get_prism3d_center(prism, &center);
+    x3d_prism3d_get_center(prism, &center);
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
-    x3d_get_prism3d_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
     
 
     X3D_Segment* seg = x3d_segment_add(&context->state, poly->total_v);
@@ -275,19 +300,18 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     prism->base_v = poly->total_v;
     
-    x3d_set_prism3d_face(poly, prism, BASE_A);
+    x3d_prism3d_set_face(poly, prism, BASE_A);
     x3d_move_polygon3d_along_normal(poly, -100, &center);
-    x3d_set_prism3d_face(poly, prism, BASE_B);
+    x3d_prism3d_set_face(poly, prism, BASE_B);
 
     context->state.spinner.selected_segment = seg->id;
     context->state.spinner.selected_face = BASE_B;
 
     free(poly);
 
-    while(_keytest(RR_F7));
+    while (x3d_keystate_down(&context->keys, KEY_ADD_SEGMENT));
 
   }
-#endif
 }
 
 void x3d_test_cleanup(X3D_TestContext* context) {
