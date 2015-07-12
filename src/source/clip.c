@@ -678,7 +678,7 @@ project_and_draw:
 #define FIXMUL15(_a, _b) FIXMULN(_a, _b, 15)
 
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
-char clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D* dest) {
+_Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D* dest) {
   int16 i;
   int16 next_point;
   int16 in, next_in;
@@ -878,7 +878,7 @@ char clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D*
 // This routine requires two temporary polygons, one of which the
 // final polygon will be in. This returns the address of which one it
 // is
-char clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* dest) {
+_Bool clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* dest) {
 #if 1
   X3D_Polygon3D* temp[2] = { ALLOCA_POLYGON3D(30), ALLOCA_POLYGON3D(30) };
   int16 current_temp = 0;
@@ -902,7 +902,7 @@ char clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* 
     //if(i == PLANE_LEFT || i == PLANE_RIGHT)
     //	continue;
 
-    if(!clip_polygon_to_plane(poly, &f->p[i], temp[current_temp])) {
+    if(!x3d_clip_polygon3d_to_plane(poly, &f->p[i], temp[current_temp])) {
       dest->total_v = 0;
       return 0;
     }
@@ -913,7 +913,7 @@ char clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* 
 #endif
 
   //return poly->total_v > 2;
-  return clip_polygon_to_plane(poly, &f->p[f->total_p - 1], dest);
+  return x3d_clip_polygon3d_to_plane(poly, &f->p[f->total_p - 1], dest);
 
 #endif
 }
