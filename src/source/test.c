@@ -169,22 +169,23 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 void x3d_test_handle_keys(X3D_TestContext* context) {
   X3D_Camera* cam = &context->context.cam;
   X3D_Vex3D_int32 dir = { (int32)cam->mat.data[2] * 6, (int32)cam->mat.data[5] * 6, (int32)cam->mat.data[8] * 6 };
+  x3d_keystate_update(&context->keys);
 
-  if(_keytest(RR_F1)) {
+  if(x3d_keystate_down(&context->keys, XKEY_FORWARD)) {
     cam->pos.x += dir.x;
     cam->pos.y += dir.y;
     cam->pos.z += dir.z;
   }
-  else if(_keytest(RR_F2)) {
+  else if (x3d_keystate_down(&context->keys, XKEY_BACK)) {
     cam->pos.x -= dir.x;
     cam->pos.y -= dir.y;
     cam->pos.z -= dir.z;
   }
 
-  if(_keytest(RR_UP)) {
+  if (x3d_keystate_down(&context->keys, XKEY_UP)) {
     cam->angle.x += 3;
   }
-  else if(_keytest(RR_DOWN)) {
+  else if (x3d_keystate_down(&context->keys, XKEY_DOWN)) {
     cam->angle.x -= 3;
   }
 

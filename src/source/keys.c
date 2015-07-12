@@ -24,7 +24,7 @@
 * @note Make sure to call this before calling x3d_keystate_down!
 */
 void x3d_keystate_update(X3D_KeyState* state) {
-  uint16 i;
+  int16 i;
 
   state->state = 0;
 
