@@ -189,23 +189,21 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     cam->angle.x -= 3;
   }
 
-  if(_keytest(RR_LEFT)) {
+  if (x3d_keystate_down(&context->keys, XKEY_LEFT)) {
     cam->angle.y -= 3;
   }
-  else if(_keytest(RR_RIGHT)) {
+  else if (x3d_keystate_down(&context->keys, XKEY_RIGHT)) {
     cam->angle.y += 3;
   }
-  if(_keytest(RR_ESC)) {
+  if (x3d_keystate_down(&context->keys, XKEY_QUIT)) {
     context->quit = 1;
   }
 
-  if(_keytest(RR_F5)) {
+  if (x3d_keystate_down_wait(&context->keys, KEY_CYCLE_SEGMENT)) {
     x3d_selectspinner_select(&context->state.spinner, &context->state, context->state.spinner.selected_segment, context->state.spinner.selected_face + 1);
-    
-    while(_keytest(RR_F5));
   }
 
-  if(_keytest(RR_E)) {
+  if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_UP)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -222,7 +220,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     free(poly);
   }
 
-  if(_keytest(RR_R)) {
+  if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_DOWN)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -240,7 +238,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
   }
 
-  if(_keytest(RR_W)) {
+  if (x3d_keystate_down(&context->keys, KEY_SCALE_DOWN)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -260,7 +258,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
   }
 
-  if(_keytest(RR_Q)) {
+  if (x3d_keystate_down(&context->keys, KEY_SCALE_UP)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -280,8 +278,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
   }
 
-#if 1
-  if(_keytest(RR_F7)) {
+  if (x3d_keystate_down_wait(&context->keys, KEY_ADD_SEGMENT)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
@@ -312,10 +309,9 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     free(poly);
 
-    while(_keytest(RR_F7));
+    while (x3d_keystate_down(&context->keys, KEY_ADD_SEGMENT));
 
   }
-#endif
 }
 
 void x3d_test_cleanup(X3D_TestContext* context) {
