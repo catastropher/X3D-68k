@@ -608,12 +608,313 @@ project_and_draw:
   const uint16 TOTAL_F = prism->base_v + 2;
   uint16 edge_list[prism->base_v];
   uint16 edges;
+  X3D_Plane planes[prism->base_v];
+  //uint16 planes;
 
   for(face = 0; face < TOTAL_F; ++i) {
     // For right now, we're only going to try this construction with BASE_A
     if(face == BASE_A) {
       edges = x3d_prism3d_get_edges(prism, face, edge_list);
+
+      uint16 edge = 0xFFFF;
+      // First, find an edge that is not totally invisible
+      for(i = 0; i < edges; ++i) {
+        if(edge_status[i] != EDGE_INVISIBLE) {
+          edge = i;
+          break;
+        }
+      }
+
+      //planes = 0;
+
+      uint16 edge_pos = 0;
+
+      if(edge != 0xFFFF) {
+        do {
+
+
+
+        } while(1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      }
+      else {
+        // Yuck, we have the case where none of the edges are visible
+        // To be worked out later...
+      }
     }
   }
+}
+
+//=============================================================================
+// Old clipping code
+//=============================================================================
+
+
+#define FIXDIV8(_n, _d) (((long)(_n) << 8) / (_d))
+
+#define FIXMULN(_a, _b, _n) (((long)(_a) * (_b)) >> (_n))
+
+
+
+
+#define FIXMUL8(_a, _b) FIXMULN(_a, _b, 8)
+#define FIXMUL15(_a, _b) FIXMULN(_a, _b, 15)
+
+// Clips a polygon against a plane. Returns whether a valid polygon remains.
+char clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D* dest) {
+  int16 i;
+  int16 next_point;
+  int16 in, next_in;
+  int16 dot, next_dot;
+  int16 t;
+
+  int16 out[30];
+  short out_pos = 0;
+
+  dot = x3d_vex3d_fp0x16_dot(&poly->v[0], &plane->normal);
+  in = (dot >= plane->d);
+
+  //printf("Dot: %d\nD: %d\n", dot, plane->d);
+  //print_vex3d(&plane->normal);
+  //print_vex3d(&poly->v[0]);
+  //ngetchx();
+
+  int16 total_outside = !in;
+
+  dest->total_v = 0;
+
+  int16 clipped = 0;
+
+  for(i = 0; i < poly->total_v; i++) {
+    if(clipped == 2) {
+      // A convex polygon can at most have two edges clipped, so if we've reached it
+      // just copy over the other ones (assuming we're back to being inside the poly)
+
+      if(in) {
+
+        for(; i < poly->total_v; i++) {
+          dest->v[dest->total_v] = poly->v[i];
+        }
+      }
+
+      break;
+
+      //plane_clipped_saved++;
+    }
+
+
+    next_point = i + 1;
+    if(next_point == poly->total_v)
+      next_point = 0;
+
+
+    // The vertex is inside the plane, so don't clip it
+    if(in) {
+      dest->v[dest->total_v] = poly->v[i];
+    }
+
+    //errorif(!in, "Point not in!");
+
+
+    next_dot = x3d_vex3d_fp0x16_dot(&poly->v[next_point], &plane->normal);
+    next_in = (next_dot >= plane->d);
+
+    total_outside += !next_in;
+
+    //	printf("Next dot: %d\n", next_dot);
+
+    // The points are on opposite sides of the plane, so clip it
+    if(in != next_in) {
+      ++clipped;
+
+      // Scale factor to get the point on the plane
+      // errorif((long)next_dot - dot == 0, "Clip div by 0");
+
+      t = FIXDIV8(plane->d - dot, next_dot - dot);
+      //t = fast_div_fix(plane->d - dot, next_dot - dot, 15 - 8);
+
+
+      //errorif(abs((long)plane->d - dot) > 32767, "plane->d too big");
+      //errorif(abs((long)next_dot - dot) > 32767, "next_dot too big");
+
+      //errorif(abs(t) > 32767, "Invalid clip t");
+      //errorif(t == 0, "t == 0");
+
+      if(t == 0) {
+        //printf("T == 0\n");
+      }
+
+      //if(cube_id == 12) {
+        //printf("T: %ld\n", t);
+      //}
+
+      //printf("Dist: %d\n", dot + plane->d);
+      //printf("T: %ld Z: %d\n", t, poly->v[i].z);
+
+      dest->v[dest->total_v].x = poly->v[i].x + FIXMUL8(((long)poly->v[next_point].x - poly->v[i].x), t);
+      dest->v[dest->total_v].y = poly->v[i].y + FIXMUL8(((long)poly->v[next_point].y - poly->v[i].y), t);
+      dest->v[dest->total_v].z = poly->v[i].z + FIXMUL8(((long)poly->v[next_point].z - poly->v[i].z), t);
+
+
+
+
+
+
+      // Use floats to make sure we're not overflowing
+
+
+
+
+
+      //dest->draw[dest->total_v] = poly->draw[i];
+
+      //printf("Dest z: %d\n", dest->v[dest->total_v].z);
+      //printf("Should be: %d\n", -plane->d);
+
+      //errorif(dest->v[dest->total_v].z < DIST_TO_NEAR_PLANE / 2, "Invalid clip: %d", dest->v[dest->total_v].z);
+
+      dest->total_v++;
+    }
+
+    if(next_in != in) {
+      out[out_pos++] = dest->total_v - 1;
+    }
+
+    dot = next_dot;
+    in = next_in;
+  }
+
+  //printf("total outside: %d\ntotal: %d", total_outside, dest->total_v);
+
+  if(dest->total_v > 4) {
+    //clrscr();
+
+    int i;
+
+    for(i = 0; i < dest->total_v; i++) {
+      //	print_vex3d(&dest->v[i]);
+    }
+
+    //Polygon2D out;
+
+  }
+
+  //===============================
+  //for(i = 0; i < out_pos - 1; i++) {
+  //  if(out[i] == out[i + 1] - 1) {
+  //    //printf("Case\n");
+  //    dest->draw[out[i]] = 0;
+  //  }
+  //  else {
+  //    //error("ERRORX");
+
+  //    if(out[i] != 0 || out[i + 1] != dest->total_v - 1) {
+
+  //      printf("A: %d, B: %d\n", out[i], out[i + 1]);
+
+  //      dest->draw[out[i]] = 0;
+  //      dest->draw[out[i + 1]] = 0;
+  //    }
+
+
+  //  }
+  //}
+
+  //if(out_pos > 0 && out[0] == 0 && out[out_pos - 1] == dest->total_v - 1) {
+  //  dest->draw[dest->total_v - 1] = 0;
+  //  //printf("CASE\n");
+  //}
+
+
+
+
+  //if(out_pos != 0 && out_pos != 2) {
+  //  //printf("CASE<----\n");
+  //  //error("Wrong out pos\n");
+  //  invert_screen = 1;
+  //  return 0;
+
+
+  //  PortRestore();
+  //  clrscr();
+
+  //  print_polygon(poly);
+  //  printf("Total: %d\n", out_pos);
+
+  //  while(1);
+  //}
+
+
+
+  //errorif(out_pos != 0 && out_pos != 2, "Wrong out pos: %d\n", out_pos);
+
+  //if(cube_id == 14) {
+  //  //printf("Total outside: %d\n", total_outside);
+  //}
+
+  //xassert(dest->total_v < MAX_POINTS);
+
+  return dest->total_v > 1;
+}
+
+// Clips a polygon against the entire view frustum
+// This routine requires two temporary polygons, one of which the
+// final polygon will be in. This returns the address of which one it
+// is
+char clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* dest) {
+#if 1
+  X3D_Polygon3D* temp[2] = { ALLOCA_POLYGON3D(30), ALLOCA_POLYGON3D(30) };
+  int16 current_temp = 0;
+  X3D_Polygon3D* poly = src;
+  int16 i;
+
+
+  //xassert(f->total_p != 0);
+
+  //xassert(f->total_p < MAX_PLANES);
+
+  if(f->total_p == 0)
+    return 0;
+
+
+#if 1
+  for(i = 0; i < f->total_p - 1; i++) {
+    //errorif(poly->total_v < 3, "Invalid clip poly");
+    //return clip_polygon_to_plane(src, &f->p[FRUSTUM_TOP], dest);
+
+    //if(i == PLANE_LEFT || i == PLANE_RIGHT)
+    //	continue;
+
+    if(!clip_polygon_to_plane(poly, &f->p[i], temp[current_temp])) {
+      dest->total_v = 0;
+      return 0;
+    }
+
+    poly = temp[current_temp];
+    current_temp = !current_temp;
+  }
+#endif
+
+  //return poly->total_v > 2;
+  return clip_polygon_to_plane(poly, &f->p[f->total_p - 1], dest);
+
+#endif
 }
 
