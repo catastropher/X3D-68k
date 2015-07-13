@@ -294,6 +294,10 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     X3D_Segment* seg = x3d_segment_add(&context->state, poly->total_v);
 
+    X3D_SegmentFace* face = x3d_segment_get_face(s);
+
+    face[context->state.spinner.selected_face].connect_id = x3d_get_total_segments(&context->state) - 1;
+
     //X3D_LOG_WAIT(&context->context, "Total: %d\n", poly->total_v);
 
     prism = &seg->prism;
@@ -372,9 +376,11 @@ void x3d_test() {
 
     printf("%d\n", x3d_get_total_segments(&test.state));
 
-    for(i = 0; i < x3d_get_total_segments(&test.state); ++i) {
-      x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
-    }
+    //for(i = 0; i < x3d_get_total_segments(&test.state); ++i) {
+    //  x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
+    //}
+
+    x3d_render_segment_wireframe(0, frustum, &test.state, &test.context);
 
     //printf("%d\n", test.context.render_clock);
     //printf("Face: %d\n", test.state.spinner.selected_face);

@@ -19,34 +19,22 @@
 #include "X3D_vector.h"
 #include "X3D_prism.h"
 #include "X3D_polygon.h"
+#include "X3D_frustum.h"
 
 //=============================================================================
 // Defines
 //=============================================================================
 
 #define ALLOCA_POLYGON3D(_total_v) alloca(x3d_polygon3d_needed_size(_total_v))
+#define ALLOCA_FRUSTUM(_total_p) alloca(x3d_frustum_needed_size(_total_p))
+
 
 
 //=============================================================================
 // Types
 //=============================================================================
 
-/// A plane described by the equation ax + by + cz - d = 0, where <a, b, c>
-/// is the surface normal and d is the perpendicular distance from the origin.
-typedef struct X3D_Plane {
-  X3D_Vex3D_fp0x16 normal;    ///< Surface normal (a vector perpendicular to the plane)
-  int16 d;                    ///< Perpendicular distance from the origin
-} X3D_Plane;
 
-/// A viewing frustum that can have a variable number of planes. A viewing frustum
-/// is a 3D viewing region bounded by planes that defines what a camera can see.
-/// Though traditionally a frustum is a truncated pyramid, in X3D a frustum can
-/// have any number of planes since it's a portal renderer.
-/// @note This is a variable-sized data structure!
-typedef struct X3D_Frustum {
-  uint16 total_p;     ///< Total number of planes
-  X3D_Plane p[0];     ///< Planes (variable number)
-} X3D_Frustum;
 
 
 //=============================================================================

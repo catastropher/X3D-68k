@@ -20,6 +20,7 @@
 #include "X3D_render.h"
 #include "X3D_trig.h"
 #include "X3D_clip.h"
+#include "X3D_frustum.h"
 
 #ifdef __TIGCC__
 #include <extgraph/extgraph.h>
@@ -141,13 +142,22 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
 
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
-#if 0
+#if 1
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
-    if(face[i].connect_id != SEGMENT_NONE ) {
+    if(face[i].connect_id != SEGMENT_NONE) {
 
       //X3D_LOG_WAIT(context, "FACE ID: %d\n", face[i].connect_id);
 
-      x3d_render_segment_wireframe(face[i].connect_id, frustum, state, context);
+      X3D_Frustum* f = ALLOCA_FRUSTUM(20);
+      X3D_Polygon3D* poly = ALLOCA_POLYGON3D(20);
+      X3D_Polygon3D* poly_out = ALLOCA_POLYGON3D(20);
+
+      x3d_prism3d_get_face(poly, temp, i);
+      x3d_clip_polygon_to_frustum(poly, frustum, poly_out);
+      x3d_construct_frustum_from_polygon3D(poly_out, context, f);
+
+      x3d_render_segment_wireframe(face[i].connect_id, f, state, context);
+
     }
   }
 #endif
@@ -176,4 +186,3 @@ void x3d_selectspinner_select(X3D_SelectSpinner* spinner, X3D_EngineState* state
   spinner->select_a = 0;
   spinner->select_b = spinner->base_v / 2;
 }
-

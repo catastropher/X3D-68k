@@ -710,7 +710,7 @@ _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Pol
       if(in) {
 
         for(; i < poly->total_v; i++) {
-          dest->v[dest->total_v] = poly->v[i];
+          dest->v[dest->total_v++] = poly->v[i];
         }
       }
 
@@ -727,7 +727,7 @@ _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Pol
 
     // The vertex is inside the plane, so don't clip it
     if(in) {
-      dest->v[dest->total_v] = poly->v[i];
+      dest->v[dest->total_v++] = poly->v[i];
     }
 
     //errorif(!in, "Point not in!");
@@ -878,7 +878,7 @@ _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Pol
 // This routine requires two temporary polygons, one of which the
 // final polygon will be in. This returns the address of which one it
 // is
-_Bool clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* dest) {
+_Bool x3d_clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* dest) {
 #if 1
   X3D_Polygon3D* temp[2] = { ALLOCA_POLYGON3D(30), ALLOCA_POLYGON3D(30) };
   int16 current_temp = 0;

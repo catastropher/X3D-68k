@@ -65,3 +65,26 @@ void x3d_frustum_print(X3D_Frustum* f) {
   }
 }
 
+// Takes a 3D polygon and constructs the planes of the view frustum
+// such that the points on the polygon form the bounds. Each plane
+// consits of two points on the polygon and one on the camera
+//
+// With any luck, this will remove the need for a 2D polygon clipper!
+void x3d_construct_frustum_from_polygon3D(X3D_Polygon3D* poly, X3D_RenderContext* context, X3D_Frustum* dest) {
+  int16 i;
+
+  dest->total_p = poly->total_v;
+
+  Vex3D cam_pos = { context->cam.pos.x >> X3D_NORMAL_SHIFT, context->cam.pos.y >> X3D_NORMAL_SHIFT, context->cam.pos.z >> X3D_NORMAL_SHIFT };
+
+  for(i = 0; i < poly->total_v; i++) {
+    uint16 next_point = i + 1;
+
+    if(next_point == poly->total_v)
+      next_point = 0;
+
+    x3d_plane_construct(&dest->p[i], &cam_pos, &poly->v[next_point], &poly->v[i]);
+
+  }
+}
+
