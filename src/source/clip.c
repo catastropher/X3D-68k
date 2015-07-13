@@ -340,25 +340,15 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
           //int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
           //int16 n = abs(dist[b][outside[a][i]]);
 
-          if(abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]) >= 0x7FFF) {
-            printf("Overflow!\n");
-          }
-
           if(n == d) {
-            printf("Equal!");
             continue;
           }
 
           if(d < 1) {
-            printf("Too small!\n");
             continue;
           }
 
           int32 scale = ((int32)n << 14) / (d);
-          
-          if(scale > 0x7FFF) {
-            printf("Invalid scale!\n");
-          }
 
           //printf("Scale: %d\n", scale);
 
