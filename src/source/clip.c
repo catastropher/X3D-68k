@@ -667,14 +667,14 @@ project_and_draw:
 //=============================================================================
 
 
-#define FIXDIV8(_n, _d) (((long)(_n) << 8) / (_d))
+#define FIXDIV8(_n, _d) (((long)(_n) << 14) / (_d))
 
 #define FIXMULN(_a, _b, _n) (((long)(_a) * (_b)) >> (_n))
 
 
 
 
-#define FIXMUL8(_a, _b) FIXMULN(_a, _b, 8)
+#define FIXMUL8(_a, _b) FIXMULN(_a, _b, 14)
 #define FIXMUL15(_a, _b) FIXMULN(_a, _b, 15)
 
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
@@ -703,7 +703,7 @@ _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Pol
   int16 clipped = 0;
 
   for(i = 0; i < poly->total_v; i++) {
-#if 0
+#if 1
     if(clipped == 2) {
       // A convex polygon can at most have two edges clipped, so if we've reached it
       // just copy over the other ones (assuming we're back to being inside the poly)

@@ -158,7 +158,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
       if(x3d_clip_polygon_to_frustum(poly, frustum, poly_out)) {
         x3d_construct_frustum_from_polygon3D(poly_out, context, f);
 
-        if(i <= BASE_B) {
+        if(i == BASE_B) {
           uint16 d;
 
           for(d = 0; d < f->total_p; ++d) {
@@ -169,13 +169,16 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
 
         uint16 k;
 
-#if 0
+#if 1
         for(k = 0; k < poly_out->total_v; ++k) {
           uint16 next = (k + 1) % poly_out->total_v;
           X3D_Vex2D_int16 a, b;
 
           x3d_vex3d_int16_project(&a, &poly_out->v[k], context);
           x3d_vex3d_int16_project(&b, &poly_out->v[next], context);
+
+          x3d_rendercontext_clamp_vex2d_int16(&a, context);
+          x3d_rendercontext_clamp_vex2d_int16(&b, context);
 
           x3d_draw_line_black(context, &a, &b);
         }

@@ -304,12 +304,12 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     prism->base_v = poly->total_v;
     
-    x3d_prism3d_set_face(poly, prism, BASE_A);
-    x3d_move_polygon3d_along_normal(poly, -100, &center);
     x3d_prism3d_set_face(poly, prism, BASE_B);
+    x3d_move_polygon3d_along_normal(poly, -100, &center);
+    x3d_prism3d_set_face(poly, prism, BASE_A);
 
     context->state.spinner.selected_segment = seg->id;
-    context->state.spinner.selected_face = BASE_B;
+    context->state.spinner.selected_face = BASE_A;
 
     free(poly);
 
