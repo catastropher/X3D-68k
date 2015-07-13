@@ -140,7 +140,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
     x3d_get_selectspinner_selected(&state->spinner, &select_a, &select_b);
   }
 
-  //x3d_draw_clipped_prism3d_wireframe(temp, frustum, context, select_a, select_b);
+  x3d_draw_clipped_prism3d_wireframe(temp, frustum, context, select_a, select_b);
 
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
@@ -169,7 +169,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
 
       uint16 k;
 
-#if 1
+#if 0
       for(k = 0; k < poly_out->total_v; ++k) {
         uint16 next = (k + 1) % poly_out->total_v;
         X3D_Vex2D_int16 a, b;

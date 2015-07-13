@@ -323,8 +323,21 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
         int16 min_scale_index = 0;
 
         for(i = 0; i < outside_total[a]; ++i) {
-          int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
+          //t = FIXDIV8(plane->d - dot, next_dot - dot);
+          
+          //int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
+          //int16 n = abs(dist[b][outside[a][i]]);
+          
           int16 n = abs(dist[b][outside[a][i]]);
+          int16 d = abs(-dist[b][outside[a][i]] + frustum->p[outside[a][i]].d) + abs(-dist[a][outside[a][i]] + frustum->p[outside[a][i]].d);
+          
+          //printf("n: %d d: %d|", n, d);
+          
+          if(n == 0)
+            continue;
+          
+          //int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
+          //int16 n = abs(dist[b][outside[a][i]]);
 
           if(abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]) >= 0x7FFF) {
             printf("Overflow!\n");
@@ -340,7 +353,11 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
             continue;
           }
 
-          int16 scale = ((int32)n << 10) / (d);
+          int32 scale = ((int32)n << 14) / (d);
+          
+          if(scale > 0x7FFF) {
+            printf("Invalid scale!\n");
+          }
 
           //printf("Scale: %d\n", scale);
 
@@ -351,9 +368,9 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
         }
 
         if(min_scale[vertex] != 0x7FFF) {
-          clipped[vertex].x = prism->v[b].x + ((((int32)prism->v[a].x - prism->v[b].x) * min_scale[vertex]) >> 10);
-          clipped[vertex].y = prism->v[b].y + ((((int32)prism->v[a].y - prism->v[b].y) * min_scale[vertex]) >> 10);
-          clipped[vertex].z = prism->v[b].z + ((((int32)prism->v[a].z - prism->v[b].z) * min_scale[vertex]) >> 10);
+          clipped[vertex].x = prism->v[b].x + ((((int32)prism->v[a].x - prism->v[b].x) * min_scale[vertex]) >> 14);
+          clipped[vertex].y = prism->v[b].y + ((((int32)prism->v[a].y - prism->v[b].y) * min_scale[vertex]) >> 14);
+          clipped[vertex].z = prism->v[b].z + ((((int32)prism->v[a].z - prism->v[b].z) * min_scale[vertex]) >> 14);
         }
       }
 
@@ -542,8 +559,14 @@ void x3d_draw_clipped_segment_solid(X3D_Segment* seg, X3D_Frustum* frustum, X3D_
         int16 min_scale_index = 0;
 
         for(i = 0; i < outside_total[a]; ++i) {
-          int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
+          //t = FIXDIV8(plane->d - dot, next_dot - dot);
+          
+          //int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
+          //int16 n = abs(dist[b][outside[a][i]]);
+          
           int16 n = abs(dist[b][outside[a][i]]);
+          int16 d = abs(-dist[b][outside[a][i]] + frustum->p[outside[a][i]].d) + abs(-dist[a][outside[a][i]] + frustum->p[outside[a][i]].d);
+          
 
           if(n == d)
             continue;
