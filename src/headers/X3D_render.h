@@ -99,6 +99,8 @@ typedef struct X3D_RenderContext {
   X3D_EngineState* state;
 
   uint16 render_clock;
+  
+  uint16 frame;
 
 } X3D_RenderContext;
 

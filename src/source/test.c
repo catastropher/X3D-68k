@@ -268,6 +268,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     X3D_Vex3D_int16 center;
     x3d_prism3d_get_center(prism, &center);
 
+
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
     x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
@@ -363,6 +364,8 @@ void x3d_test() {
   uint16 last_spin = x3d_get_clock();
 
   uint16 i;
+  
+  test.context.frame = 0;
 
   do {
     // Construct the rotation matrix
@@ -374,7 +377,7 @@ void x3d_test() {
 
     test.context.render_clock = 0;
 
-    printf("%d\n", x3d_get_total_segments(&test.state));
+    //printf("%d\n", x3d_get_total_segments(&test.state));
 
     //for(i = 0; i < x3d_get_total_segments(&test.state); ++i) {
     //  x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
@@ -382,7 +385,7 @@ void x3d_test() {
 
     x3d_render_segment_wireframe(0, frustum, &test.state, &test.context);
 
-    //printf("%d\n", test.context.render_clock);
+    printf("%d\n", test.context.render_clock);
     //printf("Face: %d\n", test.state.spinner.selected_face);
 
     x3d_renderdevice_flip(&test.device);
@@ -391,6 +394,8 @@ void x3d_test() {
       x3d_selectspinner_spin(&test.state.spinner);
       last_spin = x3d_get_clock();
     }
+    
+    ++test.context.frame;
 
     x3d_test_handle_keys(&test);
   } while(!test.quit);
