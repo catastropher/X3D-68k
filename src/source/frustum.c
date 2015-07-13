@@ -75,7 +75,7 @@ void x3d_construct_frustum_from_polygon3D(X3D_Polygon3D* poly, X3D_RenderContext
 
   dest->total_p = poly->total_v;
 
-  Vex3D cam_pos = { context->cam.pos.x >> X3D_NORMAL_SHIFT, context->cam.pos.y >> X3D_NORMAL_SHIFT, context->cam.pos.z >> X3D_NORMAL_SHIFT };
+  Vex3D cam_pos = { 0, 0, 0 };//{ context->cam.pos.x >> X3D_NORMAL_SHIFT, context->cam.pos.y >> X3D_NORMAL_SHIFT, context->cam.pos.z >> X3D_NORMAL_SHIFT };
 
   for(i = 0; i < poly->total_v; i++) {
     uint16 next_point = i + 1;

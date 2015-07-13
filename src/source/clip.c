@@ -703,6 +703,7 @@ _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Pol
   int16 clipped = 0;
 
   for(i = 0; i < poly->total_v; i++) {
+#if 0
     if(clipped == 2) {
       // A convex polygon can at most have two edges clipped, so if we've reached it
       // just copy over the other ones (assuming we're back to being inside the poly)
@@ -718,6 +719,7 @@ _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Pol
 
       //plane_clipped_saved++;
     }
+#endif
 
 
     next_point = i + 1;
@@ -870,6 +872,8 @@ _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Pol
   //}
 
   //xassert(dest->total_v < MAX_POINTS);
+
+  //printf("\nV: %d\n", dest->total_v);
 
   return dest->total_v > 1;
 }
