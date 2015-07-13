@@ -130,6 +130,8 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
 
   X3D_Segment* seg = x3d_get_segment(state, id);
   X3D_Prism* temp = alloca(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * seg->prism.base_v * 2);
+  
+  seg->last_frame = context->frame;
 
   x3d_test_rotate_prism3d(temp, &seg->prism, &context->cam);
 
@@ -146,11 +148,16 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
 
 #if 1
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
-
-
+  
     //X3D_LOG_WAIT(context, "FACE ID: %d\n", face[i].connect_id);
 
     if(face[i].connect_id != SEGMENT_NONE) {
+      X3D_Segment* next_seg = x3d_get_segment(state, face[i].connect_id);
+      
+      if(next_seg->last_frame == context->frame)
+        continue;
+      
+    
       X3D_Frustum* f = ALLOCA_FRUSTUM(20);
       X3D_Polygon3D* poly = ALLOCA_POLYGON3D(20);
       X3D_Polygon3D* poly_out = ALLOCA_POLYGON3D(20);

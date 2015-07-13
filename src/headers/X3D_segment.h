@@ -43,11 +43,13 @@ typedef struct X3D_BoundSphere {
 typedef struct X3D_Segment {
   uint16 base_v;
   uint16 id;
-
+  uint16 last_frame;
+  
   X3D_BoundSphere bound;
 
   uint16 face_offset;
   X3D_Prism prism;
+  
 } X3D_Segment;
 
 typedef struct X3D_SegmentFace {

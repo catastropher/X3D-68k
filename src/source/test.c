@@ -62,7 +62,8 @@ enum {
   KEY_TRANSLATE_UP = XKEY_CUSTOM3,
   KEY_TRANSLATE_DOWN = XKEY_CUSTOM4,
   KEY_CYCLE_SEGMENT = XKEY_CUSTOM5,
-  KEY_ADD_SEGMENT = XKEY_CUSTOM6
+  KEY_ADD_SEGMENT = XKEY_CUSTOM6,
+  KEY_SWITCH_SEGMENT = XKEY_CUSTOM7
 };
 
 #if defined(__TIGCC__) || defined(WIN32)
@@ -102,7 +103,7 @@ uint16 x3d_get_clock() {
 }
 
 static void x3d_test_init(X3D_TestContext* context) {
-  x3d_enginestate_init(&context->state, 20, 1000);
+  x3d_enginestate_init(&context->state, 30, 20000);
   x3d_renderdevice_init(&context->device, 240, 128);
   x3d_rendercontext_init(&context->context, context->device.dbuf, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
 
@@ -126,7 +127,7 @@ static void x3d_test_init(X3D_TestContext* context) {
   x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM4, RR_R);
   x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM5, RR_F5);
   x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM6, RR_F7);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM7, RR_ESC);
+  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM7, RR_F4);
   x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM8, RR_ESC);
   x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM9, RR_ESC);
 
@@ -298,6 +299,10 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     X3D_SegmentFace* face = x3d_segment_get_face(s);
 
     face[context->state.spinner.selected_face].connect_id = seg->id;//x3d_get_total_segments(&context->state) - 1;
+    
+    X3D_SegmentFace* new_face = x3d_segment_get_face(seg);
+    
+    new_face[BASE_B].connect_id = s->id;
 
     //X3D_LOG_WAIT(&context->context, "Total: %d\n", poly->total_v);
 
@@ -313,9 +318,19 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     context->state.spinner.selected_face = BASE_A;
 
     free(poly);
-
-    while (x3d_keystate_down(&context->keys, KEY_ADD_SEGMENT));
-
+  }
+  
+  if (x3d_keystate_down_wait(&context->keys, KEY_SWITCH_SEGMENT)) {
+    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_SegmentFace* face = x3d_segment_get_face(s);
+    
+    if(face[context->state.spinner.selected_face].connect_id != SEGMENT_NONE) {
+      
+      x3d_selectspinner_select(&context->state.spinner, &context->state, face[context->state.spinner.selected_face].connect_id, BASE_A);
+      
+      //X3D_LOG_WAIT("New seg: %d\n", 
+    }
+    
   }
 }
 

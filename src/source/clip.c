@@ -331,7 +331,7 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
           int16 n = abs(dist[b][outside[a][i]]);
           int16 d = abs(-dist[b][outside[a][i]] + frustum->p[outside[a][i]].d) + abs(-dist[a][outside[a][i]] + frustum->p[outside[a][i]].d);
           
-          printf("n: %d d: %d|", n, d);
+          //printf("n: %d d: %d|", n, d);
           
           if(n == 0) {
             goto invisible;
