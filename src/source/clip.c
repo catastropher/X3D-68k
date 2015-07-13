@@ -326,13 +326,21 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
           int16 d = abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]);
           int16 n = abs(dist[b][outside[a][i]]);
 
-          if(n == d)
-            continue;
+          if(abs(dist[b][outside[a][i]]) + abs(dist[a][outside[a][i]]) >= 0x7FFF) {
+            printf("Overflow!\n");
+          }
 
-          if(d < 1)
+          if(n == d) {
+            printf("Equal!");
             continue;
+          }
 
-          int16 scale = ((int32)n << 8) / (d);
+          if(d < 1) {
+            printf("Too small!\n");
+            continue;
+          }
+
+          int16 scale = ((int32)n << 10) / (d);
 
           //printf("Scale: %d\n", scale);
 
@@ -343,9 +351,9 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
         }
 
         if(min_scale[vertex] != 0x7FFF) {
-          clipped[vertex].x = prism->v[b].x + ((((int32)prism->v[a].x - prism->v[b].x) * min_scale[vertex]) >> 8);
-          clipped[vertex].y = prism->v[b].y + ((((int32)prism->v[a].y - prism->v[b].y) * min_scale[vertex]) >> 8);
-          clipped[vertex].z = prism->v[b].z + ((((int32)prism->v[a].z - prism->v[b].z) * min_scale[vertex]) >> 8);
+          clipped[vertex].x = prism->v[b].x + ((((int32)prism->v[a].x - prism->v[b].x) * min_scale[vertex]) >> 10);
+          clipped[vertex].y = prism->v[b].y + ((((int32)prism->v[a].y - prism->v[b].y) * min_scale[vertex]) >> 10);
+          clipped[vertex].z = prism->v[b].z + ((((int32)prism->v[a].z - prism->v[b].z) * min_scale[vertex]) >> 10);
         }
       }
 
