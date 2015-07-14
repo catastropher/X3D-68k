@@ -20,11 +20,11 @@ CC_FLAGS=-I../headers
 all:
 	@make --no-print-directory tigcc
 	@echo ""
-	@make --no-print-directory gcc
+	#@make --no-print-directory gcc
 
-	@echo ""
-	@echo "=======Running tests for gcc======="
-	@gcc/test
+	#@echo ""
+	#@echo "=======Running tests for gcc======="
+	#@gcc/test
 	
 	@make --no-print-directory -C ./game
 
@@ -39,7 +39,7 @@ gcc:
 	@make --no-print-directory gcc/test.exe
 
 tigcc/test.9xz: $(TIGCC_OBJ_FILES)
-	@$(CC) -o "test" $(TIGCC_OBJ_FILES) X3D.a
+	@$(CC) -o "test" $(TIGCC_OBJ_FILES) $(TIGCC)/lib/X3D.a
 	@mv test.9xz tigcc/test.9xz
 	@echo X3D test suite built successfully for tigcc
 

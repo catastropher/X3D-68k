@@ -61,14 +61,14 @@ tigcc/%.o: %.c
 	
 install: check-tigcc
 	@echo Installing X3D for tigcc...
-	@rm -rf "$(TIGCC)/Include/C/X3D"
+	@rm -rf "$(TIGCC)/include/c/X3D"
 	@cp -f ./tigcc/X3D.a "$(TIGCC)/lib"
-	@cp -rf ../headers "$(TIGCC)/Include/C/X3D"
+	@cp -rf ../headers "$(TIGCC)/include/c/X3D"
 
-	@echo Installing X3D for gcc
-	@rm -rf /usr/include/X3D
-	@cp -rf ../headers /usr/include/X3D
-	@cp gcc/X3D.a /usr/lib/libX3D.a
+	#@echo Installing X3D for gcc
+	#@rm -rf /usr/include/X3D
+	#@cp -rf ../headers /usr/include/X3D
+	#@cp gcc/X3D.a /usr/lib/libX3D.a
 
 	@echo X3D installed.
 	

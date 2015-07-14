@@ -17,7 +17,7 @@
 #define X3D_CHECK_OVERFLOW
 
 #include "X3D_config.h"
-#include "x3d_error.h"
+#include "X3D_error.h"
 
 //=============================================================================
 // Types
