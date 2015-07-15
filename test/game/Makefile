@@ -38,7 +38,7 @@ gcc:
 	@make --no-print-directory gcc/prism.exe
 
 tigcc/prism.9xz: $(TIGCC_OBJ_FILES)
-	@$(CC) -o "test" $(TIGCC_OBJ_FILES) $(TIGCC)/lib/X3D.a $(TIGCC)/lib/extgraph.a
+	@$(CC) -o "test" $(TIGCC_OBJ_FILES) $(TIGCC)/lib/X3D.a $(TIGCC)/lib/sudpextgraph.a
 	@mv test.9xz tigcc/test.9xz
 	@echo X3D test suite built successfully for tigcc
 
