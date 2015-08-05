@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 
 INCLUDE(CMakeForceCompiler)
-CMAKE_FORCE_C_COMPILER(tigcc tigcc)
+CMAKE_FORCE_C_COMPILER(tigcc-x3d tigcc-x3d)
 
 add_definitions(-D__TIGCC_HEADERS__)
 
