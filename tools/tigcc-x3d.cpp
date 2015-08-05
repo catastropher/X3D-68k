@@ -16,17 +16,25 @@ bool is_path(char* arg) {
 }
 
 int main(int argc, char* argv[]) {
-  std::string new_exec = "tigcc";
+  std::string new_exec = "tigcc ";
   char path[2048];
   
   for(int i = 1; i < argc; ++i) {
-    if(is_path(argv[i])) {
+    char* arg = argv[i];
+    
+    if(arg[0] == '-' && arg[1] == 'I') {
+      new_exec += "-I";
+      arg += 2;
+    }
+    
+    if(is_path(arg)) {
+    
       // Convert the path to a Windows path
-      FILE* file = popen((std::string("cygpath --windows ") + std::string(argv[i])).c_str(), "r");
+      FILE* file = popen((std::string("cygpath --windows ") + std::string(arg)).c_str(), "r");
       
       if(!file) {
         std::cout << "Error: failed to execute cygpath!" << std::endl;
-        std::cout << "Argumet: " << argv[i] << std::endl;
+        std::cout << "Argumet: " << arg << std::endl;
         return -1;
       }
       
@@ -41,14 +49,12 @@ int main(int argc, char* argv[]) {
       if(path[length - 1] == '\n')
         path[length - 1] = '\0';
       
-      new_exec += " \"" + std::string(path) + "\"";
+      new_exec += "\"" + std::string(path) + "\" ";
     }
     else {
-      new_exec += " " + std::string(argv[i]);
+      new_exec += std::string(arg) + " ";
     }
   }
-  
-  fprintf(stderr, "\nCOMMAND: %s\n", new_exec.c_str());
   
   return system(new_exec.c_str());
 }
