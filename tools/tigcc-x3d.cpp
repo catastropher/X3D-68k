@@ -1,3 +1,34 @@
+// This file is part of X3D.
+
+// X3D is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// X3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with X3D. If not, see <http://www.gnu.org/licenses/>.
+
+
+
+// This program converts unix paths to windows paths in commands, if being run
+// under Windows with Cygwin. This is necessary because the Cygwin version of
+// CMake generates UNIX makefiles, but the Windows versions of GCC4TI/TIGCC expect
+// Windows paths. Because X3D should be buildable on both Windows and Linux, it is
+// necessary to convert them. Thus, this program converts commands in this format:
+//
+// tigcc-x3d ... <unix path> ... -I<unix path>
+//
+// to:
+//
+// tigcc ... <windows path> ... -I<windows path>
+//
+// and executes them.
+
 #include <iostream>
 #include <string>
 
@@ -16,12 +47,14 @@ bool is_path(char* arg) {
 }
 
 int main(int argc, char* argv[]) {
+#ifdef WIN32
   std::string new_exec = "tigcc ";
   char path[2048];
   
   for(int i = 1; i < argc; ++i) {
     char* arg = argv[i];
     
+    // Handle -I<include path> switches
     if(arg[0] == '-' && arg[1] == 'I') {
       new_exec += "-I";
       arg += 2;
@@ -55,6 +88,7 @@ int main(int argc, char* argv[]) {
       new_exec += std::string(arg) + " ";
     }
   }
-  
+
   return system(new_exec.c_str());
+#endif
 }
