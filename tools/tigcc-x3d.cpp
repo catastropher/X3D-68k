@@ -47,7 +47,7 @@ bool is_path(char* arg) {
 }
 
 int main(int argc, char* argv[]) {
-#ifdef WIN32
+#ifdef __CYGWIN__
   std::string new_exec = "tigcc ";
   char path[2048];
   
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
       
       if(!file) {
         std::cout << "Error: failed to execute cygpath!" << std::endl;
-        std::cout << "Argumet: " << arg << std::endl;
+        std::cout << "Argument: " << arg << std::endl;
         return -1;
       }
       
@@ -88,7 +88,9 @@ int main(int argc, char* argv[]) {
       new_exec += std::string(arg) + " ";
     }
   }
-
+  
+  fprintf(stderr, "\nRUN\n");
+  
   return system(new_exec.c_str());
 #endif
 }

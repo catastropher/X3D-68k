@@ -2,13 +2,17 @@ cmake_minimum_required(VERSION 2.6)
 
 
 INCLUDE(CMakeForceCompiler)
-CMAKE_FORCE_C_COMPILER(tigcc-x3d tigcc-x3d)
+CMAKE_FORCE_C_COMPILER($ENV{X3D}/tools/tigcc-x3d tigcc-x3d)
+
+SET(CMAKE_AR $ENV{X3D}/tools/tigcc-x3d CACHE FILEPATH "Archiver")
+
+SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> -ar")
 
 add_definitions(-D__TIGCC_HEADERS__)
 
 Project(X3D)
 
-include_directories(${X3D_SOURCE_DIR}/../headers/)
+include_directories($ENV{X3D}/src/static/headers)
 
 add_library(X3D
   clip.c
