@@ -14,8 +14,8 @@ add_library(X3D
   clip.c
   editor.c
   error.c
-  fastsqrt.c
-  fix.c
+  math/fastsqrt.c
+  math/fix.c
   frustum.c
   geo.c
   keys.c
@@ -26,7 +26,7 @@ add_library(X3D
   render.c
   segment.c
   test.c
-  trig.c
-  vector.c
+  math/trig.c
+  math/vector.c
 )
   
