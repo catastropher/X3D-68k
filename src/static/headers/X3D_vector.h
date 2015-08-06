@@ -144,3 +144,35 @@ static inline X3D_Vex3D_int16 vscale16(Vex3D* v, fp8x8 scale) {
   };
 }
 
+static inline Vex3D v3neg(Vex3D v);
+static inline Vex3D v3scale(Vex3D v, fp8x8 scale);
+static inline Vex3D v3add(Vex3D a, Vex3D b);
+static inline Vex3D v3sub(Vex3D a, Vex3D b);
+static inline Vex3D v3dot(Vex3D a, Vex3D b);
+static inline Vex3D v3cross(Vex3D a, Vex3D b);
+static inline int32 v3mag(Vex3D v);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
