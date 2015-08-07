@@ -26,11 +26,12 @@ A 3D portal-rendering game engine for the TI68k graphing calculators (TI92+/TI89
 ## Dependencies
 To build X3D, you will need:
   1. GNU Make
-  2. GCC
-  3. GCC4TI or TIGCC (GCC4TI is reccommended, as it is still maintained and has numerous improvements over TIGCC. Available here: https://github.com/debrouxl/gcc4ti/wiki/Download)
-  4. Extgraph by Lionel Debroux (available here: https://github.com/debrouxl/ExtGraph/tree/master/lib): copy extgraph.h to
+  2. CMake
+  3. GCC
+  4. GCC4TI or TIGCC (GCC4TI is reccommended, as it is still maintained and has numerous improvements over TIGCC. Available here: https://github.com/debrouxl/gcc4ti/wiki/Download)
+  5. Extgraph by Lionel Debroux (available here: https://github.com/debrouxl/ExtGraph/tree/master/lib): copy extgraph.h to
   $TIGCC/Include/C/extgraph and extgraph.a to $TIGCC/Lib
-  5. Doxygen (for generating documentation)
+  6. Doxygen (for generating documentation)
   
 ## Build Instructions
 *Note:* until we resolve problems with the build system, building in Windows is currently broken (though building in Linux will still work). In addition, building with GCC is also disabled. This should be resolved in the near future.
@@ -41,13 +42,20 @@ To build X3D, you will need:
   ```
   export TIGCC="C:\program files (x86)\TIGCC"
   ```
-  3. From the X3D-68k folder, execute the following commands:
+  3. Set the environment variable X3D to the X3D-68k directory
+  4. Build the tools:
   
   ```
-  cd src/source
-  make clean && make && make test
+  cd $X3D/tools
+  mkdir build && cd build
+  cmake ..
+  make
   ```
   
-This will build the library with TIGCC for the calculators and GCC, the test suite, and the test programs. In addition, it
-will run the test suite. Note: we recommend rebuilding the entire project when a header file is changed because the build
-system doesn't currently do proper dependency tracking.
+  5. Build X3D!
+  
+  ```
+  cd $X3D
+  mkdir build && cd build
+  cmake ..
+  make
