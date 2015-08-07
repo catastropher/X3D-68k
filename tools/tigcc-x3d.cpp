@@ -89,8 +89,6 @@ int main(int argc, char* argv[]) {
     }
   }
   
-  fprintf(stderr, "\nRUN\n");
-  
   return system(new_exec.c_str());
 #endif
 }
