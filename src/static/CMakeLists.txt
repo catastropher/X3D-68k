@@ -8,7 +8,7 @@ CMAKE_FORCE_C_COMPILER($ENV{X3D}/tools/tigcc-x3d tigcc-x3d)
 
 # Custom configuration for the archiver
 SET(CMAKE_AR $ENV{X3D}/tools/tigcc-x3d)
-SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> -ar")
+SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> -ar -o <TARGET> <OBJECTS> <LINK_LIBRARIES> -ar")
 
 # Lets the X3D source know to include the TIGCC header files
 add_definitions(-D__TIGCC_HEADERS__)
@@ -36,4 +36,6 @@ add_library(X3DStatic
   source/init/init.c
 )
 
+
 set_target_properties(X3DStatic PROPERTIES OUTPUT_NAME X3D)
+set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY $ENV{X3D}/lib)

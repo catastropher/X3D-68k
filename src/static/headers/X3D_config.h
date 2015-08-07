@@ -37,6 +37,8 @@
 
 #ifdef __TIGCC_HEADERS__
 
+#define _GENERIC_ARCHIVE
+
 #include <tigcclib.h>
 
 #endif
