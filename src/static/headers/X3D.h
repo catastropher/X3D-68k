@@ -27,4 +27,4 @@
 #include "X3D_clip.h"
 #include "X3D_geo.h"
 #include "X3D_frustum.h"
-
+#include "X3D_dll.h"

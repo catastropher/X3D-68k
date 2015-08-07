@@ -33,6 +33,7 @@ add_library(X3DStatic
   source/test.c
   source/math/trig.c
   source/math/vector.c
+  source/init/init.c
 )
 
 set_target_properties(X3DStatic PROPERTIES OUTPUT_NAME X3D)
