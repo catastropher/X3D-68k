@@ -131,5 +131,11 @@ int main(int argc, char* argv[]) {
   fprintf(stderr, "%s", strerror(errno));
   
   return code;
+#else
+  char name[] = "tigcc";
+  
+  argv[0] = name;
+
+  execvp("tigcc", argv);
 #endif
 }
