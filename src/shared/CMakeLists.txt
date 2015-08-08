@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 project(X3DShared)
 
-set(CALC_NAME test)
-
 # Needed to make force the 'compiler' to tigcc-x3d
 INCLUDE(CMakeForceCompiler)
 CMAKE_FORCE_C_COMPILER($ENV{X3D}/tools/tigcc-x3d tigcc-x3d)
@@ -22,7 +20,8 @@ include_directories($ENV{X3D}/src/static/headers)
 
 add_executable(X3DShared
 	source/export.c
+	source/init/init.c
 )
 
-set_target_properties(X3DShared PROPERTIES OUTPUT_NAME X3D)
+set_target_properties(X3DShared PROPERTIES OUTPUT_NAME X3D.9xy)
 set_target_properties(X3DShared PROPERTIES RUNTIME_OUTPUT_DIRECTORY $ENV{X3D}/lib)

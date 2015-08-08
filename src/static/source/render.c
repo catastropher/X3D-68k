@@ -23,7 +23,7 @@
 #include "X3D_frustum.h"
 
 #ifdef __TIGCC__
-#include <extgraph/extgraph.h>
+#include "extgraph.h"
 #endif
 
 /// @todo document

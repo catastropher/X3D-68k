@@ -23,6 +23,6 @@ add_executable(X3D-test
 	test.c
 )
 
-set_target_properties(X3D-test PROPERTIES OUTPUT_NAME test)
+set_target_properties(X3D-test PROPERTIES OUTPUT_NAME test.9xz)
 
 target_link_libraries(X3D-test $ENV{X3D}/lib/libX3D.a)

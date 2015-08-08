@@ -29,3 +29,7 @@
 #include "X3D_frustum.h"
 #include "X3D_dll.h"
 
+#include "X3D_engine.h"
+
+#include "init/X3D_init.h"
+

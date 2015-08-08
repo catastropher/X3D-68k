@@ -9,7 +9,12 @@
 void _main() {
   uint16 status;
   
-  if((status = x3d_init()) != 0) {
+  X3D_Context context;
+  X3D_Config config;
+  
+  config.w = 240;
+  
+  if((status = x3d_init(&context, &config)) != 0) {
     clrscr();
     printf("Error loading DLL: %d\n", status);
     ngetchx();

@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "X3D_fix.h"
-
-#define x3d_init_core _DLL_call(uint16, (X3D_Context*, X3D_Config*), 0)
+typedef struct {
+  
+} X3D_Context;
 

@@ -14,6 +14,7 @@ SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> -ar -o <TARGET> <OBJECTS> <LINK_LIBRARIES
 add_definitions(-D__TIGCC_HEADERS__)
 
 include_directories($ENV{X3D}/src/static/headers)
+include_directories($ENV{X3D}/lib)
 
 add_library(X3DStatic
   source/clip.c

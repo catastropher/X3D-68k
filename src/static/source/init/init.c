@@ -15,18 +15,25 @@
 
 #include "X3D_fix.h"
 #include "X3D_dll.h"
+#include "X3D_engine.h"
+#include "init/X3D_init.h"
+
+#include <tigcclib.h>
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
-
-uint16 x3d_init() {
+/**
+ * Attempts to initialize X3D by loading the DLL and calling x3d_init_core(). 
+ * 
+*/
+uint16 x3d_init(X3D_Context* context, X3D_Config* config) {
   uint16 dll_status;
   
   if((dll_status = LoadDLL("x3d", X3D_ID, 1, 0)) != DLL_OK) {
     return dll_status;
   }
   
-  x3d_init_core();
+  x3d_init_core(context, config);
   
   return 0;
 }

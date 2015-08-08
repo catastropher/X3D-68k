@@ -13,9 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "X3D_fix.h"
+#include "X3D_engine.h"
+#include "init/X3D_init.h"
 
-#define x3d_init_core _DLL_call(uint16, (X3D_Context*, X3D_Config*), 0)
+int16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
+  clrscr();
+  printf("w: %u\n", config->w);
+  ngetchx();
+}
 

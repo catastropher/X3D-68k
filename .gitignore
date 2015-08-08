@@ -10,3 +10,7 @@ docs/latex
 build/
 bin/
 lib/
+kdev4/
+*.kdev4
+.kdev_include_paths
+tools/tigcc-x3d

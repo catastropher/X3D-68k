@@ -16,6 +16,10 @@
 #pragma once
 
 #include "X3D_fix.h"
+#include "X3D_engine.h"
+#include "init/X3D_init.h"
 
-#define x3d_init_core _DLL_call(uint16, (X3D_Context*, X3D_Config*), 0)
-
+//=============================================================================
+// Functions
+//=============================================================================
+int16 x3d_init_core(X3D_Context* context, X3D_Config* config)

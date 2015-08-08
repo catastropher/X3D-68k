@@ -13,10 +13,3 @@ DLL_VERSION 1,0
 DLL_EXPORTS x3d_init_core
 
 DLL_IMPLEMENTATION
-
-void x3d_init_core() {
-  clrscr();
-  printf("Hello, world!");
-  ngetchx();
-}
-
