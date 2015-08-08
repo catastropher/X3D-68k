@@ -18,13 +18,16 @@
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
+
 uint16 x3d_init() {
   uint16 dll_status;
   
-  if((dll_status = LoadDLL("X3D", X3D_ID, 1, 0)) != DLL_OK) {
+  if((dll_status = LoadDLL("x3d", X3D_ID, 1, 0)) != DLL_OK) {
     return dll_status;
   }
   
   x3d_init_core();
+  
+  return 0;
 }
 
