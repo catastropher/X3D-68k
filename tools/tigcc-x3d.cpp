@@ -63,9 +63,8 @@ int main(int argc, char* argv[]) {
 #ifdef __CYGWIN__
   std::vector<char *> args;
   
-  args.push_back("tigcc");
+  args.push_back((char *)"tigcc");
   
-  fprintf(stderr,"==========================\n");
   for(int i = 1; i < argc; ++i) {
     char* new_arg = new char[1024];
     char* arg = argv[i];
@@ -118,13 +117,6 @@ int main(int argc, char* argv[]) {
   }
   
   args.push_back(NULL);
-  
-  fprintf(stderr,"----------------------------\n");
-  for(int i = 0; i < args.size(); ++i) {
-    fprintf(stderr, "%s\n", args[i]);
-  }
-  fprintf(stderr,"==========================\n");
-  
   
   int code = execvp("tigcc", &args[0]);
   
