@@ -1,4 +1,4 @@
-#define USE_TI89
+#define USE_TI92PLUS
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 

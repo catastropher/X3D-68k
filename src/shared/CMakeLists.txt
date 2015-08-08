@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 project(X3DShared)
 
+set(CALC_NAME test)
+
 # Needed to make force the 'compiler' to tigcc-x3d
 INCLUDE(CMakeForceCompiler)
 CMAKE_FORCE_C_COMPILER($ENV{X3D}/tools/tigcc-x3d tigcc-x3d)
@@ -9,7 +11,7 @@ CMAKE_FORCE_C_COMPILER($ENV{X3D}/tools/tigcc-x3d tigcc-x3d)
 # Custom configuration for the linker
 SET(CMAKE_LINKER $ENV{X3D}/tools/tigcc-x3d)
 
-SET(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+SET(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> -n X3D")
 
 SET(CMAKE_EXECUTABLE_SUFFIX "")
 

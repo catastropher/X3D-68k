@@ -1,10 +1,16 @@
-#define USE_TI89
+#define USE_TI92PLUS
 
 #include <tigcclib.h>
 
 #include "X3D.h"
 
 void _main() {
-  x3d_init();
+  if(!x3d_init()) {
+    clrscr();
+    printf("Error loading DLL\n");
+    ngetchx();
+  }
+  
+  ngetchx();
 }
 
