@@ -84,6 +84,8 @@ typedef struct X3D_Vex2D_int16 {
 /// A shorthand for X3D_Vex2D_int16
 typedef X3D_Vex2D_int16 X3D_Vex2D;
 
+typedef X3D_Vex2D_int16 Vex2D;
+
 //=============================================================================
 // Function declarations
 //=============================================================================

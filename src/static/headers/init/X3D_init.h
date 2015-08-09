@@ -23,7 +23,13 @@
 //=============================================================================
 
 typedef struct {
-  uint16 w;
+  uint16 max_segments;
+  uint16 seg_pool_size;
+  uint16 screen_w, screen_h;
+  uint16 context_w, context_h;
+  Vex2D context_pos; 
+  uint8 fov;
+  uint8 flags;
 } X3D_Config;
 
 //=============================================================================

@@ -23,5 +23,8 @@ add_executable(X3DShared
 	source/init/init.c
 )
 
+target_link_libraries(X3DShared $ENV{X3D}/lib/libX3D.a)
+target_link_libraries(X3DShared $ENV{X3D}/lib/extgraph.a)
+
 set_target_properties(X3DShared PROPERTIES OUTPUT_NAME X3D.9xy)
 set_target_properties(X3DShared PROPERTIES RUNTIME_OUTPUT_DIRECTORY $ENV{X3D}/lib)

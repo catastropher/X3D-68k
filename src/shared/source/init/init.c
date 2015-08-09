@@ -16,10 +16,26 @@
 #include "X3D_fix.h"
 #include "X3D_engine.h"
 #include "init/X3D_init.h"
+#include "X3D_render.h"
+#include "X3D_trig.h"
 
-int16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
-  clrscr();
-  printf("w: %u\n", config->w);
-  ngetchx();
+uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
+  //x3d_enginestate_init(&context->state, config->max_segments, config->seg_pool_size);
+  x3d_renderdevice_init(&context->device, config->screen_w, config->screen_h);
+  //x3d_rendercontext_init(&context->context, context->device.dbuf, config->screen_w,
+  //                       config->screen_h, config->context_w, config->context_h,
+  //                       config->context_pos.x, config->context_pos.y, config->fov,
+  //                       config->flags);
+  
+  // Redirect interrupt handlers
+  context->old_int_1 = GetIntVec(AUTO_INT_1);
+  context->old_int_5 = GetIntVec(AUTO_INT_5);
+  
+  //SetIntVec(AUTO_INT_1, new_auto_int_1);
+  //SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
+  
+  context->quit = 0;
+  
+  return 0;
 }
 

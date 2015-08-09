@@ -15,7 +15,17 @@
 
 #pragma once
 
-typedef struct {
-  
-} X3D_Context;
+#include "X3D_render.h"
+#include "X3D_keys.h"
 
+typedef struct X3D_Context {
+  X3D_RenderContext context;
+  X3D_EngineState state;
+  X3D_RenderDevice device;
+  X3D_KeyState keys;
+  
+  INT_HANDLER old_int_1;
+  INT_HANDLER old_int_5;
+  
+  uint8 quit;
+} X3D_Context;
