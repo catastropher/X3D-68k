@@ -2,20 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 Project(X3DStatic)
 
-# Needed to make force the 'compiler' to tigcc-x3d
-INCLUDE(CMakeForceCompiler)
-CMAKE_FORCE_C_COMPILER($ENV{X3D}/tools/tigcc-x3d tigcc-x3d)
-
-# Custom configuration for the archiver
-SET(CMAKE_AR $ENV{X3D}/tools/tigcc-x3d)
-SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> -ar -o <TARGET> <OBJECTS> <LINK_LIBRARIES> -ar")
-
-# Lets the X3D source know to include the TIGCC header files
-add_definitions(-D__TIGCC_HEADERS__)
-
-include_directories($ENV{X3D}/src/static/headers)
-include_directories($ENV{X3D}/lib)
-
 add_library(X3DStatic
   source/clip.c
   source/editor.c
@@ -37,6 +23,26 @@ add_library(X3DStatic
   source/init/init.c
 )
 
+if(X3D_TARGET EQUAL 68k)
+  include($ENV{X3D}/src/platform/68k/68k.cmake)
+  set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY $ENV{X3D}/lib/68k)
+  
+elseif(X3D_TARGET EQUAL "pc")
+  set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY $ENV{X3D}/lib/68k)
+endif()
+
+
+
+
+
+
+
+
+include_directories($ENV{X3D}/src/static/headers)
+include_directories($ENV{X3D}/lib)
+
+set(CMAKE_USE_RELATIVE_PATHS FALSE)
+
+
 
 set_target_properties(X3DStatic PROPERTIES OUTPUT_NAME X3D)
-set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY $ENV{X3D}/lib)
