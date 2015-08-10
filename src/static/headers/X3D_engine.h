@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "X3D_config.h"
 #include "X3D_render.h"
 #include "X3D_keys.h"
 
@@ -24,8 +25,10 @@ typedef struct X3D_Context {
   X3D_RenderDevice device;
   X3D_KeyState keys;
   
+#ifdef __TIGCC__
   INT_HANDLER old_int_1;
   INT_HANDLER old_int_5;
+#endif
   
   uint8 quit;
 } X3D_Context;

@@ -25,15 +25,13 @@ add_library(X3DStatic
 
 if(X3D_TARGET EQUAL 68k)
   include($ENV{X3D}/src/platform/68k/68k.cmake)
-  set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY $ENV{X3D}/lib/68k)
   
 elseif(X3D_TARGET EQUAL "pc")
-  set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY $ENV{X3D}/lib/68k)
 endif()
 
 
 
-
+set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 
 
 

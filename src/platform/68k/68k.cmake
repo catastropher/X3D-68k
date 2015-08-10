@@ -24,4 +24,8 @@ add_definitions(-D__TIGCC_HEADERS__)
 
 if(X3D_SUBTARGET EQUAL "ti92plus")
   add_definitions(-DUSE_TI92PLUS)
+elseif(X3D_SUBTARGET EQUAL "v200")
+  add_definitions(-DUSE_V200)
+elseif(X3D_SUBTARGET EQUAL "ti89")
+  add_definitions(-DUSE_TI89)
 endif()
