@@ -13,13 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X3D_fix.h"
-#include "X3D_engine.h"
-#include "init/X3D_init.h"
-#include "X3D_render.h"
-#include "X3D_trig.h"
+#include "X3D_config.h"
 
-uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
+uint16 x3d_init_core() {//X3D_Context* context, X3D_Config* config) {
   clrscr();
   printf("Hello from DLL!\n");
   ngetchx();
@@ -37,7 +33,7 @@ uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
   //SetIntVec(AUTO_INT_1, new_auto_int_1);
   //SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
   
-  context->quit = 0;
+  //context->quit = 0;
   
   return 0;
 }

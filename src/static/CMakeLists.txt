@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 Project(X3DStatic)
 
+add_definitions(-DUSE_TI92PLUS)
+
 add_library(X3DStatic
   source/clip.c
   source/editor.c
@@ -38,6 +40,7 @@ set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR
 
 include_directories($ENV{X3D}/src/static/headers)
 include_directories($ENV{X3D}/lib)
+include_directories(${PLATFORM_DIR})
 
 set(CMAKE_USE_RELATIVE_PATHS FALSE)
 

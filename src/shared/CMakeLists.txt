@@ -7,15 +7,22 @@ project(X3DShared)
 # Lets the X3D source know to include the TIGCC header files
 add_definitions(-D__TIGCC_HEADERS__)
 
-include_directories($ENV{X3D}/src/static/headers)
+include_directories(${PLATFORM_DIR})
+include_directories($ENV{X3D}/src/shared/headers)
 
 add_executable(X3DShared
 	source/export.c
 	source/init/init.c
 )
 
-target_link_libraries(X3DShared $ENV{X3D}/lib/libX3D.a)
+if(X3D_TARGET EQUAL 68k)
+  include($ENV{X3D}/src/platform/68k/68k.cmake)
+  
+elseif(X3D_TARGET EQUAL "pc")
+endif()
+
+
 target_link_libraries(X3DShared $ENV{X3D}/lib/extgraph.a)
 
 set_target_properties(X3DShared PROPERTIES OUTPUT_NAME X3D.9xy)
-set_target_properties(X3DShared PROPERTIES RUNTIME_OUTPUT_DIRECTORY $ENV{X3D}/lib)
+set_target_properties(X3DShared PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})

@@ -12,14 +12,41 @@
 
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
+//
+//
+// Description: This is the platform configuration file for the 68k port.
+
+
 
 #pragma once
 
-#include "X3D_fix.h"
-#include "X3D_engine.h"
-#include "init/X3D_init.h"
+#include <tigcclib.h>
 
 //=============================================================================
-// Functions
+// Types
 //=============================================================================
-uint16 x3d_init_core(X3D_Context* context, X3D_Config* config)
+
+/// An 8-bit signed integer
+typedef char int8;
+
+/// An 8-bit unsigned integer
+typedef unsigned char uint8;
+
+/// A 16-bit signed integer
+typedef short int16;
+
+/// A 16-bit unsigned integer
+typedef unsigned short uint16;
+
+/// A 32-bit signed integer
+typedef long int32;
+
+/// A 32-bit unsigned integer
+typedef unsigned long uint32;
+
+/// A 64-bit signed integer
+typedef long long int64;
+
+/// A 64-bit unsigned integer
+typedef unsigned long long uint64;
+
