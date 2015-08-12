@@ -13,6 +13,7 @@ include_directories($ENV{X3D}/src/shared/headers)
 add_executable(X3DShared
 	source/export.c
 	source/init/init.c
+  source/debug/log.c
 )
 
 if(X3D_TARGET EQUAL 68k)
