@@ -18,6 +18,9 @@ SET(CMAKE_EXECUTABLE_SUFFIX "")
 add_definitions(-D__TIGCC_HEADERS__)
 
 include_directories($ENV{X3D}/src/static/headers)
+include_directories($ENV{X3D}/src/shared/headers)
+include_directories($ENV{X3D}/lib)
+include_directories(${PLATFORM_DIR})
 
 add_executable(X3D-test
 	test.c
@@ -25,5 +28,5 @@ add_executable(X3D-test
 
 set_target_properties(X3D-test PROPERTIES OUTPUT_NAME test.9xz)
 
-target_link_libraries(X3D-test $ENV{X3D}/lib/libX3D.a)
+target_link_libraries(X3D-test $ENV{X3D}/lib/68k/ti92plus/libX3D.a)
 target_link_libraries(X3D-test $ENV{X3D}/lib/extgraph.a)

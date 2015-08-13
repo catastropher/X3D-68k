@@ -17,12 +17,12 @@ void _main() {
   config.screen_w = LCD_WIDTH;
   config.screen_h = LCD_HEIGHT;
   
-  config.fov = ANG_60;
+  config.fov = 0;//ANG_60;
   config.max_segments = 20;
   config.seg_pool_size = 20000;
   config.flags = 0;
   
-  config.context_pos = (Vex2D) { 0, 0 };
+  //config.context_pos = (Vex2D) { 0, 0 };
   
   if((status = x3d_init(&context, &config)) != 0) {
     clrscr();

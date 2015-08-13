@@ -27,6 +27,8 @@
 .PHONY: clean-pc
 .PHONY: nuke-build
 
+.PHONY: test
+
 
 all: 68k pc
 
@@ -89,3 +91,9 @@ clean-all: clean-68k clean-pc
 
 nuke-build:
 	@rm -rf build
+	
+config-test:
+	@mkdir -p build/test && cd build/test && cmake ../../test -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k
+	
+test:
+	@cd build/test && make

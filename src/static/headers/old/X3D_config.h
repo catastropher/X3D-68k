@@ -15,28 +15,31 @@
 
 #pragma once
 
-#include "X3D_engine.h"
-#include "X3D_export.h"
+#define NDEBUG
 
-typedef struct {
-  uint16 max_segments;
-  uint16 seg_pool_size;
-  uint16 screen_w, screen_h;
-  uint16 context_w, context_h;
-  //Vex2D context_pos; 
-  uint8 fov;
-  uint8 flags;
-} X3D_Config;
+#ifdef _MSC_VER
+#define inline __inline
+#endif
 
+#if defined(__CYGWIN__) || defined(WIN32)
 
-#ifdef __X3D_SHARED__
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <ctype.h>
+#include <string.h>
 
-uint16 x3d_init(X3D_Context* context, X3D_Config* config);
+#define _keytest(...) 1
+#define ngetchx() ;
+#define clrscr() ;
 
+#endif
 
-#else
+#ifdef __TIGCC_HEADERS__
 
-#define x3d_init_core _DLL_call(uint16, (X3D_Context*, X3D_Config*), EXPORT_X3D_INIT_CORE)
+#define _GENERIC_ARCHIVE
+
+#include <tigcclib.h>
 
 #endif
 
