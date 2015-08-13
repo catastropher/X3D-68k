@@ -96,4 +96,4 @@ config-test:
 	@mkdir -p build/test && cd build/test && cmake ../../test -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k
 	
 test:
-	@cd build/test && make
+	@cd build/test && make --no-print-directory
