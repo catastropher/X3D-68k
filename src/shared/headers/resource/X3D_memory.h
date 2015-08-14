@@ -14,26 +14,23 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "X3D_config.h"
-#include "debug/X3D_log.h"
-#include "debug/X3D_error.h"
-#include "resource/X3D_memory.h"
+#include "X3D_fix.h"
+#include "X3D_engine.h"
 
-#include "init/X3D_init.h"
+#ifdef __X3D_SHARED__
 
+void* x3d_malloc(X3D_Context* context, uint16 size);
+void x3d_free(X3D_Context* context, void* ptr);
+void* x3d_realloc(X3D_Context* context, void* ptr, uint16 size);
 
-#ifdef __TIGCC__
+#else
 
-#define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
-
-DLL_INTERFACE
-
-DLL_ID X3D_ID
-DLL_VERSION 1,0
-DLL_EXPORTS x3d_init_core, x3d_log, x3d_cleanup_core, &x3d_loaded, x3d_error, x3d_malloc, x3d_free, x3d_realloc
-
-DLL_IMPLEMENTATION
-
+#define x3d_malloc _DLL_call(void* , (X3D_Context* context, uint16 size), EXPORT_X3D_MALLOC)
+#define x3d_free _DLL_call(void, (X3D_Context* context, void* ptr), EXPORT_X3D_FREE)
+#define x3d_realloc _DLL_call(void* , (X3D_Context* context, void* ptr, uint16 size), EXPORT_X3D_REALLOC)
 
 #endif
 
