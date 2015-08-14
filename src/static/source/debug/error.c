@@ -15,7 +15,17 @@
  */
 
 #include "X3D_fix.h"
- 
+
+/**
+ * X3D's default error handler that's called whenever an error occurs.
+ *
+ * @param code  - error code
+ * @param msg   - error message to display
+ *
+ * @note This function does not return because it calls exit().
+ * @note A custom handler can be installed by using
+ *    @ref x3d_set_error_handler().
+ */
 void x3d_default_error_handler(uint16 code, const char* msg) {
   clrscr();
   printf("Error code %d: %s\n", code, msg);

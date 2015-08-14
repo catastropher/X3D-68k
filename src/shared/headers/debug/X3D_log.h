@@ -16,24 +16,27 @@
 
 #pragma once
 
+/// Types of information that can be sent to the log.
 typedef enum {
   X3D_INFO = 1,
   X3D_WARNING = 2,
   X3D_ERROR = 4
 } X3D_LogStatus;
 
+/// Options for enabling logging
 typedef enum {
   X3D_ENABLE_INFO = 1,
   X3D_ENABLE_WARNING = 2,
   X3D_ENABLE_ERROR = 4,
   
-  X3D_ENABLE_LOG_STDOUT = 8,
-  X3D_ENABLE_LOG_FILE = 16
+  X3D_ENABLE_LOG_STDOUT = 8,      /// Log will be echoed to stdout
+  X3D_ENABLE_LOG_FILE = 16        /// Log will be saved to file "log"
 } X3D_LogFlags;
 
+/// Stores information about an X3D log
 typedef struct X3D_Log {
-  uint8 flags;
-  FILE* file;
+  uint8 flags;    /// Log flags (see @ref X3D_LogFlags)
+  FILE* file;     /// File to write log to
 } X3D_Log;
 
 //=============================================================================

@@ -20,10 +20,20 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+/**
+ * Sends formatted output to the log.
+ *
+ * @param status  - status of output (see @ref X3D_LogStatus for types)
+ * @param format  - printf like format string
+ *
+ * @note Log data can be sent to stdout, a file, or both.
+ * @note States types can be ignored e.g. if X3D_ENABLE_INFO is not set,
+ *    anything with the info status will be ignored.
+ */
 void x3d_log(X3D_LogStatus status, const char* format, ...) {
   X3D_Context* context = x3d_get_active_context();
   
-  // Check if logging
+  // Check if logging of this status type is enabled
   if((context->log.flags & status) == 0)
     return;
   
@@ -47,7 +57,5 @@ void x3d_log(X3D_LogStatus status, const char* format, ...) {
     fprintf(context->log.file, "%s ", log_status[status - 1]);
     vfprintf(context->log.file, format, &list);
   }
-  
-  printf("Flags: %d\n", context->log.flags);
 }
 

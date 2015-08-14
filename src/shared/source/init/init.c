@@ -18,10 +18,16 @@
 #include "init/X3D_init.h"
 #include "X3D_engine.h"
 
+/**
+ * Initializes logging.
+ *
+ * @param context - context to set up logging for
+ * @param flags   - logging flags 
+ *
+ * @note Do not call this directly. It is called from x3d_init_core().
+ */
 static inline x3d_init_log(X3D_Context* context, uint8 flags) {
   context->log.flags = flags;
-  
-  printf("%lx\n", x3d_get_active_context());
   
   if((context->log.flags & X3D_ENABLE_LOG_FILE) != 0) {
     context->log.file = fopen("log", "wt");
@@ -32,44 +38,32 @@ static inline x3d_init_log(X3D_Context* context, uint8 flags) {
     }
   }
   
-  x3d_log(X3D_INFO, "Init log\r");
-  
-  printf("flags: %d\n", context->log.flags);
+  x3d_log(X3D_INFO, "Init log\n");
 }
 
-
+/**
+ * Initializes the core engine.
+ *
+ * @param context - context to set as active context
+ * @param config  - configuration settings
+ *
+ * @note Do not call this directly. It is called from x3d_init().
+ */
 uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
   clrscr();
   
   x3d_set_active_context(context);
-  
-  
   x3d_init_log(context, config->log_flags);
-  
-  x3d_error(0, "Init library\n");
-  
-
-
-
-  //x3d_enginestate_init(&context->state, config->max_segments, config->seg_pool_size);
-  //x3d_renderdevice_init(&context->device, config->screen_w, config->screen_h);
-  //x3d_rendercontext_init(&context->context, context->device.dbuf, config->screen_w,
-  //                       config->screen_h, config->context_w, config->context_h,
-  //                       config->context_pos.x, config->context_pos.y, config->fov,
-  //                       config->flags);
-  
-  // Redirect interrupt handlers
-  //context->old_int_1 = GetIntVec(AUTO_INT_1);
-  //context->old_int_5 = GetIntVec(AUTO_INT_5);
-  
-  //SetIntVec(AUTO_INT_1, new_auto_int_1);
-  //SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
-  
-  //context->quit = 0;
   
   return 0;
 }
 
+/**
+ * Cleans up the engine core and releases any resources.
+ *
+ * @note Do not call this directly. It is called from x3d_cleanup().
+ * @todo Should this be moved into a separate file?
+ */
 void x3d_cleanup_core(void) {
   X3D_Context* context = x3d_get_active_context();
   

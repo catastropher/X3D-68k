@@ -19,9 +19,13 @@
 #include "X3D_engine.h"
 #include "X3D_export.h"
 
+/// Configuration settings for X3D
+/// @todo document
 typedef struct {
-  uint16 max_segments;
-  uint16 seg_pool_size;
+  uint16 max_segments;            ///< Maximum number of segments the segment table
+                                  ///     can hold.
+  uint16 seg_pool_size;           ///
+  
   uint16 screen_w, screen_h;
   uint16 context_w, context_h;
   //Vex2D context_pos; 

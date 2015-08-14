@@ -18,12 +18,32 @@
 
 uint8 x3d_loaded; 
 
+/// The active X3D context. Do not access directly.
 X3D_Context* active_context;
- 
- X3D_Context* x3d_get_active_context() {
+
+/**
+ * Gets the active X3D context.
+ *
+ * @return The active X3D context.
+ *
+ * @note Only one X3D context can be active at a time.
+ * @note Use this to get the value of @ref active_context.
+ */
+X3D_Context* x3d_get_active_context() {
   return active_context;
 }
 
+/**
+ * Sets the active X3D context.
+ *
+ * @parm context -  context to set the active context to.
+ *
+ * @return nothing
+ *
+ * @note Only one X3D context can be active at a time.
+ * @note Use this to set the value of @ref active_context.
+ */
 void x3d_set_active_context(X3D_Context* context) {
   active_context = context;
 }
+

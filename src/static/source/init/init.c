@@ -33,7 +33,7 @@ CALLBACK void x3d_cleanup(void) {
 /**
  * Attempts to initialize X3D by loading the DLL and calling x3d_init_core(). 
  * 
-*/
+ */
 uint16 x3d_init(X3D_Context* context, X3D_Config* config) {
   uint16 dll_status;
   

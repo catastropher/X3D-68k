@@ -18,7 +18,24 @@
 #include "X3D_engine.h"
 
 #include <stdarg.h>
- 
+
+/**
+ * Throws an error with the given code and calls the installed handler
+ *    function. An optional message (in printf style) can be provided, which
+ *    is also passed to the handler.
+ *
+ *
+ * @param code  - error code
+ * @param msg   - error message
+ *
+ * @note A custom handler can be installed by using
+ *    @ref x3d_set_error_handler().
+ *
+ * @note This function does not return, but it is the handler's responsibility
+ *    to call exit().
+ *
+ * @note The default handler is @ref x3d_default_error_handler()
+ */
 void x3d_error(uint16 code, const char* format, ...) {
   char msg[256];
 
