@@ -22,10 +22,11 @@
 
 #include "X3D.h"
 
+X3D_Context context;
+
 void _main() {
   uint16 status;
   
-  X3D_Context context;
   X3D_Config config;
   
   config.context_w = LCD_WIDTH;
@@ -38,6 +39,8 @@ void _main() {
   config.seg_pool_size = 20000;
   config.flags = 0;
   
+  config.log_flags = X3D_ENABLE_INFO | X3D_ENABLE_WARNING | X3D_ENABLE_ERROR | X3D_ENABLE_LOG_STDOUT | X3D_ENABLE_LOG_FILE;
+  
   //config.context_pos = (Vex2D) { 0, 0 };
   
   if((status = x3d_init(&context, &config)) != 0) {
@@ -45,5 +48,7 @@ void _main() {
     printf("Error loading DLL: %d\n", status);
     ngetchx();
   }
+  
+  ngetchx();
 }
 

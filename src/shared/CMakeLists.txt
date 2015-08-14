@@ -6,6 +6,7 @@ project(X3DShared)
 
 # Lets the X3D source know to include the TIGCC header files
 add_definitions(-D__TIGCC_HEADERS__)
+add_definitions(-D__X3D_SHARED__)
 
 include_directories(${PLATFORM_DIR})
 include_directories($ENV{X3D}/src/shared/headers)
@@ -14,6 +15,8 @@ add_executable(X3DShared
 	source/export.c
 	source/init/init.c
   source/debug/log.c
+  source/engine.c
+  source/debug/error.c
 )
 
 if(X3D_TARGET EQUAL 68k)

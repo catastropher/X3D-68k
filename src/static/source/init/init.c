@@ -21,6 +21,14 @@
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
+
+CALLBACK void x3d_cleanup(void) {
+  if(x3d_loaded) {
+    x3d_cleanup_core();
+    UnloadDLL();
+  }
+}
+
 /**
  * Attempts to initialize X3D by loading the DLL and calling x3d_init_core(). 
  * 
@@ -28,13 +36,20 @@
 uint16 x3d_init(X3D_Context* context, X3D_Config* config) {
   uint16 dll_status;
   
+  atexit(x3d_cleanup);
+  
 #ifdef __TIGCC__
+  UnloadDLL();
+  
+  x3d_loaded = 0;
+  
   if((dll_status = LoadDLL("x3d", X3D_ID, 1, 0)) != DLL_OK) {
     return dll_status;
   }
+  
+  x3d_loaded = 1;
   x3d_init_core(context, config);
 #endif
   
   return 0;
 }
-

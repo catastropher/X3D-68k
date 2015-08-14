@@ -29,6 +29,10 @@
 // 6) Switch back to your branch
 // 7) Merge in the changes from "export-list"
 enum {
-  EXPORT_X3D_INIT_CORE = 0
+  EXPORT_X3D_INIT_CORE = 0,
+  EXPORT_X3D_LOG = 1,
+  EXPORT_X3D_CLEANUP_CORE = 2,
+  EXPORT_X3D_LOADED = 3,
+  EXPORT_X3D_ERROR = 4
 };
 

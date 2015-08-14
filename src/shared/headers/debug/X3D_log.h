@@ -36,5 +36,23 @@ typedef struct X3D_Log {
   FILE* file;
 } X3D_Log;
 
+//=============================================================================
+// Static inline functions
+//=============================================================================
+
+
+
+//=============================================================================
+// Functions
+//=============================================================================
+
+#ifdef __X3D_SHARED__
+
 void x3d_log(X3D_LogStatus status, const char* format, ...);
+
+#else
+
+#define x3d_log _DLL_call(void, (X3D_LogStatus status, const char* format, ...), EXPORT_X3D_LOG)
+
+#endif
 

@@ -27,17 +27,21 @@ typedef struct {
   //Vex2D context_pos; 
   uint8 fov;
   uint8 flags;
+  
+  uint8 log_flags;
 } X3D_Config;
 
 
 #ifdef __X3D_SHARED__
 
-uint16 x3d_init(X3D_Context* context, X3D_Config* config);
+uint16 x3d_init_core(X3D_Context* context, X3D_Config* config);
+void x3d_cleanup_core(void);
 
 
 #else
 
 #define x3d_init_core _DLL_call(uint16, (X3D_Context*, X3D_Config*), EXPORT_X3D_INIT_CORE)
+#define x3d_cleanup_core _DLL_call(void, (void), EXPORT_X3D_CLEANUP_CORE)
 
 #endif
 

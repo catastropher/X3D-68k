@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 Project(X3DStatic)
 
-add_definitions(-DUSE_TI92PLUS)
+add_definitions(-D__TIGCC_STATIC__)
 
 add_library(X3DStatic
   source/init/init.c

@@ -13,26 +13,23 @@
  * You should have received a copy of the GNU General Public License
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "X3D_config.h"
-#include "debug/X3D_log.h"
-#include "debug/X3D_error.h"
-
-#include "init/X3D_init.h"
-
-
-#ifdef __TIGCC__
-
-#define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
-
-DLL_INTERFACE
-
-DLL_ID X3D_ID
-DLL_VERSION 1,0
-DLL_EXPORTS x3d_init_core, x3d_log, x3d_cleanup_core, &x3d_loaded, x3d_error
-
-DLL_IMPLEMENTATION
-
-
-#endif
-
+ 
+ #include "debug/X3D_error.h"
+ #include "X3D_engine.h"
+ 
+ #include <stdarg.h>
+ 
+ void x3d_error(uint16 code, const char* format, ...) {
+  char msg[256];
+  
+  va_list list;
+  
+  va_start(list, format);
+  vsprintf(msg, format, &list);
+  
+  // Todo: reset screen
+  
+  x3d_get_active_context()->error_handler(code, msg);
+  
+  exit(-1);
+ }

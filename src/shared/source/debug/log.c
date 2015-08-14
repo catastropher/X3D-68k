@@ -24,7 +24,7 @@ void x3d_log(X3D_LogStatus status, const char* format, ...) {
   X3D_Context* context = x3d_get_active_context();
   
   // Check if logging
-  if((context->log.flags & status) != 0)
+  if((context->log.flags & status) == 0)
     return;
   
   const char* log_status[] = {
@@ -36,23 +36,18 @@ void x3d_log(X3D_LogStatus status, const char* format, ...) {
   
   va_list list;
   
-  va_start(list, format);
-  
   if((context->log.flags & X3D_ENABLE_LOG_STDOUT) != 0) {
-    printf("%s ", log_status[status - 1]);
+    va_start(list, format);
+    printf("[%s] ", log_status[status - 1]);
     vprintf(format, &list);
   }
   
   if((context->log.flags & X3D_ENABLE_LOG_FILE) != 0) {
+    va_start(list, format);
     fprintf(context->log.file, "%s ", log_status[status - 1]);
     vfprintf(context->log.file, format, &list);
   }
   
-  
-  
-  
-  
-  
-  
+  printf("Flags: %d\n", context->log.flags);
 }
 

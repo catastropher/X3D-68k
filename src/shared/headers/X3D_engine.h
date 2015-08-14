@@ -20,9 +20,9 @@
 #include "debug/X3D_log.h"
 
 typedef struct X3D_Context {
-  uint8 log_flags;
-  
   X3D_Log log;
+  
+  void (*error_handler)(uint16 code, const char* msg);
   
   //X3D_RenderContext context;
   //X3D_EngineState state;
@@ -37,7 +37,18 @@ typedef struct X3D_Context {
   uint8 quit;
 } X3D_Context;
 
-static inline X3D_Context* x3d_get_active_context() {
-  return NULL;
-}
+#ifdef __X3D_SHARED__
+
+extern uint8 x3d_loaded;
+
+
+X3D_Context* x3d_get_active_context();
+void x3d_set_active_context(X3D_Context* context);
+
+#else
+
+#define x3d_loaded _DLL_glbvar(uint8, EXPORT_X3D_LOADED)
+
+
+#endif
 
