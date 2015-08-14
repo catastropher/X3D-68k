@@ -18,6 +18,7 @@
 #include "X3D_fix.h"
 #include "X3D_engine.h"
 #include "init/X3D_init.h"
+#include "debug/X3D_static_error.h"
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
@@ -46,6 +47,9 @@ uint16 x3d_init(X3D_Context* context, X3D_Config* config) {
   if((dll_status = LoadDLL("x3d", X3D_ID, 1, 0)) != DLL_OK) {
     return dll_status;
   }
+  
+  // Set the error handler
+  context->error_handler = x3d_default_error_handler;
   
   x3d_loaded = 1;
   x3d_init_core(context, config);

@@ -13,22 +13,13 @@
  * You should have received a copy of the GNU General Public License
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include "X3D_fix.h"
  
-#include "debug/X3D_error.h"
-#include "X3D_engine.h"
-
-#include <stdarg.h>
- 
-void x3d_error(uint16 code, const char* format, ...) {
-  char msg[256];
-
-  va_list list;
-
-  va_start(list, format);
-  vsprintf(msg, format, &list);
-
-  // Todo: reset screen
-
-  x3d_get_active_context()->error_handler(code, msg);
+void x3d_default_error_handler(uint16 code, const char* msg) {
+  clrscr();
+  printf("Error code %d: %s\n", code, msg);
+  ngetchx();
+  
+  exit(-1);
 }
-

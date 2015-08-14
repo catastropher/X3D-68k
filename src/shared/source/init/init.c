@@ -46,6 +46,8 @@ uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
   
   x3d_init_log(context, config->log_flags);
   
+  x3d_error(0, "Init library\n");
+  
 
 
 

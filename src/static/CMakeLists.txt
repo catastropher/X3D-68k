@@ -6,6 +6,7 @@ add_definitions(-D__TIGCC_STATIC__)
 
 add_library(X3DStatic
   source/init/init.c
+  source/debug/error.c
 )
 
 if(X3D_TARGET EQUAL 68k)
