@@ -45,3 +45,16 @@ const fp0x16 sintab[256] = {
   -12539, -11793, -11039, -10278, -9512, -8739, -7961, -7179, -6392, -5602,
   -4808, -4011, -3211, -2410, -1607, -804
 };
+
+
+/**
+* Calculates the sine of an angle.
+*
+* @param angle - the angle as an angle256
+*
+* @return The sine of the angle in fp0x16 format
+*/
+
+inline fp0x16 x3d_sinfp(angle256 angle) {
+  return sintab[(uint16)angle];
+}

@@ -34,18 +34,18 @@ enum {
 ///< The slope of a vertical line in fp8x8 format (faking infinity)
 #define VERTICAL_LINE_SLOPE INT16_MAX
 
+
+#ifdef __X3D_SHARED__
+
 extern const fp0x16 sintab[256];
 
-/**
-* Calculates the sine of an angle.
-*
-* @param angle - the angle as an angle256
-*
-* @return The sine of the angle in fp0x16 format
-*/
-static inline fp0x16 x3d_sinfp(angle256 angle) {
-  return sintab[(uint16)angle];
-}
+inline fp0x16 x3d_sinfp(angle256 angle);
+
+#else
+
+#define x3d_sinfp _DLL_call(fp0x16, (angle256), EXPORT_X3D_SINFP)
+
+#endif
 
 /**
 * Calculates the cosine of an angle.
@@ -58,6 +58,7 @@ static inline fp0x16 x3d_cosfp(angle256 angle) {
   // We exploit the fact that cos(x) = sin(90 - x)
   return x3d_sinfp(ANG_90 - angle);
 }
+
 
 /**
 * Calculates the tangent of an angle.

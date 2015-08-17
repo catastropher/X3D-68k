@@ -18,6 +18,7 @@
 #include "debug/X3D_log.h"
 #include "debug/X3D_error.h"
 #include "resource/X3D_memory.h"
+#include "X3D_trig.h"
 
 #include "init/X3D_init.h"
 
@@ -30,7 +31,7 @@ DLL_INTERFACE
 
 DLL_ID X3D_ID
 DLL_VERSION 1,0
-DLL_EXPORTS x3d_init_core, x3d_log, x3d_cleanup_core, &x3d_loaded, x3d_error, x3d_malloc, x3d_free, x3d_realloc
+DLL_EXPORTS x3d_init_core, x3d_log, x3d_cleanup_core, &x3d_loaded, x3d_error, x3d_malloc, x3d_free, x3d_realloc, x3d_sinfp
 
 DLL_IMPLEMENTATION
 
