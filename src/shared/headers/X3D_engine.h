@@ -18,18 +18,19 @@
 
 #include "X3D_config.h"
 #include "debug/X3D_log.h"
+#include "X3D_vector.h"
 
 /// A logical screen that is rendered to.
 typedef struct X3D_RenderContext {
   uint8 flags;                ///< Flags (currently unused)
 
   uint8 fov;                  ///< Camera field of view
-  //X3D_Vex2D_int16 pos;      ///< Position on the screen where to render
+  Vex3D pos;      ///< Position on the screen where to render
   uint16 w, h;                ///< Size of the render context
 
   int16 scale;                ///< Scaling factor for rendering
 
-  //X3D_Vex2D_int16 center;   ///< Logical center of the rendering context
+  Vex3D center;   ///< Logical center of the rendering context
 
   uint8* screen;              ///< Screen to render to (monochrome)
   uint16 screen_w;            ///< Full witdth of the screen
