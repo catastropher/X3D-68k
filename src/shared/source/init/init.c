@@ -74,3 +74,31 @@ void x3d_cleanup_core(void) {
     }
   }
 }
+
+#if 0
+
+void x3d_init_viewport(X3D_ViewPort* port, uint8* screen, uint16 port_w,
+  uint16 port_h, Vex2D port_pos, uint8 fov, uint8 flags) {
+
+  context->screen = screen;
+  context->screen_w = screen_w;
+  context->screen_h = screen_h;
+
+  context->w = context_w;
+  context->h = context_h;
+  context->pos.x = context_x;
+  context->pos.y = context_y;
+
+  context->fov = fov;
+  context->flags = flags;
+
+  // Default center of the render context
+  context->center.x = context->pos.x + context->w / 2;
+  context->center.y = context->pos.y + context->h / 2;
+
+  // Calculate the screen scaling factor (distance to the near plane)
+  // dist = (w / 2) / tan(fov / 2)
+  context->scale = div_int16_by_fp0x16(screen_w / 2, x3d_tanfp(fov / 2));
+}
+
+#endif
