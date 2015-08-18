@@ -20,6 +20,7 @@
 #include "debug/X3D_log.h"
 #include "X3D_vector.h"
 #include "X3D_objects.h"
+#include "X3D_segment.h"
 
 
 /// A logical screen that is rendered to.
@@ -47,13 +48,20 @@ typedef struct X3D_ViewPort {
 } X3D_ViewPort;
 
 
+typedef struct X3D_Camera {
+  X3D_Object object;
 
+  X3D_ViewPort* port;
 
+  uint8 fov;
+  uint8 flags;
+} X3D_Camera;
 
 typedef struct X3D_Context {
   X3D_Log log;
   X3D_Screen screen;
   X3D_ObjectManager object_manager;
+  X3D_SegmentManager segment_manager;
 
   X3D_Camera camera[X3D_MAX_CAMERAS];
   
@@ -87,3 +95,8 @@ void x3d_set_active_context(X3D_Context* context);
 
 #endif
 
+
+// Returns the total number of segments in an enginestate
+uint16 x3d_get_total_segments(X3D_Context* context) {
+  return context->segment_manager.segment_offset.size;
+}

@@ -18,6 +18,8 @@
 
 #include "X3D_config.h"
 
+#define X3D_NORMAL_SHIFT 15
+
 /// An 8.8 fixed point number
 typedef int16 fp8x8;
 
@@ -32,4 +34,67 @@ typedef uint16 ufp8x8;
 
 /// An angle that goes from 0-255 instead of 0-359
 typedef uint8 angle256;
+
+/**
+* Divides an fp0x16 by an fp0x16.
+*
+* @param n - numerator
+* @param d - denominator
+*
+* @return a / b as an fp8x8
+*/
+static inline fp8x8 div_fp0x16_by_fp0x16(fp0x16 n, fp0x16 d) {
+  return ((int32)n << 8) / d;
+}
+
+/**
+* Divides an int16 by an fp0x16.
+*
+* @param n - numerator
+* @param d - denominator
+*
+* @return a / b as an int16
+*/
+static inline int16 div_int16_by_fp0x16(int16 n, fp0x16 d) {
+  return ((int32)n << 8) / d;
+}
+
+/**
+* Rotates the lower byte of a uint16.
+*
+* @param i - input
+*
+* @return The lower byte
+*/
+static inline uint8 uint16_lower(uint16 i) {
+  return i & 0xFF;
+}
+
+/**
+* Rotates the upper byte of a uint16.
+*
+* @param i - input
+*
+* @return The upper byte
+*/
+static inline uint8 uint16_upper(uint16 i) {
+  return i >> 8;
+}
+
+/**
+* Multiplies an fp0x16 by an int16.
+*
+* @param a - the fp0x16
+* @param b - the int16
+*
+* @return a * b as an int16
+*/
+static inline int16 mul_fp0x16_by_int16_as_int16(fp0x16 a, int16 b) {
+  return ((int32)a * b) >> 15;
+}
+
+/// @todo document
+static inline fp8x8 div_int16_by_int16_as_fp8x8(int16 n, int16 d) {
+  return ((int32)n << 8) / d;
+}
 

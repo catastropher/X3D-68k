@@ -36,6 +36,7 @@ typedef struct X3D_Event {
 
 struct X3D_Object;
 struct X3D_Context;
+struct X3D_Camera;
 
 typedef struct X3D_ObjectType {
   void(*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
@@ -56,18 +57,14 @@ typedef struct X3D_Model {
 typedef struct X3D_Object {
   uint8 flags;
   uint16 id;
+  uint16 type;
+  uint16 category;
   Vex3D_fp16x16 pos;
   Mat3x3_fp0x8 mat;
 
   X3D_Model* unrotated;
   X3D_Model* rotated;
 } X3D_Object;
-
-typedef struct X3D_Camera {
-  X3D_Object object;
-  uint8 fov;
-  uint8 flags;
-} X3D_Camera;
 
 typedef struct X3D_ObjectManager {
   void* object_data;
@@ -83,7 +80,7 @@ _Bool x3d_activate_object(struct X3D_Context* context, X3D_Object* obj);
 void x3d_deactivate_object(struct X3D_Context* context, X3D_Object* obj);
 X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
 X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp8x8 velocity);
-X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
+struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
 
 #else
 

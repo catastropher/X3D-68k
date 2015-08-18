@@ -20,6 +20,10 @@ add_executable(X3DShared
   source/resource/memory.c
   source/trig.c
   source/objects.c
+  source/segment.c
+  source/matrix.c
+  source/vector.c
+  source/fastsqrt
 )
 
 if(X3D_TARGET EQUAL 68k)
