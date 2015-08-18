@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include "resource/X3D_memory.h"
+
 #define ALLOCA_POLYGON3D(_total_v) alloca(x3d_polygon3d_needed_size(_total_v))
 #define ALLOCA_FRUSTUM(_total_p) alloca(x3d_frustum_needed_size(_total_p))
 
@@ -37,8 +39,7 @@ static inline void x3d_stack_restore(X3D_Stack* stack, void* ptr) {
 
 /// @todo document
 static inline void x3d_stack_create(X3D_Stack* stack, uint16 size) {
-  /// @TODO: replace with x3d_malloc
-  stack->base = malloc(size);
+  stack->base = x3d_malloc(NULL, size);
   stack->size = size;
   stack->ptr = stack->base + size;
 }
@@ -53,7 +54,7 @@ static inline uint16 x3d_list_uint16_add(X3D_List_uint16* list, uint16 value) {
 
 /// @todo document
 static inline void x3d_list_uint16_create(X3D_List_uint16* list, uint16 size) {
-  list->base = malloc(size);
+  list->base = x3d_malloc(NULL, size);
   list->size = 0;
   list->capacity = size;
 }

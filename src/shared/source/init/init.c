@@ -17,6 +17,8 @@
 #include "X3D_config.h"
 #include "init/X3D_init.h"
 #include "X3D_engine.h"
+#include "X3D_segment.h"
+#include "X3D_alloc.h"
 
 /**
  * Initializes logging.
@@ -41,6 +43,14 @@ static inline x3d_init_log(X3D_Context* context, uint8 flags) {
   x3d_log(X3D_INFO, "Init log\n");
 }
 
+void x3d_init_segmentmanager(X3D_SegmentManager* manager, uint16 max_segments, uint16 seg_pool_size) {
+  x3d_stack_create(&manager->segment_data, seg_pool_size);
+  x3d_list_uint16_create(&manager->segment_offset, max_segments);
+
+  //state->render_step = 0;
+  //state->frame = 0;
+}
+
 /**
  * Initializes the core engine.
  *
@@ -54,6 +64,8 @@ uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
   
   x3d_set_active_context(context);
   x3d_init_log(context, config->log_flags);
+
+  x3d_init_segmentmanager(&context->segment_manager, config->max_segments, config->seg_pool_size);
   
   return 0;
 }

@@ -18,10 +18,20 @@
 #include "X3D_fix.h"
 #include "resource/X3D_memory.h"
 #include "X3D_engine.h"
+#include "debug/X3D_log.h"
 
 
 void* x3d_malloc(X3D_Context* context, uint16 size) {
-  return malloc(size);
+  printf("Size: %d\n", size);
+  x3d_log(X3D_INFO, "Alloc'd %d bytes\n", size);
+  
+  void* mem = malloc(size);
+
+  if(!mem) {
+    x3d_error(0, "Out of memory!");
+  }
+
+  return mem;
 }
 
 void x3d_free(X3D_Context* context, void* ptr) {
