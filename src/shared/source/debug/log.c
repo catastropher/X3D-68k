@@ -49,13 +49,13 @@ void x3d_log(X3D_LogStatus status, const char* format, ...) {
   if((context->log.flags & X3D_ENABLE_LOG_STDOUT) != 0) {
     va_start(list, format);
     printf("[%s] ", log_status[status - 1]);
-    vprintf(format, &list);
+    vprintf(format, list);
   }
   
   if((context->log.flags & X3D_ENABLE_LOG_FILE) != 0) {
     va_start(list, format);
     fprintf(context->log.file, "%s ", log_status[status - 1]);
-    vfprintf(context->log.file, format, &list);
+    vfprintf(context->log.file, format, list);
   }
 }
 
