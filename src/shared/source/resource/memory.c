@@ -22,7 +22,6 @@
 
 
 void* x3d_malloc(X3D_Context* context, uint16 size) {
-  printf("Size: %d\n", size);
   x3d_log(X3D_INFO, "Alloc'd %d bytes\n", size);
   
   void* mem = malloc(size);
