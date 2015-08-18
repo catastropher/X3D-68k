@@ -19,6 +19,7 @@
 #include "X3D_config.h"
 #include "debug/X3D_log.h"
 #include "X3D_vector.h"
+#include "X3D_objects.h"
 
 
 /// A logical screen that is rendered to.
@@ -46,20 +47,13 @@ typedef struct X3D_ViewPort {
 } X3D_ViewPort;
 
 
-typedef struct X3D_Object {
-  Vex3D_fp16x16 pos;
-} X3D_Object;
 
-typedef struct X3D_Camera {
-  X3D_Object object;
-
-  uint8 fov;
-} X3D_Camera;
 
 
 typedef struct X3D_Context {
   X3D_Log log;
   X3D_Screen screen;
+  X3D_ObjectManager object_manager;
   
   void (*error_handler)(uint16 code, const char* msg);
   

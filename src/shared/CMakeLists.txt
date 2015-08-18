@@ -19,6 +19,7 @@ add_executable(X3DShared
   source/debug/error.c
   source/resource/memory.c
   source/trig.c
+  source/objects.c
 )
 
 if(X3D_TARGET EQUAL 68k)
