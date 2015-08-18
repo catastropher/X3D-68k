@@ -54,6 +54,8 @@ typedef struct X3D_Context {
   X3D_Log log;
   X3D_Screen screen;
   X3D_ObjectManager object_manager;
+
+  X3D_Camera camera[X3D_MAX_CAMERAS];
   
   void (*error_handler)(uint16 code, const char* msg);
   

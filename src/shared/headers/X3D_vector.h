@@ -62,7 +62,7 @@ typedef Vex3D_int16 Vex3D_fp0x16;
 typedef Vex3D_int32 Vex3D_fp16x16;
 
 /// A 3D vector with uint8 components.
-typedef struct X3D_Vex3D_uint8 {
+typedef struct Vex3D_uint8 {
   uint8 x;
   uint8 y;
   uint8 z;

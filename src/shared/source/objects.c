@@ -57,3 +57,11 @@ X3D_Object* x3d_get_object(X3D_Context* context, uint16 id) {
   return context->object_manager.object_data + id * X3D_OBJECT_SIZE;
 }
 
+X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp8x8 velocity) {
+
+}
+
+X3D_Camera* x3d_create_camera(X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle) {
+  
+}
+

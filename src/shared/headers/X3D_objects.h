@@ -16,8 +16,12 @@
 
 #pragma once
 
+#include "X3D_vector.h"
+
 #define X3D_MAX_ACTIVE_OBJECTS 10
 #define X3D_OBJECT_SIZE 128
+#define X3D_MAX_OBJECT_TYPES 20
+#define X3D_MAX_CAMERAS 4
 
 typedef enum {
   X3D_EV_CREATE,
@@ -60,13 +64,28 @@ typedef struct X3D_Object {
 } X3D_Object;
 
 typedef struct X3D_Camera {
-  uint8 flags;
   X3D_Object object;
   uint8 fov;
+  uint8 flags;
 } X3D_Camera;
 
 typedef struct X3D_ObjectManager {
   void* object_data;
   X3D_Object* active_list[X3D_MAX_ACTIVE_OBJECTS];
+  X3D_ObjectType types[X3D_MAX_OBJECT_TYPES];
+
 } X3D_ObjectManager;
+
+#ifdef __X3D_SHARED__
+
+_Bool x3d_is_object_active(X3D_Object* obj);
+_Bool x3d_activate_object(struct X3D_Context* context, X3D_Object* obj);
+void x3d_deactivate_object(struct X3D_Context* context, X3D_Object* obj);
+X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
+X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp8x8 velocity);
+X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
+
+#else
+
+#endif
 
