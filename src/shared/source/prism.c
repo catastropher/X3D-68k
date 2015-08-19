@@ -123,7 +123,7 @@ void x3d_move_polygon3d_along_normal(X3D_Polygon3D* p, int16 dist, X3D_Vex3D_int
 void x3d_prism3d_get_center(X3D_Prism3D* prism, X3D_Vex3D_int16* dest) {
   uint16 i;
   
-  X3D_Vex3D_int32 center =  { 0, 0, 0 };
+  Vex3D_int32 center =  { 0, 0, 0 };
 
   for(i = 0; i < prism->base_v * 2; ++i) {
     center.x += prism->v[i].x;

@@ -47,10 +47,10 @@ typedef struct X3D_SegmentTable {
 /// A moveable camera
 typedef struct {
   X3D_Mat3x3_fp0x16 mat;          ///< Rotation matrix based on angle
-  X3D_Vex3D_angle256 angle;       ///< Angle the camera is facing
+  Vex3D_angle256 angle;       ///< Angle the camera is facing
 
-  X3D_Vex3D_fp16x16 pos;          ///< Position of the camera
-  X3D_Vex3D_fp16x16 velocity;     ///< Velocity
+  Vex3D_fp16x16 pos;          ///< Position of the camera
+  Vex3D_fp16x16 velocity;     ///< Velocity
 } X3D_Camera;
 
 typedef struct X3D_SelectSpinner {
@@ -80,12 +80,12 @@ typedef struct X3D_RenderContext {
 
   /// @todo (should this be moved to camera ? )
   uint8 fov;                  ///< Camera field of view
-  X3D_Vex2D_int16 pos;        ///< Position on the screen where to render
+  Vex2D_int16 pos;        ///< Position on the screen where to render
   uint16 w, h;                ///< Size of the render context
 
   int16 scale;                ///< Scaling factor for rendering
 
-  X3D_Vex2D_int16 center;     ///< Logical center of the rendering context
+  Vex2D_int16 center;     ///< Logical center of the rendering context
 
   uint8* screen;              ///< Screen to render to (monochrome)
   uint16 screen_w;            ///< Full witdth of the screen
@@ -116,7 +116,7 @@ struct X3D_Frustum;
 // Function declarations
 //=============================================================================
 
-void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16* v1, X3D_Vex2D_int16* v2);
+void x3d_draw_line_black(X3D_RenderContext* context, Vex2D_int16* v1, Vex2D_int16* v2);
 
 void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags);
@@ -125,7 +125,7 @@ void x3d_renderdevice_init(X3D_RenderDevice* d, uint16 w, uint16 h);
 void x3d_renderdevice_cleanup(X3D_RenderDevice* d);
 void x3d_renderdevice_flip(X3D_RenderDevice* d);
 
-void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* context);
+void x3d_rendercontext_clamp_vex2d_int16(Vex2D_int16* v, X3D_RenderContext* context);
 
 void x3d_enginestate_init(X3D_EngineState* state, uint16 max_segments, uint16 seg_pool_size);
 void x3d_enginestate_cleanup(X3D_EngineState* state);

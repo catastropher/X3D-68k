@@ -28,6 +28,7 @@
 .PHONY: nuke-build
 
 .PHONY: test
+.PHONY: fetch
 
 
 all: 68k pc
@@ -97,3 +98,7 @@ config-test:
 	
 test:
 	@cd build/test && make --no-print-directory
+
+fetch:
+	wget https://raw.githubusercontent.com/debrouxl/ExtGraph/master/lib/extgraph.h -P ./lib
+	wget https://github.com/debrouxl/ExtGraph/raw/master/lib/extgraph.a -P ./lib

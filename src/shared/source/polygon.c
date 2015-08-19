@@ -29,7 +29,7 @@
 *     the polygon. If concave, it may be, but this is not guaranteed.
 */
 void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D_int16* center) {
-  X3D_Vex3D_int32 sum = { 0, 0, 0 };
+  Vex3D_int32 sum = { 0, 0, 0 };
   uint16 i;
   
   for(i = 0; i < poly->total_v; ++i) {

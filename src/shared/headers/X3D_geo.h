@@ -41,8 +41,8 @@
 // Function prototypes
 //=============================================================================
 
-void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
-int16 x3d_distance_to_plane(X3D_Plane* plane, X3D_Vex3D_int16* v);
+void x3d_plane_construct(X3D_Plane* p, Vex3D* a, Vex3D* b, Vex3D* c);
+int16 x3d_distance_to_plane(X3D_Plane* plane, Vex3D* v);
 
 
 //=============================================================================
@@ -51,5 +51,5 @@ int16 x3d_distance_to_plane(X3D_Plane* plane, X3D_Vex3D_int16* v);
 
 // Returns the size needed to store a Polygon3D with the given number of points
 static inline uint16 x3d_polygon3d_needed_size(uint16 total_v) {
-  return sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * total_v;
+  return sizeof(X3D_Polygon3D) + sizeof(Vex3D) * total_v;
 }

@@ -43,7 +43,7 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
  *
  * @return dot product of a and b as an fp0x16
  */
-fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
+fp0x16 x3d_vex3d_fp0x16_dot(Vex3D_fp0x16* a, Vex3D_fp0x16* b) {
   X3D_STACK_TRACE;
   
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_SHIFT;
@@ -56,7 +56,7 @@ fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
  *
  * @return nothing
  */
-inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
+inline void x3d_vex3d_fp0x16_normalize(Vex3D_fp0x16* v) {
   X3D_STACK_TRACE;
   
   // Calculate x^2 + y^2 + z^2 for the distance formula.
@@ -161,7 +161,7 @@ void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat
 // Calculates the cross product of two vectors. This creates a vector that
 // is perpendicular to both vectors
 // Note: this routine will normalize the result
-void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
+void x3d_vex3d_fp0x16_cross(Vex3D_fp0x16* dest, Vex3D_fp0x16* a, Vex3D_fp0x16* b) {
   int32 xxx = ((((int32)a->y * b->z) >> 1) - (((int32)a->z * b->y) >> 1));
   int32 yyy = ((((int32)a->z * b->x) >> 1) - (((int32)a->x * b->z) >> 1));
   int32 zzz = ((((int32)a->x * b->y) >> 1) - (((int32)a->y * b->x) >> 1));

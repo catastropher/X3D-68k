@@ -34,7 +34,7 @@ struct X3D_EngineState;
 //=============================================================================
 
 typedef struct X3D_BoundSphere {
-  X3D_Vex3D_int16 center;
+  Vex3D center;
   int16 radius;
 } X3D_BoundSphere;
 
@@ -61,7 +61,7 @@ typedef struct X3D_SegmentFace {
 //=============================================================================
 // Function declarations
 //=============================================================================
-void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
+void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, Vex3D_angle256 rot_angle);
 void x3d_prism_render(const X3D_Prism* prism, struct X3D_RenderContext* context);
 
 X3D_Segment* x3d_segment_add(struct X3D_EngineState* state, uint16 base_v);
@@ -74,7 +74,7 @@ uint16 x3d_get_total_segments(struct X3D_EngineState* state);
 //=============================================================================
 
 /// @todo document
-static inline X3D_Vex3D_int16* x3d_segment_get_v(X3D_Segment* s) {
+static inline Vex3D* x3d_segment_get_v(X3D_Segment* s) {
   return s->prism.v;
 }
 
@@ -95,13 +95,13 @@ static inline uint16 x3d_segment_total_f(X3D_Segment* s) {
 
 /// @todo document
 static inline uint16 x3d_segment_needed_size(uint16 base_v) {
-  return sizeof(X3D_Segment) + sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * base_v * 2 +
+  return sizeof(X3D_Segment) + sizeof(X3D_Prism) + sizeof(Vex3D) * base_v * 2 +
     (base_v + 2) * sizeof(X3D_SegmentFace);
 }
 
 /// @todo document
 static inline uint16 x3d_segment_size(X3D_Segment* s) {
-  return sizeof(X3D_Segment) + x3d_segment_total_v(s) * sizeof(X3D_Vex3D_int16) +
+  return sizeof(X3D_Segment) + x3d_segment_total_v(s) * sizeof(Vex3D) +
     x3d_segment_total_f(s) * sizeof(X3D_SegmentFace);
 }
 

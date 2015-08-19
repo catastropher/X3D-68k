@@ -39,19 +39,19 @@ typedef struct X3D_FailPlane {
 // Holds which planes in a frustum a vertex is outside of
 // Note: this is a variable sized data structure
 typedef struct X3D_VertexClip {
-  X3D_Vex3D_int16 v;
+  Vex3D v;
 
   uint16 total_fp;
   X3D_FailPlane fp[0];
 } X3D_VertexClip;
 
 typedef struct X3D_Edge {
-  X3D_Vex3D_int16 v[2];
+  Vex3D v[2];
 } X3D_Edge;
 
 typedef struct X3D_ParamLine2D {
-  X3D_Vex2D_int16 start;
-  X3D_Vex2D_int16 normal;
+  Vex2D_int16 start;
+  Vex2D_int16 normal;
   int32 d;
 } X3D_ParamLine2D;
 
@@ -63,14 +63,14 @@ typedef struct X3D_ClipRegion {
 typedef struct X3D_Prism2D {
   uint32 draw_edges;        ///< Bitfield of which edges should be drawn
   uint16 base_v;            ///< Number of vertices in each base
-  X3D_Vex2D_int16 v[0];     ///< Vertices (variable number)
+  Vex2D_int16 v[0];     ///< Vertices (variable number)
 } X3D_Prism2D;
 
 //=============================================================================
 // Function declarations
 //=============================================================================
 
-void x3d_get_fail_planes(X3D_VertexClip* vc, X3D_Vex3D_int16* v, X3D_Frustum* f);
+void x3d_get_fail_planes(X3D_VertexClip* vc, Vex3D* v, X3D_Frustum* f);
 void x3d_frustum_from_rendercontext(struct X3D_Frustum* f, struct X3D_RenderContext* context);
 void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, struct X3D_RenderContext* context, uint16 select_a, uint16 select_b);
 

@@ -15,10 +15,12 @@
 
 #pragma once
 
+#include "X3D_fix.h"
+
 /// A plane described by the equation ax + by + cz - d = 0, where <a, b, c>
 /// is the surface normal and d is the perpendicular distance from the origin.
 typedef struct X3D_Plane {
-  X3D_Vex3D_fp0x16 normal;    ///< Surface normal (a vector perpendicular to the plane)
+  Vex3D_fp0x16 normal;    ///< Surface normal (a vector perpendicular to the plane)
   int16 d;                    ///< Perpendicular distance from the origin
 } X3D_Plane;
 

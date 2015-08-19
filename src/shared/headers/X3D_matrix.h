@@ -39,4 +39,4 @@ typedef struct X3D_Mat3x3_fp0x16 {
 
 void x3d_mat3x3_fp0x16_mul(X3D_Mat3x3_fp0x16* dest, X3D_Mat3x3_fp0x16* a, X3D_Mat3x3_fp0x16* b);
 void x3d_mat3x3_fp0x16_print(X3D_Mat3x3_fp0x16* mat);
-void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *angle);
+void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, Vex3D_angle256 *angle);

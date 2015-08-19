@@ -148,13 +148,13 @@ static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
 
 void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* cam) {
   // Move the prism relative to the camera
-  X3D_Vex3D_int16 cam_pos = { cam->pos.x >> 15, cam->pos.y >> 15, cam->pos.z >> 15 };
+  Vex3D cam_pos = { cam->pos.x >> 15, cam->pos.y >> 15, cam->pos.z >> 15 };
 
   uint16 i;
   for(i = 0; i < src->base_v * 2; ++i) {
-    X3D_Vex3D_int16 v = vex3d_int16_sub(src->v + i, &cam_pos);
+    Vex3D v = vex3d_int16_sub(src->v + i, &cam_pos);
 
-    X3D_Vex3D_int16 temp;
+    Vex3D temp;
     x3d_vex3d_int16_rotate(&temp, &v, &cam->mat);
 
     dest->v[i] = temp;
@@ -169,7 +169,7 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 
 void x3d_test_handle_keys(X3D_TestContext* context) {
   X3D_Camera* cam = &context->context.cam;
-  X3D_Vex3D_int32 dir = { (int32)cam->mat.data[2] * 6, (int32)cam->mat.data[5] * 6, (int32)cam->mat.data[8] * 6 };
+  Vex3D_int32 dir = { (int32)cam->mat.data[2] * 6, (int32)cam->mat.data[5] * 6, (int32)cam->mat.data[8] * 6 };
   x3d_keystate_update(&context->keys);
 
   if(x3d_keystate_down(&context->keys, XKEY_FORWARD)) {
@@ -205,13 +205,13 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   }
 
   if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_UP)) {
-    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
+    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
-    X3D_Vex3D_int16 center;
+    Vex3D center;
     x3d_prism3d_get_center(prism, &center);
 
     x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
@@ -222,13 +222,13 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   }
 
   if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_DOWN)) {
-    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
+    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
-    X3D_Vex3D_int16 center;
+    Vex3D center;
     x3d_prism3d_get_center(prism, &center);
 
     x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
@@ -240,13 +240,13 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   }
 
   if (x3d_keystate_down(&context->keys, KEY_SCALE_DOWN)) {
-    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
+    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
-    X3D_Vex3D_int16 center;
+    Vex3D center;
     x3d_prism3d_get_center(prism, &center);
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
@@ -260,13 +260,13 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   }
 
   if (x3d_keystate_down(&context->keys, KEY_SCALE_UP)) {
-    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
+    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
-    X3D_Vex3D_int16 center;
+    Vex3D center;
     x3d_prism3d_get_center(prism, &center);
 
 
@@ -281,12 +281,12 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   }
 
   if (x3d_keystate_down_wait(&context->keys, KEY_ADD_SEGMENT)) {
-    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(X3D_Vex3D_int16) * 30);
+    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
     X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
     X3D_Prism* prism = &s->prism;
 
-    X3D_Vex3D_int16 center;
+    Vex3D center;
     x3d_prism3d_get_center(prism, &center);
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
@@ -351,8 +351,8 @@ void x3d_test() {
 
   // Initialize the camera
   X3D_Camera* cam = &test.context.cam;
-  cam->pos = (X3D_Vex3D_fp16x16){ 0, 0, 0 };
-  cam->angle = (X3D_Vex3D_angle256){ 0, 0, 0 };
+  cam->pos = (Vex3D_fp16x16){ 0, 0, 0 };
+  cam->angle = (Vex3D_angle256){ 0, 0, 0 };
 
   // Make some prisms
 
@@ -360,13 +360,13 @@ void x3d_test() {
 
   //X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
-  X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
-  x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { 0, 0, 0 });
-  //x3d_prism_construct(&seg2->prism, 8, 200 * 3, 50 * 3, (X3D_Vex3D_uint8) { ANG_90, 0, 0 });
+  X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(Vex3D) * 50 * 2);
+  x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (Vex3D_uint8) { 0, 0, 0 });
+  //x3d_prism_construct(&seg2->prism, 8, 200 * 3, 50 * 3, (Vex3D_uint8) { ANG_90, 0, 0 });
 
   //x3d_segment_get_face(seg)->connect_id = 1;
 
-  //X3D_Prism* prism3d_rotated = malloc(sizeof(X3D_Prism3D) + sizeof(X3D_Vex3D_int16) * 50 * 2);
+  //X3D_Prism* prism3d_rotated = malloc(sizeof(X3D_Prism3D) + sizeof(Vex3D) * 50 * 2);
 
   // Construct the viewing frustum
   X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 20);
