@@ -14,6 +14,8 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if 0
+ 
 #include "X3D_config.h"
 #include "X3D_fix.h"
 #include "X3D_engine.h"
@@ -57,3 +59,4 @@ uint16 x3d_init(X3D_Context* context, X3D_Config* config) {
   
   return 0;
 }
+#endif

@@ -1,18 +1,17 @@
-/* This file is part of X3D.
- *
- * X3D is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * X3D is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with X3D. If not, see <http://www.gnu.org/licenses/>.
- */
+// This file is part of X3D.
+
+// X3D is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// X3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
@@ -34,18 +33,18 @@ enum {
 ///< The slope of a vertical line in fp8x8 format (faking infinity)
 #define VERTICAL_LINE_SLOPE INT16_MAX
 
-
-#ifdef __X3D_SHARED__
-
 extern const fp0x16 sintab[256];
 
-inline fp0x16 x3d_sinfp(angle256 angle);
-
-#else
-
-#define x3d_sinfp _DLL_call(fp0x16, (angle256), EXPORT_X3D_SINFP)
-
-#endif
+/**
+* Calculates the sine of an angle.
+*
+* @param angle - the angle as an angle256
+*
+* @return The sine of the angle in fp0x16 format
+*/
+static inline fp0x16 x3d_sinfp(angle256 angle) {
+  return sintab[(uint16)angle];
+}
 
 /**
 * Calculates the cosine of an angle.
@@ -58,7 +57,6 @@ static inline fp0x16 x3d_cosfp(angle256 angle) {
   // We exploit the fact that cos(x) = sin(90 - x)
   return x3d_sinfp(ANG_90 - angle);
 }
-
 
 /**
 * Calculates the tangent of an angle.
@@ -75,3 +73,4 @@ static inline fp8x8 x3d_tanfp(angle256 angle) {
 
   return div_fp0x16_by_fp0x16(x3d_sinfp(angle), x3d_cosfp(angle));
 }
+

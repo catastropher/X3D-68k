@@ -12,18 +12,23 @@ include_directories(${PLATFORM_DIR})
 include_directories($ENV{X3D}/src/shared/headers)
 
 add_executable(X3DShared
-	source/export.c
-	source/init/init.c
-  source/debug/log.c
-  source/engine.c
-  source/debug/error.c
-  source/resource/memory.c
-  source/trig.c
-  source/objects.c
-  source/segment.c
+  source/clip.c
+  source/editor.c
+  source/error.c
+  source/fastsqrt.c
+  source/fix.c
+  source/frustum.c
+  source/geo.c
+  source/keys.c
+  source/log.c
   source/matrix.c
+  source/polygon.c
+  source/prism.c
+  source/render.c
+  source/segment.c
+  source/test.c
+  source/trig.c
   source/vector.c
-  source/fastsqrt
 )
 
 if(X3D_TARGET EQUAL 68k)

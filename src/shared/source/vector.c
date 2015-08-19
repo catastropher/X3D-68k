@@ -1,57 +1,64 @@
-/* This file is part of X3D.
-*
-* X3D is free software: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation, either version 3 of the License, or
-* (at your option) any later version.
-*
-* X3D is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with X3D. If not, see <http://www.gnu.org/licenses/>.
-*/
+// This file is part of X3D.
 
+// X3D is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// X3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with X3D. If not, see <http://www.gnu.org/licenses/>.
+
+#include "X3D_config.h"
+#include "X3D_fix.h"
 #include "X3D_vector.h"
-#include "X3D_matrix.h"
-#include "X3D_trig.h"
+#include "X3D_error.h"
+#include "X3D_fastsqrt.h"
+#include "X3D_render.h"
 
 /**
-* Calculates the dot product of two 16-bit integer 3D vectors.
-*
-* @param a - pointer to the first 3D vector
-* @param b - pointer to the the second 3D vector
-*
-* @return dot product of a and b as an int32
-* @todo add overflow detection
-*/
-int32 x3d_vex3d_int16_dot(Vex3D* a, Vex3D* b) {
+ * Calculates the dot product of two 16-bit integer 3D vectors.
+ *
+ * @param a - pointer to the first 3D vector
+ * @param b - pointer to the the second 3D vector
+ *
+ * @return dot product of a and b as an int32
+ * @todo add overflow detection
+ */
+int32 x3d_vex3d_int16_dot(X3D_Vex3D_int16* a, X3D_Vex3D_int16* b) {
+  X3D_STACK_TRACE;
+  
   return (int32)a->x * b->x + (int32)a->y * b->y + (int32)a->z * b->z;
 }
 
 /**
-* Calculates the dot product of two 0x16 fixed-point 3D vectors.
-*
-* @param a - pointer to the first 3D vector
-* @param b - pointer to the second 3D vector
-*
-* @return dot product of a and b as an fp0x16
-*/
-fp0x16 x3d_vex3d_fp0x16_dot(Vex3D_fp0x16* a, Vex3D_fp0x16* b) {
-
+ * Calculates the dot product of two 0x16 fixed-point 3D vectors.
+ *
+ * @param a - pointer to the first 3D vector
+ * @param b - pointer to the second 3D vector
+ *
+ * @return dot product of a and b as an fp0x16
+ */
+fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
+  X3D_STACK_TRACE;
+  
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_SHIFT;
 }
 
 /**
-* Normalizes an fp0x16 3D vector (makes the entire length 1).
-*
-* @param v - pointer to the 3D vector to normalize
-*
-* @return nothing
-*/
-inline void x3d_vex3d_fp0x16_normalize(Vex3D_fp0x16* v) {
+ * Normalizes an fp0x16 3D vector (makes the entire length 1).
+ *
+ * @param v - pointer to the 3D vector to normalize
+ *
+ * @return nothing
+ */
+inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
+  X3D_STACK_TRACE;
+  
   // Calculate x^2 + y^2 + z^2 for the distance formula.
   //
   // We divide each term by 4 to prevent overflow (if x, y, and z are all 0x7FFF,
@@ -71,7 +78,7 @@ inline void x3d_vex3d_fp0x16_normalize(Vex3D_fp0x16* v) {
 
   // If distance_squared is negative, the only possible explaination is that
   // it overflowed (should never happen because we divide each term by 4)
-  //x3d_errorif(distance_squared < 0, "normalize overflow");
+  x3d_errorif(distance_squared < 0, "normalize overflow");
 
 
   // Calculate the actual length of the vector
@@ -95,13 +102,13 @@ inline void x3d_vex3d_fp0x16_normalize(Vex3D_fp0x16* v) {
 }
 
 /**
-* Prints out an int16 Vex3D on the screen.
-*
-* @param v - pointer to the 3D vector to print.
-*
-* @return nothing
-*/
-void x3d_vex3d_int16_print(Vex3D* v) {
+ * Prints out an int16 Vex3D on the screen.
+ *
+ * @param v - pointer to the 3D vector to print.
+ *
+ * @return nothing
+ */
+void x3d_vex3d_int16_print(X3D_Vex3D_int16* v) {
   printf("{%d, %d, %d}\n", v->x, v->y, v->z);
 }
 
@@ -116,8 +123,7 @@ void x3d_vex3d_int16_print(Vex3D* v) {
 * @note If src->z is zero, dest->x and dest->y are set to 0 to prevent division
 *     by 0.
 */
-#if 0
-void x3d_vex3d_int16_project(Vex2D* dest, const Vex3D* src, X3D_ViewPort* context) {
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src, X3D_RenderContext* context) {
   // To prevent division by zero
   if(src->z == 0) {
     dest->x = 0;
@@ -129,7 +135,6 @@ void x3d_vex3d_int16_project(Vex2D* dest, const Vex3D* src, X3D_ViewPort* contex
     dest->y = ((int32)src->y * context->scale) / src->z + context->center.y;
   }
 }
-#endif
 
 /**
 * Rotates a 3D vector around the origin.
@@ -141,12 +146,12 @@ void x3d_vex3d_int16_project(Vex2D* dest, const Vex3D* src, X3D_ViewPort* contex
 * @return nothing
 * @todo Replace with assembly version
 */
-void x3d_vex3d_int16_rotate(Vex3D* dest, Vex3D* src, X3D_Mat3x3_fp0x16* mat) {
+void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat3x3_fp0x16* mat) {
   fp0x16* m = mat->data;
-
-  Vex3D x = (Vex3D){ m[MAT3x3(0, 0)], m[MAT3x3(1, 0)], m[MAT3x3(2, 0)] };
-  Vex3D y = (Vex3D){ m[MAT3x3(0, 1)], m[MAT3x3(1, 1)], m[MAT3x3(2, 1)] };
-  Vex3D z = (Vex3D){ m[MAT3x3(0, 2)], m[MAT3x3(1, 2)], m[MAT3x3(2, 2)] };
+  
+  X3D_Vex3D_int16 x = (X3D_Vex3D_int16){ m[MAT3x3(0, 0)], m[MAT3x3(1, 0)], m[MAT3x3(2, 0)] };
+  X3D_Vex3D_int16 y = (X3D_Vex3D_int16){ m[MAT3x3(0, 1)], m[MAT3x3(1, 1)], m[MAT3x3(2, 1)] };
+  X3D_Vex3D_int16 z = (X3D_Vex3D_int16){ m[MAT3x3(0, 2)], m[MAT3x3(1, 2)], m[MAT3x3(2, 2)] };
 
   dest->x = x3d_vex3d_fp0x16_dot(&x, src);
   dest->y = x3d_vex3d_fp0x16_dot(&y, src);
@@ -156,7 +161,7 @@ void x3d_vex3d_int16_rotate(Vex3D* dest, Vex3D* src, X3D_Mat3x3_fp0x16* mat) {
 // Calculates the cross product of two vectors. This creates a vector that
 // is perpendicular to both vectors
 // Note: this routine will normalize the result
-void x3d_vex3d_fp0x16_cross(Vex3D_fp0x16* dest, Vex3D_fp0x16* a, Vex3D_fp0x16* b) {
+void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
   int32 xxx = ((((int32)a->y * b->z) >> 1) - (((int32)a->z * b->y) >> 1));
   int32 yyy = ((((int32)a->z * b->x) >> 1) - (((int32)a->x * b->z) >> 1));
   int32 zzz = ((((int32)a->x * b->y) >> 1) - (((int32)a->y * b->x) >> 1));
@@ -175,7 +180,7 @@ void x3d_vex3d_fp0x16_cross(Vex3D_fp0x16* dest, Vex3D_fp0x16* a, Vex3D_fp0x16* b
 }
 
 /// @todo document
-uint16 x3d_vex3d_int16_mag(Vex3D* v) {
+uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v) {
   int32 distance_squared =
     (((int32)v->x * v->x) >> 2) +
     (((int32)v->y * v->y) >> 2) +

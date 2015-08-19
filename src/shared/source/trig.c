@@ -1,19 +1,18 @@
-/* This file is part of X3D.
- *
- * X3D is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * X3D is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with X3D. If not, see <http://www.gnu.org/licenses/>.
- */
- 
+// This file is part of X3D.
+
+// X3D is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// X3D is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with X3D. If not, see <http://www.gnu.org/licenses/>.
+
 #include "X3D_fix.h"
 
 /// A table of fp0x16 sin values for angle256
@@ -46,15 +45,3 @@ const fp0x16 sintab[256] = {
   -4808, -4011, -3211, -2410, -1607, -804
 };
 
-
-/**
-* Calculates the sine of an angle.
-*
-* @param angle - the angle as an angle256
-*
-* @return The sine of the angle in fp0x16 format
-*/
-
-inline fp0x16 x3d_sinfp(angle256 angle) {
-  return sintab[(uint16)angle];
-}
