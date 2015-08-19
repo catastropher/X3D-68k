@@ -21,6 +21,7 @@
 #include "X3D_trig.h"
 #include "X3D_clip.h"
 #include "X3D_frustum.h"
+#include "X3D_engine.h"
 
 #ifdef __TIGCC__
 #include <extgraph/extgraph.h>
@@ -119,7 +120,7 @@ void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_ViewPort* conte
 
 void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
-void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineState* state, X3D_ViewPort* context) {
+void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {
   uint16 i;
 
   //printf("Enter %d\n", id);
@@ -128,21 +129,21 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
 
   uint16 start = x3d_get_clock();
 
-  X3D_Segment* seg = x3d_get_segment(state, id);
+  X3D_Segment* seg = x3d_get_segment(context, id);
   X3D_Prism* temp = alloca(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * seg->prism.base_v * 2);
   
   seg->last_frame = context->frame;
 
-  x3d_test_rotate_prism3d(temp, &seg->prism, &context->cam);
+  x3d_test_rotate_prism3d(temp, &seg->prism, context->cam);
 
   // Draw the prism
   uint16 select_a = 0, select_b = 0;
 
-  if(id == state->spinner.selected_segment) {
-    x3d_get_selectspinner_selected(&state->spinner, &select_a, &select_b);
+  if(id == context->spinner.selected_segment) {
+    x3d_get_selectspinner_selected(&context->spinner, &select_a, &select_b);
   }
 
-  x3d_draw_clipped_prism3d_wireframe(temp, frustum, context, select_a, select_b);
+  x3d_draw_clipped_prism3d_wireframe(temp, frustum, viewport, select_a, select_b);
 
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
@@ -152,7 +153,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
     //X3D_LOG_WAIT(context, "FACE ID: %d\n", face[i].connect_id);
 
     if(face[i].connect_id != SEGMENT_NONE) {
-      X3D_Segment* next_seg = x3d_get_segment(state, face[i].connect_id);
+      X3D_Segment* next_seg = x3d_get_segment(context, face[i].connect_id);
       
       if(next_seg->last_frame == context->frame)
         continue;
@@ -192,7 +193,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineSta
       }
 #endif
 
-        x3d_render_segment_wireframe(face[i].connect_id, f, state, context);
+        x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
 
         if(id == 1) {
           uint16 d;

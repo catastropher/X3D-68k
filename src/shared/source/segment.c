@@ -21,6 +21,7 @@
 #include "X3D_render.h"
 #include "X3D_matrix.h"
 #include "X3D_geo.h"
+#include "X3D_engine.h"
 
 /**
 * Constructs a prism with regular polygons as the base.
@@ -151,8 +152,8 @@ X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
 * @param state  - engine state
 * @param id     - id of the segment
 */
-inline X3D_Segment* x3d_get_segment(X3D_EngineState* state, int id) {
-  return (X3D_Segment*)(state->table.segment_data.base + state->table.segment_offset.base[id]);
+inline X3D_Segment* x3d_get_segment(X3D_Context* context, int id) {
+  return (X3D_Segment*)(context->segment_manager.segment_data.base + context->segment_manager.segment_offset.base[id]);
 }
 
 // Returns the total number of segments in an enginestate

@@ -23,6 +23,8 @@
 // Structures
 //=============================================================================
 
+struct X3D_Context;
+
 /// @todo document
 /// @todo rename to X3D_RenderStack
 typedef struct {
@@ -130,7 +132,7 @@ void x3d_rendercontext_clamp_vex2d_int16(Vex2D_int16* v, X3D_ViewPort* context);
 void x3d_enginestate_init(X3D_EngineState* state, uint16 max_segments, uint16 seg_pool_size);
 void x3d_enginestate_cleanup(X3D_EngineState* state);
 
-void x3d_render_segment_wireframe(uint16 id, struct X3D_Frustum* frustum, X3D_EngineState* state, X3D_ViewPort* context);
+void x3d_render_segment_wireframe(uint16 id, struct X3D_Frustum* frustum, struct X3D_Context* context, X3D_ViewPort* view);
 
 uint16 x3d_get_clock();
 
