@@ -14,16 +14,17 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if 0
+#if 1
  
 #include "X3D_config.h"
 #include "X3D_fix.h"
-#include "X3D_engine.h"
+//#include "X3D_engine.h"
 #include "init/X3D_init.h"
 #include "debug/X3D_static_error.h"
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
+uint8 x3d_loaded;
 
 CALLBACK void x3d_cleanup(void) {
   if(x3d_loaded) {
@@ -51,7 +52,7 @@ uint16 x3d_init(X3D_Context* context, X3D_Config* config) {
   }
   
   // Set the error handler
-  context->error_handler = x3d_default_error_handler;
+  //context->error_handler = x3d_default_error_handler;
   
   x3d_loaded = 1;
   x3d_init_core(context, config);

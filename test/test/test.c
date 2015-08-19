@@ -22,9 +22,9 @@
 
 #include "X3D_fix.h"
 #include "init/X3D_init.h"
-#include "X3D_engine.h"
 #include "X3D_vector.h"
 #include "X3D_trig.h"
+#include "debug/X3D_log.h"
 
 X3D_Context context;
 
@@ -51,9 +51,6 @@ void _main() {
     clrscr();
     printf("Error loading DLL: %d\n", status);
     ngetchx();
-  }
-  else {
-    printf("Sin: %d\n", x3d_sinfp(ANG_45));
   }
   
   
