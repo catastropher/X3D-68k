@@ -47,7 +47,7 @@ typedef struct X3D_SegmentTable {
 } X3D_SegmentTable;
 
 /// A moveable camera
-typedef struct {
+typedef struct X3D_Camera {
   X3D_Mat3x3_fp0x16 mat;          ///< Rotation matrix based on angle
   Vex3D_angle256 angle;       ///< Angle the camera is facing
 
@@ -136,7 +136,7 @@ void x3d_render_segment_wireframe(uint16 id, struct X3D_Frustum* frustum, struct
 
 uint16 x3d_get_clock();
 
-void x3d_selectspinner_select(X3D_SelectSpinner* spinner, X3D_EngineState* state, uint16 segment, uint16 face);
+void x3d_selectspinner_select(X3D_SelectSpinner* spinner, struct X3D_Context* state, uint16 segment, uint16 face);
 
 //=============================================================================
 // Static inline functions

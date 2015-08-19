@@ -125,14 +125,14 @@ void x3d_prism_render(const X3D_Prism* prism, X3D_ViewPort* context) {
 
 // Creates a new segment
 /// @todo document properly
-X3D_Segment* x3d_segment_add(X3D_EngineState* state, uint16 base_v) {
+X3D_Segment* x3d_segment_add(X3D_Context* state, uint16 base_v) {
   X3D_STACK_TRACE;
   
-  X3D_Segment* s = (X3D_Segment* )x3d_stack_alloc(&state->table.segment_data, x3d_segment_needed_size(base_v));
+  X3D_Segment* s = (X3D_Segment* )x3d_stack_alloc(&state->segment_manager.segment_data, x3d_segment_needed_size(base_v));
 
   s->base_v = base_v;
 
-  s->id = x3d_list_uint16_add(&state->table.segment_offset, (uint8* )s - state->table.segment_data.base);
+  s->id = x3d_list_uint16_add(&state->segment_manager.segment_offset, (uint8* )s - state->segment_manager.segment_data.base);
 
   // Initialize all of the faces to not be connected to anything
   s->face_offset = offsetof(X3D_Segment, prism) + sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * base_v * 2;

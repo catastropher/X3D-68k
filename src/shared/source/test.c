@@ -27,6 +27,7 @@
 #include "X3D_matrix.h"
 #include "X3D_error.h"
 #include "X3D_keys.h"
+#include "X3D_engine.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -167,8 +168,9 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 
 
 
-void x3d_test_handle_keys(X3D_TestContext* context) {
-  X3D_Camera* cam = &context->context.cam;
+void x3d_test_handle_keys(X3D_Context* context) {
+  X3D_Camera* cam = context->cam;
+  
   Vex3D_int32 dir = { (int32)cam->mat.data[2] * 6, (int32)cam->mat.data[5] * 6, (int32)cam->mat.data[8] * 6 };
   x3d_keystate_update(&context->keys);
 
@@ -201,22 +203,23 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   }
 
   if (x3d_keystate_down_wait(&context->keys, KEY_CYCLE_SEGMENT)) {
-    x3d_selectspinner_select(&context->state.spinner, &context->state, context->state.spinner.selected_segment, context->state.spinner.selected_face + 1);
+    // FIXME
+    //x3d_selectspinner_select(&context->spinner, &context->state, context->state.spinner.selected_segment, context->state.spinner.selected_face + 1);
   }
 
   if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_UP)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
-    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_Segment* s = x3d_get_segment(context, context->spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
     Vex3D center;
     x3d_prism3d_get_center(prism, &center);
 
-    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     x3d_move_polygon3d_along_normal(poly, 5, &center);
-    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
 
     free(poly);
   }
@@ -224,16 +227,16 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_DOWN)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
-    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_Segment* s = x3d_get_segment(context, context->spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
     Vex3D center;
     x3d_prism3d_get_center(prism, &center);
 
-    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     x3d_move_polygon3d_along_normal(poly, -5, &center);
-    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
 
     free(poly);
 
@@ -242,7 +245,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   if (x3d_keystate_down(&context->keys, KEY_SCALE_DOWN)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
-    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_Segment* s = x3d_get_segment(context, context->spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
@@ -251,9 +254,9 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
-    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     x3d_polygon3d_scale(poly, 225);
-    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
 
     free(poly);
 
@@ -262,7 +265,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   if (x3d_keystate_down(&context->keys, KEY_SCALE_UP)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
-    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_Segment* s = x3d_get_segment(context, context->spinner.selected_segment);
     X3D_Prism3D* prism = &s->prism;
 
     // Get the center of the prism
@@ -272,9 +275,9 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
-    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     x3d_polygon3d_scale(poly, 256 + (256 - 225));
-    x3d_prism3d_set_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
 
     free(poly);
 
@@ -283,7 +286,7 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
   if (x3d_keystate_down_wait(&context->keys, KEY_ADD_SEGMENT)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
 
-    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_Segment* s = x3d_get_segment(context, context->spinner.selected_segment);
     X3D_Prism* prism = &s->prism;
 
     Vex3D center;
@@ -291,14 +294,14 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
 
     //X3D_LOG_WAIT(&context->context, "Center: %d, %d, %d", center.x, center.y, center.z);
 
-    x3d_prism3d_get_face(poly, prism, context->state.spinner.selected_face);
+    x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     
 
-    X3D_Segment* seg = x3d_segment_add(&context->state, poly->total_v);
+    X3D_Segment* seg = x3d_segment_add(context, poly->total_v);
 
     X3D_SegmentFace* face = x3d_segment_get_face(s);
 
-    face[context->state.spinner.selected_face].connect_id = seg->id;//x3d_get_total_segments(&context->state) - 1;
+    face[context->spinner.selected_face].connect_id = seg->id;//x3d_get_total_segments(&context->state) - 1;
     
     X3D_SegmentFace* new_face = x3d_segment_get_face(seg);
     
@@ -314,19 +317,19 @@ void x3d_test_handle_keys(X3D_TestContext* context) {
     x3d_move_polygon3d_along_normal(poly, -100, &center);
     x3d_prism3d_set_face(poly, prism, BASE_A);
 
-    context->state.spinner.selected_segment = seg->id;
-    context->state.spinner.selected_face = BASE_A;
+    context->spinner.selected_segment = seg->id;
+    context->spinner.selected_face = BASE_A;
 
     free(poly);
   }
   
   if (x3d_keystate_down_wait(&context->keys, KEY_SWITCH_SEGMENT)) {
-    X3D_Segment* s = x3d_get_segment(&context->state, context->state.spinner.selected_segment);
+    X3D_Segment* s = x3d_get_segment(context, context->spinner.selected_segment);
     X3D_SegmentFace* face = x3d_segment_get_face(s);
     
-    if(face[context->state.spinner.selected_face].connect_id != SEGMENT_NONE) {
+    if(face[context->spinner.selected_face].connect_id != SEGMENT_NONE) {
       
-      x3d_selectspinner_select(&context->state.spinner, &context->state, face[context->state.spinner.selected_face].connect_id, BASE_A);
+      x3d_selectspinner_select(&context->spinner, context, face[context->spinner.selected_face].connect_id, BASE_A);
       
       //X3D_LOG_WAIT("New seg: %d\n", 
     }
@@ -355,8 +358,11 @@ void x3d_test() {
   cam->angle = (Vex3D_angle256){ 0, 0, 0 };
 
   // Make some prisms
+  
+  X3D_Context context;
+  
 
-  X3D_Segment* seg = x3d_segment_add(&test.state, 8);
+  X3D_Segment* seg = x3d_segment_add(&context, 8);
 
   //X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
@@ -374,7 +380,7 @@ void x3d_test() {
 
   //X3D_LOG_WAIT(&test.context, "DIFF: %ld\n", ((void *)seg) - ((void*)seg2));
 
-  x3d_selectspinner_select(&test.state.spinner, &test.state, 0, 0);
+  x3d_selectspinner_select(&context.spinner, &context, 0, 0);
 
   uint16 last_spin = x3d_get_clock();
 
@@ -398,7 +404,7 @@ void x3d_test() {
     //  x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
     //}
 
-    x3d_render_segment_wireframe(0, frustum, &test.state, &test.context);
+    x3d_render_segment_wireframe(0, frustum, &context, &test.context);
 
     printf("%d\n", test.context.render_clock);
     //printf("Face: %d\n", test.state.spinner.selected_face);
@@ -412,7 +418,7 @@ void x3d_test() {
     
     ++test.context.frame;
 
-    x3d_test_handle_keys(&test);
+    x3d_test_handle_keys(&context);
   } while(!test.quit);
 
   free(frustum);

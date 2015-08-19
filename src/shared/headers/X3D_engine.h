@@ -17,6 +17,7 @@
 #pragma once
 
 #include "X3D_manager.h"
+#include "X3D_keys.h"
 
 struct X3D_Camera;
 
@@ -27,7 +28,11 @@ typedef struct X3D_Context {
   struct X3D_Camera* cam;
   X3D_SelectSpinner spinner;
   
+  X3D_KeyState keys;
+  
   X3D_SegmentManager segment_manager;
   uint16 render_clock;
+  
+  _Bool quit;
 } X3D_Context;
 
