@@ -93,3 +93,7 @@ static inline uint16 x3d_segment_size(X3D_Segment* s) {
     x3d_segment_total_f(s) * sizeof(X3D_SegmentFace);
 }
 
+static inline uint16 x3d_prism3d_opposite(X3D_Prism3D* prism, uint16 v) {
+  return prism->base_v + (prism->base_v - v) - 1;
+}
+
