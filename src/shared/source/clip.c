@@ -83,7 +83,7 @@ inline void get_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
 
 #define SWAP(_a, _b) {typeof(_a) temp = _a; _a = _b; _b = temp;}
 
-void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_RenderContext* context) {
+void x3d_prism2d_clip(X3D_Prism2D* prism, X3D_ClipRegion* clip, X3D_ViewPort* context) {
   // Check each point against each bounding line
   uint16 i, d;
   int32 dist[clip->total_pl][prism->base_v * 2];
@@ -200,7 +200,7 @@ void x3d_edge_clip(X3D_Edge* e, X3D_VertexClip* a, X3D_VertexClip* b, X3D_Frustu
   }
 }
 
-void test_clip(X3D_RenderContext* context) {
+void test_clip(X3D_ViewPort* context) {
   X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 10);
   X3D_VertexClip* clip_a = malloc(sizeof(X3D_VertexClip) + sizeof(X3D_FailPlane) * 10);
 
@@ -250,7 +250,7 @@ inline void x3d_get_prism3d_edge(X3D_Prism3D* p, uint16 id, uint16* a, uint16* b
   @param frustum    - frustum to clip against
   @param context    - rendering context to draw to
   */
-void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, X3D_RenderContext* context, uint16 select_a, uint16 select_b) {
+void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, X3D_ViewPort* context, uint16 select_a, uint16 select_b) {
   //X3D_LOG_WAIT(context, "Planes: %d\n", frustum->total_p);
 
   uint16 i, d, vertex, plane, edge;
@@ -464,7 +464,7 @@ Draws a wireframe 3D prism, clipped against a frustum.
 @param frustum    - frustum to clip against
 @param context    - rendering context to draw to
 */
-void x3d_draw_clipped_segment_solid(X3D_Segment* seg, X3D_Frustum* frustum, X3D_RenderContext* context, uint16 select_a, uint16 select_b) {
+void x3d_draw_clipped_segment_solid(X3D_Segment* seg, X3D_Frustum* frustum, X3D_ViewPort* context, uint16 select_a, uint16 select_b) {
   //X3D_LOG_WAIT(context, "Planes: %d\n", frustum->total_p);
   X3D_Prism3D* prism = &seg->prism;
 

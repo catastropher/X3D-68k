@@ -27,7 +27,7 @@
 #endif
 
 /// @todo document
-void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16* v1, X3D_Vex2D_int16* v2) {
+void x3d_draw_line_black(X3D_ViewPort* context, X3D_Vex2D_int16* v1, X3D_Vex2D_int16* v2) {
 #ifdef __TIGCC__
   //DrawLine(v1.x, v1.y, v2.x, v2.y, A_NORMAL);
   FastLine_Draw_R(context->screen, v1->x, v1->y, v2->x, v2->y);
@@ -36,7 +36,7 @@ void x3d_draw_line_black(X3D_RenderContext* context, X3D_Vex2D_int16* v1, X3D_Ve
 
 /// @todo rename context_x and context_y to pos_x and pos_y
 /// @todo document
-void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
+void x3d_rendercontext_init(X3D_ViewPort* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags) {
 
   X3D_STACK_TRACE;
@@ -105,7 +105,7 @@ void x3d_renderdevice_flip(X3D_RenderDevice* d) {
 }
 
 /// @todo document
-void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* context) {
+void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_ViewPort* context) {
   if(v->x < context->pos.x)
     v->x = context->pos.x;
   else if(v->x >= context->pos.x + context->w)
@@ -119,7 +119,7 @@ void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_RenderContext* 
 
 void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
-void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineState* state, X3D_RenderContext* context) {
+void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_EngineState* state, X3D_ViewPort* context) {
   uint16 i;
 
   //printf("Enter %d\n", id);

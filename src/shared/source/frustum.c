@@ -19,7 +19,7 @@
 #include "X3D_frustum.h"
 
 /// @todo document
-void x3d_frustum_from_rendercontext(X3D_Frustum* f, X3D_RenderContext* context) {
+void x3d_frustum_from_rendercontext(X3D_Frustum* f, X3D_ViewPort* context) {
   // Calculates the normals of the unrotated planes of the view frustum
   int16 w = context->w;
   int16 h = context->h;
@@ -70,7 +70,7 @@ void x3d_frustum_print(X3D_Frustum* f) {
 // consits of two points on the polygon and one on the camera
 //
 // With any luck, this will remove the need for a 2D polygon clipper!
-void x3d_construct_frustum_from_polygon3D(X3D_Polygon3D* poly, X3D_RenderContext* context, X3D_Frustum* dest) {
+void x3d_construct_frustum_from_polygon3D(X3D_Polygon3D* poly, X3D_ViewPort* context, X3D_Frustum* dest) {
   int16 i;
 
   dest->total_p = poly->total_v;

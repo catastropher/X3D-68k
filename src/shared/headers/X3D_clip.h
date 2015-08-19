@@ -24,7 +24,7 @@
 //=============================================================================
 
 struct X3D_Frustum;
-struct X3D_RenderContext;
+struct X3D_ViewPort;
 
 //=============================================================================
 // Structures
@@ -71,8 +71,8 @@ typedef struct X3D_Prism2D {
 //=============================================================================
 
 void x3d_get_fail_planes(X3D_VertexClip* vc, Vex3D* v, X3D_Frustum* f);
-void x3d_frustum_from_rendercontext(struct X3D_Frustum* f, struct X3D_RenderContext* context);
-void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, struct X3D_RenderContext* context, uint16 select_a, uint16 select_b);
+void x3d_frustum_from_rendercontext(struct X3D_Frustum* f, struct X3D_ViewPort* context);
+void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, struct X3D_ViewPort* context, uint16 select_a, uint16 select_b);
 
 _Bool x3d_clip_polygon3d_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D* dest);
 _Bool x3d_clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* dest);

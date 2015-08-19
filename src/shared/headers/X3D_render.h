@@ -75,7 +75,7 @@ typedef struct X3D_EngineState {
 } X3D_EngineState;
 
 /// A logical screen that is rendered to.
-typedef struct X3D_RenderContext {
+typedef struct X3D_ViewPort {
   uint8 flags;                ///< Flags (currently unused)
 
   /// @todo (should this be moved to camera ? )
@@ -85,7 +85,7 @@ typedef struct X3D_RenderContext {
 
   int16 scale;                ///< Scaling factor for rendering
 
-  Vex2D_int16 center;     ///< Logical center of the rendering context
+  Vex2D center;     ///< Logical center of the rendering context
 
   uint8* screen;              ///< Screen to render to (monochrome)
   uint16 screen_w;            ///< Full witdth of the screen
@@ -102,7 +102,7 @@ typedef struct X3D_RenderContext {
   
   uint16 frame;
 
-} X3D_RenderContext;
+} X3D_ViewPort;
 
 /// A physical device to render to
 typedef struct X3D_RenderDevice {
@@ -116,21 +116,21 @@ struct X3D_Frustum;
 // Function declarations
 //=============================================================================
 
-void x3d_draw_line_black(X3D_RenderContext* context, Vex2D_int16* v1, Vex2D_int16* v2);
+void x3d_draw_line_black(X3D_ViewPort* context, Vex2D_int16* v1, Vex2D_int16* v2);
 
-void x3d_rendercontext_init(X3D_RenderContext* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
+void x3d_rendercontext_init(X3D_ViewPort* context, uint8* screen, uint16 screen_w, uint16 screen_h, uint16 context_w,
   uint16 context_h, uint16 context_x, int16 context_y, uint8 fov, uint8 flags);
 
 void x3d_renderdevice_init(X3D_RenderDevice* d, uint16 w, uint16 h);
 void x3d_renderdevice_cleanup(X3D_RenderDevice* d);
 void x3d_renderdevice_flip(X3D_RenderDevice* d);
 
-void x3d_rendercontext_clamp_vex2d_int16(Vex2D_int16* v, X3D_RenderContext* context);
+void x3d_rendercontext_clamp_vex2d_int16(Vex2D_int16* v, X3D_ViewPort* context);
 
 void x3d_enginestate_init(X3D_EngineState* state, uint16 max_segments, uint16 seg_pool_size);
 void x3d_enginestate_cleanup(X3D_EngineState* state);
 
-void x3d_render_segment_wireframe(uint16 id, struct X3D_Frustum* frustum, X3D_EngineState* state, X3D_RenderContext* context);
+void x3d_render_segment_wireframe(uint16 id, struct X3D_Frustum* frustum, X3D_EngineState* state, X3D_ViewPort* context);
 
 uint16 x3d_get_clock();
 

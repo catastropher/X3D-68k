@@ -70,7 +70,7 @@ enum {
 
 
 typedef struct X3D_TestContext {
-  X3D_RenderContext context;
+  X3D_ViewPort context;
   X3D_EngineState state;
   X3D_RenderDevice device;
   X3D_KeyState keys;
@@ -81,7 +81,7 @@ typedef struct X3D_TestContext {
   uint8 quit;
 } X3D_TestContext;
 
-void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_RenderContext* context) {
+void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_ViewPort* context) {
   uint16 i;
   for(i = 0; i < p->base_v * 2; ++i) {
     x3d_vex3d_int16_project(dest->v + i, p->v + i, context);

@@ -30,7 +30,7 @@
 // Forward declarations
 //=============================================================================
 
-struct X3D_RenderContext;
+struct X3D_ViewPort;
 struct X3D_Mat3x3_fp0x16;
 
 //=============================================================================
@@ -98,7 +98,7 @@ inline void x3d_vex3d_fp0x16_normalize(Vex3D_fp0x16* v);
 void x3d_print_vex3d_int16(Vex3D* v);
 
 void x3d_vex3d_int16_print(Vex3D* v);
-void x3d_vex3d_int16_project(Vex2D_int16* dest, const Vex3D* src, struct X3D_RenderContext* context);
+void x3d_vex3d_int16_project(Vex2D_int16* dest, const Vex3D* src, struct X3D_ViewPort* context);
 void x3d_vex3d_int16_rotate(Vex3D* dest, Vex3D* src, struct X3D_Mat3x3_fp0x16* mat);
 void x3d_vex3d_fp0x16_cross(Vex3D_fp0x16* dest, Vex3D_fp0x16* a, Vex3D_fp0x16* b);
 uint16 x3d_vex3d_int16_mag(Vex3D* v);

@@ -35,14 +35,14 @@ typedef struct X3D_Frustum {
 } X3D_Frustum;
 
 struct X3D_Frustum;
-struct X3D_RenderContext;
+struct X3D_ViewPort;
 
 void x3d_frustum_print(struct X3D_Frustum* f);
-void x3d_frustum_from_rendercontext(X3D_Frustum* f, struct X3D_RenderContext* context);
+void x3d_frustum_from_rendercontext(X3D_Frustum* f, struct X3D_ViewPort* context);
 
 static inline uint16 x3d_frustum_needed_size(uint16 total_p) {
   return sizeof(X3D_Frustum) + sizeof(X3D_Plane) * total_p;
 }
 
-void x3d_construct_frustum_from_polygon3D(X3D_Polygon3D* poly, struct X3D_RenderContext* context, X3D_Frustum* dest);
+void x3d_construct_frustum_from_polygon3D(X3D_Polygon3D* poly, struct X3D_ViewPort* context, X3D_Frustum* dest);
 

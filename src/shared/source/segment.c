@@ -80,7 +80,7 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, Vex3D_an
 *     account when rendering.
 * @todo Add clipping and take into position of the camera.
 */
-void x3d_prism_render(const X3D_Prism* prism, X3D_RenderContext* context) {
+void x3d_prism_render(const X3D_Prism* prism, X3D_ViewPort* context) {
   uint16 i, d;
   X3D_Vex2D_int16 screen[prism->base_v * 2];
 
