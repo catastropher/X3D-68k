@@ -14,14 +14,11 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "X3D_manager.h"
 
-#include "X3D_render.h"               // <--- needed for stack and list
-
-typedef struct X3D_SegmentManager{
-  X3D_List_uint16 segment_offset;
-  X3D_Stack segment_data;
-} X3D_SegmentManager;
-
-void x3d_init_segmentmanager(X3D_SegmentManager* state, uint16 max_segments, uint16 seg_pool_size);
+/// @todo document
+void x3d_init_segmentmanager(X3D_SegmentManager* manager, uint16 max_segments, uint16 seg_pool_size) {
+  x3d_stack_create(&manager->segment_data, seg_pool_size);
+  x3d_list_uint16_create(&manager->segment_offset, max_segments);
+}
 

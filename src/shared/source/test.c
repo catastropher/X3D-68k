@@ -28,6 +28,7 @@
 #include "X3D_error.h"
 #include "X3D_keys.h"
 #include "X3D_engine.h"
+#include "X3D_manager.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -103,8 +104,13 @@ uint16 x3d_get_clock() {
   return hardware_timer;
 }
 
-static void x3d_test_init(X3D_TestContext* context) {
-  x3d_enginestate_init(&context->state, 30, 20000);
+static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
+  c->render_step = 0;
+  c->frame = 0;
+  
+  x3d_init_segmentmanager(&c->segment_manager, 30, 20000);
+  
+  //x3d_enginestate_init(&context->state, 30, 20000);
   x3d_renderdevice_init(&context->device, 240, 128);
   x3d_rendercontext_init(&context->context, context->device.dbuf, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
 
@@ -115,27 +121,27 @@ static void x3d_test_init(X3D_TestContext* context) {
   SetIntVec(AUTO_INT_1, new_auto_int_1);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
 
-  x3d_keystate_map(&context->keys, XKEY_MAP_LEFT, RR_LEFT);
-  x3d_keystate_map(&context->keys, XKEY_MAP_RIGHT, RR_RIGHT);
-  x3d_keystate_map(&context->keys, XKEY_MAP_UP, RR_UP);
-  x3d_keystate_map(&context->keys, XKEY_MAP_DOWN, RR_DOWN);
-  x3d_keystate_map(&context->keys, XKEY_MAP_FORWARD, RR_F1);
-  x3d_keystate_map(&context->keys, XKEY_MAP_BACK, RR_F2);
-  x3d_keystate_map(&context->keys, XKEY_MAP_QUIT, RR_ESC);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM1, RR_Q);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM2, RR_W);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM3, RR_E);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM4, RR_R);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM5, RR_F5);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM6, RR_F7);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM7, RR_F4);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM8, RR_ESC);
-  x3d_keystate_map(&context->keys, XKEY_MAP_CUSTOM9, RR_ESC);
+  x3d_keystate_map(&c->keys, XKEY_MAP_LEFT, RR_LEFT);
+  x3d_keystate_map(&c->keys, XKEY_MAP_RIGHT, RR_RIGHT);
+  x3d_keystate_map(&c->keys, XKEY_MAP_UP, RR_UP);
+  x3d_keystate_map(&c->keys, XKEY_MAP_DOWN, RR_DOWN);
+  x3d_keystate_map(&c->keys, XKEY_MAP_FORWARD, RR_F1);
+  x3d_keystate_map(&c->keys, XKEY_MAP_BACK, RR_F2);
+  x3d_keystate_map(&c->keys, XKEY_MAP_QUIT, RR_ESC);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM1, RR_Q);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM2, RR_W);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM3, RR_E);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM4, RR_R);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM5, RR_F5);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM6, RR_F7);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM7, RR_F4);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM8, RR_ESC);
+  x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM9, RR_ESC);
 
   hardware_timer = 0;
 
   // We don't want to quit yet!
-  context->quit = 0;
+  c->quit = 0;
 }
 
 static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
@@ -348,7 +354,6 @@ void x3d_test_cleanup(X3D_TestContext* context) {
 
 void x3d_test() {
   X3D_TestContext test;
-  x3d_test_init(&test);
 
   FontSetSys(F_4x6);
 
@@ -360,6 +365,10 @@ void x3d_test() {
   // Make some prisms
   
   X3D_Context context;
+  
+  context.cam = cam;
+  
+  x3d_test_init(&test, &context);
   
 
   X3D_Segment* seg = x3d_segment_add(&context, 8);
@@ -396,7 +405,7 @@ void x3d_test() {
     clrscr();
     //x3d_draw_clipped_prism3d_wireframe(prism3d_rotated, frustum, &test.context);
 
-    test.context.render_clock = 0;
+    context.render_clock = 0;
 
     //printf("%d\n", x3d_get_total_segments(&test.state));
 
@@ -406,7 +415,7 @@ void x3d_test() {
 
     x3d_render_segment_wireframe(0, frustum, &context, &test.context);
 
-    printf("%d\n", test.context.render_clock);
+    printf("%d\n", context.render_clock);
     //printf("Face: %d\n", test.state.spinner.selected_face);
 
     x3d_renderdevice_flip(&test.device);
@@ -416,16 +425,16 @@ void x3d_test() {
       last_spin = x3d_get_clock();
     }
     
-    ++test.context.frame;
+    ++context.frame;
 
     x3d_test_handle_keys(&context);
-  } while(!test.quit);
+  } while(!context.quit);
 
   free(frustum);
   //free(prism3d);
   //free(prism3d_rotated);
 
-  x3d_test_cleanup(&test);
+  //x3d_test_cleanup(&test);
 }
 
 #endif

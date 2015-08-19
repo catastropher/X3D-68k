@@ -33,6 +33,8 @@ typedef struct X3D_Context {
   X3D_SegmentManager segment_manager;
   uint16 render_clock;
   
+  uint16 render_step;
+  
   _Bool quit;
 } X3D_Context;
 
