@@ -12,6 +12,7 @@ include_directories(${PLATFORM_DIR})
 include_directories($ENV{X3D}/src/shared/headers)
 
 add_executable(X3DShared
+  source/export.c
   source/clip.c
   source/editor.c
   source/error.c
@@ -29,6 +30,7 @@ add_executable(X3DShared
   source/test.c
   source/trig.c
   source/vector.c
+  source/debug/log.c
 )
 
 if(X3D_TARGET EQUAL 68k)
