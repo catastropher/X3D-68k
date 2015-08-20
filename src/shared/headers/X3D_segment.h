@@ -69,6 +69,7 @@ X3D_Segment* x3d_segment_add(struct X3D_Context* state, uint16 base_v);
 inline X3D_Segment* x3d_get_segment(struct X3D_Context* context, int id);
 
 uint16 x3d_get_total_segments(struct X3D_EngineState* state);
+void x3d_calculate_segment_normals(X3D_Segment* s);
 
 //=============================================================================
 // Static inline functions

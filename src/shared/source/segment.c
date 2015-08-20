@@ -22,6 +22,7 @@
 #include "X3D_matrix.h"
 #include "X3D_geo.h"
 #include "X3D_engine.h"
+#include "X3D_geo.h"
 
 /**
 * Constructs a prism with regular polygons as the base.
@@ -171,9 +172,20 @@ void x3d_calculate_segment_normals(X3D_Segment* s) {
   X3D_Polygon3D* poly = ALLOCA_POLYGON3D(s->base_v);
   X3D_SegmentFace* face = x3d_segment_get_face(s);
 
+  Vex3D center;
+  
+  x3d_prism3d_get_center(&s->prism, &center);
+  
   for(i = 0; i < x3d_segment_total_f(s); ++i) {
     x3d_prism3d_get_face(poly, &s->prism, i);
-
+    x3d_plane_construct(&face[i].plane, &poly->v[0], &poly->v[1], &poly->v[2]);
+    
+    if(x3d_distance_to_plane(&face[i].plane, &center) < 0) {
+      face[i].plane.normal.x = -face[i].plane.normal.x;
+      face[i].plane.normal.y = -face[i].plane.normal.y;
+      face[i].plane.normal.z = -face[i].plane.normal.z;
+      face[i].plane.d = -face[i].plane.d;
+    }
   }
 }
 

@@ -373,7 +373,7 @@ void x3d_test() {
   
 
   X3D_Segment* seg = x3d_segment_add(&context, 8);
-
+  
   //X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
   X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(Vex3D) * 50 * 2);
@@ -397,6 +397,8 @@ void x3d_test() {
   uint16 i;
   
   test.context.frame = 0;
+  
+  x3d_calculate_segment_normals(seg);
 
   do {
     // Construct the rotation matrix
