@@ -203,14 +203,6 @@ static inline void x3d_get_selectspinner_selected(X3D_SelectSpinner* spinner, ui
   }
 }
 
-static inline uint16 x3d_single_wrap(uint16 v, uint16 max) {
-  if(v >= max) {
-    return v - max;
-  }
-
-  return v;
-}
-
 static inline void x3d_selectspinner_spin(X3D_SelectSpinner* spinner) {
   spinner->select_a = x3d_single_wrap(spinner->select_a + 1, spinner->base_v);
   spinner->select_b = x3d_single_wrap(spinner->select_b + 1, spinner->base_v);

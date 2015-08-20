@@ -102,6 +102,14 @@ typedef uint8 angle256;
 // Inline functions
 //=============================================================================
 
+static inline uint16 x3d_single_wrap(uint16 v, uint16 max) {
+  if(v >= max) {
+    return v - max;
+  }
+
+  return v;
+}
+
 /**
  * Adds two int8 numbers, possibly checking for overflow.
  *

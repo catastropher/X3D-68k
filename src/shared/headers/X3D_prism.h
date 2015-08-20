@@ -46,8 +46,17 @@ enum {
 
 struct X3D_Polygon3D;
 
-static inline uint16 x3d_opposite_vertex(X3D_Prism* prism, uint16 v) {
+static inline uint16 x3d_opposite_vertex(X3D_Prism3D* prism, uint16 v) {
   return prism->base_v + (prism->base_v - v) - 1;
+}
+
+static inline void x3d_prism3d_side_face(X3D_Prism3D* prism, uint16 face, uint16 v[4]) {
+  v[0] = face - 2;
+  v[1] = x3d_opposite_vertex(prism, face - 2);
+
+  v[2] = x3d_opposite_vertex(prism, x3d_single_wrap(v[0] + 1, prism->base_v));
+
+  v[3] = x3d_single_wrap(v[0] + 1, prism->base_v);
 }
 
 //=============================================================================

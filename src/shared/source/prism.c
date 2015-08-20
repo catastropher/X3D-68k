@@ -44,10 +44,14 @@ void x3d_prism3d_get_face(X3D_Polygon3D* dest, X3D_Prism3D* prism, uint16 face) 
     dest->total_v = prism->base_v;
   }
   else {
-    dest->v[0] = prism->v[face - 2];
-    dest->v[1] = prism->v[face - 2 + prism->base_v];
-    dest->v[2] = prism->v[x3d_single_wrap(face - 2 + 1, prism->base_v) + prism->base_v];
-    dest->v[3] = prism->v[x3d_single_wrap(face - 2 + 1, prism->base_v)];
+    uint16 v[4];
+
+    x3d_prism3d_side_face(prism, face, v);
+
+    dest->v[0] = prism->v[v[0]];
+    dest->v[1] = prism->v[v[1]];
+    dest->v[2] = prism->v[v[2]];
+    dest->v[3] = prism->v[v[3]];
 
     dest->total_v = 4;
   }
@@ -74,10 +78,23 @@ void x3d_prism3d_set_face(X3D_Polygon3D* src, X3D_Prism3D* prism, uint16 face) {
       prism->v[x3d_opposite_vertex(prism, i)] = src->v[i];
   }
   else {
-    prism->v[face - 2] = src->v[0];
-    prism->v[x3d_single_wrap(face - 2 + 1, prism->base_v)] = src->v[3];
-    prism->v[x3d_single_wrap(face - 2 + 1, prism->base_v) + prism->base_v] = src->v[2];
-    prism->v[face - 2 + prism->base_v] = src->v[1];
+    uint16 v[4];
+
+    x3d_prism3d_side_face(prism, face, v);
+
+    prism->v[v[0]] = src->v[0];
+    prism->v[v[1]] = src->v[1];
+    prism->v[v[2]] = src->v[2];
+    prism->v[v[3]] = src->v[3];
+
+
+
+
+
+    //prism->v[face - 2] = src->v[0];
+    //prism->v[x3d_single_wrap(face - 2 + 1, prism->base_v)] = src->v[3];
+    //prism->v[x3d_single_wrap(face - 2 + 1, prism->base_v) + prism->base_v] = src->v[2];
+    //prism->v[face - 2 + prism->base_v] = src->v[1];
   }
 }
 
