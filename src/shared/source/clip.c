@@ -230,16 +230,16 @@ inline void x3d_get_prism3d_edge(X3D_Prism3D* p, uint16 id, uint16* a, uint16* b
       *b = 0;
   }
   else if(id < p->base_v * 2) {
-    *a = id;
+    *a = x3d_opposite_vertex(p, id - p->base_v);
 
     if(id != p->base_v * 2 - 1)
-      *b = id + 1;
+      *b = x3d_opposite_vertex(p, id + 1 - p->base_v);
     else
-      *b = p->base_v;
+      *b = x3d_opposite_vertex(p, p->base_v - p->base_v);
   }
   else {
-    *a = id - p->base_v * 2;
-    *b = id - p->base_v;
+    *a = x3d_opposite_vertex(p, id - p->base_v * 2);
+    *b = id - p->base_v * 2;
   }
 }
 

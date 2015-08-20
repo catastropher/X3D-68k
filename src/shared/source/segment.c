@@ -49,9 +49,11 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, Vex3D_an
     s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sinfp(uint16_upper(angle)), r);
     s->v[i].y = -h / 2;
 
-    s->v[i + steps].x = s->v[i].x;
-    s->v[i + steps].z = s->v[i].z;
-    s->v[i + steps].y = h / 2;
+    uint16 opp = x3d_opposite_vertex(s, i);
+
+    s->v[opp].x = s->v[i].x;
+    s->v[opp].z = s->v[i].z;
+    s->v[opp].y = h / 2;
 
     angle += angle_step;
   }
