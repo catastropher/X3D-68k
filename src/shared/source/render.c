@@ -223,10 +223,14 @@ void x3d_selectspinner_select(X3D_SelectSpinner* spinner, X3D_Context* context, 
   spinner->base_v = (face < 2 ? s->base_v : 4);
 
   if(face > 1) {
-    spinner->select_data[0] = face - 2;
-    spinner->select_data[1] = x3d_single_wrap(face - 2 + 1, s->base_v);
-    spinner->select_data[2] = x3d_single_wrap(face - 2 + 1, s->base_v) + s->base_v;
-    spinner->select_data[3] = face - 2 + s->base_v;
+    uint16 v[4];
+
+    x3d_prism3d_side_face(&s->prism, face, v);
+
+    spinner->select_data[0] = v[0];
+    spinner->select_data[1] = v[1];
+    spinner->select_data[2] = v[2];
+    spinner->select_data[3] = v[3];
   }
 
   spinner->select_a = 0;
