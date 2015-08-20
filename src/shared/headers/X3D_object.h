@@ -17,6 +17,7 @@
 #pragma once
 
 #include "X3D_vector.h"
+#include "X3D_matrix.h"
 
 #define X3D_MAX_ACTIVE_OBJECTS 10
 #define X3D_OBJECT_SIZE 128
@@ -54,17 +55,26 @@ typedef struct X3D_Model {
   uint16 bound_sphere;
 } X3D_Model;
 
+/// @todo Should be renamed to X3D_BaseObject
 typedef struct X3D_Object {
   uint8 flags;
   uint16 id;
   uint16 type;
   uint16 category;
   Vex3D_fp16x16 pos;
-  Mat3x3_fp0x8 mat;
+  X3D_Mat3x3_fp0x16 mat;
+
+  Vex3D_angle256 angle;
 
   X3D_Model* unrotated;
   X3D_Model* rotated;
 } X3D_Object;
+
+typedef struct X3D_Camera {
+  X3D_Object object;
+} X3D_Camera;
+
+typedef void* X3D_ObjectBase;
 
 #ifdef __X3D_SHARED__
 
@@ -74,6 +84,10 @@ void x3d_deactivate_object(struct X3D_Context* context, X3D_Object* obj);
 X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
 X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp8x8 velocity);
 struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
+
+
+static inline void x3d_object_pos(X3D_ObjectBase* obj) {
+}
 
 #else
 

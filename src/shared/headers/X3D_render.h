@@ -18,6 +18,7 @@
 #include "X3D_fix.h"
 #include "X3D_vector.h"
 #include "X3D_matrix.h"
+#include "X3D_object.h"
 
 //=============================================================================
 // Structures
@@ -46,6 +47,7 @@ typedef struct X3D_SegmentTable {
   X3D_Stack segment_data;
 } X3D_SegmentTable;
 
+#if 0
 /// A moveable camera
 typedef struct X3D_Camera {
   X3D_Mat3x3_fp0x16 mat;          ///< Rotation matrix based on angle
@@ -54,6 +56,10 @@ typedef struct X3D_Camera {
   Vex3D_fp16x16 pos;          ///< Position of the camera
   Vex3D_fp16x16 velocity;     ///< Velocity
 } X3D_Camera;
+#endif
+
+
+
 
 typedef struct X3D_SelectSpinner {
   uint16 selected_segment;

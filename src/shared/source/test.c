@@ -155,14 +155,14 @@ static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
 
 void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* cam) {
   // Move the prism relative to the camera
-  Vex3D cam_pos = { cam->pos.x >> 15, cam->pos.y >> 15, cam->pos.z >> 15 };
+  Vex3D cam_pos = { cam->object.pos.x >> 15, cam->object.pos.y >> 15, cam->object.pos.z >> 15 };
 
   uint16 i;
   for(i = 0; i < src->base_v * 2; ++i) {
     Vex3D v = vex3d_int16_sub(src->v + i, &cam_pos);
 
     Vex3D temp;
-    x3d_vex3d_int16_rotate(&temp, &v, &cam->mat);
+    x3d_vex3d_int16_rotate(&temp, &v, &cam->object.mat);
 
     dest->v[i] = temp;
   }
@@ -177,32 +177,32 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 void x3d_test_handle_keys(X3D_Context* context) {
   X3D_Camera* cam = context->cam;
   
-  Vex3D_int32 dir = { (int32)cam->mat.data[2] * 6, (int32)cam->mat.data[5] * 6, (int32)cam->mat.data[8] * 6 };
+  Vex3D_int32 dir = { (int32)cam->object.mat.data[2] * 6, (int32)cam->object.mat.data[5] * 6, (int32)cam->object.mat.data[8] * 6 };
   x3d_keystate_update(&context->keys);
 
   if(x3d_keystate_down(&context->keys, XKEY_FORWARD)) {
-    cam->pos.x += dir.x;
-    cam->pos.y += dir.y;
-    cam->pos.z += dir.z;
+    cam->object.pos.x += dir.x;
+    cam->object.pos.y += dir.y;
+    cam->object.pos.z += dir.z;
   }
   else if (x3d_keystate_down(&context->keys, XKEY_BACK)) {
-    cam->pos.x -= dir.x;
-    cam->pos.y -= dir.y;
-    cam->pos.z -= dir.z;
+    cam->object.pos.x -= dir.x;
+    cam->object.pos.y -= dir.y;
+    cam->object.pos.z -= dir.z;
   }
 
   if (x3d_keystate_down(&context->keys, XKEY_UP)) {
-    cam->angle.x += 3;
+    cam->object.angle.x += 3;
   }
   else if (x3d_keystate_down(&context->keys, XKEY_DOWN)) {
-    cam->angle.x -= 3;
+    cam->object.angle.x -= 3;
   }
 
   if (x3d_keystate_down(&context->keys, XKEY_LEFT)) {
-    cam->angle.y -= 3;
+    cam->object.angle.y -= 3;
   }
   else if (x3d_keystate_down(&context->keys, XKEY_RIGHT)) {
-    cam->angle.y += 3;
+    cam->object.angle.y += 3;
   }
   if (x3d_keystate_down(&context->keys, XKEY_QUIT)) {
     context->quit = 1;
@@ -359,8 +359,8 @@ void x3d_test() {
 
   // Initialize the camera
   X3D_Camera* cam = &test.context.cam;
-  cam->pos = (Vex3D_fp16x16){ 0, 0, 0 };
-  cam->angle = (Vex3D_angle256){ 0, 0, 0 };
+  cam->object.pos = (Vex3D_fp16x16){ 0, 0, 0 };
+  cam->object.angle = (Vex3D_angle256){ 0, 0, 0 };
 
   // Make some prisms
   
@@ -399,7 +399,7 @@ void x3d_test() {
 
   do {
     // Construct the rotation matrix
-    x3d_mat3x3_fp0x16_construct(&cam->mat, &cam->angle);
+    x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
 
 
     clrscr();
