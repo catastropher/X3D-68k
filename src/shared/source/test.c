@@ -420,8 +420,8 @@ void x3d_test() {
 
     x3d_renderdevice_flip(&test.device);
 
-    if(test.state.spinner.selected_segment != SEGMENT_NONE && x3d_get_clock() - last_spin >= 75) {
-      x3d_selectspinner_spin(&test.state.spinner);
+    if(context.spinner.selected_segment != SEGMENT_NONE && x3d_get_clock() - last_spin >= 75) {
+      x3d_selectspinner_spin(&context.spinner);
       last_spin = x3d_get_clock();
     }
     
