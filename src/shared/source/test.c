@@ -210,7 +210,7 @@ void x3d_test_handle_keys(X3D_Context* context) {
 
   if (x3d_keystate_down_wait(&context->keys, KEY_CYCLE_SEGMENT)) {
     // FIXME
-    //x3d_selectspinner_select(&context->spinner, &context->state, context->state.spinner.selected_segment, context->state.spinner.selected_face + 1);
+    x3d_selectspinner_select(&context->spinner, context, context->spinner.selected_segment, context->spinner.selected_face + 1);
   }
 
   if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_UP)) {

@@ -30,14 +30,16 @@
 */
 void x3d_prism3d_get_face(X3D_Polygon3D* dest, X3D_Prism3D* prism, uint16 face) {
   uint16 i;
-  uint16 offset = 0;
 
-  if(face == BASE_B)
-    offset = prism->base_v;
-
-  if(face == BASE_A || face == BASE_B) {
+  if(face == BASE_A) {
     for(i = 0; i < prism->base_v; ++i)
-      dest->v[i] = prism->v[i + offset];
+      dest->v[i] = prism->v[i];
+
+    dest->total_v = prism->base_v;
+  }
+  else if(face == BASE_B) {
+    for(i = 0; i < prism->base_v; ++i)
+      dest->v[i] = prism->v[x3d_opposite_vertex(prism, i)];
 
     dest->total_v = prism->base_v;
   }
