@@ -86,7 +86,12 @@ X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, V
 struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
 
 
-static inline void x3d_object_pos(X3D_ObjectBase* obj) {
+static inline void x3d_object_pos(void* obj, Vex3D* v) {
+  X3D_Object* object = (X3D_Object *)obj;
+  
+  v->x = object->pos.x >> X3D_NORMAL_SHIFT;
+  v->y = object->pos.y >> X3D_NORMAL_SHIFT;
+  v->z = object->pos.z >> X3D_NORMAL_SHIFT;
 }
 
 #else

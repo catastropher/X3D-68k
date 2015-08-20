@@ -29,6 +29,7 @@
 #include "X3D_keys.h"
 #include "X3D_engine.h"
 #include "X3D_manager.h"
+#include "X3D_collide.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -416,6 +417,12 @@ void x3d_test() {
     x3d_render_segment_wireframe(0, frustum, &context, &test.context);
 
     printf("%d\n", context.render_clock);
+    
+    Vex3D cam_pos;
+    x3d_object_pos(cam, &cam_pos);
+
+    printf("%d\n", x3d_point_in_segment(seg, &cam_pos));
+
     //printf("Face: %d\n", test.state.spinner.selected_face);
 
     x3d_renderdevice_flip(&test.device);
