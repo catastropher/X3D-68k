@@ -17,11 +17,19 @@
 #pragma once
 
 #include "X3D_render.h"               // <--- needed for stack and list
+#include "X3D_object.h"
 
 typedef struct X3D_SegmentManager{
   X3D_List_uint16 segment_offset;
   X3D_Stack segment_data;
 } X3D_SegmentManager;
+
+typedef struct X3D_ObjectManager {
+  void* object_data;
+  X3D_Object* active_list[X3D_MAX_ACTIVE_OBJECTS];
+  X3D_ObjectType types[X3D_MAX_OBJECT_TYPES];
+
+} X3D_ObjectManager;
 
 void x3d_init_segmentmanager(X3D_SegmentManager* state, uint16 max_segments, uint16 seg_pool_size);
 

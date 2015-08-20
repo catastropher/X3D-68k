@@ -232,3 +232,4 @@ void x3d_selectspinner_select(X3D_SelectSpinner* spinner, X3D_Context* context, 
   spinner->select_a = 0;
   spinner->select_b = spinner->base_v / 2;
 }
+

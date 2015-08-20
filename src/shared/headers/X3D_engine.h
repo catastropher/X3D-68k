@@ -31,6 +31,8 @@ typedef struct X3D_Context {
   X3D_KeyState keys;
   
   X3D_SegmentManager segment_manager;
+  X3D_ObjectManager object_manager;
+
   uint16 render_clock;
   
   uint16 render_step;

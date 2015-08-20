@@ -33,6 +33,7 @@ add_executable(X3DShared
   source/debug/log.c
   source/init/init.c
   source/manager.c
+  source/object.c
 )
 
 if(X3D_TARGET EQUAL 68k)
