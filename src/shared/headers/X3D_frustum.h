@@ -46,10 +46,5 @@ static inline uint16 x3d_frustum_needed_size(uint16 total_p) {
   return sizeof(X3D_Frustum) + sizeof(X3D_Plane) * total_p;
 }
 
-/// @todo document
-static inline int16 x3d_dist_to_plane(X3D_Plane* p, Vex3D* v) {
-  return x3d_vex3d_fp0x16_dot(&p->normal, v) - p->d;
-}
-
 void x3d_construct_frustum_from_polygon3D(X3D_Polygon3D* poly, struct X3D_ViewPort* context, struct X3D_Frustum* dest);
 

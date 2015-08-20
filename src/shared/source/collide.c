@@ -29,9 +29,9 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p) {
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
-    printf("dist: %d\n", x3d_dist_to_plane(&face[i].plane, p));
+    printf("dist: %d\n", x3d_distance_to_plane(&face[i].plane, p));
 
-    if(x3d_dist_to_plane(&face[i].plane, p) > 0)
+    if(x3d_distance_to_plane(&face[i].plane, p) > 0)
       return FALSE;
   }
 
