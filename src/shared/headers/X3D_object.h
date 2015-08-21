@@ -24,6 +24,8 @@
 #define X3D_MAX_OBJECT_TYPES 20
 #define X3D_MAX_CAMERAS 4
 
+#define X3D_MAX_OBJECT_SEGS 4
+
 typedef enum {
   X3D_EV_CREATE,
   X3D_EV_DESTROY,
@@ -55,6 +57,10 @@ typedef struct X3D_Model {
   uint16 bound_sphere;
 } X3D_Model;
 
+typedef struct X3D_SegmentPos {
+  uint16 segs[X3D_MAX_OBJECT_SEGS];
+} X3D_SegmentPos;
+
 /// @todo Should be renamed to X3D_BaseObject
 typedef struct X3D_Object {
   uint8 flags;
@@ -63,6 +69,8 @@ typedef struct X3D_Object {
   uint16 category;
   Vex3D_fp16x16 pos;
   X3D_Mat3x3_fp0x16 mat;
+
+  X3D_SegmentPos seg_pos;
 
   Vex3D_angle256 angle;
 

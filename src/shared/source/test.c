@@ -182,9 +182,11 @@ void x3d_test_handle_keys(X3D_Context* context) {
   x3d_keystate_update(&context->keys);
 
   if(x3d_keystate_down(&context->keys, XKEY_FORWARD)) {
-    cam->object.pos.x += dir.x;
-    cam->object.pos.y += dir.y;
-    cam->object.pos.z += dir.z;
+    //cam->object.pos.x += dir.x;
+    //cam->object.pos.y += dir.y;
+    //cam->object.pos.z += dir.z;
+
+    x3d_attempt_move_object(context, cam, &dir);
   }
   else if (x3d_keystate_down(&context->keys, XKEY_BACK)) {
     cam->object.pos.x -= dir.x;
@@ -423,7 +425,7 @@ void x3d_test() {
     Vex3D cam_pos;
     x3d_object_pos(cam, &cam_pos);
 
-    printf("%d\n", x3d_point_in_segment(seg, &cam_pos));
+    //printf("%d\n", x3d_point_in_segment(seg, &cam_pos));
 
     //printf("Face: %d\n", test.state.spinner.selected_face);
 

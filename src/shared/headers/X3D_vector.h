@@ -148,3 +148,14 @@ static inline Vex3D vscale16(Vex3D* v, fp8x8 scale) {
   };
 }
 
+static inline void vex3d_fp16x16_to_vex3d(Vex3D_fp16x16* src, Vex3D* dest) {
+  dest->x = src->x >> X3D_NORMAL_SHIFT;
+  dest->y = src->y >> X3D_NORMAL_SHIFT;
+  dest->z = src->z >> X3D_NORMAL_SHIFT;
+}
+
+#define V3ADD(_a, _b) ({__typeof__(*_a) _vec = {(_a)->x + (_b)->x, (_a)->y + (_b)->y, (_a)->z + (_b)->z}; _vec;})
+
+
+#define V3SUB(_a, _b) ((typeof(_a)){(_a)->x - (_b)->x, (_a)->y - (_b)->y, (_a)->z - (_b)->z})
+
