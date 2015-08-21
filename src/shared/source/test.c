@@ -405,6 +405,12 @@ void x3d_test() {
   
   x3d_calculate_segment_normals(seg);
 
+  for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+    cam->object.seg_pos.segs[i] = SEGMENT_NONE;
+  }
+
+  cam->object.seg_pos.segs[0] = 0;
+
   do {
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
