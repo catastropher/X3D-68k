@@ -415,7 +415,6 @@ void x3d_test() {
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
 
-
     clrscr();
     //x3d_draw_clipped_prism3d_wireframe(prism3d_rotated, frustum, &test.context);
 
@@ -430,6 +429,10 @@ void x3d_test() {
     x3d_render_segment_wireframe(0, frustum, &context, &test.context);
 
     printf("%d\n", context.render_clock);
+
+    for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+      printf("%d ", cam->object.seg_pos.segs[i]);
+    }
     
     Vex3D cam_pos;
     x3d_object_pos(cam, &cam_pos);

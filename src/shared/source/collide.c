@@ -26,7 +26,7 @@ typedef struct X3D_PlaneCollision {
   int16 dist;
 } X3D_PlaneCollision;
 
-_Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, int16 radius, X3D_PlaneCollision* pc) {
+_Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, int16 radius, X3D_PlaneCollision* pc, _Bool include_portal) {
   uint16 i;
 
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
@@ -35,7 +35,8 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, int16 radius, X3D_PlaneCo
     //printf("dist: %d\n", x3d_distance_to_plane(&face[i].plane, p));
     int16 dist = x3d_distance_to_plane(&face[i].plane, p);
 
-    if(dist < radius) {
+
+    if((include_portal || face[i].connect_id == SEGMENT_NONE) && dist < radius) {
       pc->dist = dist;
       pc->face = &face[i];
       return FALSE;
@@ -48,7 +49,9 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, int16 radius, X3D_PlaneCo
 #define X3D_MAX_COLLISION_ATTEMPS 5
 
 static inline x3d_add_seg_pos(uint16 seg_list[], uint16* seg_list_size, uint16 seg) {
+  //printf("Added segment %d\n", seg);
 
+  seg_list[(*seg_list_size)++] = seg;
 }
 
 static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp16x16* pos) {
@@ -59,7 +62,7 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
   for(attempt = 0; attempt < X3D_MAX_COLLISION_ATTEMPS; ++attempt) {
     vex3d_fp16x16_to_vex3d(pos, &new_pos);
 
-    _Bool inside = x3d_point_in_segment(seg, &new_pos, 10, &pc);
+    _Bool inside = x3d_point_in_segment(seg, &new_pos, 10, &pc, FALSE);
 
     if(inside) {
       return TRUE;
@@ -96,6 +99,10 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
   uint16 seg_pos;
   uint16 i;
 
+  for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+    new_seg_list[i] = SEGMENT_NONE;
+  }
+
 
   for(seg_pos = 0; seg_pos < X3D_MAX_OBJECT_SEGS; ++seg_pos) {
     if(obj->seg_pos.segs[seg_pos] != SEGMENT_NONE) {
@@ -103,10 +110,21 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
 
       X3D_Segment* seg = x3d_get_segment(context, obj->seg_pos.segs[seg_pos]);
 
-      _Bool inside = x3d_point_in_segment(seg, &new_pos, 10, &pc);
+      _Bool inside = x3d_point_in_segment(seg, &new_pos, 10, &pc, TRUE);
 
       // Are we close enough to this segment to still be considered inside of it?
-      if(abs(pc.dist) <= 10 || inside) {
+      _Bool found = FALSE;
+
+      for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+        if(new_seg_list[i] == obj->seg_pos.segs[seg_pos]) {
+          found = TRUE;
+          break;
+        }
+      }
+
+      printf("Dist: %d\n", pc.dist);
+
+      if(!found && (abs(pc.dist) <= 10 || inside)) {
         x3d_add_seg_pos(new_seg_list, &new_seg_list_size, seg->id);
       }
 
@@ -114,11 +132,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
         // Try moving the object along the normal of the plane it failed against
         if(pc.face->connect_id == SEGMENT_NONE) {
           if(!x3d_attempt_adjust_inside_segment(seg, &new_pos_fp16x16)) {
-            printf("Non!\n");
             return FALSE;
-          }
-          else {
-            printf("Repositioned\n");
           }
         }
         else {
@@ -137,7 +151,9 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
           }
 
           if(!found) {
-            if(x3d_attempt_adjust_inside_segment(seg, &new_pos_fp16x16)) {
+            X3D_Segment* new_seg = x3d_get_segment(context, pc.face->connect_id);
+
+            if(x3d_attempt_adjust_inside_segment(new_seg, &new_pos_fp16x16)) {
               x3d_add_seg_pos(new_seg_list, &new_seg_list_size, pc.face->connect_id);
             }
             else {
@@ -155,5 +171,9 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
 
   // Yaaay, the object was repositioned successfully! :D
   obj->pos = new_pos_fp16x16;
+
+  for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+    obj->seg_pos.segs[i] = new_seg_list[i];
+  }
 }
 
