@@ -358,7 +358,7 @@ void x3d_test_handle_keys(X3D_Context* context) {
 
 void x3d_test_cleanup(X3D_TestContext* context) {
   x3d_renderdevice_cleanup(&context->device);
-  x3d_enginestate_cleanup(&context->state);
+  //x3d_enginestate_cleanup(&context->state);
 
   SetIntVec(AUTO_INT_1, context->old_int_1);
   SetIntVec(AUTO_INT_5, context->old_int_5);
@@ -468,7 +468,7 @@ void x3d_test() {
   //free(prism3d);
   //free(prism3d_rotated);
 
-  //x3d_test_cleanup(&test);
+  x3d_test_cleanup(&test);
 }
 
 #endif
