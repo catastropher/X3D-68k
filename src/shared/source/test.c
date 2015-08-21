@@ -426,7 +426,10 @@ void x3d_test() {
     //  x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
     //}
 
-    x3d_render_segment_wireframe(0, frustum, &context, &test.context);
+    for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+      if(cam->object.seg_pos.segs[i] != SEGMENT_NONE)
+        x3d_render_segment_wireframe(cam->object.seg_pos.segs[i], frustum, &context, &test.context);
+    }
 
     printf("%d\n", context.render_clock);
 

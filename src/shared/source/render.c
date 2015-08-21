@@ -131,7 +131,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
 
   X3D_Segment* seg = x3d_get_segment(context, id);
   X3D_Prism* temp = alloca(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * seg->prism.base_v * 2);
-  
+
   seg->last_frame = context->frame;
 
   x3d_test_rotate_prism3d(temp, &seg->prism, context->cam);
@@ -149,34 +149,63 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
 
 #if 1
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
-  
+
     //X3D_LOG_WAIT(context, "FACE ID: %d\n", face[i].connect_id);
 
     if(face[i].connect_id != SEGMENT_NONE) {
       X3D_Segment* next_seg = x3d_get_segment(context, face[i].connect_id);
-      
+
       if(next_seg->last_frame == context->frame)
         continue;
-      
-    
+
       X3D_Frustum* f = ALLOCA_FRUSTUM(20);
       X3D_Polygon3D* poly = ALLOCA_POLYGON3D(20);
       X3D_Polygon3D* poly_out = ALLOCA_POLYGON3D(20);
 
       x3d_prism3d_get_face(poly, temp, i);
-      if(x3d_clip_polygon_to_frustum(poly, frustum, poly_out)) {
-        x3d_construct_frustum_from_polygon3D(poly_out, viewport, f);
 
-        if(i == BASE_B) {
-          uint16 d;
+      Vex3D cam_pos;
 
-          for(d = 0; d < f->total_p; ++d) {
-            f->p[d].normal = vneg16(&f->p[d].normal);
+      x3d_object_pos((void *)context->cam, &cam_pos);
+
+      // Calculate the distance to the face
+      int16 dist = x3d_distance_to_plane(&face[i].plane, &cam_pos);
+
+      if(dist < 0)
+        continue;
+
+      const uint16 MIN_DIST = 200;
+
+      printf("==DIST==    = %d\n", dist);
+
+      if(dist > MIN_DIST) {
+
+        if(x3d_clip_polygon_to_frustum(poly, frustum, poly_out)) {
+          x3d_construct_frustum_from_polygon3D(poly_out, viewport, f);
+
+#if 0
+          if(i == BASE_B) {
+            uint16 d;
+
+            for(d = 0; d < f->total_p; ++d) {
+              f->p[d].normal = vneg16(&f->p[d].normal);
+            }
+
           }
+#endif
+        }
+      }
+      else {
+        uint16 d;
 
+        for(d = 0; d < frustum->total_p - 1; d++) {
+          f->p[d] = frustum->p[d + 1];
         }
 
-        uint16 k;
+        f->total_p = frustum->total_p - 1;
+      }
+
+      uint16 k;
 
 #if 0
       for(k = 0; k < poly_out->total_v; ++k) {
@@ -193,18 +222,17 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       }
 #endif
 
-        x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
+      x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
 
-        if(id == 1) {
-          uint16 d;
+      if(id == 1) {
+        uint16 d;
 
-          for(d = 0; d < f->total_p; ++d) {
-            //printf("%d %d %d -> %d\n", f->p[d].normal.x, f->p[d].normal.y, f->p[d].normal.z, f->p[d].d);
-          }
+        for(d = 0; d < f->total_p; ++d) {
+          //printf("%d %d %d -> %d\n", f->p[d].normal.x, f->p[d].normal.y, f->p[d].normal.z, f->p[d].d);
         }
       }
-
     }
+
   }
 #endif
 
