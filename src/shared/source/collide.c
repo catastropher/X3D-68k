@@ -22,7 +22,7 @@
 #include "X3D_engine.h"
 
 typedef struct X3D_PlaneCollision {
-  X3D_Plane* plane;
+  X3D_SegmentFace* face;
   int16 dist;
 } X3D_PlaneCollision;
 
@@ -37,7 +37,7 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, int16 radius, X3D_PlaneCo
 
     if(dist < radius) {
       pc->dist = dist;
-      pc->plane = &face[i].plane;
+      pc->face = &face[i];
       return FALSE;
     }
   }
@@ -69,16 +69,14 @@ void x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_int32* di
 	
 	// Try moving the object along the normal of the plane it failed against
 
-    printf("Dist: %d\n", pc.dist);
-
     pc.dist -= 10;
 
     pc.dist = -pc.dist;
 
     Vex3D_int32 shift = {
-      (int32)pc.plane->normal.x * pc.dist,
-      (int32)pc.plane->normal.y * pc.dist,
-      (int32)pc.plane->normal.z * pc.dist
+      (int32)pc.face->plane.normal.x * pc.dist,
+      (int32)pc.face->plane.normal.y * pc.dist,
+      (int32)pc.face->plane.normal.z * pc.dist
     };
 
     new_pos_fp16x16 = V3ADD(&new_pos_fp16x16, &shift);

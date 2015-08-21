@@ -326,6 +326,9 @@ void x3d_test_handle_keys(X3D_Context* context) {
     x3d_move_polygon3d_along_normal(poly, -100, &center);
     x3d_prism3d_set_face(poly, prism, BASE_A);
 
+    // Calculate the normals
+    x3d_calculate_segment_normals(seg);
+
     context->spinner.selected_segment = seg->id;
     context->spinner.selected_face = BASE_A;
 
