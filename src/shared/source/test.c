@@ -429,8 +429,6 @@ void x3d_test() {
 
     //printf("Face: %d\n", test.state.spinner.selected_face);
 
-    x3d_renderdevice_flip(&test.device);
-
     if(context.spinner.selected_segment != SEGMENT_NONE && x3d_get_clock() - last_spin >= 75) {
       x3d_selectspinner_spin(&context.spinner);
       last_spin = x3d_get_clock();
@@ -439,6 +437,9 @@ void x3d_test() {
     ++context.frame;
 
     x3d_test_handle_keys(&context);
+
+    x3d_renderdevice_flip(&test.device);
+
   } while(!context.quit);
 
   free(frustum);

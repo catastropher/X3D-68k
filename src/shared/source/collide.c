@@ -53,9 +53,6 @@ void x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_int32* di
   Vex3D new_pos;
   X3D_PlaneCollision pc;
 
-  vex3d_fp16x16_to_vex3d(&new_pos_fp16x16, &new_pos);
-
-
   uint16 attempt = 0;
 
   uint16 seg_id = 0;
@@ -63,10 +60,28 @@ void x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_int32* di
   X3D_Segment* seg = x3d_get_segment(context, seg_id);
 
   for(attempt = 0; attempt < X3D_MAX_COLLISION_ATTEMPS; ++attempt) {
+    vex3d_fp16x16_to_vex3d(&new_pos_fp16x16, &new_pos);
+
     if(x3d_point_in_segment(seg, &new_pos, 10, &pc)) {
       obj->pos = new_pos_fp16x16;
       return;
     }
+	
+	// Try moving the object along the normal of the plane it failed against
+
+    printf("Dist: %d\n", pc.dist);
+
+    pc.dist -= 10;
+
+    pc.dist = -pc.dist;
+
+    Vex3D_int32 shift = {
+      (int32)pc.plane->normal.x * pc.dist,
+      (int32)pc.plane->normal.y * pc.dist,
+      (int32)pc.plane->normal.z * pc.dist
+    };
+
+    new_pos_fp16x16 = V3ADD(&new_pos_fp16x16, &shift);
   }
 }
 
