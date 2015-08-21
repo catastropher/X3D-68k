@@ -62,13 +62,13 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
   for(attempt = 0; attempt < X3D_MAX_COLLISION_ATTEMPS; ++attempt) {
     vex3d_fp16x16_to_vex3d(pos, &new_pos);
 
-    _Bool inside = x3d_point_in_segment(seg, &new_pos, 10, &pc, FALSE);
+    _Bool inside = x3d_point_in_segment(seg, &new_pos, 15, &pc, FALSE);
 
     if(inside) {
       return TRUE;
     }
 
-    pc.dist -= 10;
+    pc.dist -= 15;
     pc.dist = -pc.dist;
 
     Vex3D_int32 shift = {
@@ -110,7 +110,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
 
       X3D_Segment* seg = x3d_get_segment(context, obj->seg_pos.segs[seg_pos]);
 
-      _Bool inside = x3d_point_in_segment(seg, &new_pos, 10, &pc, TRUE);
+      _Bool inside = x3d_point_in_segment(seg, &new_pos, 15, &pc, TRUE);
 
       // Are we close enough to this segment to still be considered inside of it?
       _Bool found = FALSE;
@@ -124,7 +124,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
 
       printf("Dist: %d\n", pc.dist);
 
-      if(!found && (abs(pc.dist) <= 10 || inside)) {
+      if(!found && (abs(pc.dist) <= 15 || inside)) {
         x3d_add_seg_pos(new_seg_list, &new_seg_list_size, seg->id);
       }
 

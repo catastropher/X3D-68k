@@ -212,7 +212,6 @@ void x3d_test_handle_keys(X3D_Context* context) {
   }
 
   if (x3d_keystate_down_wait(&context->keys, KEY_CYCLE_SEGMENT)) {
-    // FIXME
     x3d_selectspinner_select(&context->spinner, context, context->spinner.selected_segment, context->spinner.selected_face + 1);
   }
 
@@ -229,6 +228,8 @@ void x3d_test_handle_keys(X3D_Context* context) {
     x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     x3d_move_polygon3d_along_normal(poly, 5, &center);
     x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
+    
+    x3d_calculate_segment_normals(s);
 
     free(poly);
   }
@@ -247,6 +248,8 @@ void x3d_test_handle_keys(X3D_Context* context) {
     x3d_move_polygon3d_along_normal(poly, -5, &center);
     x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
 
+    x3d_calculate_segment_normals(s);
+    
     free(poly);
 
   }
@@ -266,6 +269,8 @@ void x3d_test_handle_keys(X3D_Context* context) {
     x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     x3d_polygon3d_scale(poly, 225);
     x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
+    
+    x3d_calculate_segment_normals(s);
 
     free(poly);
 
@@ -287,6 +292,8 @@ void x3d_test_handle_keys(X3D_Context* context) {
     x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
     x3d_polygon3d_scale(poly, 256 + (256 - 225));
     x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
+    
+    x3d_calculate_segment_normals(s);
 
     free(poly);
 

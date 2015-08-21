@@ -174,7 +174,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       if(dist < 0)
         continue;
 
-      const uint16 MIN_DIST = 200;
+      const uint16 MIN_DIST = 100;
 
       printf("==DIST==    = %d\n", dist);
 
