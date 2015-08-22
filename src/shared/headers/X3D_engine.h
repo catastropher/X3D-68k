@@ -37,6 +37,8 @@ typedef struct X3D_Context {
   
   uint16 render_step;
   
+  char status_bar[64];
+  
   _Bool quit;
 } X3D_Context;
 

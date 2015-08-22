@@ -21,5 +21,5 @@
 #pragma once
 
 _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p);
-_Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16* dir);
+_Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* dir, int16 speed);
 

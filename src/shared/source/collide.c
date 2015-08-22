@@ -54,11 +54,13 @@ static inline x3d_add_seg_pos(uint16 seg_list[], uint16* seg_list_size, uint16 s
   seg_list[(*seg_list_size)++] = seg;
 }
 
-static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp16x16* pos) {
+static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp16x16* pos, _Bool* hit_wall) {
   X3D_PlaneCollision pc;
   uint16 attempt;
   Vex3D new_pos;
 
+  *hit_wall = FALSE;
+  
   for(attempt = 0; attempt < X3D_MAX_COLLISION_ATTEMPS; ++attempt) {
     vex3d_fp16x16_to_vex3d(pos, &new_pos);
 
@@ -67,6 +69,8 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
     if(inside) {
       return TRUE;
     }
+    
+    *hit_wall = TRUE;
 
     pc.dist -= 15;
     pc.dist = -pc.dist;
@@ -83,12 +87,17 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
   return FALSE;
 }
 
-_Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16* dir) {
+_Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* dir, int16 speed) {
   X3D_Object* obj = (X3D_Object*)object;
-  Vex3D_fp16x16 new_pos_fp16x16 = V3ADD(&obj->pos, dir);
+  Vex3D_fp16x16 new_pos_fp16x16 = obj->pos;
   Vex3D new_pos;
   X3D_PlaneCollision pc;
 
+  
+  new_pos_fp16x16.x = new_pos_fp16x16.x + (int32)dir->x * speed;
+  new_pos_fp16x16.y = new_pos_fp16x16.y + (int32)dir->y * speed;
+  new_pos_fp16x16.z = new_pos_fp16x16.z + (int32)dir->z * speed;
+  
   uint16 attempt = 0;
 
   uint16 seg_id = 0;
@@ -98,6 +107,8 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
 
   uint16 seg_pos;
   uint16 i;
+  
+  _Bool hit_wall = FALSE;
 
   for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
     new_seg_list[i] = SEGMENT_NONE;
@@ -129,7 +140,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
       if(!inside) {
         // Try moving the object along the normal of the plane it failed against
         if(pc.face->connect_id == SEGMENT_NONE) {
-          if(!x3d_attempt_adjust_inside_segment(seg, &new_pos_fp16x16)) {
+          if(!x3d_attempt_adjust_inside_segment(seg, &new_pos_fp16x16, &hit_wall)) {
             return FALSE;
           }
         }
@@ -151,7 +162,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
           if(!found) {
             X3D_Segment* new_seg = x3d_get_segment(context, pc.face->connect_id);
 
-            if(x3d_attempt_adjust_inside_segment(new_seg, &new_pos_fp16x16)) {
+            if(x3d_attempt_adjust_inside_segment(new_seg, &new_pos_fp16x16, &hit_wall)) {
               x3d_add_seg_pos(new_seg_list, &new_seg_list_size, pc.face->connect_id);
             }
             else {
@@ -173,5 +184,19 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
   for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
     obj->seg_pos.segs[i] = new_seg_list[i];
   }
+  
+  if(hit_wall) {
+    printf("Hit wall!\n");
+    
+    int16 scale = x3d_vex3d_fp0x16_dot(dir, &pc.face->plane.normal);
+    
+    sprintf(context->status_bar, "Scale: %d\n", scale);
+    
+    obj->dir.x = (((int32)-2 * pc.face->plane.normal.x * scale) >> X3D_NORMAL_SHIFT) + dir->x;
+    obj->dir.y = (((int32)-2 * pc.face->plane.normal.y * scale) >> X3D_NORMAL_SHIFT) + dir->y;
+    obj->dir.z = (((int32)-2 * pc.face->plane.normal.z * scale) >> X3D_NORMAL_SHIFT) + dir->z;
+  }
+  
+  return TRUE;
 }
 

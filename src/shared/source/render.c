@@ -166,6 +166,10 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
 
     //X3D_LOG_WAIT(context, "FACE ID: %d\n", face[i].connect_id);
+    
+    if(id == 2 && face[i].connect_id == 0) {
+       printf("Valid!\n"); 
+    }
 
     if(face[i].connect_id != SEGMENT_NONE) {
       X3D_Segment* next_seg = x3d_get_segment(context, face[i].connect_id);
@@ -195,7 +199,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
           x3d_construct_frustum_from_polygon3D(poly_out, viewport, f);
           render = 1;
 
-#if 0
+#if 1
           if(i == BASE_B) {
             uint16 d;
 

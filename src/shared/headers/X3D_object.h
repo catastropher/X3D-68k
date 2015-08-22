@@ -61,6 +61,11 @@ typedef struct X3D_SegmentPos {
   uint16 segs[X3D_MAX_OBJECT_SEGS];
 } X3D_SegmentPos;
 
+enum {
+  X3D_COLLIDE_SLIDE,
+  X3D_COLLIDE_BOUNCE
+};
+
 /// @todo Should be renamed to X3D_BaseObject
 typedef struct X3D_Object {
   uint8 flags;
@@ -69,6 +74,9 @@ typedef struct X3D_Object {
   uint16 category;
   Vex3D_fp16x16 pos;
   X3D_Mat3x3_fp0x16 mat;
+  
+  Vex3D_fp0x16 dir;
+  int16 speed;
 
   X3D_SegmentPos seg_pos;
 
@@ -76,6 +84,8 @@ typedef struct X3D_Object {
 
   X3D_Model* unrotated;
   X3D_Model* rotated;
+  
+  uint8 collide_behavior;
 } X3D_Object;
 
 typedef struct X3D_Camera {
