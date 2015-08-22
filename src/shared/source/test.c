@@ -411,6 +411,7 @@ void x3d_test() {
   uint16 i;
   
   test.context.frame = 0;
+  context.frame = 0;
   
   x3d_calculate_segment_normals(seg);
 

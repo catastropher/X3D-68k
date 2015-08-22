@@ -350,8 +350,6 @@ void x3d_draw_clipped_prism3d_wireframe(X3D_Prism* prism, X3D_Frustum* frustum, 
 
           int32 scale = ((int32)n << 14) / (d);
 
-          //printf("Scale: %d\n", scale);
-
           if(scale < min_scale[vertex]) {
             min_scale[vertex] = scale;
             min_scale_index = outside[vertex][i];

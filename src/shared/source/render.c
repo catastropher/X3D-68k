@@ -148,7 +148,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
   x3d_draw_clipped_prism3d_wireframe(temp, frustum, viewport, select_a, select_b);
 
   
-  if(id == 0) {
+  if(id == 0 && 0) {
     X3D_Segment* box = x3d_get_segment(context, bouncing_box);
     
     x3d_test_rotate_prism3d(temp, &box->prism, context->cam);
@@ -158,6 +158,10 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
   
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
+  X3D_Frustum* f = ALLOCA_FRUSTUM(20);
+  X3D_Polygon3D* poly = ALLOCA_POLYGON3D(20);
+  X3D_Polygon3D* poly_out = ALLOCA_POLYGON3D(20);
+  
 #if 1
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
 
@@ -168,10 +172,6 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
 
       if(next_seg->last_frame == context->frame)
         continue;
-
-      X3D_Frustum* f = ALLOCA_FRUSTUM(20);
-      X3D_Polygon3D* poly = ALLOCA_POLYGON3D(20);
-      X3D_Polygon3D* poly_out = ALLOCA_POLYGON3D(20);
 
       x3d_prism3d_get_face(poly, temp, i);
 
@@ -186,13 +186,14 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
         continue;
 
       const uint16 MIN_DIST = 100;
-
-      printf("==DIST==    = %d\n", dist);
-
+      
+      _Bool render = 0;
+      
       if(dist > MIN_DIST) {
 
         if(x3d_clip_polygon_to_frustum(poly, frustum, poly_out)) {
           x3d_construct_frustum_from_polygon3D(poly_out, viewport, f);
+          render = 1;
 
 #if 0
           if(i == BASE_B) {
@@ -214,6 +215,8 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
         }
 
         f->total_p = frustum->total_p - 1;
+        
+        render = 1;
       }
 
       uint16 k;
@@ -223,25 +226,32 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
         uint16 next = (k + 1) % poly_out->total_v;
         X3D_Vex2D_int16 a, b;
 
-        x3d_vex3d_int16_project(&a, &poly_out->v[k], context);
-        x3d_vex3d_int16_project(&b, &poly_out->v[next], context);
+        x3d_vex3d_int16_project(&a, &poly_out->v[k], viewport);
+        x3d_vex3d_int16_project(&b, &poly_out->v[next], viewport);
 
-        x3d_rendercontext_clamp_vex2d_int16(&a, context);
-        x3d_rendercontext_clamp_vex2d_int16(&b, context);
+        x3d_rendercontext_clamp_vex2d_int16(&a, viewport);
+        x3d_rendercontext_clamp_vex2d_int16(&b, viewport);
 
-        x3d_draw_line_black(context, &a, &b);
+        x3d_draw_line_black(viewport, &a, &b);
       }
 #endif
 
-      x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
+      //x3d_frustum_print(f);
       
-      if(id == 1) {
+      
+      if(render) {
+        x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
+      }
+      
+#if 0
+      if(face[i].connect_id == 3) {
         uint16 d;
 
         for(d = 0; d < f->total_p; ++d) {
-          //printf("%d %d %d -> %d\n", f->p[d].normal.x, f->p[d].normal.y, f->p[d].normal.z, f->p[d].d);
+          printf("%d %d %d -> %d\n", f->p[d].normal.x, f->p[d].normal.y, f->p[d].normal.z, f->p[d].d);
         }
       }
+#endif
     }
 
   }
