@@ -442,7 +442,7 @@ void x3d_test() {
   
   Vex3D_fp0x16 dir = { (int32)cam->object.mat.data[2], (int32)cam->object.mat.data[5], (int32)cam->object.mat.data[8]};
   
-  cam->object.dir = dir;
+  cam->object.dir = (Vex3D_fp0x16) { 0, 0, 0 }; //dir;
   
   context.status_bar[0] = '\0';
 
@@ -455,7 +455,7 @@ void x3d_test() {
 
     context.render_clock = 0;
     
-    x3d_attempt_move_object(&context, (void *)cam, &cam->object.dir, 6);
+    x3d_attempt_move_object(&context, (void *)cam, &cam->object.dir, 10);
 
     //printf("%d\n", x3d_get_total_segments(&test.state));
 
@@ -468,15 +468,16 @@ void x3d_test() {
         x3d_render_segment_wireframe(cam->object.seg_pos.segs[i], frustum, &context, &test.context);
     }
     
-    printf("STAT: %s\n", context.status_bar);
+
+    //printf("STAT: %s\n", context.status_bar);
 
     printf("%d\n", context.render_clock);
 
-    for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
-      printf("%d ", cam->object.seg_pos.segs[i]);
-    }
+    //for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+    //  printf("%d ", cam->object.seg_pos.segs[i]);
+    //}
     
-    printf("\n%d %d %d\n", cam->object.dir.x, cam->object.dir.y, cam->object.dir.z);
+    //printf("\n%d %d %d\n", cam->object.dir.x, cam->object.dir.y, cam->object.dir.z);
     
     Vex3D cam_pos;
     x3d_object_pos(cam, &cam_pos);

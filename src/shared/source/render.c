@@ -167,10 +167,6 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
 
     //X3D_LOG_WAIT(context, "FACE ID: %d\n", face[i].connect_id);
     
-    if(id == 2 && face[i].connect_id == 0) {
-       printf("Valid!\n"); 
-    }
-
     if(face[i].connect_id != SEGMENT_NONE) {
       X3D_Segment* next_seg = x3d_get_segment(context, face[i].connect_id);
 
