@@ -364,6 +364,8 @@ void x3d_test_cleanup(X3D_TestContext* context) {
   SetIntVec(AUTO_INT_5, context->old_int_5);
 }
 
+uint16 bouncing_box;
+
 
 void x3d_test() {
   X3D_TestContext test;
@@ -417,6 +419,14 @@ void x3d_test() {
   }
 
   cam->object.seg_pos.segs[0] = 0;
+  
+  
+  X3D_Segment* box =  x3d_segment_add(&context, 4);
+  
+  bouncing_box = box->id;
+  
+  x3d_prism_construct(&box->prism, 4, 20, 40, (Vex3D_uint8) { 0, 0, 0 });
+  
 
   do {
     // Construct the rotation matrix

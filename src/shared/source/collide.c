@@ -122,8 +122,6 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp16x16*
         }
       }
 
-      printf("Dist: %d\n", pc.dist);
-
       if(!found && (abs(pc.dist) <= 15 || inside)) {
         x3d_add_seg_pos(new_seg_list, &new_seg_list_size, seg->id);
       }

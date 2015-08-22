@@ -120,6 +120,8 @@ void x3d_rendercontext_clamp_vex2d_int16(X3D_Vex2D_int16* v, X3D_ViewPort* conte
 
 void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
+extern uint16 bouncing_box;
+
 void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {
   uint16 i;
 
@@ -145,6 +147,15 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
 
   x3d_draw_clipped_prism3d_wireframe(temp, frustum, viewport, select_a, select_b);
 
+  
+  if(id == 0) {
+    X3D_Segment* box = x3d_get_segment(context, bouncing_box);
+    
+    x3d_test_rotate_prism3d(temp, &box->prism, context->cam);
+    x3d_draw_clipped_prism3d_wireframe(temp, frustum, viewport, 0, 0);
+  }
+  
+  
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 
 #if 1
@@ -223,7 +234,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
 #endif
 
       x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
-
+      
       if(id == 1) {
         uint16 d;
 
