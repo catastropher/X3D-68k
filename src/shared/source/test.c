@@ -390,7 +390,7 @@ void x3d_box_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev)
 void x3d_cam_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev) {
   switch(ev.type) {
     case X3D_EV_RENDER:
-      sprintf(context->status_bar, "render from %d", ev.render.segment->id);
+      sprintf(context->status_bar, "render from %ld", sizeof(X3D_Object));
       break;
   }
 }
