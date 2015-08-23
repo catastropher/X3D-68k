@@ -100,7 +100,7 @@ _Bool x3d_is_object_active(X3D_Object* obj);
 _Bool x3d_activate_object(struct X3D_Context* context, X3D_Object* obj);
 void x3d_deactivate_object(struct X3D_Context* context, X3D_Object* obj);
 X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
-X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp8x8 velocity);
+X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active);
 struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
 
 

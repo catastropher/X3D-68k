@@ -19,6 +19,11 @@
 #include "X3D_engine.h"
 #include "X3D_object.h"
 
+#define X3D_MAX_OBJECTS 32
+
+enum {
+  X3D_OBJECT_IN_USE = 1
+};
 
 _Bool x3d_is_object_active(X3D_Object* obj) {
   return obj->flags & X3D_OBJECT_ACTIVE;
@@ -57,10 +62,46 @@ X3D_Object* x3d_get_object(X3D_Context* context, uint16 id) {
   return context->object_manager.object_data + id * X3D_OBJECT_SIZE;
 }
 
-X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp8x8 velocity) {
-
+X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active) {
+  uint16 i;
+  
+  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
+    X3D_Object* object = x3d_get_object(context, i);
+    
+    if((object->flags & X3D_OBJECT_IN_USE) == 0) {
+      object->flags |= X3D_OBJECT_IN_USE;
+      
+      object->pos.x = (int32)pos.x << X3D_NORMAL_SHIFT;
+      object->pos.y = (int32)pos.y << X3D_NORMAL_SHIFT;
+      object->pos.z = (int32)pos.z << X3D_NORMAL_SHIFT;
+      
+      object->dir = velocity;
+      
+      if(active) {
+        x3d_activate_object(context, object);
+      }
+      
+      return object;
+    }
+  }
 }
 
 X3D_Camera* x3d_create_camera(X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle) {
 
 }
+
+
+void x3d_init_objectmanager(X3D_Context* context) {
+  uint16 i;
+  
+  context->object_manager.object_data = malloc(X3D_OBJECT_SIZE * X3D_MAX_OBJECTS);
+  
+  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
+    X3D_Object* obj = x3d_get_object(context, i);
+    
+    obj->flags = 0;
+    obj->id = i;
+  }
+}
+
+
