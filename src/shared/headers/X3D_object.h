@@ -26,11 +26,14 @@
 
 #define X3D_MAX_OBJECT_SEGS 4
 
+#define X3D_OBJECT_NONE 0xFFFF
+
 typedef enum {
   X3D_EV_CREATE,
   X3D_EV_DESTROY,
   X3D_EV_VISIBLE,
-  X3D_EV_NOTVISIBLE
+  X3D_EV_NOTVISIBLE,
+  X3D_EV_RENDER
 } X3D_EventType;
 
 typedef struct X3D_Event {
@@ -102,7 +105,7 @@ _Bool x3d_is_object_active(X3D_Object* obj);
 _Bool x3d_activate_object(struct X3D_Context* context, X3D_Object* obj);
 void x3d_deactivate_object(struct X3D_Context* context, X3D_Object* obj);
 X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
-X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active);
+X3D_Object* x3d_create_object( struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg);
 struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
 void x3d_add_object_type(struct X3D_Context* context, uint16 type_id, X3D_ObjectType* type);
 

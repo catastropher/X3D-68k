@@ -23,6 +23,8 @@
 ///< Indicates no segment (used to indicate no segment is connected to a face)
 #define SEGMENT_NONE 0xFFFF
 
+#define X3D_MAX_OBJECTS_IN_SEGMENT 10
+
 //=============================================================================
 // Forward declarations
 //=============================================================================
@@ -46,6 +48,8 @@ typedef struct X3D_Segment {
   uint16 last_frame;
   
   X3D_BoundSphere bound;
+  
+  uint16 objects[X3D_MAX_OBJECTS_IN_SEGMENT];
 
   uint16 face_offset;
   X3D_Prism prism;
@@ -70,6 +74,9 @@ inline X3D_Segment* x3d_get_segment(struct X3D_Context* context, int id);
 
 uint16 x3d_get_total_segments(struct X3D_EngineState* state);
 void x3d_calculate_segment_normals(X3D_Segment* s);
+
+void x3d_add_object_to_segment(X3D_Segment* seg, uint16 obj);
+void x3d_remove_object_from_segment(X3D_Segment* seg, uint16 obj);
 
 //=============================================================================
 // Static inline functions

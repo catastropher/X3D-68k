@@ -387,7 +387,12 @@ void x3d_box_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev)
   }
 }
 
+void x3d_cam_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev) {
+  
+}
+
 enum {
+  OBJECT_CAM,
   OBJECT_BOX
 };
 
@@ -396,7 +401,12 @@ void register_types(X3D_Context* context) {
     .event_handler = x3d_box_handler
   };
   
+  X3D_ObjectType cam = {
+    .event_handler = x3d_cam_handler
+  };
+  
   x3d_add_object_type(context, OBJECT_BOX, &box);
+  x3d_add_object_type(context, OBJECT_CAM, &cam);
 }
 
 
@@ -405,21 +415,22 @@ void x3d_test() {
 
   FontSetSys(F_4x6);
 
-  // Initialize the camera
-  X3D_Camera* cam = &test.context.cam;
-  cam->object.pos = (Vex3D_fp16x16){ 0, 0, 0 };
-  cam->object.angle = (Vex3D_angle256){ 0, 0, 0 };
-
   // Make some prisms
   
   X3D_Context context;
-  
-  context.cam = cam;
   
   x3d_test_init(&test, &context);
   
 
   X3D_Segment* seg = x3d_segment_add(&context, 4);
+  
+  
+   // Initialize the camera
+  X3D_Camera* cam = (X3D_Camera*)x3d_create_object(&context, OBJECT_CAM, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
+  cam->object.pos = (Vex3D_fp16x16){ 0, 0, 0 };
+  cam->object.angle = (Vex3D_angle256){ 0, 0, 0 };
+  
+  context.cam = cam;
   
   //X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
@@ -471,9 +482,9 @@ void x3d_test() {
   
   register_types(&context);
   
-  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE);
-
+  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
   do {
+
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
 

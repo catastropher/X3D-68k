@@ -133,8 +133,14 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
         }
       }
 
-      if(!found && (abs(pc.dist) <= 15 || inside)) {
-        x3d_add_seg_pos(new_seg_list, &new_seg_list_size, seg->id);
+      if(!found) {
+        if((abs(pc.dist) <= 15 || inside)) {
+          x3d_add_seg_pos(new_seg_list, &new_seg_list_size, seg->id);
+        }
+        else {
+          // Remove the object from the segment's list of objects
+          x3d_remove_object_from_segment(seg, obj->id);
+        }
       }
 
       if(!inside) {
@@ -164,6 +170,9 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
 
             if(x3d_attempt_adjust_inside_segment(new_seg, &new_pos_fp16x16, &hit_wall)) {
               x3d_add_seg_pos(new_seg_list, &new_seg_list_size, pc.face->connect_id);
+              
+              // Add the object to the segment's list of objects
+              x3d_add_object_to_segment(new_seg, obj->id);
             }
             else {
               // If it couldn't be adjusted, it's impossible to slide along the wall

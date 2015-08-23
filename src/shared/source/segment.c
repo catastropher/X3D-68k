@@ -23,6 +23,7 @@
 #include "X3D_geo.h"
 #include "X3D_engine.h"
 #include "X3D_geo.h"
+#include "X3D_object.h"
 
 /**
 * Constructs a prism with regular polygons as the base.
@@ -146,6 +147,10 @@ X3D_Segment* x3d_segment_add(X3D_Context* state, uint16 base_v) {
   for(i = 0; i < x3d_segment_total_f(s); ++i) {
     f[i].connect_id = SEGMENT_NONE;
   }
+  
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEGMENT; ++i) {
+    s->objects[i] = X3D_OBJECT_NONE;
+  }
 
   return s;
 }
@@ -188,4 +193,44 @@ void x3d_calculate_segment_normals(X3D_Segment* s) {
     }
   }
 }
+
+void x3d_add_object_to_segment(X3D_Segment* seg, uint16 obj) {
+  uint16 i;
+  
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEGMENT; ++i) {
+    if(seg->objects[i] == X3D_OBJECT_NONE) {
+      seg->objects[i] = obj;
+      break;
+    }
+  }
+}
+
+void x3d_remove_object_from_segment(X3D_Segment* seg, uint16 obj) {
+  uint16 i;
+  
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEGMENT; ++i) {
+    if(seg->objects[i] == obj) {
+      seg->objects[i] = X3D_OBJECT_NONE;
+      break;
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

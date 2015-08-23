@@ -18,6 +18,7 @@
 #include "X3D_vector.h"
 #include "X3D_engine.h"
 #include "X3D_object.h"
+#include "X3D_segment.h"
 
 #define X3D_MAX_OBJECTS 32
 
@@ -62,7 +63,7 @@ X3D_Object* x3d_get_object(X3D_Context* context, uint16 id) {
   return context->object_manager.object_data + id * X3D_OBJECT_SIZE;
 }
 
-X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active) {
+X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg) {
   uint16 i;
   
   for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
@@ -88,6 +89,8 @@ X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D po
       };
       
       object->event_handler(context, object, ev);
+      
+      x3d_add_object_to_segment(x3d_get_segment(context, seg), i);
       
       return object;
     }
