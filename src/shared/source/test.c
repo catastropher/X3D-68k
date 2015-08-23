@@ -424,6 +424,7 @@ void x3d_test() {
 
   X3D_Segment* seg = x3d_segment_add(&context, 4);
   
+  register_types(&context);
   
    // Initialize the camera
   X3D_Camera* cam = (X3D_Camera*)x3d_create_object(&context, OBJECT_CAM, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
@@ -479,8 +480,6 @@ void x3d_test() {
   cam->object.dir = (Vex3D_fp0x16) { 0, 0, 0 }; //dir;
   
   context.status_bar[0] = '\0';
-  
-  register_types(&context);
   
   x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
   do {
