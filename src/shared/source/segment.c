@@ -197,12 +197,18 @@ void x3d_calculate_segment_normals(X3D_Segment* s) {
 void x3d_add_object_to_segment(X3D_Segment* seg, uint16 obj) {
   uint16 i;
   
+  int16 pos = -1;
+
   for(i = 0; i < X3D_MAX_OBJECTS_IN_SEGMENT; ++i) {
     if(seg->objects[i] == X3D_OBJECT_NONE) {
-      seg->objects[i] = obj;
-      break;
+      pos = i;
     }
+    else if(seg->objects[i] == obj)
+      return;
   }
+
+  if(pos != -1)
+    seg->objects[pos] = obj;
 }
 
 void x3d_remove_object_from_segment(X3D_Segment* seg, uint16 obj) {
