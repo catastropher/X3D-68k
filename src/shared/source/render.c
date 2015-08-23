@@ -147,6 +147,21 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
 
   x3d_draw_clipped_prism3d_wireframe(temp, frustum, viewport, select_a, select_b);
 
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEGMENT; ++i) {
+    if(seg->objects[i] != X3D_OBJECT_NONE) {
+      X3D_Event ev;
+
+      ev.type = X3D_EV_RENDER;
+      ev.render.frustum = frustum;
+      ev.render.segment = seg;
+
+      X3D_Object* obj = x3d_get_object(context, seg->objects[i]);
+
+      // Trigger the object's render event
+      obj->event_handler(context, obj, ev);
+    }
+  }
+
   
   if(id == 0 && 0) {
     X3D_Segment* box = x3d_get_segment(context, bouncing_box);

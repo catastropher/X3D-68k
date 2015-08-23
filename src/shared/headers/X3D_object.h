@@ -36,8 +36,19 @@ typedef enum {
   X3D_EV_RENDER
 } X3D_EventType;
 
+struct X3D_Frustum;
+struct X3D_Segment;
+
 typedef struct X3D_Event {
   X3D_EventType type;
+
+  union {
+    struct {
+      struct X3D_Frustum* frustum;
+      struct X3D_Segment* segment;
+    } render;
+  };
+
 } X3D_Event;
 
 struct X3D_Object;
