@@ -30,6 +30,7 @@
 #include "X3D_engine.h"
 #include "X3D_manager.h"
 #include "X3D_collide.h"
+#include "X3D_object.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -112,8 +113,10 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   x3d_init_segmentmanager(&c->segment_manager, 30, 20000);
   
   //x3d_enginestate_init(&context->state, 30, 20000);
-  x3d_renderdevice_init(&context->device, 240, 128);
+  x3d_renderdevice_init(&context->device, LCD_WIDTH, LCD_HEIGHT);
   x3d_rendercontext_init(&context->context, context->device.dbuf, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
+  
+  x3d_init_objectmanager(c);
 
   // Redirect interrupt handlers
   context->old_int_1 = GetIntVec(AUTO_INT_1);
@@ -376,6 +379,26 @@ void x3d_test_cleanup(X3D_TestContext* context) {
 
 uint16 bouncing_box;
 
+void x3d_box_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev) {
+  switch(ev.type) {
+    case X3D_EV_CREATE:
+      strcpy(context->status_bar, "Created!");
+      break;
+  }
+}
+
+enum {
+  OBJECT_BOX
+};
+
+void register_types(X3D_Context* context) {
+  X3D_ObjectType box = {
+    .event_handler = x3d_box_handler
+  };
+  
+  x3d_add_object_type(context, OBJECT_BOX, &box);
+}
+
 
 void x3d_test() {
   X3D_TestContext test;
@@ -445,6 +468,10 @@ void x3d_test() {
   cam->object.dir = (Vex3D_fp0x16) { 0, 0, 0 }; //dir;
   
   context.status_bar[0] = '\0';
+  
+  register_types(&context);
+  
+  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE);
 
   do {
     // Construct the rotation matrix
@@ -469,8 +496,7 @@ void x3d_test() {
     }
     
 
-    //printf("STAT: %s\n", context.status_bar);
-
+    printf("%s\n", context.status_bar);
     printf("%d\n", context.render_clock);
 
     //for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {

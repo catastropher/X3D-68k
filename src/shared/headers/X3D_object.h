@@ -42,7 +42,7 @@ struct X3D_Context;
 struct X3D_Camera;
 
 typedef struct X3D_ObjectType {
-  void(*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
+  void (*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
 
 } X3D_ObjectType;
 
@@ -85,6 +85,8 @@ typedef struct X3D_Object {
   X3D_Model* unrotated;
   X3D_Model* rotated;
   
+  void (*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
+  
   uint8 collide_behavior;
 } X3D_Object;
 
@@ -102,6 +104,7 @@ void x3d_deactivate_object(struct X3D_Context* context, X3D_Object* obj);
 X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
 X3D_Object* x3d_create_object(struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active);
 struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
+void x3d_add_object_type(struct X3D_Context* context, uint16 type_id, X3D_ObjectType* type);
 
 
 static inline void x3d_object_pos(void* obj, Vex3D* v) {

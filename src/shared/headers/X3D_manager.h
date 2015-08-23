@@ -32,4 +32,5 @@ typedef struct X3D_ObjectManager {
 } X3D_ObjectManager;
 
 void x3d_init_segmentmanager(X3D_SegmentManager* state, uint16 max_segments, uint16 seg_pool_size);
+void x3d_init_objectmanager(struct X3D_Context* context);
 

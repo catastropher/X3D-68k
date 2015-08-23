@@ -186,11 +186,8 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
   }
   
   if(hit_wall) {
-    printf("Hit wall!\n");
     
     int16 scale = x3d_vex3d_fp0x16_dot(dir, &pc.face->plane.normal);
-    
-    sprintf(context->status_bar, "Scale: %d\n", scale);
     
     obj->dir.x = (((int32)-2 * pc.face->plane.normal.x * scale) >> X3D_NORMAL_SHIFT) + dir->x;
     obj->dir.y = (((int32)-2 * pc.face->plane.normal.y * scale) >> X3D_NORMAL_SHIFT) + dir->y;

@@ -81,6 +81,14 @@ X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D po
         x3d_activate_object(context, object);
       }
       
+      object->event_handler = context->object_manager.types[object_type].event_handler;
+      
+      X3D_Event ev = {
+        .type = X3D_EV_CREATE
+      };
+      
+      object->event_handler(context, object, ev);
+      
       return object;
     }
   }
@@ -102,6 +110,13 @@ void x3d_init_objectmanager(X3D_Context* context) {
     obj->flags = 0;
     obj->id = i;
   }
+  
+  for(i = 0; i < X3D_MAX_ACTIVE_OBJECTS; ++i) {
+    context->object_manager.active_list[i] = NULL;
+  }
 }
 
+void x3d_add_object_type(X3D_Context* context, uint16 type_id, X3D_ObjectType* type) {
+  context->object_manager.types[type_id] = *type;
+}
 
