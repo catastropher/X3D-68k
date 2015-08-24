@@ -79,8 +79,8 @@ struct X3D_Camera;
 
 typedef struct X3D_ObjectType {
   void (*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
-
   uint8 wall_behavior;
+  X3D_BoundVolume volume;
 
 } X3D_ObjectType;
 

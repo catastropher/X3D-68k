@@ -427,13 +427,20 @@ enum {
 void register_types(X3D_Context* context) {
   X3D_ObjectType box = {
     .event_handler = x3d_box_handler,
-    .wall_behavior = X3D_COLLIDE_BOUNCE
+    .wall_behavior = X3D_COLLIDE_BOUNCE,
+
   };
+
+  box.volume.type = X3D_BOUND_SPHERE;
+  box.volume.sphere.radius = 10;
   
   X3D_ObjectType cam = {
     .event_handler = x3d_cam_handler,
     .wall_behavior = X3D_COLLIDE_SLIDE
   };
+
+  cam.volume.type = X3D_BOUND_SPHERE;
+  cam.volume.sphere.radius = 10;
   
   x3d_add_object_type(context, OBJECT_BOX, &box);
   x3d_add_object_type(context, OBJECT_CAM, &cam);
