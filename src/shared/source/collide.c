@@ -21,6 +21,8 @@
 #include "X3D_vector.h"
 #include "X3D_engine.h"
 
+#define FRAC_BITS 1
+
 typedef struct X3D_PlaneCollision {
   X3D_SegmentFace* face;
   int16 dist;
@@ -33,7 +35,7 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, X3D_BoundVolume* volume, 
 
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
     //printf("dist: %d\n", x3d_distance_to_plane(&face[i].plane, p));
-    int16 dist = x3d_distance_to_plane(&face[i].plane, p);
+    int16 dist = (x3d_vex3d_int16_dot(&face[i].plane.normal, p) >> (X3D_NORMAL_SHIFT - FRAC_BITS)) - ((face[i].plane.d << FRAC_BITS));//x3d_distance_to_plane(&face[i].plane, p);
     int16 radius;
 
     if(volume->type == X3D_BOUND_CAPSULE) {
@@ -43,7 +45,7 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, X3D_BoundVolume* volume, 
         p->z - volume->capsule.height,
       };
 
-      dist = min(dist, x3d_distance_to_plane(&face[i].plane, &top));
+      dist = min(dist, (x3d_vex3d_int16_dot(&face[i].plane.normal, &top) >> (X3D_NORMAL_SHIFT - FRAC_BITS)) - ((face[i].plane.d << FRAC_BITS)));
       radius = volume->capsule.radius;
     }
     else {
@@ -51,7 +53,7 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, X3D_BoundVolume* volume, 
     }
 
 
-    if((include_portal || face[i].connect_id == SEGMENT_NONE) && dist < radius) {
+    if((include_portal || face[i].connect_id == SEGMENT_NONE) && (dist >> FRAC_BITS) < radius) {
       pc->dist = dist;
       pc->face = &face[i];
       return FALSE;
@@ -87,7 +89,9 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
     
     *hit_wall = TRUE;
 
-    pc.dist -= 15;
+    pc.dist >>= FRAC_BITS;
+
+    pc.dist -= volume->sphere.radius;// << FRAC_BITS;
     pc.dist = -pc.dist;
 
     Vex3D_int32 shift = {
@@ -96,7 +100,15 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
       (int32)pc.face->plane.normal.z * pc.dist
     };
 
+    //shift.x >>= FRAC_BITS;
+    //shift.y >>= FRAC_BITS;
+    //shift.z >>= FRAC_BITS;
+
     *pos = V3ADD(pos, &shift);
+    
+    //pos->x = pos->x & ~0x7FFFL;
+    //pos->y = pos->y & ~0x7FFFL;
+    //pos->z = pos->z & ~0x7FFFL;
   }
 
   return FALSE;

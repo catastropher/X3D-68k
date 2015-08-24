@@ -435,7 +435,7 @@ void register_types(X3D_Context* context) {
   };
 
   box.volume.type = X3D_BOUND_SPHERE;
-  box.volume.sphere.radius = 10;
+  box.volume.sphere.radius = 15;
   
   X3D_ObjectType cam = {
     .event_handler = x3d_cam_handler,
@@ -443,7 +443,7 @@ void register_types(X3D_Context* context) {
   };
 
   cam.volume.type = X3D_BOUND_CAPSULE;
-  cam.volume.capsule.radius = 10;
+  cam.volume.capsule.radius = 15;
   cam.volume.capsule.height = 30;
   
   x3d_add_object_type(context, OBJECT_BOX, &box);
@@ -572,6 +572,8 @@ void x3d_test() {
     
     Vex3D cam_pos;
     x3d_object_pos(cam, &cam_pos);
+    
+    printf("%d\n", cam_pos.y);
 
     //printf("%d\n", x3d_point_in_segment(seg, &cam_pos));
 
