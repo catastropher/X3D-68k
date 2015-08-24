@@ -22,6 +22,7 @@
 #include "X3D_clip.h"
 #include "X3D_frustum.h"
 #include "X3D_engine.h"
+#include "X3D_memory.h"
 
 #ifdef __TIGCC__
 #include <extgraph/extgraph.h>
@@ -77,8 +78,8 @@ void x3d_enginestate_init(X3D_EngineState* state, uint16 max_segments, uint16 se
 
 /// @todo document
 void x3d_enginestate_cleanup(X3D_EngineState* state) {
-  free(state->table.segment_data.base);
-  free(state->table.segment_offset.base);
+  x3d_free(state->table.segment_data.base);
+  x3d_free(state->table.segment_offset.base);
 }
 
 /// @todo document

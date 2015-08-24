@@ -105,7 +105,7 @@ X3D_Camera* x3d_create_camera(X3D_Context* context, uint16 id, Vex3D pos, Vex3D_
 void x3d_init_objectmanager(X3D_Context* context) {
   uint16 i;
   
-  context->object_manager.object_data = malloc(X3D_OBJECT_SIZE * X3D_MAX_OBJECTS);
+  context->object_manager.object_data = x3d_malloc(X3D_OBJECT_SIZE * X3D_MAX_OBJECTS);
   
   for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
     X3D_Object* obj = x3d_get_object(context, i);

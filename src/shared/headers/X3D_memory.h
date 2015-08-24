@@ -17,7 +17,7 @@
 #pragma once
 
 void* x3d_malloc_function(uint16 size, const char* function_name);
-void x3d_free_function(void* mem, void* function_name);
+void x3d_free_function(void* mem, const char* function_name);
 void x3d_free_all();
 void x3d_init_memorymanager();
 

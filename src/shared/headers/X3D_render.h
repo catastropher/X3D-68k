@@ -19,6 +19,7 @@
 #include "X3D_vector.h"
 #include "X3D_matrix.h"
 #include "X3D_object.h"
+#include "X3D_memory.h"
 
 //=============================================================================
 // Structures
@@ -167,7 +168,7 @@ static inline void x3d_stack_restore(X3D_Stack* stack, void* ptr) {
 /// @todo document
 static inline void x3d_stack_create(X3D_Stack* stack, uint16 size) {
   /// @TODO: replace with x3d_malloc
-  stack->base = malloc(size);
+  stack->base = x3d_malloc(size);
   stack->size = size;
   stack->ptr = stack->base + size;
 }
@@ -183,7 +184,7 @@ static inline uint16 x3d_list_uint16_add(X3D_List_uint16* list, uint16 value) {
 
 /// @todo document
 static inline void x3d_list_uint16_create(X3D_List_uint16* list, uint16 size) {
-  list->base = malloc(size);
+  list->base = x3d_malloc(size);
   list->size = 0;
   list->capacity = size;
 }
