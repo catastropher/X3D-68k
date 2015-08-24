@@ -38,11 +38,12 @@ _Bool x3d_point_in_segment(X3D_Segment* seg, Vex3D* p, X3D_BoundVolume* volume, 
 
     if(volume->type == X3D_BOUND_CAPSULE) {
       Vex3D top = {
-        p->x + volume->capsule.height,
-        p->x + volume->capsule.height,
-        p->x + volume->capsule.height,
+        p->x - volume->capsule.height,
+        p->y - volume->capsule.height,
+        p->z - volume->capsule.height,
       };
 
+      dist = min(dist, x3d_distance_to_plane(&face[i].plane, &top));
       radius = volume->capsule.radius;
     }
     else {

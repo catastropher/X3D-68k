@@ -160,6 +160,9 @@ static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
 void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* cam) {
   // Move the prism relative to the camera
   Vex3D cam_pos = { cam->object.pos.x >> 15, cam->object.pos.y >> 15, cam->object.pos.z >> 15 };
+  
+  // Account for the player's height
+  cam_pos.y -= cam->object.volume.capsule.height;
 
   uint16 i;
   for(i = 0; i < src->base_v * 2; ++i) {
@@ -439,8 +442,9 @@ void register_types(X3D_Context* context) {
     .wall_behavior = X3D_COLLIDE_SLIDE
   };
 
-  cam.volume.type = X3D_BOUND_SPHERE;
-  cam.volume.sphere.radius = 10;
+  cam.volume.type = X3D_BOUND_CAPSULE;
+  cam.volume.capsule.radius = 10;
+  cam.volume.capsule.height = 30;
   
   x3d_add_object_type(context, OBJECT_BOX, &box);
   x3d_add_object_type(context, OBJECT_CAM, &cam);
