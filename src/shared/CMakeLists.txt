@@ -35,6 +35,7 @@ add_executable(X3DShared
   source/manager.c
   source/object.c
   source/collide.c
+  source/memory.c
 )
 
 if(X3D_TARGET EQUAL 68k)

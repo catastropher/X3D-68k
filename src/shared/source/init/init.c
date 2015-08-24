@@ -16,6 +16,8 @@
 
 #include "X3D_config.h"
 #include "init/X3D_init.h"
+#include "X3D_memory.h"
+
 //#include "X3D_engine.h"
 
 #if 0
@@ -61,6 +63,8 @@ uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
   //x3d_set_active_context(context);
   //x3d_init_log(context, config->log_flags);
   
+  x3d_init_memorymanager();
+  
   x3d_test();
   
   return 0;
@@ -74,6 +78,8 @@ uint16 x3d_init_core(X3D_Context* context, X3D_Config* config) {
  */
 void x3d_cleanup_core(void) {
   //X3D_Context* context = x3d_get_active_context();
+  
+  x3d_free_all();
   
 #if 0
   
