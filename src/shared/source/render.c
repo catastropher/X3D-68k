@@ -154,6 +154,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       ev.type = X3D_EV_RENDER;
       ev.render.frustum = frustum;
       ev.render.segment = seg;
+      ev.render.viewport = viewport;
 
       X3D_Object* obj = x3d_get_object(context, seg->objects[i]);
 
@@ -161,15 +162,6 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       obj->event_handler(context, obj, ev);
     }
   }
-
-  
-  if(id == 0 && 0) {
-    X3D_Segment* box = x3d_get_segment(context, bouncing_box);
-    
-    x3d_test_rotate_prism3d(temp, &box->prism, context->cam);
-    x3d_draw_clipped_prism3d_wireframe(temp, frustum, viewport, 0, 0);
-  }
-  
   
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
 

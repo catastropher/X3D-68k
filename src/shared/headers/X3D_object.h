@@ -38,6 +38,7 @@ typedef enum {
 
 struct X3D_Frustum;
 struct X3D_Segment;
+struct X3D_ViewPort;
 
 typedef struct X3D_Event {
   X3D_EventType type;
@@ -46,6 +47,7 @@ typedef struct X3D_Event {
     struct {
       struct X3D_Frustum* frustum;
       struct X3D_Segment* segment;
+	  struct X3D_ViewPort* viewport;
     } render;
   };
 

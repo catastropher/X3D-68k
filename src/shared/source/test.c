@@ -384,13 +384,35 @@ void x3d_box_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev)
     case X3D_EV_CREATE:
       strcpy(context->status_bar, "Created!");
       break;
+    case X3D_EV_RENDER:
+    {
+      X3D_Segment* box = x3d_get_segment(context, bouncing_box);
+      X3D_Prism* temp = alloca(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * box->prism.base_v * 2);
+      X3D_Prism* temp2 = alloca(sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * box->prism.base_v * 2);
+      uint16 i;
+      
+      Vex3D pos;
+      
+      x3d_object_pos(obj, &pos);
+      
+      for(i = 0; i < box->prism.base_v * 2; ++i) {
+        temp2->v[i] = V3ADD(&box->prism.v[i], &pos);
+      }
+      
+      temp2->base_v = box->prism.base_v;
+    
+      x3d_test_rotate_prism3d(temp, temp2, context->cam);
+      x3d_draw_clipped_prism3d_wireframe(temp, ev.render.frustum, ev.render.viewport, 0, 0);
+      
+      x3d_attempt_move_object(context, obj, &obj->dir , 10);
+    }
+      break;
   }
 }
 
 void x3d_cam_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev) {
   switch(ev.type) {
     case X3D_EV_RENDER:
-      sprintf(context->status_bar, "render from %ld", sizeof(X3D_Object));
       break;
   }
 }
@@ -485,7 +507,7 @@ void x3d_test() {
   
   context.status_bar[0] = '\0';
   
-  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
+  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0);
   do {
 
     // Construct the rotation matrix
