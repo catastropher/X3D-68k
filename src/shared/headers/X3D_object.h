@@ -36,6 +36,26 @@ typedef enum {
   X3D_EV_RENDER
 } X3D_EventType;
 
+typedef enum {
+  X3D_BOUND_SPHERE,
+  X3D_BOUND_CAPSULE
+} X3D_BoundType;
+
+typedef struct X3D_BoundVolume {
+  X3D_BoundType type;
+  
+  union {
+    struct {
+      uint16 radius;
+    } sphere;
+
+    struct {
+      uint16 radius;
+      uint16 height;
+    } capsule;
+  };
+} X3D_BoundVolume;
+
 struct X3D_Frustum;
 struct X3D_Segment;
 struct X3D_ViewPort;
@@ -93,6 +113,8 @@ typedef struct X3D_Object {
   uint16 category;
   Vex3D_fp16x16 pos;
   X3D_Mat3x3_fp0x16 mat;
+
+  X3D_BoundVolume volume;
   
   Vex3D_fp0x16 dir;
   int16 speed;
