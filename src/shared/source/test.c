@@ -187,6 +187,8 @@ void x3d_test_handle_keys(X3D_Context* context) {
   if(_keytest(RR_ENTER)) {
     cam->object.dir = dir;
   }
+  
+  
 
   if(_keytest(RR_1)) {
     cam->object.dir.x = 0;
@@ -501,17 +503,21 @@ void x3d_test() {
   
   x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
   
-  Vex3D_fp0x16 dir = { (int32)cam->object.mat.data[2], (int32)cam->object.mat.data[5], (int32)cam->object.mat.data[8]};
+  
   
   cam->object.dir = (Vex3D_fp0x16) { 0, 0, 0 }; //dir;
   
   context.status_bar[0] = '\0';
   
   x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0);
+  
+  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ -8192, -16384, 8192 }, FALSE, 0);
   do {
 
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
+    
+    Vex3D_fp0x16 dir = { (int32)cam->object.mat.data[2], (int32)cam->object.mat.data[5], (int32)cam->object.mat.data[8]};
 
     clrscr();
     //x3d_draw_clipped_prism3d_wireframe(prism3d_rotated, frustum, &test.context);
@@ -529,6 +535,16 @@ void x3d_test() {
     for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
       if(cam->object.seg_pos.segs[i] != SEGMENT_NONE)
         x3d_render_segment_wireframe(cam->object.seg_pos.segs[i], frustum, &context, &test.context);
+    }
+    
+    if(_keytest(RR_3)) {
+      Vex3D pos;
+      
+      x3d_object_pos(cam, &pos);
+      
+      x3d_create_object(&context, OBJECT_BOX, pos , (Vex3D_angle256){ 0, 0, 0 }, dir, FALSE, 0);
+      
+      while(_keytest(RR_3)) ;
     }
     
 
