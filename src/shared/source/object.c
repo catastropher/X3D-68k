@@ -83,7 +83,8 @@ X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D po
       }
       
       object->event_handler = context->object_manager.types[object_type].event_handler;
-      
+      object->wall_behavior = context->object_manager.types[object_type].wall_behavior;
+
       X3D_Event ev = {
         .type = X3D_EV_CREATE
       };

@@ -60,6 +60,8 @@ struct X3D_Camera;
 typedef struct X3D_ObjectType {
   void (*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
 
+  uint8 wall_behavior;
+
 } X3D_ObjectType;
 
 enum {
@@ -85,6 +87,7 @@ enum {
 /// @todo Should be renamed to X3D_BaseObject
 typedef struct X3D_Object {
   uint8 flags;
+  uint8 wall_behavior;
   uint16 id;
   uint16 type;
   uint16 category;

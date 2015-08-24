@@ -123,8 +123,9 @@ void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
 extern uint16 bouncing_box;
 
-void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {
+void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {  
   uint16 i;
+  
 
   //printf("Enter %d\n", id);
 
@@ -152,12 +153,12 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
     if(seg->objects[i] != X3D_OBJECT_NONE) {
       X3D_Event ev;
 
+      X3D_Object* obj = x3d_get_object(context, seg->objects[i]);
+      
       ev.type = X3D_EV_RENDER;
       ev.render.frustum = frustum;
       ev.render.segment = seg;
       ev.render.viewport = viewport;
-
-      X3D_Object* obj = x3d_get_object(context, seg->objects[i]);
 
       // Trigger the object's render event
       obj->event_handler(context, obj, ev);

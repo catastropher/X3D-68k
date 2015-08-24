@@ -426,11 +426,13 @@ enum {
 
 void register_types(X3D_Context* context) {
   X3D_ObjectType box = {
-    .event_handler = x3d_box_handler
+    .event_handler = x3d_box_handler,
+    .wall_behavior = X3D_COLLIDE_BOUNCE
   };
   
   X3D_ObjectType cam = {
-    .event_handler = x3d_cam_handler
+    .event_handler = x3d_cam_handler,
+    .wall_behavior = X3D_COLLIDE_SLIDE
   };
   
   x3d_add_object_type(context, OBJECT_BOX, &box);
