@@ -81,6 +81,7 @@ typedef struct X3D_ObjectType {
   void (*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
   uint8 wall_behavior;
   X3D_BoundVolume volume;
+  Vex3D gravity;
 
 } X3D_ObjectType;
 
@@ -113,10 +114,11 @@ typedef struct X3D_Object {
   uint16 category;
   Vex3D_fp16x16 pos;
   X3D_Mat3x3_fp0x16 mat;
+  Vex3D gravity;
 
   X3D_BoundVolume volume;
   
-  Vex3D_fp0x16 dir;
+  Vex3D_fp16x16 dir;
   int16 speed;
 
   X3D_SegmentPos seg_pos;

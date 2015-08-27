@@ -76,7 +76,9 @@ X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D po
       object->pos.y = (int32)pos.y << X3D_NORMAL_SHIFT;
       object->pos.z = (int32)pos.z << X3D_NORMAL_SHIFT;
       
-      object->dir = velocity;
+      object->dir.x = 0;//velocity.x;
+      object->dir.y = 0;//velocity.y;
+      object->dir.z = 0;//velocity.z;
       
       if(active) {
         x3d_activate_object(context, object);
@@ -85,6 +87,7 @@ X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D po
       object->event_handler = context->object_manager.types[object_type].event_handler;
       object->wall_behavior = context->object_manager.types[object_type].wall_behavior;
       object->volume = context->object_manager.types[object_type].volume;
+      object->gravity = context->object_manager.types[object_type].gravity;
 
       X3D_Event ev = {
         .type = X3D_EV_CREATE

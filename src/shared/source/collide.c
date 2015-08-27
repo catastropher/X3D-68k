@@ -113,16 +113,23 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
   return FALSE;
 }
 
-_Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* dir, int16 speed) {
+_Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* dir2, int16 speed2) {
   X3D_Object* obj = (X3D_Object*)object;
   Vex3D_fp16x16 new_pos_fp16x16 = obj->pos;
   Vex3D new_pos;
   X3D_PlaneCollision pc;
-
   
-  new_pos_fp16x16.x = new_pos_fp16x16.x + (int32)dir->x * speed;
-  new_pos_fp16x16.y = new_pos_fp16x16.y + (int32)dir->y * speed;
-  new_pos_fp16x16.z = new_pos_fp16x16.z + (int32)dir->z * speed;
+  Vex3D_fp16x16* dir = &obj->dir;
+  int16 speed = 6;//&obj->speed;
+
+  obj->dir.x += obj->gravity.x;
+  obj->dir.y += obj->gravity.y;
+  obj->dir.z += obj->gravity.z;
+  
+  
+  new_pos_fp16x16.x = new_pos_fp16x16.x + (int32)dir->x;// * speed;
+  new_pos_fp16x16.y = new_pos_fp16x16.y + (int32)dir->y;// * speed;
+  new_pos_fp16x16.z = new_pos_fp16x16.z + (int32)dir->z;// * speed;
   
   uint16 attempt = 0;
 
@@ -173,6 +180,9 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
         // Try moving the object along the normal of the plane it failed against
         if(pc.face->connect_id == SEGMENT_NONE) {
           if(!x3d_attempt_adjust_inside_segment(seg, &new_pos_fp16x16, &hit_wall, &obj->volume)) {
+            dir->x = 0;
+            dir->y = 0;
+            dir->z = 0;
             return FALSE;
           }
         }
@@ -202,6 +212,9 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
             }
             else {
               // If it couldn't be adjusted, it's impossible to slide along the wall
+              dir->x = 0;
+              dir->y = 0;
+              dir->z = 0;
               return FALSE;
             }
           }
@@ -222,11 +235,87 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
   
   if(hit_wall && obj->wall_behavior == X3D_COLLIDE_BOUNCE) {
     
-    int16 scale = x3d_vex3d_fp0x16_dot(dir, &pc.face->plane.normal);
+    Vex3D_fp16x16 v = *dir;
+    uint16 shift = 0;
     
-    obj->dir.x = (((int32)-2 * pc.face->plane.normal.x * scale) >> X3D_NORMAL_SHIFT) + dir->x;
-    obj->dir.y = (((int32)-2 * pc.face->plane.normal.y * scale) >> X3D_NORMAL_SHIFT) + dir->y;
-    obj->dir.z = (((int32)-2 * pc.face->plane.normal.z * scale) >> X3D_NORMAL_SHIFT) + dir->z;
+    while(v.x > 0x7FFF || v.y > 0x7FFF || v.z > 0x7FFF) {
+      v.x >>= 1;
+      v.y >>= 1;
+      v.z >>= 1;
+      ++shift;
+    }
+    
+    Vex3D v2 = {v.x, v.y, v.z};
+    
+    int16 scale = x3d_vex3d_fp0x16_dot(&v2, &pc.face->plane.normal);
+    
+    obj->dir.x = (((int32)-2 * pc.face->plane.normal.x * scale) >> X3D_NORMAL_SHIFT) + v2.x;
+    obj->dir.y = (((int32)-2 * pc.face->plane.normal.y * scale) >> X3D_NORMAL_SHIFT) + v2.y;
+    obj->dir.z = (((int32)-2 * pc.face->plane.normal.z * scale) >> X3D_NORMAL_SHIFT) + v2.z;
+    
+    obj->dir.x <<= shift;
+    obj->dir.y <<= shift;
+    obj->dir.z <<= shift;
+  }
+  else if(hit_wall && obj->wall_behavior == X3D_COLLIDE_SLIDE) {
+      Vex3D_fp16x16 v = *dir;
+    uint16 shift = 0;
+    
+    
+    Vex3D_fp8x8 d = {
+      dir->x >> 7,
+      dir->y >> 7,      
+      dir->z >> 7
+    };
+    
+    
+    int16 scale = x3d_vex3d_fp0x16_dot(&d, &pc.face->plane.normal);
+    
+    
+    //scale = ((int32)scale * 128) >> 8;
+    
+    int16 old = d.y;
+
+    d.x = -(((int32)pc.face->plane.normal.x * scale) >> (X3D_NORMAL_SHIFT)) + d.x;
+    d.y = -(((int32)pc.face->plane.normal.y * scale) >> (X3D_NORMAL_SHIFT)) + d.y;
+    d.z = -(((int32)pc.face->plane.normal.z * scale) >> (X3D_NORMAL_SHIFT)) + d.z;
+    
+    Vex3D v2 = d;
+    
+    x3d_vex3d_fp0x16_normalize(&v2);
+    
+    Vex3D new_d = {
+      d.x - v2.x,
+      d.y - v2.y,
+      d.z - v2.z
+    };
+    
+    //sprintf(context->status_bar, "fri %d %d %d\n%d %d %d", v2.x, v2.y, v2.z, d.x, d.y, d.z);
+    
+    if(X3D_SIGNOF(new_d.x) != X3D_SIGNOF(d.x))
+      new_d.x = 0;
+    
+    if(X3D_SIGNOF(new_d.y) != X3D_SIGNOF(d.y))
+      new_d.y = 0;
+    
+    if(X3D_SIGNOF(new_d.z) != X3D_SIGNOF(d.z))
+      new_d.z = 0;
+    
+    if(abs(new_d.x) < 20 && abs(new_d.y) < 20 && abs(new_d.z) < 20) {
+      dir->x = 0;
+      dir->y = 0;
+      dir->z = 0;
+      
+      return TRUE;
+    }
+    
+    
+    
+    
+    dir->x = (int32)new_d.x << 7;
+    dir->y = (int32)new_d.y << 7;
+    dir->z = (int32)new_d.z << 7;
+    
   }
   
   return TRUE;

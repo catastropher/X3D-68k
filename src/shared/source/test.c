@@ -184,7 +184,7 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
 void x3d_test_handle_keys(X3D_Context* context) {
   X3D_Camera* cam = context->cam;
   
-  Vex3D_fp0x16 dir = { (int32)cam->object.mat.data[2], (int32)cam->object.mat.data[5], (int32)cam->object.mat.data[8]};
+  Vex3D_fp16x16 dir = { (int32)cam->object.mat.data[2] * 12, (int32)cam->object.mat.data[5] * 12, (int32)cam->object.mat.data[8] * 12};
   x3d_keystate_update(&context->keys);
 
   if(_keytest(RR_ENTER)) {
@@ -204,7 +204,10 @@ void x3d_test_handle_keys(X3D_Context* context) {
     //cam->object.pos.y += dir.y;
     //cam->object.pos.z += dir.z;
 
-    x3d_attempt_move_object(context, cam, &dir, 12);
+    cam->object.dir.z = dir.z;
+    cam->object.dir.x = dir.x;
+    
+    //x3d_attempt_move_object(context, cam, NULL, 12);
   }
   else if (x3d_keystate_down(&context->keys, XKEY_BACK)) {
     cam->object.pos.x -= dir.x;
@@ -409,7 +412,7 @@ void x3d_box_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev)
       x3d_test_rotate_prism3d(temp, temp2, context->cam);
       x3d_draw_clipped_prism3d_wireframe(temp, ev.render.frustum, ev.render.viewport, 0, 0);
       
-      x3d_attempt_move_object(context, obj, &obj->dir , 10);
+      x3d_attempt_move_object(context, obj, NULL , 10);
     }
       break;
   }
@@ -431,7 +434,7 @@ void register_types(X3D_Context* context) {
   X3D_ObjectType box = {
     .event_handler = x3d_box_handler,
     .wall_behavior = X3D_COLLIDE_BOUNCE,
-
+    .gravity = {0, 4000, 0}
   };
 
   box.volume.type = X3D_BOUND_SPHERE;
@@ -439,12 +442,13 @@ void register_types(X3D_Context* context) {
   
   X3D_ObjectType cam = {
     .event_handler = x3d_cam_handler,
-    .wall_behavior = X3D_COLLIDE_SLIDE
+    .wall_behavior = X3D_COLLIDE_SLIDE,
+    .gravity = {0, 4000, 0}
   };
 
   cam.volume.type = X3D_BOUND_CAPSULE;
   cam.volume.capsule.radius = 15;
-  cam.volume.capsule.height = 30;
+  cam.volume.capsule.height = 40;
   
   x3d_add_object_type(context, OBJECT_BOX, &box);
   x3d_add_object_type(context, OBJECT_CAM, &cam);
@@ -518,13 +522,13 @@ void x3d_test() {
   
   
   
-  cam->object.dir = (Vex3D_fp0x16) { 0, 0, 0 }; //dir;
+  cam->object.dir = (Vex3D_fp16x16) { 0, 0, 0 }; //dir;
   
   context.status_bar[0] = '\0';
   
-  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0);
+  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0)->speed = 6;
   
-  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ -8192, -16384, 8192 }, FALSE, 0);
+  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ -8192, -16384, 8192 }, FALSE, 0)->speed = 6;
   do {
 
     // Construct the rotation matrix
@@ -537,7 +541,7 @@ void x3d_test() {
 
     context.render_clock = 0;
     
-    x3d_attempt_move_object(&context, (void *)cam, &cam->object.dir, 10);
+    x3d_attempt_move_object(&context, (void *)cam, NULL, 10);
 
     //printf("%d\n", x3d_get_total_segments(&test.state));
 
@@ -555,7 +559,7 @@ void x3d_test() {
       
       x3d_object_pos(cam, &pos);
       
-      x3d_create_object(&context, OBJECT_BOX, pos , (Vex3D_angle256){ 0, 0, 0 }, dir, FALSE, 0);
+      x3d_create_object(&context, OBJECT_BOX, pos , (Vex3D_angle256){ 0, 0, 0 }, dir, FALSE, 0)->speed = 6;
       
       while(_keytest(RR_3)) ;
     }
@@ -573,7 +577,7 @@ void x3d_test() {
     Vex3D cam_pos;
     x3d_object_pos(cam, &cam_pos);
     
-    printf("%d\n", cam_pos.y);
+    //printf("%ld %ld %ld\n", cam->object.dir.x, cam->object.dir.y, cam->object.dir.z);
 
     //printf("%d\n", x3d_point_in_segment(seg, &cam_pos));
 
