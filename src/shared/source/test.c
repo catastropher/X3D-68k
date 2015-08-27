@@ -235,6 +235,36 @@ void x3d_test_handle_keys(X3D_Context* context) {
   if (x3d_keystate_down_wait(&context->keys, KEY_CYCLE_SEGMENT)) {
     x3d_selectspinner_select(&context->spinner, context, context->spinner.selected_segment, context->spinner.selected_face + 1);
   }
+  
+  if(_keytest(RR_SPACE)) {
+    cam->object.dir.y = -0xFFFFL * 3;
+  
+  }
+  
+  if (_keytest(RR_4)) {
+    X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
+
+    X3D_Segment* s = x3d_get_segment(context, context->spinner.selected_segment);
+    X3D_Prism3D* prism = &s->prism;
+
+    // Get the center of the prism
+    Vex3D center;
+    x3d_prism3d_get_center(prism, &center);
+
+    x3d_prism3d_get_face(poly, prism, context->spinner.selected_face);
+    
+    Vex3D dir = { 0, -10, 0 };
+    
+    x3d_polygon3d_translate(poly, &dir);
+    
+    
+    //x3d_move_polygon3d_along_normal(poly, 5, &center);
+    x3d_prism3d_set_face(poly, prism, context->spinner.selected_face);
+    
+    x3d_calculate_segment_normals(s);
+
+    free(poly);
+  }
 
   if (x3d_keystate_down(&context->keys, KEY_TRANSLATE_UP)) {
     X3D_Polygon3D* poly = malloc(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * 30);
@@ -443,7 +473,7 @@ void register_types(X3D_Context* context) {
   X3D_ObjectType cam = {
     .event_handler = x3d_cam_handler,
     .wall_behavior = X3D_COLLIDE_SLIDE,
-    .gravity = {0, 4000, 0}
+    .gravity = {0, 17000, 0}
   };
 
   cam.volume.type = X3D_BOUND_CAPSULE;

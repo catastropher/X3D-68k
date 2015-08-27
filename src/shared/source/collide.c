@@ -119,12 +119,16 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
   Vex3D new_pos;
   X3D_PlaneCollision pc;
   
+  Vex3D_fp16x16 old_pos = obj->pos;
+  
   Vex3D_fp16x16* dir = &obj->dir;
   int16 speed = 6;//&obj->speed;
 
   obj->dir.x += obj->gravity.x;
   obj->dir.y += obj->gravity.y;
   obj->dir.z += obj->gravity.z;
+  
+  
   
   
   new_pos_fp16x16.x = new_pos_fp16x16.x + (int32)dir->x;// * speed;
@@ -280,6 +284,18 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
     d.y = -(((int32)pc.face->plane.normal.y * scale) >> (X3D_NORMAL_SHIFT)) + d.y;
     d.z = -(((int32)pc.face->plane.normal.z * scale) >> (X3D_NORMAL_SHIFT)) + d.z;
     
+    sprintf(context->status_bar, "fri %d %d %d", d.x, d.y, d.z);
+    
+    if(abs(d.x) < 100 && abs(d.y) < 100 && abs(d.z) < 100) {
+      dir->x = 0;
+      dir->y = 0;
+      dir->z = 0;
+      
+      obj->pos = old_pos;
+      
+      return TRUE;
+    }
+    
     Vex3D v2 = d;
     
     x3d_vex3d_fp0x16_normalize(&v2);
@@ -289,8 +305,6 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
       d.y - v2.y,
       d.z - v2.z
     };
-    
-    //sprintf(context->status_bar, "fri %d %d %d\n%d %d %d", v2.x, v2.y, v2.z, d.x, d.y, d.z);
     
     if(X3D_SIGNOF(new_d.x) != X3D_SIGNOF(d.x))
       new_d.x = 0;
