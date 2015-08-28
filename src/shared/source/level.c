@@ -22,14 +22,41 @@ void write_uint16(FILE* file, uint16 i) {
   fputc(i & 0xFF, file);
 }
 
+uint16 read_uint16(FILE* file) {
+  uint16 i = (uint8)fgetc(file) << 8;
+  
+  return i | fgetc(file);
+}
+
 void x3d_save_level(X3D_Context* context, FILE* file) {
   // Segment offset table
+  printf("Cap %u\n", context->segment_manager.segment_offset.capacity);
+  
   write_uint16(file, context->segment_manager.segment_offset.capacity);
   write_uint16(file, context->segment_manager.segment_offset.size);
-  fwrite(context->segment_manager.segment_offset.base, 1, context->segment_manager.segment_offset.size, file);
+  fwrite(context->segment_manager.segment_offset.base, 1, context->segment_manager.segment_offset.size * 2, file);
   
   // Segment data
   write_uint16(file, context->segment_manager.segment_data.size);
-  fwrite(context->segment_manager.segment_data.ptr, 1, context->segment_manager.segment_data.size, file);
+  
+  printf("Data %ld\n", context->segment_manager.segment_data.base + context->segment_manager.segment_data.size - context->segment_manager.segment_data.ptr + 1);
+  
+  fwrite(context->segment_manager.segment_data.ptr, 1, context->segment_manager.segment_data.base + context->segment_manager.segment_data.size - context->segment_manager.segment_data.ptr + 1, file);
 }
 
+void x3d_load_level(X3D_Context* context, FILE* file) {
+  context->segment_manager.segment_offset.capacity = read_uint16(file);
+  
+  printf("Cap %u\n", context->segment_manager.segment_offset.capacity);
+  
+  context->segment_manager.segment_offset.size = read_uint16(file);
+  fread(context->segment_manager.segment_offset.base, 1, context->segment_manager.segment_offset.size * 2, file);
+
+  context->segment_manager.segment_data.size = read_uint16(file);
+  
+  printf("Data %ld\n", context->segment_manager.segment_data.base + context->segment_manager.segment_data.size - context->segment_manager.segment_data.ptr + 1);
+  
+  fread(context->segment_manager.segment_data.ptr, 1, context->segment_manager.segment_data.base + context->segment_manager.segment_data.size - context->segment_manager.segment_data.ptr + 1, file);
+  
+  
+}

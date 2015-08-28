@@ -128,3 +128,18 @@ void x3d_add_object_type(X3D_Context* context, uint16 type_id, X3D_ObjectType* t
   context->object_manager.types[type_id] = *type;
 }
 
+void x3d_clear_all_objects(X3D_Context* context) {
+  free(context->object_manager.object_data);
+  x3d_init_objectmanager(context);
+  
+  uint16 i, d;
+  
+  for(i = 0; i < x3d_get_total_segments(context); ++i) {
+    X3D_Segment* seg = x3d_get_segment(context, i);
+    
+    for(d = 0; d < X3D_MAX_OBJECTS_IN_SEGMENT; ++d) {
+      seg->objects[d] = X3D_OBJECT_NONE;
+    }
+  }
+}
+

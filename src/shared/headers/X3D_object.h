@@ -148,6 +148,7 @@ X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
 X3D_Object* x3d_create_object( struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg);
 struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
 void x3d_add_object_type(struct X3D_Context* context, uint16 type_id, X3D_ObjectType* type);
+void x3d_clear_all_objects(struct X3D_Context* context);
 
 
 static inline void x3d_object_pos(void* obj, Vex3D* v) {

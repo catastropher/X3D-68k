@@ -15,6 +15,7 @@
  */
 
 #include "X3D_engine.h"
+#include "X3D_segment.h"
 
 void x3d_parse_command(char* str, char** argv, uint16* total) {
   char* arg = str;
@@ -57,6 +58,57 @@ void x3d_run_command(X3D_Context* context, char** argv, uint16 argc) {
   if(strcmp(argv[0], "echo") == 0) {
     for(i = 1; i < argc; ++i) {
       printf("'%s'\n", argv[i]);
+    }
+  }
+  else if(strcmp(argv[0], "save") == 0) {
+    if(argc == 1 || *argv[1] == '\0') {
+      printf("Wrong number of args\n");
+    }
+    else {
+      FILE* file = fopen(argv[1], "wb");
+      
+      if(file == NULL) {
+        printf("Error opening file\n");
+      }
+      else {
+        x3d_save_level(context, file);
+        fclose(file);
+        
+        printf("Level saved\n");
+      }
+    }
+  }
+  else if(strcmp(argv[0], "load") == 0) {
+    if(argc == 1 || *argv[1] == '\0') {
+      printf("Wrong number of args\n");
+    }
+    else {
+      FILE* file = fopen(argv[1], "rb");
+      
+      if(file == NULL) {
+        printf("Error opening file\n");
+      }
+      else {
+        x3d_load_level(context, file);
+        fclose(file);
+        
+        printf("Clearing objects...\n");
+        x3d_clear_all_objects(context);
+        
+        printf("Creating camera\n");
+        X3D_Camera* cam = (X3D_Camera*)x3d_create_object(context, 0, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
+        cam->object.pos = (Vex3D_fp16x16){ 0, 0, 0 };
+        cam->object.angle = (Vex3D_angle256){ 0, 0, 0 };
+        
+        context->cam = cam;
+        
+        printf("Level loaded\n");
+      }
+    }
+  }
+  else if(strcmp(argv[0], "size") == 0) {
+    if(argc > 1) {
+      printf("%d\n", x3d_segment_needed_size(atoi(argv[1])));
     }
   }
   else {

@@ -165,8 +165,8 @@ inline X3D_Segment* x3d_get_segment(X3D_Context* context, int id) {
 }
 
 // Returns the total number of segments in an enginestate
-uint16 x3d_get_total_segments(X3D_EngineState* state) {
-  return state->table.segment_offset.size;
+uint16 x3d_get_total_segments(X3D_Context* context) {
+  return context->segment_manager.segment_offset.size;
 }
 
 // Calculates the plane equations for every face in a Segment

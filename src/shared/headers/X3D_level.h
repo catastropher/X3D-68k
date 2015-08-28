@@ -13,10 +13,9 @@
  * You should have received a copy of the GNU General Public License
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #pragma once
 
 #include "X3D_engine.h"
 
-void x3d_enter_console(X3D_Context* context);
-
+void x3d_save_level(X3D_Context* context, FILE* file);
