@@ -14,36 +14,7 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "X3D_engine.h"
 
-#include "X3D_manager.h"
-#include "X3D_keys.h"
-
-struct X3D_Camera;
-
-/// @todo document
-typedef struct X3D_Context {
-  uint16 frame;
-  
-  struct X3D_Camera* cam;
-  X3D_SelectSpinner spinner;
-  
-  X3D_KeyState keys;
-  
-  X3D_SegmentManager segment_manager;
-  X3D_ObjectManager object_manager;
-  
-  INT_HANDLER old_int_5;
-  INT_HANDLER old_int_1;
-
-  uint16 render_clock;
-  
-  uint16 render_step;
-  
-  char status_bar[64];
-  
-  void* screen_data;
-  
-  _Bool quit;
-} X3D_Context;
+void x3d_enter_console(X3D_Context* context);
 

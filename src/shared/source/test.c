@@ -31,6 +31,7 @@
 #include "X3D_manager.h"
 #include "X3D_collide.h"
 #include "X3D_object.h"
+#include "X3D_command.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -121,6 +122,11 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   // Redirect interrupt handlers
   context->old_int_1 = GetIntVec(AUTO_INT_1);
   context->old_int_5 = GetIntVec(AUTO_INT_5);
+  
+  c->old_int_1 = context->old_int_1;
+  c->old_int_5 = context->old_int_5;
+  
+  c->screen_data = context->device.dbuf;
 
   SetIntVec(AUTO_INT_1, new_auto_int_1);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
@@ -188,7 +194,9 @@ void x3d_test_handle_keys(X3D_Context* context) {
   x3d_keystate_update(&context->keys);
 
   if(_keytest(RR_ENTER)) {
-    cam->object.dir = dir;
+    while(_keytest(RR_ENTER)) ;
+    
+    x3d_enter_console(context);
   }
   
   
