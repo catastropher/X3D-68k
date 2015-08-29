@@ -129,7 +129,7 @@ void x3d_add_object_type(X3D_Context* context, uint16 type_id, X3D_ObjectType* t
 }
 
 void x3d_clear_all_objects(X3D_Context* context) {
-  free(context->object_manager.object_data);
+  x3d_free(context->object_manager.object_data);
   x3d_init_objectmanager(context);
   
   uint16 i, d;
