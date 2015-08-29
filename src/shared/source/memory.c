@@ -58,6 +58,7 @@ void x3d_free_function(void* mem, const char* function_name) {
   for(i = 0; i < X3D_MAX_ALLOCS; ++i) {
     if(mem_manager.allocs[i].mem == mem) {
       free(mem_manager.allocs[i].mem); 
+      mem_manager.allocs[i].mem = NULL;
       return;
     }
   }
