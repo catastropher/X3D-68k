@@ -46,6 +46,14 @@ void x3d_save_level(X3D_Context* context, FILE* file) {
   
   write_uint16(file, size);
   fwrite(s->ptr, 1, size, file);
+  
+  // Key data
+  write_uint16(file, context->record);
+  
+  if(context->record) {
+    write_uint16(file, context->key_data_size);
+    fwrite(context->key_data, 2, context->key_data_size, file);
+  }
 }
 
 void x3d_load_level(X3D_Context* context, FILE* file) {
@@ -65,4 +73,11 @@ void x3d_load_level(X3D_Context* context, FILE* file) {
   
   fread(s->ptr, 1, size, file);
   
+  if(read_uint16(file)) {
+    // Load key data
+    context->key_data = malloc(10000);
+    context->key_data_size = read_uint16(file);
+    fread(context->key_data, 2, context->key_data_size, file);
+    printf("Key frames: %d\n", context->key_data_size);
+  }
 }
