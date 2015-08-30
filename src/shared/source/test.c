@@ -602,10 +602,12 @@ void x3d_test() {
     //for(i = 0; i < x3d_get_total_segments(&test.state); ++i) {
     //  x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
     //}
-
-    for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
-      if(cam->object.seg_pos.segs[i] != SEGMENT_NONE)
-        x3d_render_segment_wireframe(cam->object.seg_pos.segs[i], frustum, &context, &test.context);
+    
+    if(!context.play || context.play_pos >= context.play_start) {
+      for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+        if(cam->object.seg_pos.segs[i] != SEGMENT_NONE)
+          x3d_render_segment_wireframe(cam->object.seg_pos.segs[i], frustum, &context, &test.context);
+      }
     }
     
     if(_keytest(RR_3)) {
@@ -621,6 +623,10 @@ void x3d_test() {
 
     printf("%s\n", context.status_bar);
     printf("%d\n", context.render_clock);
+    
+    if(context.play) {
+      printf("play frame: %d\n", context.play_pos);
+    }
 
     //for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
     //  printf("%d ", cam->object.seg_pos.segs[i]);
@@ -647,7 +653,18 @@ void x3d_test() {
     x3d_test_handle_keys(&context);
 
     x3d_renderdevice_flip(&test.device);
-
+    
+    if(context.play && context.play_pos >= context.play_start + 1) {
+      do {
+        if(_keytest(RR_9)) {
+          break;
+        }
+        else if(_keytest(RR_0)) {
+          while(_keytest(RR_0));
+          break;
+        }
+      } while(1);
+    }
   } while(!context.quit);
 
   free(frustum);

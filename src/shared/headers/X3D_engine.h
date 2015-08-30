@@ -50,6 +50,8 @@ typedef struct X3D_Context {
   uint16 play_pos;
   _Bool play;
   
+  uint16 play_start;
+  
   _Bool quit;
 } X3D_Context;
 

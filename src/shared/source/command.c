@@ -191,7 +191,14 @@ void x3d_run_command(X3D_Context* context, char** argv, uint16 argc) {
     context->cam->object.angle.y = 0;
     context->cam->object.angle.z = 0;
     
-    printf("Playing\n");
+    if(argc > 1) {
+      context->play_start = atoi(argv[1]);
+    }
+    else {
+      context->play_start = 0;
+    }
+    
+    printf("Playing from frame %d\n", context->play_start);
   }
   else {
     printf("Unknown command\n");
