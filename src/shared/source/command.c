@@ -149,6 +149,50 @@ void x3d_run_command(X3D_Context* context, char** argv, uint16 argc) {
       printf("\n");
     }
   }
+  else if(strcmp(argv[0], "record") == 0) {
+    if(context->record) {
+      printf("Already recording\n");
+    }
+    else {
+      context->record = TRUE;
+      context->key_data = x3d_malloc(10000);
+      context->key_data_size = 0;
+      context->play_pos = 0;
+      
+      context->cam->object.pos.x = 0;
+      context->cam->object.pos.y = 0;
+      context->cam->object.pos.z = 0;
+      
+      context->cam->object.dir.x = 0;
+      context->cam->object.dir.y = 0;
+      context->cam->object.dir.z = 0;
+      
+      context->cam->object.angle.x = 0;
+      context->cam->object.angle.y = 0;
+      context->cam->object.angle.z = 0;
+      
+      printf("Recording\n");
+    }
+  }
+  else if(strcmp(argv[0], "play") == 0) {
+    context->play = TRUE;
+    context->play_pos = 0;
+    context->record = FALSE;
+    
+    context->cam->object.pos.x = 0;
+    context->cam->object.pos.y = 0;
+    context->cam->object.pos.z = 0;
+    
+    context->cam->object.dir.x = 0;
+    context->cam->object.dir.y = 0;
+    context->cam->object.dir.z = 0;
+    
+    context->cam->object.angle.x = 0;
+    context->cam->object.angle.y = 0;
+    context->cam->object.angle.z = 0;
+    
+    printf("Playing\n");
+  }
   else {
     printf("Unknown command\n");
   }

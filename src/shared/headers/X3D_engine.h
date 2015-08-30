@@ -44,6 +44,12 @@ typedef struct X3D_Context {
   
   void* screen_data;
   
+  uint16* key_data;
+  uint16 key_data_size;
+  _Bool record;
+  uint16 play_pos;
+  _Bool play;
+  
   _Bool quit;
 } X3D_Context;
 

@@ -191,7 +191,18 @@ void x3d_test_handle_keys(X3D_Context* context) {
   X3D_Camera* cam = context->cam;
   
   Vex3D_fp16x16 dir = { (int32)cam->object.mat.data[2] * 12, (int32)cam->object.mat.data[5] * 12, (int32)cam->object.mat.data[8] * 12};
-  x3d_keystate_update(&context->keys);
+  
+  if(!context->play) {
+    x3d_keystate_update(&context->keys);
+  }
+  else {
+    if(context->play_pos < context->key_data_size) {
+      context->keys.state = context->key_data[context->play_pos++];
+    }
+    else {
+      context->play = FALSE;
+    }
+  }
 
   if(_keytest(RR_ENTER)) {
     while(_keytest(RR_ENTER)) ;
@@ -199,6 +210,9 @@ void x3d_test_handle_keys(X3D_Context* context) {
     x3d_enter_console(context);
   }
   
+  if(context->record) {
+    context->key_data[context->key_data_size++] = context->keys.state; 
+  }
   
 
   if(_keytest(RR_1)) {
@@ -504,6 +518,8 @@ void x3d_test() {
   
   x3d_test_init(&test, &context);
   
+  context.record = 0;
+  context.play = 0;
 
   X3D_Segment* seg = x3d_segment_add(&context, 4);
   

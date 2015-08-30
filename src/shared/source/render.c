@@ -191,6 +191,8 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       // Calculate the distance to the face
       int16 dist = x3d_distance_to_plane(&face[i].plane, &cam_pos);
 
+      printf("dist: %d\n", dist);
+      
       if(dist < 0)
         continue;
 
@@ -218,6 +220,8 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       }
       else {
         uint16 d;
+        
+        printf("min dist\n");
 
         for(d = 0; d < frustum->total_p - 1; d++) {
           f->p[d] = frustum->p[d + 1];

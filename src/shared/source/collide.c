@@ -169,6 +169,8 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
           break;
         }
       }
+      
+      printf("PCdist: %d\n", pc.dist);
 
       if(!found) {
         if((abs(pc.dist) <= (obj->volume.sphere.radius << FRAC_BITS) || inside)) {
@@ -191,6 +193,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
           }
         }
         else {
+          printf("Here!!!\n");
           // Alright, so it appears we've moved into another segment
           //if(!x3d_attempt_adjust_inside_segment)
 
@@ -206,9 +209,16 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
           }
 
           if(!found) {
+            printf("-----------------------------------------------------\n");
             X3D_Segment* new_seg = x3d_get_segment(context, pc.face->connect_id);
 
             if(x3d_attempt_adjust_inside_segment(new_seg, &new_pos_fp16x16, &hit_wall, &obj->volume)) {
+              printf("Adjusted\nadjusted\nadjusted\nadjusted\nadjustedd\n");
+              
+              if(hit_wall) {
+                printf("hit wall\nhit wall\nhit wall\n hit wall\n hit wall\n"); 
+                
+              }
               x3d_add_seg_pos(new_seg_list, &new_seg_list_size, pc.face->connect_id);
               
               // Add the object to the segment's list of objects
@@ -236,6 +246,8 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
   for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
     obj->seg_pos.segs[i] = new_seg_list[i];
   }
+  
+  
   
   if(hit_wall && obj->wall_behavior == X3D_COLLIDE_BOUNCE) {
     
