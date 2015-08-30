@@ -111,6 +111,44 @@ void x3d_run_command(X3D_Context* context, char** argv, uint16 argc) {
       printf("%d\n", x3d_segment_needed_size(atoi(argv[1])));
     }
   }
+  else if(strcmp(argv[0], "obj") == 0) {
+    uint16 i;    
+    
+    if(argc == 1) {
+      for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
+        if(x3d_get_object(context, i)->flags & X3D_OBJECT_IN_USE) {
+          X3D_Object* obj = x3d_get_object(context, i);
+          
+          printf("%d: %d\n", obj->id, obj->type);
+          
+        }
+      }
+    }
+    else {
+      uint16 id = atoi(argv[1]);
+      
+      X3D_Object* obj = x3d_get_object(context, id);
+      
+      printf("pos = {%ld.%ld, %ld.%ld, %ld.%ld}\n",
+        obj->pos.x >> 15, abs(obj->pos.x) & 0x7FFF,
+        obj->pos.y >> 15, abs(obj->pos.y) & 0x7FFF, 
+        obj->pos.z >> 15, abs(obj->pos.z) & 0x7FFF);
+        
+      printf("vel = {%ld.%ld, %ld.%ld, %ld.%ld}\n",
+        obj->dir.x >> 15, abs(obj->dir.x) & 0x7FFF,
+        obj->dir.y >> 15, abs(obj->dir.y) & 0x7FFF, 
+        obj->dir.z >> 15, abs(obj->dir.z) & 0x7FFF);
+        
+      uint16 i;
+      
+      printf("col: ");
+      
+      for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i)
+        printf("%d ", obj->seg_pos.segs[i]);
+      
+      printf("\n");
+    }
+  }
   else {
     printf("Unknown command\n");
   }

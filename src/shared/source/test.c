@@ -566,7 +566,7 @@ void x3d_test() {
   
   x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0)->speed = 6;
   
-  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ -8192, -16384, 8192 }, FALSE, 0)->speed = 6;
+  //x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ -8192, -16384, 8192 }, FALSE, 0)->speed = 6;
   do {
 
     // Construct the rotation matrix

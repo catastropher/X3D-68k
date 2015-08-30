@@ -20,11 +20,7 @@
 #include "X3D_object.h"
 #include "X3D_segment.h"
 
-#define X3D_MAX_OBJECTS 32
 
-enum {
-  X3D_OBJECT_IN_USE = 1
-};
 
 _Bool x3d_is_object_active(X3D_Object* obj) {
   return obj->flags & X3D_OBJECT_ACTIVE;
@@ -79,6 +75,8 @@ X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D po
       object->dir.x = 0;//velocity.x;
       object->dir.y = 0;//velocity.y;
       object->dir.z = 0;//velocity.z;
+      
+      object->type = object_type;
       
       if(active) {
         x3d_activate_object(context, object);

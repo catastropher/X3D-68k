@@ -23,10 +23,15 @@
 #define X3D_OBJECT_SIZE 128
 #define X3D_MAX_OBJECT_TYPES 20
 #define X3D_MAX_CAMERAS 4
+#define X3D_MAX_OBJECTS 32
 
 #define X3D_MAX_OBJECT_SEGS 4
 
 #define X3D_OBJECT_NONE 0xFFFF
+
+enum {
+  X3D_OBJECT_IN_USE = 1
+};
 
 typedef enum {
   X3D_EV_CREATE,
