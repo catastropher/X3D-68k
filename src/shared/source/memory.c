@@ -144,8 +144,10 @@ void x3d_init_blockallocator(X3D_BlockAllocator* ba, uint16 block_size,
     ba->head = ba->tail = NULL;
     ba->block_size = block_size;
     ba->pointer_offset = pointer_offset;
+    ba->memory_base = memory;
     
     void* ptr = memory + memory_size - block_size;
+    ba->first_block = ptr;
     
     do {
       x3d_free_block(ba, ptr);
@@ -153,7 +155,16 @@ void x3d_init_blockallocator(X3D_BlockAllocator* ba, uint16 block_size,
     } while(ptr >= memory);
 }
 
-
+/***
+ * Returns a pointer to the block with the given id.
+ * 
+ * @param ba    - block allocator
+ * @param id    - id of the block
+ * 
+*/
+void* x3d_get_block(X3D_BlockAllocator* ba, uint16 id) {
+  return ba->first_block - id * ba->block_size;
+}
 
 
 

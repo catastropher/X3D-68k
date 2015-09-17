@@ -34,6 +34,8 @@ typedef struct X3D_BlockAllocatorNode {
 } X3D_BlockAllocatorNode;
 
 typedef struct X3D_BlockAllocator {
+  void* memory_base;
+  void* first_block;
   X3D_BlockAllocatorNode* head;
   X3D_BlockAllocatorNode* tail;
   uint16 block_size;
@@ -53,4 +55,5 @@ void* x3d_alloc_block(X3D_BlockAllocator* ba);
 void x3d_free_block(X3D_BlockAllocator* ba, void* block);
 void x3d_init_blockallocator(X3D_BlockAllocator* ba, uint16 block_size,
                              uint16 pointer_offset, void* memory, uint16 memory_size);
+void* x3d_get_block(X3D_BlockAllocator* ba, uint16 id);
 
