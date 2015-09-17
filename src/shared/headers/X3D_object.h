@@ -73,12 +73,12 @@ typedef struct X3D_Event {
 
 } X3D_Event;
 
-struct X3D_Object;
+struct X3D_ObjectBase;
 struct X3D_Context;
 struct X3D_Camera;
 
 typedef struct X3D_ObjectType {
-  void (*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
+  void (*event_handler)(struct X3D_Context* context, struct X3D_ObjectBase* obj, X3D_Event ev);
   uint8 wall_behavior;
   X3D_BoundVolume volume;
   Vex3D gravity;
@@ -106,7 +106,7 @@ enum {
 };
 
 /// @todo Should be renamed to X3D_BaseObject
-typedef struct X3D_Object {
+typedef struct X3D_ObjectBaseBase {
   uint8 flags;
   uint8 wall_behavior;
   uint16 id;
@@ -130,31 +130,29 @@ typedef struct X3D_Object {
   X3D_Model* unrotated;
   X3D_Model* rotated;
   
-  void (*event_handler)(struct X3D_Context* context, struct X3D_Object* obj, X3D_Event ev);
+  void (*event_handler)(struct X3D_Context* context, struct X3D_ObjectBase* obj, X3D_Event ev);
   
   uint8 collide_behavior;
-} X3D_Object;
+} X3D_ObjectBase;
 
 typedef struct X3D_Camera {
-  X3D_Object object;
+  X3D_ObjectBase object;
 } X3D_Camera;
-
-typedef void* X3D_ObjectBase;
 
 #ifdef __X3D_SHARED__
 
-_Bool x3d_is_object_active(X3D_Object* obj);
-_Bool x3d_activate_object(struct X3D_Context* context, X3D_Object* obj);
-void x3d_deactivate_object(struct X3D_Context* context, X3D_Object* obj);
-X3D_Object* x3d_get_object(struct X3D_Context* context, uint16 id);
-X3D_Object* x3d_create_object( struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg);
+_Bool x3d_is_object_active(X3D_ObjectBase* obj);
+_Bool x3d_activate_object(struct X3D_Context* context, X3D_ObjectBase* obj);
+void x3d_deactivate_object(struct X3D_Context* context, X3D_ObjectBase* obj);
+X3D_ObjectBase* x3d_get_object(struct X3D_Context* context, uint16 id);
+X3D_ObjectBase* x3d_create_object( struct X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg);
 struct X3D_Camera* x3d_create_camera(struct X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle);
 void x3d_add_object_type(struct X3D_Context* context, uint16 type_id, X3D_ObjectType* type);
 void x3d_clear_all_objects(struct X3D_Context* context);
 
 
 static inline void x3d_object_pos(void* obj, Vex3D* v) {
-  X3D_Object* object = (X3D_Object *)obj;
+  X3D_ObjectBase* object = (X3D_ObjectBase *)obj;
   
   v->x = object->pos.x >> X3D_NORMAL_SHIFT;
   v->y = object->pos.y >> X3D_NORMAL_SHIFT;

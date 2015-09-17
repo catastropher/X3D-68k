@@ -114,7 +114,7 @@ static inline _Bool x3d_attempt_adjust_inside_segment(X3D_Segment* seg, Vex3D_fp
 }
 
 _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* dir2, int16 speed2) {
-  X3D_Object* obj = (X3D_Object*)object;
+  X3D_ObjectBase* obj = (X3D_ObjectBase*)object;
   Vex3D_fp16x16 new_pos_fp16x16 = obj->pos;
   Vex3D new_pos;
   X3D_PlaneCollision pc;

@@ -27,11 +27,11 @@ enum {
   X3D_OBJECT_IN_USE = 1
 };
 
-_Bool x3d_is_object_active(X3D_Object* obj) {
+_Bool x3d_is_object_active(X3D_ObjectBase* obj) {
   return obj->flags & X3D_OBJECT_ACTIVE;
 }
 
-_Bool x3d_activate_object(X3D_Context* context, X3D_Object* obj) {
+_Bool x3d_activate_object(X3D_Context* context, X3D_ObjectBase* obj) {
   uint16 i;
   X3D_ObjectManager* manager = &context->object_manager;
 
@@ -47,7 +47,7 @@ _Bool x3d_activate_object(X3D_Context* context, X3D_Object* obj) {
   return FALSE;
 }
 
-void x3d_deactivate_object(X3D_Context* context, X3D_Object* obj) {
+void x3d_deactivate_object(X3D_Context* context, X3D_ObjectBase* obj) {
   uint16 i;
   X3D_ObjectManager* manager = &context->object_manager;
 
@@ -60,14 +60,14 @@ void x3d_deactivate_object(X3D_Context* context, X3D_Object* obj) {
   }
 }
 
-X3D_Object* x3d_get_object(X3D_Context* context, uint16 id) {
+X3D_ObjectBase* x3d_get_object(X3D_Context* context, uint16 id) {
   return x3d_get_block(&context->object_manager.allocator, id);
 }
 
-X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg) {
+X3D_ObjectBase* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg) {
   uint16 i;
   
-  X3D_Object* object = x3d_alloc_block(&context->object_manager.allocator);
+  X3D_ObjectBase* object = x3d_alloc_block(&context->object_manager.allocator);
     
   object->flags |= X3D_OBJECT_IN_USE;
   
@@ -111,7 +111,7 @@ void x3d_init_objectmanager(X3D_Context* context) {
   context->object_manager.object_data = x3d_malloc(X3D_OBJECT_SIZE * X3D_MAX_OBJECTS);
   
   for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
-    X3D_Object* obj = x3d_get_object(context, i);
+    X3D_ObjectBase* obj = x3d_get_object(context, i);
     
     obj->flags = 0;
     obj->id = i;
@@ -124,7 +124,7 @@ void x3d_init_objectmanager(X3D_Context* context) {
   x3d_init_blockallocator(&context->object_manager.allocator, 128, 20, object_mem, object_mem_size);
   
   for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
-    X3D_Object* obj = x3d_get_block(&context->object_manager.allocator, i);
+    X3D_ObjectBase* obj = x3d_get_block(&context->object_manager.allocator, i);
     obj->id = i;
   }
   
