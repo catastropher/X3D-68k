@@ -16,6 +16,8 @@
  
 #pragma once
 
+#include "X3D_fix.h"
+
 //=============================================================================
 // Macros
 //=============================================================================
@@ -46,4 +48,9 @@ void* x3d_malloc_function(uint16 size, const char* function_name);
 void x3d_free_function(void* mem, const char* function_name);
 void x3d_free_all();
 void x3d_init_memorymanager();
+
+void* x3d_alloc_block(X3D_BlockAllocator* ba);
+void x3d_free_block(X3D_BlockAllocator* ba, void* block);
+void x3d_init_blockallocator(X3D_BlockAllocator* ba, uint16 block_size,
+                             uint16 pointer_offset, void* memory, uint16 memory_size);
 

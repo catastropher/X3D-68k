@@ -18,6 +18,8 @@
 
 #include "X3D_fix.h"
 #include "X3D_error.h"
+#include "X3D_memory.h"
+
 #include "../headers/X3D_fix.h"
 
 typedef struct X3D_Alloc {
@@ -114,7 +116,7 @@ void* x3d_alloc_block(X3D_BlockAllocator* ba) {
  * @note Only free blocks to the block allocator it was allocated from!
  */
 void x3d_free_block(X3D_BlockAllocator* ba, void* block) {
-  X3D_AllocatorBlockNode* node = (X3D_BlockAllocatorNode)(block + ba->pointer_offset);
+  X3D_BlockAllocatorNode* node = (X3D_BlockAllocatorNode* )(block + ba->pointer_offset);
   
   if(ba->tail == NULL) {
     ba->tail = ba->head = node;
