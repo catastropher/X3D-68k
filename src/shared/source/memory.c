@@ -18,6 +18,7 @@
 
 #include "X3D_fix.h"
 #include "X3D_error.h"
+#include "../headers/X3D_fix.h"
 
 typedef struct X3D_Alloc {
   void* mem;
@@ -84,6 +85,83 @@ void x3d_init_memorymanager() {
   }  
   
 }
+
+/***
+ * Allocates a new memory block from a fixed-size block allocator. 
+ * 
+ * @param ba  - the block allocator to allocate from
+ * 
+ * @note If out of the blocks, this will currently throw an error. In future,
+ *    it will allocate more memory from the free store.
+ */
+void* x3d_alloc_block(X3D_BlockAllocator* ba) {
+  if(ba->head == NULL) {
+    // TODO: allocate more memory from the free store
+    x3d_error("Block allocator full");
+  }
+  
+  X3D_BlockAllocatorNode* node = ba->head;
+  ba->head = ba->head->next;
+  return (void *)node - ba->pointer_offset;
+}
+
+/***
+ * Returns a memory block to a block allocator
+ * 
+ * @param ba    - block allocator
+ * @param block - block to free
+ * 
+ * @note Only free blocks to the block allocator it was allocated from!
+ */
+void x3d_free_block(X3D_BlockAllocator* ba, void* block) {
+  X3D_AllocatorBlockNode* node = (X3D_BlockAllocatorNode)(block + ba->pointer_offset);
+  
+  if(ba->tail == NULL) {
+    ba->tail = ba->head = node;
+  }
+  else {
+    node->next = ba->tail;
+    ba->tail = node;
+  }
+}
+
+/***
+ * Initializes a block allocator, which allocates single blocks of a fixed size.
+ * 
+ * @param ba              - block allocator
+ * @param block_size      - size of each block
+ * @param pointer_offset  - a word-aligned offset in a block that's safe to
+ *                            over-write when the block is not in use (used
+ *                            to store a pointer to the next block)
+ * @param memory          - memory to partition into blocks
+ * @param memory_size     - size of the memory to partition
+ */
+void x3d_init_blockallocator(X3D_BlockAllocator* ba, uint16 block_size,
+            uint16 pointer_offset, void* memory, uint16 memory_size) {
+
+    ba->head = ba->tail = NULL;
+    ba->block_size = block_size;
+    ba->pointer_offset = pointer_offset;
+    
+    void* ptr = memory + memory_size - block_size;
+    
+    do {
+      x3d_free_block(ba, ptr);
+      ptr -= block_size;
+    } while(ptr >= memory);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

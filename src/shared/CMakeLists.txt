@@ -10,6 +10,7 @@ add_definitions(-D__X3D_SHARED__)
 
 include_directories(${PLATFORM_DIR})
 include_directories($ENV{X3D}/src/shared/headers)
+include_directories($ENV{X3D}/lib)
 
 add_executable(X3DShared
   source/export.c

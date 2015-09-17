@@ -116,6 +116,8 @@ typedef struct X3D_Object {
   X3D_Mat3x3_fp0x16 mat;
   Vex3D gravity;
 
+  Force velocity;
+  
   X3D_BoundVolume volume;
   
   Vex3D_fp16x16 dir;

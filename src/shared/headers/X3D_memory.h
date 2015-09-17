@@ -16,11 +16,34 @@
  
 #pragma once
 
+//=============================================================================
+// Macros
+//=============================================================================
+
+#define x3d_malloc(_size)   x3d_malloc_function(_size, __FUNCTION__)
+#define x3d_free(_mem)      x3d_free_function(_mem, __FUNCTION__)
+
+//=============================================================================
+// Types
+//=============================================================================
+
+typedef struct X3D_BlockAllocatorNode {
+  struct X3D_BlockAllocatorNode* next;
+} X3D_BlockAllocatorNode;
+
+typedef struct X3D_BlockAllocator {
+  X3D_BlockAllocatorNode* head;
+  X3D_BlockAllocatorNode* tail;
+  uint16 block_size;
+  uint16 pointer_offset;
+} X3D_BlockAllocator;
+
+//=============================================================================
+// Function declarations
+//=============================================================================
+
 void* x3d_malloc_function(uint16 size, const char* function_name);
 void x3d_free_function(void* mem, const char* function_name);
 void x3d_free_all();
 void x3d_init_memorymanager();
-
-#define x3d_malloc(_size) x3d_malloc_function(_size, __FUNCTION__)
-#define x3d_free(_mem) x3d_free_function(_mem, __FUNCTION__)
 
