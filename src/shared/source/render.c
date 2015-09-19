@@ -25,7 +25,7 @@
 #include "X3D_memory.h"
 
 #ifdef __TIGCC__
-#include <extgraph/extgraph.h>
+#include "extgraph.h"
 #endif
 
 /// @todo document
@@ -153,7 +153,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
     if(seg->objects[i] != X3D_OBJECT_NONE) {
       X3D_Event ev;
 
-      X3D_Object* obj = x3d_get_object(context, seg->objects[i]);
+      X3D_ObjectBase* obj = x3d_get_object(context, seg->objects[i]);
       
       ev.type = X3D_EV_RENDER;
       ev.render.frustum = frustum;

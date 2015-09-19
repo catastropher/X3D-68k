@@ -19,14 +19,16 @@
 #include "X3D_engine.h"
 #include "X3D_object.h"
 #include "X3D_segment.h"
+#include "X3D_memory.h"
+#include "X3D_log.h"
 
 
 
-_Bool x3d_is_object_active(X3D_Object* obj) {
+_Bool x3d_is_object_active(X3D_ObjectBase* obj) {
   return obj->flags & X3D_OBJECT_ACTIVE;
 }
 
-_Bool x3d_activate_object(X3D_Context* context, X3D_Object* obj) {
+_Bool x3d_activate_object(X3D_Context* context, X3D_ObjectBase* obj) {
   uint16 i;
   X3D_ObjectManager* manager = &context->object_manager;
 
@@ -42,7 +44,7 @@ _Bool x3d_activate_object(X3D_Context* context, X3D_Object* obj) {
   return FALSE;
 }
 
-void x3d_deactivate_object(X3D_Context* context, X3D_Object* obj) {
+void x3d_deactivate_object(X3D_Context* context, X3D_ObjectBase* obj) {
   uint16 i;
   X3D_ObjectManager* manager = &context->object_manager;
 
@@ -55,49 +57,46 @@ void x3d_deactivate_object(X3D_Context* context, X3D_Object* obj) {
   }
 }
 
-X3D_Object* x3d_get_object(X3D_Context* context, uint16 id) {
-  return context->object_manager.object_data + id * X3D_OBJECT_SIZE;
+X3D_ObjectBase* x3d_get_object(X3D_Context* context, uint16 id) {
+  return x3d_get_block(&context->object_manager.allocator, id);
 }
 
-X3D_Object* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg) {
+X3D_ObjectBase* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3D pos, Vex3D_angle256 angle, Vex3D_fp0x16 velocity, _Bool active, uint16 seg) {
   uint16 i;
   
-  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
-    X3D_Object* object = x3d_get_object(context, i);
-    
-    if((object->flags & X3D_OBJECT_IN_USE) == 0) {
-      object->flags |= X3D_OBJECT_IN_USE;
-      
-      object->pos.x = (int32)pos.x << X3D_NORMAL_SHIFT;
-      object->pos.y = (int32)pos.y << X3D_NORMAL_SHIFT;
-      object->pos.z = (int32)pos.z << X3D_NORMAL_SHIFT;
-      
-      object->dir.x = 0;//velocity.x;
-      object->dir.y = 0;//velocity.y;
-      object->dir.z = 0;//velocity.z;
-      
-      object->type = object_type;
-      
-      if(active) {
-        x3d_activate_object(context, object);
-      }
-      
-      object->event_handler = context->object_manager.types[object_type].event_handler;
-      object->wall_behavior = context->object_manager.types[object_type].wall_behavior;
-      object->volume = context->object_manager.types[object_type].volume;
-      object->gravity = context->object_manager.types[object_type].gravity;
-
-      X3D_Event ev = {
-        .type = X3D_EV_CREATE
-      };
-      
-      object->event_handler(context, object, ev);
-      
-      x3d_add_object_to_segment(x3d_get_segment(context, seg), i);
-      
-      return object;
-    }
+  X3D_ObjectBase* object = x3d_alloc_block(&context->object_manager.allocator);
+  
+  x3d_debug(context, TRUE, "Create object: %ld\n", object);
+  
+  
+  object->flags |= X3D_OBJECT_IN_USE;
+  
+  object->pos.x = (int32)pos.x << X3D_NORMAL_SHIFT;
+  object->pos.y = (int32)pos.y << X3D_NORMAL_SHIFT;
+  object->pos.z = (int32)pos.z << X3D_NORMAL_SHIFT;
+  
+  object->dir.x = 0;//velocity.x;
+  object->dir.y = 0;//velocity.y;
+  object->dir.z = 0;//velocity.z;
+  
+  if(active) {
+    x3d_activate_object(context, object);
   }
+  
+  object->event_handler = context->object_manager.types[object_type].event_handler;
+  object->wall_behavior = context->object_manager.types[object_type].wall_behavior;
+  object->volume = context->object_manager.types[object_type].volume;
+  object->gravity = context->object_manager.types[object_type].gravity;
+
+  X3D_Event ev = {
+    .type = X3D_EV_CREATE
+  };
+  
+  object->event_handler(context, object, ev);
+  
+  x3d_add_object_to_segment(x3d_get_segment(context, seg), i);
+  
+  return object;
 }
 
 X3D_Camera* x3d_create_camera(X3D_Context* context, uint16 id, Vex3D pos, Vex3D_angle256 angle) {
@@ -107,13 +106,27 @@ X3D_Camera* x3d_create_camera(X3D_Context* context, uint16 id, Vex3D pos, Vex3D_
 
 void x3d_init_objectmanager(X3D_Context* context) {
   uint16 i;
-  
+
+#if 0  
   context->object_manager.object_data = x3d_malloc(X3D_OBJECT_SIZE * X3D_MAX_OBJECTS);
   
   for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
-    X3D_Object* obj = x3d_get_object(context, i);
+    X3D_ObjectBase* obj = x3d_get_object(context, i);
     
     obj->flags = 0;
+    obj->id = i;
+  }
+#endif
+
+  uint16 object_mem_size = X3D_OBJECT_SIZE * X3D_MAX_OBJECTS;
+  void* object_mem = x3d_malloc(object_mem_size);
+  
+  printf("Object mem: %ld\n", object_mem);
+  
+  x3d_init_blockallocator(&context->object_manager.allocator, 128, 20, object_mem, object_mem_size);
+  
+  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
+    X3D_ObjectBase* obj = x3d_get_block(&context->object_manager.allocator, i);
     obj->id = i;
   }
   
@@ -127,7 +140,7 @@ void x3d_add_object_type(X3D_Context* context, uint16 type_id, X3D_ObjectType* t
 }
 
 void x3d_clear_all_objects(X3D_Context* context) {
-  x3d_free(context->object_manager.object_data);
+  x3d_free(context->object_manager.allocator.memory_base);
   x3d_init_objectmanager(context);
   
   uint16 i, d;
