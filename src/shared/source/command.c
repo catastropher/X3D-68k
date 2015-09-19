@@ -117,7 +117,7 @@ void x3d_run_command(X3D_Context* context, char** argv, uint16 argc) {
     if(argc == 1) {
       for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
         if(x3d_get_object(context, i)->flags & X3D_OBJECT_IN_USE) {
-          X3D_Object* obj = x3d_get_object(context, i);
+          X3D_ObjectBase* obj = x3d_get_object(context, i);
           
           printf("%d: %d\n", obj->id, obj->type);
           
@@ -127,7 +127,7 @@ void x3d_run_command(X3D_Context* context, char** argv, uint16 argc) {
     else {
       uint16 id = atoi(argv[1]);
       
-      X3D_Object* obj = x3d_get_object(context, id);
+      X3D_ObjectBase* obj = x3d_get_object(context, id);
       
       printf("pos = {%ld.%ld, %ld.%ld, %ld.%ld}\n",
         obj->pos.x >> 15, abs(obj->pos.x) & 0x7FFF,
