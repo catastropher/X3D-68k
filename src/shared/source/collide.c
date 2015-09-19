@@ -158,7 +158,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
 
       X3D_Segment* seg = x3d_get_segment(context, obj->seg_pos.segs[seg_pos]);
 
-      _Bool inside = x3d_point_in_segment(seg, &new_pos, &obj->volume, &pc, TRUE);
+      _Bool inside = x3d_point_in_segment(seg, &new_pos, &obj->type->volume, &pc, TRUE);
 
       // Are we close enough to this segment to still be considered inside of it?
       _Bool found = FALSE;
@@ -173,7 +173,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
       printf("PCdist: %d\n", pc.dist);
 
       if(!found) {
-        if((abs(pc.dist) <= (obj->volume.sphere.radius << FRAC_BITS) || inside)) {
+        if((abs(pc.dist) <= (obj->type->volume.sphere.radius << FRAC_BITS) || inside)) {
           x3d_add_seg_pos(new_seg_list, &new_seg_list_size, seg->id);
         }
         else {
@@ -185,7 +185,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
       if(!inside) {
         // Try moving the object along the normal of the plane it failed against
         if(pc.face->connect_id == SEGMENT_NONE) {
-          if(!x3d_attempt_adjust_inside_segment(seg, &new_pos_fp16x16, &hit_wall, &obj->volume)) {
+          if(!x3d_attempt_adjust_inside_segment(seg, &new_pos_fp16x16, &hit_wall, &obj->type->volume)) {
             dir->x = 0;
             dir->y = 0;
             dir->z = 0;
@@ -212,7 +212,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
             printf("-----------------------------------------------------\n");
             X3D_Segment* new_seg = x3d_get_segment(context, pc.face->connect_id);
 
-            if(x3d_attempt_adjust_inside_segment(new_seg, &new_pos_fp16x16, &hit_wall, &obj->volume)) {
+            if(x3d_attempt_adjust_inside_segment(new_seg, &new_pos_fp16x16, &hit_wall, &obj->type->volume)) {
               printf("Adjusted\nadjusted\nadjusted\nadjusted\nadjustedd\n");
               
               if(hit_wall) {
@@ -249,7 +249,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
   
   
   
-  if(hit_wall && obj->wall_behavior == X3D_COLLIDE_BOUNCE) {
+  if(hit_wall && obj->type->wall_behavior == X3D_COLLIDE_BOUNCE) {
     
     Vex3D_fp16x16 v = *dir;
     uint16 shift = 0;
@@ -273,7 +273,7 @@ _Bool x3d_attempt_move_object(X3D_Context* context, void* object, Vex3D_fp0x16* 
     obj->dir.y <<= shift;
     obj->dir.z <<= shift;
   }
-  else if(hit_wall && obj->wall_behavior == X3D_COLLIDE_SLIDE) {
+  else if(hit_wall && obj->type->wall_behavior == X3D_COLLIDE_SLIDE) {
       Vex3D_fp16x16 v = *dir;
     uint16 shift = 0;
     

@@ -182,7 +182,7 @@ void x3d_test_rotate_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src, X3D_Camera* ca
   Vex3D cam_pos = { cam->object.pos.x >> 15, cam->object.pos.y >> 15, cam->object.pos.z >> 15 };
   
   // Account for the player's height
-  cam_pos.y -= cam->object.volume.capsule.height;
+  cam_pos.y -= cam->object.type->volume.capsule.height;
 
   uint16 i;
   for(i = 0; i < src->base_v * 2; ++i) {

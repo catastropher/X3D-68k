@@ -161,7 +161,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       ev.render.viewport = viewport;
 
       // Trigger the object's render event
-      obj->event_handler(context, obj, ev);
+      obj->type->event_handler(context, obj, ev);
     }
   }
   

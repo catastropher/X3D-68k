@@ -87,6 +87,8 @@ typedef struct X3D_ObjectType {
   uint8 wall_behavior;
   X3D_BoundVolume volume;
   Vex3D gravity;
+  uint16 type;
+  uint16 type_category;
 
 } X3D_ObjectType;
 
@@ -110,20 +112,16 @@ enum {
   X3D_COLLIDE_BOUNCE
 };
 
-/// @todo Should be renamed to X3D_BaseObject
 typedef struct X3D_ObjectBase {
   uint8 flags;
-  uint8 wall_behavior;
   uint16 id;
-  uint16 type;
-  uint16 category;
   Vex3D_fp16x16 pos;
   X3D_Mat3x3_fp0x16 mat;
   Force gravity;
+  
+  X3D_ObjectType* type;
 
   Force velocity;
-  
-  X3D_BoundVolume volume;
   
   Vex3D_fp16x16 dir;
   int16 speed;
@@ -134,10 +132,6 @@ typedef struct X3D_ObjectBase {
 
   X3D_Model* unrotated;
   X3D_Model* rotated;
-  
-  void (*event_handler)(struct X3D_Context* context, struct X3D_ObjectBase* obj, X3D_Event ev);
-  
-  uint8 collide_behavior;
 } X3D_ObjectBase;
 
 typedef struct X3D_Camera {

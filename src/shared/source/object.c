@@ -66,7 +66,8 @@ X3D_ObjectBase* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3
   
   X3D_ObjectBase* object = x3d_alloc_block(&context->object_manager.allocator);
   
-  x3d_debug(context, TRUE, "Create object: %ld\n", object);
+  //x3d_debug(context, TRUE, "Create object: %d, %d\n", 
+  //          object->id, x3d_get_object(context, object->id)->id == object->id);
   
   
   object->flags |= X3D_OBJECT_IN_USE;
@@ -79,20 +80,20 @@ X3D_ObjectBase* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3
   object->dir.y = 0;//velocity.y;
   object->dir.z = 0;//velocity.z;
   
+  object->type = object_type;
+  
   if(active) {
     x3d_activate_object(context, object);
   }
   
-  object->event_handler = context->object_manager.types[object_type].event_handler;
-  object->wall_behavior = context->object_manager.types[object_type].wall_behavior;
-  object->volume = context->object_manager.types[object_type].volume;
+  object->type = &context->object_manager.types[object_type];
   object->gravity = context->object_manager.types[object_type].gravity;
 
   X3D_Event ev = {
     .type = X3D_EV_CREATE
   };
   
-  object->event_handler(context, object, ev);
+  object->type->event_handler(context, object, ev);
   
   x3d_add_object_to_segment(x3d_get_segment(context, seg), i);
   
