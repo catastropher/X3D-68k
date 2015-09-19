@@ -32,6 +32,7 @@
 #include "X3D_collide.h"
 #include "X3D_object.h"
 #include "X3D_command.h"
+#include "X3D_log.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -71,7 +72,7 @@ enum {
   KEY_SWITCH_SEGMENT = XKEY_CUSTOM7
 };
 
-#if defined(__TIGCC__) || defined(WIN32)
+#if defined(__TIGCC__) || defined(WIN32) || 1
 
 
 typedef struct X3D_TestContext {
@@ -116,8 +117,14 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   //x3d_enginestate_init(&context->state, 30, 20000);
   x3d_renderdevice_init(&context->device, LCD_WIDTH, LCD_HEIGHT);
   x3d_rendercontext_init(&context->context, context->device.dbuf, LCD_WIDTH, LCD_HEIGHT, LCD_WIDTH, LCD_HEIGHT, 0, 0, ANG_60, 0);
+
+  c->screen_data = context->device.dbuf;
   
-  x3d_init_objectmanager(c);
+
+  
+  
+  
+  //x3d_init_objectmanager(c);
 
   // Redirect interrupt handlers
   context->old_int_1 = GetIntVec(AUTO_INT_1);
@@ -125,8 +132,7 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   
   c->old_int_1 = context->old_int_1;
   c->old_int_5 = context->old_int_5;
-  
-  c->screen_data = context->device.dbuf;
+
 
   SetIntVec(AUTO_INT_1, new_auto_int_1);
   SetIntVec(AUTO_INT_5, DUMMY_HANDLER);
@@ -152,6 +158,12 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
 
   // We don't want to quit yet!
   c->quit = 0;
+  
+  //printf("Hello world!\n");
+  //LCD_restore(c->screen_data);
+  //while(1) ;
+  
+  x3d_debug(c, TRUE, "Init debug\n");
 }
 
 static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
@@ -425,7 +437,7 @@ void x3d_test_cleanup(X3D_TestContext* context) {
 
 uint16 bouncing_box;
 
-void x3d_box_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev) {
+void x3d_box_handler(X3D_Context* context, X3D_ObjectBase* obj, X3D_Event ev) {
   switch(ev.type) {
     case X3D_EV_CREATE:
       strcpy(context->status_bar, "Created!");
@@ -456,7 +468,7 @@ void x3d_box_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev)
   }
 }
 
-void x3d_cam_handler(X3D_Context* context, struct X3D_Object* obj, X3D_Event ev) {
+void x3d_cam_handler(X3D_Context* context, X3D_ObjectBase* obj, X3D_Event ev) {
   switch(ev.type) {
     case X3D_EV_RENDER:
       break;

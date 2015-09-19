@@ -25,14 +25,14 @@
 #include "X3D_memory.h"
 
 #ifdef __TIGCC__
-//#include <extgraph/extgraph.h>
+#include "extgraph.h"
 #endif
 
 /// @todo document
 void x3d_draw_line_black(X3D_ViewPort* context, X3D_Vex2D_int16* v1, X3D_Vex2D_int16* v2) {
 #ifdef __TIGCC__
   //DrawLine(v1.x, v1.y, v2.x, v2.y, A_NORMAL);
-  //FastLine_Draw_R(context->screen, v1->x, v1->y, v2->x, v2->y);
+  FastLine_Draw_R(context->screen, v1->x, v1->y, v2->x, v2->y);
 #endif
 }
 

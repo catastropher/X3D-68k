@@ -15,6 +15,21 @@
 
 #include "X3D_config.h"
 #include "X3D_fix.h"
+#include "X3D_engine.h"
+
+void x3d_debug(X3D_Context* context, _Bool wait, char* format, ...) {
+  va_list list;
+  
+  va_start(list, format);
+  vprintf(format, list);
+  
+  LCD_restore(context->screen_data);
+  
+  if(wait) {
+    while(!_keytest(RR_C));
+    while(_keytest(RR_C));
+  }
+}
 
 /**
 * Parses a positive integer.

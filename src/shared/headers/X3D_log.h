@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include "X3D_engine.h"
+
+void x3d_debug(X3D_Context* context, _Bool wait, char* format, ...);
+
 //=============================================================================
 // Function declarations
 //=============================================================================

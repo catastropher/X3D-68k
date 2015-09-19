@@ -20,6 +20,7 @@
 #include "X3D_object.h"
 #include "X3D_segment.h"
 #include "X3D_memory.h"
+#include "X3D_log.h"
 
 #define X3D_MAX_OBJECTS 32
 
@@ -68,7 +69,10 @@ X3D_ObjectBase* x3d_create_object(X3D_Context* context, uint16 object_type, Vex3
   uint16 i;
   
   X3D_ObjectBase* object = x3d_alloc_block(&context->object_manager.allocator);
-    
+  
+  x3d_debug(context, TRUE, "Create object: %ld\n", object);
+  
+  
   object->flags |= X3D_OBJECT_IN_USE;
   
   object->pos.x = (int32)pos.x << X3D_NORMAL_SHIFT;

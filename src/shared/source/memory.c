@@ -19,6 +19,7 @@
 #include "X3D_fix.h"
 #include "X3D_error.h"
 #include "X3D_memory.h"
+#include "X3D_log.h"
 
 #include "../headers/X3D_fix.h"
 
@@ -120,6 +121,7 @@ void x3d_free_block(X3D_BlockAllocator* ba, void* block) {
   
   if(ba->tail == NULL) {
     ba->tail = ba->head = node;
+    node->next = NULL;
   }
   else {
     node->next = ba->tail;
@@ -140,19 +142,19 @@ void x3d_free_block(X3D_BlockAllocator* ba, void* block) {
  */
 void x3d_init_blockallocator(X3D_BlockAllocator* ba, uint16 block_size,
             uint16 pointer_offset, void* memory, uint16 memory_size) {
-
-    ba->head = ba->tail = NULL;
-    ba->block_size = block_size;
-    ba->pointer_offset = pointer_offset;
-    ba->memory_base = memory;
-    
-    void* ptr = memory + memory_size - block_size;
-    ba->first_block = ptr;
-    
-    do {
-      x3d_free_block(ba, ptr);
-      ptr -= block_size;
-    } while(ptr >= memory);
+  
+  ba->head = ba->tail = NULL;
+  ba->block_size = block_size;
+  ba->pointer_offset = pointer_offset;
+  ba->memory_base = memory;
+  
+  void* ptr = memory + memory_size - block_size;
+  ba->first_block = ptr;
+  
+  do {
+    x3d_free_block(ba, ptr);
+    ptr -= block_size;
+  } while(ptr >= memory);
 }
 
 /***
