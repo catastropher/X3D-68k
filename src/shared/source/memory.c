@@ -124,7 +124,7 @@ void x3d_free_block(X3D_BlockAllocator* ba, void* block) {
     node->next = NULL;
   }
   else {
-    node->next = ba->tail;
+    ba->tail->next = node;
     ba->tail = node;
   }
 }

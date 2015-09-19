@@ -125,6 +125,8 @@ void x3d_init_objectmanager(X3D_Context* context) {
   uint16 object_mem_size = X3D_OBJECT_SIZE * X3D_MAX_OBJECTS;
   void* object_mem = x3d_malloc(object_mem_size);
   
+  printf("Object mem: %ld\n", object_mem);
+  
   x3d_init_blockallocator(&context->object_manager.allocator, 128, 20, object_mem, object_mem_size);
   
   for(i = 0; i < X3D_MAX_OBJECTS; ++i) {

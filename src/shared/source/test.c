@@ -124,7 +124,7 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   
   
   
-  //x3d_init_objectmanager(c);
+  x3d_init_objectmanager(c);
 
   // Redirect interrupt handlers
   context->old_int_1 = GetIntVec(AUTO_INT_1);
@@ -164,6 +164,8 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   //while(1) ;
   
   x3d_debug(c, TRUE, "Init debug\n");
+  
+  //X3D_BlockAllocatorNode* node = c->object_manager.allocator.head;
 }
 
 static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
