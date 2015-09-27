@@ -39,6 +39,7 @@ add_executable(X3DShared
   source/memory.c
   source/level.c
   source/command.c
+  source/newclip.c
 )
 
 if(X3D_TARGET EQUAL 68k)

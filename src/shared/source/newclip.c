@@ -14,3 +14,75 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "X3D_vector.h"
+
+typedef struct X3D_BoundLine {
+  Vex2D normal;
+  Vex2D point;
+} X3D_BoundLine;
+
+void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
+  
+}
+
+typedef struct X3D_BoundRegion {
+  uint16 total_bl;
+  X3D_BoundLine line[];
+} X3D_BoundRegion;
+
+
+void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v) {
+  uint16 i;
+  
+  for(i = 0; i < total_v; ++i) {
+    x3d_construct_boundline(region->line + i, v + i, v + (i % total_v));
+  }
+  
+  region->total_bl = total_v;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

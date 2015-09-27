@@ -89,6 +89,7 @@ typedef struct Vex2D_int16 {
 typedef Vex2D_int16 Vex2D;
 
 
+typedef Vex2D Vex2D_fp0x16;
 
 typedef Vex3D X3D_Vex3D_int16;
 typedef Vex2D X3D_Vex2D_int16;
@@ -108,6 +109,8 @@ void x3d_vex3d_int16_project(Vex2D_int16* dest, const Vex3D* src, struct X3D_Vie
 void x3d_vex3d_int16_rotate(Vex3D* dest, Vex3D* src, struct X3D_Mat3x3_fp0x16* mat);
 void x3d_vex3d_fp0x16_cross(Vex3D_fp0x16* dest, Vex3D_fp0x16* a, Vex3D_fp0x16* b);
 uint16 x3d_vex3d_int16_mag(Vex3D* v);
+
+void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v);
 
 
 //=============================================================================
