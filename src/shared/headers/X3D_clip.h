@@ -60,12 +60,6 @@ typedef struct X3D_ClipRegion {
   X3D_ParamLine2D pl[0];
 } X3D_ClipRegion;
 
-typedef struct X3D_Prism2D {
-  uint32 draw_edges;        ///< Bitfield of which edges should be drawn
-  uint16 base_v;            ///< Number of vertices in each base
-  Vex2D_int16 v[0];     ///< Vertices (variable number)
-} X3D_Prism2D;
-
 //=============================================================================
 // Function declarations
 //=============================================================================

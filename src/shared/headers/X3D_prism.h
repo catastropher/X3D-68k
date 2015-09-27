@@ -37,6 +37,12 @@ typedef struct X3D_Prism3D {
 
 typedef X3D_Prism3D X3D_Prism;
 
+typedef struct X3D_Prism2D {
+  uint32 draw_edges;        ///< Bitfield of which edges should be drawn
+  uint16 base_v;            ///< Number of vertices in each base
+  Vex2D_int16 v[0];     ///< Vertices (variable number)
+} X3D_Prism2D;
+
 /// Face constants for a prism
 enum {
   BASE_A = 0,
@@ -47,6 +53,10 @@ enum {
 struct X3D_Polygon3D;
 
 static inline uint16 x3d_opposite_vertex(X3D_Prism3D* prism, uint16 v) {
+  return prism->base_v + (prism->base_v - v) - 1;
+}
+
+static inline uint16 x3d_prism2d_opposite_vertex(X3D_Prism2D* prism, uint16 v) {
   return prism->base_v + (prism->base_v - v) - 1;
 }
 
