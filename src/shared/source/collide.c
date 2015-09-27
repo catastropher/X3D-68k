@@ -14,6 +14,8 @@
 * along with X3D. If not, see <http://www.gnu.org/licenses/>.
 */
 
+
+
 #include "X3D_config.h"
 #include "X3D_frustum.h"
 #include "X3D_object.h"
@@ -22,6 +24,9 @@
 #include "X3D_engine.h"
 
 #define FRAC_BITS 2
+
+#undef print
+#define printf(...) ;
 
 typedef struct X3D_PlaneCollision {
   X3D_SegmentFace* face;
