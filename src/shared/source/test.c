@@ -33,6 +33,7 @@
 #include "X3D_object.h"
 #include "X3D_command.h"
 #include "X3D_log.h"
+#include "X3D_newclip.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -520,11 +521,20 @@ void register_types(X3D_Context* context) {
   x3d_add_object_type(context, OBJECT_CAM, &cam);
 }
 
+void x3d_temp_test() {
+  clrscr();
+  x3d_test_new_clip();
+  ngetchx();
+}
+
 
 void x3d_test() {
   X3D_TestContext test;
 
   FontSetSys(F_4x6);
+  
+  x3d_temp_test();
+  return;
 
   // Make some prisms
   
