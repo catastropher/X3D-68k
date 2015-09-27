@@ -28,5 +28,6 @@ add_library(X3D
   test.c
   trig.c
   vector.c
+  newclip.c
 )
   
