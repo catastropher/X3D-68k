@@ -63,6 +63,9 @@ typedef Vex3D Vex3D_fp0x16;
 /// A 3D vector with fp16x16 components.
 typedef Vex3D_int32 Vex3D_fp16x16;
 
+/// A 3D vector with fp16x8 components
+typedef Vex3D_int32 Vex3D_fp16x8;
+
 /// A force vector
 typedef Vex3D Force;
 
