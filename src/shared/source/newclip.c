@@ -24,6 +24,7 @@
 #include "X3D_error.h"
 #include "X3D_segment.h"
 #include "X3D_prism.h"
+#include "X3D_engine.h"
 
 typedef struct X3D_BoundLine {
   Vex2D normal;
@@ -163,7 +164,7 @@ void x3d_clip_edge(X3D_ClipData* clip, uint16 id) {
 }
 
 
-void x3d_clip_render_segment_walls(X3D_Segment* seg, X3D_BoundRegion* region, X3D_SegmentClip* seg_clip) {
+void x3d_clip_render_segment_walls(X3D_Context* context, X3D_Segment* seg, X3D_BoundRegion* region, X3D_SegmentClip* seg_clip) {
   X3D_Prism2D* prism;
   uint16 total_v = prism->base_v * 2;
   
