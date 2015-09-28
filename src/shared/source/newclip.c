@@ -38,7 +38,10 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   
   x3d_normalize_vex2d_fp0x16(&new_normal);
   
-  printf("{%d, %d} after {%d, %d}\n", normal.x, normal.y, new_normal.x, new_normal.y);
+  line->normal = new_normal;
+  line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
+  
+  printf("{%d, %d} after {%d, %d}, %d\n", normal.x, normal.y, new_normal.x, new_normal.y, line->d);
 }
 
 typedef struct X3D_BoundRegion {
@@ -68,8 +71,8 @@ typedef struct X3D_EdgeClip {
 
 #define OUTSIDE(_clip, _v, _pos) _clip->dist[INDEX(_clip, _pos, _v)]
 
-inline x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
-  return (((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT;
+inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
+  return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
 }
 
 
@@ -204,6 +207,8 @@ static inline calc_line_distances(X3D_ClipData* clip) {
       int16 dist = x3d_dist_to_line(clip->region->line + line, clip->v + vertex);     
       *dist_ptr(clip, line, vertex);
       
+      printf("dist: %d\n", dist);
+      
       if(dist < 0) {
         add_outside(clip, vertex, line);      
       }
@@ -278,7 +283,17 @@ void x3d_test_new_clip() {
     { 0, LCD_HEIGHT - 1 }
   };
   
+  Vex2D vex[] = { {0, 0} };
+  
+  X3D_ClipData clip = {
+    .region = region,
+    .v = vex,
+    .total_v = 1,
+    .total_e = 0
+  }; 
+  
   x3d_construct_boundregion(region, v, 4);
+  x3d_clip_edges(&clip);
 }
 
 

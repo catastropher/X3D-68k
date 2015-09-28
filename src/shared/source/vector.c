@@ -51,8 +51,8 @@ fp0x16 x3d_vex3d_fp0x16_dot(Vex3D_fp0x16* a, Vex3D_fp0x16* b) {
 
 void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v) {
   int32 distance_squared = 
-    (((int32)v->x * v->x) >> 2) +
-    (((int32)v->y * v->y) >> 2);
+    (((int32)v->x * v->x)) +
+    (((int32)v->y * v->y));
   
   // If distance_squared is negative, the only possible explaination is that
   // it overflowed (should never happen because we divide each term by 4)
@@ -66,7 +66,7 @@ void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v) {
   // by 2 to get the real result. We add 1 to prevent division by 0 and to make
   // sure we never get 0x8000 after the division (because that's to big to fit in
   // an int16)
-  uint16 len = (x3d_fastsqrt(distance_squared) << 1) + 1;
+  uint16 len = (x3d_fastsqrt(distance_squared)) + 1;
   
   
   /// @todo Add check to make sure the sign of the components is the same after
