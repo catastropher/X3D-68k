@@ -32,6 +32,10 @@ typedef struct X3D_BoundLine {
   Vex2D point;
 } X3D_BoundLine;
 
+inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
+  return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
+}
+
 void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   Vex2D normal = { -(b->y - a->y), b->x - a->x };
   Vex2D new_normal = normal;
@@ -40,6 +44,14 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
+  
+  Vex2D center = { 0, 0 };
+  
+  if(x3d_dist_to_line(line, &center ) < 0) {
+    line->normal.x = -line->normal.x;
+    line->normal.y = -line->normal.y;
+    line->d = -line->d;
+  }
   
   //printf("{%d, %d} after {%d, %d}, %d\n", normal.x, normal.y, new_normal.x, new_normal.y, line->d);
 }
@@ -70,10 +82,6 @@ typedef struct X3D_EdgeClip {
 #define DIST(_clip, _line, _v) _clip->dist[INDEX(_clip, _line, _v)]
 
 #define OUTSIDE(_clip, _v, _pos) _clip->dist[INDEX(_clip, _pos, _v)]
-
-inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
-  return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
-}
 
 
 // inline x3d_calc_distances_to_lines(X3D_ClipData* clip) {
@@ -221,7 +229,7 @@ static inline calc_line_distances(X3D_ClipData* clip) {
 //#define 
 
 static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
-  int16 n = abs(dist(clip, line, end));
+  int16 n = abs(dist(clip, line, start));
   //int16 d = abs(-dist(clip, line, end) + clip->region->line[line].d) + abs(-dist(clip, line, start) + clip->region->line[line].d);
   
   int16 d = abs(dist(clip, line, end)) + abs(dist(clip, line, start));
@@ -234,11 +242,19 @@ static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uin
   return ((int32)n << X3D_NORMAL_SHIFT) / d;
 }
 
+void scale_edge(Vex2D* end_dest, Vex2D* start, Vex2D* end, int16 scale) {
+  int16 dx = end->x - start->x;
+  int16 dy = end->y - start->y;
+  
+  end_dest->x = start->x + (((int32)dx * scale) >> X3D_NORMAL_SHIFT);
+  end_dest->y = start->y + (((int32)dy * scale) >> X3D_NORMAL_SHIFT);
+}
+
 int16 clip_scale_float(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
-  float n = abs(dist(clip, line, end));
+  float n = abs(dist(clip, line, start));
   float d = abs(dist(clip, line, end)) + abs(dist(clip, line, start));
   
-  return (n / d) * 32768;
+  return (n / d) * 32768.0;
 }
 
 int16 ask(const char* str) {
@@ -262,7 +278,8 @@ Vex2D ask_vex2d(const char* str) {
 }
 
 Vex2D rand_vex2d() {
-  return (Vex2D) { rand() - 16384, rand() - 16384 };
+  return (Vex2D) { rand() % LCD_WIDTH, rand() % LCD_HEIGHT };
+  //return (Vex2D) { rand() - 16384, rand() - 16384 };
 }
 
 void test_clip_scale() {
@@ -282,9 +299,17 @@ void test_clip_scale() {
   clip.outside = alloca(100);
   clip.outside_total = alloca(100);
   
-  for(i = 0; i < 1000; ++i) {
-    Vex2D b1 = rand_vex2d();
-    Vex2D b2 = rand_vex2d();
+  for(i = 0; i < 20; ++i) {
+    Vex2D b1;// = rand_vex2d();
+    Vex2D b2;// = rand_vex2d();
+    
+    
+    b1.x = rand() % LCD_WIDTH;
+    b1.y = (rand() % 2) * (LCD_HEIGHT - 1);
+    
+    b2.x = (rand() % 2) * (LCD_WIDTH - 1);
+    b2.y = rand() % LCD_HEIGHT;
+    
     X3D_BoundLine line;
     
     x3d_construct_boundline(&line, &b1, &b2);
@@ -315,9 +340,7 @@ void test_clip_scale() {
 
     
     
-    
-    
-    
+     
     calc_line_distances(&clip);
     
     int16 scale = clip_scale(&clip, 0, 1, 0);
@@ -327,10 +350,24 @@ void test_clip_scale() {
     int16 scale_float = clip_scale_float(&clip, 0, 1, 0);
     
     if(scale != scale_float) {
-      printf("Scale: %d, scale_float: %d\n", scale, scale_float);
+      //printf("Scale: %d, scale_float: %d\n", scale, scale_float);
     }
     
-    //printf("Scale: %d, scale_float: %d\n", scale, scale_float);
+    clrscr();
+    DrawLine(b1.x, b1.y, b2.x, b2.y, A_NORMAL);
+    DrawLine(p1.x, p1.y, p2.x, p2.y, A_NORMAL);
+    printf("Scale: %d, scale_float: %d\n", scale, scale_float);
+    ngetchx();
+    
+    Vex2D new_end;
+    scale_edge(&new_end, &p1, &p2, scale);
+    
+    clrscr();
+    DrawLine(b1.x, b1.y, b2.x, b2.y, A_NORMAL);
+    DrawLine(p1.x, p1.y, new_end.x, new_end.y, A_NORMAL);
+    printf("Scale: %d, scale_float: %d\n", scale, scale_float);
+    ngetchx();
+
     //ngetchx();
   }
 }
