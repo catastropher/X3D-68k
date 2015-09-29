@@ -41,7 +41,7 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
   
-  printf("{%d, %d} after {%d, %d}, %d\n", normal.x, normal.y, new_normal.x, new_normal.y, line->d);
+  //printf("{%d, %d} after {%d, %d}, %d\n", normal.x, normal.y, new_normal.x, new_normal.y, line->d);
 }
 
 typedef struct X3D_BoundRegion {
@@ -181,7 +181,7 @@ typedef struct X3D_ClipData {
 } X3D_ClipData;
 
 static inline int16* dist_ptr(X3D_ClipData* clip, uint16 line, uint16 vertex) {
-  return clip->line_dist + line * clip->region->total_bl + vertex;
+  return clip->line_dist + line * clip->total_v + vertex;
 }
 
 static inline int16* outside_ptr(X3D_ClipData* clip, uint16 vertex, uint16 pos) {
@@ -193,9 +193,9 @@ static inline void add_outside(X3D_ClipData* clip, uint16 vertex, uint16 line) {
 }
 
 static inline int16 dist(X3D_ClipData* clip, uint16 line, uint16 vertex) {
-  int16 n = dist(clip, line, vertex);
+  int16 n = *dist_ptr(clip, line, vertex);
   
-  
+  return n;
   
 }
 
@@ -204,27 +204,138 @@ static inline calc_line_distances(X3D_ClipData* clip) {
   
   for(line = 0; line < clip->region->total_bl; ++line) {
     for(vertex = 0; vertex < clip->total_v; ++vertex) {  
-      int16 dist = x3d_dist_to_line(clip->region->line + line, clip->v + vertex);     
-      *dist_ptr(clip, line, vertex);
+      int16 d = x3d_dist_to_line(clip->region->line + line, clip->v + vertex);     
+      *dist_ptr(clip, line, vertex) = d;
       
-      printf("dist: %d\n", dist);
+      //printf("dist: %d (offset %d) dist: %d\n", d, (int16)(dist_ptr(clip, line, vertex) - clip->line_dist), dist(clip, line, vertex));
       
       if(dist < 0) {
         add_outside(clip, vertex, line);      
       }
     }
   }
+  
+  //printf("DONE\n");
 }
 
 //#define 
 
-static inline clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
-  int16 n = -dist(clip, line, end);
-  int16 d = abs(-dist(clip, line, end) + clip->region->line[line].d) + abs(-dist(clip, line, start) + clip->region->line[line].d);
+static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
+  int16 n = abs(dist(clip, line, end));
+  //int16 d = abs(-dist(clip, line, end) + clip->region->line[line].d) + abs(-dist(clip, line, start) + clip->region->line[line].d);
+  
+  int16 d = abs(dist(clip, line, end)) + abs(dist(clip, line, start));
+  
+  //printf("DIST: %d, %d\n", dist(clip, line, end), dist(clip, line, start));
   
   if(n == 0)
     return 0;
+  
+  return ((int32)n << X3D_NORMAL_SHIFT) / d;
 }
+
+int16 clip_scale_float(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
+  float n = abs(dist(clip, line, end));
+  float d = abs(dist(clip, line, end)) + abs(dist(clip, line, start));
+  
+  return (n / d) * 32768;
+}
+
+int16 ask(const char* str) {
+  printf(str);
+  
+  char buf[32];
+  gets(buf);
+  printf("\n");
+  
+  return atoi(str);
+}
+
+Vex2D ask_vex2d(const char* str) {
+  printf("%d:\n", str);
+  
+  Vex2D v;
+  v.x = ask("x: ");
+  v.x = ask("y: ");
+  
+  return v;
+}
+
+Vex2D rand_vex2d() {
+  return (Vex2D) { rand() - 16384, rand() - 16384 };
+}
+
+void test_clip_scale() {
+  srand(0);
+  
+  uint16 i;
+  
+  X3D_BoundRegion* region = alloca(sizeof(X3D_BoundLine) * 4 + sizeof(X3D_BoundRegion));
+  
+  X3D_ClipData clip = {
+    .region = region,
+    .total_v = 2,
+    .total_e = 0
+  };
+  
+  clip.line_dist = alloca(100);
+  clip.outside = alloca(100);
+  clip.outside_total = alloca(100);
+  
+  for(i = 0; i < 1000; ++i) {
+    Vex2D b1 = rand_vex2d();
+    Vex2D b2 = rand_vex2d();
+    X3D_BoundLine line;
+    
+    x3d_construct_boundline(&line, &b1, &b2);
+    
+    Vex2D p1, p2;
+    int16 d1, d2;
+    
+    
+    do {
+      p1 = rand_vex2d();
+      p2 = rand_vex2d();
+      
+      d1 = x3d_dist_to_line(&line, &p1);
+      d2 = x3d_dist_to_line(&line, &p2);
+      
+      //printf("distances: %d %d", d1, d2);
+    } while(d1 < 0 || d2 >= 0);
+    
+    //printf("VEX: %d %d, %d %d\n", p1.x, p1.y, p2.x, p2.y);
+    
+    Vex2D v[] = { p1, p2 };
+    
+    clip.v = v;
+ 
+    region->total_bl = 1;
+    region->line[0] = line;
+    
+
+    
+    
+    
+    
+    
+    calc_line_distances(&clip);
+    
+    int16 scale = clip_scale(&clip, 0, 1, 0);
+    
+    //printf("CLIP\n");
+    
+    int16 scale_float = clip_scale_float(&clip, 0, 1, 0);
+    
+    if(scale != scale_float) {
+      printf("Scale: %d, scale_float: %d\n", scale, scale_float);
+    }
+    
+    //printf("Scale: %d, scale_float: %d\n", scale, scale_float);
+    //ngetchx();
+  }
+}
+
+
 
 static inline clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
 }
@@ -274,6 +385,10 @@ void x3d_clip_edges(X3D_ClipData* clip) {
  
 
 void x3d_test_new_clip() {
+  test_clip_scale();
+  return;
+  
+  
   X3D_BoundRegion* region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 10);
   
   Vex2D v[] = {
