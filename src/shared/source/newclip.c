@@ -45,7 +45,7 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
   
-  Vex2D center = { 0, 0 };
+  Vex2D center = { LCD_WIDTH / 2, LCD_HEIGHT / 2 };
   
   if(x3d_dist_to_line(line, &center ) < 0) {
     line->normal.x = -line->normal.x;
@@ -239,6 +239,9 @@ static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uin
   if(n == 0)
     return 0;
   
+  if(n == d)
+    return 0x7FFF;
+  
   return ((int32)n << X3D_NORMAL_SHIFT) / d;
 }
 
@@ -353,7 +356,6 @@ void test_clip_scale() {
       //printf("Scale: %d, scale_float: %d\n", scale, scale_float);
     }
     
-    clrscr();
     DrawLine(b1.x, b1.y, b2.x, b2.y, A_NORMAL);
     DrawLine(p1.x, p1.y, p2.x, p2.y, A_NORMAL);
     printf("Scale: %d, scale_float: %d\n", scale, scale_float);
@@ -367,6 +369,7 @@ void test_clip_scale() {
     DrawLine(p1.x, p1.y, new_end.x, new_end.y, A_NORMAL);
     printf("Scale: %d, scale_float: %d\n", scale, scale_float);
     ngetchx();
+    clrscr();
 
     //ngetchx();
   }
