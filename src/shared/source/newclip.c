@@ -217,7 +217,7 @@ static inline calc_line_distances(X3D_ClipData* clip) {
       
       //printf("dist: %d (offset %d) dist: %d\n", d, (int16)(dist_ptr(clip, line, vertex) - clip->line_dist), dist(clip, line, vertex));
       
-      if(dist < 0) {
+      if(d < 0) {
         add_outside(clip, vertex, line);      
       }
     }
@@ -230,11 +230,7 @@ static inline calc_line_distances(X3D_ClipData* clip) {
 
 static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
   int16 n = abs(dist(clip, line, start));
-  //int16 d = abs(-dist(clip, line, end) + clip->region->line[line].d) + abs(-dist(clip, line, start) + clip->region->line[line].d);
-  
   int16 d = abs(dist(clip, line, end)) + abs(dist(clip, line, start));
-  
-  //printf("DIST: %d, %d\n", dist(clip, line, end), dist(clip, line, start));
   
   if(n == 0)
     return 0;
@@ -243,6 +239,22 @@ static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uin
     return 0x7FFF;
   
   return ((int32)n << X3D_NORMAL_SHIFT) / d;
+}
+
+static inline int16 min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end) {
+  int16 min_scale = 0x7FFF;
+  uint16 line = 0;
+  
+  for(line = 0; line < clip->outside_total[end]; ++line) {
+    uint16 scale = clip_scale(clip, start, end, *outside_ptr(clip, end, line));
+  
+    if(scale == 0)
+      return 0;
+    
+    min_scale = min(min_scale, scale);
+  }
+  
+  return min_scale;
 }
 
 void scale_edge(Vex2D* end_dest, Vex2D* start, Vex2D* end, int16 scale) {
@@ -288,7 +300,7 @@ Vex2D rand_vex2d() {
 void test_clip_scale() {
   srand(0);
   
-  uint16 i;
+  uint16 i, d;
   
   X3D_BoundRegion* region = alloca(sizeof(X3D_BoundLine) * 4 + sizeof(X3D_BoundRegion));
   
@@ -302,9 +314,12 @@ void test_clip_scale() {
   clip.outside = alloca(100);
   clip.outside_total = alloca(100);
   
-  for(i = 0; i < 20; ++i) {
+  for(i = 0; i < 1; ++i) {
     Vex2D b1;// = rand_vex2d();
     Vex2D b2;// = rand_vex2d();
+    
+    for(d = 0; d < 10; ++d)
+      clip.outside_total[d] = 0;
     
     
     b1.x = rand() % LCD_WIDTH;
@@ -347,6 +362,7 @@ void test_clip_scale() {
     calc_line_distances(&clip);
     
     int16 scale = clip_scale(&clip, 0, 1, 0);
+    int16 min_s = min_clip_scale(&clip, 0, 1);
     
     //printf("CLIP\n");
     
@@ -358,7 +374,7 @@ void test_clip_scale() {
     
     DrawLine(b1.x, b1.y, b2.x, b2.y, A_NORMAL);
     DrawLine(p1.x, p1.y, p2.x, p2.y, A_NORMAL);
-    printf("Scale: %d, scale_float: %d\n", scale, scale_float);
+    printf("Scale: %d, scale_float: %d, min: %d\n", scale, scale_float, min_s);
     ngetchx();
     
     Vex2D new_end;
