@@ -435,11 +435,14 @@ void test_clip_scale() {
   Vex2D start, end;
   rand_line(&start, &end);
   
-  draw_line(start, end);
+  //draw_line(start, end);
   
   // clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out)
   
-  Vex2D points[] = { start, end };
+  Vex2D points[] = {
+    { -16000, -16000 },
+    { 16000, 16000 }
+  };
   
   clip.v = points;
   
@@ -465,6 +468,12 @@ void test_clip_scale() {
   
   if(edge_out.v[0].clip_status != CLIP_INVISIBLE)
     draw_line(edge_out.v[0].v, edge_out.v[1].v);
+  
+  
+  Vex2D s = { 0, 0 };
+  Vex2D e = { 127, 127 };
+  
+  draw_line(s, e);
   
 }
   
