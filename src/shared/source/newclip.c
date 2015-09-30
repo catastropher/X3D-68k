@@ -272,6 +272,24 @@ int16 clip_scale_float(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line
   return (n / d) * 32768.0;
 }
 
+static inline _Bool vertex_visible(X3D_ClipData* clip, uint16 v) {
+  return clip->outside_total[v] == 0;
+}
+
+static inline clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
+  // TODO: make sure the endpoints don't fail by the same line
+  
+  _Bool out_a = vertex_visible(clip, edge->v[0]);
+  _Bool out_b = vertex_visible(clip, edge->v[1]);
+  
+  edge_out->v[0] = clip->v[edge->v[0]];
+  edge_out->v[1] = clip->v[edge->v[1]];
+  
+  if(out_a) {
+    
+  }
+}
+
 int16 ask(const char* str) {
   printf(str);
   
@@ -389,11 +407,6 @@ void test_clip_scale() {
 
     //ngetchx();
   }
-}
-
-
-
-static inline clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
 }
 
 void x3d_clip_edges(X3D_ClipData* clip) {
