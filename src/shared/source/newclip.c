@@ -127,8 +127,8 @@ inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b
 }
 
 enum {
-  CLIP_OUTSIDE,
-  CLIP_INSIDE,
+  CLIP_INVISIBLE,
+  CLIP_VISIBLE,
   CLIP_CLIPPED
 };
 
@@ -241,7 +241,7 @@ static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uin
   return ((int32)n << X3D_NORMAL_SHIFT) / d;
 }
 
-static inline int16 min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end) {
+static inline int16 min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16* min_scale_line) {
   int16 min_scale = 0x7FFF;
   uint16 line = 0;
   
@@ -251,7 +251,10 @@ static inline int16 min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end)
     if(scale == 0)
       return 0;
     
-    min_scale = min(min_scale, scale);
+    if(scale < min_scale) {
+      *min_scale_line = line;
+      min_scale = scale;
+    }
   }
   
   return min_scale;
@@ -276,18 +279,57 @@ static inline _Bool vertex_visible(X3D_ClipData* clip, uint16 v) {
   return clip->outside_total[v] == 0;
 }
 
-static inline clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
+static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
   // TODO: make sure the endpoints don't fail by the same line
   
   _Bool out_a = vertex_visible(clip, edge->v[0]);
   _Bool out_b = vertex_visible(clip, edge->v[1]);
   
-  edge_out->v[0] = clip->v[edge->v[0]];
-  edge_out->v[1] = clip->v[edge->v[1]];
+  //min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16* min_scale_line)
   
-  if(out_a) {
+  uint16 vex;
+  for(vex = 0; vex < 2; ++vex) {
     
+    if(!vertex_visible(clip, edge->v[vex])) {
+      uint16 min_scale_line;
+      int16 scale = min_clip_scale(clip, edge->v[vex ^ 1], edge->v[vex], &min_scale_line);
+      
+      printf("Scale: %d\n", scale);
+      
+      if(scale != 0) {
+        scale_edge(&edge_out->v[vex].v, &clip->v[edge->v[vex ^ 1]], &clip->v[edge->v[vex]], scale);
+        edge_out->v[vex].clip_line = min_scale_line;
+        edge_out->v[vex].clip_status = CLIP_CLIPPED;
+      }
+      else {
+        edge_out->v[vex].clip_status = CLIP_INVISIBLE;
+        edge_out->v[vex ^ 1].clip_status = CLIP_INVISIBLE;
+        return;
+      }
+    }
+    else {
+      edge_out->v[vex].clip_status = CLIP_VISIBLE;
+      edge_out->v[vex].v = clip->v[edge->v[vex]];
+    }
   }
+}
+
+void x3d_clip_edges(X3D_ClipData* clip) {
+  // Allocate space
+  clip->line_dist = alloca(sizeof(int16) * clip->total_v * clip->region->total_bl);
+  clip->outside = alloca(sizeof(uint16) * clip->total_v * clip->region->total_bl);
+  clip->outside_total = alloca(sizeof(uint16) * clip->total_v);
+  
+  uint16 i;
+  for(i = 0; i < clip->total_v; ++i)
+    clip->outside_total[i] = 0;
+  
+  // Calculate the distance from every point to every line
+  calc_line_distances(clip);
+  
+  for(i = 0; i < clip->total_e; ++i)
+    clip_edge(clip, clip->edge + i, clip->edge_out + i);
+  
 }
 
 int16 ask(const char* str) {
@@ -315,6 +357,41 @@ Vex2D rand_vex2d() {
   //return (Vex2D) { rand() - 16384, rand() - 16384 };
 }
 
+Vex2D rand_side(uint16 s) {
+  Vex2D v;
+  
+  if(s == 0 || s == 1) {
+    v.x = (s == 0 ? 0 : LCD_WIDTH - 1);
+    v.y = rand() % LCD_HEIGHT;
+  }
+  else {
+    v.x = rand() % LCD_WIDTH;
+    v.y = (s == 2 ? 0 : LCD_HEIGHT - 1);
+  }
+  
+  return v;
+}
+
+void rand_sides(uint16* a, uint16* b) {
+  *a = rand() % 4;
+  
+  do {
+    *b = rand() % 4;
+  } while(*b == *a);
+}
+
+void rand_line(Vex2D* start, Vex2D* end) {
+  uint16 a, b;
+  
+  rand_sides(&a, &b);
+  *start = rand_side(a);
+  *end = rand_side(b);
+}
+
+void draw_line(Vex2D a, Vex2D b) {
+  DrawLine(a.x, a.y, b.x, b.y, A_NORMAL);
+}
+
 void test_clip_scale() {
   srand(0);
   
@@ -332,98 +409,62 @@ void test_clip_scale() {
   clip.outside = alloca(100);
   clip.outside_total = alloca(100);
   
-  for(i = 0; i < 1; ++i) {
-    Vex2D b1;// = rand_vex2d();
-    Vex2D b2;// = rand_vex2d();
-    
-    for(d = 0; d < 10; ++d)
-      clip.outside_total[d] = 0;
-    
-    
-    b1.x = rand() % LCD_WIDTH;
-    b1.y = (rand() % 2) * (LCD_HEIGHT - 1);
-    
-    b2.x = (rand() % 2) * (LCD_WIDTH - 1);
-    b2.y = rand() % LCD_HEIGHT;
-    
-    X3D_BoundLine line;
-    
-    x3d_construct_boundline(&line, &b1, &b2);
-    
-    Vex2D p1, p2;
-    int16 d1, d2;
-    
-    
-    do {
-      p1 = rand_vex2d();
-      p2 = rand_vex2d();
-      
-      d1 = x3d_dist_to_line(&line, &p1);
-      d2 = x3d_dist_to_line(&line, &p2);
-      
-      //printf("distances: %d %d", d1, d2);
-    } while(d1 < 0 || d2 >= 0);
-    
-    //printf("VEX: %d %d, %d %d\n", p1.x, p1.y, p2.x, p2.y);
-    
-    Vex2D v[] = { p1, p2 };
-    
-    clip.v = v;
- 
-    region->total_bl = 1;
-    region->line[0] = line;
-    
-
-    
-    
-     
-    calc_line_distances(&clip);
-    
-    int16 scale = clip_scale(&clip, 0, 1, 0);
-    int16 min_s = min_clip_scale(&clip, 0, 1);
-    
-    //printf("CLIP\n");
-    
-    int16 scale_float = clip_scale_float(&clip, 0, 1, 0);
-    
-    if(scale != scale_float) {
-      //printf("Scale: %d, scale_float: %d\n", scale, scale_float);
-    }
-    
-    DrawLine(b1.x, b1.y, b2.x, b2.y, A_NORMAL);
-    DrawLine(p1.x, p1.y, p2.x, p2.y, A_NORMAL);
-    printf("Scale: %d, scale_float: %d, min: %d\n", scale, scale_float, min_s);
-    ngetchx();
-    
-    Vex2D new_end;
-    scale_edge(&new_end, &p1, &p2, scale);
-    
-    clrscr();
-    DrawLine(b1.x, b1.y, b2.x, b2.y, A_NORMAL);
-    DrawLine(p1.x, p1.y, new_end.x, new_end.y, A_NORMAL);
-    printf("Scale: %d, scale_float: %d\n", scale, scale_float);
-    ngetchx();
-    clrscr();
-
-    //ngetchx();
+  Vex2D p[] = {
+    { 40, 20 },
+    { 200, 70 },
+    { 150, 100 },
+    { 20, 40 }
+  };
+  
+  x3d_construct_boundregion(region, p, 4);
+  
+  for(i = 0; i < 20; ++i)
+    clip.outside_total[i] = 0;
+  
+  
+  clrscr();
+  for(i = 0; i < 4; ++i) {
+    uint16 next = (i + 1) % 4;
+    draw_line(p[i], p[next]);
   }
-}
-
-void x3d_clip_edges(X3D_ClipData* clip) {
-  // Allocate space
-  clip->line_dist = alloca(sizeof(int16) * clip->total_v * clip->region->total_bl);
-  clip->outside = alloca(sizeof(uint16) * clip->total_v * clip->region->total_bl);
-  clip->outside_total = alloca(sizeof(uint16) * clip->total_v);
   
-  uint16 i;
-  for(i = 0; i < clip->total_v; ++i)
-    clip->outside_total[i] = 0;
+  DrawPix(LCD_WIDTH / 2, LCD_HEIGHT / 2, A_NORMAL);
   
-  // Calculate the distance from every point to every line
-  calc_line_distances(clip);
+  randomize();
   
-  for(i = 0; i < clip->total_e; ++i)
-    clip_edge(clip, clip->edge + i, clip->edge_out + i);
+  Vex2D start, end;
+  rand_line(&start, &end);
+  
+  draw_line(start, end);
+  
+  // clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out)
+  
+  Vex2D points[] = { start, end };
+  
+  clip.v = points;
+  
+  calc_line_distances(&clip);
+  
+  X3D_IndexedEdge edge = {
+    {0, 1} 
+  };
+  
+  X3D_ClippedEdge edge_out;
+  
+  clip_edge(&clip, &edge, &edge_out);
+  
+  printf("start stat: %u, end stat: %u\n", edge_out.v[0].clip_status, edge_out.v[1].clip_status);
+  
+  ngetchx();
+  
+  clrscr();
+  for(i = 0; i < 4; ++i) {
+    uint16 next = (i + 1) % 4;
+    draw_line(p[i], p[next]);
+  }
+  
+  if(edge_out.v[0].clip_status != CLIP_INVISIBLE)
+    draw_line(edge_out.v[0].v, edge_out.v[1].v);
   
 }
   
