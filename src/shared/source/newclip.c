@@ -183,7 +183,7 @@ typedef struct X3D_ClipData {
   uint16            total_v;
   X3D_IndexedEdge*  edge;
   uint16            total_e;
-  X3D_ClippedEdge*  edge_out;
+  X3D_ClippedEdge*  edge_clip;
   
   int16*            line_dist;
   uint16*           outside;
@@ -338,7 +338,7 @@ void x3d_clip_edges(X3D_ClipData* clip) {
   calc_line_distances(clip);
   
   for(i = 0; i < clip->total_e; ++i)
-    clip_edge(clip, clip->edge + i, clip->edge_out + i);
+    clip_edge(clip, clip->edge + i, clip->edge_clip + i);
   
 }
 
@@ -404,6 +404,14 @@ void draw_line(Vex2D a, Vex2D b) {
 
 void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_ViewPort* context);
 
+void generate_prism2d_edge_list(X3D_Prism2D* prism, X3D_IndexedEdge* edges) {
+  uint16 i;
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    x3d_get_prism2d_edge(prism, i, edges[i].v, edges[i].v + 1);
+  }
+}
+
 void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   srand(0);
   
@@ -420,6 +428,9 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   clip.line_dist = alloca(400);
   clip.outside = alloca(400);
   clip.outside_total = alloca(400);
+  clip.edge_clip = alloca(400);
+  clip.edge = alloca(400);
+
   
   Vex2D p[] = {
     { 40, 20 },
@@ -459,7 +470,8 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     uint16 next = (i + 1) % 4;
     draw_line(p[i], p[next]);
   }
-  
+
+  clip.total_e = prism2d->base_v * 3;
   
   for(i = 0; i < prism2d->base_v * 3; ++i) {
     uint16 a, b;
@@ -486,22 +498,21 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     uint16 next = (i + 1) % 4;
     draw_line(p[i], p[next]);
   }
+
+  
+
+  generate_prism2d_edge_list(prism2d, clip.edge);
+#if 1
+  x3d_clip_edges(&clip);
   
   
   for(i = 0; i < prism2d->base_v * 3; ++i) {
-    uint16 a, b;
     
-    x3d_get_prism2d_edge(prism2d, i, &a, &b);
-    
-    X3D_IndexedEdge e = { { a, b } };
-    X3D_ClippedEdge e_clip;
-    
-    clip_edge(&clip, &e, &e_clip);
-    
-    if(e_clip.v[0].clip_status != CLIP_INVISIBLE) {
-      draw_line(e_clip.v[0].v, e_clip.v[1].v);
+    if(clip.edge_clip[i].v[0].clip_status != CLIP_INVISIBLE) {
+      draw_line(clip.edge_clip[i].v[0].v, clip.edge_clip[i].v[1].v);
     }
   }
+#endif
 #endif
   
   printf("clipped\n");
