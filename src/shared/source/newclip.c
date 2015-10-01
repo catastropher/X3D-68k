@@ -232,10 +232,10 @@ static inline calc_line_distances(X3D_ClipData* clip) {
 //#define 
 
 static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
-  int16 n = abs(dist(clip, line, start));
+  int16 n = dist(clip, line, start);
   int16 d = abs(dist(clip, line, end)) + abs(dist(clip, line, start));
   
-  if(n == 0)
+  if(n <= 0)
     return 0;
   
   if(n == d)
@@ -297,7 +297,7 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
       uint16 min_scale_line;
       int16 scale = min_clip_scale(clip, edge->v[vex ^ 1], edge->v[vex], &min_scale_line);
       
-      printf("Scale: %d\n", scale);
+      //printf("Scale: %d\n", scale);
       
       if(scale != 0) {
         scale_edge(&edge_out->v[vex].v, &clip->v[edge->v[vex ^ 1]], &clip->v[edge->v[vex]], scale);
@@ -410,9 +410,9 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     .total_e = 0
   };
   
-  clip.line_dist = alloca(100);
-  clip.outside = alloca(100);
-  clip.outside_total = alloca(100);
+  clip.line_dist = alloca(400);
+  clip.outside = alloca(400);
+  clip.outside_total = alloca(400);
   
   Vex2D p[] = {
     { 40, 20 },
@@ -426,12 +426,6 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   for(i = 0; i < 20; ++i)
     clip.outside_total[i] = 0;
   
-  
-  clrscr();
-  for(i = 0; i < 4; ++i) {
-    uint16 next = (i + 1) % 4;
-    draw_line(p[i], p[next]);
-  }
   
   DrawPix(LCD_WIDTH / 2, LCD_HEIGHT / 2, A_NORMAL);
   
@@ -453,6 +447,12 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   TEST_x3d_project_prism3d(prism2d, prism, port);
   
+  clrscr();
+  for(i = 0; i < 4; ++i) {
+    uint16 next = (i + 1) % 4;
+    draw_line(p[i], p[next]);
+  }
+  
   
   for(i = 0; i < prism2d->base_v * 3; ++i) {
     uint16 a, b;
@@ -462,9 +462,46 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     draw_line(prism2d->v[a], prism2d->v[b]);
   }
   
+  
   LCD_restore(context->screen_data);
   
   while(!_keytest(RR_Q)) ;
+  
+  clrscr();
+  
+  clip.total_v = prism2d->base_v * 2;
+  clip.v = prism2d->v;
+  
+  calc_line_distances(&clip);
+  
+#if 1
+  for(i = 0; i < 4; ++i) {
+    uint16 next = (i + 1) % 4;
+    draw_line(p[i], p[next]);
+  }
+  
+  
+  for(i = 0; i < prism2d->base_v * 3; ++i) {
+    uint16 a, b;
+    
+    x3d_get_prism2d_edge(prism2d, i, &a, &b);
+    
+    X3D_IndexedEdge e = { { a, b } };
+    X3D_ClippedEdge e_clip;
+    
+    clip_edge(&clip, &e, &e_clip);
+    
+    if(e_clip.v[0].clip_status != CLIP_INVISIBLE) {
+      draw_line(e_clip.v[0].v, e_clip.v[1].v);
+    }
+  }
+#endif
+  
+  printf("clipped\n");
+  
+  LCD_restore(context->screen_data);
+  
+  while(1) ;
   
   /*
   randomize();
