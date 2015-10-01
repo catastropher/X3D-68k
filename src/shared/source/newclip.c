@@ -412,6 +412,67 @@ void generate_prism2d_edge_list(X3D_Prism2D* prism, X3D_IndexedEdge* edges) {
   }
 }
 
+#define EDGE(_id) clip->edge_clip[edge_list[_id]]
+
+void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_list, uint16 total_e, X3D_BoundRegion* region) {
+  region->total_bl = 0;
+  
+  uint16 edge_id = 0;
+  
+  // Skip over edges that are totally invisible
+  while(edge_id < total_e && EDGE(edge_id).v[0].clip_status == CLIP_INVISIBLE) {
+    ++edge_id;
+  }
+  
+  uint16 first_visible_edge = edge_id;
+  
+  if(edge_id < total_e) {
+    
+    // Alright, so we've encountered an edge that is at least partially visible
+    X3D_ClippedEdge* edge = &EDGE(edge_id);
+    
+    // We're only interested in edges that are either totally visible, or begin in the
+    // bounding region and exit
+    if(edge->v[0].clip_status == CLIP_VISIBLE) {
+      if(edge->v[1].clip_status == CLIP_CLIPPED) {
+        
+        // Construct a bounding line for the 
+        
+        uint16 start_edge = edge_id;
+        
+        // Walk along the old bounding region until we find an edge where we reenter it
+        do {
+          edge_id = x3d_single_wrap(edge + 1, edge_id);
+        } while(EDGE(edge_id).v[1].clip_status != CLIP_VISIBLE);
+        
+        // Add the edges along the old bound region
+        uint16 start = EDGE(start_edge).v[1].clip_line;
+        uint16 end = EDGE(edge_id).v[0].clip_line;
+        
+        region->line[region->total_bl++] = clip->region->line[start];
+        
+        // Prevent special case of when it enters and exits on the same edge
+        if(start != end) {
+          uint16 e = start;
+          
+          do {
+            e = x3d_single_wrap(e + 1, clip->region->total_bl);
+            region->line[region->total_bl++] = clip->region->line[e];
+          } while(e != end);
+        }
+      }
+      
+      // TODO construct a new bounding line for the next clipped edge
+    }
+    
+    
+    
+    
+  }
+  
+  
+}
+
 void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   srand(0);
   
