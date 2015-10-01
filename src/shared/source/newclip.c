@@ -283,13 +283,6 @@ static inline _Bool vertex_visible(X3D_ClipData* clip, uint16 v) {
 }
 
 static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
-  // TODO: make sure the endpoints don't fail by the same line
-  
-  _Bool out_a = vertex_visible(clip, edge->v[0]);
-  _Bool out_b = vertex_visible(clip, edge->v[1]);
-  
-  //min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16* min_scale_line)
-  
   uint16 vex;
   for(vex = 0; vex < 2; ++vex) {
     
@@ -305,14 +298,28 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
         edge_out->v[vex].clip_status = CLIP_CLIPPED;
       }
       else {
-        edge_out->v[vex].clip_status = CLIP_INVISIBLE;
-        edge_out->v[vex ^ 1].clip_status = CLIP_INVISIBLE;
+        edge_out->v[0].clip_status = CLIP_INVISIBLE;
         return;
       }
     }
     else {
       edge_out->v[vex].clip_status = CLIP_VISIBLE;
       edge_out->v[vex].v = clip->v[edge->v[vex]];
+    }
+  }
+  
+  if(!vertex_visible(clip, edge->v[0]) && !vertex_visible(clip, edge->v[1])) {
+    // Check to make sure the midpoint is in the bounding region to disambiguate
+    // the cases where an egde fails by two separate bounding lines, and interesecs
+    // the bounding region and when it doesn't.
+    Vex2D mid = { (edge_out->v[0].v.x + edge_out->v[1].v.x) / 2, (edge_out->v[0].v.y + edge_out->v[1].v.y) / 2 };
+    uint16 line;
+    
+    for(line = 0; line < clip->region->total_bl; ++line) {
+      if(x3d_dist_to_line(clip->region->line + line, &mid) < 0) {
+        edge_out->v[0].clip_status = CLIP_INVISIBLE;
+        return;
+      }
     }
   }
 }
