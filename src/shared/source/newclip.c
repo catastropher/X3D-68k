@@ -25,6 +25,9 @@
 #include "X3D_segment.h"
 #include "X3D_prism.h"
 #include "X3D_engine.h"
+#include "X3D_prism.h"
+#include "X3D_memory.h"
+#include "X3D_segment.h"
 
 typedef struct X3D_BoundLine {
   Vex2D normal;
@@ -392,7 +395,9 @@ void draw_line(Vex2D a, Vex2D b) {
   DrawLine(a.x, a.y, b.x, b.y, A_NORMAL);
 }
 
-void test_clip_scale() {
+void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_ViewPort* context);
+
+void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   srand(0);
   
   uint16 i, d;
@@ -430,6 +435,38 @@ void test_clip_scale() {
   
   DrawPix(LCD_WIDTH / 2, LCD_HEIGHT / 2, A_NORMAL);
   
+  
+  X3D_Prism3D* prism = alloca(500);
+  
+  X3D_Mat3x3_fp0x16 mat;
+  Vex3D_angle256 angle = { 0, 0, 0 };
+  x3d_mat3x3_fp0x16_construct(&mat, &angle);
+  
+  x3d_prism_construct(prism, 8, 50, 100, (Vex3D_angle256) { 0, 0 });
+  
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    prism->v[i].z += 400;
+  }
+  
+  
+  X3D_Prism2D* prism2d = alloca(500);
+  
+  TEST_x3d_project_prism3d(prism2d, prism, port);
+  
+  
+  for(i = 0; i < prism2d->base_v * 3; ++i) {
+    uint16 a, b;
+    
+    x3d_get_prism2d_edge(prism2d, i, &a, &b);
+    
+    draw_line(prism2d->v[a], prism2d->v[b]);
+  }
+  
+  LCD_restore(context->screen_data);
+  
+  while(!_keytest(RR_Q)) ;
+  
+  /*
   randomize();
   
   Vex2D start, end;
@@ -440,8 +477,8 @@ void test_clip_scale() {
   // clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out)
   
   Vex2D points[] = {
-    { -16000, -16000 },
-    { 16000, 16000 }
+    { -8192, -8192},
+    { 8192, 8192 }
   };
   
   clip.v = points;
@@ -453,6 +490,13 @@ void test_clip_scale() {
   };
   
   X3D_ClippedEdge edge_out;
+  
+  
+  
+  
+  
+  
+  
   
   clip_edge(&clip, &edge, &edge_out);
   
@@ -473,7 +517,10 @@ void test_clip_scale() {
   Vex2D s = { 0, 0 };
   Vex2D e = { 127, 127 };
   
-  draw_line(s, e);
+  */
+  
+  
+  //draw_line(s, e);
   
 }
   
@@ -503,8 +550,8 @@ void test_clip_scale() {
   
  
 
-void x3d_test_new_clip() {
-  test_clip_scale();
+void x3d_test_new_clip(X3D_Context* context, X3D_ViewPort* port) {
+  test_clip_scale(context, port);
   return;
   
   

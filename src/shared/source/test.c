@@ -521,10 +521,9 @@ void register_types(X3D_Context* context) {
   x3d_add_object_type(context, OBJECT_CAM, &cam);
 }
 
-void x3d_temp_test() {
+void x3d_temp_test(X3D_Context* context, X3D_ViewPort* port) {
   clrscr();
-  x3d_test_new_clip();
-  ngetchx();
+  x3d_test_new_clip(context, port);
 }
 
 
@@ -533,14 +532,15 @@ void x3d_test() {
 
   FontSetSys(F_4x6);
   
-  x3d_temp_test();
-  return;
 
   // Make some prisms
   
   X3D_Context context;
   
   x3d_test_init(&test, &context);
+  
+  x3d_temp_test(&context, &test.context);
+  return;
   
   context.record = 0;
   context.play = 0;
