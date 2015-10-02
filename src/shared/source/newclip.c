@@ -327,6 +327,7 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
       }
       else {
         edge_out->v[0].clip_status = CLIP_INVISIBLE;
+        edge_out->v[1].clip_status = CLIP_INVISIBLE;
         return;
       }
     }
@@ -346,6 +347,7 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
     for(line = 0; line < clip->region->total_bl; ++line) {
       if(x3d_dist_to_line(clip->region->line + line, &mid) < 0) {
         edge_out->v[0].clip_status = CLIP_INVISIBLE;
+        edge_out->v[1].clip_status = CLIP_INVISIBLE;
         return;
       }
     }
@@ -469,26 +471,22 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
           // Construct a bounding line for the edge
           x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
           
+          
           uint16 start_edge = edge_id;
           
           // Walk along the old bounding region until we find an edge where we reenter it
           do {
-            edge_id = x3d_single_wrap(edge_id + 1, clip->region->total_bl);
+            edge_id = x3d_single_wrap(edge_id + 1, total_e);
           } while(EDGE(edge_id).v[1].clip_status != CLIP_VISIBLE);
           
           // Add the edges along the old bound region
           uint16 start = EDGE(start_edge).v[1].clip_line;
           uint16 end = EDGE(edge_id).v[0].clip_line;
           
-          
+          printf("\n\n\n\n\n\n\n\n\n\n\n\nStart: %d, %d\nId: %d, %d\n", start, end, start_edge, edge_id);
           
           region->line[region->total_bl++] = clip->region->line[start];
           
-          printf("Start: %d\nEnd: %d\n", start, end);
-          
-          printf("Start id: %d, %d\n", start_edge, edge_id);
-          
-          return;
           
           // Prevent special case of when it enters and exits on the same edge
           if(start != end) {
@@ -499,6 +497,7 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
               region->line[region->total_bl++] = clip->region->line[e];
             } while(e != end);
           }
+          
         }
         
         // TODO construct a new bounding line for the next clipped edge
