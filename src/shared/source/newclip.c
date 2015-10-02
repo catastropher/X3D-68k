@@ -247,7 +247,7 @@ static inline calc_line_distances(X3D_ClipData* clip) {
       
       //printf("dist: %d (offset %d) dist: %d\n", d, (int16)(dist_ptr(clip, line, vertex) - clip->line_dist), dist(clip, line, vertex));
       
-      if(d < 0) {
+      if(d <= 0) {
         add_outside(clip, vertex, line);      
       }
     }
@@ -483,7 +483,7 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
           uint16 start = EDGE(start_edge).v[1].clip_line;
           uint16 end = EDGE(edge_id).v[0].clip_line;
           
-          printf("\n\n\n\n\n\n\n\n\n\n\n\nStart: %d, %d\nId: %d, %d\n", start, end, start_edge, edge_id);
+          //printf("\n\n\n\n\n\n\n\n\n\n\n\nStart: %d, %d\nId: %d, %d\n", start, end, start_edge, edge_id);
           
           region->line[region->total_bl++] = clip->region->line[start];
           
@@ -539,7 +539,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   Vex2D p[] = {
     { 40, 20 },
-    { 200, 70 },
+    { 200, 70 + 15 + 5 },
     { 150, 100 },
     { 20, 40 }
   };
