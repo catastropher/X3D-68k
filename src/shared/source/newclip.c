@@ -454,7 +454,7 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
     ++edge_id;
   }
   
-  uint16 first_visible_edge = edge_id;
+  uint16 first_visible_edge = 0xFFFF;
   
   if(edge_id < total_e) {
     
@@ -465,6 +465,9 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
       // We're only interested in edges that are either totally visible, or begin in the
       // bounding region and exit
       if(edge->v[0].clip_status == CLIP_VISIBLE) {
+        if(first_visible_edge == 0xFFFF)
+          first_visible_edge = edge_id;
+      
         if(edge->v[1].clip_status == CLIP_CLIPPED) {
           
           
@@ -484,6 +487,8 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
           uint16 end = EDGE(edge_id).v[0].clip_line;
           
           //printf("\n\n\n\n\n\n\n\n\n\n\n\nStart: %d, %d\nId: %d, %d\n", start, end, start_edge, edge_id);
+          //while(!_keytest(RR_C)) ;
+          //while(_keytest(RR_C)) ;
           
           region->line[region->total_bl++] = clip->region->line[start];
           
@@ -504,7 +509,7 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
         x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
       }
       
-      edge_id = x3d_single_wrap(edge_id + 1, total_e);    
+      edge_id = x3d_single_wrap(edge_id + 1, total_e);
     }
     while(edge_id != first_visible_edge);
     
@@ -559,7 +564,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   Vex3D_angle256 angle = { 0, 0, 0 };
   x3d_mat3x3_fp0x16_construct(&mat, &angle);
   
-  x3d_prism_construct(prism, 8, 50, 100, (Vex3D_angle256) { ANG_45, 0, 0 });
+  x3d_prism_construct(prism, 8, 180, 50, (Vex3D_angle256) { ANG_180, 0, 0 });
   
   for(i = 0; i < prism->base_v * 2; ++i) {
     prism->v[i].z += 400;
@@ -571,7 +576,8 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   TEST_x3d_project_prism3d(prism2d, prism, port);
   
   for(i = 0; i < prism2d->base_v * 2; ++i) {
-    prism2d->v[i].y += 27;
+    prism2d->v[i].x += 20;
+    //prism2d->v[i].y += 27;
   }
   
   
@@ -629,13 +635,19 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   uint16 edges[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   
-  X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundLine) * 4 + sizeof(X3D_BoundRegion));
+  X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundLine) * 12 + sizeof(X3D_BoundRegion));
+  //x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region);
+  //fill_boundregion(new_region);
   
-  x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region);
-  
+  uint16 new_edges[] = { 8, 9, 10, 11, 12, 13, 14, 15 };
+  x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region);
   fill_boundregion(new_region);
   
   printf("Bl: %d\n", new_region->total_bl);
+  
+  for(i = 0; i < new_region->total_bl; ++i) {
+    printf("{%d, %d} -> %d\n", new_region->line[i].normal.x, new_region->line[i].normal.y, new_region->line[i].d);
+  }
   
   printf("clipped\n");
   

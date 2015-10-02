@@ -86,7 +86,7 @@ void x3d_enginestate_cleanup(X3D_EngineState* state) {
 /// @todo make cross platform
 void x3d_renderdevice_init(X3D_RenderDevice* d, uint16 w, uint16 h) {
 #ifdef __TIGCC__
-  d->dbuf = malloc(LCD_SIZE);   /// @todo replace with new memory management
+  d->dbuf = LCD_MEM;//malloc(LCD_SIZE);   /// @todo replace with new memory management
   PortSet(d->dbuf, LCD_WIDTH - 1, LCD_HEIGHT - 1);
 #endif
 }
