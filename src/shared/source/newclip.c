@@ -48,6 +48,7 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
   
+#if 0
   Vex2D center = { LCD_WIDTH / 2, LCD_HEIGHT / 2 };
   
   if(x3d_dist_to_line(line, &center ) < 0) {
@@ -55,6 +56,7 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
     line->normal.y = -line->normal.y;
     line->d = -line->d;
   }
+#endif
   
   //printf("{%d, %d} after {%d, %d}, %d\n", normal.x, normal.y, new_normal.x, new_normal.y, line->d);
 }
@@ -73,6 +75,30 @@ void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_
   }
   
   region->total_bl = total_v;
+}
+
+void fill_boundregion(X3D_BoundRegion* region) {
+  uint16 i, d;
+  uint16 line;
+  
+  for(i = 0; i < LCD_WIDTH; ++i) {
+    for(d = 0; d < LCD_HEIGHT; ++d) {
+      Vex2D v = { i, d};
+      _Bool pass = TRUE;
+      
+      
+      for(line = 0; line < region->total_bl; ++line) {
+          if(x3d_dist_to_line(region->line + line, &v) < 0) {
+            pass = FALSE;
+            break;
+          }
+      }
+      
+      if(pass) {
+        DrawPix(i, d, A_XOR);
+      }
+    }
+  }
 }
 
 typedef struct X3D_EdgeClip {
@@ -428,46 +454,53 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
   
   if(edge_id < total_e) {
     
-    // Alright, so we've encountered an edge that is at least partially visible
-    X3D_ClippedEdge* edge = &EDGE(edge_id);
-    
-    // We're only interested in edges that are either totally visible, or begin in the
-    // bounding region and exit
-    if(edge->v[0].clip_status == CLIP_VISIBLE) {
-      if(edge->v[1].clip_status == CLIP_CLIPPED) {
-        
-        // Construct a bounding line for the 
-        
-        uint16 start_edge = edge_id;
-        
-        // Walk along the old bounding region until we find an edge where we reenter it
-        do {
-          edge_id = x3d_single_wrap(edge + 1, edge_id);
-        } while(EDGE(edge_id).v[1].clip_status != CLIP_VISIBLE);
-        
-        // Add the edges along the old bound region
-        uint16 start = EDGE(start_edge).v[1].clip_line;
-        uint16 end = EDGE(edge_id).v[0].clip_line;
-        
-        region->line[region->total_bl++] = clip->region->line[start];
-        
-        // Prevent special case of when it enters and exits on the same edge
-        if(start != end) {
-          uint16 e = start;
+    do {
+      // Alright, so we've encountered an edge that is at least partially visible
+      X3D_ClippedEdge* edge = &EDGE(edge_id);
+      
+      // We're only interested in edges that are either totally visible, or begin in the
+      // bounding region and exit
+      if(edge->v[0].clip_status == CLIP_VISIBLE) {
+        if(edge->v[1].clip_status == CLIP_CLIPPED) {
+          // Construct a bounding line for the edge
+          x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
           
+          uint16 start_edge = edge_id;
+          
+          // Walk along the old bounding region until we find an edge where we reenter it
           do {
-            e = x3d_single_wrap(e + 1, clip->region->total_bl);
-            region->line[region->total_bl++] = clip->region->line[e];
-          } while(e != end);
+            edge_id = x3d_single_wrap(edge_id + 1, clip->region->total_bl);
+          } while(EDGE(edge_id).v[1].clip_status != CLIP_VISIBLE);
+          
+          // Add the edges along the old bound region
+          uint16 start = EDGE(start_edge).v[1].clip_line;
+          uint16 end = EDGE(edge_id).v[0].clip_line;
+          
+          region->line[region->total_bl++] = clip->region->line[start];
+          
+          // Prevent special case of when it enters and exits on the same edge
+          if(start != end) {
+            uint16 e = start;
+            
+            do {
+              e = x3d_single_wrap(e + 1, clip->region->total_bl);
+              region->line[region->total_bl++] = clip->region->line[e];
+            } while(e != end);
+          }
         }
+        
+        // TODO construct a new bounding line for the next clipped edge
+        x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
       }
       
-      // TODO construct a new bounding line for the next clipped edge
+      edge_id = x3d_single_wrap(edge_id + 1, total_e);    
     }
+    while(edge_id != first_visible_edge);
     
     
-    
-    
+  }
+  else {
+    printf("Invisible\n");
   }
   
   
@@ -526,12 +559,19 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   TEST_x3d_project_prism3d(prism2d, prism, port);
   
+  for(i = 0; i < prism2d->base_v * 2; ++i) {
+    prism2d->v[i].y += 20;
+  }
+  
+  
   clrscr();
   for(i = 0; i < 4; ++i) {
     uint16 next = (i + 1) % 4;
     draw_line(p[i], p[next]);
   }
 
+  //fill_boundregion(region);
+  
   clip.total_e = prism2d->base_v * 3;
   
   for(i = 0; i < prism2d->base_v * 3; ++i) {
@@ -575,6 +615,16 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   }
 #endif
 #endif
+  
+  uint16 edges[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
+  
+  X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundLine) * 4 + sizeof(X3D_BoundRegion));
+  
+  x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region);
+  
+  fill_boundregion(new_region);
+  
+  printf("Bl: %d\n", new_region->total_bl);
   
   printf("clipped\n");
   
