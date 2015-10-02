@@ -27,6 +27,7 @@
 #include "X3D_engine.h"
 #include "X3D_prism.h"
 #include "X3D_memory.h"
+#include "X3D_trig.h"
 #include "X3D_segment.h"
 
 typedef struct X3D_BoundLine {
@@ -275,13 +276,14 @@ static inline int16 min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end,
   uint16 line = 0;
   
   for(line = 0; line < clip->outside_total[end]; ++line) {
-    uint16 scale = clip_scale(clip, start, end, *outside_ptr(clip, end, line));
+    uint16 fail_line = *outside_ptr(clip, end, line);
+    uint16 scale = clip_scale(clip, start, end, fail_line);
   
     if(scale == 0)
       return 0;
     
     if(scale < min_scale) {
-      *min_scale_line = line;
+      *min_scale_line = fail_line;
       min_scale = scale;
     }
   }
@@ -462,6 +464,8 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
       // bounding region and exit
       if(edge->v[0].clip_status == CLIP_VISIBLE) {
         if(edge->v[1].clip_status == CLIP_CLIPPED) {
+          
+          
           // Construct a bounding line for the edge
           x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
           
@@ -476,7 +480,15 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
           uint16 start = EDGE(start_edge).v[1].clip_line;
           uint16 end = EDGE(edge_id).v[0].clip_line;
           
+          
+          
           region->line[region->total_bl++] = clip->region->line[start];
+          
+          printf("Start: %d\nEnd: %d\n", start, end);
+          
+          printf("Start id: %d, %d\n", start_edge, edge_id);
+          
+          return;
           
           // Prevent special case of when it enters and exits on the same edge
           if(start != end) {
@@ -548,7 +560,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   Vex3D_angle256 angle = { 0, 0, 0 };
   x3d_mat3x3_fp0x16_construct(&mat, &angle);
   
-  x3d_prism_construct(prism, 8, 50, 100, (Vex3D_angle256) { 0, 0 });
+  x3d_prism_construct(prism, 8, 50, 100, (Vex3D_angle256) { ANG_45, 0, 0 });
   
   for(i = 0; i < prism->base_v * 2; ++i) {
     prism->v[i].z += 400;
@@ -560,7 +572,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   TEST_x3d_project_prism3d(prism2d, prism, port);
   
   for(i = 0; i < prism2d->base_v * 2; ++i) {
-    prism2d->v[i].y += 20;
+    prism2d->v[i].y += 27;
   }
   
   
