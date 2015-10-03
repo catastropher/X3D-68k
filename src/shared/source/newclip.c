@@ -40,7 +40,15 @@ inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
   return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
 }
 
+_Bool swap_boundline;
+
 void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
+  if(swap_boundline) {
+    Vex2D* temp = a;
+    a = b;
+    b = temp;
+  }
+  
   Vex2D normal = { -(b->y - a->y), b->x - a->x };
   Vex2D new_normal = normal;
   
@@ -96,7 +104,10 @@ void fill_boundregion(X3D_BoundRegion* region) {
       }
       
       if(pass) {
-        DrawPix(i, d, A_XOR);
+        DrawPix(i, d, A_NORMAL);
+      }
+      else {
+        DrawPix(i, d, A_REVERSE);
       }
     }
   }
@@ -549,7 +560,11 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     { 20, 40 }
   };
   
+  swap_boundline = 0;
+  
   x3d_construct_boundregion(region, p, 4);
+  
+  //swap_boundline = 1;
   
   for(i = 0; i < 20; ++i)
     clip.outside_total[i] = 0;
@@ -636,18 +651,78 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   uint16 edges[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   
   X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundLine) * 12 + sizeof(X3D_BoundRegion));
-  //x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region);
+  x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region);
   //fill_boundregion(new_region);
   
   uint16 new_edges[] = { 8, 9, 10, 11, 12, 13, 14, 15 };
-  x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region);
-  fill_boundregion(new_region);
+  //x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region);
+  //fill_boundregion(new_region);
   
   printf("Bl: %d\n", new_region->total_bl);
   
-  for(i = 0; i < new_region->total_bl; ++i) {
-    printf("{%d, %d} -> %d\n", new_region->line[i].normal.x, new_region->line[i].normal.y, new_region->line[i].d);
+  uint16 bl = new_region->total_bl;
+  
+  clrscr();
+  
+  void* image[bl + 1];
+  
+  for(i = 0; i <= bl; ++i) {
+    new_region->total_bl = i;
+  
+    uint16 d;
+  
+    for(d = 0; d < prism2d->base_v * 3; ++d) {
+      uint16 a, b;
+      
+      x3d_get_prism2d_edge(prism2d, d, &a, &b);
+      
+      draw_line(prism2d->v[a], prism2d->v[b]);
+    }
+    
+    for(d = 0; d < 4; ++d) {
+      uint16 next = (d + 1) % 4;
+      draw_line(p[d], p[next]);
+    }
+    
+    fill_boundregion(new_region);
+    image[i] = malloc(LCD_SIZE);
+    memcpy(image[i], LCD_MEM, LCD_SIZE);
+    //printf("{%d, %d} -> %d\n", new_region->line[i].normal.x, new_region->line[i].normal.y, new_region->line[i].d);
   }
+  
+  do {
+    clrscr();
+    memcpy(LCD_MEM, image[bl], LCD_SIZE);
+    
+    for(i = 0; i < prism2d->base_v * 3; ++i) {
+      uint16 a, b;
+      
+      x3d_get_prism2d_edge(prism2d, i, &a, &b);
+      
+      draw_line(prism2d->v[a], prism2d->v[b]);
+    }
+    
+    for(i = 0; i < 4; ++i) {
+      uint16 next = (i + 1) % 4;
+      draw_line(p[i], p[next]);
+    }
+    
+    printf("line = %d\nTotal: %d\n", bl, new_region->total_bl);
+    
+    do {
+      if(_keytest(RR_LEFT) && bl > 0) {
+        --bl;
+        while(_keytest(RR_LEFT)) ;
+        break;
+      }
+      else if(_keytest(RR_RIGHT) && bl + 1 <= new_region->total_bl ) {
+        ++bl;
+        while(_keytest(RR_RIGHT)) ;
+        break;
+      }
+    } while(1);
+  } while(1);
+    
   
   printf("clipped\n");
   
