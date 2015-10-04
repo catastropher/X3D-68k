@@ -85,6 +85,20 @@ _Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
   return (int32)a.x * b.y - (int32)b.x * a.y > 0;
 }
 
+void get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
+  uint16 i;
+  
+  if(face == BASE_A) {
+    for(i = 0; i < prism->base_v; ++i) {
+      edges[i] = i;
+    }
+  }
+  else if(face == BASE_B) {
+    for(i = 0; i < prism->base_v; ++i) {
+      edges[i] = i + prism->base_v;
+    }
+  }
+}
 
 
 void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v) {
@@ -567,7 +581,6 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
           
         }
         
-        // TODO construct a new bounding line for the next clipped edge
         x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v, clockwise);
       }
       
@@ -797,7 +810,11 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   //x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region, TRUE);
   //fill_boundregion(new_region);
   
-  uint16 new_edges[] = { 8, 9, 10, 11, 12, 13, 14, 15 };
+  //uint16 new_edges[] = { 8, 9, 10, 11, 12, 13, 14, 15 };
+  
+  uint16 new_edges[20];
+  get_prism2d_face_edges(prism2d, BASE_B, new_edges);
+  
   printf("Enter\n");
   x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region, FALSE);
   //fill_boundregion(new_region);
