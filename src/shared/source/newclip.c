@@ -42,8 +42,8 @@ inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
 
 _Bool swap_boundline;
 
-void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
-  if(swap_boundline) {
+void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b, _Bool clockwise) {
+  if(!clockwise) {
     Vex2D* temp = a;
     a = b;
     b = temp;
@@ -76,11 +76,20 @@ typedef struct X3D_BoundRegion {
 } X3D_BoundRegion;
 
 
+_Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
+  Vex2D a = { p2->x - p1->x, p2->y - p1->y };
+  Vex2D b = { p3->x - p2->x, p3->y - p2->y };
+  
+  return (int32)a.x * b.y - (int32)b.x * a.y > 0;
+}
+
+
+
 void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v) {
   uint16 i;
   
   for(i = 0; i < total_v; ++i) {
-    x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v));
+    x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v), 1);
   }
   
   region->total_bl = total_v;
@@ -455,8 +464,21 @@ void generate_prism2d_edge_list(X3D_Prism2D* prism, X3D_IndexedEdge* edges) {
 
 #define EDGE(_id) clip->edge_clip[edge_list[_id]]
 
-void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_list, uint16 total_e, X3D_BoundRegion* region) {
+void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_list, uint16 total_e, X3D_BoundRegion* region, _Bool clockwise) {
   region->total_bl = 0;
+  
+  int16 reverse_edge_list[total_e];
+  
+  // If not clockwise, reverse the list of edges
+  if(!clockwise) {
+    uint16 i;
+    
+    for(i = 0; i < total_e; ++i)
+      reverse_edge_list[i] = edge_list[total_e - i - 1];
+    
+    edge_list = reverse_edge_list;
+  }
+  
   
   uint16 edge_id = 0;
   
@@ -480,10 +502,9 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
           first_visible_edge = edge_id;
       
         if(edge->v[1].clip_status == CLIP_CLIPPED) {
-          
-          
+                    
           // Construct a bounding line for the edge
-          x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
+          x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v, clockwise);
           
           
           uint16 start_edge = edge_id;
@@ -517,7 +538,7 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
         }
         
         // TODO construct a new bounding line for the next clipped edge
-        x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
+        x3d_construct_boundline(region->line + region->total_bl++, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v, clockwise);
       }
       
       edge_id = x3d_single_wrap(edge_id + 1, total_e);
@@ -563,6 +584,9 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   swap_boundline = 0;
   
   x3d_construct_boundregion(region, p, 4);
+
+  //is_clockwise_turn(p, p + 3, p + 2);
+
   
   //swap_boundline = 1;
   
@@ -617,6 +641,9 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   LCD_restore(context->screen_data);
   
+  
+  //printf("Clockwise: %d\n", region->clockwise);
+  
   while(!_keytest(RR_Q)) ;
   
   clrscr();
@@ -651,11 +678,11 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   uint16 edges[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   
   X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundLine) * 12 + sizeof(X3D_BoundRegion));
-  x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region);
+  x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region, TRUE);
   //fill_boundregion(new_region);
   
   uint16 new_edges[] = { 8, 9, 10, 11, 12, 13, 14, 15 };
-  //x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region);
+  x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region, FALSE);
   //fill_boundregion(new_region);
   
   printf("Bl: %d\n", new_region->total_bl);
