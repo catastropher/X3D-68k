@@ -78,13 +78,6 @@ typedef struct X3D_BoundRegion {
 } X3D_BoundRegion;
 
 
-_Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
-  Vex2D a = { p2->x - p1->x, p2->y - p1->y };
-  Vex2D b = { p3->x - p2->x, p3->y - p2->y };
-  
-  return (int32)a.x * b.y - (int32)b.x * a.y > 0;
-}
-
 void get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
   uint16 i;
   
@@ -100,16 +93,34 @@ void get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
   }
 }
 
+_Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
+  Vex2D a = { p2->x - p1->x, p2->y - p1->y };
+  Vex2D b = { p3->x - p2->x, p3->y - p2->y };
+  
+  return (int32)a.x * b.y - (int32)b.x * a.y > 0;
+}
+
+
 
 void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v) {
-  uint16 i;
+  int16 i;
   
-  for(i = 0; i < total_v; ++i) {
-    x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v), 1);
+  if(is_clockwise_turn(v, v + 1, v + 2)) {
+    
+    for(i = 0; i < total_v; ++i) {
+      x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v), 1);
+    }
+  }
+  else {
+    for(i = total_v - 1; i >= 0; --i) {
+      x3d_construct_boundline(region->line + i, v + i, (i != 0 ? v + i - 1 : v + total_v - 1), 1);
+    }
   }
   
   region->total_bl = total_v;
 }
+
+
 
 void fill_boundregion(X3D_BoundRegion* region) {
   uint16 i, d;
