@@ -154,7 +154,7 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM7, RR_F4);
   x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM8, RR_ESC);
   x3d_keystate_map(&c->keys, XKEY_MAP_CUSTOM9, RR_ESC);
-
+  
   hardware_timer = 0;
 
   // We don't want to quit yet!
@@ -164,7 +164,9 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   //LCD_restore(c->screen_data);
   //while(1) ;
   
-  x3d_debug(c, TRUE, "Init debug\n");
+  //x3d_debug(c, TRUE, "Init debug\n");
+  
+  return;
   
   //X3D_BlockAllocatorNode* node = c->object_manager.allocator.head;
 }
@@ -531,13 +533,14 @@ void x3d_test() {
   X3D_TestContext test;
 
   FontSetSys(F_4x6);
-  
 
   // Make some prisms
   
   X3D_Context context;
   
   x3d_test_init(&test, &context);
+  
+  //goto quit;
   
   x3d_temp_test(&context, &test.context);
   return;
@@ -691,7 +694,9 @@ void x3d_test() {
     }
   } while(!context.quit);
 
+
   free(frustum);
+quit:
   //free(prism3d);
   //free(prism3d_rotated);
 

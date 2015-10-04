@@ -15,6 +15,7 @@
  */
 
 #define USE_TI92PLUS
+#define USE_TI89
 #define SAVE_SCREEN
 #define EXECUTE_IN_GHOST_SPACE
 
