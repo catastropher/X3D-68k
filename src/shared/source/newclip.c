@@ -513,7 +513,9 @@ _Bool diff_boundline(X3D_BoundLine* a, X3D_BoundLine* b) {
   return TRUE;//abs(a->normal.x - b->normal.x) > 500 || abs(a->normal.y - b->normal.y) > 500 || abs(a->d - b->d) > 2;
 }
 
-void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_list, uint16 total_e, X3D_BoundRegion* region, _Bool clockwise) {
+X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_list, uint16 total_e, X3D_BoundRegion* region, _Bool clockwise) {
+  X3D_BoundRegion* result_region = region;
+  
   region->total_bl = 0;
   
   int16 reverse_edge_list[total_e];
@@ -644,19 +646,25 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
       printf("Invisible by SAT: %ld\n", edge_mask);
     }
     else {
+      X3D_BoundLine line;
+      
       for(i = 0; i < total_e; ++i) {
-        x3d_construct_boundline(region->line + region->total_bl, &EDGE(i).v[0].v, &EDGE(i).v[1].v, 0);
+        x3d_construct_boundline(&line, &EDGE(i).v[0].v, &EDGE(i).v[1].v, 0);
         
-        if(x3d_dist_to_line(region->line + region->total_bl, &region->point_inside) < 0) {
-          printf("Total invisible\n");
+        if(x3d_dist_to_line(&line, &region->point_inside) < 0) {
+          //printf("Total invisible\n");
+          printf("Invisible by SAT2\n");
+          result_region = NULL;
+          break;
         }
       }
       
-      
-      
-      
-      
-      //printf("Ambiguous\n");
+      // If we got through testing all the edges, and the point is inside, the
+      // old region must be inside the new region
+      if(i == total_e) {
+        printf("Totally inside!\n");
+        result_region = clip->region;
+      }
     }
   }
   
@@ -668,7 +676,8 @@ void x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_l
       SWAP(EDGE(i).v[0], EDGE(i).v[1]);
     }
   }
-  
+
+  return result_region;
 }
 
 void x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip, X3D_Prism2D* prism, uint16 face, X3D_BoundRegion* region) {
