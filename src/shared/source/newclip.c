@@ -376,6 +376,8 @@ static inline _Bool vertex_visible(X3D_ClipData* clip, uint16 v) {
   return clip->outside_total[v] == 0;
 }
 
+#define SIGNOF(_x) ((_x) == 0 ? 0 : ((_x) < 0) ? -1 : 1) 
+
 static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
   uint16 vex;
   for(vex = 0; vex < 2; ++vex) {
@@ -404,6 +406,22 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
   }
   
   if(!vertex_visible(clip, edge->v[0]) && !vertex_visible(clip, edge->v[1])) {
+    // Check to make sure the domain wasn't flipped
+    int16 old_dx = clip->v[edge->v[0]].x - clip->v[edge->v[1]].x;
+    int16 old_dy = clip->v[edge->v[0]].y - clip->v[edge->v[1]].y;
+    
+    int16 new_dx = edge_out->v[0].v.x - edge_out->v[1].v.x;
+    int16 new_dy = edge_out->v[0].v.y - edge_out->v[1].v.y;
+
+    if(SIGNOF(new_dx) != SIGNOF(old_dx) || SIGNOF(new_dy) != SIGNOF(old_dy)) {
+      edge_out->v[0].clip_status = CLIP_INVISIBLE;
+      edge_out->v[1].clip_status = CLIP_INVISIBLE;
+      return;
+    }
+  }
+  
+#if 0
+  if(!vertex_visible(clip, edge->v[0]) && !vertex_visible(clip, edge->v[1])) {
     // Check to make sure the midpoint is in the bounding region to disambiguate
     // the cases where an egde fails by two separate bounding lines, and interesecs
     // the bounding region and when it doesn't.
@@ -414,11 +432,16 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
       if(x3d_dist_to_line(clip->region->line + line, &mid) < 0) {
         edge_out->v[0].clip_status = CLIP_INVISIBLE;
         edge_out->v[1].clip_status = CLIP_INVISIBLE;
-        printf("CASE\n");
+        //printf("CASE\n");
+        
+        printf("FAIL FAIL FAIL\n");
+        while(1) ;
+        
         return;
       }
     }
   }
+#endif
 }
 
 void x3d_clip_edges(X3D_ClipData* clip) {
