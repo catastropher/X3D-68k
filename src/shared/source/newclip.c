@@ -88,14 +88,14 @@ uint16 get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
   
   if(face == BASE_A) {
     for(i = 0; i < prism->base_v; ++i) {
-      edges[i] = prism->base_v - i - 1;
+      edges[i] = i;
     }
     
     return prism->base_v;
   }
   else if(face == BASE_B) {
     for(i = 0; i < prism->base_v; ++i) {
-      edges[i] = i + prism->base_v;
+      edges[i] = prism->base_v * 2 - i - 1;
     }
     
     return prism->base_v;
@@ -191,6 +191,7 @@ typedef struct X3D_EdgeClip {
   // }
 // }
 
+// TODO: fix order on BASE_B
 inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
   if(id < p->base_v) {
     *a = id;
@@ -201,12 +202,12 @@ inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b
       *b = 0;
   }
   else if(id < p->base_v * 2) {
-    *a = x3d_prism2d_opposite_vertex(p, id - p->base_v);
-    
     if(id != p->base_v * 2 - 1)
-      *b = x3d_prism2d_opposite_vertex(p, id + 1 - p->base_v);
+      *a = x3d_prism2d_opposite_vertex(p, id + 1 - p->base_v);
     else
-      *b = x3d_prism2d_opposite_vertex(p, p->base_v - p->base_v);
+      *a = x3d_prism2d_opposite_vertex(p, p->base_v - p->base_v);
+    
+    *b = x3d_prism2d_opposite_vertex(p, id - p->base_v);
   }
   else {
     *a = x3d_prism2d_opposite_vertex(p, id - p->base_v * 2);
@@ -904,7 +905,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   printf("Enter\n");
   //x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region, FALSE);
   
-  x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, BASE_A, new_region);
+  x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, BASE_B, new_region);
   
   //fill_boundregion(new_region);
   
