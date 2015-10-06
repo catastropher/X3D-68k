@@ -670,20 +670,33 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
       printf("EDGE FAIL\n");
     }
     else {
+      for(i = 0; i < total_e; ++i) {
+        if(is_clockwise_turn(&EDGE(i).v[0].v, &clip->region->point_inside, &EDGE(i).v[1].v)) {
+          result_region = NULL;
+          break;
+        }
+      }
+     
+#if 0
       X3D_BoundLine line;
       
       for(i = 0; i < total_e; ++i) {
         x3d_construct_boundline(&line, &EDGE(i).v[0].v, &EDGE(i).v[1].v, 0);
         
         if(x3d_dist_to_line(&line, &clip->region->point_inside) < 0) {
+          if(result_region != NULL) {
+            printf("POINT IN POLYGON FAILED\n");
+          }
+          
           result_region = NULL;
           break;
         }
       }
-      
+#endif
+     
       // If we got through testing all the edges, and the point is inside, the
       // old region must be inside the new region
-      if(i == total_e) {
+      if(result_region != NULL) {
         result_region = clip->region;
         printf("ASSIGN OLD\n");
       }
