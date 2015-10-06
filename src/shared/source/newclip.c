@@ -59,6 +59,10 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b, _Bool cloc
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
   
+  line->normal.x = -line->normal.x;
+  line->normal.y = -line->normal.y;
+  line->d = -line->d;
+  
 #if 0
   Vex2D center = { LCD_WIDTH / 2, LCD_HEIGHT / 2 };
   
@@ -102,7 +106,7 @@ _Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
   Vex2D a = { p2->x - p1->x, p2->y - p1->y };
   Vex2D b = { p3->x - p2->x, p3->y - p2->y };
   
-  return (int32)a.x * b.y - (int32)b.x * a.y > 0;
+  return (int32)a.x * b.y - (int32)b.x * a.y < 0;
 }
 
 
@@ -524,6 +528,8 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
   if(!clockwise) {
     uint16 i;
     
+    printf("NOT Clockwise\n");
+    
     for(i = 0; i < total_e; ++i) {
       reverse_edge_list[i] = edge_list[total_e - i - 1];
       
@@ -534,15 +540,18 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
     
   }
   
+  uint16 a;
+  for(a = 0; a < total_e; ++a) {
+    printf("EDGE %d{%d} -> %d{%d}: %d, %d\n", EDGE(a).v[0].clip_line, EDGE(a).v[0].clip_status, EDGE(a).v[1].clip_line, EDGE(a).v[1].clip_status, EDGE(a).v[0].v.x, EDGE(a).v[0].v.y);
+  }
+  
   
   uint16 edge_id = 0;
   
-  printf("Enter skip\n");
   // Skip over edges that are totally invisible
   while(edge_id < total_e && EDGE(edge_id).v[0].clip_status == CLIP_INVISIBLE) {
     ++edge_id;
   }
-  printf("Exit skip\n");
   
   uint16 first_visible_edge = 0xFFFF;
   
@@ -560,8 +569,6 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
           region->point_inside = edge->v[0].v;
         }
           
-        printf("clip\n");
-      
         if(edge->v[1].clip_status == CLIP_CLIPPED) {
                     
           // Construct a bounding line for the edge
@@ -574,30 +581,22 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
           uint16 start_edge = edge_id;
           
           // Walk along the old bounding region until we find an edge where we reenter it
-          printf("Enter A\n");
           do {
             edge_id = x3d_single_wrap(edge_id + 1, total_e);
           } while(EDGE(edge_id).v[1].clip_status != CLIP_VISIBLE && EDGE(edge_id).v[1].clip_status != CLIP_CLIPPED);
-          
-          printf("Enter B\n");
           
           // Add the edges along the old bound region
           uint16 start = EDGE(start_edge).v[1].clip_line;
           uint16 end = EDGE(edge_id).v[0].clip_line;
           
-          //printf("\n\n\n\n\n\n\n\n\n\n\n\nStart: %d, %d\nId: %d, %d\n", start, end, start_edge, edge_id);
-          //while(!_keytest(RR_C)) ;
-          //while(_keytest(RR_C)) ;
-          
           if(diff_boundline(clip->region->line + start, region->line + region->total_bl - 1))
             region->line[region->total_bl++] = clip->region->line[start];
           
+          printf("Start: %d, end: %d\n", start, end);
           
           // Prevent special case of when it enters and exits on the same edge
           if(start != end) {
             uint16 e = start;
-            
-            printf("Enter C\n");
             
             do {
               e = x3d_single_wrap(e + 1, clip->region->total_bl);
@@ -605,8 +604,9 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
               if(diff_boundline(clip->region->line + e, region->line + region->total_bl - 1))
                 region->line[region->total_bl++] = clip->region->line[e];
             } while(e != end);
+          }
+          else {
             
-            printf("Enter D\n");
           }
           
           continue;
@@ -626,7 +626,6 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
     
   }
   else {
-    //printf("Invisible\n");
     uint16 i;
     uint32 edge_mask = 0;// = clip->outside_mask[clip->edge->v[0]];
     
@@ -634,16 +633,12 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
       edge_mask |= (1L << (clip->region->total_bl - edge_list[i] - 1));
     }
     
-    printf("Edge mask: %ld\n", edge_mask);
-    
-    for(i = 0; i < total_e; ++i) {
-      printf("OUTSIDE: %ld\n", clip->outside_mask[clip->edge[i].v[0]]);
+    for(i = 0; i < total_e && edge_mask != 0; ++i) {
       edge_mask &= clip->outside_mask[clip->edge[i].v[0]];
-      //edge_mask &= clip->outside_mask[clip->edge[i].v[1]];
     }
     
     if(edge_mask != 0) {
-      printf("Invisible by SAT: %ld\n", edge_mask);
+      result_region = NULL;
     }
     else {
       X3D_BoundLine line;
@@ -652,8 +647,6 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
         x3d_construct_boundline(&line, &EDGE(i).v[0].v, &EDGE(i).v[1].v, 0);
         
         if(x3d_dist_to_line(&line, &region->point_inside) < 0) {
-          //printf("Total invisible\n");
-          printf("Invisible by SAT2\n");
           result_region = NULL;
           break;
         }
@@ -662,7 +655,6 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
       // If we got through testing all the edges, and the point is inside, the
       // old region must be inside the new region
       if(i == total_e) {
-        printf("Totally inside!\n");
         result_region = clip->region;
       }
     }
@@ -968,6 +960,11 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     }
     
     printf("line = %d\nTotal: %d\n", bl, new_region->total_bl);
+    
+    for(i = 0; i < new_region->total_bl; ++i) {
+      printf("LINE: {%d %d} %d\n", new_region->line[i].normal.x, new_region->line[i].normal.y, new_region->line[i].d);
+    }
+    
     
     do {
       if(_keytest(RR_LEFT) && bl > 0) {
