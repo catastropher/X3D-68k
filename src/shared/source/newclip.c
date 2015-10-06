@@ -628,18 +628,23 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
   }
   else {
     uint16 i;
-    uint32 edge_mask = 0;// = clip->outside_mask[clip->edge->v[0]];
+    uint32 edge_mask = (1L << clip->region->total_bl) - 1;// = clip->outside_mask[clip->edge->v[0]];
+    
+    /*for(i = 0; i < total_e; ++i) {
+      edge_mask |= i;//(1L << (clip->region->total_bl - edge_list[i] - 1));
+      printf("EDge: %d\n", edge_list[i]);
+    }*/
+    
+    printf("Begin: %ld\n", edge_mask);
     
     for(i = 0; i < total_e; ++i) {
-      edge_mask |= (1L << (clip->region->total_bl - edge_list[i] - 1));
-    }
-    
-    for(i = 0; i < total_e && edge_mask != 0; ++i) {
-      edge_mask &= clip->outside_mask[clip->edge[i].v[0]];
+      printf("Mask: %ld\n", clip->outside_mask[clip->edge[edge_list[i]].v[0]]);
+      edge_mask &= clip->outside_mask[clip->edge[edge_list[i]].v[0]];
     }
     
     if(edge_mask != 0) {
       result_region = NULL;
+      printf("EDGE FAIL\n");
     }
     else {
       X3D_BoundLine line;
@@ -647,7 +652,7 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
       for(i = 0; i < total_e; ++i) {
         x3d_construct_boundline(&line, &EDGE(i).v[0].v, &EDGE(i).v[1].v, 0);
         
-        if(x3d_dist_to_line(&line, &region->point_inside) < 0) {
+        if(x3d_dist_to_line(&line, &clip->region->point_inside) < 0) {
           result_region = NULL;
           break;
         }
@@ -657,6 +662,7 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
       // old region must be inside the new region
       if(i == total_e) {
         result_region = clip->region;
+        printf("ASSIGN OLD\n");
       }
     }
   }
@@ -673,7 +679,7 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
   return result_region;
 }
 
-void x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip, X3D_Prism2D* prism, uint16 face, X3D_BoundRegion* region) {
+X3D_BoundRegion* x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip, X3D_Prism2D* prism, uint16 face, X3D_BoundRegion* region) {
   uint16 edges[prism->base_v];
   
   uint16 total_e = get_prism2d_face_edges(prism, face, edges);
@@ -688,7 +694,7 @@ void x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip, X3D_Prism2D
   
   printf("Clockwise: %d\n", clockwise);
   
-  x3d_construct_boundregion_from_clip_data(clip, edges, total_e, region, clockwise);
+  return x3d_construct_boundregion_from_clip_data(clip, edges, total_e, region, clockwise);
 }
 
 uint16 input_polygon2d(Vex2D* v) {
@@ -710,6 +716,13 @@ uint16 input_polygon2d(Vex2D* v) {
       start = 0;
       
       idle();
+      
+      if(_keytest(RR_DIAMOND)) {
+        idle();
+        idle();
+        idle();
+        idle();
+      }
     }
     
     
@@ -776,34 +789,12 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   clip.edge = malloc(400);
   clip.outside_mask = malloc(400);
 
-  
-  /*Vex2D p[] = {
-    { 40, 20 },
-    { 200, 70 + 15 + 5 },
-    { 150, 100 },
-    { 20, 40 }
-  };*/
-  
   Vex2D* p = clip_v;
-  
-  swap_boundline = 0;
-  
-  
-
-  //is_clockwise_turn(p, p + 3, p + 2);
-
-  
-  //swap_boundline = 1;
   
   for(i = 0; i < 20; ++i)
     clip.outside_total[i] = 0;
   
-  
-  DrawPix(LCD_WIDTH / 2, LCD_HEIGHT / 2, A_NORMAL);
-  
-  
-  X3D_Prism3D* prism = alloca(500);
-  
+  X3D_Prism3D* prism = alloca(500);  
   X3D_Mat3x3_fp0x16 mat;
   Vex3D_angle256 angle = { 0, 0, 0 };
   x3d_mat3x3_fp0x16_construct(&mat, &angle);
@@ -821,17 +812,10 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   for(i = 0; i < prism2d->base_v * 2; ++i) {
     prism2d->v[i].x += 20;
-    //prism2d->v[i].y += 27;
   }
   
   
   clrscr();
-  
-  
- 
-
-  //fill_boundregion(region);
-  
   clip.total_e = prism2d->base_v * 3;
   
   for(i = 0; i < prism2d->base_v * 3; ++i) {
@@ -850,14 +834,6 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     draw_line(p[i], p[next]);
   }
   
-  fill_boundregion(region);
-  
-  
-  LCD_restore(context->screen_data);
-  
-  
-  //printf("Clockwise: %d\n", region->clockwise);
-  
   while(!_keytest(RR_Q)) ;
   
   clrscr();
@@ -865,11 +841,8 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   clip.total_v = prism2d->base_v * 2;
   clip.v = prism2d->v;
   
-  printf("before line\n");
   calc_line_distances(&clip);
-  printf("after line\n");
   
-#if 1
   for(i = 0; i < total_clip_v; ++i) {
     uint16 next = (i + 1) % total_clip_v;
     draw_line(p[i], p[next]);
@@ -878,7 +851,6 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
 
   generate_prism2d_edge_list(prism2d, clip.edge);
-#if 1
   x3d_clip_edges(&clip);
   
   
@@ -888,26 +860,23 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
       draw_line(clip.edge_clip[i].v[0].v, clip.edge_clip[i].v[1].v);
     }
   }
-#endif
-#endif
   
   uint16 edges[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   
   X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundLine) * 12 + sizeof(X3D_BoundRegion));
-  //x3d_construct_boundregion_from_clip_data(&clip, edges, 8, new_region, TRUE);
-  //fill_boundregion(new_region);
-  
-  //uint16 new_edges[] = { 8, 9, 10, 11, 12, 13, 14, 15 };
   
   uint16 new_edges[20];
   get_prism2d_face_edges(prism2d, BASE_B, new_edges);
   
-  printf("Enter\n");
   //x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region, FALSE);
   
-  x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, BASE_B, new_region);
+  new_region = x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, BASE_B, new_region);
   
-  //fill_boundregion(new_region);
+  if(new_region == NULL) {
+    printf("INVISIBLE\n");
+    
+    while(1) ;
+  }
   
   printf("Bl: %d\n", new_region->total_bl);
   
