@@ -399,6 +399,10 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
       else {
         edge_out->v[0].clip_status = CLIP_INVISIBLE;
         edge_out->v[1].clip_status = CLIP_INVISIBLE;
+        
+        edge_out->v[0].v = clip->v[edge->v[0]];
+        edge_out->v[1].v = clip->v[edge->v[1]];
+        
         return;
       }
     }
@@ -419,6 +423,8 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
     if(SIGNOF(new_dx) != SIGNOF(old_dx) || SIGNOF(new_dy) != SIGNOF(old_dy)) {
       edge_out->v[0].clip_status = CLIP_INVISIBLE;
       edge_out->v[1].clip_status = CLIP_INVISIBLE;
+      edge_out->v[0].v = clip->v[edge->v[0]];
+      edge_out->v[1].v = clip->v[edge->v[1]];
       return;
     }
   }
