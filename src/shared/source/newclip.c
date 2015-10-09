@@ -43,25 +43,28 @@ inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
 _Bool swap_boundline;
 
 void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b, _Bool clockwise) {
-  #if 0
+#if 0
   if(!clockwise) {
     Vex2D* temp = a;
     a = b;
     b = temp;
-}
+  }
 #endif
 
-Vex2D normal = { -(b->y - a->y), b->x - a->x };
-Vex2D new_normal = normal;
+  Vex2D normal = { -(b->y - a->y), b->x - a->x };
+  Vex2D new_normal = normal;
 
-x3d_normalize_vex2d_fp0x16(&new_normal);
+  x3d_normalize_vex2d_fp0x16(&new_normal);
 
-line->normal = new_normal;
-line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
+  line->normal = new_normal;
+  line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
 
-line->normal.x = -line->normal.x;
-line->normal.y = -line->normal.y;
-line->d = -line->d;
+  
+#if 0
+  line->normal.x = -line->normal.x;
+  line->normal.y = -line->normal.y;
+  line->d = -line->d;
+#endif
 
 #if 0
 Vex2D center = { LCD_WIDTH / 2, LCD_HEIGHT / 2 };
@@ -106,7 +109,7 @@ _Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
   Vex2D a = { p2->x - p1->x, p2->y - p1->y };
   Vex2D b = { p3->x - p2->x, p3->y - p2->y };
   
-  return (int32)a.x * b.y - (int32)b.x * a.y < 0;
+  return (int32)a.x * b.y - (int32)b.x * a.y > 0;
 }
 
 
@@ -203,11 +206,11 @@ inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b
   }
   else if(id < p->base_v * 2) {
     if(id != p->base_v * 2 - 1)
-      *a = x3d_prism2d_opposite_vertex(p, id + 1 - p->base_v);
+      *b = x3d_prism2d_opposite_vertex(p, id + 1 - p->base_v);
     else
-      *a = x3d_prism2d_opposite_vertex(p, p->base_v - p->base_v);
+      *b = x3d_prism2d_opposite_vertex(p, p->base_v - p->base_v);
     
-    *b = x3d_prism2d_opposite_vertex(p, id - p->base_v);
+    *a = x3d_prism2d_opposite_vertex(p, id - p->base_v);
   }
   else {
     *a = x3d_prism2d_opposite_vertex(p, id - p->base_v * 2);
@@ -564,9 +567,15 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
     
   }
   
+  clrscr();
+  
   uint16 a;
   for(a = 0; a < total_e; ++a) {
     printf("EDGE %d{%d} -> %d{%d}: %d, %d\n", EDGE(a).v[0].clip_line, EDGE(a).v[0].clip_status, EDGE(a).v[1].clip_line, EDGE(a).v[1].clip_status, EDGE(a).v[0].v.x, EDGE(a).v[0].v.y);
+    draw_line(EDGE(a).v[0].v, EDGE(a).v[1].v);
+    
+    while(!_keytest(RR_Y));
+    while(_keytest(RR_Y));
   }
   
   
@@ -722,8 +731,8 @@ X3D_BoundRegion* x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip,
   
   uint16 v[3] = {
     clip->edge[edges[0]].v[0],
-    clip->edge[edges[0]].v[1],
-    clip->edge[edges[1]].v[0]
+    clip->edge[edges[1]].v[1],
+    clip->edge[edges[2]].v[2]
   };
   
   _Bool clockwise = is_clockwise_turn(clip->v + v[0], clip->v + v[1], clip->v + v[2]);
@@ -835,7 +844,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   Vex3D_angle256 angle = { 0, 0, 0 };
   x3d_mat3x3_fp0x16_construct(&mat, &angle);
   
-  x3d_prism_construct(prism, 4, 180, 50, (Vex3D_angle256) { ANG_180, ANG_45, 0 });
+  x3d_prism_construct(prism, 8, 180, 50, (Vex3D_angle256) { ANG_180, ANG_45, 0 });
   
   for(i = 0; i < prism->base_v * 2; ++i) {
     prism->v[i].z += 400;
