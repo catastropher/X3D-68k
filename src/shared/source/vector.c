@@ -72,6 +72,10 @@ void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v) {
   /// @todo Add check to make sure the sign of the components is the same after
   /// dividing?
   
+  if(len == 0) {
+    x3d_error("NORMALIZE 2D ERROR\n");
+  }
+  
   // Divide each component by the length
   /// @todo Replace with fixed point division
   v->x = ((int32)v->x << X3D_NORMAL_SHIFT) / len;

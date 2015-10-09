@@ -105,9 +105,21 @@ uint16 get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
   }
 }
 
+void print_vex2d(Vex2D* v) {
+  printf("{%d, %d}", v->x, v->y);
+}
+
 _Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
   Vex2D a = { p2->x - p1->x, p2->y - p1->y };
   Vex2D b = { p3->x - p2->x, p3->y - p2->y };
+  
+  if((int32)a.x * b.y - (int32)b.x * a.y == 0) {
+    print_vex2d(p1);
+    print_vex2d(p2);
+    print_vex2d(p3);
+    printf("CROSS PRODUCT ERROR\n");
+    while(1) ;
+  }
   
   return (int32)a.x * b.y - (int32)b.x * a.y > 0;
 }
@@ -118,12 +130,21 @@ void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_
   int16 i;
   
   if(is_clockwise_turn(v, v + 1, v + 2)) {
+    printf("BOUNDING CLOCKWISE\n");
+    
+    for(i = 0; i < 200; ++i)
+      idle();
     
     for(i = 0; i < total_v; ++i) {
       x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v), 1);
     }
   }
   else {
+    printf("BOUNDING COUNTER-CLOCKWISE\n");
+    
+    for(i = 0; i < 200; ++i)
+      idle();
+    
     for(i = total_v - 1; i >= 0; --i) {
       x3d_construct_boundline(region->line + i, v + i, (i != 0 ? v + i - 1 : v + total_v - 1), 1);
     }
@@ -206,11 +227,11 @@ inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b
   }
   else if(id < p->base_v * 2) {
     if(id != p->base_v * 2 - 1)
-      *b = x3d_prism2d_opposite_vertex(p, id + 1 - p->base_v);
+      *a = x3d_prism2d_opposite_vertex(p, id + 1 - p->base_v);
     else
-      *b = x3d_prism2d_opposite_vertex(p, p->base_v - p->base_v);
+      *a = x3d_prism2d_opposite_vertex(p, p->base_v - p->base_v);
     
-    *a = x3d_prism2d_opposite_vertex(p, id - p->base_v);
+    *b = x3d_prism2d_opposite_vertex(p, id - p->base_v);
   }
   else {
     *a = x3d_prism2d_opposite_vertex(p, id - p->base_v * 2);
@@ -419,6 +440,12 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
     
     int16 new_dx = edge_out->v[0].v.x - edge_out->v[1].v.x;
     int16 new_dy = edge_out->v[0].v.y - edge_out->v[1].v.y;
+    
+    if(new_dx == 0)
+      new_dx = SIGNOF(old_dx);
+    
+    if(new_dy == 0)
+      new_dy = SIGNOF(old_dy);
     
     if(SIGNOF(new_dx) != SIGNOF(old_dx) || SIGNOF(new_dy) != SIGNOF(old_dy)) {
       edge_out->v[0].clip_status = CLIP_INVISIBLE;
@@ -737,8 +764,8 @@ X3D_BoundRegion* x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip,
   
   uint16 v[3] = {
     clip->edge[edges[0]].v[0],
-    clip->edge[edges[1]].v[1],
-    clip->edge[edges[2]].v[2]
+    clip->edge[edges[1]].v[0],
+    clip->edge[edges[2]].v[0]
   };
   
   _Bool clockwise = is_clockwise_turn(clip->v + v[0], clip->v + v[1], clip->v + v[2]);
@@ -879,6 +906,8 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   uint16 total_clip_v = input_polygon2d(clip_v);
   x3d_construct_boundregion(region, p, total_clip_v);
+  
+  fill_boundregion(region);
   
   for(i = 0; i < total_clip_v; ++i) {
     uint16 next = (i + 1) % total_clip_v;
