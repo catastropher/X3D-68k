@@ -102,6 +102,16 @@ uint16 get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
     }
     
     return prism->base_v;
+  } else{
+    face -= 2;
+    edges[0] = x3d_single_wrap(face + 1, prism->base_v) + prism->base_v * 2;
+    edges[1] = face + prism->base_v;
+    edges[2] = face + prism->base_v * 2;
+    edges[3] = face;
+    
+    
+    
+    return 4;
   }
 }
 
@@ -762,6 +772,11 @@ X3D_BoundRegion* x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip,
   
   uint16 total_e = get_prism2d_face_edges(prism, face, edges);
   
+  if(face > 1) {
+    SWAP(clip->edge[edges[0]].v[0], clip->edge[edges[0]].v[1]);
+    SWAP(clip->edge_clip[edges[0]].v[0], clip->edge_clip[edges[0]].v[1]);
+  }
+  
   uint16 v[3] = {
     clip->edge[edges[0]].v[0],
     clip->edge[edges[1]].v[0],
@@ -842,6 +857,14 @@ uint16 input_polygon2d(Vex2D* v) {
   
 }
 
+void draw_prism2d_edge(X3D_Prism2D* prism, uint16 id) {
+  uint16 a, b;
+  
+  x3d_get_prism2d_edge(prism, id, &a, &b);
+  
+  draw_line(prism->v[a], prism->v[b]);
+}
+
 void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   srand(0);
   
@@ -891,6 +914,32 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   for(i = 0; i < prism2d->base_v * 2; ++i) {
     prism2d->v[i].x += 20;
   }
+  
+
+#if 0
+  uint16 g = 0;
+  
+  do {
+    clrscr();
+    
+    draw_prism2d_edge(prism2d, g);
+    draw_prism2d_edge(prism2d, g + prism2d->base_v);
+    
+    draw_prism2d_edge(prism2d, g + prism->base_v * 2);
+    
+    g = (g + 1) % prism2d->base_v;
+    
+    
+    draw_prism2d_edge(prism2d, g + prism->base_v * 2);
+    
+    
+    while(!_keytest(RR_U));
+    while(_keytest(RR_U));
+    
+  } while(1);
+#endif
+  
+  
   
   
   clrscr();
@@ -950,7 +999,11 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   //x3d_construct_boundregion_from_clip_data(&clip, new_edges, 8, new_region, FALSE);
   
-  new_region = x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, BASE_B, new_region);
+  
+  
+  
+  
+  new_region = x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, 3, new_region);
   
   if(new_region == NULL) {
     printf("INVISIBLE\n");
