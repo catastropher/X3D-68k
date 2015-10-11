@@ -40,17 +40,7 @@ inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
   return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
 }
 
-_Bool swap_boundline;
-
-void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b, _Bool clockwise) {
-#if 0
-  if(!clockwise) {
-    Vex2D* temp = a;
-    a = b;
-    b = temp;
-  }
-#endif
-
+void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   Vex2D normal = { -(b->y - a->y), b->x - a->x };
   Vex2D new_normal = normal;
 
@@ -65,20 +55,8 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b, _Bool cloc
   line->normal.y = -line->normal.y;
   line->d = -line->d;
 #endif
-
-#if 0
-Vex2D center = { LCD_WIDTH / 2, LCD_HEIGHT / 2 };
-
-if(x3d_dist_to_line(line, &center ) < 0) {
-  line->normal.x = -line->normal.x;
-  line->normal.y = -line->normal.y;
-  line->d = -line->d;
 }
-#endif
-
-//printf("{%d, %d} after {%d, %d}, %d\n", normal.x, normal.y, new_normal.x, new_normal.y, line->d);
-}
-
+  
 typedef struct X3D_BoundRegion {
   uint16 total_bl;
   Vex2D point_inside;
@@ -140,28 +118,17 @@ void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_
   int16 i;
   
   if(is_clockwise_turn(v, v + 1, v + 2)) {
-    printf("BOUNDING CLOCKWISE\n");
-    
-    for(i = 0; i < 200; ++i)
-      idle();
-    
     for(i = 0; i < total_v; ++i) {
-      x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v), 1);
+      x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v));
     }
   }
   else {
-    printf("BOUNDING COUNTER-CLOCKWISE\n");
-    
-    for(i = 0; i < 200; ++i)
-      idle();
-    
     for(i = total_v - 1; i >= 0; --i) {
-      x3d_construct_boundline(region->line + i, v + i, (i != 0 ? v + i - 1 : v + total_v - 1), 1);
+      x3d_construct_boundline(region->line + i, v + i, (i != 0 ? v + i - 1 : v + total_v - 1));
     }
   }
   
   region->point_inside = v[0];
-  
   region->total_bl = total_v;
 }
 
@@ -205,27 +172,6 @@ typedef struct X3D_EdgeClip {
 
 #define OUTSIDE(_clip, _v, _pos) _clip->dist[INDEX(_clip, _pos, _v)]
 
-
-// inline x3d_calc_distances_to_lines(X3D_ClipData* clip) {
-// uint16 line, vex;
-
-// for(vex = 0; vex < clip->total_v; ++vex)
-// clip->outside_total[vex] = 0;
-
-// for(line = 0; line < clip->region->total_bl; ++line) {
-// for(vex = 0; vex < clip->total_v; ++vex) {
-// int16 dist = x3d_dist_to_line(clip->region->line + line, clip->prism->v + vex);
-
-// DIST(clip, line, vex) = dist;
-
-// if(dist < 0) {
-// OUTSIDE(clip, vex, clip->outside_total[line]++) = line;
-// }
-// }
-// }
-// }
-
-// TODO: fix order on BASE_B
 inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b) {
   if(id < p->base_v) {
     *a = id;
@@ -254,33 +200,6 @@ enum {
   CLIP_VISIBLE,
   CLIP_CLIPPED
 };
-
-// void x3d_clip_edge(X3D_ClipData* clip, uint16 id) {
-// uint16 a, b;
-
-// x3d_get_prism2d_edge(clip->prism, id, &a, &b);
-
-// uint16 a_pos = 0, b_pos = 0;
-
-// X3D_EdgeClip* edge = clip->seg_clip->edge + id;
-
-//Check to make sure that a and b don't fail by the same edge
-// while(a_pos < clip->outside_total[a] && b_pos < clip->outside_total[b]) {
-// uint16 out_a = OUTSIDE(clip, a, a_pos);
-// uint16 out_b = OUTSIDE(clip, b, b_pos);
-
-// if(out_a == out_b) {
-// edge->clip_status[0] = CLIP_OUTSIDE;
-// return;
-// }
-
-// if(out_a < out_b)
-// ++a_pos;
-// else
-// ++b_pos;
-// }
-
-// }
 
 typedef struct X3D_IndexedEdge {
   uint16 v[2];
@@ -326,8 +245,7 @@ static inline void add_outside(X3D_ClipData* clip, uint16 vertex, uint16 line) {
 static inline int16 dist(X3D_ClipData* clip, uint16 line, uint16 vertex) {
   int16 n = *dist_ptr(clip, line, vertex);
   
-  return n;
-  
+  return n;  
 }
 
 static inline calc_line_distances(X3D_ClipData* clip) {
@@ -341,8 +259,6 @@ static inline calc_line_distances(X3D_ClipData* clip) {
       int16 d = x3d_dist_to_line(clip->region->line + line, clip->v + vertex);     
       *dist_ptr(clip, line, vertex) = d;
       
-      //printf("dist: %d (offset %d) dist: %d\n", d, (int16)(dist_ptr(clip, line, vertex) - clip->line_dist), dist(clip, line, vertex));
-      
       outside_mask = (outside_mask << 1) | (d <= 0 ? 1 : 0);
       
       if(d <= 0) {
@@ -352,11 +268,7 @@ static inline calc_line_distances(X3D_ClipData* clip) {
     
     clip->outside_mask[vertex] = outside_mask;
   }
-  
-  //printf("DONE\n");
 }
-
-//#define 
 
 static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uint16 line) {
   int16 n = dist(clip, line, start);
@@ -419,8 +331,6 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
     if(!vertex_visible(clip, edge->v[vex])) {
       uint16 min_scale_line;
       int16 scale = min_clip_scale(clip, edge->v[vex ^ 1], edge->v[vex], &min_scale_line);
-      
-      //printf("Scale: %d\n", scale);
       
       if(scale != 0) {
         scale_edge(&edge_out->v[vex].v, &clip->v[edge->v[vex ^ 1]], &clip->v[edge->v[vex]], scale);
@@ -508,62 +418,6 @@ void x3d_clip_edges(X3D_ClipData* clip) {
   
 }
 
-int16 ask(const char* str) {
-  printf(str);
-  
-  char buf[32];
-  gets(buf);
-  printf("\n");
-  
-  return atoi(str);
-}
-
-Vex2D ask_vex2d(const char* str) {
-  printf("%d:\n", str);
-  
-  Vex2D v;
-  v.x = ask("x: ");
-  v.x = ask("y: ");
-  
-  return v;
-}
-
-Vex2D rand_vex2d() {
-  return (Vex2D) { rand() % LCD_WIDTH, rand() % LCD_HEIGHT };
-  //return (Vex2D) { rand() - 16384, rand() - 16384 };
-}
-
-Vex2D rand_side(uint16 s) {
-  Vex2D v;
-  
-  if(s == 0 || s == 1) {
-    v.x = (s == 0 ? 0 : LCD_WIDTH - 1);
-    v.y = rand() % LCD_HEIGHT;
-  }
-  else {
-    v.x = rand() % LCD_WIDTH;
-    v.y = (s == 2 ? 0 : LCD_HEIGHT - 1);
-  }
-  
-  return v;
-}
-
-void rand_sides(uint16* a, uint16* b) {
-  *a = rand() % 4;
-  
-  do {
-    *b = rand() % 4;
-  } while(*b == *a);
-}
-
-void rand_line(Vex2D* start, Vex2D* end) {
-  uint16 a, b;
-  
-  rand_sides(&a, &b);
-  *start = rand_side(a);
-  *end = rand_side(b);
-}
-
 void draw_line(Vex2D a, Vex2D b) {
   DrawLine(a.x, a.y, b.x, b.y, A_NORMAL);
 }
@@ -648,7 +502,7 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
         if(edge->v[1].clip_status == CLIP_CLIPPED) {
           
           // Construct a bounding line for the edge
-          x3d_construct_boundline(region->line + region->total_bl, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v, clockwise);
+          x3d_construct_boundline(region->line + region->total_bl, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
           
           if(region->total_bl == 0 || diff_boundline(region->line + region->total_bl, region->line + region->total_bl - 1))
             ++region->total_bl;
@@ -690,7 +544,7 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
         }
         
         
-        x3d_construct_boundline(region->line + region->total_bl, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v, clockwise);
+        x3d_construct_boundline(region->line + region->total_bl, &EDGE(edge_id).v[0].v, &EDGE(edge_id).v[1].v);
         
         if(region->total_bl == 0 || diff_boundline(region->line + region->total_bl, region->line + region->total_bl - 1))
           ++region->total_bl;
@@ -865,6 +719,26 @@ void draw_prism2d_edge(X3D_Prism2D* prism, uint16 id) {
   draw_line(prism->v[a], prism->v[b]);
 }
 
+void clip_prism2d_to_boundregion(X3D_Prism2D* prism, X3D_BoundRegion* region, X3D_ClipData* clip) {
+  clip->region = region;
+  clip->total_v = prism->base_v * 2;
+  clip->v = prism->v;
+  
+  calc_line_distances(clip);
+  generate_prism2d_edge_list(prism, clip->edge);
+  x3d_clip_edges(clip);
+}
+
+void draw_clipped_edges(X3D_ClipData* clip) {
+  uint16 i;
+  
+  for(i = 0; i < clip->total_e; ++i) {
+    if(clip->edge_clip[i].v[0].clip_status != CLIP_INVISIBLE) {
+      draw_line(clip->edge_clip[i].v[0].v, clip->edge_clip[i].v[1].v);
+    }
+  }
+}
+
 void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   srand(0);
   
@@ -967,20 +841,13 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   clrscr();
   
-  clip.total_v = prism2d->base_v * 2;
-  clip.v = prism2d->v;
+  clip_prism2d_to_boundregion(prism2d, region, &clip);
   
-  calc_line_distances(&clip);
   
   for(i = 0; i < total_clip_v; ++i) {
     uint16 next = (i + 1) % total_clip_v;
     draw_line(p[i], p[next]);
   }
-  
-  
-  
-  generate_prism2d_edge_list(prism2d, clip.edge);
-  x3d_clip_edges(&clip);
   
   
   for(i = 0; i < prism2d->base_v * 3; ++i) {
