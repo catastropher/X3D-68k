@@ -31,11 +31,31 @@
 #include "X3D_segment.h"
 #include "X3D_newclip.h"
 
-
+/**
+ * Calculates the signed distance from a point to a bounding line. This
+ *    distance is positive if on the normal-facing side of the line, and
+ *    negative otherwise.
+ * 
+ * @param line    - bounding line
+ * @param v       - point to test
+ * 
+ * @return Distance to the bounding line.
+ */
 inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
   return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
 }
 
+/**
+ * Calculates a bounding line between @ref a and @ref b. It is assumed that
+ *    @ref a and @ref b both lie on a clockwise convex polygon, which affects
+ *    which way the normal points.
+ * 
+ * @param line      - output line
+ * @param a         - first point
+ * @param b         - second point
+ * 
+ * @return Nothing.
+ */
 void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   Vex2D normal = { -(b->y - a->y), b->x - a->x };
   Vex2D new_normal = normal;
@@ -46,6 +66,16 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
 }
 
+/**
+ * Gets a list of all edge indexes (in order) that make up @ref face from a
+ *    2D prism.
+ * 
+ * @param prism   - 2D prism
+ * @param face    - face ID to get edges for
+ * @param edges   - output list of edges
+ * 
+ * @return The number of edges that comprise the face.
+ */
 uint16 get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
   uint16 i;
   
