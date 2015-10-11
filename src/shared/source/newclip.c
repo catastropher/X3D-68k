@@ -666,6 +666,27 @@ void draw_clipped_edges(X3D_ClipData* clip) {
   }
 }
 
+void draw_prism2d(X3D_Prism2D* prism2d) {
+  uint16 i;
+  
+  for(i = 0; i < prism2d->base_v * 3; ++i) {
+    uint16 a, b;
+    
+    x3d_get_prism2d_edge(prism2d, i, &a, &b);
+    
+    draw_line(prism2d->v[a], prism2d->v[b]);
+  }
+}
+
+void draw_polygon(Vex2D* p, uint16 total_p) {
+  uint16 i;
+  
+  for(i = 0; i < total_p; ++i) {
+    uint16 next = (i + 1) % total_p;
+    draw_line(p[i], p[next]);
+  }
+}
+
 void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   srand(0);
   
@@ -678,11 +699,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   X3D_BoundRegion* region = alloca(sizeof(X3D_BoundLine) * 20 + sizeof(X3D_BoundRegion));
   
-  X3D_ClipData clip = {
-    .region = region,
-    .total_v = 2,
-    .total_e = 0
-  };
+  X3D_ClipData clip;
   
   clip.line_dist = malloc(400);
   clip.outside = malloc(400);
@@ -697,9 +714,6 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     clip.outside_total[i] = 0;
   
   X3D_Prism3D* prism = alloca(500);  
-  X3D_Mat3x3_fp0x16 mat;
-  Vex3D_angle256 angle = { 0, 0, 0 };
-  x3d_mat3x3_fp0x16_construct(&mat, &angle);
   
   x3d_prism_construct(prism, 8, 180, 50, (Vex3D_angle256) { ANG_180, ANG_45, 0 });
   
@@ -721,23 +735,14 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   clrscr();
   clip.total_e = prism2d->base_v * 3;
   
-  for(i = 0; i < prism2d->base_v * 3; ++i) {
-    uint16 a, b;
-    
-    x3d_get_prism2d_edge(prism2d, i, &a, &b);
-    
-    draw_line(prism2d->v[a], prism2d->v[b]);
-  }
+  draw_prism2d(prism2d);
   
   uint16 total_clip_v = input_polygon2d(clip_v);
   x3d_construct_boundregion(region, p, total_clip_v);
   
   fill_boundregion(region);
   
-  for(i = 0; i < total_clip_v; ++i) {
-    uint16 next = (i + 1) % total_clip_v;
-    draw_line(p[i], p[next]);
-  }
+  draw_polygon(p, total_clip_v);
   
   while(!_keytest(RR_Q)) ;
   
@@ -746,18 +751,10 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   clip_prism2d_to_boundregion(prism2d, region, &clip);
   
   
-  for(i = 0; i < total_clip_v; ++i) {
-    uint16 next = (i + 1) % total_clip_v;
-    draw_line(p[i], p[next]);
-  }
+  draw_polygon(p, total_clip_v);
   
   
-  for(i = 0; i < prism2d->base_v * 3; ++i) {
-    
-    if(clip.edge_clip[i].v[0].clip_status != CLIP_INVISIBLE) {
-      draw_line(clip.edge_clip[i].v[0].v, clip.edge_clip[i].v[1].v);
-    }
-  }
+  draw_clipped_edges(&clip);
   
   uint16 edges[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
   
@@ -795,18 +792,9 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     
     uint16 d;
     
-    for(d = 0; d < prism2d->base_v * 3; ++d) {
-      uint16 a, b;
-      
-      x3d_get_prism2d_edge(prism2d, d, &a, &b);
-      
-      draw_line(prism2d->v[a], prism2d->v[b]);
-    }
+    draw_prism2d(prism2d);
     
-    for(d = 0; d < total_clip_v; ++d) {
-      uint16 next = (d + 1) % total_clip_v;
-      draw_line(p[d], p[next]);
-    }
+    draw_polygon(p, total_clip_v);
     
     fill_boundregion(new_region);
     image[i] = malloc(LCD_SIZE);
@@ -818,18 +806,9 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     clrscr();
     memcpy(LCD_MEM, image[bl], LCD_SIZE);
     
-    for(i = 0; i < prism2d->base_v * 3; ++i) {
-      uint16 a, b;
-      
-      x3d_get_prism2d_edge(prism2d, i, &a, &b);
-      
-      draw_line(prism2d->v[a], prism2d->v[b]);
-    }
+    draw_prism2d(prism2d);
     
-    for(i = 0; i < total_clip_v; ++i) {
-      uint16 next = (i + 1) % total_clip_v;
-      draw_line(p[i], p[next]);
-    }
+    draw_polygon(p, total_clip_v);
     
     printf("line = %d\nTotal: %d\n", bl, new_region->total_bl);
     
