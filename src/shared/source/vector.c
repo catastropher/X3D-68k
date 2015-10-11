@@ -222,3 +222,25 @@ uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v) {
   return (x3d_fastsqrt(distance_squared) << 1) + 1;
 }
 
+void print_vex2d(Vex2D* v) {
+  printf("{%d, %d}", v->x, v->y);
+}
+
+_Bool x3d_is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
+  Vex2D a = { p2->x - p1->x, p2->y - p1->y };
+  Vex2D b = { p3->x - p2->x, p3->y - p2->y };
+  
+  if((int32)a.x * b.y - (int32)b.x * a.y == 0) {
+    print_vex2d(p1);
+    print_vex2d(p2);
+    print_vex2d(p3);
+    printf("CROSS PRODUCT ERROR\n");
+    while(1) ;
+  }
+  
+  return (int32)a.x * b.y - (int32)b.x * a.y > 0;
+}
+
+
+
+

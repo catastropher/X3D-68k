@@ -111,6 +111,7 @@ void x3d_vex3d_fp0x16_cross(Vex3D_fp0x16* dest, Vex3D_fp0x16* a, Vex3D_fp0x16* b
 uint16 x3d_vex3d_int16_mag(Vex3D* v);
 
 void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v);
+_Bool x3d_is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3);
 
 
 //=============================================================================

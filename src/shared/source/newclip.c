@@ -44,13 +44,6 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
 
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
-
-  
-#if 0
-  line->normal.x = -line->normal.x;
-  line->normal.y = -line->normal.y;
-  line->d = -line->d;
-#endif
 }
 
 uint16 get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
@@ -76,37 +69,14 @@ uint16 get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
     edges[2] = face + prism->base_v * 2;
     edges[3] = face;
     
-    
-    
     return 4;
   }
 }
 
-void print_vex2d(Vex2D* v) {
-  printf("{%d, %d}", v->x, v->y);
-}
-
-_Bool is_clockwise_turn(Vex2D* p1, Vex2D* p2, Vex2D* p3) {
-  Vex2D a = { p2->x - p1->x, p2->y - p1->y };
-  Vex2D b = { p3->x - p2->x, p3->y - p2->y };
-  
-  if((int32)a.x * b.y - (int32)b.x * a.y == 0) {
-    print_vex2d(p1);
-    print_vex2d(p2);
-    print_vex2d(p3);
-    printf("CROSS PRODUCT ERROR\n");
-    while(1) ;
-  }
-  
-  return (int32)a.x * b.y - (int32)b.x * a.y > 0;
-}
-
-
-
 void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v) {
   int16 i;
   
-  if(is_clockwise_turn(v, v + 1, v + 2)) {
+  if(x3d_is_clockwise_turn(v, v + 1, v + 2)) {
     for(i = 0; i < total_v; ++i) {
       x3d_construct_boundline(region->line + i, v + i, v + ((i + 1) % total_v));
     }
@@ -521,7 +491,7 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
     }
     else {
       for(i = 0; i < total_e; ++i) {
-        if(is_clockwise_turn(&EDGE(i).v[0].v, &clip->region->point_inside, &EDGE(i).v[1].v)) {
+        if(x3d_is_clockwise_turn(&EDGE(i).v[0].v, &clip->region->point_inside, &EDGE(i).v[1].v)) {
           result_region = NULL;
           break;
         }
@@ -564,7 +534,7 @@ X3D_BoundRegion* x3d_construct_boundregion_from_prism2d_face(X3D_ClipData* clip,
     clip->edge[edges[2]].v[0]
   };
   
-  _Bool clockwise = is_clockwise_turn(clip->v + v[0], clip->v + v[1], clip->v + v[2]);
+  _Bool clockwise = x3d_is_clockwise_turn(clip->v + v[0], clip->v + v[1], clip->v + v[2]);
   
   printf("Clockwise: %d\n", clockwise);
   
