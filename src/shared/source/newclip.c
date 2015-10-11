@@ -29,12 +29,8 @@
 #include "X3D_memory.h"
 #include "X3D_trig.h"
 #include "X3D_segment.h"
+#include "X3D_newclip.h"
 
-typedef struct X3D_BoundLine {
-  Vex2D normal;
-  int16 d;
-  Vex2D point;
-} X3D_BoundLine;
 
 inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
   return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
@@ -56,13 +52,6 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
   line->d = -line->d;
 #endif
 }
-  
-typedef struct X3D_BoundRegion {
-  uint16 total_bl;
-  Vex2D point_inside;
-  X3D_BoundLine line[];
-} X3D_BoundRegion;
-
 
 uint16 get_prism2d_face_edges(X3D_Prism2D* prism, uint16 face, uint16* edges) {
   uint16 i;
@@ -161,11 +150,6 @@ void fill_boundregion(X3D_BoundRegion* region) {
   }
 }
 
-typedef struct X3D_EdgeClip {
-  uint16 v[2];
-  uint16 clip_status[2];
-} X3D_EdgeClip;
-
 #define INDEX(_clip, _line, _v) _line * _clip->region->total_bl + _v
 
 #define DIST(_clip, _line, _v) _clip->dist[INDEX(_clip, _line, _v)]
@@ -194,41 +178,6 @@ inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b
     *b = id - p->base_v * 2;
   }
 }
-
-enum {
-  CLIP_INVISIBLE,
-  CLIP_VISIBLE,
-  CLIP_CLIPPED
-};
-
-typedef struct X3D_IndexedEdge {
-  uint16 v[2];
-} X3D_IndexedEdge;
-
-typedef struct X3D_ClippedVertex {
-  Vex2D v;
-  uint16 clip_status;
-  uint16 clip_line;
-} X3D_ClippedVertex;
-
-typedef struct X3D_ClippedEdge {
-  X3D_ClippedVertex v[2];
-} X3D_ClippedEdge;
-
-
-typedef struct X3D_ClipData {
-  X3D_BoundRegion*  region;
-  Vex2D*            v;
-  uint16            total_v;
-  X3D_IndexedEdge*  edge;
-  uint16            total_e;
-  X3D_ClippedEdge*  edge_clip;
-  
-  int16*            line_dist;
-  uint16*           outside;
-  uint16*           outside_total;
-  uint32*           outside_mask;
-} X3D_ClipData;
 
 static inline int16* dist_ptr(X3D_ClipData* clip, uint16 line, uint16 vertex) {
   return clip->line_dist + line * clip->total_v + vertex;
