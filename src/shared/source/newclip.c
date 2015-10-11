@@ -559,11 +559,6 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
     uint16 i;
     uint32 edge_mask = (1L << clip->region->total_bl) - 1;// = clip->outside_mask[clip->edge->v[0]];
     
-    /*for(i = 0; i < total_e; ++i) {
-     *      edge_mask |= i;//(1L << (clip->region->total_bl - edge_list[i] - 1));
-     *      printf("EDge: %d\n", edge_list[i]);
-  }*/
-    
     printf("Begin: %ld\n", edge_mask);
     
     for(i = 0; i < total_e; ++i) {
@@ -583,29 +578,12 @@ X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, ui
         }
       }
       
-      #if 0
-      X3D_BoundLine line;
-      
-      for(i = 0; i < total_e; ++i) {
-        x3d_construct_boundline(&line, &EDGE(i).v[0].v, &EDGE(i).v[1].v, 0);
-        
-        if(x3d_dist_to_line(&line, &clip->region->point_inside) < 0) {
-          if(result_region != NULL) {
-            printf("POINT IN POLYGON FAILED\n");
-    }
-    
-    result_region = NULL;
-    break;
-    }
-    }
-    #endif
-    
-    // If we got through testing all the edges, and the point is inside, the
-    // old region must be inside the new region
-    if(result_region != NULL) {
-      result_region = clip->region;
-      printf("ASSIGN OLD\n");
-    }
+      // If we got through testing all the edges, and the point is inside, the
+      // old region must be inside the new region
+      if(result_region != NULL) {
+        result_region = clip->region;
+        printf("ASSIGN OLD\n");
+      }
     }
   }
   
@@ -789,31 +767,6 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
     prism2d->v[i].x += 20;
   }
   
-
-#if 0
-  uint16 g = 0;
-  
-  do {
-    clrscr();
-    
-    draw_prism2d_edge(prism2d, g);
-    draw_prism2d_edge(prism2d, g + prism2d->base_v);
-    
-    draw_prism2d_edge(prism2d, g + prism->base_v * 2);
-    
-    g = (g + 1) % prism2d->base_v;
-    
-    
-    draw_prism2d_edge(prism2d, g + prism->base_v * 2);
-    
-    
-    while(!_keytest(RR_U));
-    while(_keytest(RR_U));
-    
-  } while(1);
-#endif
-  
-  
   
   
   clrscr();
@@ -957,87 +910,9 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   while(1) ;
   
-  /*
-   *  randomize();
-   *  
-   *  Vex2D start, end;
-   *  rand_line(&start, &end);
-   *  
-   *  //draw_line(start, end);
-   *  
-   *  // clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out)
-   *  
-   *  Vex2D points[] = {
-   *    { -8192, -8192},
-   *    { 8192, 8192 }
-};
-
-clip.v = points;
-
-calc_line_distances(&clip);
-
-X3D_IndexedEdge edge = {
-{0, 1} 
-};
-
-X3D_ClippedEdge edge_out;
-
-
-
-
-
-
-
-
-clip_edge(&clip, &edge, &edge_out);
-
-printf("start stat: %u, end stat: %u\n", edge_out.v[0].clip_status, edge_out.v[1].clip_status);
-
-ngetchx();
-
-clrscr();
-for(i = 0; i < 4; ++i) {
-  uint16 next = (i + 1) % 4;
-  draw_line(p[i], p[next]);
-}
-
-if(edge_out.v[0].clip_status != CLIP_INVISIBLE)
-  draw_line(edge_out.v[0].v, edge_out.v[1].v);
-
-
-Vex2D s = { 0, 0 };
-Vex2D e = { 127, 127 };
-
-*/
-  
-  
-  //draw_line(s, e);
-  
 }
 
 
-
-
-// X3D_Prism2D* prism;
-// uint16 total_v = prism->base_v * 2;
-
-// int16 dist[region->total_bl * total_v];
-// uint16 outside[region->total_bl * total_v];
-// uint16 outside_total[total_v];
-
-
-// X3D_ClipData clip = {
-// .seg = seg,
-// .region = region,
-// .prism = prism,
-// .total_v = total_v,
-// .dist = dist,
-// .outside = outside,
-// .outside_total = outside_total
-// };
-
-
-// x3d_calc_distances_to_lines(&clip);
 
 
 
