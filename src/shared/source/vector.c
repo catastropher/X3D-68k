@@ -53,10 +53,10 @@ void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v) {
   int32 distance_squared = 
     (((int32)v->x * v->x)) +
     (((int32)v->y * v->y));
-  
+    
   // If distance_squared is negative, the only possible explaination is that
   // it overflowed (should never happen because we divide each term by 4)
-  x3d_errorif(distance_squared < 0, "normalize overflow");
+  x3d_errorif(distance_squared <= 0, "normalize overflow");
   
   
   // Calculate the actual length of the vector
@@ -66,7 +66,8 @@ void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v) {
   // by 2 to get the real result. We add 1 to prevent division by 0 and to make
   // sure we never get 0x8000 after the division (because that's to big to fit in
   // an int16)
-  uint16 len = (x3d_fastsqrt(distance_squared)) + 1;
+  uint16 len = (x3d_fastsqrt(distance_squared));
+  
   
   
   /// @todo Add check to make sure the sign of the components is the same after
@@ -78,8 +79,35 @@ void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v) {
   
   // Divide each component by the length
   /// @todo Replace with fixed point division
-  v->x = ((int32)v->x << X3D_NORMAL_SHIFT) / len;
-  v->y = ((int32)v->y << X3D_NORMAL_SHIFT) / len;
+  
+  //x3d_errorif(abs(v->x) == len, "v->x == len");
+  //x3d_errorif(abs(v->y) == len, "v->y == len");
+  
+  if(abs(v->y) == len) {
+    if(v->y < 0) {
+      v->y = -0x7FFF;
+    }
+    else {
+      v->y = 0x7FFF;
+    }
+  }
+  else {
+    v->y = ((int32)v->y << X3D_NORMAL_SHIFT) / len;
+  }
+  
+  
+  
+  if(abs(v->x) == len) {
+    if(v->x < 0) {
+      v->x = -0x7FFF;
+    }
+    else {
+      v->x = 0x7FFF;
+    }
+  }
+  else {
+    v->x = ((int32)v->x << X3D_NORMAL_SHIFT) / len;
+  }
 }
 
 /**

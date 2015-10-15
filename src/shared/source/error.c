@@ -127,6 +127,8 @@ void x3d_print_stacktrace() {
   printf("===========================\n");
 }
 
+#endif
+
 /**
 * Throws an error, prints out the error message, and aborts.
 *
@@ -142,20 +144,21 @@ void x3d_error(const char* format, ...) {
   va_start(list, format);
   vsprintf(buf, format, list);
 
-#ifdef __TIGCC__
+  
+//#ifdef __TIGCC__
   PortRestore();
   clrscr();
 
-#endif
+//#endif
   printf("Error: %s\nPress Esc to quit\n\n", buf);
 
-  x3d_print_stacktrace();
+  //x3d_print_stacktrace();
 
 #ifdef __TIGCC__
   while(!_keytest(RR_ESC));
 #endif
+  
+  //while(1);
 
   exit(-1);
 }
-
-#endif
