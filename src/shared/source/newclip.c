@@ -367,8 +367,11 @@ void x3d_clip_edges(X3D_ClipData* clip) {
   
 }
 
+X3D_ViewPort* global_viewport;
+
 void draw_line(Vex2D a, Vex2D b) {
-  DrawLine(a.x, a.y, b.x, b.y, A_NORMAL);
+  //DrawLine(a.x, a.y, b.x, b.y, A_NORMAL);
+  x3d_draw_line_black(global_viewport, &a, &b);
 }
 
 void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_ViewPort* context);
@@ -818,13 +821,23 @@ static inline uint16 x3d_prism2d_needed_size(uint16 base_v) {
 
 void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
-void x3d_draw_clip_segment(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {
+void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* context, X3D_ViewPort* viewport) {
+  global_viewport = viewport;
+  
   X3D_Segment* seg = x3d_get_segment(context, id);
   X3D_Prism3D* prism_temp = alloca(x3d_prism3d_needed_size(seg->prism.base_v));
+  X3D_Prism2D* prism2d = alloca(x3d_prism2d_needed_size(seg->prism.base_v));
+  
   
   x3d_test_rotate_prism3d(prism_temp, &seg->prism, context->cam);
+  TEST_x3d_project_prism3d(prism2d, prism_temp, viewport);
   
-  x3d_draw_clipped_prism3d_wireframe(prism_temp, frustum, viewport, 0, 0);
+  draw_prism2d(prism2d);
+  
+  
+  
+  
+  //x3d_draw_clipped_prism3d_wireframe(prism_temp, frustum, viewport, 0, 0);
 }
 
 

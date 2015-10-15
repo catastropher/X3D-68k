@@ -23,6 +23,7 @@
 #include "X3D_frustum.h"
 #include "X3D_engine.h"
 #include "X3D_memory.h"
+#include "X3D_newclip.h"
 
 #ifdef __TIGCC__
 #include "extgraph.h"
@@ -123,13 +124,23 @@ void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
 extern uint16 bouncing_box;
 
-void x3d_draw_clip_segment(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport);
+void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* frustum, X3D_Context* context, X3D_ViewPort* viewport);
 
 void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {  
   uint16 i;
 
-  //x3d_draw_clip_segment(id, frustum, context, viewport);
-  //return;
+  X3D_BoundRegion* screen_region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 10);
+  Vex2D screen_v[] = {
+    { 0, 0 },
+    { LCD_WIDTH - 1, 0 },
+    { LCD_WIDTH - 1, LCD_HEIGHT - 1 },
+    { 0, LCD_HEIGHT - 1}
+  };
+  
+  x3d_construct_boundregion(screen_region, screen_v, 4);
+  
+  x3d_draw_clip_segment(id, screen_region, context, viewport);
+  return;
 
   //printf("Enter %d\n", id);
 
@@ -174,6 +185,8 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
   X3D_Frustum* f = ALLOCA_FRUSTUM(20);
   X3D_Polygon3D* poly = ALLOCA_POLYGON3D(20);
   X3D_Polygon3D* poly_out = ALLOCA_POLYGON3D(20);
+  
+  
   
 #if 1
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
@@ -235,7 +248,11 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       
       
       if(render) {
-        x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
+        //x3d_render_segment_wireframe(face[i].connect_id, f, context, viewport);
+          
+        
+        
+        
       }
       
 #if 0

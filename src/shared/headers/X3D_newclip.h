@@ -72,4 +72,5 @@ typedef struct X3D_ClipData {
 } X3D_ClipData;
 
 void x3d_test_new_clip();
+void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v);
 
