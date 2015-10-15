@@ -197,15 +197,15 @@ static inline int16 dist(X3D_ClipData* clip, uint16 line, uint16 vertex) {
   return n;  
 }
 
-static inline calc_line_distances(X3D_ClipData* clip) {
+static inline void calc_line_distances(X3D_ClipData* clip) {
   uint16 vertex, line;
   
   for(vertex = 0; vertex < clip->total_v; ++vertex) {
     uint32 outside_mask = 0;
     
-    for(line = 0; line < clip->region->total_bl; ++line) {  
+    for(line = 0; line < clip->region->total_bl; ++line) {
       
-      int16 d = x3d_dist_to_line(clip->region->line + line, clip->v + vertex);     
+      int16 d = x3d_dist_to_line(clip->region->line + line, clip->v + vertex);
       *dist_ptr(clip, line, vertex) = d;
       
       outside_mask = (outside_mask << 1) | (d <= 0 ? 1 : 0);
@@ -361,6 +361,8 @@ void x3d_clip_edges(X3D_ClipData* clip) {
   
   // Calculate the distance from every point to every line
   calc_line_distances(clip);
+  
+  printf("Total e: %d\n", clip->total_e);
   
   for(i = 0; i < clip->total_e; ++i)
     clip_edge(clip, clip->edge + i, clip->edge_clip + i);
@@ -642,8 +644,8 @@ void clip_prism2d_to_boundregion(X3D_Prism2D* prism, X3D_BoundRegion* region, X3
   clip->region = region;
   clip->total_v = prism->base_v * 2;
   clip->v = prism->v;
+  clip->total_e = prism->base_v * 3;
   
-  calc_line_distances(clip);
   generate_prism2d_edge_list(prism, clip->edge);
   x3d_clip_edges(clip);
 }
@@ -821,6 +823,7 @@ static inline uint16 x3d_prism2d_needed_size(uint16 base_v) {
 
 void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
+
 void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* context, X3D_ViewPort* viewport) {
   global_viewport = viewport;
   
@@ -832,8 +835,40 @@ void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* cont
   x3d_test_rotate_prism3d(prism_temp, &seg->prism, context->cam);
   TEST_x3d_project_prism3d(prism2d, prism_temp, viewport);
   
-  draw_prism2d(prism2d);
+  X3D_ClipData clip;
   
+  clip.total_v = prism2d->base_v * 2;
+  clip.edge = alloca(sizeof(X3D_IndexedEdge) * (prism2d->base_v * 3));
+  clip.total_e = prism2d->base_v * 3;
+  clip.edge_clip = alloca(sizeof(X3D_ClippedEdge) * clip.total_e);
+  clip.outside_mask = alloca(sizeof(uint32) * clip.total_v * 2);
+  
+  clip_prism2d_to_boundregion(prism2d, region, &clip);
+  
+  
+  //draw_prism2d(prism2d);
+  
+  draw_clipped_edges(&clip);
+  //draw_prism2d(prism2d);
+  
+  uint16 i;
+  
+  if(id != 0)
+    return;
+  
+  X3D_SegmentFace* face = x3d_segment_get_face(seg);
+  
+  for(i = 0; i < x3d_segment_total_f(seg); ++i) {
+    if(face[i].connect_id != SEGMENT_NONE) {
+      X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 10);
+      
+      new_region = x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, i, new_region);
+      
+      if(new_region != NULL) {
+        x3d_draw_clip_segment(face[i].connect_id, new_region, context, viewport);
+      }
+    }
+  }
   
   
   

@@ -243,8 +243,12 @@ void x3d_test_handle_keys(X3D_Context* context) {
     //cam->object.pos.y += dir.y;
     //cam->object.pos.z += dir.z;
 
-    cam->object.dir.z = dir.z;
-    cam->object.dir.x = dir.x;
+    //cam->object.dir.z = dir.z;
+    //cam->object.dir.x = dir.x;
+    
+    cam->object.pos.x += dir.x;
+    cam->object.pos.y += dir.y;
+    cam->object.pos.z += dir.z;
     
     //x3d_attempt_move_object(context, cam, NULL, 12);
   }
