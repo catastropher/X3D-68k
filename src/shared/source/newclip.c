@@ -736,7 +736,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   
   X3D_Prism3D* prism = malloc(8000);//alloca(100);  
   
-  x3d_prism_construct(prism, 16, 180, 50, (Vex3D_angle256) { ANG_180, ANG_45, 0 });
+  x3d_prism_construct(prism, 8, 180, 50, (Vex3D_angle256) { ANG_180, ANG_45, 0 });
   
   for(i = 0; i < prism->base_v * 2; ++i) {
     prism->v[i].z += 400;
@@ -808,6 +808,24 @@ void x3d_test_new_clip(X3D_Context* context, X3D_ViewPort* port) {
 }
 
 
+static inline uint16 x3d_prism3d_needed_size(uint16 base_v) {
+  return sizeof(X3D_Prism3D) + sizeof(Vex3D) * base_v * 2;
+}
+
+static inline uint16 x3d_prism2d_needed_size(uint16 base_v) {
+  return sizeof(X3D_Prism2D) + sizeof(Vex2D) * base_v * 2;
+}
+
+void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
+
+void x3d_draw_clip_segment(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {
+  X3D_Segment* seg = x3d_get_segment(context, id);
+  X3D_Prism3D* prism_temp = alloca(x3d_prism3d_needed_size(seg->prism.base_v));
+  
+  x3d_test_rotate_prism3d(prism_temp, &seg->prism, context->cam);
+  
+  x3d_draw_clipped_prism3d_wireframe(prism_temp, frustum, viewport, 0, 0);
+}
 
 
 

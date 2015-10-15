@@ -542,8 +542,8 @@ void x3d_test() {
   
   //goto quit;
   
-  x3d_temp_test(&context, &test.context);
-  return;
+  //x3d_temp_test(&context, &test.context);
+  //return;
   
   context.record = 0;
   context.play = 0;
@@ -554,8 +554,8 @@ void x3d_test() {
   
    // Initialize the camera
   X3D_Camera* cam = (X3D_Camera*)x3d_create_object(&context, OBJECT_CAM, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
-  cam->object.pos = (Vex3D_fp16x16){ 0, 0, 0 };
-  cam->object.angle = (Vex3D_angle256){ 0, 0, 0 };
+  cam->object.pos = (Vex3D_fp16x16){ -1000L << 15, 50L << 15, -1000L << 15 };
+  cam->object.angle = (Vex3D_angle256){ 0, ANG_45, 0 };
   
   context.cam = cam;
   
@@ -622,7 +622,7 @@ void x3d_test() {
 
     context.render_clock = 0;
     
-    x3d_attempt_move_object(&context, (void *)cam, NULL, 10);
+    //x3d_attempt_move_object(&context, (void *)cam, NULL, 10);
 
     //printf("%d\n", x3d_get_total_segments(&test.state));
 

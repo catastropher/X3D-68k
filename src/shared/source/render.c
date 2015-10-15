@@ -86,7 +86,7 @@ void x3d_enginestate_cleanup(X3D_EngineState* state) {
 /// @todo make cross platform
 void x3d_renderdevice_init(X3D_RenderDevice* d, uint16 w, uint16 h) {
 #ifdef __TIGCC__
-  d->dbuf = LCD_MEM;//malloc(LCD_SIZE);   /// @todo replace with new memory management
+  d->dbuf = malloc(LCD_SIZE);   /// @todo replace with new memory management
   PortSet(d->dbuf, LCD_WIDTH - 1, LCD_HEIGHT - 1);
 #endif
 }
@@ -123,9 +123,13 @@ void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
 extern uint16 bouncing_box;
 
+void x3d_draw_clip_segment(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport);
+
 void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {  
   uint16 i;
-  
+
+  //x3d_draw_clip_segment(id, frustum, context, viewport);
+  //return;
 
   //printf("Enter %d\n", id);
 
@@ -203,33 +207,11 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       if(dist > MIN_DIST) {
 
         if(x3d_clip_polygon_to_frustum(poly, frustum, poly_out)) {
-          x3d_construct_frustum_from_polygon3D(poly_out, viewport, f);
+          //x3d_construct_frustum_from_polygon3D(poly_out, viewport, f);
           render = 1;
-
-#if 1
-          if(i == BASE_B) {
-            uint16 d;
-
-            for(d = 0; d < f->total_p; ++d) {
-              f->p[d].normal = vneg16(&f->p[d].normal);
-            }
-
-          }
-#endif
         }
       }
       else {
-        uint16 d;
-        
-        printf("min dist\n");
-
-        for(d = 0; d < frustum->total_p - 1; d++) {
-          f->p[d] = frustum->p[d + 1];
-        }
-
-        f->total_p = frustum->total_p - 1;
-        
-        render = 1;
       }
 
       uint16 k;
