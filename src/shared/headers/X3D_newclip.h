@@ -71,6 +71,13 @@ typedef struct X3D_ClipData {
   uint32*           outside_mask;
 } X3D_ClipData;
 
+typedef struct X3D_ClipReport {
+  uint16 bound_line;
+  uint16 mul;
+  uint16 div;
+  uint16 arr2D;
+} X3D_ClipReport;
+
 void x3d_test_new_clip();
 void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v);
 

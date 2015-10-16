@@ -31,6 +31,8 @@
 #include "X3D_segment.h"
 #include "X3D_newclip.h"
 
+X3D_ClipReport report;
+
 /**
  * Calculates the signed distance from a point to a bounding line. This
  *    distance is positive if on the normal-facing side of the line, and
@@ -42,6 +44,9 @@
  * @return Distance to the bounding line.
  */
 inline int16 x3d_dist_to_line(X3D_BoundLine* line, Vex2D* v) {
+  report.mul += 2;
+  
+  
   return ((((int32)line->normal.x * v->x) + ((int32)line->normal.y * v->y)) >> X3D_NORMAL_SHIFT) + line->d;
 }
 
@@ -64,6 +69,8 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
 
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
+  
+  report.bound_line++;
 }
 
 /**
@@ -179,12 +186,29 @@ inline void x3d_get_prism2d_edge(X3D_Prism2D* p, uint16 id, uint16* a, uint16* b
   }
 }
 
+#define FIXED_ARR_SIZE
+#define ARR_SIZE 64
+
+#define BL_ARR_SIZE 16
+
 static inline int16* dist_ptr(X3D_ClipData* clip, uint16 line, uint16 vertex) {
+#ifndef FIXED_ARR_SIZE
+  report.arr2D++;
+  
   return clip->line_dist + line * clip->total_v + vertex;
+#else
+  return clip->line_dist + line * (ARR_SIZE / sizeof(uint16)) + vertex;
+#endif
 }
 
 static inline int16* outside_ptr(X3D_ClipData* clip, uint16 vertex, uint16 pos) {
+#ifndef FIXED_ARR_SIZE
+  report.arr2D++;
+  
   return clip->outside + vertex * clip->region->total_bl + pos;
+#else
+  return clip->outside + vertex * (BL_ARR_SIZE / sizeof(uint16)) + pos;
+#endif
 }
 
 static inline void add_outside(X3D_ClipData* clip, uint16 vertex, uint16 line) {
@@ -229,6 +253,8 @@ static inline int16 clip_scale(X3D_ClipData* clip, uint16 start, uint16 end, uin
   if(n == d)
     return 0x7FFF;
   
+  ++report.div;
+  
   return ((int32)n << X3D_NORMAL_SHIFT) / d;
 }
 
@@ -255,6 +281,8 @@ static inline int16 min_clip_scale(X3D_ClipData* clip, uint16 start, uint16 end,
 void scale_edge(Vex2D* end_dest, Vex2D* start, Vex2D* end, int16 scale) {
   int16 dx = end->x - start->x;
   int16 dy = end->y - start->y;
+  
+  report.mul += 2;
   
   end_dest->x = start->x + (((int32)dx * scale) >> X3D_NORMAL_SHIFT);
   end_dest->y = start->y + (((int32)dy * scale) >> X3D_NORMAL_SHIFT);
@@ -351,8 +379,18 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
 
 void x3d_clip_edges(X3D_ClipData* clip) {
   // Allocate space
+  
+#ifndef FIXED_ARR_SIZE
   clip->line_dist = alloca(sizeof(int16) * clip->total_v * clip->region->total_bl);
   clip->outside = alloca(sizeof(uint16) * clip->total_v * clip->region->total_bl);
+  
+#else
+  
+  clip->line_dist = alloca(ARR_SIZE * clip->region->total_bl);
+  clip->outside = alloca(BL_ARR_SIZE * clip->total_v);
+#endif
+  
+  
   clip->outside_total = alloca(sizeof(uint16) * clip->total_v);
   
   uint16 i;
@@ -362,7 +400,7 @@ void x3d_clip_edges(X3D_ClipData* clip) {
   // Calculate the distance from every point to every line
   calc_line_distances(clip);
   
-  printf("Total e: %d\n", clip->total_e);
+  //printf("Total e: %d\n", clip->total_e);
   
   for(i = 0; i < clip->total_e; ++i)
     clip_edge(clip, clip->edge + i, clip->edge_clip + i);

@@ -532,6 +532,7 @@ void x3d_temp_test(X3D_Context* context, X3D_ViewPort* port) {
   x3d_test_new_clip(context, port);
 }
 
+extern X3D_ClipReport report;
 
 void x3d_test() {
   X3D_TestContext test;
@@ -634,6 +635,11 @@ void x3d_test() {
     //  x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
     //}
     
+    report.mul = 0;
+    report.div = 0;
+    report.arr2D = 0;
+    report.bound_line = 0;
+    
     if(!context.play || context.play_pos >= context.play_start) {
       for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
         if(cam->object.seg_pos.segs[i] != SEGMENT_NONE)
@@ -654,6 +660,12 @@ void x3d_test() {
 
     printf("%s\n", context.status_bar);
     printf("%d\n", context.render_clock);
+    
+    
+    printf("Mul: %d\n", report.mul);
+    printf("Div: %d\n", report.div);
+    printf("BL: %d\n", report.bound_line);
+    printf("arr2D: %d\n", report.arr2D);
     
     if(context.play) {
       printf("play frame: %d\n", context.play_pos);

@@ -128,8 +128,6 @@ void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* frustum, X3D_Context* con
 
 void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* context, X3D_ViewPort* viewport) {  
   uint16 i;
-
-  uint16 start_time = x3d_get_clock();
   
   X3D_BoundRegion* screen_region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 10);
   Vex2D screen_v[] = {
@@ -140,6 +138,8 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
   };
   
   x3d_construct_boundregion(screen_region, screen_v, 4);
+  
+  uint16 start_time = x3d_get_clock();
   
   x3d_draw_clip_segment(id, screen_region, context, viewport);
   
