@@ -69,6 +69,9 @@ void x3d_construct_boundline(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
 
   line->normal = new_normal;
   line->d = (((int32)-line->normal.x * a->x) - ((int32)line->normal.y * a->y)) >> X3D_NORMAL_SHIFT;
+
+  line->v[0] = *a;
+  line->v[1] = *b;
   
   report.bound_line++;
 }
@@ -221,6 +224,8 @@ static inline int16 dist(X3D_ClipData* clip, uint16 line, uint16 vertex) {
   return n;  
 }
 
+_Bool boundbox_intersect()
+
 static inline void calc_line_distances(X3D_ClipData* clip) {
   uint16 vertex, line;
   
@@ -303,6 +308,11 @@ static inline _Bool vertex_visible(X3D_ClipData* clip, uint16 v) {
 
 static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_ClippedEdge* edge_out) {
   uint16 vex;
+  
+  if((clip->outside_mask[edge->v[0]] & clip->outside_mask[edge->v[1]]) != 0) {
+    goto invisible;
+  }
+    
   for(vex = 0; vex < 2; ++vex) {
     
     if(!vertex_visible(clip, edge->v[vex])) {
@@ -315,6 +325,7 @@ static inline void clip_edge(X3D_ClipData* clip, X3D_IndexedEdge* edge, X3D_Clip
         edge_out->v[vex].clip_status = CLIP_CLIPPED;
       }
       else {
+invisible:
         edge_out->v[0].clip_status = CLIP_INVISIBLE;
         edge_out->v[1].clip_status = CLIP_INVISIBLE;
         

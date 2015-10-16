@@ -22,7 +22,7 @@
 typedef struct X3D_BoundLine {
   Vex2D normal;
   int16 d;
-  Vex2D point;
+  Vex2D v[2];
 } X3D_BoundLine;
 
 typedef struct X3D_BoundRegion {
