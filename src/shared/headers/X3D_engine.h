@@ -53,5 +53,9 @@ typedef struct X3D_Context {
   uint16 play_start;
   
   _Bool quit;
+  
+  
+  uint8 render_select;
+  
 } X3D_Context;
 

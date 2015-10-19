@@ -224,7 +224,38 @@ static inline int16 dist(X3D_ClipData* clip, uint16 line, uint16 vertex) {
   return n;  
 }
 
-_Bool boundbox_intersect()
+typedef struct X3D_BoundRect {
+  Vex2D top_left;
+  Vex2D bottom_right;
+} X3D_BoundRect;
+
+void construct_boundrect(Vex2D* a, Vex2D* b, X3D_BoundRect* rect) {
+  if(a->x < b->x) {
+    rect->top_left.x = a->x;
+    rect->bottom_right.x = b->x;
+  }
+  else {
+    rect->top_left.x = b->x;
+    rect->bottom_right.x = a->x;
+  }
+  
+  if(a->y < b->y) {
+    rect->top_left.y = a->y;
+    rect->bottom_right.y = b->y;
+  }
+  else {
+    rect->top_left.y = b->y;
+    rect->bottom_right.y = a->y;
+  }    
+  
+}
+  
+  
+
+_Bool boundline_boundrect_intersect(X3D_BoundLine* line, Vex2D* a, Vex2D* b) {
+}
+
+
 
 static inline void calc_line_distances(X3D_ClipData* clip) {
   uint16 vertex, line;

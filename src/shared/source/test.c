@@ -545,6 +545,9 @@ void x3d_test() {
   
   x3d_test_init(&test, &context);
   
+  
+  context.render_select = 0;
+  
   //goto quit;
   
   //x3d_temp_test(&context, &test.context);
@@ -553,7 +556,7 @@ void x3d_test() {
   context.record = 0;
   context.play = 0;
 
-  X3D_Segment* seg = x3d_segment_add(&context, 8);
+  X3D_Segment* seg = x3d_segment_add(&context, 4);
   
   register_types(&context);
   
@@ -567,7 +570,7 @@ void x3d_test() {
   //X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
   X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(Vex3D) * 50 * 2);
-  x3d_prism_construct(prism3d, 8, 200 * 3, 50 * 3, (Vex3D_uint8) { 0, 0, 0 });
+  x3d_prism_construct(prism3d, 4, 200 * 3, 50 * 3, (Vex3D_uint8) { 0, 0, 0 });
   //x3d_prism_construct(&seg2->prism, 8, 200 * 3, 50 * 3, (Vex3D_uint8) { ANG_90, 0, 0 });
 
   //x3d_segment_get_face(seg)->connect_id = 1;
@@ -655,6 +658,12 @@ void x3d_test() {
       x3d_create_object(&context, OBJECT_BOX, pos , (Vex3D_angle256){ 0, 0, 0 }, dir, FALSE, 0)->speed = 6;
       
       while(_keytest(RR_3)) ;
+    }
+    
+    if(_keytest(RR_P)) {
+      context.render_select = (context.render_select + 1) & 1;
+      
+      while(_keytest(RR_P)) ;
     }
     
 
