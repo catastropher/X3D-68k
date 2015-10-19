@@ -97,7 +97,7 @@ void TEST_x3d_project_prism3d(X3D_Prism2D* dest, X3D_Prism3D* p, X3D_ViewPort* c
   dest->base_v = p->base_v;
 }
 
-#define TICKS_PER_SECONDS 350
+#define TICKS_PER_SECONDS 256
 
 volatile uint16 hardware_timer;
 
@@ -160,15 +160,7 @@ static void x3d_test_init(X3D_TestContext* context, X3D_Context* c) {
   // We don't want to quit yet!
   c->quit = 0;
   
-  //printf("Hello world!\n");
-  //LCD_restore(c->screen_data);
-  //while(1) ;
-  
-  //x3d_debug(c, TRUE, "Init debug\n");
-  
   return;
-  
-  //X3D_BlockAllocatorNode* node = c->object_manager.allocator.head;
 }
 
 static void x3d_test_copy_prism3d(X3D_Prism3D* dest, X3D_Prism3D* src) {
@@ -543,6 +535,9 @@ void init_level(X3D_TestContext* test, X3D_Context* context) {
   X3D_Segment* seg = x3d_segment_add(context, INITIAL_SEGMENT_BASE_V);
   x3d_prism_construct(&seg->prism, INITIAL_SEGMENT_BASE_V, 200 * 3, 50 * 3, (Vex3D_uint8) { 0, 0, 0 });
   x3d_calculate_segment_normals(seg);
+  
+  // Set the select spinner to the first segment
+  x3d_selectspinner_select(&context->spinner, context, 0, 0);
 }
 
 void init(X3D_TestContext* test, X3D_Context* context) {
@@ -568,7 +563,32 @@ void init(X3D_TestContext* test, X3D_Context* context) {
   cam->object.angle = (Vex3D_angle256){ 0, ANG_45, 0 };
   
   context->cam = cam;
+  
+  uint16 i;
+  for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
+    cam->object.seg_pos.segs[i] = SEGMENT_NONE;
+  }
+  
+  cam->object.seg_pos.segs[0] = 0;
+  
+  x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
+  cam->object.dir = (Vex3D_fp16x16) { 0, 0, 0 };
+  
+  // Reset the frame counter
+  test->context.frame = 0;
+  context->frame = 0;
+  
+  // Create a bouncing box
+  X3D_Segment* box =  x3d_segment_add(context, 4);
+  bouncing_box = box->id;  
+  x3d_prism_construct(&box->prism, 4, 20, 40, (Vex3D_uint8) { 0, 0, 0 });
+  x3d_create_object(context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0)->speed = 6;
+  
+  // Clear the status bar
+  context->status_bar[0] = '\0';
 }
+
+
 
 void x3d_test() {
   X3D_TestContext test;
@@ -578,83 +598,56 @@ void x3d_test() {
   
   X3D_Camera* cam = context.cam;
   
-  //X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
-
-  //x3d_prism_construct(&seg2->prism, 8, 200 * 3, 50 * 3, (Vex3D_uint8) { ANG_90, 0, 0 });
-
-  //x3d_segment_get_face(seg)->connect_id = 1;
-
-  //X3D_Prism* prism3d_rotated = malloc(sizeof(X3D_Prism3D) + sizeof(Vex3D) * 50 * 2);
-
+  void* gdbuf;
+  void* screen = test.context.screen;
+  
   // Construct the viewing frustum
   X3D_Frustum* frustum = malloc(sizeof(X3D_Frustum) + sizeof(X3D_Plane) * 20);
   x3d_frustum_from_rendercontext(frustum, &test.context);
 
-  //X3D_LOG_WAIT(&test.context, "DIFF: %ld\n", ((void *)seg) - ((void*)seg2));
 
-  x3d_selectspinner_select(&context.spinner, &context, 0, 0);
-
+  // Last timer tick the spinner spinned at
   uint16 last_spin = x3d_get_clock();
 
   uint16 i;
   
-  test.context.frame = 0;
-  context.frame = 0;
-
-  for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
-    cam->object.seg_pos.segs[i] = SEGMENT_NONE;
-  }
-
-  cam->object.seg_pos.segs[0] = 0;
-  
-  
-  X3D_Segment* box =  x3d_segment_add(&context, 4);
-  
-  bouncing_box = box->id;
-  
-  x3d_prism_construct(&box->prism, 4, 20, 40, (Vex3D_uint8) { 0, 0, 0 });
-  
-  x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
+  _Bool gray_on = FALSE;
   
   
   
-  cam->object.dir = (Vex3D_fp16x16) { 0, 0, 0 }; //dir;
-  
-  context.status_bar[0] = '\0';
-  
-  x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0)->speed = 6;
   
   if(setjmp(exit_jmp) != 0) {
     goto quit;
   }
   
   
-  //x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ -8192, -16384, 8192 }, FALSE, 0)->speed = 6;
   do {
-
+    uint16 begin_clock = x3d_get_clock();
+    
     // Construct the rotation matrix
     x3d_mat3x3_fp0x16_construct(&cam->object.mat, &cam->object.angle);
-    
     Vex3D_fp0x16 dir = { (int32)cam->object.mat.data[2], (int32)cam->object.mat.data[5], (int32)cam->object.mat.data[8]};
 
-    clrscr();
-    //x3d_draw_clipped_prism3d_wireframe(prism3d_rotated, frustum, &test.context);
 
+    // Reset render timer
     context.render_clock = 0;
-    
-    //x3d_attempt_move_object(&context, (void *)cam, NULL, 10);
-
-    //printf("%d\n", x3d_get_total_segments(&test.state));
-
-    //for(i = 0; i < x3d_get_total_segments(&test.state); ++i) {
-    //  x3d_render_segment_wireframe(i, frustum, &test.state, &test.context);
-    //}
     
     report.mul = 0;
     report.div = 0;
     report.arr2D = 0;
     report.bound_line = 0;
     
+    if(gray_on) {
+      GrayDBufSetHiddenAMSPlane(1);
+      clrscr();
+      GrayDBufSetHiddenAMSPlane(0);
+      context.screen_data = GrayDBufGetHiddenPlane(0);
+      test.context.screen = GrayDBufGetHiddenPlane(0);
+    }
+    
+    clrscr();
+    
+    // Render each segment that the camera is in
     if(!context.play || context.play_pos >= context.play_start) {
       for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
         if(cam->object.seg_pos.segs[i] != SEGMENT_NONE)
@@ -673,14 +666,42 @@ void x3d_test() {
     }
     
     if(_keytest(RR_P)) {
+      // Switch between the new and the old clipper
       context.render_select = (context.render_select + 1) & 1;
       
       while(_keytest(RR_P)) ;
     }
     
+    if(_keytest(RR_G)) {
+      // Switch between the new and the old clipper
+      //context.render_select = (context.render_select + 1) & 1;
+      
+      if(!gray_on) {
+        GrayOn();
+        gdbuf = malloc(GRAYDBUFFER_SIZE);
+        GrayDBufInit(gdbuf);
+        
+      }
+      else {
+        GrayOff();
+        context.screen_data = screen;
+        test.context.screen = screen;
+        PortSet(test.context.screen, LCD_WIDTH - 1, LCD_HEIGHT - 1);
+        
+        free(gdbuf);
+      }
+      
+      gray_on = !gray_on;
+      
+      while(_keytest(RR_G)) ;
+    }
+    
 
     printf("%s\n", context.status_bar);
     printf("%d => %d\n", context.render_clock, 256 / context.render_clock);
+    
+    printf("Real: %d\n", x3d_get_clock() - begin_clock);
+    
     
     
     printf("Mul: %d\n", report.mul);
@@ -692,21 +713,9 @@ void x3d_test() {
       printf("play frame: %d\n", context.play_pos);
     }
 
-    //for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
-    //  printf("%d ", cam->object.seg_pos.segs[i]);
-    //}
-    
-    //printf("\n%d %d %d\n", cam->object.dir.x, cam->object.dir.y, cam->object.dir.z);
-    
     Vex3D cam_pos;
     x3d_object_pos(cam, &cam_pos);
     
-    //printf("%ld %ld %ld\n", cam->object.dir.x, cam->object.dir.y, cam->object.dir.z);
-
-    //printf("%d\n", x3d_point_in_segment(seg, &cam_pos));
-
-    //printf("Face: %d\n", test.state.spinner.selected_face);
-
     if(context.spinner.selected_segment != SEGMENT_NONE && x3d_get_clock() - last_spin >= 75) {
       x3d_selectspinner_spin(&context.spinner);
       last_spin = x3d_get_clock();
@@ -716,7 +725,12 @@ void x3d_test() {
 
     x3d_test_handle_keys(&context);
 
-    x3d_renderdevice_flip(&test.device);
+    if(!gray_on) {
+      x3d_renderdevice_flip(&test.device);
+    }
+    else {
+      GrayDBufToggleSync();
+    }
     
     if(context.play && context.play_pos >= context.play_start + 1) {
       do {
