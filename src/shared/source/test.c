@@ -534,43 +534,52 @@ void x3d_temp_test(X3D_Context* context, X3D_ViewPort* port) {
 
 extern X3D_ClipReport report;
 
-void x3d_test() {
-  X3D_TestContext test;
+JMP_BUF exit_jmp;
 
+void init_level(X3D_TestContext* test, X3D_Context* context) {
+  // Create an initial segment
+  uint16 INITIAL_SEGMENT_BASE_V = 8;
+  
+  X3D_Segment* seg = x3d_segment_add(context, INITIAL_SEGMENT_BASE_V);
+  x3d_prism_construct(&seg->prism, INITIAL_SEGMENT_BASE_V, 200 * 3, 50 * 3, (Vex3D_uint8) { 0, 0, 0 });
+  x3d_calculate_segment_normals(seg);
+}
+
+void init(X3D_TestContext* test, X3D_Context* context) {
   FontSetSys(F_4x6);
-
-  // Make some prisms
   
-  X3D_Context context;
+  x3d_test_init(test, context);
   
-  x3d_test_init(&test, &context);
+  init_level(test, context);
   
+  // Select the old clipper
+  context->render_select = 0;
   
-  context.render_select = 0;
+  // Reset frame by frame playback
+  context->record = 0;
+  context->play = 0;
   
-  //goto quit;
+  // Register the object types
+  register_types(context);
   
-  //x3d_temp_test(&context, &test.context);
-  //return;
-  
-  context.record = 0;
-  context.play = 0;
-
-  X3D_Segment* seg = x3d_segment_add(&context, 4);
-  
-  register_types(&context);
-  
-   // Initialize the camera
-  X3D_Camera* cam = (X3D_Camera*)x3d_create_object(&context, OBJECT_CAM, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
+  // Initialize the camera
+  X3D_Camera* cam = (X3D_Camera*)x3d_create_object(context, OBJECT_CAM, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 0, 0, 0 }, FALSE, 0);
   cam->object.pos = (Vex3D_fp16x16){ -1000L << 15, 50L << 15, -1000L << 15 };
   cam->object.angle = (Vex3D_angle256){ 0, ANG_45, 0 };
   
-  context.cam = cam;
+  context->cam = cam;
+}
+
+void x3d_test() {
+  X3D_TestContext test;
+  X3D_Context context;
+  
+  init(&test, &context);
+  
+  X3D_Camera* cam = context.cam;
   
   //X3D_Segment* seg2 = x3d_segment_add(&test.state, 8);
 
-  X3D_Prism* prism3d = &seg->prism;//malloc(sizeof(X3D_Prism3D) + sizeof(Vex3D) * 50 * 2);
-  x3d_prism_construct(prism3d, 4, 200 * 3, 50 * 3, (Vex3D_uint8) { 0, 0, 0 });
   //x3d_prism_construct(&seg2->prism, 8, 200 * 3, 50 * 3, (Vex3D_uint8) { ANG_90, 0, 0 });
 
   //x3d_segment_get_face(seg)->connect_id = 1;
@@ -591,8 +600,6 @@ void x3d_test() {
   
   test.context.frame = 0;
   context.frame = 0;
-  
-  x3d_calculate_segment_normals(seg);
 
   for(i = 0; i < X3D_MAX_OBJECT_SEGS; ++i) {
     cam->object.seg_pos.segs[i] = SEGMENT_NONE;
@@ -616,6 +623,11 @@ void x3d_test() {
   context.status_bar[0] = '\0';
   
   x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ 16384, -8192, 8192 }, FALSE, 0)->speed = 6;
+  
+  if(setjmp(exit_jmp) != 0) {
+    goto quit;
+  }
+  
   
   //x3d_create_object(&context, OBJECT_BOX, (Vex3D){ 0, 0, 0 }, (Vex3D_angle256){ 0, 0, 0 }, (Vex3D_fp0x16){ -8192, -16384, 8192 }, FALSE, 0)->speed = 6;
   do {

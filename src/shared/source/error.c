@@ -129,6 +129,8 @@ void x3d_print_stacktrace() {
 
 #endif
 
+extern JMP_BUF exit_jmp;
+
 /**
 * Throws an error, prints out the error message, and aborts.
 *
@@ -160,5 +162,6 @@ void x3d_error(const char* format, ...) {
   
   //while(1);
 
-  exit(-1);
+  longjmp(exit_jmp, 1);
+  
 }
