@@ -887,7 +887,7 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
 }
 
 int32 vertical_slope(Vex2D v1, Vex2D v2) {
-  if(v1.x == v2.x)
+  if(v1.y == v2.y)
     return 0;
   
   return (((int32)(v2.x - v1.x)) << 16) / (v2.y - v1.y);
@@ -925,7 +925,9 @@ void fill_polygon_bucket(X3D_RasterPolygon* poly) {
     poly->x_left += poly->slope_left;
     poly->x_right += poly->slope_right;
     
-    poly->render_span(poly->x_left >> 16, poly->x_right >> 16, poly->scanline);
+    if(poly->y >= 0 && poly->y < LCD_HEIGHT) {
+      poly->render_span(max(0, poly->x_left >> 16), min(poly->x_right >> 16, LCD_WIDTH - 1), poly->scanline);
+    }
     
     ++poly->y;
     poly->scanline += LCD_WIDTH / 8;
@@ -998,9 +1000,13 @@ void init_fill_polygon(X3D_RasterPolygon* poly, Vex2D* v, uint16 total_v, uint16
     GrayDrawSpan_BLACK_R
   }[color];
   
+  if(poly->y < 0) {
+    poly->y = 0;
+  }
+  
   poly->scanline = context->gdbuf + poly->y * (LCD_WIDTH / 8);
   
-  poly->render_span(x_left, x_right, poly->scanline);
+  poly->render_span(max(0, x_left), min(LCD_WIDTH - 1, x_right), poly->scanline);
   poly->scanline += LCD_WIDTH / 8;
   ++poly->y;
   
@@ -1034,11 +1040,10 @@ void fast_fill_polygon(X3D_Context* context, Vex2D* v, uint16 total_v, uint16 co
   do {
     fill_polygon_bucket(&poly);
     
-    break;
-    
     if(poly.next_y >= poly.bottom_y)
       break;
     
+   
     next_bucket(&poly);  
   } while(1);
 }
@@ -1101,9 +1106,6 @@ void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* cont
   
   uint16 i;
   
-  if(id != 0)
-    return;
-  
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
   
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
@@ -1115,7 +1117,7 @@ void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* cont
       X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 20);
       new_region = x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, i, new_region);
       
-      if(face[i].connect_id != SEGMENT_NONE) {
+      if(face[i].connect_id != SEGMENT_NONE && id == 0) {
         
         if(new_region != NULL) {
           x3d_draw_clip_segment(face[i].connect_id, new_region, context, viewport);
@@ -1125,7 +1127,11 @@ void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* cont
         if(new_region != NULL && context->gray_enabled) {
           // Check to make sure we're on the right side of the plane
           
-          fast_fill_boundregion(context, new_region, (i % 3) + 1);
+          uint16 color[] = {
+            3, 3, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2
+          };
+          
+          fast_fill_boundregion(context, new_region, color[i]);
         }
       }
     }
