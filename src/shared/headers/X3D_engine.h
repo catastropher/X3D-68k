@@ -57,5 +57,9 @@ typedef struct X3D_Context {
   
   uint8 render_select;
   
+  _Bool gray_enabled;
+  
+  void* gdbuf;
+  
 } X3D_Context;
 

@@ -530,7 +530,7 @@ JMP_BUF exit_jmp;
 
 void init_level(X3D_TestContext* test, X3D_Context* context) {
   // Create an initial segment
-  uint16 INITIAL_SEGMENT_BASE_V = 8;
+  uint16 INITIAL_SEGMENT_BASE_V = 4;
   
   X3D_Segment* seg = x3d_segment_add(context, INITIAL_SEGMENT_BASE_V);
   x3d_prism_construct(&seg->prism, INITIAL_SEGMENT_BASE_V, 200 * 3, 50 * 3, (Vex3D_uint8) { 0, 0, 0 });
@@ -611,7 +611,7 @@ void x3d_test() {
 
   uint16 i;
   
-  _Bool gray_on = FALSE;
+  context.gray_enabled = FALSE;
   
   
   
@@ -637,12 +637,14 @@ void x3d_test() {
     report.arr2D = 0;
     report.bound_line = 0;
     
-    if(gray_on) {
+    if(context.gray_enabled) {
       GrayDBufSetHiddenAMSPlane(1);
       clrscr();
       GrayDBufSetHiddenAMSPlane(0);
       context.screen_data = GrayDBufGetHiddenPlane(0);
       test.context.screen = GrayDBufGetHiddenPlane(0);
+      
+      context.gdbuf = GrayDBufGetHiddenPlane(1);
     }
     
     clrscr();
@@ -676,9 +678,9 @@ void x3d_test() {
       // Switch between the new and the old clipper
       //context.render_select = (context.render_select + 1) & 1;
       
-      if(!gray_on) {
+      if(!context.gray_enabled) {
         GrayOn();
-        gdbuf = malloc(GRAYDBUFFER_SIZE);
+        gdbuf = context.gdbuf = malloc(GRAYDBUFFER_SIZE);
         GrayDBufInit(gdbuf);
         
       }
@@ -691,11 +693,14 @@ void x3d_test() {
         free(gdbuf);
       }
       
-      gray_on = !gray_on;
+      context.gray_enabled = !context.gray_enabled;
       
       while(_keytest(RR_G)) ;
     }
     
+    if(context.gray_enabled) {
+      GrayDBufSetHiddenAMSPlane(1);
+    }
 
     printf("%s\n", context.status_bar);
     printf("%d => %d\n", context.render_clock, 256 / context.render_clock);
@@ -725,7 +730,7 @@ void x3d_test() {
 
     x3d_test_handle_keys(&context);
 
-    if(!gray_on) {
+    if(!context.gray_enabled) {
       x3d_renderdevice_flip(&test.device);
     }
     else {

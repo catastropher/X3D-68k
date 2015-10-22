@@ -31,6 +31,8 @@
 #include "X3D_segment.h"
 #include "X3D_newclip.h"
 
+#include "extgraph.h"
+
 X3D_ClipReport report;
 
 /**
@@ -475,6 +477,7 @@ _Bool diff_boundline(X3D_BoundLine* a, X3D_BoundLine* b) {
   return TRUE;//abs(a->normal.x - b->normal.x) > 500 || abs(a->normal.y - b->normal.y) > 500 || abs(a->d - b->d) > 2;
 }
 
+
 X3D_BoundRegion* x3d_construct_boundregion_from_clip_data(X3D_ClipData* clip, uint16* edge_list, uint16 total_e, X3D_BoundRegion* region, _Bool clockwise) {
   X3D_BoundRegion* result_region = region;
   
@@ -883,8 +886,173 @@ void test_clip_scale(X3D_Context* context, X3D_ViewPort* port) {
   while(1) ;
 }
 
+int32 vertical_slope(Vex2D v1, Vex2D v2) {
+  if(v1.x == v2.x)
+    return 0;
+  
+  return (((int32)(v2.x - v1.x)) << 16) / (v2.y - v1.y);
+}
+
+uint16 x3d_wrap_up(uint16 n, uint16 end) {
+  return n + 1 < end ? n + 1 : 0;
+}
+
+uint16 x3d_wrap_down(uint16 n, uint16 end) {
+  return n == 0 ? end - 1 : n - 1;
+}
 
 
+typedef struct X3D_RasterPolygon {
+  int32 slope_left, slope_right;
+  int32 x_left, x_right;
+  
+  uint16 y;
+  uint16 next_y;
+  uint16 bottom_y;
+  
+  void (*render_span )(short x1 asm("%d0"), short x2 asm("%d1"), void * addrs asm("%a0"));
+  uint8* scanline;
+  
+  Vex2D* v;
+  uint16 total_v;
+  
+  uint16 point_left;
+  uint16 point_right;
+} X3D_RasterPolygon;
+
+void fill_polygon_bucket(X3D_RasterPolygon* poly) {
+  while(poly->y <= poly->next_y) {
+    poly->x_left += poly->slope_left;
+    poly->x_right += poly->slope_right;
+    
+    poly->render_span(poly->x_left >> 16, poly->x_right >> 16, poly->scanline);
+    
+    ++poly->y;
+    poly->scanline += LCD_WIDTH / 8;
+  }
+}
+
+void init_fill_polygon(X3D_RasterPolygon* poly, Vex2D* v, uint16 total_v, uint16 color, X3D_Context* context) {
+  poly->total_v = total_v;
+  poly->v = v;
+  
+  // Find the top point and the max y
+  uint16 top = 0;
+  uint16 i;
+  
+  poly->bottom_y = v[0].y;
+  
+  for(i = 1; i < total_v; ++i) {
+    if(v[i].y <= v[top].y) {
+      top = i;
+    }
+    
+    poly->bottom_y = max(poly->bottom_y, v[i].y);
+  }
+  
+  int32 x_left, x_right;
+  
+  
+  // Check for the case where we have a flat top polygon
+  uint16 prev;
+  uint16 next = x3d_wrap_up(top, total_v);
+  
+  if(v[next].y == v[top].y) {
+    prev = top;
+    top = next;
+  }
+  else {
+    prev = x3d_wrap_down(top, total_v);
+  }
+  
+  if(v[prev].y == v[top].y) {
+    poly->point_left = x3d_wrap_down(prev, total_v);
+    poly->point_right = x3d_wrap_up(top, total_v);
+    
+    x_left = v[prev].x;
+    x_right = v[top].x;
+    
+    poly->slope_left = vertical_slope(v[prev], v[poly->point_left]);
+    poly->slope_right = vertical_slope(v[top], v[poly->point_right]);
+  }
+  else {
+    poly->point_left = prev;
+    poly->point_right = x3d_wrap_up(top, total_v);
+    
+    x_left = x_right = v[top].x;
+    
+    poly->slope_left = vertical_slope(v[top], v[poly->point_left]);
+    poly->slope_right = vertical_slope(v[top], v[poly->point_right]);
+  }
+  
+  poly->x_left = x_left << 16;
+  poly->x_right = x_right << 16;
+  
+  poly->next_y = min(v[poly->point_left].y, v[poly->point_right].y);
+  poly->y = v[top].y;
+  
+  poly->render_span = (void* []) {
+    GrayDrawSpan_WHITE_R,
+    GrayDrawSpan_LGRAY_R,
+    GrayDrawSpan_DGRAY_R,
+    GrayDrawSpan_BLACK_R
+  }[color];
+  
+  poly->scanline = context->gdbuf + poly->y * (LCD_WIDTH / 8);
+  
+  poly->render_span(x_left, x_right, poly->scanline);
+  poly->scanline += LCD_WIDTH / 8;
+  ++poly->y;
+  
+}
+
+void next_bucket(X3D_RasterPolygon* poly) {
+  uint16 prev_left, prev_right;
+  
+  if(poly->v[poly->point_left].y <= poly->v[poly->point_right].y) {
+    prev_left = poly->point_left;
+    poly->point_left = x3d_wrap_down(poly->point_left, poly->total_v);
+    
+    poly->slope_left = vertical_slope(poly->v[prev_left], poly->v[poly->point_left]);
+    poly->next_y = poly->v[poly->point_left].y;
+  }
+  
+  if(poly->v[poly->point_left].y >= poly->v[poly->point_right].y) {
+    prev_right = poly->point_right;
+    poly->point_right = x3d_wrap_up(poly->point_right, poly->total_v);
+    
+    poly->slope_right = vertical_slope(poly->v[prev_right], poly->v[poly->point_right]);
+    poly->next_y = poly->v[poly->point_right].y; 
+  }
+}
+
+void fast_fill_polygon(X3D_Context* context, Vex2D* v, uint16 total_v, uint16 color) {
+  X3D_RasterPolygon poly;
+  
+  init_fill_polygon(&poly, v, total_v, color, context);
+  
+  do {
+    fill_polygon_bucket(&poly);
+    
+    break;
+    
+    if(poly.next_y >= poly.bottom_y)
+      break;
+    
+    next_bucket(&poly);  
+  } while(1);
+}
+
+void fast_fill_boundregion(X3D_Context* context, X3D_BoundRegion* region, uint16 color) {
+  Vex2D v[region->total_bl];
+  
+  uint16 i;
+  for(i = 0; i < region->total_bl; ++i) {
+    v[i] = region->line[i].v[0];
+  }
+  
+  fast_fill_polygon(context, v, region->total_bl, color);
+}
 
 
 void x3d_test_new_clip(X3D_Context* context, X3D_ViewPort* port) {
@@ -939,13 +1107,26 @@ void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* cont
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
   
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
-    if(face[i].connect_id != SEGMENT_NONE) {
-      X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 10);
-      
+    Vex3D pos;
+    
+    x3d_object_pos(context->cam, &pos);
+    
+    if(x3d_distance_to_plane(&face[i].plane, &pos) > 0) {
+      X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 20);
       new_region = x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, i, new_region);
       
-      if(new_region != NULL) {
-        x3d_draw_clip_segment(face[i].connect_id, new_region, context, viewport);
+      if(face[i].connect_id != SEGMENT_NONE) {
+        
+        if(new_region != NULL) {
+          x3d_draw_clip_segment(face[i].connect_id, new_region, context, viewport);
+        }
+      }
+      else {
+        if(new_region != NULL && context->gray_enabled) {
+          // Check to make sure we're on the right side of the plane
+          
+          fast_fill_boundregion(context, new_region, (i % 3) + 1);
+        }
       }
     }
   }
