@@ -209,7 +209,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       // Calculate the distance to the face
       int16 dist = x3d_distance_to_plane(&face[i].plane, &cam_pos);
       
-      printf("dist: %d\n", dist);
+      //printf("dist: %d\n", dist);
       
       if(dist < 0)
         continue;
@@ -239,7 +239,7 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
       else {
         uint16 d;
         
-        printf("min dist\n");
+        //printf("min dist\n");
         
         for(d = 0; d < frustum->total_p - 1; d++) {
           f->p[d] = frustum->p[d + 1];
@@ -279,6 +279,26 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
     }
     }
     #endif
+    }
+    else if(context->gray_enabled){
+      Vex3D cam_pos;
+      
+      x3d_prism3d_get_face(poly, temp, i);
+      
+      x3d_object_pos((void *)context->cam, &cam_pos);
+      
+      // Calculate the distance to the face
+      int16 dist = x3d_distance_to_plane(&face[i].plane, &cam_pos);
+      
+      if(dist > 0) {
+        uint16 color[] = {
+          3, 3, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2
+        };
+        
+        if(x3d_clip_polygon_to_frustum(poly, frustum, poly_out)) {
+          fast_fill_polygon3d(viewport, context, poly_out, color[i]);
+        }
+      }
     }
     
   }

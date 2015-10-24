@@ -80,4 +80,5 @@ typedef struct X3D_ClipReport {
 
 void x3d_test_new_clip();
 void x3d_construct_boundregion(X3D_BoundRegion* region, Vex2D v[], uint16 total_v);
+void fast_fill_polygon3d(X3D_ViewPort* port, X3D_Context* context, X3D_Polygon3D* poly, uint16 color);
 

@@ -148,6 +148,7 @@ void x3d_error(const char* format, ...) {
 
   
 //#ifdef __TIGCC__
+  GrayOff();
   PortRestore();
   clrscr();
 

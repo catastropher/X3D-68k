@@ -588,6 +588,72 @@ void init(X3D_TestContext* test, X3D_Context* context) {
   context->status_bar[0] = '\0';
 }
 
+#include <extgraph.h>
+
+
+
+void adjust_gray() {
+  
+    
+  uint16 gray_level = 0;
+  
+  char* dark;
+  char* light;
+  
+  do {
+redraw:
+    dark = GrayDBufGetHiddenPlane(0);
+    light = GrayDBufGetHiddenPlane(1);
+    
+    clrscr();
+    GrayFastFillRect_R(dark, light, 0, 20, LCD_WIDTH / 2, LCD_HEIGHT / 2, 2);
+    
+    GrayFastFillRect_R(dark, light, LCD_WIDTH / 2, 20, LCD_WIDTH - 1 , LCD_HEIGHT / 2, 3);
+    
+    GrayFastFillRect_R(dark, light, 0, LCD_HEIGHT / 2, LCD_WIDTH / 2 , LCD_HEIGHT - 1, 1);
+    
+    GrayFastFillRect_R(dark, light, LCD_WIDTH / 2, LCD_HEIGHT / 2, LCD_WIDTH - 1 , LCD_HEIGHT - 1, 0);
+    
+    
+    
+    
+    printf("level = %d\n", gray_level);
+    
+    GrayDBufToggleSync();
+   
+wait:
+    if(_keytest(RR_PLUS)) {
+      while(_keytest(RR_PLUS)) ;
+      ++gray_level;
+      
+      GrayAdjust(gray_level);
+      
+      goto redraw;
+    }
+    
+    if(_keytest(RR_MINUS)) {
+      while(_keytest(RR_MINUS)) ;
+      
+      if(gray_level > 0)
+        --gray_level;
+      
+      GrayAdjust(gray_level);
+      
+      goto redraw;
+    }
+    
+    if(_keytest(RR_ENTER)) {
+       while(_keytest(RR_ENTER)) ;
+       return;
+    }
+    
+    goto wait;
+  } while(1);
+  
+  
+}
+
+
 
 
 void x3d_test() {
@@ -612,7 +678,6 @@ void x3d_test() {
   uint16 i;
   
   context.gray_enabled = FALSE;
-  
   
   
   
@@ -672,6 +737,13 @@ void x3d_test() {
       context.render_select = (context.render_select + 1) & 1;
       
       while(_keytest(RR_P)) ;
+    }
+    
+    if(_keytest(RR_5))
+      adjust_gray();
+    
+    if(_keytest(RR_M)) {
+      x3d_error("MMMMMMMMMM");
     }
     
     if(_keytest(RR_G)) {

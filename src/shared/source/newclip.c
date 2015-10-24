@@ -906,9 +906,9 @@ typedef struct X3D_RasterPolygon {
   int32 slope_left, slope_right;
   int32 x_left, x_right;
   
-  uint16 y;
-  uint16 next_y;
-  uint16 bottom_y;
+  int16 y;
+  int16 next_y;
+  int16 bottom_y;
   
   void (*render_span )(short x1 asm("%d0"), short x2 asm("%d1"), void * addrs asm("%a0"));
   uint8* scanline;
@@ -921,6 +921,11 @@ typedef struct X3D_RasterPolygon {
 } X3D_RasterPolygon;
 
 void fill_polygon_bucket(X3D_RasterPolygon* poly) {
+  
+  uint16 next = poly->next_y;
+  
+  poly->next_y = min(LCD_HEIGHT - 1, poly->next_y);
+  
   while(poly->y <= poly->next_y) {
     poly->x_left += poly->slope_left;
     poly->x_right += poly->slope_right;
@@ -932,6 +937,8 @@ void fill_polygon_bucket(X3D_RasterPolygon* poly) {
     ++poly->y;
     poly->scanline += LCD_WIDTH / 8;
   }
+  
+  poly->y = next + 1;
 }
 
 void init_fill_polygon(X3D_RasterPolygon* poly, Vex2D* v, uint16 total_v, uint16 color, X3D_Context* context) {
@@ -968,6 +975,7 @@ void init_fill_polygon(X3D_RasterPolygon* poly, Vex2D* v, uint16 total_v, uint16
   }
   
   if(v[prev].y == v[top].y) {
+    //printf("Flat top\n");
     poly->point_left = x3d_wrap_down(prev, total_v);
     poly->point_right = x3d_wrap_up(top, total_v);
     
@@ -978,6 +986,7 @@ void init_fill_polygon(X3D_RasterPolygon* poly, Vex2D* v, uint16 total_v, uint16
     poly->slope_right = vertical_slope(v[top], v[poly->point_right]);
   }
   else {
+    //printf("Not flat top\n");
     poly->point_left = prev;
     poly->point_right = x3d_wrap_up(top, total_v);
     
@@ -1004,6 +1013,11 @@ void init_fill_polygon(X3D_RasterPolygon* poly, Vex2D* v, uint16 total_v, uint16
     poly->y = 0;
   }
   
+  if(poly->next_y < 0) {
+    //x3d_error("Less\n");
+    poly->next_y = 0;
+  }
+  
   poly->scanline = context->gdbuf + poly->y * (LCD_WIDTH / 8);
   
   poly->render_span(max(0, x_left), min(LCD_WIDTH - 1, x_right), poly->scanline);
@@ -1013,23 +1027,52 @@ void init_fill_polygon(X3D_RasterPolygon* poly, Vex2D* v, uint16 total_v, uint16
 }
 
 void next_bucket(X3D_RasterPolygon* poly) {
-  uint16 prev_left, prev_right;
+  uint16 next_left = x3d_wrap_down(poly->point_left, poly->total_v);
+  uint16 next_right = x3d_wrap_up(poly->point_right, poly->total_v);
   
-  if(poly->v[poly->point_left].y <= poly->v[poly->point_right].y) {
-    prev_left = poly->point_left;
-    poly->point_left = x3d_wrap_down(poly->point_left, poly->total_v);
+  _Bool end_left = poly->v[poly->point_left].y == poly->bottom_y;
+  _Bool end_right = poly->v[poly->point_right].y == poly->bottom_y;
+  
+  uint16 point_left = poly->point_left;
+  uint16 point_right = poly->point_right;
+  
+#if 1
+  if(end_left && end_right) {
+    //printf("Case\n");
+    poly->y = 1000;
+    return;
+  }
+#endif
+ 
+#if 0
+  printf("left: {%d, %d}\n", poly->v[poly->point_left].x, poly->v[poly->point_left].y);
+  printf("right: {%d, %d}\n", poly->v[poly->point_right].x, poly->v[poly->point_right].y);
+  
+  printf("Next left: {%d, %d}\n", poly->v[next_left].x, poly->v[next_left].y);
+  printf("Next right: {%d, %d}\n", poly->v[next_right].x, poly->v[next_right].y);
+#endif
+  
+  if(poly->v[poly->point_left].y <= poly->v[poly->point_right].y && !end_left) {
+    //printf("Left next|");
     
-    poly->slope_left = vertical_slope(poly->v[prev_left], poly->v[poly->point_left]);
-    poly->next_y = poly->v[poly->point_left].y;
+    poly->slope_left = vertical_slope(poly->v[poly->point_left], poly->v[next_left]);
+    poly->point_left = next_left;
+    
+    
+    poly->next_y = min(poly->v[poly->point_left].y, poly->v[poly->point_right].y);
   }
   
-  if(poly->v[poly->point_left].y >= poly->v[poly->point_right].y) {
-    prev_right = poly->point_right;
-    poly->point_right = x3d_wrap_up(poly->point_right, poly->total_v);
+  if(poly->v[point_left].y >= poly->v[point_right].y && !end_right) {
+    //printf("Right next\n");
     
-    poly->slope_right = vertical_slope(poly->v[prev_right], poly->v[poly->point_right]);
-    poly->next_y = poly->v[poly->point_right].y; 
+    poly->slope_right = vertical_slope(poly->v[poly->point_right], poly->v[next_right]);
+    poly->point_right = next_right;
+    poly->next_y = poly->v[poly->point_right].y;
+    
+    poly->next_y = min(poly->v[poly->point_left].y, poly->v[poly->point_right].y);
   }
+  
+  //printf("\n");
 }
 
 void fast_fill_polygon(X3D_Context* context, Vex2D* v, uint16 total_v, uint16 color) {
@@ -1037,15 +1080,48 @@ void fast_fill_polygon(X3D_Context* context, Vex2D* v, uint16 total_v, uint16 co
   
   init_fill_polygon(&poly, v, total_v, color, context);
   
+  uint16 it = 0;
+  
   do {
     fill_polygon_bucket(&poly);
+   
+    next_bucket(&poly);
     
-    if(poly.next_y >= poly.bottom_y)
+    if(poly.y >= poly.bottom_y)
       break;
     
-   
-    next_bucket(&poly);  
+    ++it;
+    
+    if(it > total_v) {
+      x3d_error("Too many it (v: %d, y: %d, bt: %d)\n", total_v, poly.y, poly.bottom_y);
+    }
+    
   } while(1);
+}
+
+void fast_fill_polygon3d(X3D_ViewPort* port, X3D_Context* context, X3D_Polygon3D* poly, uint16 color) {
+  Vex2D v[poly->total_v];
+  uint16 i;
+  
+  if(poly->total_v < 3) {
+    x3d_error("Too few vert\n");
+  }
+  
+  for(i = 0; i < poly->total_v; ++i) {
+    x3d_vex3d_int16_project(v + i, poly->v + i, port);
+    x3d_rendercontext_clamp_vex2d_int16(v + 1, port);
+  }
+  
+#if 1
+  if(!x3d_is_clockwise_turn(v, v + 1, v + 2)) {
+    //printf("WRONG\n");
+    for(i = 0; i < poly->total_v / 2; ++i) {
+      SWAP(v[i], v[poly->total_v - 1 - i]);
+    }
+  }
+#endif
+  
+  fast_fill_polygon(context, v, poly->total_v, color);
 }
 
 void fast_fill_boundregion(X3D_Context* context, X3D_BoundRegion* region, uint16 color) {
