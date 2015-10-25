@@ -80,11 +80,70 @@ void init_edge(X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y)
     }
   }
   else {
-    if(a.x > )
+    // Case where both endpoints are visible
+    if(a.y >= min_y && b.y <= max_y) {
+      int32 slope = vertical_slope(a, b);
+      
+      int32 x = ((int32)a.x << 16);
+      int16 y = a.y;
+      
+      while(y <= b.y) {
+        edge->data[y - a.y] = x >> 16;
+        x += slope;
+        ++y;
+      }
+      
+      edge->start_y = a.y;
+      edge->end_y = b.y;
+      
+    }
   }
 }
 
+void draw_edge(X3D_RasterEdge* edge) {
+  int16 y = edge->start_y;
+  
+  while(y <= edge->end_y) {
+    //printf("%d\n", edge->data[y - edge->start_y]);
+    DrawPix(edge->data[y - edge->start_y], y, A_NORMAL);
+    ++y;
+  }
 
+}
+
+void test_newnew_clip() {
+  clrscr();
+  
+  Vex2D a = { 128, 0 };
+  Vex2D b = { 20, 57 };
+  
+  int16 data[256];
+  
+  
+  X3D_RasterEdge edge;
+  edge.data = data;
+  init_edge(&edge, a, b, 0, 239);
+  draw_edge(&edge);
+  
+  X3D_RasterEdge edge2;
+  
+  int16 data2[256];
+  edge2.data = data2;
+  
+  b = (Vex2D){ 200, 57 };
+  init_edge(&edge2, a, b, 0, 239);
+  draw_edge(&edge2);
+  
+  uint16 i;
+  
+  for(i = 0; i < 57; ++i) {
+    FastDrawHLine(LCD_MEM, edge.data[i], edge2.data[i], i, A_NORMAL);
+  }
+  
+  
+  //printf("Hello from test!\n");
+  ngetchx();
+}
 
 
 

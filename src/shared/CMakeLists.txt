@@ -40,6 +40,7 @@ add_executable(X3DShared
   source/level.c
   source/command.c
   source/newclip.c
+  source/newnewclip.c
 )
 
 if(X3D_TARGET EQUAL 68k)

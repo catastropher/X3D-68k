@@ -654,9 +654,14 @@ wait:
 }
 
 
-
+void test_newnew_clip();
 
 void x3d_test() {
+  
+  test_newnew_clip();
+  return;
+  
+  
   X3D_TestContext test;
   X3D_Context context;
   
