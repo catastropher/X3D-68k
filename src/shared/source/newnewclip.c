@@ -53,10 +53,16 @@ enum {
 
 int32 vertical_slope(Vex2D v1, Vex2D v2);
 
+#define SWAP(_a, _b) { typeof(_a) _temp; _temp = _a; _a = _b; _b = _temp; };
+
 void init_edge(X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y) {
   edge->flags = 0;
   
-  if((a.y < min_y && b.y < min_y) || (a.y > max_y && b.y > max_y)) {
+  if(a.y > b.y) {
+    SWAP(a, b);
+  }
+  
+  if(b.y < min_y || a.x > max_y) {
     // Invisible edge
     edge->flags = EDGE_INVISIBLE;
   }
@@ -74,7 +80,7 @@ void init_edge(X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y)
     }
   }
   else {
-    x = x0 + (y1 - y0)m
+    if(a.x > )
   }
 }
 
