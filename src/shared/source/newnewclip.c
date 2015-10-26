@@ -87,7 +87,7 @@ void init_edge(X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y)
       int32 x = ((int32)a.x << 16);
       int16 y = a.y;
       
-      while(y <= b.y) {
+      while(  y <= b.y) {
         edge->data[y - a.y] = x >> 16;
         x += slope;
         ++y;
@@ -99,6 +99,82 @@ void init_edge(X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y)
     }
   }
 }
+
+typedef struct X3D_Span_int16 {
+  int16 left;
+  int16 right;
+} X3D_Span_int16;
+
+typedef struct X3D_Span_uint8 {
+  uint8 left;
+  uint8 right;
+} X3D_Span_uint8;
+
+_Bool clip_span(X3D_Span_int16* bound, X3D_Span_int16* span, X3D_Span_int16* dest) {
+  if(span->left <= bound->left) {
+    dest->left = bound->left + 1;
+  }
+  else {
+    dest->left = span->left;
+  }
+  
+  if(span->right >= bound->right) {
+    dest->right = bound->right - 1;
+  }
+  else {
+    dest->right = span->right;
+  }
+ 
+  return dest->left <= dest->right;
+}
+
+typedef struct X3D_RasterPoly {
+  uint16 start_y;
+  uint16 end_y;
+  
+  X3D_Span_int16* spans;
+} X3D_RasterPoly;
+
+X3D_Span_int16* get_span(X3D_RasterPoly* poly, uint16 span) {
+  return poly->spans + span - poly->start_y;
+}
+
+_Bool clip_poly_span(X3D_RasterPoly* bound_poly, X3D_RasterPoly* poly, uint16 y, X3D_Span_int16* span) {
+  X3D_Span_int16* bound_span = get_span(bound_poly, y);
+  X3D_Span_int16* poly_span = get_span(poly, y);
+  
+  return clip_span(bound_span, poly_span, span);
+}
+
+
+_Bool intersect_rasterpoly(X3D_RasterPoly* bound, X3D_RasterPoly* poly, X3D_RasterPoly* dest) {
+  int16 y = max(bound->start_y, poly->start_y);
+  int16 end_y = min(bound->end_y, poly->end_y);
+  X3D_Span_int16 span;
+  
+  // Find the top visible span
+  while(y <= end_y && !clip_poly_span(bound, poly, y, &span)) {
+    ++y;
+  }
+  
+  // Find the bottom visible span
+  while(end_y > y && !clip_poly_span(bound, poly, end_y, &span)) {
+    --end_y;
+  }
+  
+  dest->start_y = y;
+  dest->end_y = end_y;
+  
+  while(y <= end_y) {
+    clip_poly_span(bound, poly, y, get_span(dest, y));
+    ++y;
+  }
+  
+  return y <= end_y;
+}
+
+
+
 
 void draw_edge(X3D_RasterEdge* edge) {
   int16 y = edge->start_y;
