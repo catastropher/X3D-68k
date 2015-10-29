@@ -62,7 +62,7 @@ void* renderstack_alloc(X3D_RenderStack* stack, uint16 size) {
   stack->ptr -= size + (size & 1);
   
   if(stack->ptr < stack->base) {
-    x3d_error("Render stack overflow");
+    x3d_error("Render stack overflow (need %u)", size);
   }
   
   return stack->ptr;
@@ -96,9 +96,8 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
   
   if(b.y < min_y || a.y > max_y) {
     edge->flags = EDGE_INVISIBLE;
-    printf("Invisible!\n");
   }
-  if(a.y == b.y) {
+  else if(a.y == b.y) {
     printf("horizontal!\n");
     // Case 1: edge is horizontal
     edge->flags = EDGE_HORIZONTAL;
@@ -135,6 +134,7 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     edge->min_y = y;
     
     edge->flags = 0;
+    
     edge->x_data = renderstack_alloc(stack, (end_y - y + 1) * 2);
     
     while(y <= end_y) {
@@ -223,21 +223,41 @@ int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge) {
   return dest;
 }
 
-void populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, uint16 start_edge, int16 dir, uint16 end_edge, int16* dest) {
+int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, uint16 start_edge, int16 dir, uint16 end_edge, int16* dest) {
   uint16 index = start_edge;
+  int16* start = dest;
   
   if(index == end_edge) {
-    populate_edge(raster_edge + edge_index[index], dest, 1);
+    X3D_RasterEdge* edge = raster_edge + edge_index[index];
+    
+    if(edge->flags & EDGE_INVISIBLE){
+      return 0;
+    }
+    else {
+      dest = populate_edge(edge, dest, 1);
+    }
   }
   else {
     uint16 next;
+    _Bool next_invisible = FALSE;
+    
+    while((raster_edge[edge_index[index]].flags & EDGE_INVISIBLE) && index != end_edge) {
+      ++index;
+    }
+    
+    if(index == end_edge)
+      return 0;
     
     do {
       next = next_edge(index, total_e, dir);
-      dest = populate_edge(raster_edge + edge_index[index], dest, next == end_edge);
+      next_invisible = raster_edge[edge_index[next]].flags & EDGE_INVISIBLE;
+      
+      dest = populate_edge(raster_edge + edge_index[index], dest, next == end_edge || next_invisible);
       index = next;
-    } while(next != end_edge);
+    } while(next != end_edge && !next_invisible);
   }
+  
+  return dest - start;
 }
 
 void intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, X3D_RasterRegion* dest) {
@@ -251,9 +271,6 @@ void intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterEdge* raster_edg
   if(top->flags & EDGE_HORIZONTAL) {
     
   }
-  
-  printf("Top: %d\n", top_index);
-  printf("Bottom: %d\n", bottom_index);
   
   int16 left_dir;
   
@@ -270,13 +287,17 @@ void intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterEdge* raster_edg
   int16 left[128];
   int16 right[128];
   
-  populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left);
+  int16 total_left = populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left);
   
-  populate_polyline(raster_edge, edge_index, total_e, next_edge(top_index, total_e, -left_dir), -left_dir, bottom_index, right);
+  int16 total_right = populate_polyline(raster_edge, edge_index, total_e, next_edge(top_index, total_e, -left_dir), -left_dir, bottom_index, right);
+  
+  if(total_left != total_right) {
+    printf("ERROR\n");
+  }
   
   int16 i;
   
-  for(i = 0; i < raster_edge[bottom_index].max_y - top->min_y + 1; ++i) {
+  for(i = 0; i < total_left; ++i) {
     //DrawPix(left[i], i + top->min_y, A_NORMAL);
     //DrawPix(right[i], i + top->min_y, A_NORMAL);
     
@@ -308,7 +329,7 @@ void test_newnew_clip() {
   clrscr();
   
   X3D_RenderStack stack;
-  renderstack_init(&stack, 1024);
+  renderstack_init(&stack, 2048);
   
   X3D_RasterEdge edge;
   
@@ -333,7 +354,7 @@ void test_newnew_clip() {
   
   for(i = 0; i < TOTAL; ++i) {
     int16 next = (i + 1) % TOTAL;
-    generate_rasteredge(&stack, edges + i, v[i], v[next], 50, 111);
+    generate_rasteredge(&stack, edges + i, v[i], v[next], 0, LCD_HEIGHT - 1);
     
     //draw_edge(edges);
     //ngetchx();
@@ -342,6 +363,27 @@ void test_newnew_clip() {
   uint16 edge_index[] =  { 0, 1, 2, 3 };
   
   intersect_rasterregion(NULL, edges, edge_index, 4, NULL);
+  
+  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 50, A_NORMAL);
+  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 60, A_NORMAL);
+
+  ngetchx();
+  clrscr();
+  
+  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 50, A_NORMAL);
+  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 60, A_NORMAL);
+  
+  for(i = 0; i < TOTAL; ++i) {
+    int16 next = (i + 1) % TOTAL;
+    generate_rasteredge(&stack, edges + i, v[i], v[next], 50, 60);
+    
+    //draw_edge(edges);
+    //ngetchx();
+  }
+  
+  intersect_rasterregion(NULL, edges, edge_index, 4, NULL);
+  
+  
   
   
   
