@@ -210,20 +210,28 @@ uint16 next_edge(uint16 edge, uint16 total_e, int16 dir) {
   }
 }
 
-int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge) {
-  int16 count = edge->max_y - edge->min_y + (last_edge ? 1 : 0);
-  int16* data = edge->x_data;
-  
-  while(count-- > 0) {
-    *dest = *data;
-    ++dest;
-    ++data;
+int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge, _Bool left) {
+  if(edge->flags & EDGE_HORIZONTAL) {
+    *dest = left ? edge->min_x : edge->max_x;
+    
+    return dest + 1;
   }
-  
-  return dest;
+  else {
+    int16 count = edge->max_y - edge->min_y + (last_edge ? 1 : 0);
+    int16* data = edge->x_data;
+    
+    while(count-- > 0) {
+      *dest = *data;
+      ++dest;
+      ++data;
+    }
+    
+    return dest;
+  }
 }
 
-int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, uint16 start_edge, int16 dir, uint16 end_edge, int16* dest) {
+int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, uint16 start_edge,
+                        int16 dir, uint16 end_edge, int16* dest, _Bool left) {
   uint16 index = start_edge;
   int16* start = dest;
   
@@ -234,27 +242,29 @@ int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 
       return 0;
     }
     else {
-      dest = populate_edge(edge, dest, 1);
+      dest = populate_edge(edge, dest, 1, left);
     }
   }
   else {
     uint16 next;
     _Bool next_invisible = FALSE;
     
-    while((raster_edge[edge_index[index]].flags & EDGE_INVISIBLE) && index != end_edge) {
+    int16 end = next_edge(end_edge, total_e, dir);
+    
+    while((raster_edge[edge_index[index]].flags & EDGE_INVISIBLE) && index != end) {
       ++index;
     }
     
-    if(index == end_edge)
+    if(index == end)
       return 0;
     
     do {
       next = next_edge(index, total_e, dir);
       next_invisible = raster_edge[edge_index[next]].flags & EDGE_INVISIBLE;
       
-      dest = populate_edge(raster_edge + edge_index[index], dest, next == end_edge || next_invisible);
+      dest = populate_edge(raster_edge + edge_index[index], dest, next == end || next_invisible, left);
       index = next;
-    } while(next != end_edge && !next_invisible);
+    } while(next != end && !next_invisible);
   }
   
   return dest - start;
@@ -265,12 +275,11 @@ void intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterEdge* raster_edg
   
   X3D_RasterEdge* top = raster_edge + top_index;
   
+  //printf("Top index: %d\n", top_index);
+  
   uint16 bottom_index = find_bottom_edge(raster_edge, edge_index, total_e);
   
-  
-  if(top->flags & EDGE_HORIZONTAL) {
-    
-  }
+  //printf("Bottom index: %d\n", bottom_index);
   
   int16 left_dir;
   
@@ -287,9 +296,18 @@ void intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterEdge* raster_edg
   int16 left[128];
   int16 right[128];
   
-  int16 total_left = populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left);
+  int16 start_right;
   
-  int16 total_right = populate_polyline(raster_edge, edge_index, total_e, next_edge(top_index, total_e, -left_dir), -left_dir, bottom_index, right);
+  if(top->flags & EDGE_HORIZONTAL) {
+    start_right = top_index;
+  }
+  else {
+    start_right = next_edge(top_index, total_e, -left_dir);
+  }
+  
+  int16 total_left = populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left, TRUE);
+  
+  int16 total_right = populate_polyline(raster_edge, edge_index, total_e, start_right, -left_dir, bottom_index, right, FALSE);
   
   if(total_left != total_right) {
     printf("ERROR\n");
@@ -356,8 +374,8 @@ void test_newnew_clip() {
     int16 next = (i + 1) % TOTAL;
     generate_rasteredge(&stack, edges + i, v[i], v[next], 0, LCD_HEIGHT - 1);
     
-    //draw_edge(edges);
-    //ngetchx();
+    draw_edge(edges + i);
+    ngetchx();
   }
   
   uint16 edge_index[] =  { 0, 1, 2, 3 };
