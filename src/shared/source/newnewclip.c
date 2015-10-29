@@ -26,11 +26,10 @@
 #include "X3D_newclip.h"
 
 typedef struct X3D_RasterEdge {
-  uint16 flags;
+  uint8 flags;
   
   union {
-    int16 min_y;
-    int16 min_x;
+    int16 min_y;    
   };
   
   union {
@@ -38,11 +37,15 @@ typedef struct X3D_RasterEdge {
     int16 max_x;
   };
   
-  int16* x_data;
+  union {
+    int16* x_data;
+    int16 min_x;
+  };
 } X3D_RasterEdge;
 
 enum {
-  EDGE_HORIZONTAL = 1
+  EDGE_HORIZONTAL = 1,
+  EDGE_INVISIBLE = 2
 };
 
 
@@ -77,12 +80,26 @@ void renderstack_cleanup(X3D_RenderStack* stack) {
 
 int32 vertical_slope(Vex2D v1, Vex2D v2);
 
+void draw_edge(X3D_RasterEdge* edge) {
+  int16 y = edge->min_y;
+  
+  while(y <= edge->max_y) {
+    DrawPix(edge->x_data[y - edge->min_y], y, A_NORMAL);
+    ++y;
+  }
+}
+
 void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y) {
   if(a.y > b.y) {
     SWAP(a, b);
   }
   
+  if(b.y < min_y || a.y > max_y) {
+    edge->flags = EDGE_INVISIBLE;
+    printf("Invisible!\n");
+  }
   if(a.y == b.y) {
+    printf("horizontal!\n");
     // Case 1: edge is horizontal
     edge->flags = EDGE_HORIZONTAL;
     
@@ -95,6 +112,7 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
       edge->max_x = a.x;
     }
     
+    edge->min_y = a.y;
   }
   else {
     fp16x16 x;
@@ -129,14 +147,153 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
   }
 }
 
-void draw_edge(X3D_RasterEdge* edge) {
-  int16 y = edge->min_y;
+typedef struct X3D_RasterRegion {
+  int16 min_y;
+  int16 max_y;
   
-  while(y <= edge->max_y) {
-    DrawPix(edge->x_data[y - edge->min_x], y, A_NORMAL);
-    ++y;
+  int16* x_left;
+  int16* x_right;
+} X3D_RasterRegion;
+
+uint16 find_top_edge(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e) {
+  int16 min_index = 0;
+  uint16 i;
+  
+  for(i = 1; i < total_e; ++i) {
+    uint16 index = edge_index[i];
+    X3D_RasterEdge* edge = raster_edge + index;
+    X3D_RasterEdge* min_edge = raster_edge + min_index;
+    
+    if(edge->min_y < min_edge->min_y) {
+      min_index = i;
+    }
+    else if(edge->min_y == min_edge->min_y) {
+      // Only update the edge if it's not horizontal and it's more left than the current one
+      if(!(min_edge->flags & EDGE_HORIZONTAL) && edge->x_data[1] < min_edge->x_data[1]) {
+        min_index = i;
+      }
+    }
+  }
+  
+  return min_index;
+}
+
+uint16 find_bottom_edge(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e) {
+  int16 max_index = 0;
+  uint16 i;
+  
+  for(i = 1; i < total_e; ++i) {
+    uint16 index = edge_index[i];
+    X3D_RasterEdge* edge = raster_edge + index;
+    X3D_RasterEdge* max_edge = raster_edge + max_index;
+    
+    if(edge->max_y > max_edge->max_y) {
+      max_index = i;
+    }
+    else if(edge->max_y == max_edge->max_y) {
+      // Only update the edge if it's not horizontal and it's more left than the current one
+      if(!(max_edge->flags & EDGE_HORIZONTAL) && edge->x_data[1] < max_edge->x_data[1]) {
+        max_index = i;
+      }
+    }
+  }
+  
+  return max_index;
+}
+
+uint16 next_edge(uint16 edge, uint16 total_e, int16 dir) {
+  if(dir < 0) {
+    return (edge == 0 ? total_e - 1 : edge - 1);
+  }
+  else {
+    return (edge == total_e - 1 ? 0 : edge + 1);
   }
 }
+
+int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge) {
+  int16 count = edge->max_y - edge->min_y + (last_edge ? 1 : 0);
+  int16* data = edge->x_data;
+  
+  while(count-- > 0) {
+    *dest = *data;
+    ++dest;
+    ++data;
+  }
+  
+  return dest;
+}
+
+void populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, uint16 start_edge, int16 dir, uint16 end_edge, int16* dest) {
+  uint16 index = start_edge;
+  
+  if(index == end_edge) {
+    populate_edge(raster_edge + edge_index[index], dest, 1);
+  }
+  else {
+    uint16 next;
+    
+    do {
+      next = next_edge(index, total_e, dir);
+      dest = populate_edge(raster_edge + edge_index[index], dest, next == end_edge);
+      index = next;
+    } while(next != end_edge);
+  }
+}
+
+void intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, X3D_RasterRegion* dest) {
+  uint16 top_index = find_top_edge(raster_edge, edge_index, total_e);
+  
+  X3D_RasterEdge* top = raster_edge + top_index;
+  
+  uint16 bottom_index = find_bottom_edge(raster_edge, edge_index, total_e);
+  
+  
+  if(top->flags & EDGE_HORIZONTAL) {
+    
+  }
+  
+  printf("Top: %d\n", top_index);
+  printf("Bottom: %d\n", bottom_index);
+  
+  int16 left_dir;
+  
+  X3D_RasterEdge* next_left = raster_edge + next_edge(top_index, total_e, -1);
+  X3D_RasterEdge* next_right = raster_edge + next_edge(top_index, total_e, 1);
+  
+  if(next_left->min_y == top->min_y) {
+    left_dir = 1;
+  }
+  else {
+    left_dir = -1;
+  }
+  
+  int16 left[128];
+  int16 right[128];
+  
+  populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left);
+  
+  populate_polyline(raster_edge, edge_index, total_e, next_edge(top_index, total_e, -left_dir), -left_dir, bottom_index, right);
+  
+  int16 i;
+  
+  for(i = 0; i < raster_edge[bottom_index].max_y - top->min_y + 1; ++i) {
+    //DrawPix(left[i], i + top->min_y, A_NORMAL);
+    //DrawPix(right[i], i + top->min_y, A_NORMAL);
+    
+    FastDrawHLine(LCD_MEM, left[i], right[i], i + top->min_y, A_NORMAL);
+  }
+  
+}
+
+
+
+
+
+
+
+
+
+
 
 void raster_tri(X3D_RasterEdge* edge_left, X3D_RasterEdge* edge_right) {
   int16 y = edge_left->min_y;
@@ -155,11 +312,40 @@ void test_newnew_clip() {
   
   X3D_RasterEdge edge;
   
-  Vex2D a = { 128, -200 };
-  Vex2D b = { 10, 300 };
-  Vex2D c = { 200, 300 };
+  Vex2D v[] = {
+    { 200, 110 },
+    { 90, 50 },
+    { 20, 30 },
+    { 120, 127 }
+  };
   
   
+  uint16 i;
+  
+  uint16 TOTAL = 4;
+  
+  for(i = 0; i < TOTAL; ++i) {
+    int16 next = (i + 1) % TOTAL;
+    //DrawLine(v[i].x, v[i].y, v[next].x, v[next].y, A_NORMAL);
+  }
+  
+  X3D_RasterEdge edges[20];
+  
+  for(i = 0; i < TOTAL; ++i) {
+    int16 next = (i + 1) % TOTAL;
+    generate_rasteredge(&stack, edges + i, v[i], v[next], 50, 111);
+    
+    //draw_edge(edges);
+    //ngetchx();
+  }
+  
+  uint16 edge_index[] =  { 0, 1, 2, 3 };
+  
+  intersect_rasterregion(NULL, edges, edge_index, 4, NULL);
+  
+  
+  
+#if 0
   
   generate_rasteredge(&stack, &edge, a, b, 40, 80);
   //draw_edge(&edge);
@@ -170,6 +356,7 @@ void test_newnew_clip() {
   raster_tri(&edge, &edge2);
   
   FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 40, A_NORMAL);
+#endif
   
   
   ngetchx();
