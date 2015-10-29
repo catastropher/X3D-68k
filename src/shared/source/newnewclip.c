@@ -26,198 +26,152 @@
 #include "X3D_newclip.h"
 
 typedef struct X3D_RasterEdge {
+  uint16 flags;
+  
   union {
-    uint8    start_y;
-    uint8    start_x;
+    int16 min_y;
+    int16 min_x;
   };
   
   union {
-    uint8    end_y;
-    uint8    end_x;
+    int16 max_y;
+    int16 max_x;
   };
   
-  int16*    data;
-  uint16    flags;
+  int16* x_data;
 } X3D_RasterEdge;
 
-
 enum {
-  EDGE_INVISIBLE = 1,
-  EDGE_HORIZONTAL = 2,
-  EDGE_RASTERED_LEFT = 4,
-  EDGE_RASTERED_RIGHT = 8,
-  
-  EDGE_RASTERED_TOP = 4,
-  EDGE_RASTERED_BOTTOM = 8
+  EDGE_HORIZONTAL = 1
 };
 
-int32 vertical_slope(Vex2D v1, Vex2D v2);
+
+typedef struct X3D_RenderStack {
+  uint8* ptr;
+  uint8* base;
+  uint8* end;
+} X3D_RenderStack;
 
 #define SWAP(_a, _b) { typeof(_a) _temp; _temp = _a; _a = _b; _b = _temp; };
 
-void init_edge(X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y) {
-  edge->flags = 0;
+
+void* renderstack_alloc(X3D_RenderStack* stack, uint16 size) {
+  stack->ptr -= size + (size & 1);
   
+  if(stack->ptr < stack->base) {
+    x3d_error("Render stack overflow");
+  }
+  
+  return stack->ptr;
+}
+
+void renderstack_init(X3D_RenderStack* stack, uint16 size) {
+  stack->base = malloc(size);
+  stack->end = stack->base + size;
+  stack->ptr = stack->end;
+}
+
+void renderstack_cleanup(X3D_RenderStack* stack) {
+  free(stack->base);
+}
+
+int32 vertical_slope(Vex2D v1, Vex2D v2);
+
+void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y) {
   if(a.y > b.y) {
     SWAP(a, b);
   }
   
-  if(b.y < min_y || a.x > max_y) {
-    // Invisible edge
-    edge->flags = EDGE_INVISIBLE;
-  }
-  else if(a.y == b.y) {
-    // Horizontal edge
+  if(a.y == b.y) {
+    // Case 1: edge is horizontal
     edge->flags = EDGE_HORIZONTAL;
     
     if(a.x < b.x) {
-      edge->start_x = a.x;
-      edge->end_x = b.x;
+      edge->min_x = a.x;
+      edge->max_x = b.x;
     }
     else {
-      edge->start_x = b.x;
-      edge->end_x = a.x;
+      edge->min_x = b.x;
+      edge->max_x = a.x;
     }
+    
   }
   else {
-    // Case where both endpoints are visible
-    if(a.y >= min_y && b.y <= max_y) {
-      int32 slope = vertical_slope(a, b);
-      
-      int32 x = ((int32)a.x << 16);
-      int16 y = a.y;
-      
-      while(  y <= b.y) {
-        edge->data[y - a.y] = x >> 16;
-        x += slope;
-        ++y;
-      }
-      
-      edge->start_y = a.y;
-      edge->end_y = b.y;
-      
+    fp16x16 x;
+    int16 y;
+    fp16x16 slope = vertical_slope(a, b);
+    
+    if(a.y >= min_y) {
+      x = ((fp16x16)a.x) << 16;
+      y = a.y;
     }
+    else {
+      fp8x8 new_slope = slope >> 8;
+      
+      x = (((int32)a.x << 8) + ((int32)(min_y - a.y) * new_slope)) << 8;
+      y = min_y;
+    }
+    
+    int16 end_y = min(max_y, b.y);
+    
+    edge->min_y = y;
+    
+    edge->flags = 0;
+    edge->x_data = renderstack_alloc(stack, (end_y - y + 1) * 2);
+    
+    while(y <= end_y) {
+      edge->x_data[y - edge->min_y] = x >> 16;
+      x += slope;
+      ++y;
+    }
+    
+    edge->max_y = end_y;
   }
 }
-
-typedef struct X3D_Span_int16 {
-  int16 left;
-  int16 right;
-} X3D_Span_int16;
-
-typedef struct X3D_Span_uint8 {
-  uint8 left;
-  uint8 right;
-} X3D_Span_uint8;
-
-_Bool clip_span(X3D_Span_int16* bound, X3D_Span_int16* span, X3D_Span_int16* dest) {
-  if(span->left <= bound->left) {
-    dest->left = bound->left + 1;
-  }
-  else {
-    dest->left = span->left;
-  }
-  
-  if(span->right >= bound->right) {
-    dest->right = bound->right - 1;
-  }
-  else {
-    dest->right = span->right;
-  }
- 
-  return dest->left <= dest->right;
-}
-
-typedef struct X3D_RasterPoly {
-  uint16 start_y;
-  uint16 end_y;
-  
-  X3D_Span_int16* spans;
-} X3D_RasterPoly;
-
-X3D_Span_int16* get_span(X3D_RasterPoly* poly, uint16 span) {
-  return poly->spans + span - poly->start_y;
-}
-
-_Bool clip_poly_span(X3D_RasterPoly* bound_poly, X3D_RasterPoly* poly, uint16 y, X3D_Span_int16* span) {
-  X3D_Span_int16* bound_span = get_span(bound_poly, y);
-  X3D_Span_int16* poly_span = get_span(poly, y);
-  
-  return clip_span(bound_span, poly_span, span);
-}
-
-
-_Bool intersect_rasterpoly(X3D_RasterPoly* bound, X3D_RasterPoly* poly, X3D_RasterPoly* dest) {
-  int16 y = max(bound->start_y, poly->start_y);
-  int16 end_y = min(bound->end_y, poly->end_y);
-  X3D_Span_int16 span;
-  
-  // Find the top visible span
-  while(y <= end_y && !clip_poly_span(bound, poly, y, &span)) {
-    ++y;
-  }
-  
-  // Find the bottom visible span
-  while(end_y > y && !clip_poly_span(bound, poly, end_y, &span)) {
-    --end_y;
-  }
-  
-  dest->start_y = y;
-  dest->end_y = end_y;
-  
-  while(y <= end_y) {
-    clip_poly_span(bound, poly, y, get_span(dest, y));
-    ++y;
-  }
-  
-  return y <= end_y;
-}
-
-
-
 
 void draw_edge(X3D_RasterEdge* edge) {
-  int16 y = edge->start_y;
+  int16 y = edge->min_y;
   
-  while(y <= edge->end_y) {
-    //printf("%d\n", edge->data[y - edge->start_y]);
-    DrawPix(edge->data[y - edge->start_y], y, A_NORMAL);
+  while(y <= edge->max_y) {
+    DrawPix(edge->x_data[y - edge->min_x], y, A_NORMAL);
     ++y;
   }
+}
 
+void raster_tri(X3D_RasterEdge* edge_left, X3D_RasterEdge* edge_right) {
+  int16 y = edge_left->min_y;
+  
+  while(y <= edge_left->max_y) {
+    FastDrawHLine(LCD_MEM, edge_left->x_data[y - edge_left->min_y], edge_right->x_data[y - edge_left->min_y], y, A_NORMAL);
+    ++y;
+  }
 }
 
 void test_newnew_clip() {
   clrscr();
   
-  Vex2D a = { 128, 0 };
-  Vex2D b = { 20, 57 };
-  
-  int16 data[256];
-  
+  X3D_RenderStack stack;
+  renderstack_init(&stack, 1024);
   
   X3D_RasterEdge edge;
-  edge.data = data;
-  init_edge(&edge, a, b, 0, 239);
-  draw_edge(&edge);
+  
+  Vex2D a = { 128, -200 };
+  Vex2D b = { 10, 300 };
+  Vex2D c = { 200, 300 };
+  
+  
+  
+  generate_rasteredge(&stack, &edge, a, b, 40, 80);
+  //draw_edge(&edge);
   
   X3D_RasterEdge edge2;
+  generate_rasteredge(&stack, &edge2, a, c, 40, 80);
   
-  int16 data2[256];
-  edge2.data = data2;
+  raster_tri(&edge, &edge2);
   
-  b = (Vex2D){ 200, 57 };
-  init_edge(&edge2, a, b, 0, 239);
-  draw_edge(&edge2);
-  
-  uint16 i;
-  
-  for(i = 0; i < 57; ++i) {
-    FastDrawHLine(LCD_MEM, edge.data[i], edge2.data[i], i, A_NORMAL);
-  }
+  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 40, A_NORMAL);
   
   
-  //printf("Hello from test!\n");
   ngetchx();
 }
 
