@@ -97,6 +97,7 @@ void draw_edge(X3D_RasterEdge* edge) {
 }
 
 void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, Vex2D b, int16 min_y, int16 max_y) {
+  // Swap points if out of order
   if(a.y > b.y) {
     SWAP(a, b);
   }
@@ -105,7 +106,7 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     edge->flags = EDGE_INVISIBLE;
   }
   else if(a.y == b.y) {
-    // Case 1: edge is horizontal
+    // Horizontal line
     edge->flags = EDGE_HORIZONTAL;
     
     if(a.x < b.x) {
@@ -121,27 +122,31 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     edge->max_y = a.y;
   }
   else {
+    // Regular line
     fp16x16 x;
     int16 y;
     fp16x16 slope = vertical_slope(a, b);
     
+    // Check if the line needs to be clipped against the line y = y_min
     if(a.y >= min_y) {
       x = ((fp16x16)a.x) << 16;
       y = a.y;
     }
     else {
+      // Clip the line
       fp8x8 new_slope = slope >> 8;
       
       x = (((int32)a.x << 8) + ((int32)(min_y - a.y) * new_slope)) << 8;
       y = min_y;
     }
     
+    // Clamp the max y
     int16 end_y = min(max_y, b.y);
     
     edge->min_y = y;
-    
     edge->flags = 0;
     
+    // Allocate space for the values
     edge->x_data = renderstack_alloc(stack, (end_y - y + 1) * 2);
     
     while(y <= end_y) {
@@ -219,13 +224,10 @@ uint16 next_edge(uint16 edge, uint16 total_e, int16 dir) {
 }
 
 int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge, _Bool left) {
-  
-  
   if(edge->flags & EDGE_HORIZONTAL) {
     printf("Horizontal\n");
     if(last_edge) {
       *dest = left ? edge->min_x : edge->max_x;
-      
       
       return dest + 1;
     }
@@ -240,18 +242,8 @@ int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge, _Bool l
     while(count-- > 0) {
       *dest = *data;
       
-      if(left) {
-      }
-      else {
-        //*dest = 200;
-      }
-      
-      
       ++dest;
       ++data;
-      
-      
-      
     }
     
     return dest;
@@ -275,94 +267,55 @@ int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 
   uint16 index = start_edge;
   
   if(!left && start_edge == end_edge) {
+    // If we're the side and we only contain one edge, just add it
     edge_list[total_list++] = index;
     index = next_edge(index, total_e, dir);
   }
   else {
-    //printf("Case b\n");
+    // Otherwise, add all the edges up until the last edge
     while(index != end_edge) {
       edge_list[total_list++] = index;
       index = next_edge(index, total_e, dir);
     }
-    //printf("Done\n");
   }
   
+  // Only add the bottom edge if we're the left side
+  // This is because the bottom edge is guaranteed to be on the left
   if(left) {
     edge_list[total_list++] = index;
     index = next_edge(index, total_e, dir);
   }
   
-  //printf("List of edges:\n");
-  
-  
-  //printf("Dir: %d\n", dir);
-  
-#if 0
-         /\
-     0  /  \  2  
-       /___ \
-          1
-  
-#endif 
-  
-  
-  uint16 t;
-  for(t = 0; t < total_list; ++t) {
-    //printf("%d ", edge_list[t]);
-  }
-  
-  //printf("\n");
-  //ngetchx();
-  
-  
   uint16* edge = edge_list;
   uint16* edge_end = edge_list + total_list;
-  
-#if 1
-  //printf("enter A\n");
+
+  // Skip invisible edges
   while(edge < edge_end && (EDGE().flags & EDGE_INVISIBLE)) {
-    //printf("Skip %d\n", (int16)(edge - edge_list));
     ++edge;
   }
-  //printf("Exit A\n");
   
+  // All edges are invisible
   if(edge == edge_end) {
-    //printf("return\n");
     return 0;
   }
-#endif
   
+  // Calculate the starting y value
   *start_y = EDGE().min_y;
-  
-  //printf("Start: %d\n", *start_y);
-  //ngetchx();
-  
+    
   _Bool last = FALSE;
     
   do {
-    //x3d_assert(*edge >= 5);
-
-    printf("Edge: %d\n", EDGE_INDEX());
-    ngetchx();
-    
-    if(edge_index[*edge] < 5) {
-      //x3d_error("Invalid index: %d!", *edge);
-    }
-    
-    
+    // We're the last edge if we're out of edges or the next edge is invisible
     last = edge + 1 == edge_end || (EDGE().flags & EDGE_INVISIBLE);
-    //printf("last: %d\n", (int16)last);
     dest = populate_edge(&EDGE(), dest, last, left);
-    //printf("Size: %d\n", (int16)(dest - start));
-    
-    //printf("Edge: %d\n", EDGE_INDEX());
-    
     ++edge;
   } while(edge < edge_end && !last);
   
+  // Return how many values were written in this polyline
   return dest - start;
 }
 
+// Clips a single span against another span (from a portal polygon)
 _Bool clip_span(int16 portal_left, int16 portal_right, int16* span_left, int16* span_right) {
   *span_left = max(portal_left, *span_left);
   *span_right = min(portal_right, *span_right);
@@ -375,8 +328,6 @@ _Bool clip_span(int16 portal_left, int16 portal_right, int16* span_left, int16* 
 void rasterize_rasterregion(X3D_RasterRegion* region) {
   int16 y = region->min_y;
 
-  //printf("Miny: %d, maxy: %d\n", region->min_y, region->max_y);
-  
   while(y <= region->max_y) {
     FastDrawHLine(LCD_MEM, region->x_left[y - region->min_y], region->x_right[y - region->min_y], y, A_XOR);
     ++y;
@@ -389,9 +340,6 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
   
   int16* region_left = region->x_left;
   int16* region_right = region->x_right;
-  
-  //printf("left: %d, right: %d\n", *portal_left, *portal_right);
-  //printf("rleft: %d, rright: %d\n", *region_left, *region_right);
   
   int16 y = region->min_y;
   
@@ -430,59 +378,67 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
 }
 
 _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, X3D_RasterRegion* dest, int16 min_y, int16 max_y) {
+  // Find the top
   uint16 top_index = find_top_edge(raster_edge, edge_index, total_e);
   X3D_RasterEdge* top = raster_edge + edge_index[top_index];
     
+  // Find the bottom
   uint16 bottom_index = find_bottom_edge(raster_edge, edge_index, total_e);
   X3D_RasterEdge* bottom = raster_edge + edge_index[bottom_index];
   
-  int16 left_dir;
-  
+  // Get the next edge from the top in either direction
   X3D_RasterEdge* next_left = raster_edge + edge_index[next_edge(top_index, total_e, -1)];
   X3D_RasterEdge* next_right = raster_edge + edge_index[next_edge(top_index, total_e, 1)];
   
+  // Calculate the maximum estimated height of the region
+  // Note: it can never be more than this
   int16 estimated_height = min(max_y, bottom->max_y) - max(min_y, top->min_y) + 1;
   
+  // Allocate space for each polyline (on the left and right)
   int16* left = renderstack_alloc(stack, estimated_height * 2);
   int16* right = renderstack_alloc(stack, estimated_height * 2);
   
+  // Starting edge for the right side
   int16 start_right;
-  
-  //x3d_assert(edge_index[top_index] >= 5);
-  //x3d_assert(edge_index[bottom_index] >= 5)
+
+  // The direction we need to walk through the edges for the left polyline
+  // This is because a polygon could be either clockwise or counter-clockwise
+  int16 left_dir;
   
   if(top->flags & EDGE_HORIZONTAL) {
-    //printf("Horizontal!\n");
-    //ngetchx();
+    // If the top is horizontal, both the left and right polyline need to start on
+    // the horizontal edge
     start_right = top_index;
     
+    // Determine whether the left direction is really next_left or next_right.
+    // If next_left is actually on the left, left_dir should be -1. Otherwise,
+    // it's flipped and should be 1.
     left_dir = (next_left->x_data[1] < next_right->x_data[1] ? -1 : 1);
   }
   else {
-    //printf("Xnext left: %d\n", next_edge(top_index, total_e, -1));
-    
+    // Since this isn't a flat-top polygon, the top edge is guaranteed to point to
+    // the top edge for the right. If the next_right edge also has the same min_y
+    // as the top edge, this means next_left and next_right are correct and left_dir
+    // should be -1. Otherwise, we're proceeding in the wrong direction and left_dir
+    // should be 1.
     if(next_right->min_y == top->min_y) {
       left_dir = -1;
     }
     else {
       left_dir = 1;
     }
-    
-    //printf("top: %d\n", top_index);
-    //printf("leftdir: %d\n", left_dir);
-    //printf("end: %d\n", bottom_index);
-    
+
+    // The starting right edge should be the first edge in the reverse
+    // left_dir direction.
     start_right = next_edge(top_index, total_e, -left_dir);
     
   }
   
+  // Populate the left and right polylines
+  int16 total_left = populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left, TRUE, &dest->min_y);
+  int16 total_right = populate_polyline(raster_edge, edge_index, total_e, start_right, -left_dir, bottom_index, right, FALSE, &dest->min_y);
   
-  int16 start_y;
-  
-  int16 total_left = populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left, TRUE, &start_y);
-  
-  int16 total_right = populate_polyline(raster_edge, edge_index, total_e, start_right, -left_dir, bottom_index, right, FALSE, &start_y);
-  
+  // If the height of the left is not the same height as the right, we have a problem!
   if(total_left != total_right) {
     x3d_error("Polgon polyline mismatch (left: %d, right: %d)", total_left, total_right);
   }
@@ -490,25 +446,12 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
   dest->x_left = left;
   dest->x_right = right;
   
-  dest->min_y = start_y;
-  dest->max_y = start_y + total_left - 1;
-  
-  //printf("start: %d, end %d\n", dest->min_y, dest->max_y);
-  //ngetchx();
-  
+  // Set the y range for the raster region
+  dest->min_y = dest->min_y;
+  dest->max_y = dest->min_y + total_left - 1;
+
+  // If max_y < min_y we have an invalid raster region!
   return dest->max_y >= dest->min_y;
-  
-#if 0
-  int16 i;
-  
-  for(i = 0; i < total_left; ++i) {
-    //DrawPix(left[i], i + top->min_y, A_NORMAL);
-    //DrawPix(right[i], i + top->min_y, A_NORMAL);
-    
-    FastDrawHLine(LCD_MEM, left[i], right[i], i + start_y, A_NORMAL);
-  }
-#endif
-  
 }
 
 
@@ -558,49 +501,19 @@ void test_newnew_clip() {
   X3D_RasterEdge edge;
   
   X3D_RasterRegion screen_region;
-  
-  int16 SIZE = 50;
-  
-#if 0
-  Vex2D screen_v[] = {
-    { 0, 0},
-    {LCD_WIDTH - 1, 0},
-    {LCD_WIDTH - 1, LCD_HEIGHT - 1},
-    {0, LCD_HEIGHT - 1}
-  };
-#else
-  
+
+  // Construct a test clipping portal
   Vex2D screen_v[] = {
     { 120, 120 },
     { 10, 10 },
     { LCD_WIDTH - 10, 10 }
   };
-  
-  
-#if 0
-         /\
-     0  /  \  2  
-       /___ \
-          1
-  
-#endif 
-  
-  
-#endif
-  
-  construct_rasterregion_from_points(&stack, &screen_region, screen_v, 3);
-  
-  
-  
+    
+  construct_rasterregion_from_points(&stack, &screen_region, screen_v, 3);  
   rasterize_rasterregion(&screen_region);
    
-  //ngetchx();
   
-  
-  
-  
-  
-  
+  // Construct a polygon to clip against the portal
   Vex2D v[] = {
     { 200, 110 },
     { 228, 70 },
@@ -611,21 +524,11 @@ void test_newnew_clip() {
   
   
   uint16 i;
-  
+
+  // Number of point in the polygon
   uint16 TOTAL = 5;
   
-  for(i = 0; i < TOTAL; ++i) {
-    int16 next = (i + 1) % TOTAL;
-    //DrawLine(v[i].x, v[i].y, v[next].x, v[next].y, A_NORMAL);
-  }
-  
   X3D_RasterEdge edges[20];
-  
-  //screen_region.min_y = 50;
-  //screen_region.max_y = 78;
-  
-  //screen_region.min_y = 0;
-  //screen_region.max_y = LCD_HEIGHT - 1;
   
   for(i = 0; i < TOTAL; ++i) {
     int16 next = (i + 1) % TOTAL;
@@ -645,47 +548,9 @@ void test_newnew_clip() {
     rasterize_rasterregion(&region);
   }
   
-  //construct_rasterregion(edges, edge_index, 4, &region);
-  
-
   ngetchx();
   
-  return;
-  
-  clrscr();
-  
-  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 50, A_NORMAL);
-  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 85, A_NORMAL);
-  
-  for(i = 0; i < TOTAL; ++i) {
-    int16 next = (i + 1) % TOTAL;
-    generate_rasteredge(&stack, edges + i, v[i], v[next], 50, 85);
-    
-    //draw_edge(edges);
-    //ngetchx();
-  }
-  
-  //construct_rasterregion(edges, edge_index, 5, &region);
-  
-  
-  
-  
-  
-#if 0
-  
-  generate_rasteredge(&stack, &edge, a, b, 40, 80);
-  //draw_edge(&edge);
-  
-  X3D_RasterEdge edge2;
-  generate_rasteredge(&stack, &edge2, a, c, 40, 80);
-  
-  raster_tri(&edge, &edge2);
-  
-  FastDrawHLine(LCD_MEM, 0, LCD_WIDTH - 1, 40, A_NORMAL);
-#endif
-  
-  
-  ngetchx();
+  return;  
 }
 
 
