@@ -658,6 +658,12 @@ void test_newnew_clip();
 
 void x3d_test() {
   
+  if(setjmp(exit_jmp) != 0) {
+    //goto quit;
+    goto test_quit;
+  }
+  
+  
   test_newnew_clip();
   return;
   
@@ -683,13 +689,6 @@ void x3d_test() {
   uint16 i;
   
   context.gray_enabled = FALSE;
-  
-  
-  
-  if(setjmp(exit_jmp) != 0) {
-    goto quit;
-  }
-  
   
   do {
     uint16 begin_clock = x3d_get_clock();
@@ -834,6 +833,11 @@ quit:
   //free(prism3d_rotated);
 
   x3d_test_cleanup(&test);
+  
+test_quit:
+  return;
+  
+  
 }
 
 #endif
