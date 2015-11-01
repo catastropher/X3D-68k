@@ -25,6 +25,10 @@
 #include "X3D_memory.h"
 #include "X3D_newclip.h"
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 typedef struct X3D_RasterEdge {
   uint8 flags;
   
@@ -165,7 +169,7 @@ uint16 find_top_edge(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 tot
   for(i = 1; i < total_e; ++i) {
     uint16 index = edge_index[i];
     X3D_RasterEdge* edge = raster_edge + index;
-    X3D_RasterEdge* min_edge = raster_edge + min_index;
+    X3D_RasterEdge* min_edge = raster_edge + edge_index[min_index];
     
     if(edge->min_y < min_edge->min_y) {
       min_index = i;
@@ -336,6 +340,16 @@ int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 
   _Bool last = FALSE;
     
   do {
+    //x3d_assert(*edge >= 5);
+
+    printf("Edge: %d\n", EDGE_INDEX());
+    ngetchx();
+    
+    if(edge_index[*edge] < 5) {
+      //x3d_error("Invalid index: %d!", *edge);
+    }
+    
+    
     last = edge + 1 == edge_end || (EDGE().flags & EDGE_INVISIBLE);
     //printf("last: %d\n", (int16)last);
     dest = populate_edge(&EDGE(), dest, last, left);
@@ -417,23 +431,15 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
 
 _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, X3D_RasterRegion* dest, int16 min_y, int16 max_y) {
   uint16 top_index = find_top_edge(raster_edge, edge_index, total_e);
-  
-  X3D_RasterEdge* top = raster_edge + top_index;
-  
-  //printf("Top index: %d\n", top_index);
-  
+  X3D_RasterEdge* top = raster_edge + edge_index[top_index];
+    
   uint16 bottom_index = find_bottom_edge(raster_edge, edge_index, total_e);
-  
-  X3D_RasterEdge* bottom = raster_edge + bottom_index;
-  
-  //printf("bottom: %d\n", bottom_index);
-  
-  //printf("Bottom index: %d\n", bottom_index);
+  X3D_RasterEdge* bottom = raster_edge + edge_index[bottom_index];
   
   int16 left_dir;
   
-  X3D_RasterEdge* next_left = raster_edge + next_edge(top_index, total_e, -1);
-  X3D_RasterEdge* next_right = raster_edge + next_edge(top_index, total_e, 1);
+  X3D_RasterEdge* next_left = raster_edge + edge_index[next_edge(top_index, total_e, -1)];
+  X3D_RasterEdge* next_right = raster_edge + edge_index[next_edge(top_index, total_e, 1)];
   
   int16 estimated_height = min(max_y, bottom->max_y) - max(min_y, top->min_y) + 1;
   
@@ -441,6 +447,9 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
   int16* right = renderstack_alloc(stack, estimated_height * 2);
   
   int16 start_right;
+  
+  //x3d_assert(edge_index[top_index] >= 5);
+  //x3d_assert(edge_index[bottom_index] >= 5)
   
   if(top->flags & EDGE_HORIZONTAL) {
     //printf("Horizontal!\n");
@@ -585,7 +594,7 @@ void test_newnew_clip() {
   
   rasterize_rasterregion(&screen_region);
    
-  ngetchx();
+  //ngetchx();
   
   
   
@@ -615,17 +624,20 @@ void test_newnew_clip() {
   //screen_region.min_y = 50;
   //screen_region.max_y = 78;
   
+  //screen_region.min_y = 0;
+  //screen_region.max_y = LCD_HEIGHT - 1;
+  
   for(i = 0; i < TOTAL; ++i) {
     int16 next = (i + 1) % TOTAL;
-    generate_rasteredge(&stack, edges + i, v[i], v[next], screen_region.min_y, screen_region.max_y);
+    generate_rasteredge(&stack, edges + i + 5, v[i], v[next], screen_region.min_y, screen_region.max_y);
     
-    draw_edge(edges + i);
+    draw_edge(edges + i + 5);
     ngetchx();
   }
   
   X3D_RasterRegion region;
   
-  uint16 edge_index[] =  { 0, 1, 2, 3, 4 };
+  uint16 edge_index[] =  { 5, 6, 7, 8, 9 };
   
   clrscr();
   
