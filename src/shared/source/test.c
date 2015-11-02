@@ -34,6 +34,7 @@
 #include "X3D_command.h"
 #include "X3D_log.h"
 #include "X3D_newclip.h"
+#include "X3D_newnewclip.h"
 
 #ifdef __TIGCC_HEADERS__
 #include <tigcclib.h>
@@ -656,17 +657,36 @@ wait:
 
 void test_newnew_clip();
 
+extern X3D_RenderStack render_stack;
+extern X3D_RasterRegion screen_region;
+
+Vex2D screen_v[] = {
+  { 0, 30 },
+  { LCD_WIDTH - 1, 30 },
+  { LCD_WIDTH - 1, LCD_HEIGHT - 30 },
+  { 0, LCD_HEIGHT - 30 }
+};
+
 void x3d_test() {
   
+#if 0
   if(setjmp(exit_jmp) != 0) {
     //goto quit;
     goto test_quit;
   }
+#endif
   
   
-  test_newnew_clip();
-  return;
   
+  
+
+  
+  
+  //test_newnew_clip();
+  //return;
+  
+  renderstack_init(&render_stack, 8192);
+  x3d_init_clip_window(&render_stack, NULL, &screen_region, screen_v, 4);
   
   X3D_TestContext test;
   X3D_Context context;
@@ -689,6 +709,12 @@ void x3d_test() {
   uint16 i;
   
   context.gray_enabled = FALSE;
+  
+  if(setjmp(exit_jmp) != 0) {
+    goto quit;
+    //goto test_quit;
+  }
+  
   
   do {
     uint16 begin_clock = x3d_get_clock();

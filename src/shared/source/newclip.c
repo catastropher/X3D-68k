@@ -30,6 +30,7 @@
 #include "X3D_trig.h"
 #include "X3D_segment.h"
 #include "X3D_newclip.h"
+#include "X3D_newnewclip.h"
 
 #include "extgraph.h"
 
@@ -1153,7 +1154,7 @@ static inline uint16 x3d_prism2d_needed_size(uint16 base_v) {
 void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
 
-void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* context, X3D_ViewPort* viewport) {
+void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* region, X3D_Context* context, X3D_ViewPort* viewport) {
   global_viewport = viewport;
   
   X3D_Segment* seg = x3d_get_segment(context, id);
@@ -1164,56 +1165,79 @@ void x3d_draw_clip_segment(uint16 id, X3D_BoundRegion* region, X3D_Context* cont
   x3d_test_rotate_prism3d(prism_temp, &seg->prism, context->cam);
   TEST_x3d_project_prism3d(prism2d, prism_temp, viewport);
   
+  void* enter_stack = renderstack_save(stack);
+  
+  
   X3D_ClipData clip;
-  
-  clip.total_v = prism2d->base_v * 2;
-  clip.edge = alloca(sizeof(X3D_IndexedEdge) * (prism2d->base_v * 3));
-  clip.total_e = prism2d->base_v * 3;
-  clip.edge_clip = alloca(sizeof(X3D_ClippedEdge) * clip.total_e);
-  clip.outside_mask = alloca(sizeof(uint32) * clip.total_v * 2);
-  
-  clip_prism2d_to_boundregion(prism2d, region, &clip);
-  
-  
-  //draw_prism2d(prism2d);
-  
-  draw_clipped_edges(&clip);
-  //draw_prism2d(prism2d);
   
   uint16 i;
   
+  // Construct all the edges
+  X3D_RasterEdge raster_edge[prism2d->base_v * 3];
+  
+  for(i = 0; i < prism2d->base_v * 3; ++i) {
+    uint16 a, b;
+    
+    x3d_get_prism2d_edge(prism2d, i, &a, &b);
+    generate_rasteredge(stack, raster_edge + i, prism2d->v[a], prism2d->v[b], region->min_y, region->max_y);
+  }
+  
+  printf("Draw\n");
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
+  
+  //rasterize_rasterregion(region, context->gdbuf, 3);
+  
+  uint16 edges[prism2d->base_v];
   
   for(i = 0; i < x3d_segment_total_f(seg); ++i) {
     Vex3D pos;
     
+    if(i != 0)
+      break;
+    
     x3d_object_pos(context->cam, &pos);
     
     if(x3d_distance_to_plane(&face[i].plane, &pos) > 0) {
-      X3D_BoundRegion* new_region = alloca(sizeof(X3D_BoundRegion) + sizeof(X3D_BoundLine) * 20);
-      new_region = x3d_construct_boundregion_from_prism2d_face(&clip, prism2d, i, new_region);
+      X3D_RasterRegion new_region;
+      
+      void* stack_ptr = renderstack_save(stack);
+      
+      //_Bool valid = intersect_rasterregion(region, &new_region);
+      
+      uint16 total_e = get_prism2d_face_edges(prism2d, i, edges);
+      
+      _Bool valid = construct_and_clip_rasterregion(stack, region, raster_edge, edges, total_e, &new_region);
+
       
       if(face[i].connect_id != SEGMENT_NONE && id == 0) {
         
-        if(new_region != NULL) {
-          x3d_draw_clip_segment(face[i].connect_id, new_region, context, viewport);
+        if(valid) {
+          //x3d_draw_clip_segment(face[i].connect_id, new_region, context, viewport);
+          
         }
       }
       else {
-        if(new_region != NULL && context->gray_enabled) {
+        if(valid) {// && context->gray_enabled) {
           // Check to make sure we're on the right side of the plane
           
           uint16 color[] = {
             3, 3, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2
           };
           
-          fast_fill_boundregion(context, new_region, color[i]);
+          rasterize_rasterregion(&new_region, context->gdbuf, color[i]);
+          
+          //fast_fill_boundregion(context, new_region, color[i]);
+        }
+        else {
+          printf("Invalid!\n");
         }
       }
+      
+      renderstack_restore(stack, stack_ptr);
     }
   }
   
-  
+  renderstack_restore(stack, enter_stack);
   
   //x3d_draw_clipped_prism3d_wireframe(prism_temp, frustum, viewport, 0, 0);
 }

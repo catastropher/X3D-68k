@@ -24,40 +24,52 @@
 #include "X3D_engine.h"
 #include "X3D_memory.h"
 #include "X3D_newclip.h"
+#include "X3D_newnewclip.h"
+
+#include "extgraph.h"
+
+#define ASSERT(_s) {if(!(_s)) x3d_error("Assert failed! %s", #_s);}
+#define ASSERT_RANGE(_a, _min, _max) ASSERT(_a >= _min && _a <= _max);
 
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
 
-typedef struct X3D_RasterEdge {
-  uint8 flags;
-  
-  int16 min_y;
+#if 0
+#define ENTER() printf("enter %d\n", __LINE__);
+#define EXIT() printf("Exit\n");
 
-  int16 max_y;
-  int16 max_x;
+#else
 
-  int16* x_data;
-  int16 min_x;
-} X3D_RasterEdge;
+#define ENTER() ;
+#define EXIT() ;
 
-enum {
-  EDGE_HORIZONTAL = 1,
-  EDGE_INVISIBLE = 2
-};
+#endif
 
 
-typedef struct X3D_RenderStack {
-  uint8* ptr;
-  uint8* base;
-  uint8* end;
-} X3D_RenderStack;
+
+void* renderstack_save(X3D_RenderStack* stack) {
+  return stack->ptr;
+}
+
+void renderstack_restore(X3D_RenderStack* stack, void* ptr) {
+  stack->ptr = ptr;
+}
 
 #define SWAP(_a, _b) { typeof(_a) _temp; _temp = _a; _a = _b; _b = _temp; };
 
+#define ADDRESS(_a) {if((int32)_a & 1) x3d_error("Address: %s\n", #_a);}
+
 
 void* renderstack_alloc(X3D_RenderStack* stack, uint16 size) {
+  
+  ADDRESS(stack);
+  
   stack->ptr -= size + (size & 1);
+  
+  ADDRESS((uint8* )stack );
+  ADDRESS(stack->ptr);
+  ADDRESS((uint8* )stack->base);
   
   if(stack->ptr < stack->base) {
     x3d_error("Render stack overflow (need %u)", size);
@@ -104,6 +116,8 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
   
   if(b.y < min_y || a.y > max_y) {
     edge->flags = EDGE_INVISIBLE;
+    edge->min_y = a.y;
+    edge->max_y = b.y;
   }
   else if(a.y == b.y) {
     // Horizontal line
@@ -148,24 +162,20 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     
     // Allocate space for the values
     edge->x_data = renderstack_alloc(stack, (end_y - y + 1) * 2);
+
     
+    ENTER();
     while(y <= end_y) {
       edge->x_data[y - edge->min_y] = x >> 16;
       x += slope;
       ++y;
     }
+    EXIT();
     
     edge->max_y = end_y;
   }
 }
 
-typedef struct X3D_RasterRegion {
-  int16 min_y;
-  int16 max_y;
-  
-  int16* x_left;
-  int16* x_right;
-} X3D_RasterRegion;
 
 uint16 find_top_edge(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e) {
   int16 min_index = 0;
@@ -178,7 +188,6 @@ uint16 find_top_edge(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 tot
     
     if(edge->min_y < min_edge->min_y) {
       min_index = i;
-      printf("Switch to %d\n", i);
     }
     else if(edge->min_y == min_edge->min_y) {
       // Only update the edge if it's not horizontal and it's more left than the current one
@@ -225,7 +234,6 @@ uint16 next_edge(uint16 edge, uint16 total_e, int16 dir) {
 
 int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge, _Bool left) {
   if(edge->flags & EDGE_HORIZONTAL) {
-    printf("Horizontal\n");
     if(last_edge) {
       *dest = left ? edge->min_x : edge->max_x;
       
@@ -239,12 +247,16 @@ int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge, _Bool l
     int16 count = edge->max_y - edge->min_y + (last_edge ? 1 : 0);
     int16* data = edge->x_data;
     
+    ASSERT_RANGE(count, 0, 128);
+    
+    ENTER();
     while(count-- > 0) {
       *dest = *data;
       
       ++dest;
       ++data;
     }
+    EXIT();
     
     return dest;
   }
@@ -273,10 +285,12 @@ int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 
   }
   else {
     // Otherwise, add all the edges up until the last edge
+    ENTER();
     while(index != end_edge) {
       edge_list[total_list++] = index;
       index = next_edge(index, total_e, dir);
     }
+    EXIT();
   }
   
   // Only add the bottom edge if we're the left side
@@ -290,12 +304,17 @@ int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 
   uint16* edge_end = edge_list + total_list;
 
   // Skip invisible edges
+  ENTER();
   while(edge < edge_end && (EDGE().flags & EDGE_INVISIBLE)) {
+    printf("Skipped!\n");
     ++edge;
   }
+  EXIT();
   
   // All edges are invisible
   if(edge == edge_end) {
+    x3d_error("Invisible!");
+    *start_y = 10000;
     return 0;
   }
   
@@ -304,12 +323,14 @@ int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 
     
   _Bool last = FALSE;
     
+  ENTER();
   do {
     // We're the last edge if we're out of edges or the next edge is invisible
     last = edge + 1 == edge_end || (EDGE().flags & EDGE_INVISIBLE);
     dest = populate_edge(&EDGE(), dest, last, left);
     ++edge;
   } while(edge < edge_end && !last);
+  EXIT();
   
   // Return how many values were written in this polyline
   return dest - start;
@@ -325,14 +346,36 @@ _Bool clip_span(int16 portal_left, int16 portal_right, int16* span_left, int16* 
 
 #define CLIP() clip_span(*portal_left, *portal_right, region_left, region_right)
 
-void rasterize_rasterregion(X3D_RasterRegion* region) {
+void rasterize_rasterregion(X3D_RasterRegion* region, void* screen, uint16 color) {
   int16 y = region->min_y;
 
+  uint8* span = screen + y * (LCD_WIDTH / 8);
+  
+  void (*render_span)(short x1 asm("%d0"), short x2 asm("%d1"), void * addrs asm("%a0")) = (void* []) {
+    GrayDrawSpan_WHITE_R,
+    GrayDrawSpan_LGRAY_R,
+    GrayDrawSpan_DGRAY_R,
+    GrayDrawSpan_BLACK_R
+  }[color];
+  
+  printf("y: %d, %d\n", region->min_y, region->max_y);
+  
+  ASSERT_RANGE(y, 0, 127);
+  
+  ENTER();
   while(y <= region->max_y) {
-    FastDrawHLine(LCD_MEM, region->x_left[y - region->min_y], region->x_right[y - region->min_y], y, A_XOR);
+    
+    
+    render_span(region->x_left[y - region->min_y], region->x_right[y - region->min_y], span);
+    
+    span += LCD_WIDTH / 8;
+    
+    //FastDrawHLine(LCD_MEM, region->x_left[y - region->min_y], region->x_right[y - region->min_y], y, A_XOR);
     ++y;
   }
+  EXIT();
 }
+
 
 _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region) {
   int16* portal_left = portal->x_left + region->min_y - portal->min_y;
@@ -341,9 +384,22 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
   int16* region_left = region->x_left;
   int16* region_right = region->x_right;
   
+  ASSERT(region_left);
+  ASSERT(region_right);
+  ASSERT(portal_left);
+  ASSERT(region_right);
+  
   int16 y = region->min_y;
+
+  return FALSE;
+  
+  
+  ASSERT(y >= 0 && y < LCD_HEIGHT);
+  
+  ASSERT_RANGE(y, region->min_y, region->max_y);
   
   // Skip fully clipped spans
+  ENTER();
   while(y <= region->max_y && !CLIP()) {
     ++y;
     ++portal_left;
@@ -351,12 +407,14 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
     ++region_left;
     ++region_right;
   }
+  EXIT();
   
   // If all the spans are fully clipped, it's invisible!
   if(y > region->max_y) {
-    printf("All invisible!\n");
     return FALSE;
   }
+  
+  return FALSE;
   
   // We need to actually adjust x_left and x_right to point to the first visible span
   region->x_left = region_left;
@@ -364,6 +422,7 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
   
   region->min_y = y;
   
+  ENTER();
   while(y <= region->max_y && CLIP()) {
     ++y;
     ++portal_left;
@@ -371,6 +430,7 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
     ++region_left;
     ++region_right;
   }
+  EXIT();
   
   region->max_y = y - 1;
   
@@ -378,25 +438,45 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
 }
 
 _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 total_e, X3D_RasterRegion* dest, int16 min_y, int16 max_y) {
+  
   // Find the top
   uint16 top_index = find_top_edge(raster_edge, edge_index, total_e);
   X3D_RasterEdge* top = raster_edge + edge_index[top_index];
+  
+  
+  ADDRESS(top);
     
   // Find the bottom
   uint16 bottom_index = find_bottom_edge(raster_edge, edge_index, total_e);
   X3D_RasterEdge* bottom = raster_edge + edge_index[bottom_index];
   
+  ADDRESS(bottom);
+  
   // Get the next edge from the top in either direction
   X3D_RasterEdge* next_left = raster_edge + edge_index[next_edge(top_index, total_e, -1)];
   X3D_RasterEdge* next_right = raster_edge + edge_index[next_edge(top_index, total_e, 1)];
+  
+  ADDRESS(next_left);
+  ADDRESS(next_right);
   
   // Calculate the maximum estimated height of the region
   // Note: it can never be more than this
   int16 estimated_height = min(max_y, bottom->max_y) - max(min_y, top->min_y) + 1;
   
+  if(estimated_height <= 0) {
+    //x3d_error("NEG HEIGHT: %d, %d, %d, %d", max_y, bottom->max_y, min_y, top->min_y);
+    return FALSE;
+  }
+  
   // Allocate space for each polyline (on the left and right)
   int16* left = renderstack_alloc(stack, estimated_height * 2);
   int16* right = renderstack_alloc(stack, estimated_height * 2);
+  
+  ADDRESS(left);
+  ADDRESS(right);
+  
+  
+  //return FALSE;
   
   // Starting edge for the right side
   int16 start_right;
@@ -440,7 +520,9 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
   
   // If the height of the left is not the same height as the right, we have a problem!
   if(total_left != total_right) {
-    x3d_error("Polgon polyline mismatch (left: %d, right: %d)", total_left, total_right);
+    //x3d_error("Polgon polyline mismatch (left: %d, right: %d)", total_left, total_right);
+    
+    printf("Mismatch: (e = %d)\n", total_e);
   }
   
   dest->x_left = left;
@@ -505,12 +587,14 @@ void test_newnew_clip() {
   // Construct a test clipping portal
   Vex2D screen_v[] = {
     { 120, 120 },
-    { 10, 10 },
-    { LCD_WIDTH - 10, 10 }
+    { 10, 122 },
+    { LCD_WIDTH - 10, 122 }
   };
     
   construct_rasterregion_from_points(&stack, &screen_region, screen_v, 3);  
-  rasterize_rasterregion(&screen_region);
+  rasterize_rasterregion(&screen_region, LCD_MEM, 2);
+  
+  ngetchx();
    
   
   // Construct a polygon to clip against the portal
@@ -525,7 +609,7 @@ void test_newnew_clip() {
   
   uint16 i;
 
-  // Number of point in the polygon
+  // Number of points in the polygon
   uint16 TOTAL = 5;
   
   X3D_RasterEdge edges[20];
@@ -535,7 +619,7 @@ void test_newnew_clip() {
     generate_rasteredge(&stack, edges + i + 5, v[i], v[next], screen_region.min_y, screen_region.max_y);
     
     draw_edge(edges + i + 5);
-    ngetchx();
+    //ngetchx();
   }
   
   X3D_RasterRegion region;
@@ -545,7 +629,7 @@ void test_newnew_clip() {
   clrscr();
   
   if(construct_and_clip_rasterregion(&stack, &screen_region, edges, edge_index, 5, &region)) {
-    rasterize_rasterregion(&region);
+    rasterize_rasterregion(&region, LCD_MEM, 0);
   }
   
   ngetchx();
@@ -554,7 +638,9 @@ void test_newnew_clip() {
 }
 
 
-
+void x3d_init_clip_window(X3D_RenderStack* stack, X3D_Context* context, X3D_RasterRegion* region, Vex2D* v, uint16 total_v) {
+  construct_rasterregion_from_points(stack, region, v, total_v);
+}
 
 
 
