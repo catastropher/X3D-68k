@@ -114,12 +114,15 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     SWAP(a, b);
   }
   
+  edge->flags = 0;
+  
   if(b.y < min_y || a.y > max_y) {
     edge->flags = EDGE_INVISIBLE;
     edge->min_y = a.y;
     edge->max_y = b.y;
   }
-  else if(a.y == b.y) {
+  
+  if(a.y == b.y) {
     // Horizontal line
     edge->flags = EDGE_HORIZONTAL;
     
@@ -135,7 +138,7 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     edge->min_y = a.y;
     edge->max_y = a.y;
   }
-  else {
+  else if(!(edge->flags & EDGE_INVISIBLE)) {
     // Regular line
     fp16x16 x;
     int16 y;
@@ -389,10 +392,7 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
   ASSERT(portal_left);
   ASSERT(region_right);
   
-  int16 y = region->min_y;
-
-  return FALSE;
-  
+  int16 y = region->min_y;  
   
   ASSERT(y >= 0 && y < LCD_HEIGHT);
   
@@ -414,7 +414,6 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
     return FALSE;
   }
   
-  return FALSE;
   
   // We need to actually adjust x_left and x_right to point to the first visible span
   region->x_left = region_left;
