@@ -540,7 +540,25 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
     // Determine whether the left direction is really next_left or next_right.
     // If next_left is actually on the left, left_dir should be -1. Otherwise,
     // it's flipped and should be 1.
-    left_dir = (next_left->x_data[1] < next_right->x_data[1] ? -1 : 1);
+    
+    
+    int16 x_left, x_right;
+    
+    if(next_left->flags & EDGE_HORIZONTAL) {
+      x_left = next_left->min_x;
+    }
+    else {
+      x_left = next_left->x_data[1];
+    }
+    
+    if(next_right->flags & EDGE_HORIZONTAL) {
+      x_right = next_right->min_x;
+    }
+    else {
+      x_right = next_right->x_data[1];
+    }
+    
+    left_dir = (x_left < x_right ? -1 : 1);
   }
   else {
     // Since this isn't a flat-top polygon, the top edge is guaranteed to point to
