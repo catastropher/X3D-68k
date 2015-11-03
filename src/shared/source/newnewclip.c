@@ -467,6 +467,7 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
     return FALSE;
   }
   
+  
   // Allocate space for each polyline (on the left and right)
   int16* left = renderstack_alloc(stack, estimated_height * 2);
   int16* right = renderstack_alloc(stack, estimated_height * 2);
@@ -474,6 +475,53 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
   ADDRESS(left);
   ADDRESS(right);
   
+  if(estimated_height == 1) {
+    printf("Height = 1\n");
+    // Height of 1 pixel (top and bottom must be horizontal)
+    // Yuck, all y values are the same! We have to search for
+    // min x and max y
+    
+    uint16 i;
+    
+    int16 min_x = 10000;
+    int16 max_x = -10000;
+    
+    for(i = 0; i < total_e; ++i) {
+      ASSERT(raster_edge[edge_index[i]].flags & EDGE_HORIZONTAL);
+      
+      min_x = min(min_x, raster_edge[edge_index[i]].min_x);
+      max_x = max(max_x, raster_edge[edge_index[i]].max_x);
+    }
+    
+    printf("Minx: %d, %d\n", min_x, max_x);
+    
+    *left = min_x;
+    *right = max_x;
+    
+    dest->x_left = left;
+    dest->x_right = right;
+    dest->min_y = top->min_y;
+    dest->max_y = top->min_y;
+    
+    return TRUE;
+  }
+  else if(estimated_height == 2) {
+    printf("Height = 2\n");
+    // Height of 2 pixels (top and bottom must be horizontal)
+    left[0] = top->min_x;
+    right[0] = top->max_x;
+    
+    left[1] = bottom->min_x;
+    right[1] = bottom->max_x;
+    
+    dest->x_left = left;
+    dest->x_right = right;
+    
+    dest->min_y = top->min_y;
+    dest->max_y = top->min_y + 1;
+    
+    return TRUE;
+  }
   
   //return FALSE;
   
