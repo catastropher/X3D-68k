@@ -1189,11 +1189,13 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
   
   uint16 edges[prism2d->base_v];
   
-  for(i = 0; i < x3d_segment_total_f(seg); ++i) {
+  int16 start = (x3d_get_clock() / 1000) % (prism2d->base_v + 2);
+  
+  for(i = start; i == start; ++i) { //x3d_segment_total_f(seg); ++i) {
     Vex3D pos;
     
-    if(i != 0)
-      break;
+    //if(i != 0)
+    //  break;
     
     x3d_object_pos(context->cam, &pos);
     

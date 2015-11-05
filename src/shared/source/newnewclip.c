@@ -159,6 +159,7 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     
     // Clamp the max y
     int16 end_y = min(max_y, b.y);
+    int16 start_x = x >> 16;
     
     edge->min_y = y;
     edge->flags = 0;
@@ -168,6 +169,7 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
 
     
     ENTER();
+
     while(y <= end_y) {
       edge->x_data[y - edge->min_y] = x >> 16;
       x += slope;
@@ -175,7 +177,14 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     }
     EXIT();
     
+    int16 end_x = (x - slope) >> 16;
+    
+    edge->min_x = min(start_x, end_x);
+    edge->max_x = max(start_x, end_x);
+    
+    
     edge->max_y = end_y;
+    
   }
 }
 
@@ -235,9 +244,9 @@ uint16 next_edge(uint16 edge, uint16 total_e, int16 dir) {
   }
 }
 
-int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge, _Bool left) {
+int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool first_edge, _Bool left) {
   if(edge->flags & EDGE_HORIZONTAL) {
-    if(last_edge) {
+    if(first_edge) {
       *dest = left ? edge->min_x : edge->max_x;
       
       return dest + 1;
@@ -247,12 +256,22 @@ int16* populate_edge(X3D_RasterEdge* edge, int16* dest, _Bool last_edge, _Bool l
     }
   }
   else {
-    int16 count = edge->max_y - edge->min_y + (last_edge ? 1 : 0);
+    int16 count = edge->max_y - edge->min_y;
     int16* data = edge->x_data;
+    
+    if(first_edge) {
+      ++count;
+    }
+    else {
+      ++data;
+    }
+    
+    printf("Count: %d\n", count);
     
     ASSERT_RANGE(count, 0, 128);
     
-    ENTER();
+    int16 total_count = count;
+
     while(count-- > 0) {
       *dest = *data;
       
@@ -325,13 +344,15 @@ int16 populate_polyline(X3D_RasterEdge* raster_edge, uint16* edge_index, uint16 
   *start_y = EDGE().min_y;
     
   _Bool last = FALSE;
-    
+  _Bool first = TRUE;
+  
   ENTER();
   do {
     // We're the last edge if we're out of edges or the next edge is invisible
     last = edge + 1 == edge_end || (EDGE().flags & EDGE_INVISIBLE);
-    dest = populate_edge(&EDGE(), dest, last, left);
+    dest = populate_edge(&EDGE(), dest, first, left);
     ++edge;
+    first = FALSE;
   } while(edge < edge_end && !last);
   EXIT();
   
@@ -449,6 +470,8 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
   uint16 bottom_index = find_bottom_edge(raster_edge, edge_index, total_e);
   X3D_RasterEdge* bottom = raster_edge + edge_index[bottom_index];
   
+  printf("top: %d, %d\n", top_index, bottom_index);
+  
   ADDRESS(bottom);
   
   // Get the next edge from the top in either direction
@@ -487,7 +510,7 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
     int16 max_x = -10000;
     
     for(i = 0; i < total_e; ++i) {
-      ASSERT(raster_edge[edge_index[i]].flags & EDGE_HORIZONTAL);
+      //ASSERT(raster_edge[edge_index[i]].flags & EDGE_HORIZONTAL);
       
       min_x = min(min_x, raster_edge[edge_index[i]].min_x);
       max_x = max(max_x, raster_edge[edge_index[i]].max_x);
@@ -582,6 +605,11 @@ _Bool construct_rasterregion(X3D_RenderStack* stack, X3D_RasterEdge* raster_edge
   // Populate the left and right polylines
   int16 total_left = populate_polyline(raster_edge, edge_index, total_e, top_index, left_dir, bottom_index, left, TRUE, &dest->min_y);
   int16 total_right = populate_polyline(raster_edge, edge_index, total_e, start_right, -left_dir, bottom_index, right, FALSE, &dest->min_y);
+  
+  //int16 size_top_right = abs(right[1] - right[2]);
+  
+ // if(abs(right[]))
+  
   
   // If the height of the left is not the same height as the right, we have a problem!
   if(total_left != total_right) {

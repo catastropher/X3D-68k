@@ -661,10 +661,10 @@ extern X3D_RenderStack render_stack;
 extern X3D_RasterRegion screen_region;
 
 Vex2D screen_v[] = {
-  { 0, 30 },
-  { LCD_WIDTH - 1, 30 },
-  { LCD_WIDTH - 1, LCD_HEIGHT - 30 },
-  { 0, LCD_HEIGHT - 30 }
+  { 0, 0 },
+  { LCD_WIDTH - 1, 0 },
+  { LCD_WIDTH - 1, LCD_HEIGHT - 1 },
+  { 0, LCD_HEIGHT - 1 }
 };
 
 void x3d_test() {
