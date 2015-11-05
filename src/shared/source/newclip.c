@@ -1179,7 +1179,7 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
     uint16 a, b;
     
     x3d_get_prism2d_edge(prism2d, i, &a, &b);
-    generate_rasteredge(stack, raster_edge + i, prism2d->v[a], prism2d->v[b], region->min_y, region->max_y);
+    //generate_rasteredge(stack, raster_edge + i, prism2d->v[a], prism2d->v[b], region->min_y, region->max_y);
   }
   
   printf("Draw\n");
@@ -1208,7 +1208,7 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
       
       uint16 total_e = get_prism2d_face_edges(prism2d, i, edges);
       
-      _Bool valid = construct_and_clip_rasterregion(stack, region, raster_edge, edges, total_e, &new_region);
+      _Bool valid = FALSE;//construct_and_clip_rasterregion(stack, region, raster_edge, edges, total_e, &new_region);
 
       
       if(face[i].connect_id != SEGMENT_NONE && id == 0) {

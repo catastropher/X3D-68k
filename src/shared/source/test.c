@@ -682,11 +682,11 @@ void x3d_test() {
 
   
   
-  //test_newnew_clip();
-  //return;
+  test_newnew_clip();
+  return;
   
   renderstack_init(&render_stack, 8192);
-  x3d_init_clip_window(&render_stack, NULL, &screen_region, screen_v, 4);
+  //x3d_init_clip_window(&render_stack, NULL, &screen_region, screen_v, 4);
   
   X3D_TestContext test;
   X3D_Context context;
