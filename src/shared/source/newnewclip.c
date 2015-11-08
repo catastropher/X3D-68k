@@ -170,11 +170,81 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     b.x = (x - slope) >> 16;
   }
   
-  printf("a: %d, b: %d\n", a.x, b.x);
-  ngetchx();
-  
   edge->x_range = get_range(a.x, b.x);
 }
+
+#define EDGE(_edge) raster_edge[edge_index[_edge]]
+
+#define REGION_OFFSET(_region, _y) (_y - _region->min_y)
+
+_Bool edge_start_x(X3D_RasterEdge* edge, int16* x) {
+  if(edge->flags & EDGE_INVISIBLE) {
+    return FALSE;
+  }
+  if(edge->flags & EDGE_HORIZONTAL) {
+    return FALSE;
+  }
+  
+  *x = edge->x_data[0];
+  return TRUE;
+}
+
+_Bool get_rasterregion(X3D_RasterRegion* region, X3D_RenderStack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
+  region->y_range.min = INT16_MAX;
+  region->y_range.max = INT16_MIN;
+  
+  region->x_left = renderstack_alloc(stack, LCD_HEIGHT * sizeof(int16));
+  region->x_right = renderstack_alloc(stack, LCD_HEIGHT * sizeof(int16));
+  
+  int16 i;
+  for(i = 0; i < LCD_HEIGHT; ++i) {
+    region->x_left[i] = INT16_MAX;
+    region->x_right[i] = INT16_MIN;
+  }
+  
+  int16 edge;
+  for(edge = 0; edge < total_e; ++edge) {
+    X3D_RasterEdge* e = &EDGE(edge);
+    
+    if(!(e->flags & EDGE_INVISIBLE)) {
+      int16* left = region->x_left + e->y_range.min;
+      int16* right = region->x_right + e->y_range.min;
+      
+      if(e->flags & EDGE_HORIZONTAL) {
+        if(e->x_range.min < *left)    *left = e->x_range.min;
+        if(e->x_range.max > *right)   *right = e->x_range.max;
+      }
+      else {
+        int16 i;
+        int16* x = e->x_data;
+        
+        for(i = e->y_range.min; i <= e->y_range.max; ++i) {
+          if(*x < *left)    *left = *x;
+          if(*x > *right)   *right = *x;
+          
+          ++x;
+          ++left;
+          ++right;
+        }
+      }
+      
+      region->y_range.min = min(region->y_range.min, e->y_range.min);
+      region->y_range.max = max(region->y_range.max, e->y_range.max);
+    }
+  }
+  
+  return region->y_range.min <= region->y_range.max;
+}
+
+
+
+
+
+
+
+
+
+
 
 void test_newnew_clip() {
   X3D_RenderStack stack;

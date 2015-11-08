@@ -36,7 +36,6 @@ typedef struct X3D_RasterEdge {
   X3D_Range x_range;
   X3D_Range y_range;
   
-  
 } X3D_RasterEdge;
 
 enum {
@@ -55,9 +54,21 @@ typedef struct X3D_RasterRegion {
   int16 min_y;
   int16 max_y;
   
+  X3D_Range y_range;
+  
   int16* x_left;
   int16* x_right;
 } X3D_RasterRegion;
+
+typedef struct X3D_PolyLine {
+  int16 total_e;
+  int16* edges;
+} X3D_PolyLine;
+
+
+
+
+
 
 _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region);
 void rasterize_rasterregion(X3D_RasterRegion* region, void* screen, uint16 color);
