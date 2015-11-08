@@ -31,7 +31,9 @@
 #define ASSERT(_s) {if(!(_s)) x3d_error("Assert failed! %s (%s %d)", #_s, __FUNCTION__, __LINE__);}
 #define ASSERT_RANGE(_a, _min, _max) ASSERT(_a >= _min && _a <= _max);
 
-#define ASSERT_EQUAL_INT16(_a, _b) { if((_a) != (_b)) x3d_error("Assert failed! %s == %s (%d, %d)", #_a, #_b, (int16)(_a), (int16)(_b)); }
+#define ASSERT_EQUAL_INT16(_a, _b) { if((_a) != (_b)) x3d_error("Assert failed (line %d)! %s == %s (%d, %d)", __LINE__, #_a, #_b, (int16)(_a), (int16)(_b)); }
+#define ASSERT_EQUAL_INT32(_a, _b) { if((_a) != (_b)) x3d_error("Assert failed (line %d)! %s == %s (%ld, %ld)", __LINE__, #_a, #_b, (int32)(_a), (int32)(_b)); }
+
 
 #ifdef NDEBUG
 #undef NDEBUG
@@ -98,7 +100,7 @@ void intersect_line_with_horizontal(fp16x16 slope, Vex2D* start, int16 y) {
   int16 dy = y - start->y;
   int16 slope_8x8 = slope >> 8;
   
-  start->x = start->x + (((int32)dy * slope) >> 8);
+  start->x = start->x + (((int32)dy * slope_8x8) >> 8);
   start->y = y;
 }
 
@@ -129,6 +131,7 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, Vex2D* a, Vex2D* b, fp16x16* slope, 
     
     if(a->y < region_y_range.min) {
       intersect_line_with_horizontal(*slope, a, region_y_range.min);
+      edge->y_range.min = region_y_range.min;
     }
     
     // Clamp the max y
@@ -142,6 +145,8 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, Vex2D* a, Vex2D* b, fp16x16* slope, 
  
 void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, Vex2D b, X3D_Range region_y_range) {
   fp16x16 slope;
+  
+  printf("a: %d, b: %d\n", a.x, b.x);
   
   if(clip_rasteredge(edge, &a, &b, &slope, region_y_range)) {     // Only generate the edge if it's (potentially) visible
     fp16x16 x = ((int32)a.x) << 16;
@@ -165,6 +170,9 @@ void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, 
     b.x = (x - slope) >> 16;
   }
   
+  printf("a: %d, b: %d\n", a.x, b.x);
+  ngetchx();
+  
   edge->x_range = get_range(a.x, b.x);
 }
 
@@ -173,6 +181,7 @@ void test_newnew_clip() {
   renderstack_init(&stack, 2048);
   FontSetSys(F_4x6);
   
+  // Case 0
   {
     void* stack_ptr = renderstack_save(&stack);
     X3D_Range y_range = SCREEN_Y_RANGE;
@@ -185,12 +194,95 @@ void test_newnew_clip() {
     
     printf("Case 0\n");
     ASSERT_EQUAL_INT16((edge.flags & EDGE_INVISIBLE) != 0, TRUE);
-    ASSERT(edge.flags & EDGE_HORIZONTAL);
-    ASSERT(edge.x_range.min == -20000);
-    ASSERT(edge.x_range.max == 20000);
-    ASSERT(edge.y_range.min == -30000);
-    ASSERT(edge.y_range.max == 30000);
-    ASSERT(edge.x_data == NULL);
+    ASSERT_EQUAL_INT16((edge.flags & EDGE_HORIZONTAL) != 0, TRUE);
+    ASSERT_EQUAL_INT16(edge.x_range.min, -20000);
+    ASSERT_EQUAL_INT16(edge.x_range.max, 20000);
+    ASSERT_EQUAL_INT16(edge.y_range.min, -30000);
+    ASSERT_EQUAL_INT16(edge.y_range.max, -30000);
+    ASSERT_EQUAL_INT32(edge.x_data, NULL);
+    
+    renderstack_restore(&stack, stack_ptr);
+  }
+  
+  // Case 1
+  {
+    void* stack_ptr = renderstack_save(&stack);
+    X3D_Range y_range = SCREEN_Y_RANGE;
+    X3D_RasterEdge edge;
+    
+    Vex2D a = { -20000, 30000 };
+    Vex2D b = { 20000, 30000 };
+    
+    generate_rasteredge(&stack, &edge, a, b, y_range);
+    
+    printf("Case 1\n");
+    ASSERT_EQUAL_INT16((edge.flags & EDGE_INVISIBLE) != 0, TRUE);
+    ASSERT_EQUAL_INT16((edge.flags & EDGE_HORIZONTAL) != 0, TRUE);
+    ASSERT_EQUAL_INT16(edge.x_range.min, -20000);
+    ASSERT_EQUAL_INT16(edge.x_range.max, 20000);
+    ASSERT_EQUAL_INT16(edge.y_range.min, 30000);
+    ASSERT_EQUAL_INT16(edge.y_range.max, 30000);
+    ASSERT_EQUAL_INT32(edge.x_data, NULL);
+    
+    renderstack_restore(&stack, stack_ptr);
+  }
+  
+  // Case 2
+  {
+    void* stack_ptr = renderstack_save(&stack);
+    X3D_Range y_range = SCREEN_Y_RANGE;
+    X3D_RasterEdge edge;
+    
+    Vex2D a = { 50, 51 };
+    Vex2D b = { 100, 101 };
+    
+    generate_rasteredge(&stack, &edge, a, b, y_range);
+    
+    printf("Case 2\n");
+    ASSERT_EQUAL_INT16(edge.flags & EDGE_INVISIBLE, 0);
+    ASSERT_EQUAL_INT16(edge.flags & EDGE_HORIZONTAL, 0);
+    
+    
+    ASSERT_EQUAL_INT16(edge.x_range.min, 50);
+    ASSERT_EQUAL_INT16(edge.x_range.max, 100);
+    ASSERT_EQUAL_INT16(edge.y_range.min, 51);
+    ASSERT_EQUAL_INT16(edge.y_range.max, 101);
+    ASSERT_EQUAL_INT32(edge.x_data != NULL, TRUE);
+    
+    ASSERT_EQUAL_INT16(edge.x_data[0], 50);
+    ASSERT_EQUAL_INT16(edge.x_data[50], 100);
+    ASSERT_EQUAL_INT16(edge.x_data[25], (edge.x_data[0] + edge.x_data[50]) / 2);
+    
+    
+    renderstack_restore(&stack, stack_ptr);
+  }
+  
+  // Case 3
+  {
+    void* stack_ptr = renderstack_save(&stack);
+    X3D_Range y_range = SCREEN_Y_RANGE;
+    X3D_RasterEdge edge;
+    
+    Vex2D a = { 0, -10 };
+    Vex2D b = { 20, 10 };
+    
+    generate_rasteredge(&stack, &edge, a, b, y_range);
+    
+    printf("Case 3\n");
+    ASSERT_EQUAL_INT16(edge.flags & EDGE_INVISIBLE, 0);
+    ASSERT_EQUAL_INT16(edge.flags & EDGE_HORIZONTAL, 0);
+    
+    
+    ASSERT_EQUAL_INT16(edge.x_range.min, 10);
+    ASSERT_EQUAL_INT16(edge.x_range.max, 20);
+    ASSERT_EQUAL_INT16(edge.y_range.min, 0);
+    ASSERT_EQUAL_INT16(edge.y_range.max, 10);
+    ASSERT_EQUAL_INT32(edge.x_data != NULL, TRUE);
+    
+    ASSERT_EQUAL_INT16(edge.x_data[0], 10);
+    ASSERT_EQUAL_INT16(edge.x_data[10], 20);
+    ASSERT_EQUAL_INT16(edge.x_data[5], (edge.x_data[0] + edge.x_data[10]) / 2);
+    
     
     renderstack_restore(&stack, stack_ptr);
   }
