@@ -21,11 +21,11 @@ static inline _Bool in_range(X3D_Range r, int16 val) {
 
 
 typedef struct X3D_RasterEdge {  
-  int16 min_y;
-  int16 min_x;
-  int16 max_y;
-  int16 max_x;
-  int16 start_y;
+  // int16 min_y;
+  // int16 min_x;
+  // int16 max_y;
+  // int16 max_x;
+  // int16 start_y;
   
   
   
@@ -51,8 +51,8 @@ typedef struct X3D_RenderStack {
 } X3D_RenderStack;
 
 typedef struct X3D_RasterRegion {
-  int16 min_y;
-  int16 max_y;
+  // int16 min_y;
+  // int16 max_y;
   
   X3D_Range y_range;
   
@@ -67,7 +67,7 @@ typedef struct X3D_PolyLine {
 
 
 
-
+void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, Vex2D b, X3D_Range region_y_range);
 
 
 _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region);

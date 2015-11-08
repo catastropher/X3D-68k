@@ -26,7 +26,7 @@ typedef struct X3D_SegmentManager{
 } X3D_SegmentManager;
 
 typedef struct X3D_ObjectManager {
-  void* object_data __attribute__((depracated));
+  void* object_data;// __attribute__((depracated));
   X3D_ObjectBase* active_list[X3D_MAX_ACTIVE_OBJECTS];
   X3D_ObjectType types[X3D_MAX_OBJECT_TYPES];
   

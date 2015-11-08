@@ -1153,6 +1153,7 @@ static inline uint16 x3d_prism2d_needed_size(uint16 base_v) {
 
 void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
+_Bool get_rasterregion(X3D_RasterRegion* region, X3D_RenderStack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e);
 
 void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* region, X3D_Context* context, X3D_ViewPort* viewport) {
   global_viewport = viewport;
@@ -1180,18 +1181,20 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
     
     x3d_get_prism2d_edge(prism2d, i, &a, &b);
     //generate_rasteredge(stack, raster_edge + i, prism2d->v[a], prism2d->v[b], region->min_y, region->max_y);
+    
+    generate_rasteredge(stack, raster_edge + i, prism2d->v[a], prism2d->v[b], (X3D_Range) { region->y_range.min, region->y_range.max }); 
   }
   
-  printf("Draw\n");
+  //printf("Draw\n");
   X3D_SegmentFace* face = x3d_segment_get_face(seg);
   
   //rasterize_rasterregion(region, context->gdbuf, 3);
   
   uint16 edges[prism2d->base_v];
   
-  int16 start = (x3d_get_clock() / 1000) % (prism2d->base_v + 2);
+  int16 start = 0;//(x3d_get_clock() / 1000) % (prism2d->base_v + 2);
   
-  for(i = start; i == start; ++i) { //x3d_segment_total_f(seg); ++i) {
+  for(i = 0; i < x3d_segment_total_f(seg); ++i) {
     Vex3D pos;
     
     //if(i != 0)
@@ -1208,13 +1211,17 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
       
       uint16 total_e = get_prism2d_face_edges(prism2d, i, edges);
       
-      _Bool valid = FALSE;//construct_and_clip_rasterregion(stack, region, raster_edge, edges, total_e, &new_region);
+      _Bool valid = get_rasterregion(&new_region, stack, raster_edge, edges, total_e) && intersect_rasterregion(region, &new_region);
+      
+      
+      
+      //construct_and_clip_rasterregion(stack, region, raster_edge, edges, total_e, &new_region);
 
       
       if(face[i].connect_id != SEGMENT_NONE && id == 0) {
         
         if(valid) {
-          //x3d_draw_clip_segment(face[i].connect_id, new_region, context, viewport);
+          x3d_draw_clip_segment(stack, face[i].connect_id, &new_region, context, viewport);
           
         }
       }
@@ -1231,7 +1238,7 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
           //fast_fill_boundregion(context, new_region, color[i]);
         }
         else {
-          printf("Invalid!\n");
+          //printf("Invalid!\n");
         }
       }
       

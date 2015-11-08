@@ -140,8 +140,13 @@ void x3d_render_segment_wireframe(uint16 id, X3D_Frustum* frustum, X3D_Context* 
   }
   
   if(context->render_select == 1) {
+    uint16 start = x3d_get_clock();
     x3d_draw_clip_segment(&render_stack, id, &screen_region, context, viewport);
-    context->render_clock = 1;
+    context->render_clock += x3d_get_clock() - start;
+    
+    if(context->render_clock == 0)
+      context->render_clock = 1;
+    
     
     return;
   }
