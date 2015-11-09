@@ -34,6 +34,9 @@
 
 #include "extgraph.h"
 
+#undef printf
+#define printf(...) ;
+
 X3D_ClipReport report;
 
 /**
@@ -1155,6 +1158,51 @@ void x3d_test_rotate_prism3d(X3D_Prism* dest, X3D_Prism* src, X3D_Camera* cam);
 
 _Bool get_rasterregion(X3D_RasterRegion* region, X3D_RenderStack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e);
 
+int16 clip_line_to_near_plane(X3D_ViewPort* viewport, Vex3D* a, Vex3D* b, Vex2D* a_project, Vex2D* b_project, Vex2D* a_dest, Vex2D* b_dest, int16 z) {
+  if(a->z < z && b->z < z) {
+    return EDGE_INVISIBLE;
+  }
+  else if(a->z >= z && b->z >= z) {
+    *a_dest = *a_project;
+    *b_dest = *b_project;
+    return 0;
+  }
+  
+  if(a->z < z) {
+    SWAP(a, b);
+    SWAP(a_project, b_project);
+    //SWAP(a_dest, b_dest);
+  }
+  
+  *a_dest = *a_project;
+  
+  int16 dist_a = a->z - z;
+  int16 dist_b = z - b->z;
+  int16 scale = ((int32)dist_a << 15) / (dist_a + dist_b);
+  
+  printf("Clipped!\n");
+  
+  Vex3D new_b = {
+    a->x + ((((int32)b->x - a->x) * scale) >> 15),
+    a->y + ((((int32)b->y - a->y) * scale) >> 15),
+    z
+  };
+  
+  x3d_vex3d_int16_project(b_dest, &new_b, viewport);
+  
+//   static int16 count = 0;
+//   
+//   if(count++ == 1) {
+//     x3d_error("{%d,%d,%d} - {%d,%d,%d} -> {%d,%d,%d} -> {%d,%d} - {%d,%d}",
+//               a->x, a->y, a->z,
+//               b->x, b->y, b->z,
+//               new_b.x, new_b.y, new_b.z, a_dest->x, a_dest->y, b_dest->x, b_dest->y);
+//   }
+  
+  return EDGE_NEAR_CLIPPED;
+}
+
+
 void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* region, X3D_Context* context, X3D_ViewPort* viewport) {
   global_viewport = viewport;
   
@@ -1178,11 +1226,22 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
   
   for(i = 0; i < prism2d->base_v * 3; ++i) {
     uint16 a, b;
+    Vex2D a_dest, b_dest;
     
     x3d_get_prism2d_edge(prism2d, i, &a, &b);
     //generate_rasteredge(stack, raster_edge + i, prism2d->v[a], prism2d->v[b], region->min_y, region->max_y);
     
-    generate_rasteredge(stack, raster_edge + i, prism2d->v[a], prism2d->v[b], (X3D_Range) { region->y_range.min, region->y_range.max }); 
+    int16 flags = clip_line_to_near_plane(viewport, prism_temp->v + a, prism_temp->v + b, prism2d->v + a, prism2d->v + b,
+                                          &a_dest, &b_dest, 10);
+    
+    if(flags != EDGE_INVISIBLE) {
+      generate_rasteredge(stack, raster_edge + i, a_dest, b_dest, (X3D_Range) { region->y_range.min, region->y_range.max }); 
+    }
+    else {
+      raster_edge[i].flags = 0;
+    }
+    
+    raster_edge[i].flags |= flags;
   }
   
   //printf("Draw\n");

@@ -27,7 +27,8 @@ typedef struct X3D_RasterEdge {
   // int16 max_x;
   // int16 start_y;
   
-  
+  int16 start_x;
+  int16 end_x;
   
   uint8 flags;
   
@@ -41,7 +42,8 @@ typedef struct X3D_RasterEdge {
 enum {
   EDGE_HORIZONTAL = 1,
   EDGE_INVISIBLE = 2,
-  EDGE_DIRECTION_UP = 4
+  EDGE_V_SWAPPED = 4,
+  EDGE_NEAR_CLIPPED = 8
 };
 
 typedef struct X3D_RenderStack {

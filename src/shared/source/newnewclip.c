@@ -115,16 +115,23 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, Vex2D* a, Vex2D* b, fp16x16* slope, 
   edge->flags = 0;
   edge->x_data = NULL;
   
+  edge->start_x = a->x;
+  edge->end_x = b->x;
+  
   // Swap points if out of order vertically
   if(a->y > b->y) {
     SWAP(*a, *b);
-    edge->flags |= EDGE_DIRECTION_UP;
+    edge->flags |= EDGE_V_SWAPPED;
   }
   
   edge->y_range = get_range(a->y, b->y);
   
   if(edge->y_range.min == edge->y_range.max) {
     edge->flags |= EDGE_HORIZONTAL;
+    
+    if(a->x > b->x) {
+      edge->flags |= EDGE_V_SWAPPED;
+    }
   }
   
   if(!range_overlap(edge->y_range, region_y_range)) {
@@ -153,6 +160,12 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, Vex2D* a, Vex2D* b, fp16x16* slope, 
  
 void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, Vex2D a, Vex2D b, X3D_Range region_y_range) {
   fp16x16 slope;
+  
+  //ASSERT(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT);
+  
+  if(!(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT)) {
+    x3d_error("range min: %d, %d", region_y_range.min, region_y_range.max);
+  }
   
   //printf("a: %d, b: %d\n", a.x, b.x);
   
@@ -230,10 +243,52 @@ _Bool get_rasterregion(X3D_RasterRegion* region, X3D_RenderStack* stack, X3D_Ras
   
   //printf("total_e: %d\n", total_e);
   
+  Vex2D out_v[2];
+  int16 total_out_v = 0;
+  X3D_RasterEdge* e = NULL;
+  
+  X3D_RasterEdge temp_edge;
+  
   int16 edge;
   for(edge = 0; edge < total_e; ++edge) {
-    X3D_RasterEdge* e = &EDGE(edge);
+    e = &EDGE(edge);
     
+    if(e->flags & EDGE_NEAR_CLIPPED) {
+      //ASSERT((e->flags & EDGE_HORIZONTAL) == 0);
+      //ASSERT(e->x_data);
+      
+      if(total_out_v == 2) {
+        x3d_error("%d %d %d %d", EDGE(0).flags, EDGE(1).flags, EDGE(2).flags, EDGE(3).flags);
+      }
+      
+      int16 a_x, b_x;
+      
+      if(e->flags & EDGE_INVISIBLE) {
+        a_x = e->start_x;
+        b_x = e->end_x;
+      }
+      else {
+        a_x = e->x_data[0];
+        b_x = EDGE_VALUE(e, e->y_range.max);
+      }
+      
+      //ASSERT(total_out_v < 2);
+      
+      
+      if(e->flags & EDGE_HORIZONTAL) {
+        out_v[total_out_v++] = (Vex2D) { (e->flags & EDGE_V_SWAPPED) ? e->x_range.min : e->x_range.max, e->y_range.min };
+      }
+      else {
+        if(e->flags & EDGE_V_SWAPPED) {
+          out_v[total_out_v++] = (Vex2D) { a_x, e->y_range.min };
+        }
+        else {
+          out_v[total_out_v++] = (Vex2D) { b_x , e->y_range.max };
+        }
+      }
+    }
+    
+add_edge:
     if(!(e->flags & EDGE_INVISIBLE)) {
       int16* left = region->x_left + e->y_range.min;
       int16* right = region->x_right + e->y_range.min;
@@ -264,6 +319,27 @@ _Bool get_rasterregion(X3D_RasterRegion* region, X3D_RenderStack* stack, X3D_Ras
     else {
       //printf("Invisible!\n");
     }
+  }
+  
+  ASSERT(total_out_v == 0 || total_out_v == 2);
+  
+  if(total_out_v != 0 && e != &temp_edge) {
+    
+    
+    
+//     x3d_error("Range: {%d, %d}\n{%d, %d}\n{%d, %d}\n{%d, %d}\n",
+//               EDGE(0).y_range.min,EDGE(0).y_range.max,
+//               EDGE(1).y_range.min,EDGE(1).y_range.max,
+//               EDGE(2).y_range.min,EDGE(2).y_range.max,
+//               EDGE(3).y_range.min,EDGE(3).y_range.max);
+    
+    generate_rasteredge(stack, &temp_edge, out_v[0], out_v[1], region->y_range);
+    
+    //x3d_error("Pos: {%d, %d} - {%d, %d}", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y);
+    
+    
+    e = &temp_edge;
+    goto add_edge;
   }
   
   //printf("Min: %d, %d\n", region->y_range.min, region->y_range.max);
@@ -478,7 +554,11 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
   //return FALSE;
   
   
-  ASSERT(y >= 0 && y < LCD_HEIGHT);
+  //ASSERT(y >= 0 && y < LCD_HEIGHT);
+  
+  if(y < 0 || y >= LCD_HEIGHT) {
+    x3d_error("y = %d, %d", y, region->y_range.max);
+  }
   
   ASSERT_RANGE(y, region->y_range.min, region->y_range.max);
   
