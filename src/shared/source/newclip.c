@@ -1276,7 +1276,7 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
       
       //construct_and_clip_rasterregion(stack, region, raster_edge, edges, total_e, &new_region);
 
-      
+     
       if(face[i].connect_id != SEGMENT_NONE && id == 0) {
         
         if(valid) {
@@ -1285,12 +1285,79 @@ void x3d_draw_clip_segment(X3D_RenderStack* stack, uint16 id, X3D_RasterRegion* 
         }
       }
       else {
-        if(valid) {// && context->gray_enabled) {
+        if(valid && context->gray_enabled) {
           // Check to make sure we're on the right side of the plane
           
           uint16 color[] = {
             3, 3, 1, 2, 1, 2, 1, 2, 1, 2, 1, 2
           };
+          
+          
+          
+          X3D_Polygon3D* poly = alloca(sizeof(X3D_Polygon3D) + sizeof(Vex3D) * prism2d->base_v);
+          
+          x3d_prism3d_get_face(poly, prism_temp, i);
+          
+          Vex3D_int32 sum = { 0, 0, 0 };
+          
+          uint16 j;
+          for(j = 0; j < poly->total_v; ++j) {
+            sum.x += poly->v[j].x;
+            sum.y += poly->v[j].y;
+            sum.z += poly->v[j].z;
+          }
+          
+          sum.x /= poly->total_v;
+          sum.y /= poly->total_v;
+          sum.z /= poly->total_v;
+          
+          Vex3D v = { sum.x, sum.y, sum.z };
+          
+          x3d_vex3d_fp0x16_normalize(&v);
+          
+          Vex3D dir = { (int32)context->cam->object.mat.data[2], (int32)context->cam->object.mat.data[5], (int32)context->cam->object.mat.data[8] };
+          int16 dot = v.z;//x3d_vex3d_fp0x16_dot(&dir, &face[i].plane.normal);
+          
+          //printf("Dot: %d\n", dot);
+          
+          
+          
+          
+          
+          
+          
+          int16 a15 = .9925 * 32767;
+          int16 a30 = .866 * 32767;
+          int16 a60 = .777 * 32767;
+          int16 a70 = .342 * 32767;
+          
+          int16 a170 = -0.9848 * 32767;
+          int16 a120 = -.5 * 32767;
+          int16 a105 = -.2588 * 32767;
+          
+          int16 c = 2;
+      
+          if(dot > a15) {
+            c = 1;
+          }
+          else if(dot > a30) {
+            c = 2;
+          }
+          else if(dot > a60) {
+            c = 3;
+          }
+          
+#if 0
+          if(dot < a170) {
+            c = 0;
+          }
+          else if(dot < a120) {
+            c = 1;
+          }
+          else if(dot < a105) {
+            c  = 2;
+          }
+#endif     
           
           rasterize_rasterregion(&new_region, context->gdbuf, color[i]);
           
