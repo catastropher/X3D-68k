@@ -13,34 +13,8 @@ include_directories($ENV{X3D}/src/shared/headers)
 include_directories($ENV{X3D}/lib)
 
 add_executable(X3DShared
-  source/export.c
-  source/clip.c
-  source/editor.c
-  source/error.c
-  source/fastsqrt.c
-  source/fix.c
-  source/frustum.c
-  source/geo.c
-  source/keys.c
-  source/log.c
-  source/matrix.c
-  source/polygon.c
-  source/prism.c
-  source/render.c
-  source/segment.c
-  source/test.c
-  source/trig.c
-  source/vector.c
-  source/debug/log.c
-  source/init/init.c
-  source/manager.c
-  source/object.c
-  source/collide.c
-  source/memory.c
-  source/level.c
-  source/command.c
-  source/newclip.c
-  source/newnewclip.c
+  C/init/export.c
+  C/init/init.c
 )
 
 if(X3D_TARGET EQUAL 68k)

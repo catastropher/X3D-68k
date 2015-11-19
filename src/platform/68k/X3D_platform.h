@@ -57,15 +57,45 @@ typedef long long int64;
 /// A 64-bit unsigned integer
 typedef unsigned long long uint64;
 
+enum {
+  X3D_FALSE = 0,
+  X3D_TRUE = 1
+};
+
 typedef struct X3D_Screen {
-
-
+  int16 width;
+  int16 height;
+  uint8 bpp;
+  uint8 flags;
+  
+  LCD_BUFFER* save_screen;
 } X3D_Screen;
 
+enum {
+  X3D_SPLIT_PLANE_GRAYSCALE = 1
+};
 
 
+static inline _Bool x3d_platform_screen_init(X3D_Screen* screen, int16 width, int16 height, int16 bpp) {
+  screen->save_screen = malloc(LCD_SIZE);
+  
+  if(!screen->save_screen)
+    return X3D_FALSE;
+  
+  LCD_save(screen->save_screen);
+  
+  screen->width = width;
+  screen->height = height;
+  screen->bpp = bpp;
+  screen->flags = X3D_SPLIT_PLANE_GRAYSCALE;
+  
+  return X3D_TRUE;
+}
 
-
+static inline void x3d_platform_screen_cleanup(X3D_Screen* screen) {
+  LCD_restore(screen->save_screen);
+  free(screen->save_screen);
+}
 
 
 
