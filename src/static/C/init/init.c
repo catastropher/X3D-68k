@@ -21,6 +21,8 @@
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
+#define x3d_load_interface _DLL_call(void, (void), 0)
+
 /**
  * Attempts to initialize X3D.
  */
@@ -47,12 +49,17 @@ _Bool x3d_init() {
       default:
         break;
     }
-    
+        
     goto error_dll;
   }
   
+  x3d_load_interface();	
+  
   x3d->error_msg = "Success!";
   
+  clrscr();
+  x3d->status.add("Hello, world!");
+  ngetchx();
   
   return X3D_FALSE;
   

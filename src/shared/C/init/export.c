@@ -14,6 +14,8 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../../static/headers/X3D_enginestate.h"
+
 #include "X3D_platform.h"
 #include "X3D_config.h"
 
@@ -21,17 +23,13 @@
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
+void x3d_load_interface(void);
+
 DLL_INTERFACE
-
-void x3d_test();
-
-void func() {
-  
-}
 
 DLL_ID X3D_ID
 DLL_VERSION 1,0
-DLL_EXPORTS func//x3d_init_core, x3d_log, x3d_cleanup_core, &x3d_loaded, x3d_error, x3d_malloc, x3d_free, x3d_realloc, x3d_sinfp
+DLL_EXPORTS x3d_load_interface
 
 DLL_IMPLEMENTATION
 

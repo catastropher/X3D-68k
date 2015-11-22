@@ -18,12 +18,20 @@
 
 #include "X3D_platform.h"
 
+typedef struct X3D_StatusBarInterface {
+	void (*add)(const char*);
+} X3D_StatusBarInterface;
+
 typedef struct X3D_EngineState {
   const char* error_msg;
   X3D_Screen screen;
+  
+  X3D_StatusBarInterface status;
 } X3D_EngineState;
 
 extern X3D_EngineState x3d_global_enginestate;
 
 register X3D_EngineState* x3d asm("a4");
+
+
 
