@@ -14,6 +14,9 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "X3D_fix.h"
+#include "../../static/headers/X3D_enginestate.h"
+
 typedef struct X3D_FreeList X3D_FreeList;
 
 typedef struct X3D_FreeListNode {
@@ -31,19 +34,19 @@ struct X3D_FreeList {
 };
 
 void x3d_freelist_init(void* mem, size_t mem_size, uint16 block_size) {
-  
+  NOT_IMPLEMENTED();
 }
 
 void* x3d_freelist_alloc(X3D_FreeList* list) {
-  
+  NOT_IMPLEMENTED();
 }
 
 void x3d_freelist_free(X3D_FreeList* list, void* block) {
-  
+  NOT_IMPLEMENTED();
 }
 
 void x3d_freelist_reset(X3D_FreeList* list) {
-  
+  NOT_IMPLEMENTED();
 }
 
 

@@ -18,15 +18,29 @@
 
 #include "X3D_platform.h"
 
+// @todo: move to better location
+enum ErrorCodes {
+  ERROR_NOT_IMPLEMENTED
+};
+
+
+#define NOT_IMPLEMENTED() x3d->error.throw_error(ERROR_NOT_IMPLEMENTED, "__FUNCTION__  is not implemented")
+
 typedef struct X3D_StatusBarInterface {
 	void (*add)(const char*);
 } X3D_StatusBarInterface;
 
+typedef struct X3D_ErrorInterface {
+  char msg[128];
+  uint16 id;
+  void __attribute__((noreturn)) (*throw_error)(uint16 id, const char* format, ...);
+} X3D_ErrorInterface;
+
 typedef struct X3D_EngineState {
-  const char* error_msg;
   X3D_Screen screen;
   
   X3D_StatusBarInterface status;
+  X3D_ErrorInterface error;
 } X3D_EngineState;
 
 extern X3D_EngineState x3d_global_enginestate;

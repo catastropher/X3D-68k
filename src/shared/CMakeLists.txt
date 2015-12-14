@@ -16,6 +16,7 @@ add_executable(X3DShared
   C/init/export.c
   C/init/init.c
   C/timer/timer.c
+  C/memory/freelist.c
 )
 
 if(X3D_TARGET EQUAL 68k)

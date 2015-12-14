@@ -22,7 +22,7 @@
 
 void _main() {  
   if(!x3d_init()) {
-    ST_helpMsg(x3d->error_msg);
+    ST_helpMsg(x3d->error.msg);
   }
 }
 

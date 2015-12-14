@@ -28,13 +28,13 @@
  */
 _Bool x3d_init() {
   uint16 dll_status;
+  const char* error_msg = "";
   
   x3d = &x3d_global_enginestate;
-  x3d->error_msg = "";
   
   // Step 1: init screen
   if(!x3d_platform_screen_init(&x3d->screen, LCD_WIDTH, LCD_HEIGHT, 1)) {
-    x3d->error_msg = "Failed to init screen";
+    error_msg = "Failed to init screen";
     goto error_screen;
   }
   
@@ -44,7 +44,7 @@ _Bool x3d_init() {
   if((dll_status = LoadDLL("x3d", X3D_ID, 1, 0)) != DLL_OK) {
     switch(dll_status) {
       case DLL_NOTFOUND:
-        x3d->error_msg = "X3D DLL not found";
+        error_msg = "X3D DLL not found";
         break;
       default:
         break;
@@ -55,7 +55,7 @@ _Bool x3d_init() {
   
   x3d_load_interface();	
   
-  x3d->error_msg = "Success!";
+  error_msg = "Success!";
   
   clrscr();
   x3d->status.add("Hello, world!");
@@ -67,6 +67,8 @@ error_dll:
   x3d_platform_screen_cleanup(&x3d->screen);
   
 error_screen:
+
+  strcpy(x3d->error.msg, error_msg);
   
   return X3D_FALSE;
 }
