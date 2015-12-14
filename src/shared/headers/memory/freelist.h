@@ -1,5 +1,5 @@
 /* This file is part of X3D.
- *
+ * 
  * X3D is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -14,25 +14,9 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "X3D_interface.h"
+#pragma once
 
-#include "X3D_platform.h"
-#include "X3D_config.h"
+typedef struct X3D_FreeList X3D_FreeList;
 
-#ifdef __TIGCC__
-
-#define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
-
-void x3d_load_interface(void);
-
-DLL_INTERFACE
-
-DLL_ID X3D_ID
-DLL_VERSION 1,0
-DLL_EXPORTS x3d_load_interface
-
-DLL_IMPLEMENTATION
-
-
-#endif
+void x3d_freelist_load_interface() __attribute__((always_inline));
 

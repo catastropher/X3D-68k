@@ -14,6 +14,7 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "X3D_enginestate.h"
+#include "X3D_interface.h"
 
-X3D_EngineState x3d_global_enginestate;
+X3D_Interface x3d_global_enginestate;
+

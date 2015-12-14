@@ -33,19 +33,29 @@ typedef struct X3D_StatusBarInterface {
 typedef struct X3D_ErrorInterface {
   char msg[128];
   uint16 id;
-  void __attribute__((noreturn)) (*throw_error)(uint16 id, const char* format, ...);
+  void (*throw_error)(uint16 id, const char* format, ...);
 } X3D_ErrorInterface;
 
-typedef struct X3D_EngineState {
+struct X3D_FreeList;
+
+typedef struct X3D_FreeListInterface {
+  void (*create)(struct X3D_FreeList* list, void* mem, size_t mem_size, uint16 block_size);
+  void* (*alloc_block)(struct X3D_FreeList* list);
+  void (*free_block)(struct X3D_FreeList* list, void* block);
+  void (*reset)(struct X3D_FreeList* list);
+} X3D_FreeListInterface;
+
+typedef struct X3D_Interface {
   X3D_Screen screen;
   
+  X3D_FreeListInterface freelist;
   X3D_StatusBarInterface status;
   X3D_ErrorInterface error;
-} X3D_EngineState;
+} X3D_Interface;
 
-extern X3D_EngineState x3d_global_enginestate;
+extern X3D_Interface x3d_global_enginestate;
 
-register X3D_EngineState* x3d asm("a4");
+register X3D_Interface* x3d asm("a4");
 
 
 

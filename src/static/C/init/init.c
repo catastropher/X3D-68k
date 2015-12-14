@@ -17,7 +17,7 @@
 #include "X3D_platform.h"
 #include "X3D_config.h"
 
-#include "X3D_enginestate.h"
+#include "X3D_interface.h"
 
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 

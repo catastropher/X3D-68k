@@ -16,6 +16,6 @@
 
 #pragma once
 
-#include "X3D_enginestate.h"
+#include "../../shared/headers/X3D_interface.h"
 #include "init/X3D_init.h"
 

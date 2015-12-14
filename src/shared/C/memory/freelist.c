@@ -15,7 +15,7 @@
  */
 
 #include "X3D_fix.h"
-#include "../../static/headers/X3D_enginestate.h"
+#include "X3D_interface.h"
 
 typedef struct X3D_FreeList X3D_FreeList;
 
@@ -33,20 +33,27 @@ struct X3D_FreeList {
   uint16 total_free_nodes;
 };
 
-void x3d_freelist_init(void* mem, size_t mem_size, uint16 block_size) {
+static void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size, uint16 block_size) {
   NOT_IMPLEMENTED();
 }
 
-void* x3d_freelist_alloc(X3D_FreeList* list) {
+static void* x3d_freelist_alloc(X3D_FreeList* list) {
   NOT_IMPLEMENTED();
 }
 
-void x3d_freelist_free(X3D_FreeList* list, void* block) {
+static void x3d_freelist_free(X3D_FreeList* list, void* block) {
   NOT_IMPLEMENTED();
 }
 
-void x3d_freelist_reset(X3D_FreeList* list) {
+static void x3d_freelist_reset(X3D_FreeList* list) {
   NOT_IMPLEMENTED();
+}
+
+void x3d_freelist_load_interface() {
+  x3d->freelist.create = x3d_freelist_create;
+  x3d->freelist.alloc_block = x3d_freelist_alloc;
+  x3d->freelist.free_block = x3d_freelist_free;
+  x3d->freelist.reset = x3d_freelist_reset;
 }
 
 
