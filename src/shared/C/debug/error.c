@@ -13,14 +13,49 @@
  * You should have received a copy of the GNU General Public License
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #include "X3D_interface.h"
 
-#include "debug/X3D_error.h"
-#include "memory/freelist.h"
-
-void x3d_load_interface(void) {
-  x3d_error_load_interface();
-  x3d_freelist_load_interface();
+/**
+ * Implementation for x3d->error.throw_error().
+ * 
+ * @param code    - numeric error code
+ * @param format  - printf-like format string
+ * 
+ * @returns Nothing.
+ * @note    code cannot be 0!
+ * @note    This function does not return.
+ */
+static void x3d_error_throw(int16 code, const char* format, ...) {
+  va_list list;
+  
+  va_start(list, format);
+  vsprintf(x3d->error.msg, format, list);
+  
+  x3d->error.code = code;
+  ER_throwVar(code);
 }
+
+/**
+ * Loads the error handling interface.
+ * 
+ * @returns Nothing.
+ * @note    For internal use only.
+ */
+void x3d_error_load_interface(void) {
+  x3d->error.throw_error = x3d_error_throw;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 

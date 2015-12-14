@@ -32,8 +32,8 @@ typedef struct X3D_StatusBarInterface {
 
 typedef struct X3D_ErrorInterface {
   char msg[128];
-  uint16 id;
-  void (*throw_error)(uint16 id, const char* format, ...);
+  int16 code;
+  void (*throw_error)(int16 id, const char* format, ...);
 } X3D_ErrorInterface;
 
 struct X3D_FreeList;

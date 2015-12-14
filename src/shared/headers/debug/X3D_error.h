@@ -13,14 +13,8 @@
  * You should have received a copy of the GNU General Public License
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
- 
-#include "X3D_interface.h"
 
-#include "debug/X3D_error.h"
-#include "memory/freelist.h"
+#pragma once
 
-void x3d_load_interface(void) {
-  x3d_error_load_interface();
-  x3d_freelist_load_interface();
-}
+void x3d_error_load_interface(void) __attribute__((always_inline));
 

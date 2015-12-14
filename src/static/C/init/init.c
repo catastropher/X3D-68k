@@ -53,15 +53,17 @@ _Bool x3d_init() {
     goto error_dll;
   }
   
-  x3d_load_interface();	
+  //x3d_load_interface();	
   
-  error_msg = "Success!";
+  //strcpy(x3d->error.msg, "Success!");
   
-  clrscr();
-  x3d->status.add("Hello, world!");
-  ngetchx();
+  //clrscr();
+  //x3d->status.add("Hello, world!");
+  //ngetchx();
   
-  return X3D_FALSE;
+  while(1) ;
+  
+  return X3D_TRUE;
   
 error_dll:
   x3d_platform_screen_cleanup(&x3d->screen);
