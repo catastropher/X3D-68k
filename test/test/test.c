@@ -20,7 +20,7 @@
 
 #include "X3D.h"
 
-void _main() {  
+void x3d_main() {  
   if(!x3d_init()) {
     ST_helpMsg(x3d->error.msg);
   }

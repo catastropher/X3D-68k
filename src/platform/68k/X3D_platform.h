@@ -24,6 +24,8 @@
 // Defines
 //=============================================================================
 
+#define x3d_main(...) _main()
+
 /// Maximum value a 16-bit integer can hold
 #ifndef INT16_MAX
 #define INT16_MAX 32767
