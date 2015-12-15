@@ -24,5 +24,11 @@ void _main() {
   if(!x3d_init()) {
     ST_helpMsg(x3d->error.msg);
   }
+  
+  TRY
+    x3d->error.throw_error(1, "Error test!");
+  ONERR
+    ST_helpMsg(x3d->error.msg);
+  ENDTRY
 }
 
