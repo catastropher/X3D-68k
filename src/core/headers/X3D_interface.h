@@ -55,7 +55,5 @@ typedef struct X3D_Interface {
 
 extern X3D_Interface x3d_global_enginestate;
 
-register X3D_Interface* x3d asm("a4");
-
 
 

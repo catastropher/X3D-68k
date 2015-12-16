@@ -23,11 +23,16 @@ if(X3D_TARGET EQUAL 68k)
   add_executable(X3DCore
     ${X3D_CORE_SOURCES}
   )
+  
+  set_target_properties(X3DCore PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+  set_target_properties(X3DCore PROPERTIES OUTPUT_NAME X3D.9xy)
 else()
   add_library(X3DCore
     #${X3D_CORE_SOURCES}
     c/memory/freelist.c
   )
+  
+  set_target_properties(X3DCore PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})
 endif()
 
 include(${PLATFORM_DIR}/cmake/platform.cmake)
@@ -35,5 +40,5 @@ include(${PLATFORM_DIR}/cmake/platform.cmake)
 
 target_link_libraries(X3DCore $ENV{X3D}/lib/extgraph.a)
 
-set_target_properties(X3DCore PROPERTIES OUTPUT_NAME X3D.9xy)
-set_target_properties(X3DCore PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+
+

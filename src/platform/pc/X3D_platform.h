@@ -45,4 +45,3 @@ typedef int64_t int64;
 
 /// A 64-bit unsigned integer
 typedef uint64_t uint64;
-
