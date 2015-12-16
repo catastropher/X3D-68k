@@ -15,6 +15,10 @@
  */
 
 #include "X3D_platform.h"
+
+#define X3D_UTIL_INIT_C
+#include "X3D_platform_init.h"
+
 #include "X3D_config.h"
 
 #include "X3D_interface.h"
@@ -31,6 +35,8 @@ _Bool x3d_init() {
   const char* error_msg = "";
   
   x3d = &x3d_global_enginestate;
+  
+  x3d_platform_init();
   
   // Step 1: init screen
   if(!x3d_platform_screen_init(&x3d->screen, LCD_WIDTH, LCD_HEIGHT, 1)) {

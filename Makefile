@@ -109,3 +109,5 @@ update-headers:
 	@cp -rf src/core/headers/* lib/x3d/headers/core
 	@cp -rf src/util/headers/* lib/x3d/headers/util
 	@cp -f src/X3D.h lib/x3d/headers/
+  
+update-ti92plus: ti92plus update-headers test

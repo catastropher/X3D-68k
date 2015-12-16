@@ -15,7 +15,7 @@ set(X3D_CORE_SOURCES C/init/export.c
 add_definitions(-D__TIGCC_HEADERS__)
 add_definitions(-D__X3D_SHARED__)
 
-include_directories(${PLATFORM_DIR})
+include_directories(${PLATFORM_DIR}/headers)
 include_directories($ENV{X3D}/src/core/headers)
 include_directories($ENV{X3D}/lib)
 
@@ -30,11 +30,7 @@ else()
   )
 endif()
 
-if(X3D_TARGET EQUAL 68k)
-  include($ENV{X3D}/src/platform/68k/68k.cmake)
-  
-elseif(X3D_TARGET EQUAL "pc")
-endif()
+include(${PLATFORM_DIR}/cmake/platform.cmake)
 
 
 target_link_libraries(X3DCore $ENV{X3D}/lib/extgraph.a)

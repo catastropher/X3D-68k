@@ -19,7 +19,7 @@ add_definitions(-D__TIGCC_HEADERS__)
 
 include_directories($ENV{X3D}/lib/x3d/headers)
 include_directories($ENV{X3D}/lib)
-include_directories(${PLATFORM_DIR})
+include_directories(${PLATFORM_DIR}/headers)
 
 add_executable(X3D-test
 	test.c
