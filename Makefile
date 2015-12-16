@@ -102,3 +102,10 @@ test:
 fetch:
 	wget https://raw.githubusercontent.com/debrouxl/ExtGraph/master/lib/extgraph.h -P ./lib
 	wget https://github.com/debrouxl/ExtGraph/raw/master/lib/extgraph.a -P ./lib
+  
+update-headers:
+	@mkdir -p lib/x3d/headers/core
+	@mkdir -p lib/x3d/headers/util
+	@cp -rf src/core/headers/* lib/x3d/headers/core
+	@cp -rf src/util/headers/* lib/x3d/headers/util
+	@cp -f src/X3D.h lib/x3d/headers/
