@@ -23,7 +23,7 @@ set_target_properties(X3DStatic PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR
 
 
 include_directories($ENV{X3D}/src/static/headers)
-include_directories($ENV{X3D}/src/shared/headers)
+include_directories($ENV{X3D}/src/core/headers)
 include_directories($ENV{X3D}/lib)
 include_directories(${PLATFORM_DIR})
 

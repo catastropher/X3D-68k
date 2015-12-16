@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 2.6)
+
+project(X3DCore)
+
+set(X3D_CORE_SOURCES C/init/export.c
+  C/init/init.c
+  C/timer/timer.c
+  C/memory/freelist.c
+  C/interface.c
+  C/debug/error.c)
+
+
+
+# Lets the X3D source know to include the TIGCC header files
+add_definitions(-D__TIGCC_HEADERS__)
+add_definitions(-D__X3D_SHARED__)
+
+include_directories(${PLATFORM_DIR})
+include_directories($ENV{X3D}/src/core/headers)
+include_directories($ENV{X3D}/lib)
+
+if(X3D_TARGET EQUAL 68k)
+  add_executable(X3DCore
+    ${X3D_CORE_SOURCES}
+  )
+else()
+  add_library(X3DCore
+    #${X3D_CORE_SOURCES}
+    c/memory/freelist.c
+  )
+endif()
+
+if(X3D_TARGET EQUAL 68k)
+  include($ENV{X3D}/src/platform/68k/68k.cmake)
+  
+elseif(X3D_TARGET EQUAL "pc")
+endif()
+
+
+target_link_libraries(X3DCore $ENV{X3D}/lib/extgraph.a)
+
+set_target_properties(X3DCore PROPERTIES OUTPUT_NAME X3D.9xy)
+set_target_properties(X3DCore PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
