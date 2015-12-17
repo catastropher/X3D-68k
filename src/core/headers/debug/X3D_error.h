@@ -19,7 +19,6 @@
 #include "X3D_platform.h"
 
 void x3d_error_throw(int16 code, const char* format, ...);
-void x3d_error_do_throw(int16 code);
 
 int16 x3d_error_setup_error_frame(X3D_ErrorFrame* frame);
 

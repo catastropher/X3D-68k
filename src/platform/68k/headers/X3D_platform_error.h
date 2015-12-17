@@ -14,16 +14,9 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "X3D_platform.h"
-#include "X3D_config.h"
-#include "X3D_interface.h"
+#pragma once
 
-/**
- * Attempts to initialize X3D.
- */
-_Bool x3d_init() {
-  x3d = &x3d_global_enginestate;
-  
-  return x3d_platform_init();
-}
+#define x3d_error_do_throw(_code) ER_throwVar(_code)
+
+typedef ERROR_FRAME X3D_ErrorFrame;
 

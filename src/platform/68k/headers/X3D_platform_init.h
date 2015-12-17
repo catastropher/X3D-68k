@@ -16,55 +16,5 @@
 
 #pragma once
  
-#ifndef X3D_UTIL_INIT_C
-#error This file is only to be included in util/init/init.c
-#endif
-
-#define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
-#define x3d_load_interface _DLL_call(void, (void), 0)
- 
-static inline _Bool x3d_platform_init() {
-  uint16 dll_status;
-  const char* error_msg = "";
-  
-  // Step 1: init screen
-  if(!x3d_platform_screen_init(&x3d->screen, LCD_WIDTH, LCD_HEIGHT, 1)) {
-    error_msg = "Failed to init screen";
-    goto error_screen;
-  }
-  
-  // Step 2: load DLL
-  UnloadDLL();
-    
-  if((dll_status = LoadDLL("x3d", X3D_ID, 1, 0)) != DLL_OK) {
-    switch(dll_status) {
-      case DLL_NOTFOUND:
-        error_msg = "X3D DLL not found";
-        break;
-      default:
-        break;
-    }
-        
-    goto error_dll;
-  }
-  
-  x3d_load_interface();	
-  
-  strcpy(x3d->error.msg, "Success!");
-  
-  //clrscr();
-  //x3d->status.add("Hello, world!");
-  //ngetchx();
-  
-  return X3D_FALSE;
-  
-error_dll:
-  x3d_platform_screen_cleanup(&x3d->screen);
-  
-error_screen:
-
-  strcpy(x3d->error.msg, error_msg);
-  
-  return X3D_FALSE;
-}
+inline _Bool x3d_platform_init();
 

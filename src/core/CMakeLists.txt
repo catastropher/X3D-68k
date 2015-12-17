@@ -38,6 +38,7 @@ include(${PLATFORM_DIR}/cmake/platform.cmake)
 
 
 target_link_libraries(X3DCore $ENV{X3D}/lib/extgraph.a)
+target_link_libraries(X3DCore $ENV{X3D}/lib/68k/ti92plus/libX3DPlatform.a)
 
 
 
