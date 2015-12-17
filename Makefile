@@ -93,11 +93,17 @@ clean-all: clean-68k clean-pc
 nuke-build:
 	@rm -rf build
 	
-config-test:
-	@mkdir -p build/test && cd build/test && cmake ../../test -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k
+config-test-68k:
+	@mkdir -p build/test/68k && cd build/test/68k && cmake ../../../test/68k -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k
 	
-test:
-	@cd build/test && make --no-print-directory
+config-test-pc:
+	@mkdir -p build/test/pc && cd build/test/pc && cmake ../../../test/pc -DOUTPUT_DIR=$(X3D)/lib/pc -DPLATFORM_DIR=$(X3D)/src/platform/pc
+	
+test-68k:
+	@cd build/test/68k && make --no-print-directory
+	
+test-pc:
+	@cd build/test/pc && make --no-print-directory
 
 fetch:
 	wget https://raw.githubusercontent.com/debrouxl/ExtGraph/master/lib/extgraph.h -P ./lib
@@ -110,4 +116,5 @@ update-headers:
 	@cp -rf src/util/headers/* lib/x3d/headers/util
 	@cp -f src/X3D.h lib/x3d/headers/
   
-update-ti92plus: ti92plus update-headers test
+update-ti92plus: ti92plus update-headers test-68k
+update-pc: pc update-headers test-pc

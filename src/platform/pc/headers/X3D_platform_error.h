@@ -16,20 +16,30 @@
 
 #pragma once
 
+#ifndef X3D_CORE_ERROR_C
+#error This file is only to be included in util/debug/error.c
+#endif
+
+#include "X3D_interface.h"
 #include "X3D_platform.h"
 
-void x3d_error_throw(int16 code, const char* format, ...);
-void x3d_error_do_throw(int16 code);
 
-int16 x3d_error_setup_error_frame(X3D_ErrorFrame* frame);
-
-/**
- * Loads the error handling interface.
- * 
- * @returns Nothing.
- * @note    For internal use only.
- */
-static inline void x3d_error_load_interface(void) {
-	x3d->error.throw_error = x3d_error_throw;
+int16 x3d_error_setup_error_frame(X3D_ErrorFrame* frame) {
+  frame->next = x3d->platform_data.error_data.head;
+  x3d->platform_data.error_data.head = frame;
+  
+  return setjmp(frame->buf);
 }
 
+void x3d_error_do_throw(int16 code) {
+  X3D_ErrorFrame* frame = x3d->platform_data.error_data.head;
+  
+  if(!frame) {
+    printf("Uncaught error(%d): %s\n", code, x3d->error.msg);
+    exit(0);
+  }
+  
+  x3d->platform_data.error_data.head = frame->next;
+  
+  longjmp(frame->buf, code);
+}

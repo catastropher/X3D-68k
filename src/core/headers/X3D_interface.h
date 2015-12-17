@@ -51,6 +51,8 @@ typedef struct X3D_Interface {
   X3D_FreeListInterface freelist;
   X3D_StatusBarInterface status;
   X3D_ErrorInterface error;
+  
+  X3D_PlatformData platform_data;
 } X3D_Interface;
 
 extern X3D_Interface x3d_global_enginestate;

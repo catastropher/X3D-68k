@@ -16,6 +16,9 @@
 
 #include "X3D_interface.h"
 
+#define X3D_CORE_ERROR_C
+#include "X3D_platform_error.h"
+
 /**
  * Implementation for x3d->error.throw_error().
  * 
@@ -33,7 +36,7 @@ void x3d_error_throw(int16 code, const char* format, ...) {
   vsprintf(x3d->error.msg, format, list);
   
   x3d->error.code = code;
-  ER_throwVar(code);
+  x3d_error_do_throw(code);
 }
 
 

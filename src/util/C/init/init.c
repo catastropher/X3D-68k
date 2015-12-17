@@ -27,6 +27,8 @@
 _Bool x3d_init() {
   x3d = &x3d_global_enginestate;
   
+  x3d_load_interface();
+  
   return x3d_platform_init();
 }
 

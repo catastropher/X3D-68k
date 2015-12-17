@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <setjmp.h>
 
 //=============================================================================
 // Types
@@ -69,10 +71,17 @@ enum {
 struct X3D_Interface;
 extern struct X3D_Interface* x3d;
 
+#define X3D_MAX_TRY_DEPTH 16
 
+typedef struct X3D_ErrorFrame {
+  jmp_buf buf;
+  struct X3D_ErrorFrame* next;
+} X3D_ErrorFrame;
 
-
-
-
+typedef struct X3D_PlatformData {
+  struct {
+    X3D_ErrorFrame* head;
+  } error_data;
+} X3D_PlatformData;
 
 

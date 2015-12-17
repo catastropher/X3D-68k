@@ -14,34 +14,27 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#define USE_TI92PLUS
+#define USE_TI89
+#define EXECUTE_IN_GHOST_SPACE
 
-#include <stdint.h>
+#include "X3D.h"
 
-//=============================================================================
-// Types
-//=============================================================================
+int main() {
+  x3d_init();
+  
+#if 0
+  if(!x3d_init()) {
+    ST_helpMsg(x3d->error.msg);
+  }
+  
+  TRY
+    x3d->error.throw_error(1, "Error test!");
+  ONERR
+    ST_helpMsg(x3d->error.msg);
+  ENDTRY
+#endif
 
-/// An 8-bit signed integer
-typedef int8_t int8;
+  printf("Hello, world!");
+}
 
-/// An 8-bit unsigned integer
-typedef uint8_t uint8;
-
-/// A 16-bit signed integer
-typedef int16_t int16;
-
-/// A 16-bit unsigned integer
-typedef uint16_t uint16;
-
-/// A 32-bit signed integer
-typedef int32_t int32;
-
-/// A 32-bit unsigned integer
-typedef uint32_t uint32;
-
-/// A 64-bit signed integer
-typedef int64_t int64;
-
-/// A 64-bit unsigned integer
-typedef uint64_t uint64;

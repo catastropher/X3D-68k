@@ -103,7 +103,9 @@ struct X3D_Interface;
 register struct X3D_Interface* x3d asm("a4");
 
 
-
+typedef struct X3D_PlatformData {
+  
+} X3D_PlatformData;
 
 
 
