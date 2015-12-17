@@ -26,7 +26,7 @@
  * @note    code cannot be 0!
  * @note    This function does not return.
  */
-static void x3d_error_throw(int16 code, const char* format, ...) {
+void x3d_error_throw(int16 code, const char* format, ...) {
   va_list list;
   
   va_start(list, format);
@@ -36,15 +36,6 @@ static void x3d_error_throw(int16 code, const char* format, ...) {
   ER_throwVar(code);
 }
 
-/**
- * Loads the error handling interface.
- * 
- * @returns Nothing.
- * @note    For internal use only.
- */
-void x3d_error_load_interface(void) {
-  x3d->error.throw_error = x3d_error_throw;
-}
 
 
 

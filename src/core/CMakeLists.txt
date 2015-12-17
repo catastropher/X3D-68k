@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 2.6)
 project(X3DCore)
 
 set(X3D_CORE_SOURCES C/init/export.c
+  C/debug/error.c
   C/init/init.c
   C/timer/timer.c
   C/memory/freelist.c
-  C/interface.c
-  C/debug/error.c)
+  C/interface.c)
 
 
 
@@ -28,8 +28,7 @@ if(X3D_TARGET EQUAL 68k)
   set_target_properties(X3DCore PROPERTIES OUTPUT_NAME X3D.9xy)
 else()
   add_library(X3DCore
-    #${X3D_CORE_SOURCES}
-    c/memory/freelist.c
+    ${X3D_CORE_SOURCES}
   )
   
   set_target_properties(X3DCore PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})

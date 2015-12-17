@@ -16,7 +16,20 @@
 
 #pragma once
 
+#include "X3D_interface.h"
+
 typedef struct X3D_FreeList X3D_FreeList;
 
-void x3d_freelist_load_interface() __attribute__((always_inline));
+void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size, uint16 block_size);
+void* x3d_freelist_alloc(X3D_FreeList* list);
+void x3d_freelist_free(X3D_FreeList* list, void* block);
+void x3d_freelist_reset(X3D_FreeList* list);
+
+static inline void x3d_freelist_load_interface() {
+	x3d->freelist.create = x3d_freelist_create;
+	x3d->freelist.alloc_block = x3d_freelist_alloc;
+	x3d->freelist.free_block = x3d_freelist_free;
+	x3d->freelist.reset = x3d_freelist_reset;
+}
+
 

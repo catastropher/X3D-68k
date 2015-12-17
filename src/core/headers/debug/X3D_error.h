@@ -16,5 +16,15 @@
 
 #pragma once
 
-void x3d_error_load_interface(void) __attribute__((always_inline));
+void x3d_error_throw(int16 code, const char* format, ...);
+
+/**
+ * Loads the error handling interface.
+ * 
+ * @returns Nothing.
+ * @note    For internal use only.
+ */
+static inline void x3d_error_load_interface(void) {
+	x3d->error.throw_error = x3d_error_throw;
+}
 
