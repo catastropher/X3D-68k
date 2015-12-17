@@ -1,5 +1,5 @@
 /* This file is part of X3D.
- *
+ * 
  * X3D is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -14,7 +14,10 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 
-#include "X3D_interface.h"
-#include "X3D_platform.h"
+struct X3D_Interface;
+struct X3D_Interface* x3d;
+
+void x3d_platform_init(void) {
+  //x3d_interface_init();
+}

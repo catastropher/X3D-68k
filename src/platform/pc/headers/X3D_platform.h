@@ -85,3 +85,4 @@ typedef struct X3D_PlatformData {
 } X3D_PlatformData;
 
 
+#include "X3D_platform_init.h"

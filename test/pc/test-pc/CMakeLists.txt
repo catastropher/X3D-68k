@@ -8,6 +8,7 @@ project(test)
 include_directories($ENV{X3D}/lib/x3d/headers)
 include_directories($ENV{X3D}/lib)
 include_directories(${PLATFORM_DIR}/headers)
+include_directories(${PLATFORM_DIR}/headers/core)
 
 add_executable(X3D-test-pc
 	test.c
