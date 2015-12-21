@@ -21,6 +21,7 @@
 #include "X3D.h"
 
 int main() {
+#if 0
   x3d_init();
   
 #if 0
@@ -36,5 +37,8 @@ int main() {
 #endif
 
   printf("Hello, world!");
+#endif
+
+  //x3d_memory_free(NULL);
 }
 
