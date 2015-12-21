@@ -14,8 +14,7 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "X3D_fix.h"
-#include "X3D_interface.h"
+#include "X3D_core.h"
 
 typedef struct X3D_FreeList X3D_FreeList;
 

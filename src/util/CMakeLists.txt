@@ -6,7 +6,6 @@ add_definitions(-D__TIGCC_STATIC__)
 
 add_library(X3DUtil
   C/init/init.c
-  C/interface.c
 )
 
 include(${PLATFORM_DIR}/cmake/platform.cmake)

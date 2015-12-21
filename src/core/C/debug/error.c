@@ -14,10 +14,7 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "X3D_interface.h"
-
-#define X3D_CORE_ERROR_C
-#include "X3D_platform_error.h"
+#include "X3D_core.h"
 
 /**
  * Implementation for x3d->error.throw_error().
@@ -33,10 +30,10 @@ void x3d_error_throw(int16 code, const char* format, ...) {
   va_list list;
   
   va_start(list, format);
-  vsprintf(x3d->error.msg, format, list);
+  //vsprintf(x3d->error.msg, format, list);
   
-  x3d->error.code = code;
-  x3d_error_do_throw(code);
+  //x3d->error.code = code;
+  //x3d_error_do_throw(code);
 }
 
 

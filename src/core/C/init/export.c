@@ -14,10 +14,7 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "X3D_interface.h"
-
-#include "X3D_platform.h"
-#include "X3D_config.h"
+#include "X3D_core.h"
 
 #ifdef __TIGCC__
 

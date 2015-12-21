@@ -18,7 +18,6 @@
 #define X3D_CHECK_OVERFLOW
 
 #include "X3D_platform.h"
-#include "X3D_config.h"
 
 //=============================================================================
 // Types

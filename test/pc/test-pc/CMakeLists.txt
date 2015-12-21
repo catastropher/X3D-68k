@@ -5,8 +5,9 @@ set(CALC_NAME test)
 
 project(test)
 
+include_directories(${PLATFORM_DIR}/headers)
+include_directories(${INTERFACE_DIR})
 include_directories($ENV{X3D}/src/headers)
-include_directories($ENV{X3D}/src/headers/interface/pc)
 
 add_executable(X3D-test-pc
 	test.c

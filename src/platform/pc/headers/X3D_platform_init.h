@@ -15,6 +15,3 @@
  */
 
 #pragma once
-
-#include "X3D_interface.h"
-#include "X3D_platform.h"

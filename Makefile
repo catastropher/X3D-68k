@@ -66,10 +66,10 @@ config-ti92plus:
 	@mkdir -p build/68k/ti92plus && cd build/68k/ti92plus && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=ti92plus -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k -DINTERFACE_DIR=$(X3D)/src/headers/interface/68k
 	
 config-ti89:
-	@mkdir -p build/68k/ti89 && cd build/68k/ti89 && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=ti89 -DOUTPUT_DIR=$(X3D)/lib/68k/ti89 -DPLATFORM_DIR=$(X3D)/src/platform/68k
+	@mkdir -p build/68k/ti89 && cd build/68k/ti89 && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=ti89 -DOUTPUT_DIR=$(X3D)/lib/68k/ti89 -DPLATFORM_DIR=$(X3D)/src/platform/68k -DINTERFACE_DIR=$(X3D)/src/headers/interface/68k
 
 config-v200:
-	@mkdir -p build/68k/v200 && cd build/68k/v200 && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=v200 -DOUTPUT_DIR=$(X3D)/lib/68k/v200 -DPLATFORM_DIR=$(X3D)/src/platform/68k
+	@mkdir -p build/68k/v200 && cd build/68k/v200 && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=v200 -DOUTPUT_DIR=$(X3D)/lib/68k/v200 -DPLATFORM_DIR=$(X3D)/src/platform/68k -DINTERFACE_DIR=$(X3D)/src/headers/interface/68k
 	
 	
 # pc
@@ -77,7 +77,7 @@ pc:
 	@cd build/pc && make --no-print-directory
 	
 config-pc:
-	@mkdir -p build/pc && cd build/pc && cmake ../.. -DX3D_TARGET=pc -DOUTPUT_DIR=$(X3D)/lib/pc -DPLATFORM_DIR=$(X3D)/src/platform/pc
+	@mkdir -p build/pc && cd build/pc && cmake ../.. -DX3D_TARGET=pc -DOUTPUT_DIR=$(X3D)/lib/pc -DPLATFORM_DIR=$(X3D)/src/platform/pc -DINTERFACE_DIR=$(X3D)/src/headers/interface/pc
 	
 clean-pc:
 	@cd build/pc && make clean --no-print-directory
@@ -97,7 +97,7 @@ config-test-68k:
 	@mkdir -p build/test/68k && cd build/test/68k && cmake ../../../test/68k -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k -DINTERFACE_DIR=$(X3D)/src/headers/interface/68k
 	
 config-test-pc:
-	@mkdir -p build/test/pc && cd build/test/pc && cmake ../../../test/pc -DOUTPUT_DIR=$(X3D)/lib/pc -DPLATFORM_DIR=$(X3D)/src/platform/pc
+	@mkdir -p build/test/pc && cd build/test/pc && cmake ../../../test/pc -DOUTPUT_DIR=$(X3D)/lib/pc -DPLATFORM_DIR=$(X3D)/src/platform/pc -DINTERFACE_DIR=$(X3D)/src/headers/interface/pc
 	
 test-68k:
 	@cd build/test/68k && make --no-print-directory

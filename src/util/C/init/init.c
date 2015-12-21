@@ -14,16 +14,12 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "X3D_platform.h"
-#include "X3D_config.h"
-#include "X3D_interface.h"
-
 /**
  * Attempts to initialize X3D.
  */
 _Bool x3d_init() {
-  x3d = &x3d_global_enginestate;
+  //x3d = &x3d_global_enginestate;
   
-  return x3d_platform_init();
+  //return x3d_platform_init();
 }
 

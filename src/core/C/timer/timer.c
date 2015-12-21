@@ -14,8 +14,9 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "X3D_core.h"
 
-#include "timer/X3D_timer.h"
+#if 0
 
 struct X3D_Timer {
   X3D_Time left;
@@ -25,7 +26,7 @@ struct X3D_Timer {
   void (*callback)(X3D_Timer* timer);
 };
 
-
+#endif
 
 
 

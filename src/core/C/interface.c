@@ -14,13 +14,11 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
  
-#include "X3D_interface.h"
+#include "X3D_core.h"
 
-#include "debug/X3D_error.h"
-#include "memory/freelist.h"
 
 void x3d_load_interface(void) {
-  x3d_error_load_interface();
-  x3d_freelist_load_interface();
+  //x3d_error_load_interface();
+  //x3d_freelist_load_interface();
 }
 
