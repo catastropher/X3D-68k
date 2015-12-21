@@ -39,6 +39,6 @@ int main() {
   printf("Hello, world!");
 #endif
 
-  //x3d_memory_free(NULL);
+  x3d_memory_free(NULL);
 }
 

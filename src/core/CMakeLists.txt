@@ -7,7 +7,10 @@ set(X3D_CORE_SOURCES C/init/export.c
   C/init/init.c
   C/timer/timer.c
   C/memory/freelist.c
-  C/interface.c)
+  C/memory/memory.c
+  C/interface.c
+
+)
 
 
 
@@ -15,8 +18,11 @@ set(X3D_CORE_SOURCES C/init/export.c
 add_definitions(-D__TIGCC_HEADERS__)
 add_definitions(-D__X3D_SHARED__)
 
+include_directories(${INTERFACE_DIR})
 include_directories(${PLATFORM_DIR}/headers)
 include_directories($ENV{X3D}/src/core/headers)
+include_directories($ENV{X3D}/src/headers)
+include_directories($ENV{X3D}/src/headers/core)
 include_directories($ENV{X3D}/lib)
 
 if(X3D_TARGET EQUAL 68k)

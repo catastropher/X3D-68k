@@ -21,6 +21,7 @@
 #include "X3D.h"
 
 void x3d_main() {  
+#if 0
   if(!x3d_init()) {
     ST_helpMsg(x3d->error.msg);
   }
@@ -30,5 +31,9 @@ void x3d_main() {
   ONERR
     ST_helpMsg(x3d->error.msg);
   ENDTRY
+#endif
+
+  x3d_memory_free(NULL);
+  ngetchx();
 }
 
