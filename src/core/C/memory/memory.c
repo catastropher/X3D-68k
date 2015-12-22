@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "X3D_core.h"
 
 X3D_IMPLEMENTATION void* libx3d_memory_alloc(uint16 group_id, size_t size) {

@@ -14,6 +14,8 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdarg.h>
+
 #include "X3D_core.h"
 
 /**

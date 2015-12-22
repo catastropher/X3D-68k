@@ -1,6 +1,9 @@
+#pragma once
+
 #include "X3D_config.h"
 
-#include "X3D_platform.h"
+//#include "X3D_platform.h"
+#include "common/X3D_int.h"
 #include "common/X3D_fix.h"
 
 // Interface include files

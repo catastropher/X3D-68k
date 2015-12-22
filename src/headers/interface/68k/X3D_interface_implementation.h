@@ -1,1 +1,1 @@
-#include "memory/X3D_memory_interface.h"
+#include "core/X3D_core_interface_implementation.h"

@@ -14,6 +14,10 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-void x3d_platform_init(void) {
-  //x3d_interface_init();
+#include <stdio.h>
+
+#include "X3D_platform.h"
+
+X3D_IMPLEMENTATION _Bool libx3dplatform_init() {
+  printf("Hello from %s\n", __FUNCTION__);
 }
