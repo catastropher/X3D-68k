@@ -16,6 +16,7 @@
 // X3D_config.h -> contains configuration settings for the entire project (this
 //    file is specifically for the PC port).
 
+#pragma once
 
 //=============================================================================
 // Defines
