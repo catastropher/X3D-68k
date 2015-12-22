@@ -16,6 +16,8 @@
 
 #include "X3D_core.h"
 
+ #define NOT_IMPLEMENTED() ;
+
 typedef struct X3D_FreeList X3D_FreeList;
 
 typedef struct X3D_FreeListNode {

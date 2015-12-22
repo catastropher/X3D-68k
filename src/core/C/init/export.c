@@ -18,15 +18,21 @@
 
 #ifdef __TIGCC__
 
+#include <tigcclib.h>
+
 #define X3D_ID (((unsigned long)'X' << 16) | ((unsigned long)'3' << 8) | 'D')
 
 void x3d_load_interface(void);
 
 DLL_INTERFACE
 
+void x3dcore_export_function() {
+  
+}
+
 DLL_ID X3D_ID
 DLL_VERSION 1,0
-DLL_EXPORTS x3d_load_interface
+DLL_EXPORTS x3dcore_export_function
 
 DLL_IMPLEMENTATION
 

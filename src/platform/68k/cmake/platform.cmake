@@ -20,7 +20,7 @@ set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <OBJECTS> -o <TARGET> <LINK_LIBRARIE
 set(CMAKE_EXECUTABLE_SUFFIX "")
 
 # Lets the X3D source know to include the TIGCC header files
-add_definitions(-D__TIGCC_HEADERS__)
+add_definitions(-D__TIGCC__)
 
 if(${X3D_SUBTARGET} STREQUAL "ti92plus")
   set(CMAKE_C_FLAGS "-DUSE_TI92PLUS -O3 -Wall")

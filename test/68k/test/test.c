@@ -20,7 +20,7 @@
 
 #include "X3D.h"
 
-void x3d_main() {  
+void _main() {  
 #if 0
   if(!x3d_init()) {
     ST_helpMsg(x3d->error.msg);
@@ -33,7 +33,6 @@ void x3d_main() {
   ENDTRY
 #endif
 
-  x3d_memory_free(NULL);
-  ngetchx();
+  //x3d_init()
 }
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 
 /// An 8-bit signed integer
@@ -23,3 +25,9 @@ typedef int64_t int64;
 
 /// A 64-bit unsigned integer
 typedef uint64_t uint64;
+
+enum {
+  X3D_FALSE = 0,
+  X3D_TRUE = 1
+};
+

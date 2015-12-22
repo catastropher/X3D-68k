@@ -22,3 +22,4 @@ X3D_INTERFACE static inline void x3d_memory_realloc(void* ptr, size_t new_size) 
 X3D_INTERFACE static inline void x3d_memory_free_all() {
   libx3d_memory_free_all();
 }
+
