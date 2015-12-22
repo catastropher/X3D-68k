@@ -2,7 +2,7 @@
 
 #include "X3D_core.h"
 
-#include "engine/X3D_enginestate.h"
+#include "engine/X3D_core_internal_enginestate.h"
 
 X3D_IMPLEMENTATION void* libx3d_memory_alloc(uint16 group_id, size_t size) {
   X3D_MemoryManager* mem = x3d_memory_manager_data();

@@ -7,7 +7,7 @@
 #include "common/X3D_fix.h"
 
 // Interface include files
-#include "init/X3D_init.h"
+#include "init/X3D_util_init.h"
 
 #include "X3D_interface_implementation.h"
 
