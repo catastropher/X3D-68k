@@ -14,10 +14,6 @@
  * along with X3D. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-struct X3D_Interface;
-struct X3D_Interface* x3d;
-
 void x3d_platform_init(void) {
   //x3d_interface_init();
 }

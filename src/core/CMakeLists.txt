@@ -9,7 +9,7 @@ set(X3D_CORE_SOURCES C/init/export.c
   C/memory/freelist.c
   C/memory/memory.c
   C/interface.c
-
+  C/engine/engine.c
 )
 
 
