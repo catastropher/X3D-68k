@@ -22,5 +22,5 @@
 
 #include "common/X3D_interface.h"
 
-X3D_IMPLEMENTATION _Bool libx3dplatform_init();
+X3D_IMPLEMENTATION _Bool x3dplatform_init();
 

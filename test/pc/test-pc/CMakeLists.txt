@@ -17,3 +17,4 @@ set_target_properties(X3D-test-pc PROPERTIES OUTPUT_NAME test-pc)
 
 target_link_libraries(X3D-test-pc $ENV{X3D}/lib/pc/libX3DUtil.a)
 target_link_libraries(X3D-test-pc $ENV{X3D}/lib/pc/libX3DCore.a)
+target_link_libraries(X3D-test-pc $ENV{X3D}/lib/pc/libX3DPlatform.a)
