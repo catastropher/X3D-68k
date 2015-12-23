@@ -22,5 +22,6 @@
 
 #include "common/X3D_interface.h"
 
-X3D_IMPLEMENTATION _Bool x3dplatform_init();
+struct X3D_InitSettings;
+X3D_IMPLEMENTATION _Bool x3dplatform_init(struct X3D_InitSettings* init);
 
