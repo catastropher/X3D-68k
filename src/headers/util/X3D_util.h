@@ -9,5 +9,5 @@
 // Interface include files
 #include "init/X3D_util_init.h"
 
-#include "X3D_interface_implementation.h"
+#include "X3D_interface_binding.h"
 

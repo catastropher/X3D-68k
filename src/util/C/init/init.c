@@ -19,7 +19,7 @@
 /**
  * Attempts to initialize X3D.
  */
-X3D_INTERFACE _Bool x3d_init() {
+X3D_INTERFACE _Bool x3d_init(X3D_InitSettings* init) {
   x3dcore_init();
   x3dplatform_init();
   //return x3d_platform_init();

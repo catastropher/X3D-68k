@@ -21,26 +21,11 @@
 #include "X3D.h"
 
 int main() {
-#if 0
-  x3d_init();
+  X3D_InitSettings settings = {
+    .screen_w = 240 * 3,
+    .screen_h = 128 * 3
+  };
   
-#if 0
-  if(!x3d_init()) {
-    ST_helpMsg(x3d->error.msg);
-  }
-  
-  TRY
-    x3d->error.throw_error(1, "Error test!");
-  ONERR
-    ST_helpMsg(x3d->error.msg);
-  ENDTRY
-#endif
-
-  printf("Hello, world!");
-#endif
-
-  x3d_init();
-
-  x3d_memory_free(NULL);
+  x3d_init(&settings);
 }
 

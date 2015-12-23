@@ -15,10 +15,30 @@
  */
 
 #include <stdio.h>
+#include <SDL2/SDL.h>
 
-#include "X3D_platform.h"
 
-X3D_IMPLEMENTATION _Bool x3dplatform_init() {
-  printf("Hello from %s\n", __FUNCTION__);
+#include "X3D.h"
+
+static SDL_Window* window;
+
+
+X3D_IMPLEMENTATION _Bool x3dplatform_init(struct X3D_InitSettings* init) {
+  SDL_Init(SDL_INIT_VIDEO);
+  
+  SDL_Window* window = SDL_CreateWindow(
+    "X3D",
+    SDL_WINDOWPOS_UNDEFINED,
+    SDL_WINDOWPOS_UNDEFINED,
+    init->screen_w,
+    init->screen_h,
+    SDL_WINDOW_OPENGL
+  );
+  
+  SDL_Delay(2000);
+  
+  
+  SDL_Quit();
+  
 }
 

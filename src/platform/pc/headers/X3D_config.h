@@ -27,6 +27,10 @@
 /// The maximum number of memory allocations that can happen simultaneously
 #define X3D_MAX_ALLOCS 20
 
+//#define X3D_CUSTOM_ENGINE_STATE
+
+#ifdef X3D_CUSTOM_ENGINE_STATE
+
 /// The definition line of code for the x3d_engine_state global variable (holds
 /// the global state of the engine). This exists because some platforms may 
 /// benefit from keeping x3d_engine_state in a register, requiring a different
@@ -36,3 +40,5 @@
 /// The prototype line of code for the x3d_engine_state global variable. See
 /// @ref X3D_ENGINE_STATE_DEFINITION for why this exists.
 #define X3D_ENGINE_STATE_DECL extern X3D_EngineState* x3d_engine_state
+
+#endif

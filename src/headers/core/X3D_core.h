@@ -8,6 +8,7 @@
 
 // Interface include files
 #include "memory/X3D_core_memory.h"
+#include "init/X3D_core_init.h"
 
-#include "X3D_interface_implementation.h"
+#include "X3D_interface_binding.h"
 

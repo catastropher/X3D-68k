@@ -29,8 +29,16 @@ X3D_INTERNAL typedef struct X3D_EngineState {
 } X3D_EngineState;
 
 // The declaration of x3d_engine_state (see X3D_config.h for the current
-//    platform to see the exact definition). 
+//    platform to see the exact definition).
+#ifdef X3D_CUSTOM_ENGINE_STATE
+
 X3D_ENGINE_STATE_DECL;
+
+#else
+
+extern X3D_EngineState* x3d_engine_state;
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Returns a pointer to the engine's memory manager data.
