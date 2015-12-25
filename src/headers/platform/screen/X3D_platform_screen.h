@@ -15,22 +15,16 @@
 //
 //
 //
-// X3D_platform.h -> the global include file for working with X3D_platform.
-//    Anything that is platform-dependent should go in this library so that
-//    the core can remain platform-independent.
+// X3D_platform_screen.c -> interface for screen functionality (flipping, drawing, etc)
 
 #pragma once
 
-// X3D configuration file
-#include "X3D_config.h"
-
-// Common includes
+#include "common/X3D_interface.h"
 #include "common/X3D_int.h"
-#include "common/X3D_fix.h"
 
-// Platform include files
-#include "init/X3D_platform_init.h"
+typedef uint16 X3D_Color;
 
-#include "screen/X3D_platform_screen.h"
+X3D_IMPLEMENTATION void x3dplatform_screen_flip();
+X3D_IMPLEMENTATION void x3dplatform_screen_clear(X3D_Color color);
+X3D_IMPLEMENTATION void x3dplatform_draw_pix(int16 x, int16 y, X3D_Color color);
 
-#include "debug/X3D_platform_log.h"

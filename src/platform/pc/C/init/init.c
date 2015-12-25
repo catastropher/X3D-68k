@@ -23,22 +23,30 @@
 static SDL_Window* window;
 
 
+X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init);
+
 X3D_IMPLEMENTATION _Bool x3dplatform_init(struct X3D_InitSettings* init) {
-  SDL_Init(SDL_INIT_VIDEO);
+  x3dplatform_screen_init(init);
   
-  SDL_Window* window = SDL_CreateWindow(
-    "X3D",
-    SDL_WINDOWPOS_UNDEFINED,
-    SDL_WINDOWPOS_UNDEFINED,
-    init->screen_w,
-    init->screen_h,
-    SDL_WINDOW_OPENGL
-  );
+  x3dplatform_screen_clear(0);
+  x3dplatform_screen_flip();
   
   SDL_Delay(2000);
   
-  
   SDL_Quit();
-  
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

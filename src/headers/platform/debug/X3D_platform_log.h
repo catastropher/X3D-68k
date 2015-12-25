@@ -15,22 +15,16 @@
 //
 //
 //
-// X3D_platform.h -> the global include file for working with X3D_platform.
-//    Anything that is platform-dependent should go in this library so that
-//    the core can remain platform-independent.
+// X3D_core_log.h -> logging facilities
 
-#pragma once
-
-// X3D configuration file
-#include "X3D_config.h"
-
-// Common includes
+#include "common/X3D_interface.h"
 #include "common/X3D_int.h"
-#include "common/X3D_fix.h"
 
-// Platform include files
-#include "init/X3D_platform_init.h"
+typedef enum {
+  X3D_INFO,
+  X3D_WARN,
+  X3D_ERROR
+} X3D_LogType;
 
-#include "screen/X3D_platform_screen.h"
+X3D_IMPLEMENTATION void x3dplatform_log(X3D_LogType type, const char* format, ...);
 
-#include "debug/X3D_platform_log.h"

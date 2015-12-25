@@ -7,6 +7,8 @@ add_definitions(-D__TIGCC_STATIC__)
 add_library(X3DPlatform
   C/init/init.c
   C/debug/error.c
+  C/screen/screen.c
+  C/debug/log.c
 )
 
 include(${PLATFORM_DIR}/cmake/platform.cmake)
