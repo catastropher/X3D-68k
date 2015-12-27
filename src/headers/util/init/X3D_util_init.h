@@ -3,6 +3,7 @@
 typedef struct X3D_InitSettings {
   int16 screen_w;
   int16 screen_h;
+  int16 scale;
   _Bool fullscreen;
 } X3D_InitSettings;
 

@@ -31,7 +31,7 @@ X3D_IMPLEMENTATION _Bool x3dplatform_init(struct X3D_InitSettings* init) {
   x3dplatform_screen_clear(0);
   x3dplatform_screen_flip();
   
-  SDL_Delay(2000);
+  SDL_Delay(10000);
   
   SDL_Quit();
 }

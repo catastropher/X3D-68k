@@ -25,6 +25,7 @@ static SDL_Window* window;
 static SDL_Surface* window_surface;
 static int16 screen_w;
 static int16 screen_h;
+static int16 screen_scale;
 
 X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init) {
   x3dplatform_log(X3D_INFO, "SDL init");
@@ -34,14 +35,14 @@ X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  x3dplatform_log(X3D_INFO, "Create window");
+  x3dplatform_log(X3D_INFO, "Create window (w=%d, h=%d, scale=%d)", init->screen_w, init->screen_h, init->scale);
   
   window = SDL_CreateWindow(
     "X3D",
     SDL_WINDOWPOS_UNDEFINED,
     SDL_WINDOWPOS_UNDEFINED,
-    init->screen_w,
-    init->screen_h,
+    init->screen_w * init->scale,
+    init->screen_h * init->scale,
     SDL_WINDOW_OPENGL
   );
   
@@ -53,6 +54,7 @@ X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init) {
   window_surface = SDL_GetWindowSurface(window);
   screen_w = init->screen_w;
   screen_h = init->screen_h;
+  screen_scale = init->scale;
   
   return X3D_TRUE;
   
@@ -63,10 +65,9 @@ X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init) {
 
 static uint32 map_color_to_uint32(X3D_Color color) {
   const uint16 mask = (1 << 5) - 1;
-  printf("Mask: %d\n", mask);
-  uint16 red = 255 * (color & mask) / 32;
-  uint16 green = 255 * ((color >> 5) & mask) / 32;
-  uint16 blue = 255 * ((color >> 10) & mask) / 32;
+  uint16 red = 255 * (color & mask) / 31;
+  uint16 green = 255 * ((color >> 5) & mask) / 31;
+  uint16 blue = 255 * ((color >> 10) & mask) / 31;
   
   return SDL_MapRGB(window_surface->format, red, green, blue);
 }
@@ -76,11 +77,57 @@ X3D_IMPLEMENTATION void x3dplatform_screen_flip() {
   SDL_UpdateWindowSurface(window);
 }
 
+X3D_IMPLEMENTATION void x3dplatform_draw_pix(int16 x, int16 y, X3D_Color color);
+void x3dplatform_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color);
+
+
 X3D_IMPLEMENTATION void x3dplatform_screen_clear(X3D_Color color) {
   SDL_FillRect(window_surface, NULL, map_color_to_uint32(PURPLE));// map_color_to_uint32(color));
+  
+  x3dplatform_draw_line(0, 0, screen_w - 1, screen_h - 1, 31);
+  //x3dplatform_draw_pix(10, 10, 31);
 }
 
 X3D_IMPLEMENTATION void x3dplatform_draw_pix(int16 x, int16 y, X3D_Color color) {
-  ((uint32 *)window_surface->pixels)[y * screen_w + x] = map_color_to_uint32(color);
+  uint32 c = map_color_to_uint32(color);
+  
+  for(int32 i = 0; i < screen_scale; ++i) {
+    for(int32 d = 0; d < screen_scale; ++d) {
+      int32 xx = x * screen_scale + d;
+      int32 yy = y * screen_scale + i;
+      
+      //printf("Draw %d, %d\n", xx, yy);
+      
+      ((uint32 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
+    }
+  }
 }
+
+X3D_IMPLEMENTATION void x3dplatform_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color) {
+  int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
+  int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
+  int err = (dx>dy ? dx : -dy)/2, e2;
+ 
+  for(;;){
+    x3dplatform_draw_pix(x0, y0, color);
+    if (x0==x1 && y0==y1) break;
+    e2 = err;
+    if (e2 >-dx) { err -= dy; x0 += sx; }
+    if (e2 < dy) { err += dx; y0 += sy; }
+  }
+}
+
+X3D_IMPLEMENTATION X3D_Color x3dplatform_rgb_to_color(uint8 r, uint8 g, uint8 b) {
+  return (31 * (uint16)r / 255) +
+    ((31 * (uint16)g / 255) << 5) +
+    ((31 * (uint16)b / 255) << 10);
+}
+
+X3D_IMPLEMENTATION void x3dplatform_color_to_rgb(X3D_Color color, uint8* r, uint8* g, uint8* b) {
+  const uint16 mask = (1 << 5) - 1;
+  *r = 255 * (color & mask) / 31;
+  *g = 255 * ((color >> 5) & mask) / 31;
+  *b = 255 * ((color >> 10) & mask) / 31;
+}
+
 

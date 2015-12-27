@@ -27,4 +27,7 @@ typedef uint16 X3D_Color;
 X3D_IMPLEMENTATION void x3dplatform_screen_flip();
 X3D_IMPLEMENTATION void x3dplatform_screen_clear(X3D_Color color);
 X3D_IMPLEMENTATION void x3dplatform_draw_pix(int16 x, int16 y, X3D_Color color);
+X3D_IMPLEMENTATION void x3dplatform_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color);
+X3D_IMPLEMENTATION X3D_Color x3dplatform_rgb_to_color(uint8 r, uint8 g, uint8 b);
+X3D_IMPLEMENTATION void x3dplatform_color_to_rgb(X3D_Color color, uint8* r, uint8* g, uint8* b);
 

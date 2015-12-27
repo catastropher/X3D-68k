@@ -22,10 +22,12 @@
 
 int main() {
   X3D_InitSettings settings = {
-    .screen_w = 240 * 3,
-    .screen_h = 128 * 3
+    .screen_w = 240,        // Screen width
+    .screen_h = 128,        // Screen height
+    .scale = 3                  // Screen scale
   };
   
   x3d_init(&settings);
+  x3d_screen_flip();
 }
 
