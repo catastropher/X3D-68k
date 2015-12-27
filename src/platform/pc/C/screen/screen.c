@@ -35,14 +35,14 @@ X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  x3dplatform_log(X3D_INFO, "Create window (w=%d, h=%d, scale=%d)", init->screen_w, init->screen_h, init->scale);
+  x3dplatform_log(X3D_INFO, "Create window (w=%d, h=%d, scale=%d)", init->screen_w, init->screen_h, init->screen_scale);
   
   window = SDL_CreateWindow(
     "X3D",
     SDL_WINDOWPOS_UNDEFINED,
     SDL_WINDOWPOS_UNDEFINED,
-    init->screen_w * init->scale,
-    init->screen_h * init->scale,
+    init->screen_w * init->screen_scale,
+    init->screen_h * init->screen_scale,
     SDL_WINDOW_OPENGL
   );
   
@@ -54,7 +54,7 @@ X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init) {
   window_surface = SDL_GetWindowSurface(window);
   screen_w = init->screen_w;
   screen_h = init->screen_h;
-  screen_scale = init->scale;
+  screen_scale = init->screen_scale;
   
   return X3D_TRUE;
   

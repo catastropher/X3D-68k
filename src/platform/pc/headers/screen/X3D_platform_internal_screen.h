@@ -17,29 +17,10 @@
 //
 // init.c -> initialization of PC platform
 
-#include <stdio.h>
-#include <SDL2/SDL.h>
+#pragma once
 
 #include "common/X3D_interface.h"
-
 #include "util/init/X3D_util_init.h"
-#include "screen/X3D_platform_internal_screen.h"
 
-X3D_IMPLEMENTATION _Bool x3dplatform_init(struct X3D_InitSettings* init) {
-  x3dplatform_screen_init(init);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init);
 
