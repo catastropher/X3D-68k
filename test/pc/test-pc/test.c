@@ -17,7 +17,11 @@
 //
 // test.c -> test for PC
 
+#include <SDL2/SDL.h>
+
 #include "X3D.h"
+
+void x3dplatform_key_map_pc(uint32 sdl_key_a, uint32 sdl_key_b, uint16 x3d_key);
 
 int main() {
   X3D_InitSettings settings = {
@@ -27,6 +31,7 @@ int main() {
   };
   
   x3d_init(&settings);
+  x3dplatform_key_map_pc(SDLK_LSHIFT, SDLK_RETURN, 0);
   x3d_screen_flip();
 }
 

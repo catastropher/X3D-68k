@@ -9,6 +9,7 @@ add_library(X3DPlatform
   C/debug/error.c
   C/screen/screen.c
   C/debug/log.c
+  C/keys.c
 )
 
 include(${PLATFORM_DIR}/cmake/platform.cmake)
