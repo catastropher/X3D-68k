@@ -22,6 +22,7 @@
 #include "X3D_common.h"
 #include "X3D_log.h"
 #include "X3D_init.h"
+#include "X3D_screen.h"
 
 int main() {
   X3D_InitSettings init = {
@@ -33,5 +34,12 @@ int main() {
   
   
   x3d_init(&init);
+  x3d_screen_clear(31);
+  x3d_screen_draw_line(20, 20, 100, 50, 0);
+  x3d_screen_flip();
+  
+  SDL_Delay(2000);
+  
+  SDL_Quit();
 }
 
