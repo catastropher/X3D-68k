@@ -13,11 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <stdlib.h>
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
+#include "X3D_log.h"
+
+void x3d_platform_assert_failed(const char* condition, const char* file, int16 line) {
+  x3d_log(X3D_ERROR, "Assertion failed!\nFile: %s\nline: %d\n\n%s", file, line, condition);
+  
+  /// @todo: replace with x3d_quit
+  exit(0);
+}
+
