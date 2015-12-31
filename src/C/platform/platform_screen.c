@@ -25,7 +25,7 @@ static int16 screen_w;
 static int16 screen_h;
 static int16 screen_scale;
 
-X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init) {
+X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
   
   if(SDL_Init(SDL_INIT_VIDEO) != 0) {

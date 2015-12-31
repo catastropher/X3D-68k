@@ -15,9 +15,25 @@
 
 #pragma once
 
-#include "X3D_common.h"
-#include "X3D_screen.h"
-#include "X3D_init.h"
+enum {
+  X3D_KEY_0 = 1,
+  X3D_KEY_1 = 2,
+  X3D_KEY_2 = 4,
+  X3D_KEY_3 = 8,
+  X3D_KEY_4 = 16,
+  X3D_KEY_5 = 32,
+  X3D_KEY_6 = 64,
+  X3D_KEY_7 = 128,
+  X3D_KEY_8 = 256,
+  X3D_KEY_9 = 512,
+  X3D_KEY_10 = 1024,
+  X3D_KEY_11 = 2048,
+  X3D_KEY_12 = 4096,
+  X3D_KEY_13 = 8192,
+  X3D_KEY_14 = 16384,
+  X3D_KEY_15 = 32768
+};
 
-X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init);
+// Max number of logical keys X3D can support
+#define X3D_MAX_KEYS 32
 

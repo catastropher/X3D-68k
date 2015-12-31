@@ -16,9 +16,9 @@
 #include "X3D_common.h"
 #include "X3D_init.h"
 
-#include "X3D_platform_screen.h"
+#include "X3D_platform_init.h"
 
 X3D_INTERNAL void x3d_platform_init(X3D_InitSettings* settings) {
-  x3dplatform_screen_init(settings);
+  x3d_platform_screen_init(settings);
 }
 

@@ -16,7 +16,8 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
 #include "X3D_screen.h"
-#include "X3D_keys.h"
+#include "X3D_init.h"
+
+X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init);
+

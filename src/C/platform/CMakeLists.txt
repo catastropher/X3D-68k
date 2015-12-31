@@ -3,4 +3,5 @@
 add_sources(
   platform_screen.c
   platform_init.c
+  platform_keys.c
 )
