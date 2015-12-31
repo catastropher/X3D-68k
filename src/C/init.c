@@ -14,8 +14,10 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X3D_init.h"
+#include "X3D_log.h"
 
 void x3d_init(X3D_InitSettings* settings) {
+  x3d_log(X3D_INFO, "X3D init");  
   x3d_platform_init(settings);
 }
 
