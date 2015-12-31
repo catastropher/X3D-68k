@@ -100,10 +100,20 @@ void key_test() {
   
   x3d_init(&init);
   
-  //x3d_key_map_pc(X3D_KEY_5, SDLK_RETURN);
-  //x3d_key_map_pc(X3D_KEY_5, X3D_KEY_NONE);
+  x3d_log(X3D_INFO, "Running key test");
+  x3d_log(X3D_INFO, "Enter=display message, Escape=quit\n");
   
-  x3d_key_map_pc(X3D_KEY_1 | X3D_KEY_4, SDLK_RETURN);
+  x3d_key_map_pc(X3D_KEY_0, SDLK_RETURN);
+  x3d_key_map_pc(X3D_KEY_1, SDLK_ESCAPE);
+  
+  do {
+    x3d_read_keys();
+    
+    if(x3d_key_down(X3D_KEY_0)) {
+      x3d_log(X3D_INFO, "You pressed enter!");
+      SDL_Delay(1000);
+    }
+  } while(!x3d_key_down(X3D_KEY_1));
   
   SDL_Quit();
 }

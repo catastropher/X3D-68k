@@ -56,18 +56,15 @@ X3D_INTERNAL void x3d_platform_keys_init(X3D_InitSettings* settings) {
   key_pressed_state = 0;
 }
 
-void x3d_key_map_pc(uint16 x3d_key, int32 sdl_key) {
+void x3d_key_map_pc(X3D_Key x3d_key, int32 sdl_key) {
   int id = 0;
   
   x3d_assert(x3d_key != 0);
   
   while((x3d_key & 1) == 0) {
-    printf("Key: %d\n", x3d_key);
     x3d_key >>= 1;
     ++id;
   }
-  
-  printf("Key final: %d\n", x3d_key);
   
   // Multiple keys aren't supported yet
   x3d_assert(x3d_key == 1);
@@ -104,7 +101,7 @@ X3D_PLATFORM void x3d_read_keys() {
   // Update the X3D keystate based on which keys are being pressed
   key_state = 0;
   
-  for(i = 0; i < X3D_MAX_KEYS; ++i) {
+  for(i = X3D_MAX_KEYS - 1; i >= 0; --i) {
     key_state <<= 1;
     
     if(key_map[i] != X3D_KEY_NONE)
@@ -112,7 +109,8 @@ X3D_PLATFORM void x3d_read_keys() {
   }
 }
 
-
-
+_Bool x3d_key_down(X3D_Key key) {
+  return key_state & key;
+}
 
 

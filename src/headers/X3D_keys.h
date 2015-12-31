@@ -17,9 +17,14 @@
 
 #include "X3D_common.h"
 
+/// Indicates that an X3D key should be mapped to nothing
 #define X3D_KEY_NONE -1
 
-enum {
+///////////////////////////////////////////////////////////////////////////////
+/// Represents a logical X3D key, which is mapped to a physical
+///   platform-dependent key.
+///////////////////////////////////////////////////////////////////////////////
+typedef enum {
   X3D_KEY_0 = 1,
   X3D_KEY_1 = 2,
   X3D_KEY_2 = 4,
@@ -36,7 +41,7 @@ enum {
   X3D_KEY_13 = 8192,
   X3D_KEY_14 = 16384,
   X3D_KEY_15 = 32768
-};
+} X3D_Key;
 
 // Max number of logical keys X3D can support
 #define X3D_MAX_KEYS 16
@@ -49,7 +54,8 @@ enum {
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_PLATFORM void x3d_key_map_pc(uint16 x3d_key, int32 sdl_key);
+X3D_PLATFORM void x3d_key_map_pc(X3D_Key x3d_key, int32 sdl_key);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Reads the keyboard to see which keys are currently being pressed.
@@ -57,4 +63,15 @@ X3D_PLATFORM void x3d_key_map_pc(uint16 x3d_key, int32 sdl_key);
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 X3D_PLATFORM void x3d_read_keys();
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// Checks whether a key is currently being held down.
+///
+/// @param key  - the key to check
+///
+/// @return Whether the key is currently being held down.
+/// @note Make sure the keystate has been updated with @ref x3d_read_keys().
+///////////////////////////////////////////////////////////////////////////////
+_Bool x3d_key_down(X3D_Key key);
 
