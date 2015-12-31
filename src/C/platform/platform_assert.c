@@ -19,7 +19,7 @@
 #include "X3D_log.h"
 
 void x3d_platform_assert_failed(const char* condition, const char* file, int16 line) {
-  x3d_log(X3D_ERROR, "Assertion failed!\nFile: %s\nline: %d\n\n%s", file, line, condition);
+  x3d_log(X3D_ERROR, "Assertion failed!\nFile: %s\nline: %d\n\t%s\n", file, line, condition);
   
   /// @todo: replace with x3d_quit
   exit(0);
