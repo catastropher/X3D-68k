@@ -19,10 +19,7 @@
 
 #include <SDL2/SDL.h>
 
-#include "X3D_common.h"
-#include "X3D_log.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
+#include "X3D.h"
 
 void color_test(void) {
   X3D_InitSettings init = {
