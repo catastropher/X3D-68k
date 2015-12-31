@@ -26,6 +26,7 @@ add_sources(
   C/gameloop.c
   C/log.c
   C/init.c
+  C/resource.c
 )
 
 add_subdirectory(C/platform)
