@@ -76,7 +76,7 @@ void x3d_screen_flip() {
 }
 
 void x3d_screen_clear(X3D_Color color) {
-  SDL_FillRect(window_surface, NULL, map_color_to_uint32(PURPLE));// map_color_to_uint32(color));
+  SDL_FillRect(window_surface, NULL, map_color_to_uint32(color));
 }
 
 void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
