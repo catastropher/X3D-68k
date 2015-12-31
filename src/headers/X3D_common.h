@@ -13,10 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-///////////////////////////////////////////////////////////////////////////////
-/// The main game loop.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_game_loop() {
-  
-}
+#pragma once
 
+#include "X3D_int.h"
+#include "X3D_interface.h"
+#include "X3D_log.h"

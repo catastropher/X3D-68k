@@ -13,10 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-///////////////////////////////////////////////////////////////////////////////
-/// The main game loop.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_game_loop() {
-  
-}
+#pragma once
+
+/// Marks something as "internal use only". This is not enforced in any way and
+///   is only to serve as a marker.
+#define X3D_INTERNAL
+
+/// Indicates that a function requires a platform-dependent implementation
+///   (can be found in the platform folder).
+#define X3D_PLATFORM
 

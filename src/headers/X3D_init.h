@@ -13,10 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-///////////////////////////////////////////////////////////////////////////////
-/// The main game loop.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_game_loop() {
-  
-}
+#pragma once
+
+#include "X3D_common.h"
+
+typedef struct X3D_InitSettings {
+  int16 screen_w;         ///< Width of the screen
+  int16 screen_h;         ///< Height of the screen
+  int16 screen_scale;     ///< Screen scaling factor
+  _Bool fullscreen;       ///< Fullscreen
+} X3D_InitSettings;
 

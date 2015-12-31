@@ -14,9 +14,13 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 ///////////////////////////////////////////////////////////////////////////////
-/// The main game loop.
+/// The types of log messages that can be displayed
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_game_loop() {
-  
-}
+typedef enum {
+  X3D_INFO,
+  X3D_WARN,
+  X3D_ERROR
+} X3D_LogType;
+
+void x3d_log(X3D_LogType type, const char* format, ...) __attribute__ ((format(printf, 2, 3)));
 
