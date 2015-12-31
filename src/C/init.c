@@ -22,3 +22,8 @@ void x3d_init(X3D_InitSettings* settings) {
   x3d_platform_init(settings);
 }
 
+void x3d_cleanup(void) {
+  x3d_log(X3D_INFO, "X3D cleanup");
+  x3d_platform_cleanup();
+}
+

@@ -86,8 +86,8 @@ void color_test(void) {
   }
   
   x3d_log(X3D_INFO, "Finished running color test");
-
-  SDL_Quit();
+  
+  x3d_cleanup();
 }
 
 void key_test() {
@@ -115,7 +115,7 @@ void key_test() {
     }
   } while(!x3d_key_down(X3D_KEY_1));
   
-  SDL_Quit();
+  x3d_cleanup();
 }
 
 typedef struct Test {

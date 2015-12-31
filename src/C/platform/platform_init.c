@@ -24,3 +24,8 @@ X3D_INTERNAL void x3d_platform_init(X3D_InitSettings* settings) {
   x3d_platform_keys_init(settings);
 }
 
+X3D_PLATFORM
+X3D_INTERNAL
+void x3d_platform_cleanup(void) {
+  x3d_platform_screen_cleanup();
+}

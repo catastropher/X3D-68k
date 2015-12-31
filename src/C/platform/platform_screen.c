@@ -58,6 +58,11 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   
 }
 
+X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+}
+
 
 #define PURPLE (16 | (16 << 10))
 
