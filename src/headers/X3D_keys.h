@@ -15,6 +15,10 @@
 
 #pragma once
 
+#include "X3D_common.h"
+
+#define X3D_KEY_NONE -1
+
 enum {
   X3D_KEY_0 = 1,
   X3D_KEY_1 = 2,
@@ -35,5 +39,22 @@ enum {
 };
 
 // Max number of logical keys X3D can support
-#define X3D_MAX_KEYS 32
+#define X3D_MAX_KEYS 16
+
+///////////////////////////////////////////////////////////////////////////////
+/// Maps an SDL key to an X3D key (if using the PC port).
+///
+/// @param sdl_key  - an SDL key e.g. SDLK_UP
+/// @param x3d_key  - an X3D key e.g. X3D_KEY_0
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+X3D_PLATFORM void x3d_key_map_pc(uint16 x3d_key, int32 sdl_key);
+
+///////////////////////////////////////////////////////////////////////////////
+/// Reads the keyboard to see which keys are currently being pressed.
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+X3D_PLATFORM void x3d_read_keys();
 

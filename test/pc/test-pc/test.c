@@ -90,6 +90,24 @@ void color_test(void) {
   SDL_Quit();
 }
 
+void key_test() {
+  X3D_InitSettings init = {
+    .screen_w = 256,
+    .screen_h = 256,
+    .screen_scale = 2,
+    .fullscreen = X3D_FALSE
+  };
+  
+  x3d_init(&init);
+  
+  //x3d_key_map_pc(X3D_KEY_5, SDLK_RETURN);
+  //x3d_key_map_pc(X3D_KEY_5, X3D_KEY_NONE);
+  
+  x3d_key_map_pc(X3D_KEY_1 | X3D_KEY_4, SDLK_RETURN);
+  
+  SDL_Quit();
+}
+
 typedef struct Test {
   const char* name;
   void (*run)(void);
@@ -103,6 +121,10 @@ int main() {
     {
       "Color test",
       color_test
+    },
+    {
+      "Key test",
+      key_test
     }
   };
   

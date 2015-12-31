@@ -20,4 +20,5 @@
 #include "X3D_init.h"
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init);
+X3D_INTERNAL void x3d_platform_keys_init(X3D_InitSettings* settings);
 

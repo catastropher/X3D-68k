@@ -18,7 +18,9 @@
 
 #include "X3D_platform_init.h"
 
+/// @todo this should return whether initialization succeeded
 X3D_INTERNAL void x3d_platform_init(X3D_InitSettings* settings) {
   x3d_platform_screen_init(settings);
+  x3d_platform_keys_init(settings);
 }
 
