@@ -15,14 +15,9 @@
 
 #pragma once
 
-///////////////////////////////////////////////////////////////////////////////
-/// The types of log messages that can be displayed
-///////////////////////////////////////////////////////////////////////////////
-typedef enum {
-  X3D_INFO,
-  X3D_WARN,
-  X3D_ERROR
-} X3D_LogType;
+#include "X3D_common.h"
+#include "X3D_screen.h"
+#include "X3D_init.h"
 
-void x3d_log(X3D_LogType type, const char* format, ...) __attribute__ ((format(printf, 2, 3)));
+X3D_INTERNAL _Bool x3dplatform_screen_init(X3D_InitSettings* init);
 

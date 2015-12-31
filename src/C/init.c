@@ -13,16 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X3D_init.h"
 
-///////////////////////////////////////////////////////////////////////////////
-/// The types of log messages that can be displayed
-///////////////////////////////////////////////////////////////////////////////
-typedef enum {
-  X3D_INFO,
-  X3D_WARN,
-  X3D_ERROR
-} X3D_LogType;
-
-void x3d_log(X3D_LogType type, const char* format, ...) __attribute__ ((format(printf, 2, 3)));
+void x3d_init(X3D_InitSettings* settings) {
+  x3d_platform_init(settings);
+}
 

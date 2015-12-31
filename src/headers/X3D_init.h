@@ -24,3 +24,10 @@ typedef struct X3D_InitSettings {
   _Bool fullscreen;       ///< Fullscreen
 } X3D_InitSettings;
 
+
+void x3d_init(X3D_InitSettings* settings);
+
+
+X3D_PLATFORM
+X3D_INTERNAL
+void x3d_platform_init(X3D_InitSettings* settings);

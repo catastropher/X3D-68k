@@ -20,9 +20,12 @@ macro (add_sources)
 endmacro()
 
 include_directories(headers)
+include_directories(C/src/platform)
 
-add_sources(C/gameloop.c
+add_sources(
+  C/gameloop.c
   C/log.c
+  C/init.c
 )
 
 add_subdirectory(C/platform)

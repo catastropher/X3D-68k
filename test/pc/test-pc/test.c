@@ -19,8 +19,19 @@
 
 #include <SDL2/SDL.h>
 
+#include "X3D_common.h"
 #include "X3D_log.h"
+#include "X3D_init.h"
 
 int main() {
+  X3D_InitSettings init = {
+    .screen_w = 240,
+    .screen_h = 128,
+    .screen_scale = 3,
+    .fullscreen = X3D_FALSE
+  };
+  
+  
+  x3d_init(&init);
 }
 
