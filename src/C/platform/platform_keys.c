@@ -113,4 +113,3 @@ _Bool x3d_key_down(X3D_Key key) {
   return key_state & key;
 }
 
-

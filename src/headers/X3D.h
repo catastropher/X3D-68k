@@ -21,3 +21,6 @@
 #include "X3D_screen.h"
 #include "X3D_keys.h"
 #include "X3D_assert.h"
+
+#include "memory/X3D_freelist.h"
+

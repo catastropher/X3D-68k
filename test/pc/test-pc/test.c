@@ -18,6 +18,7 @@
 // test.c -> test for PC
 
 #include <SDL2/SDL.h>
+#include <stddef.h>
 
 #include "X3D.h"
 
@@ -118,6 +119,32 @@ void key_test() {
   x3d_cleanup();
 }
 
+typedef struct FreeListBlock {
+  int16 pad0;
+  void* safe_to_overwrite;
+  int16 pad1;
+  int16 pad2;
+  int16 id;
+} FreeListBlock;
+
+void freelist_test() {
+  X3D_InitSettings init = {
+    .screen_w = 256,
+    .screen_h = 256,
+    .screen_scale = 2,
+    .fullscreen = X3D_FALSE
+  };
+  
+  x3d_init(&init);
+  
+  X3D_FreeList list;
+  FreeListBlock blocks[64];
+  
+  x3d_freelist_create(&list, blocks, sizeof(blocks), sizeof(FreeListBlock),
+    offsetof(FreeListBlock, safe_to_overwrite),
+    offsetof(FreeListBlock, id), 0);
+}
+
 typedef struct Test {
   const char* name;
   void (*run)(void);
@@ -135,6 +162,10 @@ int main() {
     {
       "Key test",
       key_test
+    },
+    {
+      "Freelist test",
+      freelist_test
     }
   };
   

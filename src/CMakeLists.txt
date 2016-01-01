@@ -27,6 +27,8 @@ add_sources(
   C/log.c
   C/init.c
   C/resource.c
+  
+  C/memory/freeslist.c
 )
 
 add_subdirectory(C/platform)
