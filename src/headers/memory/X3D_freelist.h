@@ -39,3 +39,4 @@ void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size,
     int16 id);
 
 void* x3d_freelist_alloc(X3D_FreeList* list);
+void* x3d_freelist_free(X3D_FreeList* list, void* block);

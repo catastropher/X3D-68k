@@ -120,11 +120,11 @@ void key_test() {
 }
 
 typedef struct FreeListBlock {
+  int16 id;
   int16 pad0;
   void* safe_to_overwrite;
   int16 pad1;
   int16 pad2;
-  int16 id;
 } FreeListBlock;
 
 void freelist_test() {
@@ -143,6 +143,27 @@ void freelist_test() {
   x3d_freelist_create(&list, blocks, sizeof(blocks), sizeof(FreeListBlock),
     offsetof(FreeListBlock, safe_to_overwrite),
     offsetof(FreeListBlock, id), 0);
+  
+  uint16 i;
+  
+  for(i = 0; i < 128; ++i) {
+    FreeListBlock* block = x3d_freelist_alloc(&list);
+    x3d_log(X3D_INFO, "Alloced block: %d", block->id);
+    x3d_freelist_free(&list, block);
+  }
+  
+  FreeListBlock* block;
+  
+  for(i = 0; i < 64; ++i) {
+    block = x3d_freelist_alloc(&list);
+  }
+  
+  
+  // Test when alloc pool is empty
+  x3d_freelist_free(&list, block);
+  block = x3d_freelist_alloc(&list);
+  
+  x3d_cleanup();
 }
 
 typedef struct Test {

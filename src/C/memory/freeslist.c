@@ -44,6 +44,10 @@ void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size,
   // Only allow sizes that are the multiple of the block size
   x3d_assert((mem_size % block_size) == 0);
   
+  // Check to make sure id and next pointer fit within the struct
+  x3d_assert(next_pointer_offset + sizeof(void *) <= block_size);
+  x3d_assert(block_id_offset + sizeof(uint16) <= block_size);
+  
   list->begin = mem;
   list->end = list->begin + mem_size;
   list->block_size = block_size;
@@ -53,6 +57,8 @@ void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size,
   int16 block_id = 0;
   void* block = list->begin - list->block_size;
   void** next_ptr;
+  
+  printf("Size = %lu\n", sizeof(void *));
   
   do {
     block += list->block_size;
@@ -64,30 +70,57 @@ void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size,
     }
 
     // Pointer to the pointer to the next block
-    next_ptr = (void **)block + list->next_pointer_offset;
+    next_ptr = (void **)(block + list->next_pointer_offset);
     *next_ptr = block + list->block_size;
-  } while(block < list->end);
+  } while(block + list->block_size < list->end);
   
   // Last block doesn't have a next block...
   *next_ptr = NULL;
+  
+  x3d_assert(block == list->end - list->block_size);
   
   list->head = list->begin;
   list->tail = block;
   
   x3d_log(X3D_INFO, "Created freelist %d with %d blocks (block size=%d bytes, "
-    "id_offset=%d, next_ptr_offset=%d", id, block_id, block_size,
+    "id_offset=%d, next_ptr_offset=%d)", id, block_id, block_size,
     block_id_offset, next_pointer_offset);
 }
 
 void* x3d_freelist_alloc(X3D_FreeList* list) {
   if(list->head) {
     void* block = list->head;
-    void** next = (void **)block + list->next_pointer_offset;
+    void** next = (void **)(block + list->next_pointer_offset);
     
     list->head = *next;
     return block;
   }
   
+  x3d_assert(!"Out of blocks");
+  
   /// @todo throw an error because we're out of blocks!!!
+}
+
+void* x3d_freelist_free(X3D_FreeList* list, void* block) {
+  x3d_assert(block);
+  
+  void** block_next = (void **)(block + list->next_pointer_offset);
+  *block_next = NULL;
+    
+  // Make sure the block begin freed actually came from the list
+  x3d_assert(block >= list->begin && block + list->block_size <= list->end);
+  x3d_assert(((block - list->begin) % list->block_size) == 0);
+  
+  if(list->head) {
+    // Add the block to the tail of the queue
+    void** next = (void **)(list->tail + list->next_pointer_offset);
+    *next = block;
+    
+    list->tail = block;
+  }
+  else {
+    list->tail = block;
+    list->head = block;
+  }
 }
 
