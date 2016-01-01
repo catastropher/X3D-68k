@@ -149,6 +149,9 @@ void freelist_test() {
   for(i = 0; i < 128; ++i) {
     FreeListBlock* block = x3d_freelist_alloc(&list);
     x3d_log(X3D_INFO, "Alloced block: %d", block->id);
+    
+    x3d_assert(((FreeListBlock *)x3d_freelist_get_block(&list, block->id))->id == block->id);
+    
     x3d_freelist_free(&list, block);
   }
   

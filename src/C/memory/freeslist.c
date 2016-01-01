@@ -124,3 +124,18 @@ void* x3d_freelist_free(X3D_FreeList* list, void* block) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Finds the addess of a block from a freelist given its id.
+///
+/// @param list - list
+/// @param id   - id of the block to find
+///
+/// @return Address of the block.
+///////////////////////////////////////////////////////////////////////////////
+void* x3d_freelist_get_block(X3D_FreeList* list, int16 id) {
+  int16 total_blocks = (list->end - list->begin) / list->block_size;  
+  x3d_assert(id >= 0 && id < total_blocks);
+  
+  return list->begin + id * list->block_size;
+}
+
