@@ -34,8 +34,6 @@
 /// @param id                   - unique id of the freelist (for debugging)
 ///
 /// @note mem_size MUST be a multiple of block_size!
-/// @note The blocks are created and added to the freelist in order, but when
-///     allocated will be allocated in reverse order!
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size,
     int16 block_size, int16 next_pointer_offset, int16 block_id_offset,
@@ -101,7 +99,15 @@ void* x3d_freelist_alloc(X3D_FreeList* list) {
   /// @todo throw an error because we're out of blocks!!!
 }
 
-void* x3d_freelist_free(X3D_FreeList* list, void* block) {
+///////////////////////////////////////////////////////////////////////////////
+/// Returns a block to a freelist.
+///
+/// @param list   - list
+/// @param block  - block to return
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_freelist_free(X3D_FreeList* list, void* block) {
   x3d_assert(block);
   
   void** block_next = (void **)(block + list->next_pointer_offset);
