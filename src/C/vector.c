@@ -24,7 +24,9 @@
 /// @param b - pointer to the the second 3D vector
 ///
 /// @return dot product of a and b as an int32
-/// @todo add overflow detection
+/// @note This function has the *potential* to overflow, but this has yet to be
+///   seen in practice (it requires huge vectors). If overflow does happen, the
+///   function calling this should scale down the vectors before calling this.
 ///////////////////////////////////////////////////////////////////////////////
 int32 x3d_vex3d_int16_dot(X3D_Vex3D* a, X3D_Vex3D* b) {
   int32 p_x = (int32)a->x * b->x;
