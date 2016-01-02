@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(X3D)
 
-set(CMAKE_C_FLAGS "-std=c99")
+set(CMAKE_C_FLAGS "-std=c99 -Wall")
 
 macro (add_sources)
     file (RELATIVE_PATH _relPath "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -27,6 +27,7 @@ add_sources(
   C/log.c
   C/init.c
   C/resource.c
+  C/vector.c
   
   C/memory/freeslist.c
 )
