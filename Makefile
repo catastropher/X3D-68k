@@ -1,120 +1,35 @@
 .PHONY: all
-
-.PHONY: tools
-.PHONY: clean
-.PHONY: clean-all
-.PHONY: config-all
-
-# 68k
-.PHONY: 68k
-.PHONY: ti92plus
-.PHONY: ti89
-.PHONY: v200
-
-.PHONY: config-ti92plus
-.PHONY: config-ti89
-.PHONY: config-v200
-
-.PHONY: clean-68k
-.PHONY: clean-ti92plus
-.PHONY: clean-ti89
-.PHONY: clean-v200
-
-# pc
-
-.PHONY: pc
-.PHONY: config-oc
-.PHONY: clean-pc
-.PHONY: nuke-build
-
 .PHONY: test
-.PHONY: fetch
+.PHONY: test-manual
+.PHONY: x3d
+.PHONY: config
 
+all: test
 
-all: 68k pc
-
-config-all: config-68k config-pc
-
-# 68k
-
-68k: ti92plus ti89 v200
+config:
+	@tput setaf 2
+	@echo Configuring X3D
+	@tput setaf 7
+	@mkdir -p build/X3D
+	@cd build/X3D && cmake ../../src
 	
-ti92plus:
-	@cd build/68k/ti92plus && make --no-print-directory
+	@tput setaf 2
+	@echo Configuring Unit Tests
+	@tput setaf 7
+	@mkdir -p build/unit
+	@cd build/unit && cmake ../../test/unit
 	
-ti89:
-	@cd build/68k/ti89 && make --no-print-directory
+	@tput setaf 2
+	@echo Configuring Manual Tests
+	@tput setaf 7
+	@mkdir -p build/manual
+	@cd build/manual && cmake ../../test/pc/test-pc
 	
-v200:
-	@cd build/68k/v200 && make --no-print-directory
+x3d:
+	@cd build/X3D && make --no-print-directory
 	
-clean-68k: clean-ti92plus clean-ti89 clean-v200
-
-clean-ti92plus:
-	@cd build/68k/ti92plus && make clean --no-print-directory
+test: x3d
+	@cd build/unit && make --no-print-directory && ./unit
 	
-clean-ti89:
-	@cd build/68k/ti89 && make clean --no-print-directory
-	
-clean-v200:
-	@cd build/68k/v200 && make clean --no-print-directory
-
-
-config-68k: config-ti92plus config-ti89 config-v200
-	
-config-ti92plus:
-	@mkdir -p build/68k/ti92plus && cd build/68k/ti92plus && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=ti92plus -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k
-	
-config-ti89:
-	@mkdir -p build/68k/ti89 && cd build/68k/ti89 && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=ti89 -DOUTPUT_DIR=$(X3D)/lib/68k/ti89 -DPLATFORM_DIR=$(X3D)/src/platform/68k
-
-config-v200:
-	@mkdir -p build/68k/v200 && cd build/68k/v200 && cmake ../../.. -DX3D_TARGET=68k -DX3D_SUBTARGET=v200 -DOUTPUT_DIR=$(X3D)/lib/68k/v200 -DPLATFORM_DIR=$(X3D)/src/platform/68k
-	
-	
-# pc
-pc:
-	@cd build/pc && make --no-print-directory
-	
-config-pc:
-	@mkdir -p build/pc && cd build/pc && cmake ../.. -DX3D_TARGET=pc -DOUTPUT_DIR=$(X3D)/lib/pc -DPLATFORM_DIR=$(X3D)/src/platform/pc
-	
-clean-pc:
-	@cd build/pc && make clean --no-print-directory
-	
-tools:
-	@make --no-print-directory -C ./tools
-	
-clean:
-	@echo Run 'make clean-all' to clean all builds.
-	
-clean-all: clean-68k clean-pc
-
-nuke-build:
-	@rm -rf build
-	
-config-test-68k:
-	@mkdir -p build/test/68k && cd build/test/68k && cmake ../../../test/68k -DOUTPUT_DIR=$(X3D)/lib/68k/ti92plus -DPLATFORM_DIR=$(X3D)/src/platform/68k
-	
-config-test-pc:
-	@mkdir -p build/test/pc && cd build/test/pc && cmake ../../../test/pc -DOUTPUT_DIR=$(X3D)/lib/pc -DPLATFORM_DIR=$(X3D)/src/platform/pc
-	
-test-68k:
-	@cd build/test/68k && make --no-print-directory
-	
-test-pc:
-	@cd build/test/pc && make --no-print-directory
-
-fetch:
-	wget https://raw.githubusercontent.com/debrouxl/ExtGraph/master/lib/extgraph.h -P ./lib
-	wget https://github.com/debrouxl/ExtGraph/raw/master/lib/extgraph.a -P ./lib
-  
-update-headers:
-	@mkdir -p lib/x3d/headers/core
-	@mkdir -p lib/x3d/headers/util
-	@cp -rf src/core/headers/* lib/x3d/headers/core
-	@cp -rf src/util/headers/* lib/x3d/headers/util
-	@cp -f src/X3D.h lib/x3d/headers/
-  
-update-ti92plus: ti92plus update-headers test-68k
-update-pc: pc update-headers test-pc
+test-manual:
+	@cd build/manual && make --no-print-directory && ./test-pc
