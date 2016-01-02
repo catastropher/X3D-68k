@@ -16,7 +16,19 @@
 #pragma once
 
 #include "X3D_int.h"
-#include "X3D_interface.h"
-#include "X3D_log.h"
-#include "X3D_fix.h"
+
+/// An 8.8 fixed point number
+typedef int16 fp8x8;
+
+/// A 16.16 fixed point number
+typedef int32 fp16x16;
+
+/// A 0.16 fixed point number
+typedef int16 fp0x16;
+
+/// An unsigned 8.8 fixed point number
+typedef uint16 ufp8x8;
+
+/// An angle that goes from 0-255 instead of 0-359
+typedef uint8 angle256;
 
