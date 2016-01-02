@@ -30,6 +30,7 @@ add_sources(
   C/vector.c
   
   C/memory/freeslist.c
+  C/memory/stack.c
 )
 
 add_subdirectory(C/platform)

@@ -15,13 +15,14 @@
 
 #pragma once
 
-#include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
+typedef struct X3D_Stack {
+  void* base;
+  void* ptr;
+  uint16 size;
+} X3D_Stack;
 
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
+void x3d_stack_init(X3D_Stack* stack, void* mem, int16 mem_size);
+void* x3d_stack_alloc(X3D_Stack* stack, uint16 size);
+void* x3d_stack_save(X3D_Stack* stack);
+void x3d_stack_restore(X3D_Stack* stack, void* ptr);
 
