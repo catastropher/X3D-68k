@@ -34,7 +34,7 @@ typedef struct X3D_FreeList {
   void* tail;
 } X3D_FreeList;
 
-void x3d_freelist_create(X3D_FreeList* list, void* mem, size_t mem_size,
+void x3d_freelist_create(X3D_FreeList* list, void* mem, uint16 mem_size,
     int16 block_size, int16 next_pointer_offset, int16 block_id_offset,
     int16 id);
 
