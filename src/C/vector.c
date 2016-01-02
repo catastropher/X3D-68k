@@ -15,6 +15,7 @@
 
 #include "X3D_common.h"
 #include "X3D_vector.h"
+#include "X3D_assert.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the dot product of two 16-bit integer 3D vectors.
@@ -26,7 +27,14 @@
 /// @todo add overflow detection
 ///////////////////////////////////////////////////////////////////////////////
 int32 x3d_vex3d_int16_dot(X3D_Vex3D* a, X3D_Vex3D* b) {
-  return (int32)a->x * b->x + (int32)a->y * b->y + (int32)a->z * b->z;
+  int32 p_x = (int32)a->x * b->x;
+  int32 p_y = (int32)a->y * b->y;
+  int32 p_z = (int32)a->z * b->z;
+  
+  // Check for overflow
+  x3d_assert(!x3d_addi32_check_overflow(3, p_x, p_y, p_z));
+  
+  return p_x + p_y + p_z; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -16,6 +16,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdarg.h>
 
 /// An 8-bit signed integer
 typedef int8_t int8;
@@ -45,4 +46,33 @@ enum {
   X3D_FALSE = 0,
   X3D_TRUE = 1
 };
+
+///////////////////////////////////////////////////////////////////////////////
+/// Checks a series of int32's and checks if there is overflow (or underflow).
+///
+/// @param total  - total number of int32's
+/// @param ...    - int32's to add
+///
+/// @return Whether there was an overflow or underflow in adding them.
+///////////////////////////////////////////////////////////////////////////////
+static inline _Bool x3d_addi32_check_overflow(int16 total, ...) {
+  int32 sum = 0;
+  va_list list;
+  
+  va_start(list, total);
+  
+  while(total > 0) {
+    int32 num = va_arg(list, int32);
+    
+    // Overflow/underflow can only happen if the signs are the same before
+    // adding, and become the opposite sign after adding
+    if((sum < 0 && num < 0 && sum + num > 0) ||
+        (sum > 0 && num > 0 && sum + num < 0)) {
+      
+      return X3D_TRUE;
+    }
+  }
+  
+  return X3D_FALSE;
+}
 
