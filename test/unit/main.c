@@ -19,8 +19,10 @@
 
 #include "X3D.h"
 
+void test_stack();
+
 void run_tests() {
-  
+  test_stack();
 }
 
 int main(int argc, char* argv[]) {
