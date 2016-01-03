@@ -26,3 +26,6 @@
 #include "memory/X3D_stack.h"
 
 #include "X3D_enginestate.h"
+
+#include "X3D_prism.h"
+
