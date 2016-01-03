@@ -13,16 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
-
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
-
 #include "X3D_enginestate.h"
+
+static X3D_EngineState x3d_global_enginestate;
+X3D_EngineState* x3d_state;
+
+///////////////////////////////////////////////////////////////////////////////
+/// Initializes the global engine state.
+///
+X3D_INTERNAL void x3d_enginestate_init(void) {
+  x3d_state = &x3d_global_enginestate;
+}

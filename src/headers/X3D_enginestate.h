@@ -16,13 +16,12 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
 
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
+typedef struct X3D_EngineState {
+  
+} X3D_EngineState;
 
-#include "X3D_enginestate.h"
+extern X3D_EngineState* x3d_state;
+
+X3D_INTERNAL void x3d_enginestate_init(void);
+
