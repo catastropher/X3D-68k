@@ -37,3 +37,16 @@ typedef struct X3D_Prism3D {
                       ///   next base_v vertices are for X3D_BASE_B.
 } X3D_Prism3D;
 
+
+///////////////////////////////////////////////////////////////////////////////
+/// Returns the size of a 3D prism (in bytes) given the number of vertices in
+///   the base.
+///
+/// @param base_v - number of vertices in the base
+///
+/// @return The size of the prism.
+///////////////////////////////////////////////////////////////////////////////
+static inline uint16 x3d_prism3d_size(uint16 base_v) {
+  return sizeof(X3D_Prism3D) + base_v * sizeof(X3D_Vex3D);
+}
+

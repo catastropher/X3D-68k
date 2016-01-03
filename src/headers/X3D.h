@@ -29,3 +29,5 @@
 
 #include "X3D_prism.h"
 
+#include "X3D_segment.h"
+
