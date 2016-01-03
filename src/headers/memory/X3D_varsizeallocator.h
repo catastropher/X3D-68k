@@ -15,19 +15,18 @@
 
 #pragma once
 
+#include <stdlib.h>
+
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
+#include "memory/X3D_list.h"
+#include "memory/X3D_stack.h"
 #include "X3D_assert.h"
 
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
-#include "memory/X3D_list.h"
-#include "memory/X3D_varsizeallocator.h"
-
-#include "X3D_enginestate.h"
-#include "X3D_prism.h"
-#include "X3D_segment.h"
+///////////////////////////////////////////////////////////////////////////////
+/// A memory allocator for variable-size objects.
+///////////////////////////////////////////////////////////////////////////////
+typedef struct X3D_VarSizeAllocator {
+  X3D_Stack alloc_pool;             // Memory available to the allocator
+  X3D_List_uint16 alloc_offset;     // List of allocation offsets
+} X3D_VarSizeAllocator;
 
