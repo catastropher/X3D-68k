@@ -16,17 +16,17 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
 
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
-#include "memory/X3D_list.h"
+///////////////////////////////////////////////////////////////////////////////
+/// A list of uint16's (though technically not a list).
+///////////////////////////////////////////////////////////////////////////////
+typedef struct X3D_List_uint16 {
+  uint16 capacity;      ///< The number of elements the list can hold
+  uint16 size;          ///< The number of elements the list currently has
+  uint16* data;         ///< Data
+} X3D_List_uint16;
 
-#include "X3D_enginestate.h"
-#include "X3D_prism.h"
-#include "X3D_segment.h"
+void x3d_list_uint16_init(X3D_List_uint16* list, void* mem, uint16 mem_size);
+uint16 x3d_list_uint16_add(X3D_List_uint16* list, uint16 val);
+uint16 x3d_list_uint16_get(X3D_List_uint16* list, uint16 index);
 
