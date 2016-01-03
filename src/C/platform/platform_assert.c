@@ -14,12 +14,25 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
+#include <execinfo.h>
+#include <stdio.h>
+#include <unistd.h>
 
 #include "X3D_common.h"
 #include "X3D_log.h"
 
 void x3d_platform_assert_failed(const char* condition, const char* file, int16 line) {
   x3d_log(X3D_ERROR, "Assertion failed!\nFile: %s\nline: %d\n\t%s\n", file, line, condition);
+  
+  // Stack trace
+  void* ptr[128];
+  
+  fprintf(stderr, "Stack trace:\n\n");
+  
+  int size = backtrace(ptr, 128);
+  backtrace_symbols_fd(ptr, size, STDOUT_FILENO);
+  
+  fprintf(stderr, "\n");
   
   /// @todo: replace with x3d_quit
   exit(0);

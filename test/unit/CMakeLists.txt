@@ -11,7 +11,7 @@ add_executable(UnitTests
 
 set_target_properties(UnitTests PROPERTIES OUTPUT_NAME unit)
 
-target_link_libraries(UnitTests $ENV{X3D}/src/build/libX3D.a)
+target_link_libraries(UnitTests $ENV{X3D}/build/X3D/libX3D.a)
 
 set(SDL2_DIR $ENV{X3D}/test/unit)
 

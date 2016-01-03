@@ -57,3 +57,7 @@ void* x3d_varsizeallocator_alloc(X3D_VarSizeAllocator* alloc, uint16 size, uint1
   return obj;
 }
 
+void* x3d_varsizeallocator_get(X3D_VarSizeAllocator* alloc, uint16 id) {
+  
+}
+

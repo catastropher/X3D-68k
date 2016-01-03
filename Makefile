@@ -48,7 +48,7 @@ x3d:
 	
 # Builds X3D and builds/runs the unit tests
 test: x3d
-	@cd build/unit && make --no-print-directory && ./unit
+	@cd build/unit && rm -f ./unit && make --no-print-directory && ./unit
 
 # Builds X3D and builds/runs the manual tests
 test-manual: x3d
