@@ -31,6 +31,8 @@ add_sources(
   
   C/memory/freeslist.c
   C/memory/stack.c
+  C/memory/list.c
+  C/memory/varsizeallocator.c
   
   C/enginestate.c
 )

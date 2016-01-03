@@ -30,3 +30,6 @@ typedef struct X3D_VarSizeAllocator {
   X3D_List_uint16 alloc_offset;     // List of allocation offsets
 } X3D_VarSizeAllocator;
 
+void x3d_varsizeallocator_init(X3D_VarSizeAllocator* alloc, uint16 max_allocs, uint16 mem_size);
+void* x3d_varsizeallocator_alloc(X3D_VarSizeAllocator* alloc, uint16 size, uint16* id);
+
