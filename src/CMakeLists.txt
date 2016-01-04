@@ -37,6 +37,7 @@ add_sources(
   C/enginestate.c
   C/segment.c
   C/trig.c
+  C/matrix.c
 )
 
 add_subdirectory(C/platform)

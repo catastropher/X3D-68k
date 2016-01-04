@@ -15,35 +15,21 @@
 
 #pragma once
 
-#include "X3D_int.h"
+#include "X3D_vector.h"
 
-/// An 8.8 fixed point number
-typedef int16 fp8x8;
-
-/// A 16.16 fixed point number
-typedef int32 fp16x16;
-
-/// A 0.16 fixed point number
-typedef int16 fp0x16;
-
-/// A 0.32 fixed point number
-typedef int32 fp0x32;
-
-/// An unsigned 8.8 fixed point number
-typedef uint16 ufp8x8;
-
-/// An angle that goes from 0-255 instead of 0-359
-typedef uint8 angle256;
+//< Macro for giving 1D array index from a 3x3 matrix row and column
+#define MAT3x3(_row, _col) ((_row) * 3 + (_col))
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Multiplies two fp0x16 numbers.
-///
-/// @param a - first fixed point number
-/// @param b - second fixed point number
-///
-/// @return Product of a and b
+/// A 3x3 matrix with fp0x16 elements.
 ///////////////////////////////////////////////////////////////////////////////
-static inline fp0x16 x3d_fp0x16_mul(fp0x16 a, fp0x16 b) {
-  return ((fp0x32)a * b) >> 15;
-}
+typedef struct X3D_Mat3x3_fp0x16 {
+  fp0x16 data[9];
+} X3D_Mat3x3_fp0x16;
+
+typedef X3D_Mat3x3_fp0x16 X3D_Mat3x3;
+
+void x3d_mat3x3_fp0x16_mul(X3D_Mat3x3* dest, X3D_Mat3x3* a, X3D_Mat3x3* b);
+void x3d_mat3x3_fp0x16_print(X3D_Mat3x3* mat);
+void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3 *dest, X3D_Vex3D_angle256 *angle);
 
