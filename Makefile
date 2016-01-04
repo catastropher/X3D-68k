@@ -18,6 +18,7 @@
 .PHONY: test-manual
 .PHONY: x3d
 .PHONY: config
+.PHONY: docs
 
 # Builds X3D and builds/runs the unit tests
 all: test
@@ -53,3 +54,7 @@ test: x3d
 # Builds X3D and builds/runs the manual tests
 test-manual: x3d
 	@cd build/manual && make --no-print-directory && ./test-pc
+
+# Builds the documentation
+docs:
+	@cd docs && doxygen Doxyfile
