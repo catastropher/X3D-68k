@@ -58,7 +58,7 @@ void x3d_mat3x3_mul(X3D_Mat3x3* dest, X3D_Mat3x3* a, X3D_Mat3x3* b) {
 /// @todo Construct matrix using product-to-sum identities instead of matrix
 ///    multiplication.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *angle) {
+void x3d_mat3x3_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *angle) {
 #if 1
 
   fp0x16 sin_y = x3d_sin(angle->y);
@@ -67,7 +67,7 @@ void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *an
   fp0x16 sin_x = x3d_sin(angle->x);
   fp0x16 cos_x = x3d_cos(angle->x);
 
-  X3D_Mat3x3_fp0x16 mat_y = {
+  X3D_Mat3x3 mat_y = {
     {
       cos_y, 0, sin_y,
       0, INT16_MAX, 0,
@@ -75,7 +75,7 @@ void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *an
     }
   };
 
-  X3D_Mat3x3_fp0x16 mat_x = {
+  X3D_Mat3x3 mat_x = {
     {
       INT16_MAX, 0, 0,
       0, cos_x, -sin_x,
@@ -83,16 +83,22 @@ void x3d_mat3x3_fp0x16_construct(X3D_Mat3x3_fp0x16 *dest, X3D_Vex3D_angle256 *an
     }
   };
 
-  X3D_Mat3x3_fp0x16 mul_res;
+  X3D_Mat3x3 mul_res;
 
   x3d_mat3x3_mul(&mul_res, &mat_y, &mat_x);
 
-  memcpy(dest, &mul_res, sizeof(X3D_Mat3x3_fp0x16));
+  memcpy(dest, &mul_res, sizeof(X3D_Mat3x3));
 #endif
 }
 
-/// @todo document
-void x3d_mat3x3_fp0x16_print(X3D_Mat3x3_fp0x16* mat) {
+///////////////////////////////////////////////////////////////////////////////
+/// Prints out a 3x3 matrix.
+///
+/// @param mat  - the matrix to print out
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_mat3x3_print(X3D_Mat3x3* mat) {
   uint16 r;
 
   for(r = 0; r < 3; ++r) {

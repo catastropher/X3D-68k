@@ -38,6 +38,7 @@ add_sources(
   C/segment.c
   C/trig.c
   C/matrix.c
+  C/prism.c
 )
 
 add_subdirectory(C/platform)
