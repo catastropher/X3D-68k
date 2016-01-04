@@ -18,10 +18,9 @@
 #include "X3D_common.h"
 #include "X3D_prism.h"
 #include "memory/X3D_varsizeallocator.h"
+#include "X3D_prism.h"
 
 #define X3D_SEGMENT_CACHE_SIZE 32
-
-#define X3D_MAX_SEGMENTS 32
 
 typedef enum {
   X3D_SEGMENT_IN_CACHE = 1
@@ -63,4 +62,6 @@ typedef struct X3D_SegmentManager {
 } X3D_SegmentManager;
 
 X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size);
+uint16 x3d_segmentmanager_add(X3D_Prism3D* prism);
+X3D_INTERNAL X3D_Segment* x3d_segmentmanager_get_internal(uint16 id);
 

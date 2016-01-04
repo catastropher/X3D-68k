@@ -17,6 +17,7 @@
 #include "X3D_segment.h"
 #include "X3D_enginestate.h"
 #include "memory/X3D_varsizeallocator.h"
+#include "X3D_prism.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Initializes the segment manager.
@@ -30,5 +31,34 @@ X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_s
   X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
   
   x3d_varsizeallocator_init(&seg_manager->alloc, max_segments, seg_pool_size);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Creates a new segment.
+///
+/// @param prism - a 3D prism that describes the geometry of the segment.
+///
+/// @return The ID of the segment.
+///////////////////////////////////////////////////////////////////////////////
+uint16 x3d_segmentmanager_add(X3D_Prism3D* prism) {
+  X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
+  uint16 id;
+  
+  x3d_varsizeallocator_alloc(&seg_manager->alloc, x3d_prism3d_size(prism->base_v), &id);
+  
+  return id;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Gets a pointer to the interal representation of a segment.
+///
+/// @param id - ID of the segment to get
+///
+/// @return The addess of the interal segment representation.
+///////////////////////////////////////////////////////////////////////////////
+X3D_INTERNAL X3D_Segment* x3d_segmentmanager_get_internal(uint16 id) {
+  X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
+  
+  return x3d_varsizeallocator_get(&seg_manager->alloc, id);
 }
 
