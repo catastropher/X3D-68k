@@ -76,3 +76,26 @@ static inline _Bool x3d_addi32_check_overflow(int16 total, ...) {
   return X3D_FALSE;
 }
 
+/// @todo fix formatting
+
+/**
+* Rotates the lower byte of a uint16.
+*
+* @param i - input
+*
+* @return The lower byte
+*/
+static inline uint8 x3d_uint16_lower(uint16 i) {
+  return i & 0xFF;
+}
+
+/**
+* Rotates the upper byte of a uint16.
+*
+* @param i - input
+*
+* @return The upper byte
+*/
+static inline uint8 x3d_uint16_upper(uint16 i) {
+  return i >> 8;
+}

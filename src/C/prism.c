@@ -15,8 +15,9 @@
 
 #include "X3D_common.h"
 #include "X3D_matrix.h"
-
-#if 0
+#include "X3D_trig.h"
+#include "X3D_vector.h"
+#include "X3D_prism.h"
 
 /**
 * Constructs a prism with regular polygons as the base.
@@ -31,7 +32,7 @@
 * @note @ref X3D_Prism is a variable-sized data structure. Make sure s is
 *     at least sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * steps * 2 bytes big!
 */
-void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, Vex3D_angle256 rot_angle) {
+void x3d_prism_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
   ufp8x8 angle = 0;
   ufp8x8 angle_step = 65536L / steps;
   uint16 i;
@@ -40,22 +41,20 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, Vex3D_an
 
   // Construct the two bases (regular polygons)
   for(i = 0; i < steps; ++i) {
-    s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cosfp(uint16_upper(angle)), r);
-    s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sinfp(uint16_upper(angle)), r);
+    s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cos(x3d_uint16_upper(angle)), r);
+    s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sin(x3d_uint16_upper(angle)), r);
     s->v[i].y = -h / 2;
 
-    uint16 opp = x3d_opposite_vertex(s, i);
-
-    s->v[opp].x = s->v[i].x;
-    s->v[opp].z = s->v[i].z;
-    s->v[opp].y = h / 2;
+    s->v[i + steps].x = s->v[i].x;
+    s->v[i + steps].z = s->v[i].z;
+    s->v[i + steps].y = h / 2;
 
     angle += angle_step;
   }
 
   // Rotate the prism around its center
   X3D_Mat3x3_fp0x16 mat;
-  x3d_mat3x3_fp0x16_construct(&mat, &rot_angle);
+  x3d_mat3x3_construct(&mat, &rot_angle);
 
   for(i = 0; i < steps * 2; ++i) {
     X3D_Vex3D_int16 rot;
@@ -63,9 +62,5 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, Vex3D_an
     x3d_vex3d_int16_rotate(&rot, &s->v[i], &mat);
     s->v[i] = rot;
   }
-
-  s->draw_edges = 0xFFFFFFFF;
 }
-
-#endif
 

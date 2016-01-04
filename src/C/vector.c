@@ -16,6 +16,9 @@
 #include "X3D_common.h"
 #include "X3D_vector.h"
 #include "X3D_assert.h"
+#include "X3D_enginestate.h"
+#include "X3D_screen.h"
+#include "X3D_matrix.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the dot product of two 16-bit integer 3D vectors.
@@ -50,6 +53,8 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D* a, X3D_Vex3D* b) {
 fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_BITS;
 }
+
+/// @todo clean up formatting
 
 #if 0
 
@@ -177,18 +182,22 @@ void x3d_vex3d_int16_print(X3D_Vex3D_int16* v) {
   printf("{%d, %d, %d}\n", v->x, v->y, v->z);
 }
 
+#endif
+
 /**
-* Projects a 3D point onto a render context.
+* Projects a 3D point onto a screen.
 *
 * @param dest - destination vector
 * @param src - source vector
 * @param context - rendering context
 *
 * @return nothing
-* @note If src->z is zero, dest->x and dest->y are set to 0 to prevent division
+* @note If src->z is 0, dest->x and dest->y are set to 0 to prevent division
 *     by 0.
 */
-void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src, X3D_ViewPort* context) {
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src) {
+  const X3D_ScreenManager* screen = x3d_screenmanager_get();
+  
   // To prevent division by zero
   if(src->z == 0) {
     dest->x = 0;
@@ -196,10 +205,11 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src, 
   }
   else {
     // @todo Replace division by src->z with fixed point multiply
-    dest->x = ((int32)src->x * context->scale) / src->z + context->center.x;
-    dest->y = ((int32)src->y * context->scale) / src->z + context->center.y;
+    dest->x = ((int32)src->x * screen->scale) / src->z + screen->center.x;
+    dest->y = ((int32)src->y * screen->scale) / src->z + screen->center.y;
   }
 }
+
 
 /**
 * Rotates a 3D vector around the origin.
@@ -211,7 +221,7 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src, 
 * @return nothing
 * @todo Replace with assembly version
 */
-void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat3x3_fp0x16* mat) {
+void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat3x3* mat) {
   fp0x16* m = mat->data;
   
   X3D_Vex3D_int16 x = (X3D_Vex3D_int16){ m[MAT3x3(0, 0)], m[MAT3x3(1, 0)], m[MAT3x3(2, 0)] };
@@ -222,6 +232,8 @@ void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat
   dest->y = x3d_vex3d_fp0x16_dot(&y, src);
   dest->z = x3d_vex3d_fp0x16_dot(&z, src);
 }
+
+#if 0
 
 // Calculates the cross product of two vectors. This creates a vector that
 // is perpendicular to both vectors

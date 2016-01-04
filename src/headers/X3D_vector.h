@@ -53,3 +53,7 @@ typedef X3D_Vex2D_int16 X3D_Vex2D;
 
 typedef X3D_Vex3D_uint8 X3D_Vex3D_angle256;
 
+struct X3D_Mat3x3_fp0x16;
+
+void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src);
+void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, struct X3D_Mat3x3_fp0x16* mat);
