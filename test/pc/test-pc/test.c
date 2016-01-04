@@ -172,6 +172,60 @@ void freelist_test() {
   x3d_cleanup();
 }
 
+void prism_test(void) {
+  X3D_InitSettings init = {
+    .screen_w = 240,
+    .screen_h = 128,
+    .screen_scale = 3,
+    .fullscreen = X3D_FALSE,
+    .fov = ANG_60
+  };
+  
+  x3d_init(&init);
+  
+  int16 base_v = 3;
+  X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
+  x3d_prism3d_construct(prism, base_v, 100, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  
+  uint16 i, d;
+  
+  for(i = 0; i < base_v * 2; ++i) {
+    prism->v[i].z += 200;
+  }
+  
+  for(i = 0; i < 2; ++i) {
+    for(d = 0; d < base_v; ++d) {
+      printf("{%d, %d, %d}\n", prism->v[i * base_v + d].x,
+        prism->v[i * base_v + d].y, prism->v[i * base_v + d].z);
+    }
+    
+    printf("\n\n");
+  }
+  
+  X3D_Vex2D pv[base_v * 2];
+  
+  for(i = 0; i < base_v * 2; ++i) {
+    x3d_vex3d_int16_project(pv + i, prism->v + i);
+  }
+  
+  x3d_screen_clear(0);
+  
+  for(i = 0; i < base_v; ++i) {
+    int16 next = (i + 1) % base_v;
+    x3d_screen_draw_line(pv[i].x, pv[i].y, pv[next].x, pv[next].y, 31);
+    x3d_screen_draw_line(pv[i + base_v].x, pv[i + base_v].y, pv[next + base_v].x,
+      pv[next + base_v].y, 31);
+    
+    x3d_screen_draw_line(pv[i].x, pv[i].y, pv[i + base_v].x, pv[i + base_v].y, 31);
+  }
+  
+  x3d_screen_flip();
+  
+  SDL_Delay(3000);
+  
+  x3d_cleanup();
+}
+
 typedef struct Test {
   const char* name;
   void (*run)(void);
@@ -193,6 +247,10 @@ int main() {
     {
       "Freelist test",
       freelist_test
+    },
+    {
+      "Prism test",
+      prism_test
     }
   };
   

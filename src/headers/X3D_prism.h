@@ -47,6 +47,8 @@ typedef struct X3D_Prism3D {
 /// @return The size of the prism.
 ///////////////////////////////////////////////////////////////////////////////
 static inline uint16 x3d_prism3d_size(uint16 base_v) {
-  return sizeof(X3D_Prism3D) + base_v * sizeof(X3D_Vex3D);
+  return sizeof(X3D_Prism3D) + 2 * base_v * sizeof(X3D_Vex3D);
 }
+
+void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
 

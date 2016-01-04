@@ -61,7 +61,7 @@ static inline _Bool x3d_addi32_check_overflow(int16 total, ...) {
   
   va_start(list, total);
   
-  while(total > 0) {
+  while(total-- > 0) {
     int32 num = va_arg(list, int32);
     
     // Overflow/underflow can only happen if the signs are the same before

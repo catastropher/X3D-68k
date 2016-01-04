@@ -20,7 +20,7 @@
 #include "X3D_prism.h"
 
 /**
-* Constructs a prism with regular polygons as the base.
+* Constructs a 3D prism with regular polygons as the base.
 *
 * @param s          - pointer to the dest prism
 * @param steps      - number of "steps" i.e. points on the polygon base
@@ -32,7 +32,7 @@
 * @note @ref X3D_Prism is a variable-sized data structure. Make sure s is
 *     at least sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * steps * 2 bytes big!
 */
-void x3d_prism_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
+void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
   ufp8x8 angle = 0;
   ufp8x8 angle_step = 65536L / steps;
   uint16 i;
