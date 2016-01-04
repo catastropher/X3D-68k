@@ -17,6 +17,7 @@
 
 #include "X3D_common.h"
 #include "X3D_prism.h"
+#include "memory/X3D_varsizeallocator.h"
 
 #define X3D_SEGMENT_CACHE_SIZE 32
 
@@ -55,8 +56,11 @@ typedef struct X3D_SegmentCache {
 
 typedef struct X3D_SegmentManager {
   X3D_SegmentCache cache;
+  X3D_VarSizeAllocator alloc;
   
   // Temorary store for segments
   X3D_Segment segments[];
 } X3D_SegmentManager;
+
+X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size);
 

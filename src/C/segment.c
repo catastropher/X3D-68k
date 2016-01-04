@@ -14,16 +14,21 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X3D_common.h"
+#include "X3D_segment.h"
 #include "X3D_enginestate.h"
-
-static X3D_EngineState x3d_global_enginestate;
-X3D_EngineState* x3d_state;
+#include "memory/X3D_varsizeallocator.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Initializes the global engine state.
+/// Initializes the segment manager.
 ///
-X3D_INTERNAL void x3d_enginestate_init(void) {
-  x3d_state = &x3d_global_enginestate;
+/// @param max_segments   - maximum number of segments
+/// @param seg_pool_size  - memory to set aside for allocating segments
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size) {
+  X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
   
-  x3d_segmentmanager_init(10, 2000);
+  x3d_varsizeallocator_init(&seg_manager->alloc, max_segments, seg_pool_size);
 }
+

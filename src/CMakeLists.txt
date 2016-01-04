@@ -35,6 +35,7 @@ add_sources(
   C/memory/varsizeallocator.c
   
   C/enginestate.c
+  C/segment.c
 )
 
 add_subdirectory(C/platform)
