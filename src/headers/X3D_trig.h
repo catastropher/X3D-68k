@@ -17,6 +17,10 @@
 
 #include "X3D_common.h"
 
+
+///< The slope of a vertical line in fp8x8 format (faking infinity)
+#define VERTICAL_LINE_SLOPE INT16_MAX
+
 enum {
   ANG_0 = 0,
   ANG_30 = 21,
@@ -29,6 +33,7 @@ enum {
 };
 
 fp0x16 x3d_sin(angle256 angle);
+fp8x8 x3d_tan(angle256 angle);
 
 #define x3d_cos(_angle) x3d_sin(ANG_90 - (_angle))
 

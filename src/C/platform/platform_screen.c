@@ -18,6 +18,8 @@
 #include "X3D_common.h"
 #include "X3D_init.h"
 #include "X3D_screen.h"
+#include "X3D_enginestate.h"
+#include "X3D_trig.h"
 
 static SDL_Window* window;
 static SDL_Surface* window_surface;
@@ -33,7 +35,19 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, scale=%d)", init->screen_w, init->screen_h, init->screen_scale);
+  screen_w = init->screen_w;
+  screen_h = init->screen_h;
+  screen_scale = init->screen_scale;
+  
+  x3d_state->screen_manager.w = screen_w;
+  x3d_state->screen_manager.h = screen_h;
+  x3d_state->screen_manager.center.x = screen_w / 2;
+  x3d_state->screen_manager.center.y = screen_h / 2;
+  x3d_state->screen_manager.fov = init->fov;
+  x3d_state->screen_manager.scale = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
+  
+  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
+          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale);
   
   window = SDL_CreateWindow(
     "X3D",
@@ -50,9 +64,6 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   }
   
   window_surface = SDL_GetWindowSurface(window);
-  screen_w = init->screen_w;
-  screen_h = init->screen_h;
-  screen_scale = init->screen_scale;
   
   return X3D_TRUE;
   

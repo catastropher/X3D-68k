@@ -47,3 +47,28 @@ static inline fp0x16 x3d_fp0x16_mul(fp0x16 a, fp0x16 b) {
   return ((fp0x32)a * b) >> 15;
 }
 
+/// @todo clean up the formatting
+/**
+* Divides an fp0x16 by an fp0x16.
+*
+* @param n - numerator
+* @param d - denominator
+*
+* @return a / b as an fp8x8
+*/
+static inline fp8x8 div_fp0x16_by_fp0x16(fp0x16 n, fp0x16 d) {
+  return ((int32)n << 8) / d;
+}
+
+/**
+* Divides an int16 by an fp0x16.
+*
+* @param n - numerator
+* @param d - denominator
+*
+* @return a / b as an int16
+*/
+static inline int16 div_int16_by_fp0x16(int16 n, fp0x16 d) {
+  return ((int32)n << 8) / d;
+}
+

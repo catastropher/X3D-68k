@@ -17,15 +17,21 @@
 
 #include "X3D_common.h"
 #include "X3D_segment.h"
+#include "X3D_screen.h"
 
 typedef struct X3D_EngineState {
   X3D_SegmentManager segment_manager;
+  X3D_ScreenManager screen_manager;
 } X3D_EngineState;
 
 extern X3D_EngineState* x3d_state;
 
-static inline X3D_SegmentManager* x3d_segmentmanager_get() {
+static inline X3D_SegmentManager* x3d_segmentmanager_get(void) {
   return &x3d_state->segment_manager;
+}
+
+static inline const X3D_ScreenManager* x3d_screenmanager_get(void) {
+  return &x3d_state->screen_manager;
 }
 
 X3D_INTERNAL void x3d_enginestate_init(void);

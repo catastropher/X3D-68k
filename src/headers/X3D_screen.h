@@ -16,6 +16,17 @@
 #pragma once
 
 #include "X3D_common.h"
+#include "X3D_vector.h"
+
+typedef struct X3D_ScreenManager {
+  uint16 w;
+  uint16 h;
+  angle256 fov;
+  int16 scale;
+  
+  X3D_Vex2D center;
+  X3D_Vex2D pos;
+} X3D_ScreenManager;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Represents a color. This is platform-dependent and the meaning of the
@@ -99,11 +110,5 @@ X3D_PLATFORM X3D_Color x3d_rgb_to_color(uint8 r, uint8 g, uint8 b);
 ///////////////////////////////////////////////////////////////////////////////
 X3D_PLATFORM void x3d_color_to_rgb(X3D_Color color, uint8* r, uint8* g,
     uint8* b);
-
-
-
-
-
-
 
 

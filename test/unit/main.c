@@ -32,7 +32,8 @@ int main(int argc, char* argv[]) {
     .screen_w = 256,
     .screen_h = 256,
     .screen_scale = 2,
-    .fullscreen = X3D_FALSE
+    .fullscreen = X3D_FALSE,
+    .fov = ANG_60
   };
   
   x3d_init(&init);

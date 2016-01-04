@@ -22,6 +22,7 @@ typedef struct X3D_InitSettings {
   int16 screen_h;         ///< Height of the screen
   int16 screen_scale;     ///< Screen scaling factor
   _Bool fullscreen;       ///< Fullscreen
+  angle256 fov;           ///< Camera field-of-view angle
 } X3D_InitSettings;
 
 

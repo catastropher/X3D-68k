@@ -38,8 +38,18 @@ typedef struct X3D_Vex3D_uint8 {
   int16 z;
 } X3D_Vex3D_uint8;
 
+///////////////////////////////////////////////////////////////////////////////
+/// A 2D vector with int16 components.
+///////////////////////////////////////////////////////////////////////////////
+typedef struct X3D_Vex2D_int16 {
+  int16 x;
+  int16 y;
+} X3D_Vex2D_int16;
+
 typedef X3D_Vex3D_int16 X3D_Vex3D;
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp0x16;
+
+typedef X3D_Vex2D_int16 X3D_Vex2D;
 
 typedef X3D_Vex3D_uint8 X3D_Vex3D_angle256;
 

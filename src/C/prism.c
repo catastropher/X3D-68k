@@ -16,6 +16,8 @@
 #include "X3D_common.h"
 #include "X3D_matrix.h"
 
+#if 0
+
 /**
 * Constructs a prism with regular polygons as the base.
 *
@@ -64,4 +66,6 @@ void x3d_prism_construct(X3D_Prism* s, uint16 steps, uint16 r, int16 h, Vex3D_an
 
   s->draw_edges = 0xFFFFFFFF;
 }
+
+#endif
 

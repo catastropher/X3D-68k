@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X3D_common.h"
+#include "X3D_trig.h"
 
 fp0x16 x3d_sin(angle256 angle) {
   /// A table of fp0x16 sin values for angle256
@@ -48,3 +49,22 @@ fp0x16 x3d_sin(angle256 angle) {
   
   return sintab[(uint16)angle];
 }
+
+
+/// @todo fix formatting
+/**
+* Calculates the tangent of an angle.
+*
+* @param angle - the angle as an angle256
+*
+* @return The tangent of the angle in fp8x8 format
+* @note If angle is ANG_90 or ANG_270, this returns @ref VERTICAL_LINE_SLOPE
+*/
+fp8x8 x3d_tan(angle256 angle) {
+  // Prevent division by 0
+  if(angle == ANG_90 || angle == ANG_270)
+    return VERTICAL_LINE_SLOPE;
+
+  return div_fp0x16_by_fp0x16(x3d_sin(angle), x3d_cos(angle));
+}
+
