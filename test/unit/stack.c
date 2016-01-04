@@ -51,7 +51,7 @@ void test_stack() {
   // These should crash
   
   // Stack overflow
-#if 1
+#if 0
   {
     X3D_Stack stack;
     char mem[1024];

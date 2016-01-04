@@ -7,6 +7,7 @@ include_directories($ENV{X3D}/src/headers)
 add_executable(UnitTests
 	main.c
 	stack.c
+	varsizeallocator.c
 )
 
 set_target_properties(UnitTests PROPERTIES OUTPUT_NAME unit)

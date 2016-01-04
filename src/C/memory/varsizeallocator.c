@@ -57,7 +57,16 @@ void* x3d_varsizeallocator_alloc(X3D_VarSizeAllocator* alloc, uint16 size, uint1
   return obj;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Gets the address of an object allocated with a variable-sized object
+///   allocator.
+///
+/// @param alloc  - variable-sized allocator
+/// @param id     - id of the object to get the address for
+///
+/// @return The address of the object.
+///////////////////////////////////////////////////////////////////////////////
 void* x3d_varsizeallocator_get(X3D_VarSizeAllocator* alloc, uint16 id) {
-  
+  return alloc->alloc_pool.base + x3d_list_uint16_get(&alloc->alloc_offset, id);
 }
 
