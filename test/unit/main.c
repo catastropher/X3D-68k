@@ -29,9 +29,9 @@ void run_tests() {
 
 int main(int argc, char* argv[]) {
   X3D_InitSettings init = {
-    .screen_w = 256,
-    .screen_h = 256,
-    .screen_scale = 2,
+    .screen_w = 240,
+    .screen_h = 128,
+    .screen_scale = 3,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
   };
