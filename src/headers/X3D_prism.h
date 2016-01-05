@@ -15,8 +15,11 @@
 
 #pragma once
 
+#include <string.h>
+
 #include "X3D_common.h"
 #include "X3D_vector.h"
+#include "X3D_assert.h"
 
 enum {
   X3D_BASE_A = 0,   /// First base of a prism
@@ -49,6 +52,19 @@ typedef struct X3D_Prism3D {
 static inline uint16 x3d_prism3d_size(uint16 base_v) {
   return sizeof(X3D_Prism3D) + 2 * base_v * sizeof(X3D_Vex3D);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// Copies a 3D prism.
+///
+/// @param dest - dest prism
+/// @param src  - src prism
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+static inline void x3d_prism3d_copy(X3D_Prism3D* dest, X3D_Prism3D* src) {
+  memcpy(dest, src, x3d_prism3d_size(src->base_v));
+}
+
 
 void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
 

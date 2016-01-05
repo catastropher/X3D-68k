@@ -20,10 +20,13 @@
 #include "memory/X3D_varsizeallocator.h"
 #include "X3D_prism.h"
 
+#define X3D_SEGMENT_NONE 0xFFFF
+
 #define X3D_SEGMENT_CACHE_SIZE 32
 
 typedef enum {
-  X3D_SEGMENT_IN_CACHE = 1
+  X3D_SEGMENT_IN_CACHE = (1 << 15),
+  X3D_SEGMENT_UNCOMPRESSED = (1 << 14)
 } X3D_SegmentFlags;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,6 +43,16 @@ typedef struct X3D_Segment {
   
   X3D_Prism3D prism;
 } X3D_Segment;
+
+typedef struct X3D_SegmentBase {
+  uint16 flags;
+  uint16 id;
+} X3D_SegmentBase;
+
+typedef struct X3D_UncompressedSegment {
+  X3D_SegmentBase base;
+  X3D_Prism3D prism;
+} X3D_UncompressedSegment;
 
 typedef struct X3D_SegmentCacheEntry {
   uint8 prev;
@@ -62,6 +75,20 @@ typedef struct X3D_SegmentManager {
 } X3D_SegmentManager;
 
 X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size);
-uint16 x3d_segmentmanager_add(X3D_Prism3D* prism);
+X3D_SegmentBase* x3d_segmentmanager_add(uint16 size);
 X3D_INTERNAL X3D_Segment* x3d_segmentmanager_get_internal(uint16 id);
+
+typedef uint16 X3D_SegFaceID;
+
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the size needed to store an uncompressed segment with the
+///   given number of vertices in one of the prism's bases.
+///
+/// @param base_v - number of vertices in the prism base
+///
+/// @return Size in bytes.
+///////////////////////////////////////////////////////////////////////////////
+static inline uint16 x3d_uncompressedsegment_size(uint16 base_v) {
+  return sizeof(X3D_UncompressedSegment) + 2 * base_v * sizeof(X3D_Vex3D);
+}
 

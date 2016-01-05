@@ -174,8 +174,8 @@ void freelist_test() {
 
 void prism_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 640,
-    .screen_h = 480,
+    .screen_w = 1000,
+    .screen_h = 1000,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
@@ -224,12 +224,14 @@ void prism_test(void) {
       x3d_screen_draw_line(pv[i + base_v].x, pv[i + base_v].y, pv[next + base_v].x,
         pv[next + base_v].y, 31);
       
-      x3d_screen_draw_line(pv[i].x, pv[i].y, pv[i + base_v].x, pv[i + base_v].y, 31);
+      X3D_Color color = x3d_rgb_to_color(0, 128, 0);
+      
+      x3d_screen_draw_line(pv[i].x, pv[i].y, pv[i + base_v].x, pv[i + base_v].y, color);
     }
     
     x3d_screen_flip();
   
-    //SDL_Delay(20);
+    SDL_Delay(20);
     angle.y++;
     angle.x++;
   } while(!x3d_key_down(X3D_KEY_0));

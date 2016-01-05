@@ -35,18 +35,14 @@ X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_s
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Creates a new segment.
-///
-/// @param prism - a 3D prism that describes the geometry of the segment.
-///
-/// @return The ID of the segment.
 ///////////////////////////////////////////////////////////////////////////////
-uint16 x3d_segmentmanager_add(X3D_Prism3D* prism) {
+X3D_SegmentBase* x3d_segmentmanager_add(uint16 size) {
   X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
   uint16 id;
+  X3D_SegmentBase* seg = x3d_varsizeallocator_alloc(&seg_manager->alloc, size, &id);
   
-  x3d_varsizeallocator_alloc(&seg_manager->alloc, x3d_prism3d_size(prism->base_v), &id);
-  
-  return id;
+  seg->id = id;
+  return seg;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

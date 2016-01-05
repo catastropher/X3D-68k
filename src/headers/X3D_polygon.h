@@ -13,25 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "X3D_common.h"
+#include "X3D_vector.h"
+
 #pragma once
 
-#include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
-
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
-#include "memory/X3D_list.h"
-#include "memory/X3D_varsizeallocator.h"
-
-#include "X3D_enginestate.h"
-#include "X3D_prism.h"
-#include "X3D_segment.h"
-#include "X3D_matrix.h"
-#include "X3D_trig.h"
-#include "X3D_object.h"
-#include "X3D_camera.h"
+typedef struct X3D_Polygon3D {
+  uint16 total_v;
+  X3D_Vex3D v[];
+} X3D_Polygon3D;
 

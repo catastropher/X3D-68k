@@ -16,22 +16,37 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
-
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
-#include "memory/X3D_list.h"
-#include "memory/X3D_varsizeallocator.h"
-
-#include "X3D_enginestate.h"
-#include "X3D_prism.h"
-#include "X3D_segment.h"
+#include "X3D_vector.h"
 #include "X3D_matrix.h"
-#include "X3D_trig.h"
-#include "X3D_object.h"
-#include "X3D_camera.h"
+
+typedef enum {
+  X3D_OBJECT_EVENT_CREATE = 0,
+  X3D_OBJECT_EVENT_DESTROY = 1,
+  
+} X3D_ObjectEvents;
+
+typedef struct X3D_ObjectEvent {
+  uint8 type;
+} X3D_ObjectEvent;
+
+struct X3D_ObjectBase;
+
+typedef struct X3D_ObjectType {
+  void (*event_handler)(struct X3D_ObjectBase* object, X3D_ObjectEvent event);
+} X3D_ObjectType;
+
+typedef struct X3D_ObjectBase {
+  X3D_Vex3D_fp16x8 pos;
+  X3D_ObjectType* type;
+} X3D_ObjectBase;
+
+typedef struct X3D_StaticObjectBase {
+  X3D_ObjectBase base;
+} X3D_StaticObjectBase;
+
+typedef struct X3D_DynamicObjectBase {
+  X3D_ObjectBase base;
+  X3D_Vex3D_fp8x8 velocity;
+  X3D_Mat3x3 mat;
+} X3D_DynamicObjectBase;
 
