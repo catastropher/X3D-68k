@@ -55,13 +55,15 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     SDL_WINDOWPOS_UNDEFINED,
     init->screen_w * init->screen_scale,
     init->screen_h * init->screen_scale,
-    SDL_WINDOW_OPENGL
+    SDL_WINDOW_OPENGL | (init->fullscreen ? SDL_WINDOW_FULLSCREEN : 0)
   );
   
   if(!window) {
     x3d_log(X3D_ERROR, "Failed to create window");
     return X3D_FALSE;
   }
+  
+  x3d_log(X3D_INFO, "Window created");
   
   window_surface = SDL_GetWindowSurface(window);
   
@@ -97,6 +99,9 @@ void x3d_screen_clear(X3D_Color color) {
 
 void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
   uint32 c = map_color_to_uint32(color);
+  
+  if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
+    return;
   
   for(int32 i = 0; i < screen_scale; ++i) {
     for(int32 d = 0; d < screen_scale; ++d) {
