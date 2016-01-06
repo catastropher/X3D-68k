@@ -42,6 +42,8 @@ X3D_SegmentBase* x3d_segmentmanager_add(uint16 size) {
   X3D_SegmentBase* seg = x3d_varsizeallocator_alloc(&seg_manager->alloc, size, &id);
   
   seg->id = id;
+  seg->flags = 0;
+  
   return seg;
 }
 

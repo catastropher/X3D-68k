@@ -65,6 +65,9 @@ static inline void x3d_prism3d_copy(X3D_Prism3D* dest, X3D_Prism3D* src) {
   memcpy(dest, src, x3d_prism3d_size(src->base_v));
 }
 
+static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
+  return base_v + 2;
+}
 
 void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
 

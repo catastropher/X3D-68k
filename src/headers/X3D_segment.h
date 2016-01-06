@@ -21,8 +21,11 @@
 #include "X3D_prism.h"
 
 #define X3D_SEGMENT_NONE 0xFFFF
+#define X3D_FACE_NONE 0xFFFF
 
 #define X3D_SEGMENT_CACHE_SIZE 32
+
+typedef uint16 X3D_SegFaceID;
 
 typedef enum {
   X3D_SEGMENT_IN_CACHE = (1 << 15),
@@ -44,6 +47,11 @@ typedef struct X3D_Segment {
   X3D_Prism3D prism;
 } X3D_Segment;
 
+typedef struct X3D_UncompressedSegmentFace {
+  X3D_SegFaceID portal_seg_face;  ///< Face ID that the portal on the face is
+                                  /// connected to
+} X3D_UncompressedSegmentFace;
+
 typedef struct X3D_SegmentBase {
   uint16 flags;
   uint16 id;
@@ -52,6 +60,7 @@ typedef struct X3D_SegmentBase {
 typedef struct X3D_UncompressedSegment {
   X3D_SegmentBase base;
   X3D_Prism3D prism;
+  uint16 face_offset;
 } X3D_UncompressedSegment;
 
 typedef struct X3D_SegmentCacheEntry {
@@ -78,7 +87,9 @@ X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_s
 X3D_SegmentBase* x3d_segmentmanager_add(uint16 size);
 X3D_INTERNAL X3D_Segment* x3d_segmentmanager_get_internal(uint16 id);
 
-typedef uint16 X3D_SegFaceID;
+static inline uint16 x3d_uncompressedsegment_face_offset(uint16 base_v) {
+  return sizeof(X3D_UncompressedSegment) + 2 * base_v * sizeof(X3D_Vex3D);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the size needed to store an uncompressed segment with the
@@ -89,6 +100,12 @@ typedef uint16 X3D_SegFaceID;
 /// @return Size in bytes.
 ///////////////////////////////////////////////////////////////////////////////
 static inline uint16 x3d_uncompressedsegment_size(uint16 base_v) {
-  return sizeof(X3D_UncompressedSegment) + 2 * base_v * sizeof(X3D_Vex3D);
+  return x3d_uncompressedsegment_face_offset(base_v) +
+    x3d_prism3d_total_f(base_v) * sizeof(X3D_UncompressedSegmentFace);
 }
+
+static inline X3D_UncompressedSegmentFace* x3d_uncompressedsegment_get_faces(X3D_UncompressedSegment* seg) {
+  return ((void *)seg) + seg->face_offset;
+}
+
 

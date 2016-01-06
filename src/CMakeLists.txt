@@ -36,6 +36,7 @@ add_sources(
   
   C/enginestate.c
   C/segment.c
+  C/segmentbuilder.c
   C/trig.c
   C/matrix.c
   C/prism.c
