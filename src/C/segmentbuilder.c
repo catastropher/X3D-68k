@@ -18,7 +18,16 @@
 #include "X3D_enginestate.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D* prism) {  
+/// Creates a new uncompressed segment that can be edited and joined with
+///   other segments.
+///
+/// @param prism - prism that describes the geometry of the segment
+///
+/// @return A pointer to the uncompressed segment.
+/// @note All faces of the segment are set to not be connected to anything.
+/// @note For internal use only.
+///////////////////////////////////////////////////////////////////////////////
+X3D_INTERNAL X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D* prism) {  
   X3D_UncompressedSegment* seg = (X3D_UncompressedSegment*)x3d_segmentmanager_add(
     x3d_uncompressedsegment_size(prism->base_v));
   
@@ -37,6 +46,7 @@ X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D
   }
   
   seg->base.flags = X3D_SEGMENT_UNCOMPRESSED;
+  seg->base.base_v = prism->base_v;
   
   return seg;
 }
@@ -44,6 +54,10 @@ X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D
 ///////////////////////////////////////////////////////////////////////////////
 /// Creates a new uncompressed segment that is not connected to anything else.
 ///
+/// @param prism  - the prism that describes the geometry of the segment
+///
+/// @return The id of the uncompressed segment.
+///////////////////////////////////////////////////////////////////////////////
 uint16 x3d_segmentbuilder_add_unconnected_segment(X3D_Prism3D* prism) {
   return x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
 }

@@ -30,6 +30,8 @@
 X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size) {
   X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
   
+  x3d_log(X3D_INFO, "Segment manager init");
+  
   x3d_varsizeallocator_init(&seg_manager->alloc, max_segments, seg_pool_size);
 }
 
@@ -54,7 +56,7 @@ X3D_SegmentBase* x3d_segmentmanager_add(uint16 size) {
 ///
 /// @return The addess of the interal segment representation.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_INTERNAL X3D_Segment* x3d_segmentmanager_get_internal(uint16 id) {
+X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id) {
   X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
   
   return x3d_varsizeallocator_get(&seg_manager->alloc, id);

@@ -55,6 +55,7 @@ typedef struct X3D_UncompressedSegmentFace {
 typedef struct X3D_SegmentBase {
   uint16 flags;
   uint16 id;
+  uint16 base_v;
 } X3D_SegmentBase;
 
 typedef struct X3D_UncompressedSegment {
@@ -85,7 +86,7 @@ typedef struct X3D_SegmentManager {
 
 X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size);
 X3D_SegmentBase* x3d_segmentmanager_add(uint16 size);
-X3D_INTERNAL X3D_Segment* x3d_segmentmanager_get_internal(uint16 id);
+X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id);
 
 static inline uint16 x3d_uncompressedsegment_face_offset(uint16 base_v) {
   return sizeof(X3D_UncompressedSegment) + 2 * base_v * sizeof(X3D_Vex3D);

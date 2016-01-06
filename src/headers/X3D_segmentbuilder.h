@@ -22,3 +22,5 @@ typedef struct X3D_SegmentBuilder {
   
 } X3D_SegmentBuilder;
 
+X3D_INTERNAL X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D* prism);
+

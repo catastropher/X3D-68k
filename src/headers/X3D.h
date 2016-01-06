@@ -30,8 +30,10 @@
 #include "X3D_enginestate.h"
 #include "X3D_prism.h"
 #include "X3D_segment.h"
+#include "X3D_segmentbuilder.h"
 #include "X3D_matrix.h"
 #include "X3D_trig.h"
 #include "X3D_object.h"
 #include "X3D_camera.h"
+#include "X3D_vector.h"
 

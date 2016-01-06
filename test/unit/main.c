@@ -21,10 +21,13 @@
 
 void test_stack();
 void test_varsizeallocator();
+void test_segment();
 
 void run_tests() {
+  x3d_log(X3D_INFO, "Running tests");
   test_stack();
   test_varsizeallocator();
+  test_segment();
 }
 
 int main(int argc, char* argv[]) {

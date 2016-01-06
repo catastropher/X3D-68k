@@ -8,6 +8,7 @@ add_executable(UnitTests
 	main.c
 	stack.c
 	varsizeallocator.c
+	segment.c
 )
 
 set_target_properties(UnitTests PROPERTIES OUTPUT_NAME unit)
