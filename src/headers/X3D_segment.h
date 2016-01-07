@@ -19,11 +19,14 @@
 #include "X3D_prism.h"
 #include "memory/X3D_varsizeallocator.h"
 #include "X3D_prism.h"
+#include "X3D_plane.h"
 
 #define X3D_SEGMENT_NONE 0xFFFF
 #define X3D_FACE_NONE 0xFFFF
 
 #define X3D_SEGMENT_CACHE_SIZE 32
+
+#define X3D_SEGMENT_CACHE_NONE 255
 
 typedef uint16 X3D_SegFaceID;
 
@@ -50,6 +53,8 @@ typedef struct X3D_Segment {
 typedef struct X3D_UncompressedSegmentFace {
   X3D_SegFaceID portal_seg_face;  ///< Face ID that the portal on the face is
                                   /// connected to
+  X3D_Vex3D_fp0x16 normal;
+  X3D_Plane plane;
 } X3D_UncompressedSegmentFace;
 
 typedef struct X3D_SegmentBase {
@@ -67,7 +72,7 @@ typedef struct X3D_UncompressedSegment {
 typedef struct X3D_SegmentCacheEntry {
   uint8 prev;
   uint8 next;
-  X3D_Prism3D prism;
+  X3D_UncompressedSegment seg;
 } X3D_SegmentCacheEntry;
 
 typedef struct X3D_SegmentCache {
@@ -87,6 +92,7 @@ typedef struct X3D_SegmentManager {
 X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size);
 X3D_SegmentBase* x3d_segmentmanager_add(uint16 size);
 X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id);
+X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id);
 
 static inline uint16 x3d_uncompressedsegment_face_offset(uint16 base_v) {
   return sizeof(X3D_UncompressedSegment) + 2 * base_v * sizeof(X3D_Vex3D);
@@ -108,5 +114,4 @@ static inline uint16 x3d_uncompressedsegment_size(uint16 base_v) {
 static inline X3D_UncompressedSegmentFace* x3d_uncompressedsegment_get_faces(X3D_UncompressedSegment* seg) {
   return ((void *)seg) + seg->face_offset;
 }
-
 

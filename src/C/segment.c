@@ -62,3 +62,54 @@ X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id) {
   return x3d_varsizeallocator_get(&seg_manager->alloc, id);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+/// Decompresses a segment and loads it into cache, if it's not already there.
+///
+/// @param id - id of the segment to load
+///
+/// @return The address of the uncompressed segment.
+/// @note This address is only valid while the segment remains in cache!
+/// @todo Implemented some sort of locking mechinism?
+/// @todo Implement LRU strategy for deciding which block should be replaced.
+///////////////////////////////////////////////////////////////////////////////
+X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
+  X3D_SegmentBase* seg = x3d_segmentmanager_get_internal(id);
+  X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
+  
+  // Currently only support uncompressed segments
+  x3d_assert(seg->flags & X3D_SEGMENT_UNCOMPRESSED);
+  
+  // The segment is already loaded into the cache
+  if(seg->flags & X3D_SEGMENT_IN_CACHE) {
+    uint16 cache_entry = seg->flags & (X3D_SEGMENT_CACHE_SIZE - 1);
+    
+    X3D_SegmentCacheEntry* entry = &seg_manager->cache.entry[cache_entry];
+    
+    /// @todo Move the segment back to the tail of the queue (for the LRU
+    ///   strategy).
+    return &entry->seg;
+  }
+  
+  uint16 i;
+  for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
+    if(seg_manager->cache.entry[i].seg.base.id == X3D_SEGMENT_NONE) {
+      seg_manager->cache.entry[i].seg = *((X3D_UncompressedSegment *)seg);
+      return &seg_manager->cache.entry[i].seg;
+    }
+  }
+  
+  x3d_assert(!"Out of segments!");
+  return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+

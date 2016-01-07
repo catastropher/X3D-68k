@@ -70,3 +70,4 @@ struct X3D_Mat3x3_fp0x16;
 void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src);
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, struct X3D_Mat3x3_fp0x16* mat);
 
+typedef X3D_Vex3D_fp0x16 X3D_Normal3D;
