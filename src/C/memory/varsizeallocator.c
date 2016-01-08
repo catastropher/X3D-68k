@@ -67,6 +67,8 @@ void* x3d_varsizeallocator_alloc(X3D_VarSizeAllocator* alloc, uint16 size, uint1
 /// @return The address of the object.
 ///////////////////////////////////////////////////////////////////////////////
 void* x3d_varsizeallocator_get(X3D_VarSizeAllocator* alloc, uint16 id) {
+  x3d_assert(id < alloc->alloc_offset.size);
+  
   return alloc->alloc_pool.base + x3d_list_uint16_get(&alloc->alloc_offset, id);
 }
 

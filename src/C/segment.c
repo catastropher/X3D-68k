@@ -33,6 +33,13 @@ X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_s
   x3d_log(X3D_INFO, "Segment manager init");
   
   x3d_varsizeallocator_init(&seg_manager->alloc, max_segments, seg_pool_size);
+  
+  // Clear the cache
+  uint16 i;
+  
+  for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
+    seg_manager->cache.entry[i].seg.base.id = X3D_SEGMENT_NONE;
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,6 +102,11 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
   for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
     if(seg_manager->cache.entry[i].seg.base.id == X3D_SEGMENT_NONE) {
       seg_manager->cache.entry[i].seg = *((X3D_UncompressedSegment *)seg);
+      seg->flags |= X3D_SEGMENT_IN_CACHE | i;
+      
+      x3d_log(X3D_INFO, "Moved segment %d into cache (entry %d)", id, i);
+      
+      
       return &seg_manager->cache.entry[i].seg;
     }
   }

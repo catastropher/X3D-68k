@@ -33,5 +33,11 @@ void test_segment(void) {
   
   x3d_assert(total_f == 10);
   x3d_assert(face[9].portal_seg_face == X3D_FACE_NONE);
+  
+  x3d_segmentmanager_load(0);
+  x3d_segmentmanager_load(0);
+
+  
+  
 }
 
