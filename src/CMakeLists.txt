@@ -41,6 +41,9 @@ add_sources(
   C/matrix.c
   C/prism.c
   C/render.c
+  
+  C/plane.c
+  C/fastsqrt.c
 )
 
 add_subdirectory(C/platform)

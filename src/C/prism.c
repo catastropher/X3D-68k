@@ -18,6 +18,7 @@
 #include "X3D_trig.h"
 #include "X3D_vector.h"
 #include "X3D_prism.h"
+#include "X3D_polygon.h"
 
 /**
 * Constructs a 3D prism with regular polygons as the base.
@@ -63,4 +64,46 @@ void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_
     s->v[i] = rot;
   }
 }
+
+/// @todo Document.
+void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest) {
+  uint16 i;
+  
+  if(face <= X3D_BASE_B) {
+    // One of the prism bases
+    X3D_Vex3D* v;
+    int16 dir;
+    
+    dest->total_v = prism->base_v;
+    
+    if(face == X3D_BASE_A) {
+      v = prism->v;
+      dir = 1;
+    }
+    else {
+      v = prism->v + prism->base_v * 2 - 1;
+      dir = -1;
+    }
+    
+    uint16 i;
+    for(i = 0; i < prism->base_v; ++i) {
+      dest->v[i] = *v;
+      v += dir;
+    }
+  }
+  else {
+    // One of the sides
+    
+  }
+}
+
+
+
+
+
+
+
+
+
+
 

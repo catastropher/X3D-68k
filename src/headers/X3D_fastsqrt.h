@@ -16,11 +16,6 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_vector.h"
 
-// AX + BY + CZ - D = 0
-typedef struct X3D_Plane {
-  X3D_Normal3D normal;
-  int16 d;
-} X3D_Plane;
+uint32 x3d_fastsqrt(uint32 x);
 

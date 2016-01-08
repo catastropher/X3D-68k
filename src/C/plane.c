@@ -13,14 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "X3D_common.h"
 #include "X3D_vector.h"
+#include "X3D_plane.h"
 
-// AX + BY + CZ - D = 0
-typedef struct X3D_Plane {
-  X3D_Normal3D normal;
-  int16 d;
-} X3D_Plane;
+/**
+* Constructs a plane from 3 points on the plane.
+*
+* @param p - plane
+* @param a - first point
+* @param b - middle point
+* @param c - end point
+*
+* @return nothing
+* @todo Fix formatting.
+*/
+void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c) {
+  // Calculate the normal of the plane
+  X3D_Vex3D v1 = x3d_vex3d_sub(a, b);
+  X3D_Vex3D v2 = x3d_vex3d_sub(c, b);
+
+  x3d_vex3d_fp0x16_cross(&p->normal, &v1, &v2);
+
+  // D = (AX + BY + CZ)
+  p->d = x3d_vex3d_int16_dot(&p->normal, a) >> X3D_NORMAL_BITS;
+}
 

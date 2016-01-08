@@ -20,6 +20,7 @@
 #include "X3D_common.h"
 #include "X3D_vector.h"
 #include "X3D_assert.h"
+#include "X3D_polygon.h"
 
 enum {
   X3D_BASE_A = 0,   /// First base of a prism
@@ -70,4 +71,5 @@ static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
 }
 
 void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
+void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
 
