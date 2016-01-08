@@ -190,44 +190,24 @@ void prism_test(void) {
   
   x3d_key_map_pc(X3D_KEY_0, SDLK_ESCAPE);
   
+  X3D_CameraObject cam = {
+    .base = {
+      .base = {
+        .pos = { 0, 0, (-200L) << 8 }
+      }
+    }
+  };
+  
+  X3D_Vex3D_angle256 cam_angle = { 0, 0, 0 };
+  x3d_mat3x3_construct(&cam.base.mat, &cam_angle);
+  
   do {
     x3d_read_keys();
     x3d_prism3d_construct(prism, base_v, 100, 50, angle);
     
-    uint16 i, d;
-    
-    for(i = 0; i < base_v * 2; ++i) {
-      prism->v[i].z += 200;
-    }
-    
-#if 0
-    for(i = 0; i < 2; ++i) {
-      for(d = 0; d < base_v; ++d) {
-        printf("{%d, %d, %d}\n", prism->v[i * base_v + d].x,
-          prism->v[i * base_v + d].y, prism->v[i * base_v + d].z);
-      }      
-      printf("\n\n");
-    }
-#endif
-    
-    X3D_Vex2D pv[base_v * 2];
-    
-    for(i = 0; i < base_v * 2; ++i) {
-      x3d_vex3d_int16_project(pv + i, prism->v + i);
-    }
-    
     x3d_screen_clear(0);
     
-    for(i = 0; i < base_v; ++i) {
-      int16 next = (i + 1) % base_v;
-      x3d_screen_draw_line(pv[i].x, pv[i].y, pv[next].x, pv[next].y, 31);
-      x3d_screen_draw_line(pv[i + base_v].x, pv[i + base_v].y, pv[next + base_v].x,
-        pv[next + base_v].y, 31);
-      
-      X3D_Color color = x3d_rgb_to_color(0, 128, 0);
-      
-      x3d_screen_draw_line(pv[i].x, pv[i].y, pv[i + base_v].x, pv[i + base_v].y, color);
-    }
+    x3d_prism3d_render(prism, &cam, 31);
     
     x3d_screen_flip();
   
