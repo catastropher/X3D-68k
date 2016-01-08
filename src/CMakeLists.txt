@@ -44,6 +44,7 @@ add_sources(
   
   C/plane.c
   C/fastsqrt.c
+  C/polygon.c
 )
 
 add_subdirectory(C/platform)

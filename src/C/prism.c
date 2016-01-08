@@ -67,8 +67,6 @@ void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_
 
 /// @todo Document.
 void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest) {
-  uint16 i;
-  
   if(face <= X3D_BASE_B) {
     // One of the prism bases
     X3D_Vex3D* v;
@@ -93,17 +91,15 @@ void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest) 
   }
   else {
     // One of the sides
+    dest->total_v = 4;
     
+    uint16 f = face - 2;
+    uint16 next = (f + 1 < prism->base_v ? f + 1 : 0);
+    
+    dest->v[0] = prism->v[f];
+    dest->v[1] = prism->v[next];
+    dest->v[2] = prism->v[next + prism->base_v];
+    dest->v[3] = prism->v[f + prism->base_v];
   }
 }
-
-
-
-
-
-
-
-
-
-
 

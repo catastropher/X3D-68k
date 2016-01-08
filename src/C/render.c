@@ -68,3 +68,41 @@ void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color 
     );
   }
 }
+
+void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color) {
+  X3D_Vex2D v[poly->total_v];
+  uint16 i;
+  
+  X3D_Vex3D cam_pos;
+  x3d_object_pos(object, &cam_pos);
+  
+  for(i = 0; i < poly->total_v; ++i) {
+    X3D_Vex3D translate = {
+      poly->v[i].x - cam_pos.x,
+      poly->v[i].y - cam_pos.y,
+      poly->v[i].z - cam_pos.z
+    };
+    
+    X3D_Vex3D rot;
+    x3d_vex3d_int16_rotate(&rot, &translate, &object->base.mat);
+    x3d_vex3d_int16_project(v + i, &rot);
+  }
+  
+  for(i = 0; i < poly->total_v; ++i) {
+    uint16 next = (i != poly->total_v - 1 ? i + 1 : 0);
+    
+    // BASE_A
+    x3d_screen_draw_line(
+      v[i].x,
+      v[i].y,
+      v[next].x,
+      v[next].y,
+      color
+    );
+  }
+}
+
+void x3d_segment_render(uint16 id) {
+  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
+}
+

@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <stdio.h>
+
 #include "X3D_common.h"
 #include "X3D_vector.h"
 #include "X3D_plane.h"
@@ -37,5 +39,10 @@ void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X
 
   // D = (AX + BY + CZ)
   p->d = x3d_vex3d_int16_dot(&p->normal, a) >> X3D_NORMAL_BITS;
+}
+
+void x3d_plane_print(X3D_Plane* p) {
+  printf("X3D_Plane\n\tNormal: {%d, %d, %d}\n\tD: %d\n",
+    p->normal.x, p->normal.y, p->normal.z, p->d);
 }
 

@@ -193,7 +193,8 @@ void prism_test(void) {
     KEY_W = X3D_KEY_1,
     KEY_S = X3D_KEY_2,
     KEY_A = X3D_KEY_3,
-    KEY_D = X3D_KEY_4
+    KEY_D = X3D_KEY_4,
+    KEY_ENTER = X3D_KEY_5
   };
   
   x3d_key_map_pc(KEY_QUIT, SDLK_ESCAPE);
@@ -201,6 +202,8 @@ void prism_test(void) {
   x3d_key_map_pc(KEY_A, SDLK_a);
   x3d_key_map_pc(KEY_S, SDLK_s);
   x3d_key_map_pc(KEY_D, SDLK_d);
+  x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
+  
   
   X3D_CameraObject cam = {
     .base = {
@@ -234,10 +237,48 @@ void prism_test(void) {
     else if(x3d_key_down(KEY_D)) {
       cam.base.base.pos.x += 4L << 8;
     }
+    
+    if(x3d_key_down(KEY_ENTER)) {
+      X3D_Polygon3D* poly = alloca(x3d_polygon3d_size(base_v));
+      x3d_prism3d_get_face(prism, X3D_BASE_A, poly);
+      x3d_polygon3d_print(poly);
+
+      X3D_Plane plane;
+      x3d_plane_construct(&plane, poly->v, poly->v + 1, poly->v + 2);
+      x3d_plane_print(&plane);
+      
+      x3d_prism3d_get_face(prism, X3D_BASE_B, poly);
+      x3d_polygon3d_print(poly);
+      
+      x3d_plane_construct(&plane, poly->v, poly->v + 1, poly->v + 2);
+      x3d_plane_print(&plane);
+      
+      x3d_prism3d_get_face(prism, 2, poly);
+      x3d_polygon3d_print(poly);
+      x3d_plane_construct(&plane, poly->v, poly->v + 1, poly->v + 2);
+      x3d_plane_print(&plane);
+      
+      x3d_screen_clear(0);
+      
+      uint16 i;
+      for(i = 0; i < base_v + 2; ++i) {
+        x3d_prism3d_get_face(prism, i, poly);
+        x3d_polygon3d_render_wireframe_no_clip(poly, &cam, 31);
+        x3d_screen_flip();
+        SDL_Delay(1000);
+      }
+      
+      
+      SDL_Delay(2000);
+    }
   
     SDL_Delay(20);
-    angle.y++;
-    angle.x++;
+    
+    
+    
+    
+    //angle.y++;
+    //angle.x++;
   } while(!x3d_key_down(KEY_QUIT));
   
   x3d_cleanup();

@@ -23,3 +23,9 @@ typedef struct X3D_Polygon3D {
   X3D_Vex3D v[];
 } X3D_Polygon3D;
 
+void x3d_polygon3d_print(X3D_Polygon3D* p);
+
+static inline uint16 x3d_polygon3d_size(uint16 total_v) {
+  return sizeof(X3D_Polygon3D) + total_v * sizeof(X3D_Vex3D);
+}
+

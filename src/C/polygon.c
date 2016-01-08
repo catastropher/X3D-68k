@@ -13,14 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <stdio.h>
 
 #include "X3D_common.h"
-#include "X3D_prism.h"
-#include "X3D_object.h"
-#include "X3D_camera.h"
-#include "X3D_screen.h"
+#include "X3D_polygon.h"
 
-void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color);
-void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color);
+void x3d_polygon3d_print(X3D_Polygon3D* p) {
+  printf("X3D_Polygon3D (v = %d)\n", p->total_v);
+  
+  uint16 i;
+  for(i = 0; i < p->total_v; ++i) {
+    printf("\t{%d, %d, %d}\n", p->v[i].x, p->v[i].y, p->v[i].z);
+  }
+  
+  printf("\n");
+}
 

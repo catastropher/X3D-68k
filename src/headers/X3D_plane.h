@@ -24,3 +24,18 @@ typedef struct X3D_Plane {
   int16 d;
 } X3D_Plane;
 
+void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
+void x3d_plane_print(X3D_Plane* p);
+
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the distance from a point to a plane.
+///
+/// @param p  - plane
+/// @param v  - point
+///
+/// @return The distance from p to v.
+///////////////////////////////////////////////////////////////////////////////
+static inline uint16 x3d_plane_dist(X3D_Plane* p, X3D_Vex3D* v) {
+  return (int16)x3d_vex3d_fp0x16_dot(&p->normal, v) - p->d;
+}
+
