@@ -40,6 +40,7 @@ add_sources(
   C/trig.c
   C/matrix.c
   C/prism.c
+  C/render.c
 )
 
 add_subdirectory(C/platform)

@@ -50,3 +50,13 @@ typedef struct X3D_DynamicObjectBase {
   X3D_Mat3x3 mat;
 } X3D_DynamicObjectBase;
 
+typedef void X3D_Object;
+
+static inline void x3d_object_pos(X3D_Object* object, X3D_Vex3D* v) {
+  X3D_ObjectBase* obj = object;
+  
+  v->x = obj->pos.x >> 8;
+  v->y = obj->pos.y >> 8;
+  v->z = obj->pos.z >> 8;
+}
+

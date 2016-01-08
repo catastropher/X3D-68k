@@ -58,3 +58,7 @@ test-manual: x3d
 # Builds the documentation
 docs:
 	@cd docs && doxygen Doxyfile
+
+
+concat-build:
+	find "src/C" -type f -name "*.c" -exec cat {} \; >output.txt

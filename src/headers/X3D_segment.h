@@ -21,7 +21,7 @@
 #include "X3D_prism.h"
 #include "X3D_plane.h"
 
-///< Represents a NULL segment, that is "no segment"
+///< Represents a NULL segment, that is, "no segment"
 #define X3D_SEGMENT_NONE 0xFFFF
 
 ///< Indicates that a segment has nothing attached to particular face
@@ -72,8 +72,8 @@ typedef struct X3D_SegmentBase {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-/// A segment that is full decompressed, full with calculated plane equations
-///   for the walls.
+/// A segment that is fully decompressed, complete with calculated plane
+///   equations for the walls.
 ///
 /// @note This is a two-part variable-sized data structure.
 ///////////////////////////////////////////////////////////////////////////////

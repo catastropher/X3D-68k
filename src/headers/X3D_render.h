@@ -15,15 +15,11 @@
 
 #pragma once
 
+#include "X3D_common.h"
+#include "X3D_prism.h"
 #include "X3D_object.h"
+#include "X3D_camera.h"
 #include "X3D_screen.h"
 
-
-typedef struct X3D_CameraObject {
-  X3D_DynamicObjectBase base;
-} X3D_CameraObject;
-
-typedef struct X3D_Player {
-  X3D_CameraObject* cam;
-} X3D_Player;
+void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color);
 
