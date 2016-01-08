@@ -188,7 +188,19 @@ void prism_test(void) {
   
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
-  x3d_key_map_pc(X3D_KEY_0, SDLK_ESCAPE);
+  enum {
+    KEY_QUIT = X3D_KEY_0,
+    KEY_W = X3D_KEY_1,
+    KEY_S = X3D_KEY_2,
+    KEY_A = X3D_KEY_3,
+    KEY_D = X3D_KEY_4
+  };
+  
+  x3d_key_map_pc(KEY_QUIT, SDLK_ESCAPE);
+  x3d_key_map_pc(KEY_W, SDLK_w);
+  x3d_key_map_pc(KEY_A, SDLK_a);
+  x3d_key_map_pc(KEY_S, SDLK_s);
+  x3d_key_map_pc(KEY_D, SDLK_d);
   
   X3D_CameraObject cam = {
     .base = {
@@ -206,15 +218,27 @@ void prism_test(void) {
     x3d_prism3d_construct(prism, base_v, 100, 50, angle);
     
     x3d_screen_clear(0);
-    
     x3d_prism3d_render(prism, &cam, 31);
-    
     x3d_screen_flip();
+    
+    if(x3d_key_down(KEY_W)) {
+      cam.base.base.pos.z += 4L << 8;
+    }
+    else if(x3d_key_down(KEY_S)) {
+      cam.base.base.pos.z -= 4L << 8;
+    }
+    
+    if(x3d_key_down(KEY_A)) {
+      cam.base.base.pos.x -= 4L << 8;
+    }
+    else if(x3d_key_down(KEY_D)) {
+      cam.base.base.pos.x += 4L << 8;
+    }
   
     SDL_Delay(20);
     angle.y++;
     angle.x++;
-  } while(!x3d_key_down(X3D_KEY_0));
+  } while(!x3d_key_down(KEY_QUIT));
   
   x3d_cleanup();
 }
