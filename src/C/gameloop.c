@@ -13,10 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "X3D_common.h"
+#include "X3D_enginestate.h"
+#include "X3D_keys.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 /// The main game loop.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_game_loop() {
-  
+  do {
+    // Update the key state
+    x3d_read_keys();
+    x3d_keymanager_get()->key_handler();
+  } while(1);
 }
 

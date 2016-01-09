@@ -52,6 +52,14 @@ typedef struct X3D_DynamicObjectBase {
 
 typedef void X3D_Object;
 
+///////////////////////////////////////////////////////////////////////////////
+/// Gets the whole part of an object's position.
+///
+/// @param object - object
+/// @param v      - position dest
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 static inline void x3d_object_pos(X3D_Object* object, X3D_Vex3D* v) {
   X3D_ObjectBase* obj = object;
   

@@ -43,6 +43,10 @@ typedef enum {
   X3D_KEY_15 = 32768
 } X3D_Key;
 
+typedef struct X3D_KeyManager {
+  void (*key_handler)(void);
+} X3D_KeyManager;
+
 // Max number of logical keys X3D can support
 #define X3D_MAX_KEYS 16
 
