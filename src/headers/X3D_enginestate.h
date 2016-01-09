@@ -24,6 +24,8 @@ typedef struct X3D_EngineState {
   X3D_SegmentManager segment_manager;
   X3D_ScreenManager screen_manager;
   X3D_KeyManager key_manager;
+  
+  _Bool exit_gameloop;
 } X3D_EngineState;
 
 extern X3D_EngineState* x3d_state;
@@ -40,7 +42,15 @@ static inline X3D_KeyManager* x3d_keymanager_get(void) {
   return &x3d_state->key_manager;
 }
 
+static inline X3D_EngineState* x3d_enginestate_get(void) {
+  return x3d_state;
+}
+
+static inline void x3d_keymanager_set_callback(void (*callback)(void)) {
+  x3d_keymanager_get()->key_handler = callback;
+}
 
 
 X3D_INTERNAL void x3d_enginestate_init(void);
 
+  

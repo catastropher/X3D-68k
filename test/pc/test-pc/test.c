@@ -284,6 +284,43 @@ void prism_test(void) {
   x3d_cleanup();
 }
 
+enum {
+  TEST_KEY_ENTER = X3D_KEY_0,
+  TEST_KEY_ESCAPE = X3D_KEY_1
+};
+
+void engine_test_handle_keys(void) {
+  if(x3d_key_down(TEST_KEY_ENTER)) {
+    printf("Enter!\n");
+    SDL_Delay(1000);
+  }
+  
+  if(x3d_key_down(TEST_KEY_ESCAPE)) {
+    x3d_game_loop_quit();
+  }
+}
+
+void engine_test(void) {
+  X3D_InitSettings init = {
+    .screen_w = 1000,
+    .screen_h = 1000,
+    .screen_scale = 1,
+    .fullscreen = X3D_FALSE,
+    .fov = ANG_60
+  };
+  
+  x3d_init(&init);
+  
+  // Set up key mapping
+  x3d_key_map_pc(TEST_KEY_ENTER, SDLK_RETURN);
+  x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
+  x3d_keymanager_set_callback(engine_test_handle_keys);
+  
+  x3d_game_loop();
+  
+  x3d_cleanup();
+}
+
 typedef struct Test {
   const char* name;
   void (*run)(void);
@@ -309,6 +346,10 @@ int main() {
     {
       "Prism test",
       prism_test
+    },
+    {
+      "Engine test",
+      engine_test
     }
   };
   

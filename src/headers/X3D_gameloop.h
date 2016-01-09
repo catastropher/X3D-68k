@@ -15,5 +15,8 @@
 
 #pragma once
 
+#include "X3D_common.h"
+
 void x3d_game_loop();
+void x3d_game_loop_quit(void);
 

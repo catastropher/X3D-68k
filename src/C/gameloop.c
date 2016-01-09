@@ -16,15 +16,22 @@
 #include "X3D_common.h"
 #include "X3D_enginestate.h"
 #include "X3D_keys.h"
+#include "X3D_gameloop.h"
+
+void x3d_game_loop_quit(void) {
+  x3d_enginestate_get()->exit_gameloop = X3D_TRUE;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// The main game loop.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_game_loop() {
+  X3D_EngineState* state = x3d_enginestate_get();
+  
   do {
     // Update the key state
     x3d_read_keys();
     x3d_keymanager_get()->key_handler();
-  } while(1);
+  } while(!state->exit_gameloop);
 }
 
