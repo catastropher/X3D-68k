@@ -109,6 +109,17 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color) {
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
   
   x3d_prism3d_render(&seg->prism, cam, color);
+  
+  if(id == 0) {
+    uint16 i;
+    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+    for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
+      if(face[i].portal_seg_face != X3D_FACE_NONE) {
+        uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
+        x3d_segment_render(seg_id, cam, 31);
+      }
+    }
+  }
 }
 
 

@@ -302,9 +302,9 @@ void engine_test_handle_keys(void) {
 
 void engine_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 1000,
-    .screen_h = 1000,
-    .screen_scale = 1,
+    .screen_w = 240,
+    .screen_h = 128,
+    .screen_scale = 2,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
   };
@@ -322,7 +322,12 @@ void engine_test(void) {
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
   x3d_prism3d_construct(prism, base_v, 50, 100, angle);
-  x3d_segmentbuilder_add_uncompressed_segment(prism);
+  uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+  
+  uint16 i;
+  for(i = 0; i < base_v; ++i) {
+    x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, i + 2), 100);
+  }
   
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;

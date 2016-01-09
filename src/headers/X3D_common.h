@@ -20,3 +20,5 @@
 #include "X3D_log.h"
 #include "X3D_fix.h"
 
+#define X3D_SWAP(_a, _b) { __typeof__(_a) _temp = (_a); (_a) = (_b); (_b) = _temp; }
+

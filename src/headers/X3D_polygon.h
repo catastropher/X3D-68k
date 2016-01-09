@@ -15,6 +15,8 @@
 
 #include "X3D_common.h"
 #include "X3D_vector.h"
+#include "X3D_plane.h"
+#include "X3D_assert.h"
 
 #pragma once
 
@@ -24,8 +26,15 @@ typedef struct X3D_Polygon3D {
 } X3D_Polygon3D;
 
 void x3d_polygon3d_print(X3D_Polygon3D* p);
+void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist);
+void x3d_polygon3d_reverse(X3D_Polygon3D* poly);
 
 static inline uint16 x3d_polygon3d_size(uint16 total_v) {
   return sizeof(X3D_Polygon3D) + total_v * sizeof(X3D_Vex3D);
+}
+
+static inline void x3d_polygon3d_calculate_plane(X3D_Polygon3D* poly, X3D_Plane* plane) {
+  x3d_assert(poly->total_v >= 3);
+  x3d_plane_construct(plane, poly->v, poly->v + 1, poly->v + 2);
 }
 

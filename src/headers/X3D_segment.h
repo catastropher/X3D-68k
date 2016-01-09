@@ -34,10 +34,45 @@
 #define X3D_SEGMENT_CACHE_NONE 255
 
 ///////////////////////////////////////////////////////////////////////////////
-/// The unique ID of a segment face. The lower 4 bits are the face numner
+/// The unique ID of a segment face. The lower 4 bits are the face number
 /// and the top 12 bits are the segment ID.
 ///////////////////////////////////////////////////////////////////////////////
 typedef uint16 X3D_SegFaceID;
+
+///////////////////////////////////////////////////////////////////////////////
+/// Creates an X3D_SegFaceID from the segment ID and face ID.
+///
+/// @param seg  - segment ID
+/// @param face - face ID
+///
+/// @return A new X3D_SegFaceID that references the face in seg.
+///////////////////////////////////////////////////////////////////////////////
+static inline X3D_SegFaceID x3d_segfaceid_create(uint16 seg, uint16 face) {
+  return (seg << 4) | face;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Gets the face number from an X3D_SegFaceID.
+///
+/// @param id - SegFaceID
+///
+/// @return The face number (0 to base_v + 2, where base_v is the number of
+///   vertices in one of the segment's prism bases).
+///////////////////////////////////////////////////////////////////////////////
+static inline uint16 x3d_segfaceid_face(X3D_SegFaceID id) {
+  return id & ((1 << 4) - 1);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Gets the segment ID from an X3D_SegFaceID
+///
+/// @param id - SegFaceID
+///
+/// @return The segment ID.
+///////////////////////////////////////////////////////////////////////////////
+static inline uint16 x3d_segfaceid_seg(X3D_SegFaceID id) {
+  return id >> 4;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,7 +126,10 @@ typedef struct X3D_UncompressedSegment {
 typedef struct X3D_SegmentCacheEntry {
   uint8 prev;                   ///< The previous most recently used segment
   uint8 next;                   ///< The next most recently used segment
+  
   X3D_UncompressedSegment seg;  ///< The uncompressed segment
+  X3D_Vex3D v[16];
+  X3D_UncompressedSegmentFace face[10];
 } X3D_SegmentCacheEntry;
 
 
