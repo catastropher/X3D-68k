@@ -37,4 +37,5 @@
 #include "X3D_camera.h"
 #include "X3D_vector.h"
 #include "X3D_render.h"
+#include "X3D_player.h"
 

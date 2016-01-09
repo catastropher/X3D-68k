@@ -41,6 +41,8 @@ X3D_INTERNAL X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segmen
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   uint16 total_f = x3d_prism3d_total_f(prism->base_v);
   
+  //x3d_assert(((void *)(&seg->prism)) + x3d_prism3d_size(prism->base_v) < (void *)face);
+  
   for(i = 0; i < total_f; ++i) {
     face[i].portal_seg_face = X3D_FACE_NONE;
   }

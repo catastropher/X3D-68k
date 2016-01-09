@@ -19,11 +19,13 @@
 #include "X3D_segment.h"
 #include "X3D_screen.h"
 #include "X3D_keys.h"
+#include "X3D_player.h"
 
 typedef struct X3D_EngineState {
   X3D_SegmentManager segment_manager;
   X3D_ScreenManager screen_manager;
   X3D_KeyManager key_manager;
+  X3D_PlayerManager player_manager;
   
   _Bool exit_gameloop;
 } X3D_EngineState;
@@ -48,6 +50,10 @@ static inline X3D_EngineState* x3d_enginestate_get(void) {
 
 static inline void x3d_keymanager_set_callback(void (*callback)(void)) {
   x3d_keymanager_get()->key_handler = callback;
+}
+
+static inline X3D_PlayerManager* x3d_playermanager_get(void) {
+  return &x3d_state->player_manager;
 }
 
 

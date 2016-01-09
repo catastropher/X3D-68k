@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <alloca.h>
+
 #include "X3D_common.h"
 #include "X3D_prism.h"
 #include "X3D_camera.h"
@@ -105,7 +107,14 @@ void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObjec
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color) {
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
-
+  
   x3d_prism3d_render(&seg->prism, cam, color);
+}
+
+
+void x3d_render(X3D_CameraObject* cam) {
+  X3D_Color color = x3d_rgb_to_color(0, 0, 255);
+  
+  x3d_segment_render(0, cam, color);
 }
 

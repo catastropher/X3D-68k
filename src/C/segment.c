@@ -103,7 +103,11 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
   uint16 i;
   for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
     if(seg_manager->cache.entry[i].seg.base.id == X3D_SEGMENT_NONE) {
-      seg_manager->cache.entry[i].seg = *((X3D_UncompressedSegment *)seg);
+      // Copy over the segment
+      //seg_manager->cache.entry[i].seg = *((X3D_UncompressedSegment *)seg);
+      memcpy(&seg_manager->cache.entry[i].seg, seg, x3d_uncompressedsegment_size(seg->base_v));
+      
+      
       seg->flags |= X3D_SEGMENT_IN_CACHE | i;
 
       // Calculate the plane equations for the faces

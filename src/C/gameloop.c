@@ -17,6 +17,7 @@
 #include "X3D_enginestate.h"
 #include "X3D_keys.h"
 #include "X3D_gameloop.h"
+#include "X3D_render.h"
 
 void x3d_game_loop_quit(void) {
   x3d_enginestate_get()->exit_gameloop = X3D_TRUE;
@@ -32,6 +33,11 @@ void x3d_game_loop() {
     // Update the key state
     x3d_read_keys();
     x3d_keymanager_get()->key_handler();
+    
+    // Render from the player's perspective
+    x3d_screen_clear(0);
+    x3d_render(x3d_playermanager_get()->player[0].cam);
+    x3d_screen_flip();
   } while(!state->exit_gameloop);
 }
 

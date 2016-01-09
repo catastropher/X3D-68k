@@ -24,3 +24,5 @@
 void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color);
 void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color);
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color);
+void x3d_render(X3D_CameraObject* cam);
+

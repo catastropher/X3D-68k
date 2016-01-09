@@ -15,11 +15,15 @@
 
 #pragma once
 
-#include "X3D_object.h"
-#include "X3D_screen.h"
+#include "X3D_camera.h"
 
+typedef struct X3D_Player {
+  uint16 id;
+  X3D_CameraObject* cam;
+} X3D_Player;
 
-typedef struct X3D_CameraObject {
-  X3D_DynamicObjectBase base;
-} X3D_CameraObject;
+typedef struct X3D_PlayerManager {
+  uint16 total_p;
+  X3D_Player player[2];
+} X3D_PlayerManager;
 

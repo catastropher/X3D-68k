@@ -316,6 +316,21 @@ void engine_test(void) {
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
+  // Create a new segment
+  uint16 base_v = 8;
+  X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
+  X3D_Vex3D_angle256 angle = { 0, 0, 0 };
+  
+  x3d_prism3d_construct(prism, base_v, 50, 100, angle);
+  x3d_segmentbuilder_add_uncompressed_segment(prism);
+  
+  // Setup the camera
+  X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
+  
+  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, -300 << 8 };
+  x3d_mat3x3_construct(&cam->base.mat, &angle);
+  
+  
   x3d_game_loop();
   
   x3d_cleanup();
