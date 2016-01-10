@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <SDL2/SDL.h>
+
 #include "X3D_common.h"
 #include "X3D_enginestate.h"
 #include "X3D_keys.h"
@@ -38,6 +40,9 @@ void x3d_game_loop() {
     x3d_screen_clear(0);
     x3d_render(x3d_playermanager_get()->player[0].cam);
     x3d_screen_flip();
+    
+    /// @todo Platform-independent solution
+    SDL_Delay(25);
   } while(!state->exit_gameloop);
 }
 

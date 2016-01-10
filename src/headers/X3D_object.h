@@ -48,6 +48,7 @@ typedef struct X3D_DynamicObjectBase {
   X3D_ObjectBase base;
   X3D_Vex3D_fp8x8 velocity;
   X3D_Mat3x3 mat;
+  X3D_Vex3D_angle256 angle;
 } X3D_DynamicObjectBase;
 
 typedef void X3D_Object;

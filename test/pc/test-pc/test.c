@@ -286,10 +286,18 @@ void prism_test(void) {
 
 enum {
   TEST_KEY_ENTER = X3D_KEY_0,
-  TEST_KEY_ESCAPE = X3D_KEY_1
+  KEY_W = X3D_KEY_1,
+  KEY_S = X3D_KEY_2,
+  KEY_A = X3D_KEY_3,
+  KEY_D = X3D_KEY_4,
+  TEST_KEY_ESCAPE = X3D_KEY_5,
+  KEY_Q = X3D_KEY_6,
+  KEY_E = X3D_KEY_7
 };
 
 void engine_test_handle_keys(void) {
+  X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
+  
   if(x3d_key_down(TEST_KEY_ENTER)) {
     printf("Enter!\n");
     SDL_Delay(1000);
@@ -298,6 +306,29 @@ void engine_test_handle_keys(void) {
   if(x3d_key_down(TEST_KEY_ESCAPE)) {
     x3d_game_loop_quit();
   }
+  
+  if(x3d_key_down(KEY_W)) {
+      cam->base.base.pos.z += 4L << 8;
+    }
+    else if(x3d_key_down(KEY_S)) {
+      cam->base.base.pos.z -= 4L << 8;
+    }
+    
+    if(x3d_key_down(KEY_A)) {
+      cam->base.base.pos.x -= 4L << 8;
+    }
+    else if(x3d_key_down(KEY_D)) {
+      cam->base.base.pos.x += 4L << 8;
+    }
+    
+    if(x3d_key_down(KEY_Q)) {
+      --cam->base.angle.y;
+      x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
+    }
+    else if(x3d_key_down(KEY_E)) {
+      ++cam->base.angle.y;
+      x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
+    }
 }
 
 void engine_test(void) {
@@ -314,6 +345,13 @@ void engine_test(void) {
   // Set up key mapping
   x3d_key_map_pc(TEST_KEY_ENTER, SDLK_RETURN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
+  x3d_key_map_pc(KEY_W, SDLK_w);
+  x3d_key_map_pc(KEY_A, SDLK_a);
+  x3d_key_map_pc(KEY_S, SDLK_s);
+  x3d_key_map_pc(KEY_D, SDLK_d);
+  x3d_key_map_pc(KEY_Q, SDLK_q);
+  x3d_key_map_pc(KEY_E, SDLK_e);
+  
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
   // Create a new segment
@@ -324,16 +362,14 @@ void engine_test(void) {
   x3d_prism3d_construct(prism, base_v, 50, 100, angle);
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
-  uint16 i;
-  for(i = 0; i < base_v; ++i) {
-    x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, i + 2), 100);
-  }
+  x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 2), 100);
   
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   
   cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, -300 << 8 };
-  x3d_mat3x3_construct(&cam->base.mat, &angle);
+  cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
+  x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   
   
   x3d_game_loop();
