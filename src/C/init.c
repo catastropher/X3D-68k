@@ -20,8 +20,40 @@
 
 void x3d_init(X3D_InitSettings* settings) {
   x3d_log(X3D_INFO, "X3D init");  
-  x3d_enginestate_init();
+  x3d_enginestate_init(settings);
   x3d_platform_init(settings);
+  
+  // Initialize the render stack
+  uint16 stack_size = 8192;
+  void* render_stack_mem = malloc(stack_size);
+  
+  x3d_assert(render_stack_mem);
+  
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
+  
+  // Create the raster region for the whole screen
+  X3D_Vex2D screen_v[] = {
+    { 60, 60 },
+    { settings->screen_w, 30 },
+    { settings->screen_w, settings->screen_h - 60 },
+    { 0, settings->screen_h - 60 }
+  };
+  
+  _Bool region = x3d_rasterregion_construct_from_points(
+    &renderman->stack,
+    &renderman->region,
+    screen_v,
+    4
+  );
+  
+  x3d_assert(region);
+  
+  
+  x3d_log(X3D_INFO, "%d\n", x3d_screenmanager_get()->h);
+  
+  x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.y_range.min, renderman->region.y_range.max);
 }
 
 void x3d_cleanup(void) {

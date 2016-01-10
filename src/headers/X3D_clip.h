@@ -1,4 +1,9 @@
+
+#pragma once
+
+#include "X3D_common.h"
 #include "memory/X3D_stack.h"
+
 
 typedef struct X3D_Range {
   int16 min;
@@ -9,8 +14,10 @@ typedef struct X3D_Range {
 #define SCREEN_Y_RANGE get_range(0, LCD_HEIGHT - 1)
 
 
+
+
 static inline X3D_Range get_range(int16 a, int16 b) {
-  return (X3D_Range) { min(a, b), max(a, b) };
+  return (X3D_Range) { X3D_MIN(a, b), X3D_MAX(a, b) };
 }
 
 static inline _Bool range_overlap(X3D_Range a, X3D_Range b) {
@@ -64,4 +71,7 @@ typedef struct X3D_PolyLine {
   int16 total_e;
   int16* edges;
 } X3D_PolyLine;
+
+_Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion* dest, X3D_Vex2D* v, uint16 total_v);
+_Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end);
 

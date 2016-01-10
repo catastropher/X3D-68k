@@ -16,6 +16,10 @@
 #include "X3D_common.h"
 #include "X3D_enginestate.h"
 #include "X3D_player.h"
+#include "memory/X3D_stack.h"
+#include "X3D_assert.h"
+#include "X3D_clip.h"
+#include "X3D_init.h"
 
 static X3D_EngineState x3d_global_enginestate;
 X3D_EngineState* x3d_state;
@@ -30,7 +34,7 @@ void x3d_dummy_void_callback(void) {
 ///////////////////////////////////////////////////////////////////////////////
 /// Initializes the global engine state.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_INTERNAL void x3d_enginestate_init(void) {
+X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init) {
   x3d_state = &x3d_global_enginestate;
   
   x3d_segmentmanager_init(10, 2000);
@@ -46,6 +50,7 @@ X3D_INTERNAL void x3d_enginestate_init(void) {
   };
   
   // Reset engine step
+  /// @todo Should engine_step be moved into the render manager?
   x3d_state->engine_step = 0;
 }
 

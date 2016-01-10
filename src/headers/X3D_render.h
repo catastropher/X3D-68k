@@ -20,6 +20,14 @@
 #include "X3D_object.h"
 #include "X3D_camera.h"
 #include "X3D_screen.h"
+#include "memory/X3D_stack.h"
+#include "X3D_clip.h"
+
+
+typedef struct X3D_RenderManager {
+  X3D_Stack stack;
+  X3D_RasterRegion region;
+} X3D_RenderManager;
 
 void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color);
 void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color);

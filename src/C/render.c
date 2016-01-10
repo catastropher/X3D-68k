@@ -20,6 +20,17 @@
 #include "X3D_camera.h"
 #include "X3D_segment.h"
 #include "X3D_enginestate.h"
+#include "X3D_clip.h"
+
+static void draw_clip_line(int16 x1, int16 y1, int16 x2, int16 y2, X3D_Color color) {
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  X3D_Vex2D v1 = { x1, y1 };
+  X3D_Vex2D v2 = { x2, y2 };
+  
+  if(x3d_rasterregion_clip_line(&renderman->region, &renderman->stack, &v1, &v2)) {
+    x3d_screen_draw_line(v1.x, v1.y, v2.x, v2.y, color);
+  }
+}
 
 void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color) {
   X3D_Vex2D v[prism->base_v * 2];
@@ -44,7 +55,7 @@ void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color 
     uint16 next = (i != prism->base_v - 1 ? i + 1 : 0);
     
     // BASE_A
-    x3d_screen_draw_line(
+    draw_clip_line(
       v[i].x,
       v[i].y,
       v[next].x,
@@ -53,7 +64,7 @@ void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color 
     );
     
     // BASE_B
-    x3d_screen_draw_line(
+    draw_clip_line(
       v[i + prism->base_v].x,
       v[i + prism->base_v].y,
       v[next + prism->base_v].x,
@@ -62,7 +73,7 @@ void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color 
     );
     
     // Connecting lines
-    x3d_screen_draw_line(
+    draw_clip_line(
       v[i].x,
       v[i].y,
       v[i + prism->base_v].x,

@@ -13,9 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "X3D_common.h"
 #include "X3D_segment.h"
 #include "X3D_vector.h"
@@ -25,6 +22,7 @@
 #include "X3D_screen.h"
 #include "X3D_enginestate.h"
 #include "memory/X3D_stack.h"
+#include "X3D_assert.h"
 
 
 #define LCD_WIDTH x3d_screenmanager_get()->w
@@ -33,6 +31,7 @@
 #undef printf
 #define printf(...) ;
 
+#define x3d_error(...) ;
 
 #ifndef INT16_MIN
 #define INT16_MIN -32767
@@ -62,18 +61,11 @@
 
 #define ADDRESS(_a) ;
 
-
-void renderstack_init(X3D_RenderStack* stack, uint16 size) {
+int32 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
+  if(v1.y == v2.y)
+    return 0;
   
-#if 0
-  stack->base = malloc(size);
-  stack->end = stack->base + size;
-  stack->ptr = stack->end;
-#endif
-}
-
-void renderstack_cleanup(X3D_RenderStack* stack) {
-  free(stack->base);
+  return (((int32)(v2.x - v1.x)) << 16) / (v2.y - v1.y);
 }
 
 int32 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2);
@@ -127,7 +119,7 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
     }
     
     // Clamp the max y
-    edge->y_range.max = b->y = min(edge->y_range.max, region_y_range.max);
+    edge->y_range.max = b->y = X3D_MIN(edge->y_range.max, region_y_range.max);
   }
   
   return X3D_TRUE;
@@ -135,7 +127,7 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
 
 #define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->y_range.min])
  
-void generate_rasteredge(X3D_RenderStack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range) {
+void generate_rasteredge(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range) {
   fp16x16 slope;
   
   //ASSERT(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT);
@@ -207,7 +199,7 @@ void draw_edge(X3D_RasterEdge* edge) {
 #endif
 }
 
-_Bool get_rasterregion(X3D_RasterRegion* region, X3D_RenderStack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
+_Bool get_rasterregion(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
   region->y_range.min = INT16_MAX;
   region->y_range.max = INT16_MIN;
   
@@ -292,8 +284,8 @@ add_edge:
         }
       }
       
-      region->y_range.min = min(region->y_range.min, e->y_range.min);
-      region->y_range.max = max(region->y_range.max, e->y_range.max);
+      region->y_range.min = X3D_MIN(region->y_range.min, e->y_range.min);
+      region->y_range.max = X3D_MAX(region->y_range.max, e->y_range.max);
     }
     else {
       //printf("Invisible!\n");
@@ -363,129 +355,19 @@ void rasterize_rasterregion(X3D_RasterRegion* region, void* screen, uint16 color
 }
 
 
+//_Bool get_rasterregion(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e)
 
-
-
-
-
-
-
-
-void test_newnew_clip() {
-  X3D_RenderStack stack;
-  renderstack_init(&stack, 2048);
-  //FontSetSys(F_4x6);
-  
-  // Case 0
-  {
-    void* stack_ptr = x3d_stack_save(&stack);
-    X3D_Range y_range = SCREEN_Y_RANGE;
-     X3D_RasterEdge edge;
-    
-    X3D_Vex2D a = { -20000, -30000 };
-    X3D_Vex2D b = { 20000, -30000 };
-    
-    generate_rasteredge(&stack, &edge, a, b, y_range);
-    
-    printf("Case 0\n");
-    ASSERT_EQUAL_INT16((edge.flags & EDGE_INVISIBLE) != 0, X3D_TRUE);
-    ASSERT_EQUAL_INT16((edge.flags & EDGE_HORIZONTAL) != 0, X3D_TRUE);
-    ASSERT_EQUAL_INT16(edge.x_range.min, -20000);
-    ASSERT_EQUAL_INT16(edge.x_range.max, 20000);
-    ASSERT_EQUAL_INT16(edge.y_range.min, -30000);
-    ASSERT_EQUAL_INT16(edge.y_range.max, -30000);
-    ASSERT_EQUAL_INT32(edge.x_data, NULL);
-    
-    x3d_stack_restore(&stack, stack_ptr);
-  }
-  
-  // Case 1
-  {
-    void* stack_ptr = x3d_stack_save(&stack);
-    X3D_Range y_range = SCREEN_Y_RANGE;
-    X3D_RasterEdge edge;
-    
-    X3D_Vex2D a = { -20000, 30000 };
-    X3D_Vex2D b = { 20000, 30000 };
-    
-    generate_rasteredge(&stack, &edge, a, b, y_range);
-    
-    printf("Case 1\n");
-    ASSERT_EQUAL_INT16((edge.flags & EDGE_INVISIBLE) != 0, X3D_TRUE);
-    ASSERT_EQUAL_INT16((edge.flags & EDGE_HORIZONTAL) != 0, X3D_TRUE);
-    ASSERT_EQUAL_INT16(edge.x_range.min, -20000);
-    ASSERT_EQUAL_INT16(edge.x_range.max, 20000);
-    ASSERT_EQUAL_INT16(edge.y_range.min, 30000);
-    ASSERT_EQUAL_INT16(edge.y_range.max, 30000);
-    ASSERT_EQUAL_INT32(edge.x_data, NULL);
-    
-    x3d_stack_restore(&stack, stack_ptr);
-  }
-  
-  // Case 2
-  {
-    void* stack_ptr = x3d_stack_save(&stack);
-    X3D_Range y_range = SCREEN_Y_RANGE;
-    X3D_RasterEdge edge;
-    
-    X3D_Vex2D a = { 50, 51 };
-    X3D_Vex2D b = { 100, 101 };
-    
-    generate_rasteredge(&stack, &edge, a, b, y_range);
-    
-    printf("Case 2\n");
-    ASSERT_EQUAL_INT16(edge.flags & EDGE_INVISIBLE, 0);
-    ASSERT_EQUAL_INT16(edge.flags & EDGE_HORIZONTAL, 0);
-    
-    
-    ASSERT_EQUAL_INT16(edge.x_range.min, 50);
-    ASSERT_EQUAL_INT16(edge.x_range.max, 100);
-    ASSERT_EQUAL_INT16(edge.y_range.min, 51);
-    ASSERT_EQUAL_INT16(edge.y_range.max, 101);
-    ASSERT_EQUAL_INT32(edge.x_data != NULL, X3D_TRUE);
-    
-    ASSERT_EQUAL_INT16(edge.x_data[0], 50);
-    ASSERT_EQUAL_INT16(edge.x_data[50], 100);
-    ASSERT_EQUAL_INT16(edge.x_data[25], (edge.x_data[0] + edge.x_data[50]) / 2);
-    
-    
-    x3d_stack_restore(&stack, stack_ptr);
-  }
-  
-  // Case 3
-  {
-    void* stack_ptr = x3d_stack_save(&stack);
-    X3D_Range y_range = SCREEN_Y_RANGE;
-    X3D_RasterEdge edge;
-    
-    X3D_Vex2D a = { 0, -10 };
-    X3D_Vex2D b = { 20, 10 };
-    
-    generate_rasteredge(&stack, &edge, a, b, y_range);
-    
-    printf("Case 3\n");
-    ASSERT_EQUAL_INT16(edge.flags & EDGE_INVISIBLE, 0);
-    ASSERT_EQUAL_INT16(edge.flags & EDGE_HORIZONTAL, 0);
-    
-    
-    ASSERT_EQUAL_INT16(edge.x_range.min, 10);
-    ASSERT_EQUAL_INT16(edge.x_range.max, 20);
-    ASSERT_EQUAL_INT16(edge.y_range.min, 0);
-    ASSERT_EQUAL_INT16(edge.y_range.max, 10);
-    ASSERT_EQUAL_INT32(edge.x_data != NULL, X3D_TRUE);
-    
-    ASSERT_EQUAL_INT16(edge.x_data[0], 10);
-    ASSERT_EQUAL_INT16(edge.x_data[10], 20);
-    ASSERT_EQUAL_INT16(edge.x_data[5], (edge.x_data[0] + edge.x_data[10]) / 2);
-    
-    
-    x3d_stack_restore(&stack, stack_ptr);
-  }
-}
-
-//_Bool get_rasterregion(X3D_RasterRegion* region, X3D_RenderStack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e)
-
-_Bool construct_rasterregion_from_points(X3D_RenderStack* stack, X3D_RasterRegion* dest, X3D_Vex2D* v, uint16 total_v) {
+///////////////////////////////////////////////////////////////////////////////
+/// Constructs a raster region from a list of points that define a 2D polygon.
+///
+/// @param stack    - render stack to construct the raster region on
+/// @param dest     - raster region
+/// @param v        - list of 2D points
+/// @param total_v  - number of points
+///
+/// @return Whether a valid region was created.
+///////////////////////////////////////////////////////////////////////////////
+_Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion* dest, X3D_Vex2D* v, uint16 total_v) {
   X3D_RasterEdge edges[total_v];
   uint16 edge_index[total_v];
   uint16 i;
@@ -505,7 +387,7 @@ _Bool construct_rasterregion_from_points(X3D_RenderStack* stack, X3D_RasterRegio
 }
 
 #if 0
-void x3d_init_clip_window(X3D_RenderStack* stack, X3D_Context* context, X3D_RasterRegion* region, X3D_Vex2D* v, uint16 total_v) {
+void x3d_init_clip_window(X3D_Stack* stack, X3D_Context* context, X3D_RasterRegion* region, X3D_Vex2D* v, uint16 total_v) {
   construct_rasterregion_from_points(stack, region, v, total_v);
 }
 #endif
@@ -514,8 +396,8 @@ void x3d_init_clip_window(X3D_RenderStack* stack, X3D_Context* context, X3D_Rast
 
 // Clips a single span against another span (from a portal polygon)
 _Bool clip_span(int16 portal_left, int16 portal_right, int16* span_left, int16* span_right) {
-  *span_left = max(portal_left, *span_left);
-  *span_right = min(portal_right, *span_right);
+  *span_left = X3D_MAX(portal_left, *span_left);
+  *span_right = X3D_MIN(portal_right, *span_right);
   
   return *span_left <= *span_right;
 }
@@ -579,3 +461,58 @@ _Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region)
   
   return X3D_TRUE;
 }
+
+_Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end) {
+  // This is a terribly inefficient way to implement this...
+  
+  void* stack_ptr = x3d_stack_save(stack);
+  X3D_RasterEdge edge;
+  
+  generate_rasteredge(stack, &edge, *start, *end, region->y_range);
+  
+  int16 y_min = X3D_MAX(region->y_range.min, edge.y_range.min);
+  int16 y_max = X3D_MIN(region->y_range.max, edge.y_range.max);
+  
+  int16 i;
+  _Bool found = X3D_FALSE;
+  int16 x, left, right;
+  
+  // Find where the line enters the region
+  for(i = y_min; i <= y_max; ++i) {
+    left = region->x_left[i - region->y_range.min];
+    right = region->x_right[i - region->y_range.min];
+    x = edge.x_data[i - edge.y_range.min];
+    
+    
+    if(x >= left && x <= right) {
+      found = X3D_TRUE;
+      break;
+    }
+  }
+  
+  start->x = x;
+  start->y = i;
+  
+  if(!found) {
+    x3d_stack_restore(stack, stack_ptr);
+    return X3D_FALSE;
+  }
+  
+  // Find where the line leaves the region  
+  for(; i <= y_max; ++i) {
+    left = region->x_left[i - region->y_range.min];
+    right = region->x_right[i - region->y_range.min];
+    x = edge.x_data[i - edge.y_range.min];
+    
+    if(x < left || x > right) {
+      break;
+    }
+  }
+  
+  end->y = i - 1;
+  end->x = edge.x_data[end->y - edge.y_range.min];
+  x3d_stack_restore(stack, stack_ptr);
+  
+  return X3D_TRUE;
+}
+
