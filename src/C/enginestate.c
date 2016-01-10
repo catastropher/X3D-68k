@@ -44,5 +44,8 @@ X3D_INTERNAL void x3d_enginestate_init(void) {
     .cam = &cam,
     .id = 0
   };
+  
+  // Reset engine step
+  x3d_state->engine_step = 0;
 }
 

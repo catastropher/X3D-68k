@@ -28,6 +28,7 @@ typedef struct X3D_EngineState {
   X3D_PlayerManager player_manager;
   
   _Bool exit_gameloop;
+  uint16 engine_step;
 } X3D_EngineState;
 
 extern X3D_EngineState* x3d_state;
@@ -56,7 +57,14 @@ static inline X3D_PlayerManager* x3d_playermanager_get(void) {
   return &x3d_state->player_manager;
 }
 
+static inline uint16 x3d_enginestate_get_step(void) {
+  return x3d_state->engine_step;
+}
+
+static inline void x3d_enginestate_next_step(void) {
+  ++x3d_state->engine_step;
+}
+
 
 X3D_INTERNAL void x3d_enginestate_init(void);
 
-  

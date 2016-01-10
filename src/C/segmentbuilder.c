@@ -109,7 +109,7 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
   face[face_id].portal_seg_face = x3d_segfaceid_create(new_seg->base.id, X3D_BASE_A);
   new_face[X3D_BASE_A].portal_seg_face = id;
   
-  return seg->base.id;
+  return new_seg->base.id;
 }
 
 uint16 x3d_segmentbuilder_add_connecting_segment(X3D_SegFaceID a, X3D_SegFaceID b) {

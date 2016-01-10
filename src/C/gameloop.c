@@ -43,6 +43,8 @@ void x3d_game_loop() {
     
     /// @todo Platform-independent solution
     SDL_Delay(25);
+    
+    x3d_enginestate_next_step();
   } while(!state->exit_gameloop);
 }
 

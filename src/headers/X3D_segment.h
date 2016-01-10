@@ -116,7 +116,8 @@ typedef struct X3D_UncompressedSegment {
   X3D_SegmentBase base;       ///< "Base" segment struct
   uint16 face_offset;         ///< Offset from the beginning of the struct of
                               ///  the face data.
-  X3D_Prism3D prism;          ///< Prism data
+  uint16 last_engine_step;    ///< Last step the segment was rendered
+  X3D_Prism3D prism;          ///< Prism data (MUST BE LAST MEMBER)
 } X3D_UncompressedSegment;
 
 

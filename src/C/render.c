@@ -19,6 +19,7 @@
 #include "X3D_prism.h"
 #include "X3D_camera.h"
 #include "X3D_segment.h"
+#include "X3D_enginestate.h"
 
 void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color) {
   X3D_Vex2D v[prism->base_v * 2];
@@ -107,29 +108,34 @@ void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObjec
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color) {
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
+
+  uint16 step = x3d_enginestate_get_step();
+  
+  if(seg->last_engine_step == step)
+    return;
+  
+  seg->last_engine_step = step;
   
   x3d_prism3d_render(&seg->prism, cam, color);
   
   X3D_Vex3D cam_pos;
   x3d_object_pos(cam, &cam_pos);
   
-  if(id == 0) {
-    uint16 i;
-    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-    
-    // Render the connecting segments
-    for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
-      if(face[i].portal_seg_face != X3D_FACE_NONE) {
-        // Only render the segment if we're not on the opposite side of the wall
-        // with the portal
-        int16 dist = x3d_plane_dist(&face[i].plane, &cam_pos);
-        
-        //printf("Dist: %d\n", dist);
-        
-        if(dist > 0) {
-          uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
-          x3d_segment_render(seg_id, cam, 31);
-        }
+  uint16 i;
+  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  
+  // Render the connecting segments
+  for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
+    if(face[i].portal_seg_face != X3D_FACE_NONE) {
+      // Only render the segment if we're not on the opposite side of the wall
+      // with the portal
+      int16 dist = x3d_plane_dist(&face[i].plane, &cam_pos);
+      
+      //printf("Dist: %d\n", dist);
+      
+      if(dist > 0) {
+        uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
+        x3d_segment_render(seg_id, cam, 31);
       }
     }
   }
