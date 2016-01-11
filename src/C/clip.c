@@ -532,6 +532,17 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     //X3D_Vex2D right = { edge.x_data[end->y - edge.y_range.min], i - 1 };
     end->y = i - 1;
     end->x = (x + edge.x_data[end->y - edge.y_range.min]) / 2;
+    
+    /// @todo Hmmm... it appears the clipping issue only happens with vertical
+    /// lines... investigate.
+#if 0
+    if(end->x < left) {
+      end->x = left;
+    }
+    else if(end->x > right) {
+      end->x = right;
+    }
+#endif
   }
   
   x3d_stack_restore(stack, stack_ptr);
