@@ -74,4 +74,7 @@ typedef struct X3D_PolyLine {
 
 _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion* dest, X3D_Vex2D* v, uint16 total_v);
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end);
+void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range);
+_Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e);
+_Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* region);
 

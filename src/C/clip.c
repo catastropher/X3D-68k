@@ -127,7 +127,7 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
 
 #define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->y_range.min])
  
-void generate_rasteredge(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range) {
+void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range) {
   fp16x16 slope;
   
   //ASSERT(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT);
@@ -199,7 +199,7 @@ void draw_edge(X3D_RasterEdge* edge) {
 #endif
 }
 
-_Bool get_rasterregion(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
+_Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
   region->y_range.min = INT16_MAX;
   region->y_range.max = INT16_MIN;
   
@@ -304,7 +304,7 @@ add_edge:
 //               EDGE(2).y_range.min,EDGE(2).y_range.max,
 //               EDGE(3).y_range.min,EDGE(3).y_range.max);
     
-    generate_rasteredge(stack, &temp_edge, out_v[0], out_v[1], region->y_range);
+    x3d_rasteredge_generate(stack, &temp_edge, out_v[0], out_v[1], region->y_range);
     
     //x3d_error("Pos: {%d, %d} - {%d, %d}", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y);
     
@@ -374,7 +374,7 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   
   for(i = 0; i < total_v; ++i) {
     int16 next = (i + 1) % total_v;
-    generate_rasteredge(stack, edges + i, v[i], v[next], (X3D_Range) { 0, LCD_HEIGHT - 1 });
+    x3d_rasteredge_generate(stack, edges + i, v[i], v[next], (X3D_Range) { 0, LCD_HEIGHT - 1 });
     
     //printf("es: %d, ee: %d\n", edges[i].min_y, edges[i].max_y);
     
@@ -383,7 +383,7 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   
   //printf("Min: %d, %d\n", dest->y_range.min, dest-> 
   
-  return get_rasterregion(dest, stack, edges, edge_index, total_v);
+  return x3d_rasterregion_construct_from_edges(dest, stack, edges, edge_index, total_v);
 }
 
 #if 0
@@ -402,7 +402,7 @@ _Bool clip_span(int16 portal_left, int16 portal_right, int16* span_left, int16* 
   return *span_left <= *span_right;
 }
 
-_Bool intersect_rasterregion(X3D_RasterRegion* portal, X3D_RasterRegion* region) {
+_Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* region) {
   int16* portal_left = portal->x_left + region->y_range.min - portal->y_range.min;
   int16* portal_right = portal->x_right + region->y_range.min - portal->y_range.min;
   
@@ -468,7 +468,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
   
-  generate_rasteredge(stack, &edge, *start, *end, region->y_range);
+  x3d_rasteredge_generate(stack, &edge, *start, *end, region->y_range);
   
   int16 y_min = X3D_MAX(region->y_range.min, edge.y_range.min);
   int16 y_max = X3D_MIN(region->y_range.max, edge.y_range.max);
@@ -498,19 +498,38 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     return X3D_FALSE;
   }
   
+  found = X3D_FALSE;
+  
+  /// @todo This leaves little gaps at the start of the line because it marked
+  /// the first scanline as outside. Fix this!
+  
   // Find where the line leaves the region  
   for(; i <= y_max; ++i) {
     left = region->x_left[i - region->y_range.min];
     right = region->x_right[i - region->y_range.min];
     x = edge.x_data[i - edge.y_range.min];
     
-    if(x < left || x > right) {
+    // Make sure the line actually touches the boundry it's clipped against
+    if(x < left) {
+      //x = left;
+      found = X3D_TRUE;
+      break;
+    }
+    else if(x > right) {
+      //x = right;
+      found = X3D_TRUE;
       break;
     }
   }
   
   end->y = i - 1;
-  end->x = edge.x_data[end->y - edge.y_range.min];
+  
+  if(!found) {
+    //x = edge.x_data[end->y - edge.y_range.min];
+  }
+  
+  end->x = x;
+  
   x3d_stack_restore(stack, stack_ptr);
   
   return X3D_TRUE;

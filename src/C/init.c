@@ -24,7 +24,7 @@ void x3d_init(X3D_InitSettings* settings) {
   x3d_platform_init(settings);
   
   // Initialize the render stack
-  uint16 stack_size = 8192;
+  uint16 stack_size = 60000;
   void* render_stack_mem = malloc(stack_size);
   
   x3d_assert(render_stack_mem);
@@ -35,10 +35,10 @@ void x3d_init(X3D_InitSettings* settings) {
   
   // Create the raster region for the whole screen
   X3D_Vex2D screen_v[] = {
-    { 60, 60 },
-    { settings->screen_w, 30 },
-    { settings->screen_w, settings->screen_h - 60 },
-    { 0, settings->screen_h - 60 }
+    { 0, 0 },
+    { settings->screen_w, 0 },
+    { settings->screen_w, settings->screen_h },
+    { 0, settings->screen_h }
   };
   
   _Bool region = x3d_rasterregion_construct_from_points(

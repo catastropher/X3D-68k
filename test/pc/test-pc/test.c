@@ -292,7 +292,9 @@ enum {
   KEY_D = X3D_KEY_4,
   TEST_KEY_ESCAPE = X3D_KEY_5,
   KEY_Q = X3D_KEY_6,
-  KEY_E = X3D_KEY_7
+  KEY_E = X3D_KEY_7,
+  KEY_UP = X3D_KEY_8,
+  KEY_DOWN = X3D_KEY_9
 };
 
 void engine_test_handle_keys(void) {
@@ -329,6 +331,13 @@ void engine_test_handle_keys(void) {
       ++cam->base.angle.y;
       x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
     }
+    
+    if(x3d_key_down(KEY_UP)) {
+      cam->base.base.pos.y -= 4L << 8;
+    }
+    else if(x3d_key_down(KEY_DOWN)) {
+      cam->base.base.pos.y += 4L << 8;
+    }
 }
 
 void engine_test(void) {
@@ -351,6 +360,8 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_D, SDLK_d);
   x3d_key_map_pc(KEY_Q, SDLK_q);
   x3d_key_map_pc(KEY_E, SDLK_e);
+  x3d_key_map_pc(KEY_UP, '[');
+  x3d_key_map_pc(KEY_DOWN, ']');
   
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
@@ -359,11 +370,14 @@ void engine_test(void) {
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
-  x3d_prism3d_construct(prism, base_v, 50, 100, angle);
+  x3d_prism3d_construct(prism, base_v, 50,  100, angle);
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
-  uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 2), 100);
-  uint16 id3 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id2, 2), 100);
+  uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 20);
+  uint16 id3 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id2, 3), 20);
+  uint16 id4 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id3, 1), 20);
+  uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 0), 20);
+  uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
   
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;

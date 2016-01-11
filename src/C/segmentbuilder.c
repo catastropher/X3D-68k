@@ -86,9 +86,9 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
   // The old faces becomes BASE_A of the new prism. But, if the old face was
   // BASE_B, it needs to be reversed (BASE_B is always reversed after calling
   // x3d_prism3d_get_face()).
-  if(face_id == X3D_BASE_B) {
+  //if(face_id == X3D_BASE_A || face_id == X3D_BASE_B) {
     x3d_polygon3d_reverse(poly);
-  }
+  //}
   
   x3d_prism3d_set_face(new_prism, X3D_BASE_A, poly);
   

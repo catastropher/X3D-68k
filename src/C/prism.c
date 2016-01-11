@@ -19,6 +19,7 @@
 #include "X3D_vector.h"
 #include "X3D_prism.h"
 #include "X3D_polygon.h"
+#include "X3D_camera.h"
 
 /**
 * Constructs a 3D prism with regular polygons as the base.
@@ -136,6 +137,67 @@ void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src) {
     prism->v[next] = src->v[3];
     prism->v[next + prism->base_v] = src->v[2];
     prism->v[f + prism->base_v] = src->v[1];
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Gets a list of edges indexes that compose a prism face. For example,
+///   given an octahedron prism, X3D_BASE_A would be composed of edges 0 - 7.
+///
+/// @param base_v - number of vertices in the prism base
+/// @param face   - face ID
+/// @param dest   - where to write the indexes
+///
+/// @return The number of edges in the face.
+/// @note dest should be big enough to hold the number of edges in the
+///   requested face. If face is X3D_BASE_A or X3D_BASE_B, this will be base_v
+///   vertices. Otherwise, it will be 4.
+///////////////////////////////////////////////////////////////////////////////
+uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest) {
+  if(face <= X3D_BASE_B) {
+    // Prism base
+    uint16 start = (face == X3D_BASE_A ? 0 : base_v);
+    uint16 i;
+    
+    for(i = 0; i < base_v; ++i)
+      dest[i] = start + i;
+    
+    return base_v;
+  }
+  else {
+    // Quad face
+    uint16 f = face - 2;
+    dest[0] = f;
+    dest[1] = x3d_int16_add_wrap(f, 1, base_v) + base_v * 2;
+    dest[2] = f + base_v;
+    dest[3] = f + base_v * 2;
+    
+    return 4;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Gets the vertex indexes that compose a 2D/3D prism edge.
+///
+/// @param prism  - prism
+/// @param edge   - edge ID (0 to base_v * 3)
+/// @param a      - dest of first vertex
+/// @param b      - dest of second vertex
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b) {
+  if(edge < base_v * 2) {
+    uint16 offset = (edge < base_v ? 0 : base_v);
+    uint16 next = (edge - offset + 1 != base_v ? edge - offset + 1 : 0)
+      + offset;
+    
+    *a = edge;
+    *b = next;
+  }
+  else {
+    *a = edge - base_v * 2;
+    *b = edge - base_v;
   }
 }
 

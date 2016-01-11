@@ -25,3 +25,12 @@
 #define X3D_MIN(_a, _b) ({ __typeof__(_a) _aa = _a; __typeof__(_b) _bb = _b; _aa < _bb ? _aa : _bb; })
 #define X3D_MAX(_a, _b) ({ __typeof__(_a) _aa = _a; __typeof__(_b) _bb = _b; _aa > _bb ? _aa : _bb; })
 
+
+static inline int16 x3d_int16_add_wrap(int16 val, int16 add, int16 max) {
+  return val + add < max ? val + add : val + add - max;
+}
+
+static inline int16 x3d_int16_sub_wrap(int16 val, int16 sub, int16 max) {
+  return val - sub >= 0 ? val - sub : val - sub + max;
+}
+

@@ -41,6 +41,12 @@ typedef struct X3D_Prism3D {
                       ///   next base_v vertices are for X3D_BASE_B.
 } X3D_Prism3D;
 
+/// @todo Document.
+typedef struct X3D_Prism2D {
+  uint16 base_v;
+  X3D_Vex2D v[];
+} X3D_Prism2D;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Returns the size of a 3D prism (in bytes) given the number of vertices in
@@ -66,6 +72,14 @@ static inline void x3d_prism3d_copy(X3D_Prism3D* dest, X3D_Prism3D* src) {
   memcpy(dest, src, x3d_prism3d_size(src->base_v));
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the total number of faces in a 3D prism given the number of
+///   vertices in the base.
+///
+/// @param base_v - number of vertices in the base.
+///
+/// @return The number of faces such a 3D prism would have.
+///////////////////////////////////////////////////////////////////////////////
 static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
   return base_v + 2;
 }
@@ -73,4 +87,6 @@ static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
 void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
 void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
 void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
+uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest);
+void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b);
 
