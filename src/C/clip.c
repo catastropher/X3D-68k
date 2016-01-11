@@ -465,6 +465,7 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end) {
   // This is a terribly inefficient way to implement this...
   
+  
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
   
@@ -472,6 +473,29 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   
   int16 y_min = X3D_MAX(region->y_range.min, edge.y_range.min);
   int16 y_max = X3D_MIN(region->y_range.max, edge.y_range.max);
+  
+  if(edge.flags & EDGE_INVISIBLE || y_min > y_max) {
+    x3d_stack_restore(stack, stack_ptr);
+    return X3D_FALSE;
+  }
+  
+  // Horizontal lines
+  if(start->y == end->y) {
+    uint16 y_offset = start->y - region->y_range.min;
+    
+    if(start->x > end->x) {
+      X3D_SWAP(start->x, end->x);
+    }
+    
+    if(start->x < region->x_left[y_offset])
+      start->x = region->x_left[y_offset];
+    
+    if(end->x > region->x_right[y_offset])
+      end->x = region->x_right[y_offset];
+    
+    x3d_stack_restore(stack, stack_ptr);
+    return X3D_TRUE;
+  }
   
   int16 i;
   _Bool found = X3D_FALSE;
