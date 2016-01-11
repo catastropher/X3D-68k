@@ -118,6 +118,15 @@ void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObjec
   }
 }
 
+void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
+  int16 i;
+  
+  for(i = region->y_range.min; i < region->y_range.max; ++i) {
+    uint16 index = i - region->y_range.min;
+    x3d_screen_draw_line(region->x_left[index], i, region->x_right[index], i, color);
+  }
+}
+
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region) {
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
@@ -197,7 +206,8 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
         if(x3d_rasterregion_construct_from_edges(&new_region, &renderman->stack, edges, edge_index, face_e)) {
           if(x3d_rasterregion_intersect(region, &new_region)) {
             uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
-            x3d_segment_render(seg_id, cam, color * 64, &new_region);
+           // x3d_rasterregion_fill(&new_region, 0xFFFF);
+            x3d_segment_render(seg_id, cam, color * 8, &new_region);
           }
         }
         

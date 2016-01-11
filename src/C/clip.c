@@ -511,24 +511,28 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     
     // Make sure the line actually touches the boundry it's clipped against
     if(x < left) {
-      //x = left;
       found = X3D_TRUE;
       break;
     }
     else if(x > right) {
-      //x = right;
       found = X3D_TRUE;
       break;
     }
   }
   
-  end->y = i - 1;
+  
   
   if(!found) {
-    //x = edge.x_data[end->y - edge.y_range.min];
+    end->y = i - 1;
+    end->x = edge.x_data[end->y - edge.y_range.min];
   }
-  
-  end->x = x;
+  else {
+    // Binary search to find where edge meets the raster region edge
+    //X3D_Vex2D left = { x, i };
+    //X3D_Vex2D right = { edge.x_data[end->y - edge.y_range.min], i - 1 };
+    end->y = i - 1;
+    end->x = (x + edge.x_data[end->y - edge.y_range.min]) / 2;
+  }
   
   x3d_stack_restore(stack, stack_ptr);
   
