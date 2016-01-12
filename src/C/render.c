@@ -161,7 +161,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     uint16 a, b;
     x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
     draw_clip_line(v[a].x, v[a].y, v[b].x, v[b].y, color, region);
-  }
+    }
   
   //x3d_prism3d_render(&seg->prism, cam, color);
   
@@ -206,7 +206,14 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
         if(x3d_rasterregion_construct_from_edges(&new_region, &renderman->stack, edges, edge_index, face_e)) {
           if(x3d_rasterregion_intersect(region, &new_region)) {
             uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
-           // x3d_rasterregion_fill(&new_region, 0xFFFF);
+            
+#if 0
+            if(id == 0)
+              x3d_rasterregion_fill(&new_region, 0xFFFF);
+            else
+              x3d_rasterregion_fill(&new_region, 31);
+#endif
+            
             x3d_segment_render(seg_id, cam, color * 8, &new_region);
           }
         }

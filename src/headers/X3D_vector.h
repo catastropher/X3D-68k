@@ -55,6 +55,11 @@ typedef struct X3D_Vex2D_int16 {
   int16 y;
 } X3D_Vex2D_int16;
 
+typedef struct X3D_Vex2D_int32 {
+  int32 x;
+  int32 y;
+} X3D_Vex2D_int32;
+
 typedef X3D_Vex3D_int16 X3D_Vex3D;
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp0x16;
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp8x8;

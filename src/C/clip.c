@@ -462,6 +462,15 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   return X3D_TRUE;
 }
 
+static _Bool rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p) {
+  if(p.y < region->y_range.min || p.y > region->y_range.max)
+    return X3D_FALSE;
+  
+  uint16 offsety = p.y - region->y_range.min;
+  
+  return p.x >= region->x_left[offsety] && p.x <= region->x_right[offsety];
+}
+
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end) {
   // This is a terribly inefficient way to implement this...
   
@@ -514,6 +523,10 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     }
   }
   
+  if(start->y > end->y) {
+    X3D_SWAP(start, end);
+  }
+  
   start->x = x;
   start->y = i;
   
@@ -522,52 +535,36 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     return X3D_FALSE;
   }
   
-  found = X3D_FALSE;
+  if(rasterregion_point_inside(region, *end)) {
+    x3d_stack_restore(stack, stack_ptr);
+    return X3D_TRUE;
+  }
   
-  /// @todo This leaves little gaps at the start of the line because it marked
-  /// the first scanline as outside. Fix this!
+  // Do a binary search to find the last pixel where the line is inside
+  X3D_Vex2D in = *start;
+  X3D_Vex2D out = *end;
+  X3D_Vex2D mid;
   
-  // Find where the line leaves the region  
-  for(; i <= y_max; ++i) {
-    left = region->x_left[i - region->y_range.min];
-    right = region->x_right[i - region->y_range.min];
-    x = edge.x_data[i - edge.y_range.min];
+  do {
+    mid.x = (in.x + out.x) >> 1;
+    mid.y = (in.y + out.y) >> 1;
     
-    // Make sure the line actually touches the boundry it's clipped against
-    if(x < left) {
-      found = X3D_TRUE;
-      break;
-    }
-    else if(x > right) {
-      found = X3D_TRUE;
-      break;
-    }
-  }
-  
-  
-  
-  if(!found) {
-    end->y = i - 1;
-    end->x = edge.x_data[end->y - edge.y_range.min];
-  }
-  else {
-    // Binary search to find where edge meets the raster region edge
-    //X3D_Vex2D left = { x, i };
-    //X3D_Vex2D right = { edge.x_data[end->y - edge.y_range.min], i - 1 };
-    end->y = i - 1;
-    end->x = (x + edge.x_data[end->y - edge.y_range.min]) / 2;
+    //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
     
-    /// @todo Hmmm... it appears the clipping issue only happens with vertical
-    /// lines... investigate.
-#if 0
-    if(end->x < left) {
-      end->x = left;
+    if(abs(in.x - out.x) < 2 && abs(in.y - out.y) < 2)
+      break;
+    
+    
+    if(rasterregion_point_inside(region, mid)) {
+      in = mid;
     }
-    else if(end->x > right) {
-      end->x = right;
+    else {
+      out = mid;
     }
-#endif
-  }
+  } while(1);
+  
+  end->x = mid.x;
+  end->y = mid.y;
   
   x3d_stack_restore(stack, stack_ptr);
   
