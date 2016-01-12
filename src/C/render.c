@@ -140,6 +140,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   X3D_Prism3D* prism = &seg->prism;
   X3D_Vex2D v[prism->base_v * 2];
+  X3D_Vex3D v3d[prism->base_v * 2];
   uint16 i;
   
   X3D_Vex3D cam_pos;
@@ -152,16 +153,11 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
       prism->v[i].z - cam_pos.z
     };
     
-    X3D_Vex3D rot;
-    x3d_vex3d_int16_rotate(&rot, &translate, &cam->base.mat);
-    x3d_vex3d_int16_project(v + i, &rot);
+    x3d_vex3d_int16_rotate(v3d + i, &translate, &cam->base.mat);
+    x3d_vex3d_int16_project(v + i, v3d + i);
   }
   
-  for(i = 0; i < prism->base_v * 3; ++i) {
-    uint16 a, b;
-    x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
-    draw_clip_line(v[a].x, v[a].y, v[b].x, v[b].y, color, region);
-    }
+  
   
   //x3d_prism3d_render(&seg->prism, cam, color);
   
@@ -222,6 +218,16 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
         
         x3d_stack_restore(&renderman->stack, stack_ptr);
       }
+    }
+  }
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    uint16 a, b;
+    X3D_Vex2D va, vb;
+    x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
+    
+    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v + a, v + b, &va, &vb, 10) != EDGE_INVISIBLE) {
+      draw_clip_line(va.x, va.y, vb.x, vb.y, color, region);
     }
   }
   

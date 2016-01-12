@@ -471,6 +471,51 @@ static _Bool rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p) {
   return p.x >= region->x_left[offsety] && p.x <= region->x_right[offsety];
 }
 
+
+int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_project, X3D_Vex2D* b_project, X3D_Vex2D* a_dest, X3D_Vex2D* b_dest, int16 z) {
+  if(a->z < z && b->z < z) {
+    return EDGE_INVISIBLE;
+  }
+  else if(a->z >= z && b->z >= z) {
+    *a_dest = *a_project;
+    *b_dest = *b_project;
+    return 0;
+  }
+  
+  if(a->z < z) {
+    X3D_SWAP(a, b);
+    X3D_SWAP(a_project, b_project);
+    //SWAP(a_dest, b_dest);
+  }
+  
+  *a_dest = *a_project;
+  
+  int16 dist_a = a->z - z;
+  int16 dist_b = z - b->z;
+  int16 scale = ((int32)dist_a << 15) / (dist_a + dist_b);
+  
+  printf("Clipped!\n");
+  
+  X3D_Vex3D new_b = {
+    a->x + ((((int32)b->x - a->x) * scale) >> 15),
+    a->y + ((((int32)b->y - a->y) * scale) >> 15),
+    z
+  };
+  
+  x3d_vex3d_int16_project(b_dest, &new_b);
+  
+//   static int16 count = 0;
+//   
+//   if(count++ == 1) {
+//     x3d_error("{%d,%d,%d} - {%d,%d,%d} -> {%d,%d,%d} -> {%d,%d} - {%d,%d}",
+//               a->x, a->y, a->z,
+//               b->x, b->y, b->z,
+//               new_b.x, new_b.y, new_b.z, a_dest->x, a_dest->y, b_dest->x, b_dest->y);
+//   }
+  
+  return EDGE_NEAR_CLIPPED;
+}
+
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end) {
   // This is a terribly inefficient way to implement this...
   

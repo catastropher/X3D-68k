@@ -370,14 +370,15 @@ void engine_test(void) {
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
-  x3d_prism3d_construct(prism, base_v, 50,  100, angle);
+  x3d_prism3d_construct(prism, base_v, 100,  100, angle);
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
   uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 20);
   uint16 id3 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id2, 3), 20);
-  //uint16 id4 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id3, 1), 20);
+  uint16 id4 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id3, 1), 20);
   uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 0), 20);
   uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
+  uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 100);
   
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
