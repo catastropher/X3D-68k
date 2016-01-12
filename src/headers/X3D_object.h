@@ -69,3 +69,9 @@ static inline void x3d_object_pos(X3D_Object* object, X3D_Vex3D* v) {
   v->z = obj->pos.z >> 8;
 }
 
+static inline void x3d_dynamicobject_forward_vector(X3D_DynamicObjectBase* object, X3D_Vex3D* dest) {
+  dest->x = object->mat.data[2];
+  dest->y = object->mat.data[5];
+  dest->z = object->mat.data[8];
+}
+

@@ -310,34 +310,50 @@ void engine_test_handle_keys(void) {
   }
   
   if(x3d_key_down(KEY_W)) {
-      cam->base.base.pos.z += 4L << 8;
-    }
-    else if(x3d_key_down(KEY_S)) {
-      cam->base.base.pos.z -= 4L << 8;
-    }
+    X3D_Vex3D dir;
+    x3d_dynamicobject_forward_vector(&cam->base, &dir);
     
-    if(x3d_key_down(KEY_A)) {
-      cam->base.base.pos.x -= 4L << 8;
-    }
-    else if(x3d_key_down(KEY_D)) {
-      cam->base.base.pos.x += 4L << 8;
-    }
+    cam->base.base.pos.x += dir.x >> 5;
+    cam->base.base.pos.y += dir.y >> 5;
+    cam->base.base.pos.z += dir.z >> 5;
     
-    if(x3d_key_down(KEY_Q)) {
-      --cam->base.angle.y;
-      x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
-    }
-    else if(x3d_key_down(KEY_E)) {
-      ++cam->base.angle.y;
-      x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
-    }
+    //cam->base.base.pos.z += 4L << 8;
+  }
+  else if(x3d_key_down(KEY_S)) {
+    X3D_Vex3D dir;
+    x3d_dynamicobject_forward_vector(&cam->base, &dir);
     
-    if(x3d_key_down(KEY_UP)) {
-      cam->base.base.pos.y -= 4L << 8;
-    }
-    else if(x3d_key_down(KEY_DOWN)) {
-      cam->base.base.pos.y += 4L << 8;
-    }
+    cam->base.base.pos.x -= dir.x >> 5;
+    cam->base.base.pos.y -= dir.y >> 5;
+    cam->base.base.pos.z -= dir.z >> 5;
+    
+    //cam->base.base.pos.z += 4L << 8;
+  }
+  
+#if 0
+  if(x3d_key_down(KEY_A)) {
+    cam->base.base.pos.x -= 4L << 8;
+  }
+  else if(x3d_key_down(KEY_D)) {
+    cam->base.base.pos.x += 4L << 8;
+  }
+#endif
+  
+  if(x3d_key_down(KEY_A)) {
+    --cam->base.angle.y;
+    x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
+  }
+  else if(x3d_key_down(KEY_D)) {
+    ++cam->base.angle.y;
+    x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
+  }
+  
+  if(x3d_key_down(KEY_UP)) {
+    cam->base.base.pos.y -= 4L << 8;
+  }
+  else if(x3d_key_down(KEY_DOWN)) {
+    cam->base.base.pos.y += 4L << 8;
+  }
 }
 
 void engine_test(void) {
