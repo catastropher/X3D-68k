@@ -166,9 +166,9 @@ inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
 
   // Divide each component by the length
   /// @todo Replace with fixed point division
-  v->x = ((int32)v->x << X3D_NORMAL_BITS) / len;
-  v->y = ((int32)v->y << X3D_NORMAL_BITS) / len;
-  v->z = ((int32)v->z << X3D_NORMAL_BITS) / len;
+  v->x = ((int32)v->x * (1 << X3D_NORMAL_BITS)) / len;
+  v->y = ((int32)v->y * (1 << X3D_NORMAL_BITS)) / len;
+  v->z = ((int32)v->z * (1 << X3D_NORMAL_BITS)) / len;
 }
 
 /**

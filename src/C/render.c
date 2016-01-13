@@ -105,6 +105,7 @@ typedef struct X3D_WallPortal {
   X3D_Vex3D center;
   uint16 portal_id;
   X3D_Color color;
+  X3D_Mat3x3 mat;
   _Bool fill;
   
   struct {
@@ -165,16 +166,18 @@ uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D
     &portal->portal_poly,
     &x3d_uncompressedsegment_get_faces(seg)[face_id].plane,
     seg->prism.v + top_left_v,
-    seg->prism.v + bottom_right_v
+    seg->prism.v + bottom_right_v,
+    &portal->mat
   );
   
   // Move the portal polygon to the center of the wall
   X3D_Polygon3D* wall = alloca(x3d_polygon3d_size(seg->prism.base_v));
   x3d_prism3d_get_face(&seg->prism, face_id, wall);
   
+  printf("Face ID: %d\n", face_id);
+  
   // Calculate the center of the wall
-  /// @todo This has the potential to overflow.
-  X3D_Vex3D center = { 0, 0, 0 };
+  X3D_Vex3D_int16 center = { 0, 0, 0 };
   uint16 i;
   
   for(i = 0; i < wall->total_v; ++i) {
@@ -187,7 +190,9 @@ uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D
   center.y /= wall->total_v;
   center.z /= wall->total_v;
   
-  portal->center = center;
+  printf("Center: %d, %d, %d\n", center.x, center.y, center.z);
+  
+  portal->center = (X3D_Vex3D) { center.x, center.y, center.z };
   
   for(i = 0; i < portal->portal_poly.total_v; ++i) {
     portal->portal_poly.v[i].x += center.x;
@@ -220,7 +225,15 @@ uint16 x3d_wall_get_wall_portals(X3D_SegFaceID face, uint16* dest) {
   return total;
 }
 
+void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to) {
+  wall_portals[portal_from].portal_id = portal_to;
+}
+
 void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region) {
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  void* stack_ptr = x3d_stack_save(&renderman->stack);
+  
   X3D_WallPortal* portal = wall_portals + wall_portal_id;
   
   X3D_Vex2D v2d[portal->portal_poly.total_v];
@@ -229,9 +242,54 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   x3d_camera_transform_points(cam, portal->portal_poly.v, portal->portal_poly.total_v,
     v3d, v2d);
   
-  // Draw the portal outline
   uint16 i;
   
+  X3D_RasterEdge edges[portal->portal_poly.total_v];
+  
+  // Construct the portal's raster region, which has to be clipped against the
+  // parent raster region
+  for(i = 0; i < portal->portal_poly.total_v; ++i) {
+    uint16 a, b;
+    
+    a = i;
+    b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
+    
+    x3d_rasteredge_generate(&renderman->stack, edges + i, v2d[a], v2d[b], region->y_range);
+  }
+  
+  X3D_RasterRegion clipped_region;
+  uint16 edge_index[portal->portal_poly.total_v];
+  
+  for(i = 0; i < portal->portal_poly.total_v; ++i)
+    edge_index[i] = i;
+  
+  x3d_enginestate_next_step();
+  
+  X3D_CameraObject new_cam = *cam;
+  
+  int16 dist = 200;
+  
+  X3D_Vex3D_int32 dir = {
+    ((int32)portal->mat.data[6] * dist) >> 7,
+    ((int32)portal->mat.data[7] * dist) >> 7,
+    ((int32)portal->mat.data[8] * dist) >> 7,
+  };
+  
+  new_cam.base.base.pos.x += dir.x;
+  new_cam.base.base.pos.y += dir.y;
+  new_cam.base.base.pos.z += dir.z;
+  
+  if(portal->portal_id != 0xFFFF && x3d_rasterregion_construct_from_edges(&clipped_region, &renderman->stack, edges, edge_index, portal->portal_poly.total_v)) {
+    X3D_WallPortal* other_side = wall_portals + portal->portal_id;
+    
+    if(x3d_rasterregion_intersect(region, &clipped_region)) {
+      uint16 seg_id = x3d_segfaceid_seg(other_side->face);
+      
+      x3d_segment_render(seg_id, &new_cam, 31, &clipped_region, x3d_enginestate_get_step());
+    }
+  }
+  
+  // Draw the portal outline
   for(i = 0; i < portal->portal_poly.total_v; ++i) {
     uint16 a, b;
     X3D_Vex2D va, vb;
@@ -244,6 +302,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     }
   }
   
+  x3d_stack_restore(&renderman->stack, stack_ptr);
   
   //printf("Render %d\n", wall_portal_id);
 }
@@ -322,65 +381,21 @@ void x3d_segment_render_face_portal(X3D_SegFaceID id, X3D_CameraObject* cam,
       
       
       
-      x3d_segment_render(id, &new_cam, color * 8, &new_region);
+      //x3d_segment_render(id, &new_cam, color * 8, &new_region);
     }
   }
   
   x3d_stack_restore(&renderman->stack, stack_save);
 }
 
-void x3d_create_draw_portal(X3D_UncompressedSegment* seg, X3D_CameraObject* cam, X3D_UncompressedSegmentFace* face, uint16 fff, X3D_RasterRegion* region, uint16 id, X3D_Color color) {
-  X3D_Polygon2D* poly = alloca(1000);
-  X3D_Polygon3D* poly3d = alloca(1000);
-  
-  X3D_Prism3D* prism = &seg->prism;
-  
-  X3D_Polygon3D* f = alloca(1000);
-  
-  uint16 ff = fff; //(x3d_enginestate_get_step() % 800) / 200 + 2;
-  
-  uint16 next = ((ff - 2 + 1) % seg->prism.base_v) + seg->prism.base_v;
-  
-  x3d_prism3d_get_face(&seg->prism, ff, f);
-  
-  x3d_polygon2d_construct(poly, 8, 30, 0);
-  
-  X3D_Vex3D sum = { 0, 0, 0 };
-  
-  uint16 i;
-  for(i = 0; i < f->total_v; ++i) {
-    sum.x += f->v[i].x;
-    sum.y += f->v[i].y;
-    sum.z += f->v[i].z;
-  }
-  
-  sum.x /= f->total_v;
-  sum.y /= f->total_v;
-  sum.z /= f->total_v;
-  
-  poly3d->total_v = ff;
-  
-  x3d_polygon2d_to_polygon3d(poly, poly3d, &face[ff].plane, prism->v + ff - 2, prism->v + next);
-  
-  for(i = 0; i < poly3d->total_v; ++i) {
-    poly3d->v[i].x += sum.x;
-    poly3d->v[i].y += sum.y;
-    poly3d->v[i].z += sum.z;
-  }
 
-  
-  //x3d_polygon3d_render_wireframe_no_clip(poly3d, cam, 5000);
-  
-  x3d_segment_render_face_portal(id, cam, color, region, poly3d);  
-}
-
-void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region) {
+void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step) {
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
-
-  uint16 step = x3d_enginestate_get_step();
   
-  if(seg->last_engine_step == step)
+  //printf("Step: %d, seg: %d\n", step, seg->last_engine_step);
+  
+  if(seg->last_engine_step >= step)
     return;
   
   seg->last_engine_step = step;
@@ -469,7 +484,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
                 x3d_rasterregion_fill(&new_region, 31);
   #endif
               
-              x3d_segment_render(seg_id, cam, color * 8, &new_region);
+              x3d_segment_render(seg_id, cam, color * 8, &new_region, step);
             }
           }
           
@@ -498,7 +513,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 void x3d_render(X3D_CameraObject* cam) {
   X3D_Color color = 31;//x3d_rgb_to_color(0, 0, 255);
   
-  x3d_segment_render(0, cam, color, &x3d_rendermanager_get()->region);
+  x3d_segment_render(0, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
   
   int16 cx = x3d_screenmanager_get()->w / 2;
   int16 cy = x3d_screenmanager_get()->h / 2;

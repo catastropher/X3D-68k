@@ -117,6 +117,8 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
       X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(
         &seg_manager->cache.entry[i].seg);
       
+      seg_manager->cache.entry[i].seg.last_engine_step = 0;
+      
       for(d = 0; d < x3d_prism3d_total_f(seg->base_v); ++d) {
         x3d_prism3d_get_face(&seg_manager->cache.entry[i].seg.prism, d, poly);
         x3d_plane_construct(&face[d].plane, poly->v, poly->v + 1, poly->v + 2);

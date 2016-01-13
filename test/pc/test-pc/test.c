@@ -303,14 +303,17 @@ void engine_test(void) {
   X3D_Polygon2D* portal_poly = alloca(1000);
   
   x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
-  x3d_wallportal_add(x3d_segfaceid_create(0, 4), (X3D_Vex3D) { 0, 0, 0 }, 0, portal_poly, 5000);
+  //uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 4), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 5000);
+  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id7, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 31);
   
-  x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0, portal_poly, 31);
+  //x3d_wallportal_connect(portal_red, portal_green);
+  //x3d_wallportal_connect(portal_green, portal_red);
+  
   
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   
-  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, -300 << 8 };
+  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, -300 * 256 };
   cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
   x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   

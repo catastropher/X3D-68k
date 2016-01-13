@@ -88,7 +88,7 @@ void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle25
   }
 }
 
-void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, X3D_Vex3D* top_left, X3D_Vex3D* bottom_right) {
+void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, X3D_Vex3D* top_left, X3D_Vex3D* bottom_right, X3D_Mat3x3* mat) {
   X3D_Vex3D_fp0x16 x, y, z;
   
   X3D_Vex3D* v = top_left;
@@ -165,19 +165,17 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
   y = (X3D_Vex3D) { 0, 0x7FFF, 0 };
   
   
-  X3D_Mat3x3_fp0x16 mat;
+  mat->data[0] = x.x;
+  mat->data[1] = x.y;
+  mat->data[2] = x.z;
   
-  mat.data[0] = x.x;
-  mat.data[1] = x.y;
-  mat.data[2] = x.z;
+  mat->data[3] = y.x;
+  mat->data[4] = y.y;
+  mat->data[5] = y.z;
   
-  mat.data[3] = y.x;
-  mat.data[4] = y.y;
-  mat.data[5] = y.z;
-  
-  mat.data[6] = z.x;
-  mat.data[7] = z.y;
-  mat.data[8] = z.z;
+  mat->data[6] = z.x;
+  mat->data[7] = z.y;
+  mat->data[8] = z.z;
   
   dest->total_v = poly->total_v;
   
@@ -187,7 +185,7 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
     
     //x3d_mat3x3_print(&mat);
     
-    x3d_vex3d_int16_rotate(dest->v + i, &vv, &mat);
+    x3d_vex3d_int16_rotate(dest->v + i, &vv, mat);
     
     //dest->v[i].x += v->x;
     //dest->v[i].y += v->y;
