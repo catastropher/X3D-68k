@@ -22,6 +22,12 @@
 #include "X3D_enginestate.h"
 #include "X3D_clip.h"
 
+typedef struct X3D_WallPortal {
+  X3D_SegFaceID face;
+  X3D_Vex3D center;
+  uint16 portal_id;
+} X3D_WallPortal;
+
 static void draw_clip_line(int16 x1, int16 y1, int16 x2, int16 y2, X3D_Color color, X3D_RasterRegion* region) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   X3D_Vex2D v1 = { x1, y1 };
@@ -32,92 +38,60 @@ static void draw_clip_line(int16 x1, int16 y1, int16 x2, int16 y2, X3D_Color col
   }
 }
 
-void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color) {
-#if 0
-  X3D_Vex2D v[prism->base_v * 2];
-  uint16 i;
-  
-  X3D_Vex3D cam_pos;
-  x3d_object_pos(object, &cam_pos);
-  
-  for(i = 0; i < prism->base_v * 2; ++i) {
-    X3D_Vex3D translate = {
-      prism->v[i].x - cam_pos.x,
-      prism->v[i].y - cam_pos.y,
-      prism->v[i].z - cam_pos.z
-    };
-    
-    X3D_Vex3D rot;
-    x3d_vex3d_int16_rotate(&rot, &translate, &object->base.mat);
-    x3d_vex3d_int16_project(v + i, &rot);
-  }
-  
-  for(i = 0; i < prism->base_v; ++i) {
-    uint16 next = (i != prism->base_v - 1 ? i + 1 : 0);
-    
-    // BASE_A
-    draw_clip_line(
-      v[i].x,
-      v[i].y,
-      v[next].x,
-      v[next].y,
-      color
-    );
-    
-    // BASE_B
-    draw_clip_line(
-      v[i + prism->base_v].x,
-      v[i + prism->base_v].y,
-      v[next + prism->base_v].x,
-      v[next + prism->base_v].y,
-      color
-    );
-    
-    // Connecting lines
-    draw_clip_line(
-      v[i].x,
-      v[i].y,
-      v[i + prism->base_v].x,
-      v[i + prism->base_v].y,
-      color
-    );
-  }
-#endif
-}
 
-void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color) {
-  X3D_Vex2D v[poly->total_v];
+///////////////////////////////////////////////////////////////////////////////
+/// Transforms a list of points so they are relative to a camera and
+///   projected onto the screen.
+///
+/// @param cam      - camera
+/// @param v        - list of points to transform
+/// @param total_v  - total numeber of points
+/// @param dest3d   - where to write 3D points (optional, NULL if not used)
+/// @param dest2d   - where to write projected 2D points
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
+        uint16 total_v, X3D_Vex3D* dest3d, X3D_Vex2D* dest2d) {
+  
+  X3D_Vex3D cam_pos;                // Position of the camera
+  x3d_object_pos(cam, &cam_pos);
+  
   uint16 i;
   
-  X3D_Vex3D cam_pos;
-  x3d_object_pos(object, &cam_pos);
-  
-  for(i = 0; i < poly->total_v; ++i) {
+  for(i = 0; i < total_v; ++i) {
+    // Translate the point so it's relative to the camera
     X3D_Vex3D translate = {
-      poly->v[i].x - cam_pos.x,
-      poly->v[i].y - cam_pos.y,
-      poly->v[i].z - cam_pos.z
+      v[i].x - cam_pos.x,
+      v[i].y - cam_pos.y,
+      v[i].z - cam_pos.z
     };
     
-    X3D_Vex3D rot;
-    x3d_vex3d_int16_rotate(&rot, &translate, &object->base.mat);
-    x3d_vex3d_int16_project(v + i, &rot);
-  }
-  
-  for(i = 0; i < poly->total_v; ++i) {
-    uint16 next = (i != poly->total_v - 1 ? i + 1 : 0);
+    // Rotate the point around the origin
+    X3D_Vex3D temp_rot;
+    x3d_vex3d_int16_rotate(&temp_rot, &translate, &cam->base.mat);
     
-    // BASE_A
-    x3d_screen_draw_line(
-      v[i].x,
-      v[i].y,
-      v[next].x,
-      v[next].y,
-      color
-    );
+    // Project it onto the screen
+    x3d_vex3d_int16_project(dest2d + i, &temp_rot);
+    
+    // Store the rotated 3D point, if requested
+    if(dest3d) {
+      *dest3d = temp_rot;
+      ++dest3d;
+    }
   }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+/// Fills a raster region.
+///
+/// @param region - region
+/// @param color  - color to the fill the region with
+///
+/// @return Nothing.
+/// @note No clipping is performed (it is assumed to already be clipped).
+///////////////////////////////////////////////////////////////////////////////
 void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   int16 i;
   
@@ -127,7 +101,8 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   }
 }
 
-void x3d_segment_render_face_portal(X3D_SegFaceID id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* parent_region, X3D_Polygon3D* portal) {
+void x3d_segment_render_face_portal(X3D_SegFaceID id, X3D_CameraObject* cam,
+        X3D_Color color, X3D_RasterRegion* parent_region, X3D_Polygon3D* portal) {
   X3D_Vex2D v[portal->total_v];
   X3D_Vex3D v3d[portal->total_v];
   
