@@ -33,4 +33,6 @@ void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color 
 void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color);
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region);
 void x3d_render(X3D_CameraObject* cam);
+void x3d_wallportals_init();
+uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D_Polygon2D* poly, X3D_Color color);
 

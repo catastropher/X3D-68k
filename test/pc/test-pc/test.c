@@ -298,7 +298,14 @@ void engine_test(void) {
   uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
   uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 100);
   
+  // Create a portal on one of the walls
+  uint16 portal_base_v = 8;
+  X3D_Polygon2D* portal_poly = alloca(1000);
   
+  x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
+  x3d_wallportal_add(x3d_segfaceid_create(0, 4), (X3D_Vex3D) { 0, 0, 0 }, 0, portal_poly, 5000);
+  
+  x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0, portal_poly, 31);
   
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;

@@ -54,6 +54,9 @@ void x3d_init(X3D_InitSettings* settings) {
   x3d_log(X3D_INFO, "%d\n", x3d_screenmanager_get()->h);
   
   x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.y_range.min, renderman->region.y_range.max);
+  
+  // Init wall portals
+  x3d_wallportals_init();
 }
 
 void x3d_cleanup(void) {
