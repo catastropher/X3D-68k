@@ -25,9 +25,16 @@ typedef struct X3D_Polygon3D {
   X3D_Vex3D v[];
 } X3D_Polygon3D;
 
+typedef struct X3D_Polygon2D {
+  uint16 total_v;
+  X3D_Vex2D v[];
+} X3D_Polygon2D;
+
 void x3d_polygon3d_print(X3D_Polygon3D* p);
 void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist);
 void x3d_polygon3d_reverse(X3D_Polygon3D* poly);
+void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, X3D_Vex3D* top_left, X3D_Vex3D* bottom_right);
+void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle256 ang);
 
 static inline uint16 x3d_polygon3d_size(uint16 total_v) {
   return sizeof(X3D_Polygon3D) + total_v * sizeof(X3D_Vex3D);

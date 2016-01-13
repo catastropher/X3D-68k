@@ -301,8 +301,20 @@ void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   
   if(x3d_key_down(TEST_KEY_ENTER)) {
-    printf("Enter!\n");
-    SDL_Delay(1000);
+    X3D_Polygon2D* poly = alloca(100);
+    
+    poly->total_v = 1;
+    poly->v[0] = (X3D_Vex2D) { 0, 0 };
+    
+    X3D_UncompressedSegment* seg = x3d_segmentmanager_load(0);
+    X3D_Polygon3D* p = alloca(1000);
+    x3d_prism3d_get_face(&seg->prism, 2, p);
+    
+    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+    
+    //x3d_polygon2d_to_polygon3d(poly, p, &face[2].plane, p->v);
+    
+    
   }
   
   if(x3d_key_down(TEST_KEY_ESCAPE)) {
@@ -330,12 +342,14 @@ void engine_test_handle_keys(void) {
     //cam->base.base.pos.z += 4L << 8;
   }
   
-#if 0
-  if(x3d_key_down(KEY_A)) {
-    cam->base.base.pos.x -= 4L << 8;
+#if 1
+  if(x3d_key_down(KEY_Q)) {
+    --cam->base.angle.x;
+    x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
-  else if(x3d_key_down(KEY_D)) {
-    cam->base.base.pos.x += 4L << 8;
+  else if(x3d_key_down(KEY_E)) {
+    ++cam->base.angle.x;
+    x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
 #endif
   
@@ -382,9 +396,9 @@ void engine_test(void) {
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
   // Create a new segment
-  uint16 base_v = 8;
+  uint16 base_v = 4;
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
-  X3D_Vex3D_angle256 angle = { 0, 0, 0 };
+  X3D_Vex3D_angle256 angle = { 0, ANG_30, 0 };
   
   x3d_prism3d_construct(prism, base_v, 100,  100, angle);
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
@@ -395,6 +409,8 @@ void engine_test(void) {
   uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 0), 20);
   uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
   uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 100);
+  
+  
   
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
