@@ -559,11 +559,11 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   }
   
   // Horizontal lines
-  if(edge.flags & EDGE_HORIZONTAL) {
-    uint16 y_offset = start->y - region->y_range.min;
+  if(start->y == end->y) {
+    int16 y_offset = start->y - region->y_range.min;
     
     if(start->x > end->x) {
-      X3D_SWAP(start->x, end->x);
+      X3D_SWAP(start, end);
     }
     
     if(start->x < region->x_left[y_offset])
@@ -573,7 +573,9 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
       end->x = region->x_right[y_offset];
     
     x3d_stack_restore(stack, stack_ptr);
-    return X3D_TRUE;
+    
+    return start->x < end->x;
+    
   }
   
   int16 i;

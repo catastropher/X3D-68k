@@ -248,6 +248,12 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   
   uint16 i;
   
+  for(i = 0; i < portal->portal_poly.total_v; ++i) {
+    // Can't handle portals that are partially behind the camera
+    if(v3d[i].z < 10)
+      return;
+  }
+  
   X3D_RasterEdge edges[portal->portal_poly.total_v];
   
   // Construct the portal's raster region, which has to be clipped against the
@@ -427,7 +433,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v);
   
-  
+  //x3d_rasterregion_fill(region, 0x7FFF / (depth));
   
   //x3d_prism3d_render(&seg->prism, cam, color);
   
