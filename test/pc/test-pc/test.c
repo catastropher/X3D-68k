@@ -284,11 +284,11 @@ void engine_test(void) {
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
   // Create a new segment
-  uint16 base_v = 4;
+  uint16 base_v = 8;
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
-  x3d_prism3d_construct(prism, base_v, 100,  100, angle);
+  x3d_prism3d_construct(prism, base_v, 200,  100, angle);
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
   //uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 20);
@@ -304,7 +304,7 @@ void engine_test(void) {
   
   x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 5000);
-  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id7, 2), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 31);
+  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id, 8), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 31);
   
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);

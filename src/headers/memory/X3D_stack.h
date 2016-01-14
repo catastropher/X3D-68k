@@ -18,10 +18,10 @@
 typedef struct X3D_Stack {
   void* base;
   void* ptr;
-  uint16 size;
+  uint32 size;
 } X3D_Stack;
 
-void x3d_stack_init(X3D_Stack* stack, void* mem, uint16 mem_size);
+void x3d_stack_init(X3D_Stack* stack, void* mem, uint32 mem_size);
 void* x3d_stack_alloc(X3D_Stack* stack, uint16 size);
 void* x3d_stack_save(X3D_Stack* stack);
 void x3d_stack_restore(X3D_Stack* stack, void* ptr);

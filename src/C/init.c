@@ -24,7 +24,7 @@ void x3d_init(X3D_InitSettings* settings) {
   x3d_platform_init(settings);
   
   // Initialize the render stack
-  uint16 stack_size = 60000;
+  uint32 stack_size = 600000;
   void* render_stack_mem = malloc(stack_size);
   
   x3d_assert(render_stack_mem);

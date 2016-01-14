@@ -516,6 +516,31 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
   return EDGE_NEAR_CLIPPED;
 }
 
+void bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* region) {
+  X3D_Vex2D mid;
+  
+  do {
+    mid.x = (in.x + out.x) >> 1;
+    mid.y = (in.y + out.y) >> 1;
+    
+    //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
+    
+    if(abs(in.x - out.x) < 2 && abs(in.y - out.y) < 2)
+      break;
+    
+    
+    if(rasterregion_point_inside(region, mid)) {
+      in = mid;
+    }
+    else {
+      out = mid;
+    }
+  } while(1);
+  
+  res->x = mid.x;
+  res->y = mid.y;
+}
+
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end) {
   // This is a terribly inefficient way to implement this...
   
@@ -534,7 +559,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   }
   
   // Horizontal lines
-  if(start->y == end->y) {
+  if(edge.flags & EDGE_HORIZONTAL) {
     uint16 y_offset = start->y - region->y_range.min;
     
     if(start->x > end->x) {
@@ -572,8 +597,16 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     X3D_SWAP(start, end);
   }
   
-  start->x = x;
-  start->y = i;
+  if(i == y_min) {
+    start->x = x;
+    start->y = i;
+  }
+  else {
+    X3D_Vex2D in = { x, i };
+    X3D_Vex2D out = { edge.x_data[i - 1 - edge.y_range.min], i - 1 };
+    
+    bin_search(in, out, start, region);
+  }
   
   if(!found) {
     x3d_stack_restore(stack, stack_ptr);
@@ -586,30 +619,11 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   }
   
   // Do a binary search to find the last pixel where the line is inside
-  X3D_Vex2D in = *start;
-  X3D_Vex2D out = *end;
-  X3D_Vex2D mid;
   
-  do {
-    mid.x = (in.x + out.x) >> 1;
-    mid.y = (in.y + out.y) >> 1;
-    
-    //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
-    
-    if(abs(in.x - out.x) < 2 && abs(in.y - out.y) < 2)
-      break;
-    
-    
-    if(rasterregion_point_inside(region, mid)) {
-      in = mid;
-    }
-    else {
-      out = mid;
-    }
-  } while(1);
+  bin_search(*start, *end, end, region);
   
-  end->x = mid.x;
-  end->y = mid.y;
+  //end->x = mid.x;
+  //end->y = mid.y;
   
   x3d_stack_restore(stack, stack_ptr);
   

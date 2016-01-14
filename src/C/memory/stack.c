@@ -24,7 +24,7 @@
 /// @param mem      - memory for the stack
 /// @param mem_size - size of the memory for the stack
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_stack_init(X3D_Stack* stack, void* mem, uint16 mem_size) {
+void x3d_stack_init(X3D_Stack* stack, void* mem, uint32 mem_size) {
   stack->base = mem;
   stack->size = mem_size;
   
