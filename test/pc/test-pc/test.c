@@ -260,8 +260,8 @@ void engine_test_handle_keys(void) {
 
 void engine_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 640,
-    .screen_h = 480,
+    .screen_w = 320,
+    .screen_h = 240,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
@@ -297,6 +297,7 @@ void engine_test(void) {
   //uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 0), 20);
   //uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
   uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 100);
+  uint16 id8 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 4), 100);
   
   // Create a portal on one of the walls
   uint16 portal_base_v = 8;

@@ -86,7 +86,7 @@ X3D_PLATFORM void x3d_read_keys() {
   while(SDL_PollEvent(&event)) {
     switch(event.type) {
       case SDL_KEYDOWN:
-        printf("Key: %d\n", event.key.keysym.sym);
+        //printf("Key: %d\n", event.key.keysym.sym);
         sdl_keys[event.key.keysym.sym] = X3D_TRUE;
         break;
         
