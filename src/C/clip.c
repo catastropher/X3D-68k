@@ -139,7 +139,7 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
   //printf("a: %d, b: %d\n", a.x, b.x);
   
   if(clip_rasteredge(edge, &a, &b, &slope, region_y_range)) {     // Only generate the edge if it's (potentially) visible
-    fp16x16 x = ((int32)a.x) << 16;
+    fp16x16 x = ((int32)a.x) * 65536L;
     int16 y = a.y;
     int16 height = b.y - a.y + 1;
     

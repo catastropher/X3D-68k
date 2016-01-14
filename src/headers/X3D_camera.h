@@ -21,5 +21,7 @@
 
 typedef struct X3D_CameraObject {
   X3D_DynamicObjectBase base;
+  X3D_Vex3D shift;
+  X3D_Vex3D pseduo_pos;
 } X3D_CameraObject;
 

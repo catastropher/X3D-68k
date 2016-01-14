@@ -21,7 +21,7 @@
 #include "X3D_segment.h"
 #include "X3D_enginestate.h"
 #include "X3D_clip.h"
-
+#include "X3D_trig.h"
 
 
 static void draw_clip_line(int16 x1, int16 y1, int16 x2, int16 y2, X3D_Color color, X3D_RasterRegion* region) {
@@ -66,6 +66,10 @@ void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
     // Rotate the point around the origin
     X3D_Vex3D temp_rot;
     x3d_vex3d_int16_rotate(&temp_rot, &translate, &cam->base.mat);
+    
+    temp_rot.x += cam->shift.x;
+    temp_rot.y += cam->shift.y;
+    temp_rot.z += cam->shift.z;
     
     // Project it onto the screen
     x3d_vex3d_int16_project(dest2d + i, &temp_rot);
@@ -154,8 +158,10 @@ uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D
   
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(seg_id);
   
+  x3d_assert(seg_id == seg->base.id);
+  
   /// @todo Add support for BASE_A and BASE_B face portals
-  x3d_assert(face_id >= 2);
+  //x3d_assert(face_id >= 2);
   
   uint16 top_left_v = face_id - 2;
   uint16 bottom_right_v = ((top_left_v + 1) % seg->prism.base_v) + seg->prism.base_v;
@@ -171,10 +177,8 @@ uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D
   );
   
   // Move the portal polygon to the center of the wall
-  X3D_Polygon3D* wall = alloca(x3d_polygon3d_size(seg->prism.base_v));
+  X3D_Polygon3D* wall = alloca(1000);//x3d_polygon3d_size(seg->prism.base_v * 2));
   x3d_prism3d_get_face(&seg->prism, face_id, wall);
-  
-  printf("Face ID: %d\n", face_id);
   
   // Calculate the center of the wall
   X3D_Vex3D_int16 center = { 0, 0, 0 };
@@ -267,25 +271,94 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   
   X3D_CameraObject new_cam = *cam;
   
-  int16 dist = 200;
+  int16 dist = -1000;
   
-  X3D_Vex3D_int32 dir = {
-    ((int32)portal->mat.data[6] * dist) >> 7,
-    ((int32)portal->mat.data[7] * dist) >> 7,
-    ((int32)portal->mat.data[8] * dist) >> 7,
-  };
-  
-  new_cam.base.base.pos.x += dir.x;
-  new_cam.base.base.pos.y += dir.y;
-  new_cam.base.base.pos.z += dir.z;
   
   if(portal->portal_id != 0xFFFF && x3d_rasterregion_construct_from_edges(&clipped_region, &renderman->stack, edges, edge_index, portal->portal_poly.total_v)) {
     X3D_WallPortal* other_side = wall_portals + portal->portal_id;
     
+    
+    X3D_Mat3x3 other_side_transpose = other_side->mat;
+    
+    x3d_mat3x3_transpose(&other_side_transpose);
+    
+    X3D_Mat3x3 temp;
+    
+    X3D_Mat3x3 portal_mat = portal->mat;
+    
+    x3d_mat3x3_mul(&temp, &portal_mat, &other_side_transpose);
+    
+    //new_cam.base.mat = temp;
+    
+    X3D_Mat3x3 temp2;
+    X3D_Mat3x3 rot;
+    
+    X3D_Vex3D_angle256 angle = { 0, ANG_180, 0 };
+    x3d_mat3x3_construct(&rot, &angle);
+    
+    x3d_mat3x3_mul(&temp2, &rot, &temp);
+    
+    
+    x3d_mat3x3_mul(&new_cam.base.mat, &temp2, &cam->base.mat);
+    
+    
+    X3D_Vex3D cam_pos;
+    x3d_object_pos(cam, &cam_pos);
+    
+    X3D_Vex3D center, c = x3d_vex3d_sub(&other_side->center, &cam_pos);
+    
+    X3D_Mat3x3 transpose = new_cam.base.mat;
+    //x3d_mat3x3_transpose(&transpose);
+    
+    x3d_vex3d_int16_rotate(&center, &c, &transpose);
+    
+    
+    X3D_Vex3D pcenter, pc = x3d_vex3d_sub(&portal->center, &cam_pos);
+    
+    x3d_vex3d_int16_rotate(&pcenter, &pc, &cam->base.mat);
+    
+    new_cam.shift.x = pcenter.x - center.x;
+    new_cam.shift.y = pcenter.y - center.y;
+    new_cam.shift.z = pcenter.z - center.z;
+    
+    new_cam.pseduo_pos = other_side->center;
+    
+    //printf("===================\n");
+    
+    //new_cam.base.mat.data[2] = -new_cam.base.mat.data[2];
+    //new_cam.base.mat.data[5] = -new_cam.base.mat.data[5];
+    //new_cam.base.mat.data[8] = -new_cam.base.mat.data[8];
+    
+    //new_cam.base.mat.data[2] = -new_cam.base.mat.data[2];
+    //new_cam.base.mat.data[5] = -new_cam.base.mat.data[5];
+    //new_cam.base.mat.data[8] = -new_cam.base.mat.data[8];
+    
+    //x3d_mat3x3_transpose(&new_cam.base.mat);
+    
+    //x3d_vex3d_int16_rotate(&new_diff, &diff, &transpose);
+    
+    //printf("Diff: %d, %d, %d\n", diff.x, diff.y, diff.z);
+    //printf("New Diff: %d, %d, %d\n", new_diff.x, new_diff.y, new_diff.z);
+    
+    
+    
+#if 0
+    
+    new_cam.base.base.pos.x = ((int32)other_side->center.x + new_diff.x) * 256;
+    new_cam.base.base.pos.y = ((int32)other_side->center.y + new_diff.y) * 256;
+    new_cam.base.base.pos.z = ((int32)other_side->center.z + new_diff.z) * 256;
+    
+    new_cam.base.base.pos.x = ((int32)other_side->center.x - 100) * 256;
+    new_cam.base.base.pos.y = ((int32)other_side->center.y) * 256;
+    new_cam.base.base.pos.z = ((int32)other_side->center.z + 100) * 256;
+    
+#endif
+
+    
     if(x3d_rasterregion_intersect(region, &clipped_region)) {
       uint16 seg_id = x3d_segfaceid_seg(other_side->face);
       
-      x3d_segment_render(seg_id, &new_cam, 31, &clipped_region, x3d_enginestate_get_step());
+      x3d_segment_render(seg_id, &new_cam, 31, region, x3d_enginestate_get_step());
     }
   }
   
@@ -393,10 +466,21 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
   
+  
+  if(id == 0) {
+    color = x3d_rgb_to_color(0, 0, 255);
+  }
+  else if (id == 1) {
+    color = x3d_rgb_to_color(255, 0, 255);
+  }
+  else {
+    color = 31;
+  }
+  
   //printf("Step: %d, seg: %d\n", step, seg->last_engine_step);
   
-  if(seg->last_engine_step >= step)
-    return;
+  //if(seg->last_engine_step != step)
+  //  return;
   
   seg->last_engine_step = step;
   
@@ -408,16 +492,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   X3D_Vex3D cam_pos;
   x3d_object_pos(cam, &cam_pos);
   
-  for(i = 0; i < prism->base_v * 2; ++i) {
-    X3D_Vex3D translate = {
-      prism->v[i].x - cam_pos.x,
-      prism->v[i].y - cam_pos.y,
-      prism->v[i].z - cam_pos.z
-    };
-    
-    x3d_vex3d_int16_rotate(v3d + i, &translate, &cam->base.mat);
-    x3d_vex3d_int16_project(v + i, v3d + i);
-  }
+  x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v);
   
   
   
@@ -450,11 +525,12 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     
     uint16 total_p = x3d_wall_get_wall_portals(x3d_segfaceid_create(id, i), portals);
     
+    //if(id == 6 && total_p == 0) continue;
     
     if(face[i].portal_seg_face != X3D_FACE_NONE || total_p != 0) {// || (id == 0 && i == 3)) {
       // Only render the segment if we're not on the opposite side of the wall
       // with the portal
-      int16 dist = x3d_plane_dist(&face[i].plane, &cam_pos);
+      int16 dist = x3d_plane_dist(&face[i].plane, &cam->pseduo_pos);
       
       //printf("Dist: %d\n", dist);
       
@@ -512,6 +588,9 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 
 void x3d_render(X3D_CameraObject* cam) {
   X3D_Color color = 31;//x3d_rgb_to_color(0, 0, 255);
+  
+  cam->shift = (X3D_Vex3D) { 0, 0, 0 };
+  x3d_object_pos(cam, &cam->pseduo_pos);
   
   x3d_segment_render(0, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
   

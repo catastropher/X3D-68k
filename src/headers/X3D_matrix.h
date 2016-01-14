@@ -32,4 +32,5 @@ typedef X3D_Mat3x3_fp0x16 X3D_Mat3x3;
 void x3d_mat3x3_mul(X3D_Mat3x3* dest, X3D_Mat3x3* a, X3D_Mat3x3* b);
 void x3d_mat3x3_print(X3D_Mat3x3* mat);
 void x3d_mat3x3_construct(X3D_Mat3x3 *dest, X3D_Vex3D_angle256 *angle);
+void x3d_mat3x3_transpose(X3D_Mat3x3* mat);
 

@@ -106,3 +106,18 @@ void x3d_mat3x3_print(X3D_Mat3x3* mat) {
   }
 }
 
+/// @todo Document.
+void x3d_mat3x3_transpose(X3D_Mat3x3* mat) {
+  X3D_Mat3x3 temp;
+  
+  uint16 i, j;
+  
+  for(i = 0; i < 3; ++i) {
+    for(j = 0; j < 3; ++j) {
+      temp.data[i * 3 + j] = mat->data[j * 3 + i];
+    }
+  }
+  
+  *mat = temp;
+}
+
