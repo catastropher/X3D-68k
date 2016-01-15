@@ -194,8 +194,6 @@ uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D
   center.y /= wall->total_v;
   center.z /= wall->total_v;
   
-  printf("Center: %d, %d, %d\n", center.x, center.y, center.z);
-  
   portal->center = (X3D_Vex3D) { center.x, center.y, center.z };
   
   for(i = 0; i < portal->portal_poly.total_v; ++i) {
@@ -209,7 +207,7 @@ uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D
 
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Gets a list of portals attached to a face.
+/// Gets a list of wall portals attached to a face.
 ///
 /// @param face - face ID
 /// @param dest - where to write portal ID's
@@ -229,25 +227,53 @@ uint16 x3d_wall_get_wall_portals(X3D_SegFaceID face, uint16* dest) {
   return total;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Connects a wall portal to another wall portal.
+///
+/// @param portal_from  - portal to create connection from
+/// @param portal_to    - portal that portal_from becomes connected to
+///
+/// @return Nothing.
+/// @note This overwrites what portal_from was previously connected to.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to) {
   wall_portals[portal_from].portal_id = portal_to;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders a wall portal and anything that can be seen through the portal
+///   from the perspective of the camera looking through it.
+///
+/// @param wall_portal_id - ID of the wall portal
+/// @param cam            - camera object that is looking though the portal
+/// @param region         - raster region that describes the clipping region
+///
+/// @return The number of portals attached to the given face.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   
+  // Save the stack pointer so we can free any allocations made later
   void* stack_ptr = x3d_stack_save(&renderman->stack);
   
+  // The wall portal to be rendered (using the temporary global implementation)
   X3D_WallPortal* portal = wall_portals + wall_portal_id;
   
+  // Outline of the portal projected onto the screen
   X3D_Vex2D v2d[portal->portal_poly.total_v];
+  
+  // 3D points that make up the outline and have been rotated relative to the
+  // camera, but haven't been projected yet
   X3D_Vex3D v3d[portal->portal_poly.total_v];
   
+  // Transform the points so they are relative to the camera
   x3d_camera_transform_points(cam, portal->portal_poly.v, portal->portal_poly.total_v,
     v3d, v2d);
   
   uint16 i;
   
+  // Check for portals that are partially behind the camera (clipping against
+  // the near plane isn't impelented yet)
   for(i = 0; i < portal->portal_poly.total_v; ++i) {
     // Can't handle portals that are partially behind the camera
     if(v3d[i].z < 10)
@@ -273,38 +299,49 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   for(i = 0; i < portal->portal_poly.total_v; ++i)
     edge_index[i] = i;
   
-  x3d_enginestate_next_step();
-  
+  // The new camera that has been adjusted to rasterize things on the other
+  // side of the portal properly.
   X3D_CameraObject new_cam = *cam;
   
-  int16 dist = -1000;
-  
-  
+  // Rending through a portal is a bit complicated. We have two portals that
+  // are in different parts of the world and that are oriented in different
+  // directions. When a camera looks through portal A, they are actually
+  // looking into the room with portal B as follows:
+  //
+  //  __________         _________
+  //  |        |         |       |
+  //  |        |         |   B   |
+  //  O<-- A   |         |   ^   |
+  //  |________|         |___|___|
+  //
+  // However, we have to make it look like this when rendering the portal:
+  //
+  //          __________
+  //  ________|        |
+  // |        |        |
+  // |    B<--O<-- A   |
+  // |________|________|
+  //
+  //
   if(portal->portal_id != 0xFFFF && x3d_rasterregion_construct_from_edges(&clipped_region, &renderman->stack, edges, edge_index, portal->portal_poly.total_v)) {
+    // Portal on the other side of the wall
     X3D_WallPortal* other_side = wall_portals + portal->portal_id;
     
-    
     X3D_Mat3x3 other_side_transpose = other_side->mat;
-    
     x3d_mat3x3_transpose(&other_side_transpose);
     
     X3D_Mat3x3 temp;
-    
-    X3D_Mat3x3 portal_mat = portal->mat;
-    
-    x3d_mat3x3_mul(&temp, &portal_mat, &other_side_transpose);
-    
-    //new_cam.base.mat = temp;
+    x3d_mat3x3_mul(&temp, &portal->mat, &other_side_transpose);
     
     X3D_Mat3x3 temp2;
     X3D_Mat3x3 rot;
     
+    // By this point, portal B has been flipped by 180 degrees, so flip
+    // it back
     X3D_Vex3D_angle256 angle = { 0, ANG_180, 0 };
     x3d_mat3x3_construct(&rot, &angle);
     
     x3d_mat3x3_mul(&temp2, &rot, &temp);
-    
-    
     x3d_mat3x3_mul(&new_cam.base.mat, &temp2, &cam->base.mat);
     
     
@@ -317,11 +354,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     c.y += cam->shift.y;
     c.z += cam->shift.z;
     
-    X3D_Mat3x3 transpose = new_cam.base.mat;
-    //x3d_mat3x3_transpose(&transpose);
-    
-    x3d_vex3d_int16_rotate(&center, &c, &transpose);
-    
+    x3d_vex3d_int16_rotate(&center, &c, &new_cam.base.mat);
     
     X3D_Vex3D pcenter, pc = x3d_vex3d_sub(&portal->center, &cam_pos);
     
@@ -336,38 +369,6 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     new_cam.shift.z = pcenter.z - center.z + cam->shift.z;
     
     new_cam.pseduo_pos = other_side->center;
-    
-    //printf("===================\n");
-    
-    //new_cam.base.mat.data[2] = -new_cam.base.mat.data[2];
-    //new_cam.base.mat.data[5] = -new_cam.base.mat.data[5];
-    //new_cam.base.mat.data[8] = -new_cam.base.mat.data[8];
-    
-    //new_cam.base.mat.data[2] = -new_cam.base.mat.data[2];
-    //new_cam.base.mat.data[5] = -new_cam.base.mat.data[5];
-    //new_cam.base.mat.data[8] = -new_cam.base.mat.data[8];
-    
-    //x3d_mat3x3_transpose(&new_cam.base.mat);
-    
-    //x3d_vex3d_int16_rotate(&new_diff, &diff, &transpose);
-    
-    //printf("Diff: %d, %d, %d\n", diff.x, diff.y, diff.z);
-    //printf("New Diff: %d, %d, %d\n", new_diff.x, new_diff.y, new_diff.z);
-    
-    
-    
-#if 0
-    
-    new_cam.base.base.pos.x = ((int32)other_side->center.x + new_diff.x) * 256;
-    new_cam.base.base.pos.y = ((int32)other_side->center.y + new_diff.y) * 256;
-    new_cam.base.base.pos.z = ((int32)other_side->center.z + new_diff.z) * 256;
-    
-    new_cam.base.base.pos.x = ((int32)other_side->center.x - 100) * 256;
-    new_cam.base.base.pos.y = ((int32)other_side->center.y) * 256;
-    new_cam.base.base.pos.z = ((int32)other_side->center.z + 100) * 256;
-    
-#endif
-
     
     if(x3d_rasterregion_intersect(region, &clipped_region)) {
       uint16 seg_id = x3d_segfaceid_seg(other_side->face);
@@ -390,8 +391,6 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   }
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
-  
-  //printf("Render %d\n", wall_portal_id);
 }
 
 

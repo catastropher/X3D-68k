@@ -260,8 +260,8 @@ void engine_test_handle_keys(void) {
 
 void engine_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 320,
-    .screen_h = 240,
+    .screen_w = 640,
+    .screen_h = 480,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
@@ -305,10 +305,17 @@ void engine_test(void) {
   
   x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 5000);
-  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id, 8), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 31);
+  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, 31);
   
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);
+  
+  
+  X3D_Color blue = x3d_rgb_to_color(0, 0, 255);
+  uint16 portal_blue = x3d_wallportal_add(x3d_segfaceid_create(0, 5), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, blue);
+  
+  x3d_wallportal_connect(portal_blue, portal_red);
+  
   
   
   // Setup the camera
