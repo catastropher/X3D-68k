@@ -36,4 +36,5 @@ void x3d_render(X3D_CameraObject* cam);
 void x3d_wallportals_init();
 uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D_Polygon2D* poly, X3D_Color color);
 void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to);
+void x3d_wallportal_construct(uint16 wall_portal, X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D_Polygon2D* poly, X3D_Color color);
 

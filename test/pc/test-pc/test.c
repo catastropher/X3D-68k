@@ -182,13 +182,15 @@ enum {
   KEY_Q = X3D_KEY_6,
   KEY_E = X3D_KEY_7,
   KEY_UP = X3D_KEY_8,
-  KEY_DOWN = X3D_KEY_9
+  KEY_DOWN = X3D_KEY_9,
+  KEY_1 = X3D_KEY_10,
+  KEY_2 = X3D_KEY_11
 };
 
 void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   
-  if(x3d_key_down(TEST_KEY_ENTER)) {
+  if(x3d_key_down(KEY_1)) {
     X3D_RayCaster caster;
     X3D_Vex3D_fp0x16 dir;
     
@@ -203,6 +205,37 @@ void engine_test_handle_keys(void) {
     
     printf("Seg: %d, Face: %d, Pos: { %d, %d, %d }\n", x3d_segfaceid_seg(caster.hit_face),
       x3d_segfaceid_face(caster.hit_face), caster.hit_pos.x, caster.hit_pos.y, caster.hit_pos.z);
+    
+    // Create a portal on one of the walls
+    uint16 portal_base_v = 8;
+    X3D_Polygon2D* portal_poly = alloca(1000);
+    
+    x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
+    x3d_wallportal_construct(0, caster.hit_face, caster.hit_pos, 1, portal_poly, 5000);
+  }
+  
+  if(x3d_key_down(KEY_2)) {
+    X3D_RayCaster caster;
+    X3D_Vex3D_fp0x16 dir;
+    
+    x3d_dynamicobject_forward_vector(&cam->base, &dir);
+    
+    x3d_raycaster_init(&caster, 0, cam->base.base.pos, dir);
+    x3d_raycaster_cast(&caster);
+    
+    while(x3d_key_down(TEST_KEY_ENTER)) {
+      x3d_read_keys();
+    }
+    
+    printf("Seg: %d, Face: %d, Pos: { %d, %d, %d }\n", x3d_segfaceid_seg(caster.hit_face),
+      x3d_segfaceid_face(caster.hit_face), caster.hit_pos.x, caster.hit_pos.y, caster.hit_pos.z);
+    
+    // Create a portal on one of the walls
+    uint16 portal_base_v = 8;
+    X3D_Polygon2D* portal_poly = alloca(1000);
+    
+    x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
+    x3d_wallportal_construct(1, caster.hit_face, caster.hit_pos, 0, portal_poly, 31);
   }
   
   if(x3d_key_down(TEST_KEY_ESCAPE)) {
@@ -280,6 +313,8 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_E, SDLK_e);
   x3d_key_map_pc(KEY_UP, '[');
   x3d_key_map_pc(KEY_DOWN, ']');
+  x3d_key_map_pc(KEY_1, '1');
+  x3d_key_map_pc(KEY_2, '2');
   
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
@@ -288,7 +323,7 @@ void engine_test(void) {
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
-  x3d_prism3d_construct(prism, base_v, 200,  100, angle);
+  x3d_prism3d_construct(prism, base_v, 200,  200, angle);
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
   //uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 20);
@@ -311,10 +346,10 @@ void engine_test(void) {
   x3d_wallportal_connect(portal_green, portal_red);
   
   
-  X3D_Color blue = x3d_rgb_to_color(0, 0, 255);
-  uint16 portal_blue = x3d_wallportal_add(x3d_segfaceid_create(0, 5), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, blue);
+  //X3D_Color blue = x3d_rgb_to_color(0, 0, 255);
+  //uint16 portal_blue = x3d_wallportal_add(x3d_segfaceid_create(0, 5), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, blue);
   
-  x3d_wallportal_connect(portal_blue, portal_red);
+  //x3d_wallportal_connect(portal_blue, portal_red);
   
   
   

@@ -132,23 +132,9 @@ void x3d_wallportals_init() {
   }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Adds a new wall portal to a wall.
-///
-/// @param face       - wall to add portal to
-/// @param center     - center of 3D portal on wall {0, 0, 0} means center of
-///                       the wall (unused for now).
-/// @param portal_id  - wall portal ID this portal is connected to
-/// @param poly       - 2D portal shape
-/// 
-/// @return The ID of the portal.
-///////////////////////////////////////////////////////////////////////////////
-uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D_Polygon2D* poly, X3D_Color color) {
-  static X3D_WallPortal* wall_portal_ptr = wall_portals;     // Location of next free wall portal
+void x3d_wallportal_construct(uint16 wall_portal, X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D_Polygon2D* poly, X3D_Color color) {
+  X3D_WallPortal* portal = wall_portals + wall_portal;
   
-  X3D_WallPortal* portal = wall_portal_ptr++;
-  
-  portal->id = portal - wall_portals;
   portal->face = face;
   //portal->center = center;
   portal->portal_id = portal_id;
@@ -181,27 +167,53 @@ uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D
   X3D_Polygon3D* wall = alloca(1000);//x3d_polygon3d_size(seg->prism.base_v * 2));
   x3d_prism3d_get_face(&seg->prism, face_id, wall);
   
-  // Calculate the center of the wall
-  X3D_Vex3D_int16 center = { 0, 0, 0 };
   uint16 i;
   
-  for(i = 0; i < wall->total_v; ++i) {
-    center.x += wall->v[i].x;
-    center.y += wall->v[i].y;
-    center.z += wall->v[i].z;
+  if((c.x | c.y | c.z) == 0) {
+    // Calculate the center of the wall
+    X3D_Vex3D_int16 center = { 0, 0, 0 };
+    
+    for(i = 0; i < wall->total_v; ++i) {
+      center.x += wall->v[i].x;
+      center.y += wall->v[i].y;
+      center.z += wall->v[i].z;
+    }
+    
+    center.x /= wall->total_v;
+    center.y /= wall->total_v;
+    center.z /= wall->total_v;
+    
+    portal->center = (X3D_Vex3D) { center.x, center.y, center.z };
   }
-  
-  center.x /= wall->total_v;
-  center.y /= wall->total_v;
-  center.z /= wall->total_v;
-  
-  portal->center = (X3D_Vex3D) { center.x, center.y, center.z };
+  else {
+    portal->center = c;
+  }
   
   for(i = 0; i < portal->portal_poly.total_v; ++i) {
-    portal->portal_poly.v[i].x += center.x;
-    portal->portal_poly.v[i].y += center.y;
-    portal->portal_poly.v[i].z += center.z;
+    portal->portal_poly.v[i].x += portal->center.x;
+    portal->portal_poly.v[i].y += portal->center.y;
+    portal->portal_poly.v[i].z += portal->center.z;
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Adds a new wall portal to a wall.
+///
+/// @param face       - wall to add portal to
+/// @param center     - center of 3D portal on wall in world coordinates, or
+///                     (0, 0, 0) to automatically center
+/// @param portal_id  - wall portal ID this portal is connected to
+/// @param poly       - 2D portal shape
+/// 
+/// @return The ID of the portal.
+///////////////////////////////////////////////////////////////////////////////
+uint16 x3d_wallportal_add(X3D_SegFaceID face, X3D_Vex3D c, uint16 portal_id, X3D_Polygon2D* poly, X3D_Color color) {
+  static X3D_WallPortal* wall_portal_ptr = wall_portals;     // Location of next free wall portal
+  
+  X3D_WallPortal* portal = wall_portal_ptr++;
+  portal->id = portal - wall_portals;
+  
+  x3d_wallportal_construct(portal->id, face, c, portal_id, poly, color);
   
   return portal->id;
 }
