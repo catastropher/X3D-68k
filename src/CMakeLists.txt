@@ -47,6 +47,8 @@ add_sources(
   C/polygon.c
   C/clip.c
   C/collide.c
+  C/object.c
+  C/camera.c
 )
 
 add_subdirectory(C/platform)

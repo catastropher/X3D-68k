@@ -25,3 +25,5 @@ typedef struct X3D_CameraObject {
   X3D_Vex3D pseduo_pos;
 } X3D_CameraObject;
 
+void x3d_camera_init(void);
+

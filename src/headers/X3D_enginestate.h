@@ -22,6 +22,7 @@
 #include "X3D_player.h"
 #include "X3D_render.h"
 #include "X3D_init.h"
+#include "X3D_object.h"
 
 typedef struct X3D_EngineState {
   X3D_SegmentManager segment_manager;
@@ -29,6 +30,7 @@ typedef struct X3D_EngineState {
   X3D_KeyManager key_manager;
   X3D_PlayerManager player_manager;
   X3D_RenderManager render_manager;
+  X3D_ObjectManager object_manager;
   
   _Bool exit_gameloop;
   uint16 engine_step;
@@ -70,6 +72,10 @@ static inline uint16 x3d_enginestate_get_step(void) {
 
 static inline void x3d_enginestate_next_step(void) {
   ++x3d_state->engine_step;
+}
+
+static inline X3D_ObjectManager* x3d_objectmanager_get(void) {
+  return &x3d_state->object_manager;
 }
 
 
