@@ -22,6 +22,7 @@
 #include "X3D_enginestate.h"
 #include "X3D_clip.h"
 #include "X3D_trig.h"
+#include "X3D_collide.h"
 
 
 static void draw_clip_line(int16 x1, int16 y1, int16 x2, int16 y2, X3D_Color color, X3D_RasterRegion* region) {
@@ -531,6 +532,8 @@ void x3d_render(X3D_CameraObject* cam) {
   
   cam->shift = (X3D_Vex3D) { 0, 0, 0 };
   x3d_object_pos(cam, &cam->pseduo_pos);
+  
+  
   
   x3d_segment_render(0, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
   

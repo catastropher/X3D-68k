@@ -189,20 +189,20 @@ void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   
   if(x3d_key_down(TEST_KEY_ENTER)) {
-    X3D_Polygon2D* poly = alloca(100);
+    X3D_RayCaster caster;
+    X3D_Vex3D_fp0x16 dir;
     
-    poly->total_v = 1;
-    poly->v[0] = (X3D_Vex2D) { 0, 0 };
+    x3d_dynamicobject_forward_vector(&cam->base, &dir);
     
-    X3D_UncompressedSegment* seg = x3d_segmentmanager_load(0);
-    X3D_Polygon3D* p = alloca(1000);
-    x3d_prism3d_get_face(&seg->prism, 2, p);
+    x3d_raycaster_init(&caster, 0, cam->base.base.pos, dir);
+    x3d_raycaster_cast(&caster);
     
-    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+    while(x3d_key_down(TEST_KEY_ENTER)) {
+      x3d_read_keys();
+    }
     
-    //x3d_polygon2d_to_polygon3d(poly, p, &face[2].plane, p->v);
-    
-    
+    printf("Seg: %d, Face: %d, Pos: { %d, %d, %d }\n", x3d_segfaceid_seg(caster.hit_face),
+      x3d_segfaceid_face(caster.hit_face), caster.hit_pos.x, caster.hit_pos.y, caster.hit_pos.z);
   }
   
   if(x3d_key_down(TEST_KEY_ESCAPE)) {
@@ -321,8 +321,8 @@ void engine_test(void) {
   // Setup the camera
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   
-  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, 300 * 256 };
-  cam->base.angle = (X3D_Vex3D_angle256) { 0, ANG_90 + ANG_45, 0 };
+  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, 0 };
+  cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
   x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   
   

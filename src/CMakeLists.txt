@@ -46,6 +46,7 @@ add_sources(
   C/fastsqrt.c
   C/polygon.c
   C/clip.c
+  C/collide.c
 )
 
 add_subdirectory(C/platform)
