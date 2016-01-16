@@ -42,14 +42,6 @@ X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init) {
   
   x3d_keymanager_get()->key_handler = x3d_dummy_void_callback;
   
-  /// @todo Once the object system is created, let the player create their
-  ///   own camera instead of statically creating one here!
-  static X3D_CameraObject cam;
-  x3d_playermanager_get()->player[0] = (X3D_Player) {
-    .cam = &cam,
-    .id = 0
-  };
-  
   // Reset engine step
   /// @todo Should engine_step be moved into the render manager?
   x3d_state->engine_step = 0;

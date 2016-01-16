@@ -15,6 +15,7 @@
 
 #include "X3D_common.h"
 #include "X3D_camera.h"
+#include "X3D_enginestate.h"
 
 static void x3d_camera_event_handler(X3D_ObjectBase* obj, X3D_ObjectEvent ev) {
   X3D_CameraObject* cam = (X3D_CameraObject *)obj;
@@ -35,7 +36,7 @@ void x3d_camera_init(void) {
   };
   
   x3d_objectmanager_create_object_type(0, &type_cam);
-  x3d_objectmanager_create_object(
+  uint16 cam_id = x3d_objectmanager_create_object(
     0,
     (X3D_Vex3D) { 0, 0, 0 },
     0,
@@ -43,6 +44,11 @@ void x3d_camera_init(void) {
     0,
     (X3D_Vex3D_angle256) { 0, 0, 0 }
   );
+  
+  x3d_playermanager_get()->player[0] = (X3D_Player) {
+    .cam = x3d_objectmanager_get_object(cam_id),
+    .id = 0
+  };
   
   
 }
