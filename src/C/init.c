@@ -17,6 +17,7 @@
 #include "X3D_log.h"
 #include "X3D_assert.h"
 #include "X3D_enginestate.h"
+#include "X3D_wallportal.h"
 
 void x3d_init(X3D_InitSettings* settings) {
   x3d_log(X3D_INFO, "X3D init");  

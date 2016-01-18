@@ -632,3 +632,21 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   return X3D_TRUE;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Fills a raster region.
+///
+/// @param region - region
+/// @param color  - color to the fill the region with
+///
+/// @return Nothing.
+/// @note No clipping is performed (it is assumed to already be clipped).
+///////////////////////////////////////////////////////////////////////////////
+void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
+  int16 i;
+  
+  for(i = region->y_range.min; i < region->y_range.max; ++i) {
+    uint16 index = i - region->y_range.min;
+    x3d_screen_draw_line(region->x_left[index], i, region->x_right[index], i, color);
+  }
+}
+

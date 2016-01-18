@@ -49,6 +49,7 @@ add_sources(
   C/collide.c
   C/object.c
   C/camera.c
+  C/wallportal.c
 )
 
 add_subdirectory(C/platform)

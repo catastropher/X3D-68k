@@ -49,7 +49,51 @@ void x3d_camera_init(void) {
     .cam = x3d_objectmanager_get_object(cam_id),
     .id = 0
   };
-  
-  
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Transforms a list of points so they are relative to a camera and
+///   projected onto the screen.
+///
+/// @param cam      - camera
+/// @param v        - list of points to transform
+/// @param total_v  - total numeber of points
+/// @param dest3d   - where to write 3D points (optional, NULL if not used)
+/// @param dest2d   - where to write projected 2D points
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
+        uint16 total_v, X3D_Vex3D* dest3d, X3D_Vex2D* dest2d) {
+  
+  X3D_Vex3D cam_pos;                // Position of the camera
+  x3d_object_pos(cam, &cam_pos);
+  
+  uint16 i;
+  
+  for(i = 0; i < total_v; ++i) {
+    // Translate the point so it's relative to the camera
+    X3D_Vex3D translate = {
+      v[i].x - cam_pos.x,
+      v[i].y - cam_pos.y,
+      v[i].z - cam_pos.z
+    };
+    
+    // Rotate the point around the origin
+    X3D_Vex3D temp_rot;
+    x3d_vex3d_int16_rotate(&temp_rot, &translate, &cam->base.mat);
+    
+    temp_rot.x += cam->shift.x;
+    temp_rot.y += cam->shift.y;
+    temp_rot.z += cam->shift.z;
+    
+    // Project it onto the screen
+    x3d_vex3d_int16_project(dest2d + i, &temp_rot);
+    
+    // Store the rotated 3D point, if requested
+    if(dest3d) {
+      *dest3d = temp_rot;
+      ++dest3d;
+    }
+  }
+}

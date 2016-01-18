@@ -26,4 +26,6 @@ typedef struct X3D_CameraObject {
 } X3D_CameraObject;
 
 void x3d_camera_init(void);
+void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
+        uint16 total_v, X3D_Vex3D* dest3d, X3D_Vex2D* dest2d);
 
