@@ -31,6 +31,7 @@ typedef struct X3D_RayCaster {
   X3D_SegFaceID hit_face;
   
   X3D_Vex3D hit_pos;
+  int16 dist;
 } X3D_RayCaster;
 
 void x3d_raycaster_init(X3D_RayCaster* caster, uint16 seg_id, X3D_Vex3D_fp16x8 pos, X3D_Vex3D_fp0x16 dir);

@@ -66,9 +66,11 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
   // hit.
   fp0x16 min_scale = 0x7FFF;
   int16 min_face = -1;
+  int16 min_dist;
   
   int16 i;
   for(i = 0; i < x3d_prism3d_total_f(seg->base.base_v); ++i) {
+    /// @todo dist_in can be moved into the below 'if'
     int16 dist_in = x3d_plane_dist(&face[i].plane, &in);
     int16 dist_out = x3d_plane_dist(&face[i].plane, &out);
     
@@ -95,6 +97,7 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
       if(scale < min_scale) {
         min_scale = scale;
         min_face = i;
+        min_dist = dist_in;
       }
     }
   }
@@ -110,6 +113,7 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
   caster->hit_pos.z = in.z + (((int32)diff.z * min_scale) >> X3D_NORMAL_BITS);
   
   caster->hit_face = x3d_segfaceid_create(caster->seg, min_face);
+  caster->dist = min_dist;
 }
 
 

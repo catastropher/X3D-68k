@@ -97,3 +97,22 @@ void x3d_objectmanager_create_object_type(uint16 type_id, X3D_ObjectType* type) 
   objectman->types[type_id] = *type;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Applies a force to an object.
+///
+/// @param obj    - object
+/// @param force  - force vector
+///                   about the object.
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_object_apply_force(X3D_Object* obj, X3D_Vex3D_fp8x8 force) {
+  X3D_DynamicObjectBase* object = (X3D_DynamicObjectBase *)obj;
+  
+  object->velocity.x += force.x;
+  object->velocity.y += force.y;
+  object->velocity.z += force.z;
+  
+  /// @todo Should we cap the velocity if it's greater than some value?
+}
+
+
