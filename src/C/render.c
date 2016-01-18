@@ -253,6 +253,46 @@ void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to) {
   wall_portals[portal_from].portal_id = portal_to;
 }
 
+
+_Bool x3d_construct_clipped_rasterregion(X3D_RasterRegion* dest, X3D_RasterRegion* parent,
+      X3D_RasterEdge* edges, uint16* edge_index, uint16 total_e, uint16 total_edge_index,
+      X3D_Vex3D* v3d, X3D_Vex2D* v2d, X3D_Pair* edge_pairs) {
+
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  uint16 i;
+  uint16 total_vis_e = 0;   // How many edges are actually visible
+  int16 near_z = 10;
+  uint16 out_v[2];
+  uint16 total_out_v = 0;
+  uint16 vis_e[total_edge_index + 1];
+  
+  for(i = 0; i < total_edge_index; ++i) {
+    X3D_Pair edge = edge_pairs[edge_index[i]];
+    uint16 in[2] = { v3d[edge.val[0]].z >= near_z, v3d[edge.val[1]].z >= near_z };
+
+    if(in[0] || in[1]) {
+      vis_e[total_vis_e++] = i;
+      
+      if(in[0] != in[1])
+        out_v[total_out_v++] = edge_pairs[i].val[in[0]];
+    }
+  }
+  
+  x3d_assert(total_out_v <= 2);
+    
+  // Create a two edge between the two points clipped by the near plane
+  if(total_out_v == 2) { 
+    x3d_rasteredge_generate(&renderman->stack, edges + total_edge_index,
+      v2d[out_v[0]], v2d[out_v[1]], parent->y_range);
+    
+    vis_e[total_vis_e++] = total_edge_index;
+  }
+  
+  return total_vis_e > 0 &&
+    x3d_rasterregion_construct_from_edges(dest, &renderman->stack, edges, vis_e, total_vis_e) &&
+    x3d_rasterregion_intersect(parent, dest);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders a wall portal and anything that can be seen through the portal
 ///   from the perspective of the camera looking through it.

@@ -34,3 +34,7 @@ static inline int16 x3d_int16_sub_wrap(int16 val, int16 sub, int16 max) {
   return val - sub >= 0 ? val - sub : val - sub + max;
 }
 
+typedef struct X3D_Pair {
+  int16 val[2];
+} X3D_Pair;
+
