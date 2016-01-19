@@ -61,14 +61,12 @@
 
 #define ADDRESS(_a) ;
 
-int32 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
+fp16x16 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
   if(v1.y == v2.y)
     return 0;
   
   return (((int32)(v2.x - v1.x)) << 16) / (v2.y - v1.y);
 }
-
-int32 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2);
 
 void intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y) {
   ASSERT((slope >> 16) < 128);    // To prevent overflow when converting to fp8x8 for the slope

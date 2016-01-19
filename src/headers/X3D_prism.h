@@ -89,4 +89,5 @@ void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
 void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
 uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest);
 void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b);
+void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest);
 

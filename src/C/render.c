@@ -48,12 +48,20 @@ static void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, X3D_Co
   }
 }
 
+typedef struct X3D_ClipContext {
+  X3D_Stack* stack;
+  X3D_RasterRegion* parent;
+  X3D_RasterEdge* edges;
+  uint16* edge_index;
+  uint16 total_e;
+  uint16 total_edge_index;
+  X3D_Vex3D* v3d;
+  X3D_Vex2D* v2d;
+  X3D_Pair* edge_pairs;
+} X3D_ClipContext;
 
-
-
-_Bool x3d_construct_clipped_rasterregion(X3D_RasterRegion* dest, X3D_RasterRegion* parent,
-      X3D_RasterEdge* edges, uint16* edge_index, uint16 total_e, uint16 total_edge_index,
-      X3D_Vex3D* v3d, X3D_Vex2D* v2d, X3D_Pair* edge_pairs) {
+/// Under construction
+_Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion* dest){
 
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   uint16 i;
@@ -61,17 +69,17 @@ _Bool x3d_construct_clipped_rasterregion(X3D_RasterRegion* dest, X3D_RasterRegio
   int16 near_z = 10;
   uint16 out_v[2];
   uint16 total_out_v = 0;
-  uint16 vis_e[total_edge_index + 1];
-  
-  for(i = 0; i < total_edge_index; ++i) {
-    X3D_Pair edge = edge_pairs[edge_index[i]];
-    uint16 in[2] = { v3d[edge.val[0]].z >= near_z, v3d[edge.val[1]].z >= near_z };
+  uint16 vis_e[clip->total_edge_index + 1];
+
+  for(i = 0; i < clip->total_edge_index; ++i) {
+    X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
+    uint16 in[2] = { clip->v3d[edge.val[0]].z >= near_z, clip->v3d[edge.val[1]].z >= near_z };
 
     if(in[0] || in[1]) {
-      vis_e[total_vis_e++] = i;
+      vis_e[total_vis_e++] = clip->edge_index[i];
       
       if(in[0] != in[1])
-        out_v[total_out_v++] = edge_pairs[i].val[in[0]];
+        out_v[total_out_v++] = clip->edge_pairs[clip->edge_index[i]].val[in[0]];
     }
   }
   
@@ -79,15 +87,20 @@ _Bool x3d_construct_clipped_rasterregion(X3D_RasterRegion* dest, X3D_RasterRegio
     
   // Create a two edge between the two points clipped by the near plane
   if(total_out_v == 2) { 
-    x3d_rasteredge_generate(&renderman->stack, edges + total_edge_index,
-      v2d[out_v[0]], v2d[out_v[1]], parent->y_range);
+    x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_edge_index,
+      clip->v2d[out_v[0]], clip->v2d[out_v[1]], clip->parent->y_range);
     
-    vis_e[total_vis_e++] = total_edge_index;
+    vis_e[total_vis_e++] = clip->total_edge_index;
   }
   
-  return total_vis_e > 0 &&
-    x3d_rasterregion_construct_from_edges(dest, &renderman->stack, edges, vis_e, total_vis_e) &&
-    x3d_rasterregion_intersect(parent, dest);
+  printf("Total vis e: %d\nOut v: %d\n", total_vis_e, total_out_v);
+  
+  //return total_vis_e > 0 &&
+  if(total_vis_e > 2 && x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e) &&
+    x3d_rasterregion_intersect(clip->parent, dest)) {
+  
+    x3d_rasterregion_fill(dest, 0xFFFF);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -140,7 +153,12 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     a = i;
     b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
     
-    x3d_rasteredge_generate(&renderman->stack, edges + i, v2d[a], v2d[b], region->y_range);
+    X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
+    X3D_Vex2D dest_a, dest_b;
+    
+    if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
+      x3d_rasteredge_generate(&renderman->stack, edges + i, dest_a, dest_b, region->y_range);
+    }
   }
   
   X3D_RasterRegion clipped_region;
@@ -298,14 +316,26 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   /// raster edges generated.
   
   uint16 total_e = seg->prism.base_v * 3;
-  X3D_RasterEdge edges[total_e];
+  X3D_RasterEdge edges[total_e + 1];
+  X3D_Pair edge_pair[total_e];
+  
+  x3d_prism_get_edge_pairs(total_e, edge_pair);
+  
   
   for(i = 0; i < total_e; ++i) {
-    uint16 a, b;
-    
-    x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
-    x3d_rasteredge_generate(&renderman->stack, edges + i, v[a], v[b], region->y_range);
+    x3d_prism_get_edge_index(prism->base_v, i, edge_pair[i].val, edge_pair[i].val + 1);
+    x3d_rasteredge_generate(&renderman->stack, edges + i, v[edge_pair[i].val[0]], v[edge_pair[i].val[1]], region->y_range);
   }
+  
+  X3D_ClipContext clip = {
+    .stack = &renderman->stack,
+    .parent = region,
+    .edges = edges,
+    .total_e = total_e,
+    .v3d = v3d,
+    .v2d = v,
+    .edge_pairs = edge_pair
+  };
 
   // Render the connecting segments
   for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
@@ -331,25 +361,30 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
         }
         else {
           void* stack_ptr = x3d_stack_save(&renderman->stack);
-          uint16 edge_index[prism->base_v];
+          uint16 edge_index[prism->base_v + 1];
           X3D_RasterRegion new_region;
 
           
           uint16 face_e = x3d_prism_face_edge_indexes(prism->base_v, i, edge_index);
           
-          if(x3d_rasterregion_construct_from_edges(&new_region, &renderman->stack, edges, edge_index, face_e)) {
-            if(x3d_rasterregion_intersect(region, &new_region)) {
-              uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
+          
+          X3D_RasterRegion r;
+          
+          clip.edge_index = edge_index;
+          clip.total_edge_index = face_e;
               
-  #if 0
-              if(id == 0)
-                x3d_rasterregion_fill(&new_region, 0xFFFF);
-              else
-                x3d_rasterregion_fill(&new_region, 31);
-  #endif
-              
-              x3d_segment_render(seg_id, cam, color * 8, &new_region, step);
-            }
+          if(x3d_construct_clipped_rasterregion(&clip, &r)) {
+            uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
+           
+            
+#if 0
+            if(id == 0)
+              x3d_rasterregion_fill(&new_region, 0xFFFF);
+            else
+              x3d_rasterregion_fill(&new_region, 31);
+#endif
+            
+            x3d_segment_render(seg_id, cam, color * 8, &r, step);
           }
           
           
@@ -383,6 +418,9 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_object_pos(cam, &cam->pseduo_pos);
   
   
+  static int32 tick = 0;
+  
+  printf("Tick: %d\n", tick++);
   
   x3d_segment_render(0, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
   

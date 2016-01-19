@@ -203,3 +203,21 @@ void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b) 
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Gets a list of edge pairs for prism with the given number of vertices in
+///   the base. For a given edge, this gives the index of the two vertices
+///   that compose the edge.
+///
+/// @param base_v - number of vertices in the base
+/// @param dest   - array of X3D_Pair big enough to hold base_v * 3 pairs
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest) {
+  uint16 i;
+  
+  for(i = 0; i < base_v * 3; ++i) {
+    x3d_prism_get_edge_index(base_v, i, dest[i].val, dest[i].val + 1);
+  }
+}
+
