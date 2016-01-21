@@ -118,6 +118,8 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
   
     return X3D_TRUE;
   }
+  
+  return X3D_FALSE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -151,16 +153,11 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     v3d, v2d);
   
   uint16 i;
+
   
-  // Check for portals that are partially behind the camera (clipping against
-  // the near plane isn't impelented yet)
-  for(i = 0; i < portal->portal_poly.total_v; ++i) {
-    // Can't handle portals that are partially behind the camera
-    if(v3d[i].z < 10)
-      return;
-  }
+  X3D_RasterEdge edges[portal->portal_poly.total_v + 1];
   
-  X3D_RasterEdge edges[portal->portal_poly.total_v];
+  X3D_Pair edge_pair[portal->portal_poly.total_v];
   
   // Construct the portal's raster region, which has to be clipped against the
   // parent raster region
@@ -169,6 +166,9 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     
     a = i;
     b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
+    
+    edge_pair[i].val[0] = a;
+    edge_pair[i].val[1] = b;
     
     X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
     X3D_Vex2D dest_a, dest_b;
@@ -179,10 +179,22 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   }
   
   X3D_RasterRegion clipped_region;
-  uint16 edge_index[portal->portal_poly.total_v];
+  uint16 edge_index[portal->portal_poly.total_v + 1];
   
   for(i = 0; i < portal->portal_poly.total_v; ++i)
     edge_index[i] = i;
+  
+  X3D_ClipContext clip = {
+    .stack = &renderman->stack,
+    .parent = region,
+    .edges = edges,
+    .total_e = portal->portal_poly.total_v,
+    .v3d = v3d,
+    .v2d = v2d,
+    .edge_pairs = edge_pair,
+    .edge_index = edge_index,
+    .total_edge_index = portal->portal_poly.total_v
+  };
   
   // The new camera that has been adjusted to rasterize things on the other
   // side of the portal properly.
@@ -208,7 +220,8 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   // |________|________|
   //
   //
-  if(portal->portal_id != 0xFFFF && x3d_rasterregion_construct_from_edges(&clipped_region, &renderman->stack, edges, edge_index, portal->portal_poly.total_v)) {
+  
+  if(portal->portal_id != 0xFFFF && x3d_construct_clipped_rasterregion(&clip, &clipped_region)) {
     // Portal on the other side of the wall
     X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
     
