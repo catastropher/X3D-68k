@@ -39,7 +39,7 @@ void x3d_platform_assert_failed(const char* condition, const char* file, int16 l
   
   fprintf(stderr, "\n");
 #else
-  fprintf("<no stack track available>\n");
+  fprintf(stderr, "<no stack track available>\n");
 #endif
   
   /// @todo: replace with x3d_quit

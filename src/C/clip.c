@@ -128,6 +128,9 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
 void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range) {
   fp16x16 slope;
   
+  edge->start = a;
+  edge->end = b;
+  
   //ASSERT(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT);
   
   if(!(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT)) {
@@ -157,12 +160,6 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
     
     b.x = (x - slope) >> 16;
   }
-  
-  edge->start = a;
-  edge->end = b;
-  
-  if(edge->flags & EDGE_V_SWAPPED)
-    X3D_SWAP(edge->start, edge->end);
   
   edge->x_range = get_range(a.x, b.x); 
 }
