@@ -25,21 +25,21 @@ all: test
 
 # Configures X3D, the unit tests, and the manual tests
 config:
-	@tput setaf 2
+	#@tput setaf 2
 	@echo Configuring X3D
-	@tput setaf 7
+	#@tput setaf 7
 	@mkdir -p build/X3D
 	@cd build/X3D && cmake ../../src
 	
-	@tput setaf 2
+	#@tput setaf 2
 	@echo Configuring Unit Tests
-	@tput setaf 7
+	#@tput setaf 7
 	@mkdir -p build/unit
 	@cd build/unit && cmake ../../test/unit
 	
-	@tput setaf 2
+	#@tput setaf 2
 	@echo Configuring Manual Tests
-	@tput setaf 7
+	#@tput setaf 7
 	@mkdir -p build/manual
 	@cd build/manual && cmake ../../test/pc/test-pc
 	

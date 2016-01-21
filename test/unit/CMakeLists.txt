@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 project(UnitTests)
 
+set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
+
 include_directories($ENV{X3D}/src/headers)
 
 add_executable(UnitTests

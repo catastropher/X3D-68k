@@ -99,7 +99,7 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
   if(total_vis_e > 2 && x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e) &&
     x3d_rasterregion_intersect(clip->parent, dest)) {
   
-    x3d_rasterregion_fill(dest, 0xFFFF);
+    //x3d_rasterregion_fill(dest, 0xFFFF);
   }
 }
 
