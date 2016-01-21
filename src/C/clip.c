@@ -158,7 +158,13 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
     b.x = (x - slope) >> 16;
   }
   
-  edge->x_range = get_range(a.x, b.x);
+  edge->start = a;
+  edge->end = b;
+  
+  if(edge->flags & EDGE_V_SWAPPED)
+    X3D_SWAP(edge->start, edge->end);
+  
+  edge->x_range = get_range(a.x, b.x); 
 }
 
 #define EDGE(_edge) raster_edge[edge_index[_edge]]
@@ -647,4 +653,43 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
     x3d_screen_draw_line(region->x_left[index], i, region->x_right[index], i, color);
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// Gets the two endpoints of the rasteredge, after clipping.
+///
+/// @param edge   - edge
+/// @param start  - start endpoint dest
+/// @param end    - end endpoint dest
+///
+/// @return Nothing.
+/// @note The endpoints are guaranteed to be in the same order as they were
+///   passed into x3d_rasteredge_generate().
+///////////////////////////////////////////////////////////////////////////////
+void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_Vex2D* end) {
+  *start = edge->start;
+  *end = edge->end;
+  
+  #if 0
+  x3d_assert(!(edge->flags & EDGE_INVISIBLE));
+  
+  if(edge->flags & EDGE_HORIZONTAL) {
+    start->x = edge->x_range.min;
+    start->y = edge->y_range.min;
+    
+    end->x = edge->x_range.max;
+    end->y = edge->y_range.min;
+  }
+  else {
+    start->x = edge->x_data[0];
+    start->y = edge->y_range.min;
+    
+    end->x = edge->x_data[edge->y_range.max - edge->y_range.min];
+    end->y = edge->y_range.max;
+  }
+  
+  if(edge->flags & EDGE_V_SWAPPED)
+    X3D_SWAP(*start, *end);
+#endif
+}
+
 

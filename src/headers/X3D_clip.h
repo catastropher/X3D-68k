@@ -2,6 +2,7 @@
 #pragma once
 
 #include "X3D_common.h"
+#include "X3D_vector.h"
 #include "memory/X3D_stack.h"
 
 
@@ -35,6 +36,9 @@ typedef struct X3D_RasterEdge {
   // int16 max_y;
   // int16 max_x;
   // int16 start_y;
+  X3D_Vex2D start;
+  X3D_Vex2D end;
+  
   
   int16 start_x;
   int16 end_x;
@@ -79,4 +83,5 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
 _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* region);
 int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_project, X3D_Vex2D* b_project, X3D_Vex2D* a_dest, X3D_Vex2D* b_dest, int16 z);
 void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color);
+void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_Vex2D* end);
 
