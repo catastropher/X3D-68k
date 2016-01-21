@@ -95,14 +95,15 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
     
   // Create a two edge between the two points clipped by the near plane
   if(total_out_v == 2) { 
-    return X3D_FALSE;
     x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_edge_index,
       out_v[0], out_v[1], clip->parent->y_range);
     
     
-    printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
+    //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
     
-    x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, 0x7FFF);
+    //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, 0x7FFF);
+    
+    
     
     vis_e[total_vis_e++] = clip->total_edge_index;
   }
@@ -307,14 +308,14 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   seg->last_engine_step = step;
   
   X3D_Prism3D* prism = &seg->prism;
-  X3D_Vex2D v[prism->base_v * 2];
+  X3D_Vex2D v2d[prism->base_v * 2];
   X3D_Vex3D v3d[prism->base_v * 2];
   uint16 i;
   
   X3D_Vex3D cam_pos;
   x3d_object_pos(cam, &cam_pos);
   
-  x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v);
+  x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
   
   //x3d_rasterregion_fill(region, 0x7FFF / (depth));
   
@@ -340,7 +341,21 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   for(i = 0; i < total_e; ++i) {
     x3d_prism_get_edge_index(prism->base_v, i, edge_pair[i].val, edge_pair[i].val + 1);
-    x3d_rasteredge_generate(&renderman->stack, edges + i, v[edge_pair[i].val[0]], v[edge_pair[i].val[1]], region->y_range);
+    
+    uint16 a, b;
+    
+    a = edge_pair[i].val[0];
+    b = edge_pair[i].val[1];
+    
+    X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
+    X3D_Vex2D dest_a, dest_b;
+    
+    if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
+      x3d_rasteredge_generate(&renderman->stack, edges + i, dest_a, dest_b, region->y_range);
+    }
+    
+    
+    //x3d_rasteredge_generate(&renderman->stack, edges + i, v2d[edge_pair[i].val[0]], v2d[edge_pair[i].val[1]], region->y_range);
   }
   
   X3D_ClipContext clip = {
@@ -349,7 +364,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .edges = edges,
     .total_e = total_e,
     .v3d = v3d,
-    .v2d = v,
+    .v2d = v2d,
     .edge_pairs = edge_pair
   };
 
@@ -416,7 +431,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     X3D_Vex2D va, vb;
     x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
     
-    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v + a, v + b, &va, &vb, 10) != EDGE_INVISIBLE) {
+    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
       x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, color, region);
     }
   }
