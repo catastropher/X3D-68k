@@ -95,6 +95,7 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
     
   // Create a two edge between the two points clipped by the near plane
   if(total_out_v == 2) { 
+    return X3D_FALSE;
     x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_edge_index,
       out_v[0], out_v[1], clip->parent->y_range);
     
