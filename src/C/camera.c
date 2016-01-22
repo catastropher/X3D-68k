@@ -97,3 +97,30 @@ void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
     }
   }
 }
+
+
+void x3d_camera_calculate_shift(X3D_CameraObject* new_cam, X3D_CameraObject* old_cam, X3D_Vex3D* v_from, X3D_Vex3D* v_to) {
+  X3D_Vex3D cam_pos;
+  x3d_object_pos(old_cam, &cam_pos);
+  
+  X3D_Vex3D center, c = x3d_vex3d_sub(v_to, &cam_pos);
+
+  c.x += old_cam->shift.x;
+  c.y += old_cam->shift.y;
+  c.z += old_cam->shift.z;
+  
+  x3d_vex3d_int16_rotate(&center, &c, &new_cam->base.mat);
+  
+  X3D_Vex3D pcenter, pc = x3d_vex3d_sub(v_from, &cam_pos);
+  
+  pc.x += old_cam->shift.x;
+  pc.y += old_cam->shift.y;
+  pc.z += old_cam->shift.z;
+  
+  x3d_vex3d_int16_rotate(&pcenter, &pc, &old_cam->base.mat);
+  
+  new_cam->shift.x = pcenter.x - center.x + old_cam->shift.x;
+  new_cam->shift.y = pcenter.y - center.y + old_cam->shift.y;
+  new_cam->shift.z = pcenter.z - center.z + old_cam->shift.z;
+}
+

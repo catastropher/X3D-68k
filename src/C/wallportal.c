@@ -142,20 +142,9 @@ uint16 x3d_wall_get_wallportals(X3D_SegFaceID face, uint16* dest) {
   return total;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Connects a wall portal to another wall portal.
-///
-/// @param portal_from  - portal to create connection from
-/// @param portal_to    - portal that portal_from becomes connected to
-///
-/// @return Nothing.
-/// @note This overwrites what portal_from was previously connected to.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to) {
-  X3D_WallPortal* from = wall_portals + portal_from;
-  X3D_WallPortal* to = wall_portals + portal_to;
-  
-  from->portal_id = portal_to;
+void x3d_wallportal_update(uint16 id) {
+  X3D_WallPortal* from = wall_portals + id;
+  X3D_WallPortal* to = wall_portals + from->portal_id;
   
   // Calculate the transformation matrix that partly calculates the view
   // transformation from portal_from to portal_to
@@ -173,6 +162,23 @@ void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to) {
   x3d_mat3x3_construct(&rot, &angle);
   
   x3d_mat3x3_mul(&from->transform, &rot, &temp);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Connects a wall portal to another wall portal.
+///
+/// @param portal_from  - portal to create connection from
+/// @param portal_to    - portal that portal_from becomes connected to
+///
+/// @return Nothing.
+/// @note This overwrites what portal_from was previously connected to.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to) {
+  X3D_WallPortal* from = wall_portals + portal_from;
+  
+  from->portal_id = portal_to;
+  
+  x3d_wallportal_update(portal_from);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -222,35 +222,14 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   //
   
   if(portal->portal_id != 0xFFFF && x3d_construct_clipped_rasterregion(&clip, &clipped_region)) {
-    // Portal on the other side of the wall
+    // Portal that 'portal' is connected to
     X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
     
-    
+    // Calculate the new view matrix
     x3d_mat3x3_mul(&new_cam.base.mat, &portal->transform, &cam->base.mat);
     
-    
-    X3D_Vex3D cam_pos;
-    x3d_object_pos(cam, &cam_pos);
-    
-    X3D_Vex3D center, c = x3d_vex3d_sub(&other_side->center, &cam_pos);
-
-    c.x += cam->shift.x;
-    c.y += cam->shift.y;
-    c.z += cam->shift.z;
-    
-    x3d_vex3d_int16_rotate(&center, &c, &new_cam.base.mat);
-    
-    X3D_Vex3D pcenter, pc = x3d_vex3d_sub(&portal->center, &cam_pos);
-    
-    pc.x += cam->shift.x;
-    pc.y += cam->shift.y;
-    pc.z += cam->shift.z;
-    
-    x3d_vex3d_int16_rotate(&pcenter, &pc, &cam->base.mat);
-    
-    new_cam.shift.x = pcenter.x - center.x + cam->shift.x;
-    new_cam.shift.y = pcenter.y - center.y + cam->shift.y;
-    new_cam.shift.z = pcenter.z - center.z + cam->shift.z;
+    // Calculate the geometry shift for everything on the other side of the portal
+    x3d_camera_calculate_shift(&new_cam, cam, &portal->center, &other_side->center);
     
     new_cam.pseduo_pos = other_side->center;
     

@@ -212,6 +212,8 @@ void engine_test_handle_keys(void) {
     
     x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
     x3d_wallportal_construct(0, caster.hit_face, caster.hit_pos, 1, portal_poly, 5000);
+    x3d_wallportal_update(0);
+    x3d_wallportal_update(1);
   }
   
   if(x3d_key_down(KEY_2)) {
@@ -236,6 +238,8 @@ void engine_test_handle_keys(void) {
     
     x3d_polygon2d_construct(portal_poly, portal_base_v, 30, 0);
     x3d_wallportal_construct(1, caster.hit_face, caster.hit_pos, 0, portal_poly, 31);
+    x3d_wallportal_update(0);
+    x3d_wallportal_update(1);
   }
   
   if(x3d_key_down(TEST_KEY_ESCAPE)) {

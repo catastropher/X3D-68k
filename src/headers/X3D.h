@@ -40,4 +40,5 @@
 #include "X3D_player.h"
 
 #include "X3D_collide.h"
+#include "X3D_wallportal.h"
 
