@@ -26,6 +26,7 @@ typedef struct X3D_WallPortal {
   uint16 portal_id;
   X3D_Color color;
   X3D_Mat3x3 mat;
+  X3D_Mat3x3 transform;
   _Bool fill;
   
   struct {

@@ -31,7 +31,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
   
   if(SDL_Init(SDL_INIT_VIDEO) != 0) {
-    x3d_log(X3D_ERROR, "Failed to init SDL");
+    x3d_log(X3D_ERROR, "Failed to init SDL: %s", SDL_GetError());
     return X3D_FALSE;
   }
   
@@ -55,7 +55,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     SDL_WINDOWPOS_UNDEFINED,
     init->screen_w * init->screen_scale,
     init->screen_h * init->screen_scale,
-    SDL_WINDOW_OPENGL | (init->fullscreen ? SDL_WINDOW_FULLSCREEN : 0)
+    (init->fullscreen ? SDL_WINDOW_FULLSCREEN : 0)
   );
   
   if(!window) {

@@ -225,22 +225,8 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     // Portal on the other side of the wall
     X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
     
-    X3D_Mat3x3 other_side_transpose = other_side->mat;
-    x3d_mat3x3_transpose(&other_side_transpose);
     
-    X3D_Mat3x3 temp;
-    x3d_mat3x3_mul(&temp, &portal->mat, &other_side_transpose);
-    
-    X3D_Mat3x3 temp2;
-    X3D_Mat3x3 rot;
-    
-    // By this point, portal B has been flipped by 180 degrees, so flip
-    // it back
-    X3D_Vex3D_angle256 angle = { 0, ANG_180, 0 };
-    x3d_mat3x3_construct(&rot, &angle);
-    
-    x3d_mat3x3_mul(&temp2, &rot, &temp);
-    x3d_mat3x3_mul(&new_cam.base.mat, &temp2, &cam->base.mat);
+    x3d_mat3x3_mul(&new_cam.base.mat, &portal->transform, &cam->base.mat);
     
     
     X3D_Vex3D cam_pos;

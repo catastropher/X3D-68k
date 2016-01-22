@@ -19,6 +19,7 @@
 #include "X3D_segment.h"
 #include "X3D_enginestate.h"
 #include "X3D_wallportal.h"
+#include "X3D_trig.h"
 
 #define X3D_MAX_WALL_PORTALS 32
 
@@ -151,7 +152,27 @@ uint16 x3d_wall_get_wallportals(X3D_SegFaceID face, uint16* dest) {
 /// @note This overwrites what portal_from was previously connected to.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_wallportal_connect(uint16 portal_from, uint16 portal_to) {
-  wall_portals[portal_from].portal_id = portal_to;
+  X3D_WallPortal* from = wall_portals + portal_from;
+  X3D_WallPortal* to = wall_portals + portal_to;
+  
+  from->portal_id = portal_to;
+  
+  // Calculate the transformation matrix that partly calculates the view
+  // transformation from portal_from to portal_to
+  X3D_Mat3x3 other_side_transpose = to->mat;
+  x3d_mat3x3_transpose(&other_side_transpose);
+  
+  X3D_Mat3x3 temp;
+  x3d_mat3x3_mul(&temp, &from->mat, &other_side_transpose);
+  
+  X3D_Mat3x3 rot;
+  
+  // By this point, portal B has been flipped by 180 degrees, so flip
+  // it back
+  X3D_Vex3D_angle256 angle = { 0, ANG_180, 0 };
+  x3d_mat3x3_construct(&rot, &angle);
+  
+  x3d_mat3x3_mul(&from->transform, &rot, &temp);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
