@@ -115,4 +115,26 @@ void x3d_object_apply_force(X3D_Object* obj, X3D_Vex3D_fp8x8 force) {
   /// @todo Should we cap the velocity if it's greater than some value?
 }
 
+void x3d_object_move(X3D_DynamicObjectBase* obj) {
+  X3D_Vex3D_fp16x8 new_pos = obj->base.pos;
+  
+  new_pos.x += obj->velocity.x;
+  new_pos.y += obj->velocity.y;
+  new_pos.z += obj->velocity.z;
+  
+  X3D_Vex3D_fp0x16 normal = obj->velocity;
+  
+  if(!normal.x && !normal.y && !normal.z)
+    return;
+  
+  x3d_vex3d_fp0x16_normalize(&normal);
+  
+  X3D_RayCaster caster;
+  x3d_raycaster_init(&caster, 0, new_pos, normal);
+  x3d_raycaster_cast(&caster);
+  
+  if(caster.dist > 50) {
+    obj->base.pos = new_pos;
+  }
+}
 

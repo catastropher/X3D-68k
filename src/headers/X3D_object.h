@@ -18,6 +18,7 @@
 #include "X3D_common.h"
 #include "X3D_vector.h"
 #include "X3D_matrix.h"
+#include "X3D_collide.h"
 
 typedef enum {
   X3D_OBJECT_EVENT_CREATE = 0,
@@ -33,6 +34,8 @@ struct X3D_ObjectBase;
 
 typedef struct X3D_ObjectType {
   void (*event_handler)(struct X3D_ObjectBase* object, X3D_ObjectEvent event);
+  
+  X3D_BoundVolume volume;
 } X3D_ObjectType;
 
 typedef struct X3D_ObjectBase {
@@ -89,4 +92,5 @@ void x3d_objectmanager_init(void);
 uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle);
 void x3d_objectmanager_create_object_type(uint16 type_id, X3D_ObjectType* type);
 X3D_DynamicObjectBase* x3d_objectmanager_get_object(uint16 id);
+void x3d_object_move(X3D_DynamicObjectBase* obj);
 
