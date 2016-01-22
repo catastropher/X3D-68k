@@ -433,6 +433,8 @@ void x3d_render(X3D_CameraObject* cam) {
   
   x3d_segment_render(0, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
   
+  x3d_objectmanager_render_objects();
+  
   int16 cx = x3d_screenmanager_get()->w / 2;
   int16 cy = x3d_screenmanager_get()->h / 2;
   

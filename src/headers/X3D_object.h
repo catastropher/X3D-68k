@@ -23,6 +23,7 @@
 typedef enum {
   X3D_OBJECT_EVENT_CREATE = 0,
   X3D_OBJECT_EVENT_DESTROY = 1,
+  X3D_OBJECT_EVENT_RENDER = 2
   
 } X3D_ObjectEvents;
 
@@ -93,4 +94,5 @@ uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X
 void x3d_objectmanager_create_object_type(uint16 type_id, X3D_ObjectType* type);
 X3D_DynamicObjectBase* x3d_objectmanager_get_object(uint16 id);
 void x3d_object_move(X3D_DynamicObjectBase* obj);
+void x3d_objectmanager_render_objects(void);
 

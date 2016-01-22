@@ -18,6 +18,14 @@
 #include "X3D_enginestate.h"
 #include "X3D_assert.h"
 
+static uint16 active_objects[X3D_MAX_OBJECTS];
+static uint16 total_active_objects;
+
+
+void x3d_objectmanager_activate_object(uint16 id) {
+  active_objects[total_active_objects++] = id;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Gets the address of the object with the given ID.
 ///
@@ -78,6 +86,8 @@ uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X
   
   obj->base.type->event_handler((X3D_ObjectBase* )obj, ev);
   
+  x3d_objectmanager_activate_object(obj->base.id);
+  
   return obj->base.id;
 }
 
@@ -135,6 +145,20 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   
   if(caster.dist > 50) {
     obj->base.pos = new_pos;
+  }
+}
+
+/// @todo Document.
+void x3d_objectmanager_render_objects(void) {
+  uint16 i;
+  X3D_ObjectEvent ev = {
+    .type = X3D_OBJECT_EVENT_RENDER
+  };
+  
+  for(i = 0; i < total_active_objects; ++i) {
+    X3D_DynamicObjectBase* obj = x3d_objectmanager_get_object(active_objects[i]);
+    
+    obj->base.type->event_handler(obj, ev);
   }
 }
 
