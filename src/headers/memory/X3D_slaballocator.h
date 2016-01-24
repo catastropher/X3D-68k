@@ -16,30 +16,27 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
 #include "X3D_assert.h"
-
-#include "memory/X3D_freelist.h"
 #include "memory/X3D_stack.h"
-#include "memory/X3D_list.h"
-#include "memory/X3D_varsizeallocator.h"
-#include "memory/X3D_slaballocator.h"
 
-#include "X3D_enginestate.h"
-#include "X3D_prism.h"
-#include "X3D_segment.h"
-#include "X3D_segmentbuilder.h"
-#include "X3D_matrix.h"
-#include "X3D_trig.h"
-#include "X3D_object.h"
-#include "X3D_camera.h"
-#include "X3D_vector.h"
-#include "X3D_render.h"
-#include "X3D_player.h"
+typedef struct X3D_SlabBlock {
+  struct X3D_SlabBlock* next;
+} X3D_SlabBlock;
 
-#include "X3D_collide.h"
-#include "X3D_wallportal.h"
+typedef struct X3D_Slab {
+  uint16 size;
+  X3D_SlabBlock* head;
+  X3D_SlabBlock* tail;
+} X3D_Slab;
+
+#define X3D_TOTAL_SLABS 32
+
+typedef struct X3D_SlabAllocator {
+  X3D_Stack stack;
+  X3D_Slab slabs[X3D_TOTAL_SLABS];
+} X3D_SlabAllocator;
+
+void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size);
+void x3d_slaballocator_free(X3D_SlabAllocator* alloc, void* mem);
+void x3d_slaballocator_reset(X3D_SlabAllocator* alloc);
 
