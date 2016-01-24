@@ -16,31 +16,12 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
-
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
-#include "memory/X3D_list.h"
-#include "memory/X3D_varsizeallocator.h"
 #include "memory/X3D_slaballocator.h"
-#include "memory/X3D_alloc.h"
 
-#include "X3D_enginestate.h"
-#include "X3D_prism.h"
-#include "X3D_segment.h"
-#include "X3D_segmentbuilder.h"
-#include "X3D_matrix.h"
-#include "X3D_trig.h"
-#include "X3D_object.h"
-#include "X3D_camera.h"
-#include "X3D_vector.h"
-#include "X3D_render.h"
-#include "X3D_player.h"
+typedef struct X3D_AllocManager {
+  X3D_SlabAllocator alloc;
+} X3D_AllocManager;
 
-#include "X3D_collide.h"
-#include "X3D_wallportal.h"
+void* x3d_slab_alloc(uint16 size);
+void x3d_slab_free(void* mem);
 

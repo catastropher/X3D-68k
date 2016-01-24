@@ -34,6 +34,7 @@ add_sources(
   C/memory/list.c
   C/memory/varsizeallocator.c
   C/memory/slaballocator.c
+  C/memory/alloc.c
   
   C/enginestate.c
   C/segment.c
