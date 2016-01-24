@@ -85,3 +85,15 @@ void x3d_stack_restore(X3D_Stack* stack, void* ptr) {
   stack->ptr = ptr;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Resets the stack to its original stack pointer
+///
+/// @param stack  - stack
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_stack_reset(X3D_Stack* stack) {
+  stack->ptr = stack->base + stack->size;
+}
+
+

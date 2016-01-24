@@ -25,10 +25,6 @@ static void x3d_camera_event_handler(X3D_ObjectBase* obj, X3D_ObjectEvent ev) {
       printf("Created new camera!\n");
       break;
       
-    case X3D_OBJECT_EVENT_RENDER:
-      printf("Render!\n");
-      break;
-      
     default:
       break;
   }

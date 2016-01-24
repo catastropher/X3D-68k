@@ -25,4 +25,5 @@ void x3d_stack_init(X3D_Stack* stack, void* mem, uint32 mem_size);
 void* x3d_stack_alloc(X3D_Stack* stack, uint16 size);
 void* x3d_stack_save(X3D_Stack* stack);
 void x3d_stack_restore(X3D_Stack* stack, void* ptr);
+void x3d_stack_reset(X3D_Stack* stack);
 

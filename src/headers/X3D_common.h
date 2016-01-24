@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <stdio.h>
+
 #include "X3D_int.h"
 #include "X3D_interface.h"
 #include "X3D_log.h"
