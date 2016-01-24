@@ -21,9 +21,11 @@
 #include "X3D_clip.h"
 #include "X3D_init.h"
 #include "X3D_camera.h"
+#include "memory/X3D_handle.h"
+#include "memory/X3D_alloc.h"
 
 static X3D_EngineState x3d_global_enginestate;
-X3D_EngineState* x3d_state;
+X3D_EngineState* const x3d_state = &x3d_global_enginestate;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// A dummy callback.
@@ -36,9 +38,10 @@ void x3d_dummy_void_callback(void) {
 /// Initializes the global engine state.
 ///////////////////////////////////////////////////////////////////////////////
 X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init) {
-  x3d_state = &x3d_global_enginestate;
+  //x3d_state = &x3d_global_enginestate;
   
   x3d_allocmanager_init(60000);
+  x3d_handlemanager_init(100);
   
   x3d_segmentmanager_init(10, 2000);
   

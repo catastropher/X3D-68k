@@ -24,6 +24,7 @@
 #include "X3D_init.h"
 #include "X3D_object.h"
 #include "memory/X3D_alloc.h"
+#include "memory/X3D_handle.h"
 
 typedef struct X3D_EngineState {
   X3D_SegmentManager segment_manager;
@@ -33,12 +34,13 @@ typedef struct X3D_EngineState {
   X3D_RenderManager render_manager;
   X3D_ObjectManager object_manager;
   X3D_AllocManager alloc_manager;
+  X3D_HandleManager handle_manager;
   
   _Bool exit_gameloop;
   uint16 engine_step;
 } X3D_EngineState;
 
-extern X3D_EngineState* x3d_state;
+extern X3D_EngineState* const x3d_state;
 
 static inline X3D_SegmentManager* x3d_segmentmanager_get(void) {
   return &x3d_state->segment_manager;
@@ -82,6 +84,10 @@ static inline X3D_ObjectManager* x3d_objectmanager_get(void) {
 
 static inline X3D_AllocManager* x3d_allocmanager_get(void) {
   return &x3d_state->alloc_manager;
+}
+
+static inline X3D_HandleManager* x3d_handlemanager_get(void) {
+  return &x3d_state->handle_manager;
 }
 
 

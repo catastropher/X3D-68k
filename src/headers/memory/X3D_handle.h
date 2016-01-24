@@ -16,32 +16,18 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_gameloop.h"
-#include "X3D_init.h"
-#include "X3D_screen.h"
-#include "X3D_keys.h"
-#include "X3D_assert.h"
 
-#include "memory/X3D_freelist.h"
-#include "memory/X3D_stack.h"
-#include "memory/X3D_list.h"
-#include "memory/X3D_varsizeallocator.h"
-#include "memory/X3D_slaballocator.h"
-#include "memory/X3D_alloc.h"
-#include "memory/X3D_handle.h"
+typedef uint16 X3D_Handle;
 
-#include "X3D_enginestate.h"
-#include "X3D_prism.h"
-#include "X3D_segment.h"
-#include "X3D_segmentbuilder.h"
-#include "X3D_matrix.h"
-#include "X3D_trig.h"
-#include "X3D_object.h"
-#include "X3D_camera.h"
-#include "X3D_vector.h"
-#include "X3D_render.h"
-#include "X3D_player.h"
+typedef struct X3D_HandleManager {
+  uint16 total_h;
+  void** handles;
+  void** head;
+  void** tail;
+} X3D_HandleManager;
 
-#include "X3D_collide.h"
-#include "X3D_wallportal.h"
+X3D_Handle x3d_handle_add(void* ptr);
+void x3d_handle_delete(X3D_Handle handle);
+void* x3d_handle_deref(X3D_Handle handle);
+void x3d_handlemanager_init(uint16 total_h);
 
