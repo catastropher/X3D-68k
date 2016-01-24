@@ -39,4 +39,5 @@ typedef struct X3D_SlabAllocator {
 void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size);
 void x3d_slaballocator_free(X3D_SlabAllocator* alloc, void* mem);
 void x3d_slaballocator_reset(X3D_SlabAllocator* alloc);
+void x3d_slaballocator_init(X3D_SlabAllocator* alloc, size_t mem_size);
 

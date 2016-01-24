@@ -18,6 +18,7 @@
 #include "memory/X3D_stack.h"
 #include "memory/X3D_slaballocator.h"
 
+/// @todo Document file.
 
 static uint16 x3d_slab_id_from_size(X3D_SlabAllocator* alloc, uint16 size) {
   return size >> 4;
@@ -74,5 +75,12 @@ void x3d_slaballocator_reset(X3D_SlabAllocator* alloc) {
     alloc->slabs[i].tail = NULL;
     alloc->slabs[i].size = (i + 1) * 16;
   }
+}
+
+void x3d_slaballocator_init(X3D_SlabAllocator* alloc, size_t mem_size) {
+  void* mem = malloc(mem_size);
+  
+  x3d_stack_init(&alloc->stack, mem, mem_size);
+  x3d_slaballocator_reset(alloc);
 }
 
