@@ -18,12 +18,22 @@
 #include "memory/X3D_stack.h"
 #include "memory/X3D_slaballocator.h"
 
-/// @todo Document file.
-
+// Calculates the slab ID based on the size
 static uint16 x3d_slab_id_from_size(X3D_SlabAllocator* alloc, uint16 size) {
   return size >> 4;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Allocates a block of memory from a slab allocator (suitable for several
+///   small allocs under 512 bytes).
+///
+/// @param alloc  - slab allocator
+/// @param size   - size of the block to allocate
+///
+/// @return A block of memory that is at least size bytes.
+/// @note If the allocation fails and debug mode is enabled, it will assert.
+/// @todo Implement error handling?
+///////////////////////////////////////////////////////////////////////////////
 void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size) {
   uint16 slab_id = x3d_slab_id_from_size(alloc, size);
   void* block;
@@ -53,6 +63,16 @@ void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size) {
   return block + 2;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Frees a block of memory back to a slab allocator.
+///
+/// @param alloc  - slab allocator
+/// @param mem    - block to return
+///
+/// @return Nothing.
+/// @note No checks are performed to make sure that mem was actually alloced
+///   from alloc - be careful!
+///////////////////////////////////////////////////////////////////////////////
 void x3d_slaballocator_free(X3D_SlabAllocator* alloc, void* mem) {
   X3D_SlabBlock* block = mem - 2;
   
@@ -72,6 +92,13 @@ void x3d_slaballocator_free(X3D_SlabAllocator* alloc, void* mem) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Resets a block allocator so it appears that no allocations were made.
+///
+/// @param alloc  - slab allocator
+///
+/// @note This invalidates any allocations made from alloc!
+///////////////////////////////////////////////////////////////////////////////
 void x3d_slaballocator_reset(X3D_SlabAllocator* alloc) {
   x3d_stack_reset(&alloc->stack);
   
@@ -83,6 +110,14 @@ void x3d_slaballocator_reset(X3D_SlabAllocator* alloc) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Initializes a block allocator and allocates memory for it.
+///
+/// @param alloc    - slab allocator
+/// @param mem_size - size to allocate for the memory pool
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_slaballocator_init(X3D_SlabAllocator* alloc, size_t mem_size) {
   void* mem = malloc(mem_size);
   
