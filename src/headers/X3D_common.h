@@ -18,6 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define X3D_WORD_ALIGN 8
+
 #include "X3D_int.h"
 #include "X3D_interface.h"
 #include "X3D_log.h"

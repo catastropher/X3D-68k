@@ -20,6 +20,10 @@
 
 /// @todo Document.
 
+void x3d_allocmanager_init(size_t mem_size) {
+  x3d_slaballocator_init(&x3d_allocmanager_get()->alloc, mem_size);
+}
+
 void* x3d_slab_alloc(uint16 size) {
   return x3d_slaballocator_alloc(&x3d_allocmanager_get()->alloc, size);
 }

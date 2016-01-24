@@ -25,3 +25,5 @@ typedef struct X3D_AllocManager {
 void* x3d_slab_alloc(uint16 size);
 void x3d_slab_free(void* mem);
 
+void x3d_allocmanager_init(size_t mem_size);
+

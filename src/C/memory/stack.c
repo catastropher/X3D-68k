@@ -49,7 +49,8 @@ void x3d_stack_init(X3D_Stack* stack, void* mem, uint32 mem_size) {
 void* x3d_stack_alloc(X3D_Stack* stack, uint16 size) {
   // Allocate space that is guaranteed to have an even size
   // (68k must have memory aligned to an even boundry)
-  stack->ptr -= size + (size & 1);
+  stack->ptr -= size;
+  stack->ptr -= ((size_t)stack->ptr) & (X3D_WORD_ALIGN - 1);
   
   // Check for stack overflow
   x3d_assert(stack->ptr >= stack->base);

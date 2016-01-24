@@ -36,11 +36,15 @@ void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size) {
     
     // Remove the block from the freelist
     alloc->slabs[slab_id].head = alloc->slabs[slab_id].head->next;
+    
+    x3d_log(X3D_INFO, "Grabbed existing block\n");
   }
   else {
     // No block is available, so create a new one. We need an extra 2 bytes
     // to record the size ID of the block.
     block = x3d_stack_alloc(&alloc->stack, alloc->slabs[slab_id].size + 2);
+    
+    x3d_log(X3D_INFO, "Created new block\n");
   }
   
   // Size ID comes 2 bytes before the block that is returned to the user
@@ -50,10 +54,12 @@ void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size) {
 }
 
 void x3d_slaballocator_free(X3D_SlabAllocator* alloc, void* mem) {
-  void* block = mem - 2;
+  X3D_SlabBlock* block = mem - 2;
   
   // Slab ID comes 2 bytes before mem
   uint16 slab_id = *((uint16 *)block);
+  
+  block->next = NULL;
   
   // Add the block back to the slab's freelist
   if(alloc->slabs[slab_id].head) {
