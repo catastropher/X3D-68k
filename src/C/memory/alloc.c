@@ -17,6 +17,7 @@
 #include "memory/X3D_alloc.h"
 #include "memory/X3D_slaballocator.h"
 #include "X3D_enginestate.h"
+#include "memory/X3D_handle.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Initializes the alloc manager with the given memory pool size.
@@ -53,4 +54,31 @@ void* x3d_slab_alloc(uint16 size) {
 void x3d_slab_free(void* mem) {
   x3d_slaballocator_free(&x3d_allocmanager_get()->alloc, mem);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+/// Same as @ref x3d_slab_alloc, but instead of returning a pointer to the
+///   allocated memory it returns a handle to it.
+///
+/// @param size - size of the memory to allocate
+///
+/// @return A handle to the memory (see @ref x3d_handle_deref to get the
+///   value the handle is referencing).
+///////////////////////////////////////////////////////////////////////////////
+X3D_Handle x3d_slab_alloc_handle(uint16 size) {
+  return x3d_handle_add(x3d_slab_alloc(size));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Same as @ref x3d_slab_free, but passes the handle created form
+///   @ref x3d_slab_alloc_handle instead of a pointer directly to the memory.
+///
+/// @param handle - handle of the memory to free
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_slab_free_handle(X3D_Handle handle) {
+  x3d_slab_free(x3d_handle_deref(handle));
+  x3d_handle_delete(handle);
+}
+
 
