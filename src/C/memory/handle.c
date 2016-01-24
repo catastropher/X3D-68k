@@ -18,6 +18,8 @@
 #include "memory/X3D_handle.h"
 #include "X3D_enginestate.h"
 
+/// @todo Document
+
 // Gets the address of where a handle's value is stored
 static void** x3d_handle_addr(X3D_Handle handle) {
   return x3d_handlemanager_get()->handles + handle;
