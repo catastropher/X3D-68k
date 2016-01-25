@@ -36,8 +36,8 @@ void x3d_camera_init(void) {
     .size = sizeof(X3D_CameraObject)
   };
   
-  x3d_objectmanager_create_object_type(0, &type_cam);
-  uint16 cam_id = x3d_objectmanager_create_object(
+  x3d_object_create_type(0, &type_cam);
+  uint16 cam_id = x3d_object_create(
     0,
     (X3D_Vex3D) { 0, 0, 0 },
     0,

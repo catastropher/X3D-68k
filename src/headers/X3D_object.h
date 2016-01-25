@@ -19,6 +19,7 @@
 #include "X3D_vector.h"
 #include "X3D_matrix.h"
 #include "X3D_collide.h"
+#include "memory/X3D_handle.h"
 
 typedef enum {
   X3D_OBJECT_EVENT_CREATE = 0,
@@ -91,8 +92,8 @@ static inline void x3d_dynamicobject_forward_vector(X3D_DynamicObjectBase* objec
 }
 
 void x3d_objectmanager_init(void);
-uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle);
-void x3d_objectmanager_create_object_type(uint16 type_id, X3D_ObjectType* type);
+X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle);
+void x3d_object_create_type(uint16 type_id, X3D_ObjectType* type);
 X3D_DynamicObjectBase* x3d_objectmanager_get_object(uint16 id);
 void x3d_object_move(X3D_DynamicObjectBase* obj);
 void x3d_objectmanager_render_objects(void);

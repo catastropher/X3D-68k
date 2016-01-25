@@ -68,9 +68,9 @@ void x3d_objectmanager_init(void) {
 /// @param speed  - speed the object is moving in dir
 /// @param angle  - orientation of the object
 ///
-/// @return The ID of the object.
+/// @return A handle to the object.
 ///////////////////////////////////////////////////////////////////////////////
-uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle) {
+X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle) {
   static int16 alloc_id = 0;
   
   X3D_ObjectType* obj_type = &x3d_objectmanager_get()->types[type];
@@ -91,7 +91,7 @@ uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X
   
   x3d_objectmanager_activate_object(obj->base.id);
   
-  return obj->base.id;
+  return x3d_handle_add(obj);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X
 ///                   about the object.
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_objectmanager_create_object_type(uint16 type_id, X3D_ObjectType* type) {
+void x3d_object_create_type(uint16 type_id, X3D_ObjectType* type) {
   X3D_ObjectManager* objectman = x3d_objectmanager_get();
   
   x3d_assert(type_id < X3D_MAX_OBJECT_TYPES);
@@ -115,7 +115,7 @@ void x3d_objectmanager_create_object_type(uint16 type_id, X3D_ObjectType* type) 
 ///
 /// @param obj    - object
 /// @param force  - force vector
-///                   about the object.
+///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_object_apply_force(X3D_Object* obj, X3D_Vex3D_fp8x8 force) {
