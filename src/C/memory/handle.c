@@ -18,13 +18,20 @@
 #include "memory/X3D_handle.h"
 #include "X3D_enginestate.h"
 
-/// @todo Document
 
 // Gets the address of where a handle's value is stored
 static void** x3d_handle_addr(X3D_Handle handle) {
   return x3d_handlemanager_get()->handles + handle;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Creates a new handle that references the given pointer.
+///
+/// @param ptr  - pointer to reference
+///
+/// @return The handle ID.
+/// @todo Add ability to resize the handle table if out of handles
+///////////////////////////////////////////////////////////////////////////////
 X3D_Handle x3d_handle_add(void* ptr) {
   X3D_HandleManager* handman = x3d_handlemanager_get();
   
@@ -40,6 +47,15 @@ X3D_Handle x3d_handle_add(void* ptr) {
   return handle - handman->handles;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Deletes a handle.
+///
+/// @param handle - ID of the handle to delete
+///
+/// @return Nothing.
+/// @note No check is made to ensure that the handle actually exists. Very bad
+///   things are likely to happen if a handle is deleted twice!
+///////////////////////////////////////////////////////////////////////////////
 void x3d_handle_delete(X3D_Handle handle) {
   X3D_HandleManager* handman = x3d_handlemanager_get();
   
@@ -57,10 +73,26 @@ void x3d_handle_delete(X3D_Handle handle) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Dereferences a handle i.e. gets the address referenced by the handle.
+///
+/// @param handle - handle ID
+///
+/// @return A pointer to whatever the handle is referencing.
+/// @note No check is made to ensure that this is a valid handle!
+///////////////////////////////////////////////////////////////////////////////
 void* x3d_handle_deref(X3D_Handle handle) {
   return *x3d_handle_addr(handle);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Initializes the handle manager for the engine.
+///
+/// @param total_h  - initial number of handles to create
+///
+/// @return Nothing.
+/// @todo Add check that the malloc succeeded.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_handlemanager_init(uint16 total_h) {
   X3D_HandleManager* handman = x3d_handlemanager_get();
   
