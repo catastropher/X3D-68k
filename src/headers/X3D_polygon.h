@@ -23,12 +23,12 @@
 
 typedef struct X3D_Polygon3D {
   uint16 total_v;
-  X3D_Vex3D v[];
+  X3D_Vex3D* v;
 } X3D_Polygon3D;
 
 typedef struct X3D_Polygon2D {
   uint16 total_v;
-  X3D_Vex2D v[];
+  X3D_Vex2D* v;
 } X3D_Polygon2D;
 
 void x3d_polygon3d_print(X3D_Polygon3D* p);
