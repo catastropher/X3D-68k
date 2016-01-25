@@ -17,6 +17,8 @@
 #include "X3D_object.h"
 #include "X3D_enginestate.h"
 #include "X3D_assert.h"
+#include "memory/X3D_handle.h"
+#include "memory/X3D_alloc.h"
 
 static uint16 active_objects[X3D_MAX_OBJECTS];
 static uint16 total_active_objects;
@@ -71,9 +73,10 @@ void x3d_objectmanager_init(void) {
 uint16 x3d_objectmanager_create_object(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle) {
   static int16 alloc_id = 0;
   
-  X3D_DynamicObjectBase* obj = x3d_objectmanager_get_object(alloc_id++);
+  X3D_ObjectType* obj_type = &x3d_objectmanager_get()->types[type];
+  X3D_DynamicObjectBase* obj = x3d_slab_alloc(obj_type->size);
   
-  obj->base.type = &x3d_objectmanager_get()->types[type];
+  obj->base.type = obj_type;
   obj->base.pos = (X3D_Vex3D_fp16x8) { (int32)pos.x * 256, (int32)pos.y * 256, (int32)pos.z * 256 };
   obj->velocity = (X3D_Vex3D_fp8x8) { ((int32)dir.x * speed) >> 8, ((int32)dir.y * speed) >> 8, ((int32)dir.z * speed) >> 8 };
   obj->angle = angle;
@@ -155,7 +158,7 @@ void x3d_objectmanager_render_objects(void) {
     .type = X3D_OBJECT_EVENT_RENDER
   };
   
-  for(i = 0; i < total_active_objects; ++i) {
+  for(i = 0; i < 0; ++i) {
     X3D_DynamicObjectBase* obj = x3d_objectmanager_get_object(active_objects[i]);
     
     obj->base.type->event_handler(obj, ev);

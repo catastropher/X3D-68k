@@ -52,6 +52,8 @@ void* x3d_stack_alloc(X3D_Stack* stack, uint16 size) {
   stack->ptr -= size;
   stack->ptr -= ((size_t)stack->ptr) & (X3D_WORD_ALIGN - 1);
   
+  x3d_assert(((size_t)stack->ptr & (X3D_WORD_ALIGN - 1)) == 0);
+  
   // Check for stack overflow
   x3d_assert(stack->ptr >= stack->base);
   

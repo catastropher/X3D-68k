@@ -32,7 +32,8 @@ static void x3d_camera_event_handler(X3D_ObjectBase* obj, X3D_ObjectEvent ev) {
 
 void x3d_camera_init(void) {
   X3D_ObjectType type_cam = {
-    .event_handler = x3d_camera_event_handler
+    .event_handler = x3d_camera_event_handler,
+    .size = sizeof(X3D_CameraObject)
   };
   
   x3d_objectmanager_create_object_type(0, &type_cam);

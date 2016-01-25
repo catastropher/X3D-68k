@@ -34,6 +34,7 @@ typedef struct X3D_ObjectEvent {
 struct X3D_ObjectBase;
 
 typedef struct X3D_ObjectType {
+  uint16 size;
   void (*event_handler)(struct X3D_ObjectBase* object, X3D_ObjectEvent event);
   
   X3D_BoundVolume volume;

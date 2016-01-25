@@ -13,10 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+
 #include "X3D_common.h"
 #include "X3D_assert.h"
 #include "memory/X3D_stack.h"
 #include "memory/X3D_slaballocator.h"
+
+#define X3D_PADDED_BLOCK_SIZE X3D_MAX(2, X3D_WORD_ALIGN)
+
 
 // Calculates the slab ID based on the size
 static uint16 x3d_slab_id_from_size(X3D_SlabAllocator* alloc, uint16 size) {
@@ -52,7 +56,7 @@ void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size) {
   else {
     // No block is available, so create a new one. We need an extra 2 bytes
     // to record the size ID of the block.
-    block = x3d_stack_alloc(&alloc->stack, alloc->slabs[slab_id].size + 2);
+    block = x3d_stack_alloc(&alloc->stack, alloc->slabs[slab_id].size + X3D_PADDED_BLOCK_SIZE);
     
     x3d_log(X3D_INFO, "Created new block\n");
   }
@@ -60,7 +64,7 @@ void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size) {
   // Size ID comes 2 bytes before the block that is returned to the user
   *((uint16 *)block) = slab_id;
     
-  return block + 2;
+  return block + X3D_PADDED_BLOCK_SIZE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,7 +78,7 @@ void* x3d_slaballocator_alloc(X3D_SlabAllocator* alloc, uint16 size) {
 ///   from alloc - be careful!
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_slaballocator_free(X3D_SlabAllocator* alloc, void* mem) {
-  X3D_SlabBlock* block = mem - 2;
+  X3D_SlabBlock* block = mem - X3D_PADDED_BLOCK_SIZE;
   
   // Slab ID comes 2 bytes before mem
   uint16 slab_id = *((uint16 *)block);
