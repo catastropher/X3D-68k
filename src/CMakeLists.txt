@@ -53,6 +53,7 @@ add_sources(
   C/object.c
   C/camera.c
   C/wallportal.c
+  C/portal.c
 )
 
 add_subdirectory(C/platform)
