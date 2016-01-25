@@ -21,6 +21,8 @@
 
 #pragma once
 
+/// @todo Document.
+
 typedef struct X3D_Polygon3D {
   uint16 total_v;
   X3D_Vex3D* v;
