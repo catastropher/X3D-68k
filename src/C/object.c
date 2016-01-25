@@ -29,35 +29,6 @@ void x3d_objectmanager_activate_object(uint16 id) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Gets the address of the object with the given ID.
-///
-/// @param id - object ID
-///
-/// @return The address of the object.
-///////////////////////////////////////////////////////////////////////////////
-X3D_DynamicObjectBase* x3d_objectmanager_get_object(uint16 id) {
-  return (X3D_DynamicObjectBase* )&x3d_objectmanager_get()->object_pool[id];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-/// Initializes the object manager.
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_objectmanager_init(void) {
-  uint16 i;
-  
-  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
-    X3D_DynamicObjectBase* obj = x3d_objectmanager_get_object(i);
-    
-    obj->base.id = i;
-  }
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
 /// Creates a new object of the given type.
 /// 
 /// @param type   - object type ID. See @ref
@@ -89,7 +60,7 @@ X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D d
   
   obj->base.type->event_handler((X3D_ObjectBase* )obj, ev);
   
-  x3d_objectmanager_activate_object(obj->base.id);
+  //x3d_objectmanager_activate_object(obj->base.id);
   
   return x3d_handle_add(obj);
 }
@@ -159,9 +130,8 @@ void x3d_objectmanager_render_objects(void) {
   };
   
   for(i = 0; i < 0; ++i) {
-    X3D_DynamicObjectBase* obj = x3d_objectmanager_get_object(active_objects[i]);
     
-    obj->base.type->event_handler(obj, ev);
+    //obj->base.type->event_handler(obj, ev);
   }
 }
 

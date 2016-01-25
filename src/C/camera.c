@@ -37,7 +37,7 @@ void x3d_camera_init(void) {
   };
   
   x3d_object_create_type(0, &type_cam);
-  uint16 cam_id = x3d_object_create(
+  X3D_Handle cam_handle = x3d_object_create(
     0,
     (X3D_Vex3D) { 0, 0, 0 },
     0,
@@ -47,7 +47,7 @@ void x3d_camera_init(void) {
   );
   
   x3d_playermanager_get()->player[0] = (X3D_Player) {
-    .cam = x3d_objectmanager_get_object(cam_id),
+    .cam = x3d_handle_deref(cam_handle),
     .id = 0
   };
 }

@@ -51,7 +51,6 @@ X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init) {
   /// @todo Should engine_step be moved into the render manager?
   x3d_state->engine_step = 0;
   
-  x3d_objectmanager_init();
   x3d_camera_init();
 }
 

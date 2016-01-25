@@ -44,7 +44,7 @@ typedef struct X3D_ObjectType {
 typedef struct X3D_ObjectBase {
   X3D_Vex3D_fp16x8 pos;
   X3D_ObjectType* type;
-  uint16 id;
+  X3D_Handle handle;
 } X3D_ObjectBase;
 
 typedef struct X3D_StaticObjectBase {
@@ -91,10 +91,8 @@ static inline void x3d_dynamicobject_forward_vector(X3D_DynamicObjectBase* objec
   dest->z = object->mat.data[8];
 }
 
-void x3d_objectmanager_init(void);
 X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle);
 void x3d_object_create_type(uint16 type_id, X3D_ObjectType* type);
-X3D_DynamicObjectBase* x3d_objectmanager_get_object(uint16 id);
 void x3d_object_move(X3D_DynamicObjectBase* obj);
 void x3d_objectmanager_render_objects(void);
 
