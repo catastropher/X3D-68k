@@ -31,6 +31,7 @@ void x3d_wallportals_init(void) {
   
   for(i = 0; i < X3D_MAX_WALL_PORTALS; ++i) {
     wall_portals[i].face = X3D_FACE_NONE;
+    wall_portals[i].portal_poly.v = wall_portals[i].v;
   }
 }
 
@@ -66,8 +67,11 @@ void x3d_wallportal_construct(uint16 wall_portal, X3D_SegFaceID face, X3D_Vex3D 
   );
   
   // Move the portal polygon to the center of the wall
-  X3D_Polygon3D* wall = alloca(1000);//x3d_polygon3d_size(seg->prism.base_v * 2));
-  x3d_prism3d_get_face(&seg->prism, face_id, wall);
+  X3D_Polygon3D wall = {
+    .v = alloca(1000)
+  };
+  
+  x3d_prism3d_get_face(&seg->prism, face_id, &wall);
   
   uint16 i;
   
@@ -75,15 +79,15 @@ void x3d_wallportal_construct(uint16 wall_portal, X3D_SegFaceID face, X3D_Vex3D 
     // Calculate the center of the wall
     X3D_Vex3D_int16 center = { 0, 0, 0 };
     
-    for(i = 0; i < wall->total_v; ++i) {
-      center.x += wall->v[i].x;
-      center.y += wall->v[i].y;
-      center.z += wall->v[i].z;
+    for(i = 0; i < wall.total_v; ++i) {
+      center.x += wall.v[i].x;
+      center.y += wall.v[i].y;
+      center.z += wall.v[i].z;
     }
     
-    center.x /= wall->total_v;
-    center.y /= wall->total_v;
-    center.z /= wall->total_v;
+    center.x /= wall.total_v;
+    center.y /= wall.total_v;
+    center.z /= wall.total_v;
     
     portal->center = (X3D_Vex3D) { center.x, center.y, center.z };
   }

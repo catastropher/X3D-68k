@@ -72,31 +72,33 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
   
   /// @todo This implementation will only work uncompressed segments. Fix this!
   X3D_UncompressedSegment* seg = (X3D_UncompressedSegment*)x3d_segmentmanager_get_internal(seg_id);
-  X3D_Polygon3D* poly = alloca(x3d_polygon3d_size(seg->base.base_v));
+  X3D_Polygon3D poly = {
+    .v = alloca(sizeof(X3D_Vex3D) * seg->base.base_v)
+  };
   
   // Extrude the face along its (flipped) normal
   X3D_Plane plane;
-  x3d_prism3d_get_face(&seg->prism, face_id, poly);
-  x3d_polygon3d_calculate_plane(poly, &plane);
+  x3d_prism3d_get_face(&seg->prism, face_id, &poly);
+  x3d_polygon3d_calculate_plane(&poly, &plane);
   plane.normal = x3d_vex3d_neg(&plane.normal);
   
-  X3D_Prism3D* new_prism = alloca(x3d_prism3d_size(poly->total_v));
-  new_prism->base_v = poly->total_v;
+  X3D_Prism3D* new_prism = alloca(x3d_prism3d_size(poly.total_v));
+  new_prism->base_v = poly.total_v;
   
   // The old faces becomes BASE_A of the new prism. But, if the old face was
   // BASE_B, it needs to be reversed (BASE_B is always reversed after calling
   // x3d_prism3d_get_face()).
   //if(face_id == X3D_BASE_A || face_id == X3D_BASE_B) {
-    x3d_polygon3d_reverse(poly);
+    x3d_polygon3d_reverse(&poly);
   //}
   
-  x3d_prism3d_set_face(new_prism, X3D_BASE_A, poly);
+  x3d_prism3d_set_face(new_prism, X3D_BASE_A, &poly);
   
   // BASE_B of the new prism becomes the translated polygon (but it has to be
   // because x3d_prism3d_set_face() expects BASE_B to be reversed).
-  x3d_polygon3d_reverse(poly);
-  x3d_polygon3d_translate(poly, &plane.normal, dist);
-  x3d_prism3d_set_face(new_prism, X3D_BASE_B, poly);
+  x3d_polygon3d_reverse(&poly);
+  x3d_polygon3d_translate(&poly, &plane.normal, dist);
+  x3d_prism3d_set_face(new_prism, X3D_BASE_B, &poly);
   
   // Create a new segment with the new prism
   X3D_UncompressedSegment* new_seg = x3d_segmentbuilder_add_uncompressed_segment(

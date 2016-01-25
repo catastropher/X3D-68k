@@ -112,7 +112,9 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
 
       // Calculate the plane equations for the faces
       uint16 d;
-      X3D_Polygon3D* poly = alloca(x3d_polygon3d_size(seg->base_v));
+      X3D_Polygon3D poly = {
+        .v = alloca(seg->base_v * sizeof(X3D_Vex3D))
+      };
       
       X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(
         &seg_manager->cache.entry[i].seg);
@@ -120,8 +122,8 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
       seg_manager->cache.entry[i].seg.last_engine_step = 0;
       
       for(d = 0; d < x3d_prism3d_total_f(seg->base_v); ++d) {
-        x3d_prism3d_get_face(&seg_manager->cache.entry[i].seg.prism, d, poly);
-        x3d_plane_construct(&face[d].plane, poly->v, poly->v + 1, poly->v + 2);
+        x3d_prism3d_get_face(&seg_manager->cache.entry[i].seg.prism, d, &poly);
+        x3d_plane_construct(&face[d].plane, poly.v, poly.v + 1, poly.v + 2);
       }
       
       x3d_log(X3D_INFO, "Moved segment %d into cache (entry %d)", id, i);
