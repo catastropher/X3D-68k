@@ -63,7 +63,6 @@ typedef struct X3D_DynamicObjectBase {
 #define X3D_MAX_OBJECT_TYPES 16
 
 typedef struct X3D_ObjectManager {
-  uint8 object_pool[X3D_MAX_OBJECTS][256];
   X3D_ObjectType types[X3D_MAX_OBJECT_TYPES];
 } X3D_ObjectManager;
 

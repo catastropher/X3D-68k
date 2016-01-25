@@ -17,6 +17,8 @@
 
 #include "X3D_common.h"
 
+#define X3D_INVALID_HANDLE 0xFFFF
+
 typedef uint16 X3D_Handle;
 
 typedef struct X3D_HandleManager {

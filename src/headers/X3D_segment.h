@@ -20,6 +20,7 @@
 #include "memory/X3D_varsizeallocator.h"
 #include "X3D_prism.h"
 #include "X3D_plane.h"
+#include "memory/X3D_handle.h"
 
 ///< Represents a NULL segment, that is, "no segment"
 #define X3D_SEGMENT_NONE 0xFFFF
@@ -105,6 +106,11 @@ typedef struct X3D_SegmentBase {
   uint16 base_v;      ///< Number of vertices in one of the prism bases
 } X3D_SegmentBase;
 
+#define X3D_MAX_OBJECTS_IN_SEG 10
+
+typedef struct X3D_SegmentObjectList {
+  X3D_Handle objects[X3D_MAX_OBJECTS_IN_SEG];
+} X3D_SegmentObjectList;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// A segment that is fully decompressed, complete with calculated plane
@@ -117,6 +123,7 @@ typedef struct X3D_UncompressedSegment {
   uint16 face_offset;         ///< Offset from the beginning of the struct of
                               ///  the face data.
   uint16 last_engine_step;    ///< Last step the segment was rendered
+  X3D_SegmentObjectList object_list; ///< List of objects currently in the segment
   X3D_Prism3D prism;          ///< Prism data (MUST BE LAST MEMBER)
 } X3D_UncompressedSegment;
 
