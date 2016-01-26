@@ -25,6 +25,27 @@
 #include "X3D_collide.h"
 #include "X3D_wallportal.h"
 
+int16 x3d_scale_by_depth(int16 value, int16 depth) {
+  int16 min_depth = 10;
+  int16 max_depth = 1000;
+  
+  if(depth > max_depth)
+    return 0;
+  
+  return value - ((int32)value * (depth - min_depth) / (max_depth - min_depth));
+}
+
+X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth) {
+  uint8 r, g, b;
+  x3d_color_to_rgb(color, &r, &g, &b);
+  
+  return x3d_rgb_to_color(
+    x3d_scale_by_depth(r, depth),
+    x3d_scale_by_depth(g, depth),
+    x3d_scale_by_depth(b, depth)                          
+  );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Clips a line to a raster region and draws it, if it's visible.
@@ -38,13 +59,18 @@
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-static void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, X3D_Color color, X3D_RasterRegion* region) {
+static void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1, int16 depth2, X3D_Color color, X3D_RasterRegion* region) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   X3D_Vex2D v1 = { x1, y1 };
   X3D_Vex2D v2 = { x2, y2 };
   
+  
+  
   if(x3d_rasterregion_clip_line(region, &renderman->stack, &v1, &v2)) {
-    x3d_screen_draw_line(v1.x, v1.y, v2.x, v2.y, color);
+    X3D_Color new1 = x3d_color_scale_by_depth(color, depth1);
+    X3D_Color new2 = x3d_color_scale_by_depth(color, depth2);
+    
+    x3d_screen_draw_line_grad(v1.x, v1.y, v2.x, v2.y, new1, new2);
   }
 }
 
@@ -426,7 +452,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
     
     if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
-      x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, color, region);
+      x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, color, region);
     }
   }
   
@@ -459,7 +485,5 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_screen_draw_pix(cx, cy + 1, 0xFFFF);
   x3d_screen_draw_pix(cx - 1, cy, 0xFFFF);
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
-  
-  
 }
 

@@ -135,14 +135,14 @@ void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color
   uint8 r0, g0, b0;
   x3d_color_to_rgb(color0, &r0, &g0, &b0);
   
-  uint16 r1, g1, b1;
-  x3d_color_to_rgb(color0, &r1, &g1, &b1);
+  uint8 r1, g1, b1;
+  x3d_color_to_rgb(color1, &r1, &g1, &b1);
   
   int16 step;
   
   _Bool step_x;
   
-  if(dx < dy) {
+  if(dx > dy) {
     step = dx;
     step_x = X3D_TRUE;
   }
@@ -151,9 +151,12 @@ void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color
     step_x = X3D_FALSE;
   }
   
-  int32 step_r = (((int32)r1 - r0) << 16) / step;
-  int32 step_g = (((int32)g1 - g0) << 16) / step;
-  int32 step_b = (((int32)b1 - b0) << 16) / step;
+  if(step == 0)
+    return;
+  
+  int32 step_r = (((int32)r1 - r0) * 65536L) / step;
+  int32 step_g = (((int32)g1 - g0) * 65536L) / step;
+  int32 step_b = (((int32)b1 - b0) * 65536L) / step;
   
   int32 r = ((int32)r0) << 16;
   int32 g = ((int32)g0) << 16;
@@ -191,6 +194,7 @@ void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color
       b += step_b;
       
       color = x3d_rgb_to_color(r >> 16, g >> 16, b >> 16);
+      update = X3D_FALSE;
     }
   }
 }

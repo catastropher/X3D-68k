@@ -253,7 +253,8 @@ void engine_test_handle_keys(void) {
   if(x3d_key_down(KEY_W)) {
     X3D_Vex3D dir;
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
-    
+
+#if 0    
     X3D_Vex3D_fp8x8 d = {
       dir.x >> 5,
       dir.y >> 5,
@@ -262,10 +263,11 @@ void engine_test_handle_keys(void) {
     
     cam->base.velocity = d;
     x3d_object_move(&cam->base);
+#endif
     
-    //cam->base.base.pos.x += dir.x >> 5;
-    //cam->base.base.pos.y += dir.y >> 5;
-    //cam->base.base.pos.z += dir.z >> 5;
+    cam->base.base.pos.x += dir.x >> 5;
+    cam->base.base.pos.y += dir.y >> 5;
+    cam->base.base.pos.z += dir.z >> 5;
     
     //cam->base.base.pos.z += 4L << 8;
   }
@@ -340,7 +342,7 @@ void engine_test(void) {
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
-  x3d_prism3d_construct(prism, base_v, 200,  200, angle);
+  x3d_prism3d_construct(prism, base_v, 200,  300, angle);
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
   //uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 20);
@@ -350,6 +352,10 @@ void engine_test(void) {
   //uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
   uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 100);
   uint16 id8 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 4), 100);
+  uint16 id9 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 1), 450);
+  uint16 id10 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 1), 100);
+  
+  uint16 id11 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 2000);
   
   // Create a portal on one of the walls
   uint16 portal_base_v = 8;
