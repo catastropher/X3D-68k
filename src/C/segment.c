@@ -126,6 +126,11 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
         x3d_plane_construct(&face[d].plane, poly.v, poly.v + 1, poly.v + 2);
       }
       
+      // Make it so no objects are in the segment
+      for(d = 0; d < X3D_MAX_OBJECTS_IN_SEG; ++d) {
+        seg_manager->cache.entry[i].seg.object_list.objects[d] = X3D_INVALID_HANDLE;
+      }
+      
       x3d_log(X3D_INFO, "Moved segment %d into cache (entry %d)", id, i);
       
       return &seg_manager->cache.entry[i].seg;
@@ -137,5 +142,29 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
   
   x3d_assert(!"Out of segments!");
   return NULL;
+}
+
+void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object) {
+  _Bool exists = X3D_FALSE;
+  uint16 free_pos = 0xFFFF;
+  
+  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(seg_id);
+  
+  uint16 i;
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
+    if(seg->object_list.objects[i] == X3D_INVALID_HANDLE)
+      free_pos = i;
+    else if(seg->object_list.objects[i] == object)
+      exists = X3D_TRUE;
+  }
+  
+  if(!exists) {
+    // Can't fit any more objects in the room
+    x3d_assert(free_pos != 0xFFFF);
+    
+    seg->object_list.objects[free_pos] = object;
+    
+    x3d_log(X3D_INFO, "Moved object %d to seg %d\n", object, seg_id);
+  }
 }
 

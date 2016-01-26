@@ -19,6 +19,7 @@
 #include "X3D_assert.h"
 #include "memory/X3D_handle.h"
 #include "memory/X3D_alloc.h"
+#include "X3D_segment.h"
 
 static uint16 active_objects[X3D_MAX_OBJECTS];
 static uint16 total_active_objects;
@@ -60,9 +61,13 @@ X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D d
   
   obj->base.type->event_handler((X3D_ObjectBase* )obj, ev);
   
+  X3D_Handle handle = x3d_handle_add(obj);
+  
+  x3d_uncompressedsegment_add_object(seg, handle);
+  
   //x3d_objectmanager_activate_object(obj->base.id);
   
-  return x3d_handle_add(obj);
+  return handle;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

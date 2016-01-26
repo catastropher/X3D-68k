@@ -25,24 +25,21 @@
 #include "X3D_collide.h"
 #include "X3D_wallportal.h"
 
-int16 x3d_scale_by_depth(int16 value, int16 depth) {
-  int16 min_depth = 10;
-  int16 max_depth = 1000;
-  
+int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {  
   if(depth > max_depth)
     return 0;
   
   return value - ((int32)value * (depth - min_depth) / (max_depth - min_depth));
 }
 
-X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth) {
+X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth, int16 max_depth) {
   uint8 r, g, b;
   x3d_color_to_rgb(color, &r, &g, &b);
   
   return x3d_rgb_to_color(
-    x3d_scale_by_depth(r, depth),
-    x3d_scale_by_depth(g, depth),
-    x3d_scale_by_depth(b, depth)                          
+    x3d_scale_by_depth(r, depth, min_depth, max_depth),
+    x3d_scale_by_depth(g, depth, min_depth, max_depth),
+    x3d_scale_by_depth(b, depth, min_depth, max_depth)                          
   );
 }
 
@@ -64,11 +61,9 @@ static void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 
   X3D_Vex2D v1 = { x1, y1 };
   X3D_Vex2D v2 = { x2, y2 };
   
-  
-  
   if(x3d_rasterregion_clip_line(region, &renderman->stack, &v1, &v2)) {
-    X3D_Color new1 = x3d_color_scale_by_depth(color, depth1);
-    X3D_Color new2 = x3d_color_scale_by_depth(color, depth2);
+    X3D_Color new1 = x3d_color_scale_by_depth(color, depth1, 10, 1000);
+    X3D_Color new2 = x3d_color_scale_by_depth(color, depth2, 10, 1000);
     
     x3d_screen_draw_line_grad(v1.x, v1.y, v2.x, v2.y, new1, new2);
   }
@@ -430,7 +425,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     
     //if(id == 6 && total_p == 0) continue;
     
-    if(face[i].portal_seg_face != X3D_FACE_NONE || total_p != 0) {// || (id == 0 && i == 3)) {
+    if(face[i].portal_seg_face != X3D_FACE_NONE || total_p != 0 || (id == 5 && i == 1)) {
       // Only render the segment if we're not on the opposite side of the wall
       // with the portal
       int16 dist = x3d_plane_dist(&face[i].plane, &cam->pseduo_pos);
@@ -468,6 +463,12 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
             else
               x3d_rasterregion_fill(&new_region, 31);
 #endif
+            
+            if(id == 5 && i == 1) {
+              X3D_Color cx = x3d_rgb_to_color(128, 128, 128);
+              //x3d_rasterregion_fill(&r, x3d_color_scale_by_depth(cx, dist, 10, 3000));
+              continue;
+            }
             
             x3d_segment_render(seg_id, cam, color * 8, &r, step);
           }
@@ -521,5 +522,10 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_screen_draw_pix(cx, cy + 1, 0xFFFF);
   x3d_screen_draw_pix(cx - 1, cy, 0xFFFF);
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
+  
+  X3D_Color red = x3d_rgb_to_color(255, 0, 0);
+  X3D_Color white = x3d_rgb_to_color(255, 255, 255);
+  
+  //x3d_screen_draw_line_grad(0, 0, 639, 479, red, white);
 }
 

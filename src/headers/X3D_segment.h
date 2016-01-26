@@ -210,3 +210,5 @@ X3D_SegmentBase* x3d_segmentmanager_add(uint16 size);
 X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id);
 X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id);
 
+void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object);
+

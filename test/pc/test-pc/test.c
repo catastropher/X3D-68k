@@ -426,6 +426,7 @@ void engine_test(void) {
   
   
   // Setup the camera
+  x3d_camera_init();
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   
   cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, 0 };
