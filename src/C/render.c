@@ -148,6 +148,48 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
   return X3D_FALSE;
 }
 
+typedef struct X3D_DisplayLine {
+  X3D_Vex3D v[2];
+  X3D_Color color;
+} X3D_DisplayLine;
+
+#define X3D_MAX_DISPLAY_LINE 100
+
+typedef struct X3D_DisplayLineList {
+  uint16 total_l;
+  X3D_DisplayLine lines[X3D_MAX_DISPLAY_LINE];
+} X3D_DisplayLineList;
+
+void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_depth, X3D_Vex2D b, int16 b_depth, X3D_Color color) {
+  list->lines[list->total_l].v[0].x = a.x;
+  list->lines[list->total_l].v[0].y = a.y;
+  list->lines[list->total_l].v[0].z = a_depth;
+  
+  list->lines[list->total_l].v[1].x = b.x;
+  list->lines[list->total_l].v[1].y = b.y;
+  list->lines[list->total_l].v[1].z = b_depth;
+  
+  list->lines[list->total_l].color = color;
+  
+  ++list->total_l;
+}
+
+void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* region) {
+  uint16 i;
+  for(i = 0; i < list->total_l; ++i) {
+    x3d_draw_clipped_line(
+      list->lines[i].v[0].x,
+      list->lines[i].v[0].y,
+      list->lines[i].v[1].x,
+      list->lines[i].v[1].y,
+      list->lines[i].v[0].z,
+      list->lines[i].v[1].z,
+      list->lines[i].color,
+      region
+    );
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders a wall portal and anything that can be seen through the portal
 ///   from the perspective of the camera looking through it.
@@ -158,7 +200,7 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
 ///
 /// @return The number of portals attached to the given face.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region) {
+void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region, X3D_DisplayLineList* list) {
 #if 1
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   
@@ -276,7 +318,9 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
     
     if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
-      x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, portal->color, region);
+      //x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, portal->color, region);
+      
+      x3d_displaylinelist_add(list, va, v3d[edge_pair[i].val[0]].z, vb, v3d[edge_pair[i].val[1]].z, portal->color);
     }
   }
   
@@ -284,47 +328,6 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
 #endif
 }
 
-typedef struct X3D_DisplayLine {
-  X3D_Vex3D v[2];
-  X3D_Color color;
-} X3D_DisplayLine;
-
-#define X3D_MAX_DISPLAY_LINE 100
-
-typedef struct X3D_DisplayLineList {
-  uint16 total_l;
-  X3D_DisplayLine lines[X3D_MAX_DISPLAY_LINE];
-} X3D_DisplayLineList;
-
-void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_depth, X3D_Vex2D b, int16 b_depth, X3D_Color color) {
-  list->lines[list->total_l].v[0].x = a.x;
-  list->lines[list->total_l].v[0].y = a.y;
-  list->lines[list->total_l].v[0].z = a_depth;
-  
-  list->lines[list->total_l].v[1].x = b.x;
-  list->lines[list->total_l].v[1].y = b.y;
-  list->lines[list->total_l].v[1].z = b_depth;
-  
-  list->lines[list->total_l].color = color;
-  
-  ++list->total_l;
-}
-
-void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* region) {
-  uint16 i;
-  for(i = 0; i < list->total_l; ++i) {
-    x3d_draw_clipped_line(
-      list->lines[i].v[0].x,
-      list->lines[i].v[0].y,
-      list->lines[i].v[1].x,
-      list->lines[i].v[1].y,
-      list->lines[i].v[0].z,
-      list->lines[i].v[1].z,
-      list->lines[i].color,
-      region
-    );
-  }
-}
 
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step) {
   // Load the segment into the cache
@@ -439,7 +442,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
           uint16 i;
           
           for(i = 0; i < total_p; ++i)
-            x3d_wallportal_render(portals[i], cam, region);
+            x3d_wallportal_render(portals[i], cam, region, list);
         }
         else {
           void* stack_ptr = x3d_stack_save(&renderman->stack);
