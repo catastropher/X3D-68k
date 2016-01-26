@@ -133,6 +133,7 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
 /// @return The number of portals attached to the given face.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region) {
+#if 0
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   
   // Save the stack pointer so we can free any allocations made later
@@ -254,6 +255,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   }
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
+#endif
 }
 
 
