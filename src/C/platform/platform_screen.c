@@ -26,6 +26,9 @@ static SDL_Surface* window_surface;
 static int16 screen_w;
 static int16 screen_h;
 static int16 screen_scale;
+static _Bool record;
+static int16 record_frame;
+static char record_name[1024];
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
@@ -63,6 +66,9 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
+  record = X3D_FALSE;
+  record_frame = 0;
+  
   x3d_log(X3D_INFO, "Window created");
   
   window_surface = SDL_GetWindowSurface(window);
@@ -90,6 +96,23 @@ static uint32 map_color_to_uint32(X3D_Color color) {
 
 
 void x3d_screen_flip() {
+  if(record) {
+    char str[1100];
+    sprintf(str, "%s%05d.bmp", record_name, record_frame);
+    
+    if((record_frame % 4) == 0) {
+      if(SDL_SaveBMP(window_surface, str) != 0) {
+        x3d_log(X3D_ERROR, "Error saving frame: %s\n", SDL_GetError());
+        record = X3D_FALSE;
+      }
+      else {
+        printf("Saved frame %s\n", str);
+      }
+    }
+    
+    ++record_frame;
+  }
+  
   SDL_UpdateWindowSurface(window);
 }
 
@@ -212,4 +235,12 @@ void x3d_color_to_rgb(X3D_Color color, uint8* r, uint8* g, uint8* b) {
   *b = 255 * ((color >> 10) & mask) / 31;
 }
 
+void x3d_screen_begin_record(const char* name) {
+  strcpy(record_name, name);
+  record = X3D_TRUE;
+  record_frame = 0;
+}
 
+void x3d_screen_record_end(void) {
+  record = X3D_FALSE;
+}

@@ -114,4 +114,6 @@ X3D_PLATFORM void x3d_color_to_rgb(X3D_Color color, uint8* r, uint8* g,
 
 /// @todo Document.
 void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color0, X3D_Color color1);
+void x3d_screen_begin_record(const char* name);
+void x3d_screen_record_end(void);
 

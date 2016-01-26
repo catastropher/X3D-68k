@@ -184,11 +184,57 @@ enum {
   KEY_UP = X3D_KEY_8,
   KEY_DOWN = X3D_KEY_9,
   KEY_1 = X3D_KEY_10,
-  KEY_2 = X3D_KEY_11
+  KEY_2 = X3D_KEY_11,
+  KEY_RECORD = X3D_KEY_12
 };
 
 void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
+  static _Bool rec = X3D_FALSE;
+  
+  
+  if(x3d_key_down(KEY_RECORD)) {
+    while(x3d_key_down(KEY_RECORD)) {
+      x3d_read_keys();
+    }
+    
+    if(!rec) {    
+      system("rm -rf ~/record");
+      system("mkdir ~/record");
+      
+      printf("Begin recording in (hold M to abort):\n");
+      
+      _Bool record = X3D_TRUE;
+      
+      int16 i;
+      for(i = 3; i >= 1; --i) {
+        printf("%d\n", i);
+        SDL_Delay(1000);
+        
+        x3d_read_keys();
+        if(x3d_key_down(KEY_RECORD)) {
+          printf("Recording aborted\n");
+          while(x3d_key_down(KEY_RECORD)) {
+            x3d_read_keys();
+          }
+          
+          record = X3D_FALSE;
+          break;
+        }
+      }
+      
+      if(record) {
+        printf("Begin!\n");
+        x3d_screen_begin_record("/home/michael/record/frame");
+        rec = X3D_TRUE;
+      }
+    }
+    else {
+      printf("Recording complete\n");
+      x3d_screen_record_end();
+      rec = X3D_FALSE;
+    }
+  }
   
   if(x3d_key_down(KEY_1)) {
     X3D_RayCaster caster;
@@ -312,8 +358,8 @@ void engine_test_handle_keys(void) {
 
 void engine_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 640,
-    .screen_h = 480,
+    .screen_w = 320,
+    .screen_h = 240,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
@@ -334,6 +380,7 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_DOWN, ']');
   x3d_key_map_pc(KEY_1, '1');
   x3d_key_map_pc(KEY_2, '2');
+  x3d_key_map_pc(KEY_RECORD, 'm');
   
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
