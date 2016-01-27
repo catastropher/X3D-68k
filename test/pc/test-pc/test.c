@@ -356,16 +356,24 @@ void engine_test_handle_keys(void) {
   }
 }
 
-void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
-  switch(event.type) {
-    
-  }
-}
-
 typedef struct X3D_BoxObject {
   X3D_DynamicObjectBase base;
   X3D_Prism3D* prism;
 } X3D_BoxObject;
+
+void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
+  X3D_BoxObject* box = (X3D_BoxObject* )object;
+  X3D_Vex3D translation = { 0, 0, 0 };
+  
+  switch(event.type) {
+    case X3D_OBJECT_EVENT_RENDER:
+      x3d_prism3d_render_wireframe(box->prism, &translation, event.render_event.list, event.render_event.cam, 31);
+      break;
+      
+    default:
+      break;
+  }
+}
 
 void engine_test(void) {
   X3D_InitSettings init = {
@@ -446,13 +454,20 @@ void engine_test(void) {
   
   
   
-  X3D_ObjectType box = {
+  X3D_ObjectType box_type = {
     .event_handler = boxobject_event_handler,
     .size = sizeof(X3D_BoxObject)
   };
   
-  x3d_object_create_type(1, &box);
-  x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  // Create a new box
+  x3d_object_create_type(1, &box_type);
+  X3D_Handle box_handle = x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  X3D_BoxObject* box = x3d_handle_deref(box_handle);
+  
+  X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(4));
+  x3d_prism3d_construct(box_prism, 4, 25, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  
+  box->prism = box_prism;
   
   x3d_game_loop();
   

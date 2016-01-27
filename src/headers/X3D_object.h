@@ -28,8 +28,19 @@ typedef enum {
   
 } X3D_ObjectEvents;
 
+struct X3D_CameraObject;
+struct X3D_DisplayLineList;
+
 typedef struct X3D_ObjectEvent {
   uint8 type;
+  
+  union {
+    struct {
+      struct X3D_CameraObject* cam;
+      struct X3D_DisplayLineList* list;
+    } render_event;
+  };
+  
 } X3D_ObjectEvent;
 
 struct X3D_ObjectBase;

@@ -504,6 +504,24 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     }
   }
   
+  // Render any objects that are in the segment
+  
+  X3D_ObjectEvent ev = {
+    .type = X3D_OBJECT_EVENT_RENDER,
+    .render_event = {
+      .cam = cam,
+      .list = list
+    }
+  };
+  
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
+    if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
+      X3D_DynamicObjectBase* obj = x3d_handle_deref(seg->object_list.objects[i]);
+      
+      obj->base.type->event_handler(obj, ev);
+    }
+  }
+  
   x3d_displaylinelist_render(list, region);
   
   x3d_stack_restore(&renderman->stack, stack_save);
@@ -524,8 +542,6 @@ void x3d_render(X3D_CameraObject* cam) {
   //printf("Tick: %d\n", tick++);
   
   x3d_segment_render(0, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
-  
-  x3d_objectmanager_render_objects();
   
   int16 cx = x3d_screenmanager_get()->w / 2;
   int16 cy = x3d_screenmanager_get()->h / 2;

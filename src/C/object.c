@@ -20,6 +20,7 @@
 #include "memory/X3D_handle.h"
 #include "memory/X3D_alloc.h"
 #include "X3D_segment.h"
+#include "X3D_render.h"
 
 static uint16 active_objects[X3D_MAX_OBJECTS];
 static uint16 total_active_objects;
@@ -124,19 +125,6 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   
   if(caster.dist > 50) {
     obj->base.pos = new_pos;
-  }
-}
-
-/// @todo Document.
-void x3d_objectmanager_render_objects(void) {
-  uint16 i;
-  X3D_ObjectEvent ev = {
-    .type = X3D_OBJECT_EVENT_RENDER
-  };
-  
-  for(i = 0; i < 0; ++i) {
-    
-    //obj->base.type->event_handler(obj, ev);
   }
 }
 
