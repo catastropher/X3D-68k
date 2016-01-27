@@ -58,6 +58,7 @@ typedef struct X3D_ObjectBase {
   X3D_ObjectType* type;
   X3D_Handle handle;
   uint16 frame;
+  uint16 seg;
 } X3D_ObjectBase;
 
 typedef struct X3D_StaticObjectBase {

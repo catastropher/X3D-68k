@@ -53,6 +53,7 @@ X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D d
   obj->base.pos = (X3D_Vex3D_fp16x8) { (int32)pos.x * 256, (int32)pos.y * 256, (int32)pos.z * 256 };
   obj->velocity = (X3D_Vex3D_fp8x8) { ((int32)dir.x * speed) >> 8, ((int32)dir.y * speed) >> 8, ((int32)dir.z * speed) >> 8 };
   obj->angle = angle;
+  obj->base.seg = seg;
   
   x3d_mat3x3_construct(&obj->mat, &angle);
   
@@ -120,11 +121,23 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   x3d_vex3d_fp0x16_normalize(&normal);
   
   X3D_RayCaster caster;
-  x3d_raycaster_init(&caster, 0, new_pos, normal);
+  x3d_raycaster_init(&caster, obj->base.seg, new_pos, normal);
   x3d_raycaster_cast(&caster);
   
-  if(caster.dist > 50) {
+  if(caster.dist > 10) {
     obj->base.pos = new_pos;
+  }
+  else {
+    printf("Segment before: %d\n", obj->base.seg);
+    X3D_UncompressedSegment* seg = x3d_segmentmanager_load(obj->base.seg);
+    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+    
+    if(face[x3d_segfaceid_face(caster.hit_face)].portal_seg_face != X3D_FACE_NONE) {
+      obj->base.pos = new_pos;
+      obj->base.seg = x3d_segfaceid_seg(face[x3d_segfaceid_face(caster.hit_face)].portal_seg_face);
+      
+      printf("Segment: %d\n", obj->base.seg);
+    }
   }
 }
 

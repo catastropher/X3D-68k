@@ -76,10 +76,10 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
     
     // If the distance for the rayscast start is < 0, the point wasn't actually
     // inside the segment
-    x3d_assert(dist_in >= 0);
+    //x3d_assert(dist_in >= 0);
     
     // Only include faces that the caster is outside of
-    if(dist_out <= 0) {
+    if(dist_in > 0 && dist_out <= 0) {
       // Numerator/denominator of fraction for percentage calculation
       // percent in (aka scale) = dist_in / (dist_in + abs(dist_out))
       int16 n = dist_in;
@@ -92,7 +92,10 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
         scale = (n * 32768L) / d;   /// @todo Should be replaced with constant instead of magic number
         
         
-      x3d_assert(scale > 0);
+      //x3d_assert(scale > 0);
+        
+      //if(scale < 0)
+      //  printf("Neg scale!\n");
         
       if(scale < min_scale) {
         min_scale = scale;
@@ -101,6 +104,9 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
       }
     }
   }
+  
+  printf("Min dist: %d\n", min_dist);
+  
   
   // No face was actually hit...
   x3d_assert(min_face != -1);

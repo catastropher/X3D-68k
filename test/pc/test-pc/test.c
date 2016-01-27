@@ -300,7 +300,7 @@ void engine_test_handle_keys(void) {
     X3D_Vex3D dir;
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
 
-#if 0    
+#if 1    
     X3D_Vex3D_fp8x8 d = {
       dir.x >> 5,
       dir.y >> 5,
@@ -309,11 +309,13 @@ void engine_test_handle_keys(void) {
     
     cam->base.velocity = d;
     x3d_object_move(&cam->base);
-#endif
+#else
     
     cam->base.base.pos.x += dir.x >> 5;
     cam->base.base.pos.y += dir.y >> 5;
     cam->base.base.pos.z += dir.z >> 5;
+    
+#endif
     
     //cam->base.base.pos.z += 4L << 8;
   }
