@@ -39,10 +39,11 @@ X3D_Handle x3d_handle_add(void* ptr) {
   x3d_assert(handman->head);
   
   void** handle = handman->head;
-  *handle = ptr;
   
   // Adjust head to the next available handle
   handman->head = *handman->head;
+  
+  *handle = ptr;
   
   return handle - handman->handles;
 }
