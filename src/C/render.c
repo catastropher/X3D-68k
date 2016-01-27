@@ -514,9 +514,18 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     }
   };
   
+  X3D_ObjectEvent ev_frame = {
+    .type = X3D_OBJECT_EVENT_FRAME
+  };
+  
   for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
     if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
       X3D_DynamicObjectBase* obj = x3d_handle_deref(seg->object_list.objects[i]);
+      
+      if(obj->base.frame != step) {
+        obj->base.type->event_handler(obj, ev_frame);
+        obj->base.frame = step;
+      }
       
       obj->base.type->event_handler(obj, ev);
     }

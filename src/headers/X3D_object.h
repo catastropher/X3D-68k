@@ -24,7 +24,8 @@
 typedef enum {
   X3D_OBJECT_EVENT_CREATE = 0,
   X3D_OBJECT_EVENT_DESTROY = 1,
-  X3D_OBJECT_EVENT_RENDER = 2
+  X3D_OBJECT_EVENT_RENDER = 2,
+  X3D_OBJECT_EVENT_FRAME = 3
   
 } X3D_ObjectEvents;
 
@@ -56,6 +57,7 @@ typedef struct X3D_ObjectBase {
   X3D_Vex3D_fp16x8 pos;
   X3D_ObjectType* type;
   X3D_Handle handle;
+  uint16 frame;
 } X3D_ObjectBase;
 
 typedef struct X3D_StaticObjectBase {

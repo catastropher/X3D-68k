@@ -359,16 +359,42 @@ void engine_test_handle_keys(void) {
 typedef struct X3D_BoxObject {
   X3D_DynamicObjectBase base;
   X3D_Prism3D* prism;
+  _Bool move_up;
 } X3D_BoxObject;
 
 void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
   X3D_BoxObject* box = (X3D_BoxObject* )object;
-  X3D_Vex3D translation = { 0, 0, 0 };
+  uint16 i;
+  
+  X3D_Vex3D pos;
+  x3d_object_pos(box, &pos);
   
   switch(event.type) {
-    case X3D_OBJECT_EVENT_RENDER:
-      x3d_prism3d_render_wireframe(box->prism, &translation, event.render_event.list, event.render_event.cam, 31);
+    case X3D_OBJECT_EVENT_CREATE:
+      box->move_up = X3D_TRUE;
       break;
+      
+    case X3D_OBJECT_EVENT_RENDER:
+      x3d_prism3d_render_wireframe(box->prism, &pos, event.render_event.list, event.render_event.cam, 31);
+      break;
+      
+    case X3D_OBJECT_EVENT_FRAME:
+      if(box->move_up) {
+        if(pos.y > -100) {
+          box->base.base.pos.y -= 1L << 8;
+        }
+        else {
+          box->move_up = X3D_FALSE;
+        }
+      }
+      else {
+        if(pos.y < 100) {
+          box->base.base.pos.y += 1L << 8;
+        }
+        else {
+          box->move_up = X3D_TRUE;
+        }
+      }
       
     default:
       break;
