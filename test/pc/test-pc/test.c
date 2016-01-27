@@ -356,6 +356,17 @@ void engine_test_handle_keys(void) {
   }
 }
 
+void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
+  switch(event.type) {
+    
+  }
+}
+
+typedef struct X3D_BoxObject {
+  X3D_DynamicObjectBase base;
+  X3D_Prism3D* prism;
+} X3D_BoxObject;
+
 void engine_test(void) {
   X3D_InitSettings init = {
     .screen_w = 640,
@@ -433,6 +444,15 @@ void engine_test(void) {
   cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
   x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   
+  
+  
+  X3D_ObjectType box = {
+    .event_handler = boxobject_event_handler,
+    .size = sizeof(X3D_BoxObject)
+  };
+  
+  x3d_object_create_type(1, &box);
+  x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
   x3d_game_loop();
   

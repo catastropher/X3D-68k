@@ -29,8 +29,21 @@ typedef struct X3D_RenderManager {
   X3D_RasterRegion region;
 } X3D_RenderManager;
 
+typedef struct X3D_DisplayLine {
+  X3D_Vex3D v[2];
+  X3D_Color color;
+} X3D_DisplayLine;
+
+#define X3D_MAX_DISPLAY_LINE 100
+
+typedef struct X3D_DisplayLineList {
+  uint16 total_l;
+  X3D_DisplayLine lines[X3D_MAX_DISPLAY_LINE];
+} X3D_DisplayLineList;
+
 void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color);
 void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color);
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step);
 void x3d_render(X3D_CameraObject* cam);
+void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_DisplayLineList* list, X3D_CameraObject* cam, X3D_Color color);
 
