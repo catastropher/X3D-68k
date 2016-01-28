@@ -90,6 +90,14 @@ static inline X3D_Vex3D x3d_vex3d_sub(X3D_Vex3D* a, X3D_Vex3D* b) {
   };
 }
 
+static inline X3D_Vex3D x3d_vex3d_add(X3D_Vex3D* a, X3D_Vex3D* b) {
+  return (X3D_Vex3D) {
+    a->x + b->x,
+    a->y + b->y,
+    a->z + b->z
+  };
+}
+
 static inline X3D_Vex3D x3d_vex3d_neg(X3D_Vex3D* v) {
   return (X3D_Vex3D) { -v->x, -v->y, -v->z };
 }
