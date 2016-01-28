@@ -124,17 +124,27 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   x3d_raycaster_init(&caster, obj->base.seg, new_pos, normal);
   x3d_raycaster_cast(&caster);
   
-  if(caster.dist > 10) {
-    obj->base.pos = new_pos;
+  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(obj->base.seg);
+  
+  if(caster.dist >= 0 && caster.inside) {
+    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
+    
+    if(face->portal_seg_face != X3D_FACE_NONE || caster.dist > 10)
+      obj->base.pos = new_pos;
   }
   else {
     printf("Segment before: %d\n", obj->base.seg);
-    X3D_UncompressedSegment* seg = x3d_segmentmanager_load(obj->base.seg);
-    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
     
-    if(face[x3d_segfaceid_face(caster.hit_face)].portal_seg_face != X3D_FACE_NONE) {
+    x3d_raycaster_init(&caster, obj->base.seg, obj->base.pos, normal);
+    x3d_raycaster_cast(&caster);
+    
+    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
+    
+    printf("Here!\n");
+    
+    if(face->portal_seg_face != X3D_FACE_NONE) {
       obj->base.pos = new_pos;
-      obj->base.seg = x3d_segfaceid_seg(face[x3d_segfaceid_face(caster.hit_face)].portal_seg_face);
+      obj->base.seg = x3d_segfaceid_seg(face->portal_seg_face);
       
       printf("Segment: %d\n", obj->base.seg);
     }

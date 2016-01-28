@@ -32,6 +32,7 @@ typedef struct X3D_RayCaster {
   
   X3D_Vex3D hit_pos;
   int16 dist;
+  _Bool inside;
 } X3D_RayCaster;
 
 typedef struct X3D_BoundCapsule {

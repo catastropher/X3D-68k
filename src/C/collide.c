@@ -26,6 +26,7 @@ void x3d_raycaster_init(X3D_RayCaster* caster, uint16 seg_id, X3D_Vex3D_fp16x8 p
   caster->seg = seg_id;
   caster->pos = pos;
   caster->dir = dir;
+  caster->inside = X3D_TRUE;
 }
 
 void x3d_raycaster_cast(X3D_RayCaster* caster) {
@@ -73,6 +74,11 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
     /// @todo dist_in can be moved into the below 'if'
     int16 dist_in = x3d_plane_dist(&face[i].plane, &in);
     int16 dist_out = x3d_plane_dist(&face[i].plane, &out);
+    
+    if(dist_in < 0) {
+      caster->inside = X3D_FALSE;
+      return;
+    }
     
     // If the distance for the rayscast start is < 0, the point wasn't actually
     // inside the segment
