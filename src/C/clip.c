@@ -24,6 +24,10 @@
 #include "memory/X3D_stack.h"
 #include "X3D_assert.h"
 
+// This code is absolutely terrible and badly needs to be refactored... it was
+// never intended to *actually* be used... annoy Michael until he refactors
+// this mess.
+
 
 #define LCD_WIDTH x3d_screenmanager_get()->w
 #define LCD_HEIGHT x3d_screenmanager_get()->h
@@ -215,7 +219,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   
   //printf("total_e: %d\n", total_e);
   
-  X3D_Vex2D out_v[2];
+  X3D_Vex2D out_v[20];
   int16 total_out_v = 0;
   X3D_RasterEdge* e = NULL;
   

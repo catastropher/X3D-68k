@@ -377,7 +377,7 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
       break;
       
     case X3D_OBJECT_EVENT_RENDER:
-      x3d_prism3d_render_wireframe(box->prism, &pos, event.render_event.list, event.render_event.cam, 31);
+      x3d_prism3d_render_solid(box->prism, &pos, event.render_event.list, event.render_event.cam, 31, event.render_event.region);
       break;
       
     case X3D_OBJECT_EVENT_FRAME:
@@ -405,8 +405,8 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
 
 void engine_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 640,
-    .screen_h = 480,
+    .screen_w = 320,
+    .screen_h = 240,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60

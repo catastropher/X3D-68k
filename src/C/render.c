@@ -25,6 +25,7 @@
 #include "X3D_collide.h"
 #include "X3D_wallportal.h"
 
+
 int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {  
   if(depth > max_depth)
     return 0;
@@ -43,7 +44,6 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
   );
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 /// Clips a line to a raster region and draws it, if it's visible.
 ///
@@ -56,7 +56,7 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-static void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1, int16 depth2, X3D_Color color, X3D_RasterRegion* region) {
+void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1, int16 depth2, X3D_Color color, X3D_RasterRegion* region) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   X3D_Vex2D v1 = { x1, y1 };
   X3D_Vex2D v2 = { x2, y2 };
@@ -68,6 +68,7 @@ static void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 
     x3d_screen_draw_line_grad(v1.x, v1.y, v2.x, v2.y, new1, new2);
   }
 }
+
 
 typedef struct X3D_ClipContext {
   X3D_Stack* stack;
@@ -336,6 +337,109 @@ void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, X3
   }
 }
 
+void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_DisplayLineList* list, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region) {
+  X3D_Vex3D v3d[prism->base_v * 2];
+  X3D_Vex2D v2d[prism->base_v * 2];
+  
+  uint16 i;
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    v3d[i].x = prism->v[i].x + translation->x;
+    v3d[i].y = prism->v[i].y + translation->y;
+    v3d[i].z = prism->v[i].z + translation->z;
+  }
+  
+  x3d_camera_transform_points(cam, v3d, prism->base_v * 2, v3d, v2d);
+  
+  X3D_RasterEdge edge[prism->base_v * 3];
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    uint16 a, b;
+    x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
+    
+    X3D_Vex2D va, vb;
+    
+    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
+      //x3d_displaylinelist_add(list, va, v3d[a].z, vb, v3d[b].z, color);
+      x3d_rasteredge_generate(&renderman->stack, edge + i, va, vb, region->y_range);
+    }
+    else {
+      edge[i].flags |= EDGE_INVISIBLE;
+    }
+  }
+  
+  uint16 edge_list[prism->base_v * 3];
+  
+  for(i = 0; i < prism->base_v * 3; ++i)
+    edge_list[i] = i;
+  
+  X3D_RasterRegion new_region;
+#if 1
+  if(x3d_rasterregion_construct_from_edges(&new_region, &renderman->stack, edge, edge_list, prism->base_v * 3)) {
+    if(x3d_rasterregion_intersect(region, &new_region)) {
+      x3d_rasterregion_fill(&new_region, 0);
+    }
+  }
+#endif
+  
+  _Bool render_edge[prism->base_v * 3];
+  
+  for(i = 0; i < prism->base_v * 3; ++i)
+    render_edge[i] = X3D_FALSE;
+  
+  X3D_Polygon3D poly = {
+    .v = alloca(sizeof(X3D_Vex3D) * prism->base_v)
+  };
+  
+  X3D_Plane plane;
+  
+  X3D_Vex3D cam_pos = cam->pseduo_pos;
+  //x3d_object_pos(cam, &cam_pos);
+  
+  for(i = 0; i < prism->base_v + 2; ++i) {
+    x3d_prism3d_get_face(prism, i, &poly);
+    
+    
+    poly.v[0].x += translation->x;
+    poly.v[0].y += translation->y;
+    poly.v[0].z += translation->z;
+    
+    poly.v[1].x += translation->x;
+    poly.v[1].y += translation->y;
+    poly.v[1].z += translation->z;
+    
+    poly.v[2].x += translation->x;
+    poly.v[2].y += translation->y;
+    poly.v[2].z += translation->z;
+    
+    x3d_plane_construct(&plane, poly.v, poly.v + 1, poly.v + 2);
+    
+    int16 dist = x3d_plane_dist(&plane, &cam_pos);
+    
+    if(dist < 0) {
+      int16 d;
+      uint16 e[prism->base_v];
+      
+      uint16 total_e = x3d_prism_face_edge_indexes(prism->base_v, i, e);
+      
+      for(d = 0; d < total_e; ++d) {
+        render_edge[e[d]] = X3D_TRUE;
+      }
+    }
+  }
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    X3D_RasterEdge* e = edge + i;
+    
+    if(render_edge[i]) {
+      uint16 a, b;
+      x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
+      
+      x3d_draw_clipped_line(e->start.x, e->start.y, e->end.x, e->end.y, v3d[a].z, v3d[b].z, color, region);
+    }
+  }
+}
+
 
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step) {
   // Load the segment into the cache
@@ -510,13 +614,16 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .type = X3D_OBJECT_EVENT_RENDER,
     .render_event = {
       .cam = cam,
-      .list = list
+      .list = list,
+      .region = region
     }
   };
   
   X3D_ObjectEvent ev_frame = {
     .type = X3D_OBJECT_EVENT_FRAME
   };
+  
+  x3d_displaylinelist_render(list, region);
   
   for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
     if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
@@ -530,8 +637,6 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
       obj->base.type->event_handler(obj, ev);
     }
   }
-  
-  x3d_displaylinelist_render(list, region);
   
   x3d_stack_restore(&renderman->stack, stack_save);
   

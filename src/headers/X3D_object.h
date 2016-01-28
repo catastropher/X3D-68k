@@ -31,6 +31,7 @@ typedef enum {
 
 struct X3D_CameraObject;
 struct X3D_DisplayLineList;
+struct X3D_RasterRegion;
 
 typedef struct X3D_ObjectEvent {
   uint8 type;
@@ -39,6 +40,7 @@ typedef struct X3D_ObjectEvent {
     struct {
       struct X3D_CameraObject* cam;
       struct X3D_DisplayLineList* list;
+      struct X3D_RasterRegion* region;
     } render_event;
   };
   
