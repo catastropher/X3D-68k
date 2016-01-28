@@ -80,6 +80,7 @@ typedef struct X3D_ClipContext {
   X3D_Vex3D* v3d;
   X3D_Vex2D* v2d;
   X3D_Pair* edge_pairs;
+  _Bool really_close;
 } X3D_ClipContext;
 
 /// Under construction
@@ -92,7 +93,8 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
   X3D_Vex2D out_v[2];
   uint16 total_out_v = 0;
   uint16 vis_e[clip->total_edge_index + 1];
-
+  _Bool close = X3D_FALSE;
+  
   for(i = 0; i < clip->total_edge_index; ++i) {
     X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
     uint16 in[2] = { clip->v3d[edge.val[0]].z >= near_z, clip->v3d[edge.val[1]].z >= near_z };
@@ -106,10 +108,18 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
         x3d_rasteredge_get_endpoints(clip->edges + clip->edge_index[i], v, v + 1);
         
         
-        out_v[total_out_v++] = v[in[0]];
+        if(in[0])
+          out_v[total_out_v++] = v[0];
+        else
+          out_v[total_out_v++] = v[1];
+          
+        //out_v[total_out_v++] = v[in[0]];
         
         //clip->edge_pairs[clip->edge_index[i]].val[in[0]];
       }
+    }
+    else {
+      close = close || clip->v3d[edge.val[0]].z >= 0 || clip->v3d[edge.val[1]].z >= 0;
     }
   }
   
@@ -117,9 +127,8 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
     
   // Create a two edge between the two points clipped by the near plane
   if(total_out_v == 2) { 
-    x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_edge_index,
+    x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_e,
       out_v[0], out_v[1], clip->parent->y_range);
-    
     
     //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
     
@@ -127,18 +136,23 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
     
     
     
-    vis_e[total_vis_e++] = clip->total_edge_index;
+    vis_e[total_vis_e++] = clip->total_e;
   }
   
   //printf("Total vis e: %d\nOut v: %d\n", total_vis_e, total_out_v);
   
   //return total_vis_e > 0 &&
-  if(total_vis_e > 2 && x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e) &&
-    x3d_rasterregion_intersect(clip->parent, dest)) {
+  if(total_vis_e > 2) {
+    if(x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e) &&
+      x3d_rasterregion_intersect(clip->parent, dest)) {
   
-    //x3d_rasterregion_fill(dest, 0xFFFF);
+      //x3d_rasterregion_fill(dest, 0xFFFF);
   
-    return X3D_TRUE;
+      return X3D_TRUE;
+    }
+  }
+  else {
+    clip->really_close = close;
   }
   
   return X3D_FALSE;
@@ -566,11 +580,25 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
           
           
           X3D_RasterRegion r;
+          X3D_RasterRegion* portal;
           
           clip.edge_index = edge_index;
           clip.total_edge_index = face_e;
-              
-          if(x3d_construct_clipped_rasterregion(&clip, &r)) {
+             
+          _Bool use_new = x3d_construct_clipped_rasterregion(&clip, &r);
+          
+          if(use_new) {
+            portal = &r;
+          }
+          else if(clip.really_close) {
+            printf("Really close!\n");
+            portal = region;
+          }
+          else {
+            portal = NULL;
+          }
+          
+          if(portal) {
             uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
            
             

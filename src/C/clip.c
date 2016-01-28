@@ -313,9 +313,10 @@ add_edge:
     
     //x3d_error("Pos: {%d, %d} - {%d, %d}", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y);
     
+    //x3d_log(X3D_WARN, "Doing stupid things\n");
     
     e = &temp_edge;
-    goto add_edge;
+    //goto add_edge;
   }
   
   //printf("Min: %d, %d\n", region->y_range.min, region->y_range.max);
