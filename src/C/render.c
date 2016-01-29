@@ -455,14 +455,85 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders any objects that are in a segment.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_segment_render_objects(X3D_UncompressedSegment* seg, X3D_CameraObject* cam,X3D_DisplayLineList* list,
+      X3D_RasterRegion* region, uint16 step) {
+
+  uint16 i;
+  
+  X3D_ObjectEvent ev = {
+    .type = X3D_OBJECT_EVENT_RENDER,
+    .render_event = {
+      .cam = cam,
+      .list = list,
+      .region = region
+    }
+  };
+  
+  X3D_ObjectEvent ev_frame = {
+    .type = X3D_OBJECT_EVENT_FRAME
+  };
+  
+  x3d_displaylinelist_render(list, region);
+  
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
+    if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
+      X3D_DynamicObjectBase* obj = x3d_handle_deref(seg->object_list.objects[i]);
+      
+      if(obj->base.frame != step) {
+        obj->base.type->event_handler(obj, ev_frame);
+        obj->base.frame = step;
+      }
+      
+      obj->base.type->event_handler(obj, ev);
+    }
+  }
+}
+
+uint16 x3d_segment_render_wall_portals(X3D_SegFaceID wall_id, X3D_CameraObject* cam, X3D_RasterRegion* region,
+      X3D_DisplayLineList* list) {
+  
+  uint16 portals[32];
+  uint16 total_p = x3d_wall_get_wallportals(wall_id, portals);
+  
+  if(total_p > 0) {
+    uint16 i;
+    
+    for(i = 0; i < total_p; ++i)
+      x3d_wallportal_render(portals[i], cam, region, list);
+  }
+  
+  return total_p;
+}
+
+void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stack) {
+  uint16 i;
+  
+  for(i = 0; i < clip->total_e; ++i) {
+    uint16 a, b;
+    
+    a = clip->edge_pairs[i].val[0];
+    b = clip->edge_pairs[i].val[1];
+    
+    X3D_Vex3D temp_a = clip->v3d[a], temp_b = clip->v3d[b];
+    X3D_Vex2D dest_a, dest_b;
+    
+    if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
+      x3d_rasteredge_generate(stack, clip->edges + i, dest_a, dest_b, clip->parent->y_range);
+    }
+  }
+}
+
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step) {
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
   
   X3D_DisplayLineList* list = alloca(sizeof(X3D_DisplayLineList));
-  
   list->total_l = 0;
   
+  // Make sure we don't blow the stack from recursing too deep
   static int16 depth = 0;
   
   if(depth >= 16)
@@ -470,22 +541,14 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   ++depth;
   
-  if(id == 0) {
-    color = x3d_rgb_to_color(0, 0, 255);
-  }
-  else if (id == 1) {
-    color = x3d_rgb_to_color(255, 0, 255);
-  }
-  else {
-    color = 31;
-  }
   
-  //printf("Step: %d, seg: %d\n", step, seg->last_engine_step);
-  
-  //if(seg->last_engine_step != step)
-  //  return;
-  
-  seg->last_engine_step = step;
+  // Select a color based on the id of the segment because I'm too lazy to implement
+  // colored segments atm
+  switch(id) {
+    case 0:   color = x3d_rgb_to_color(0, 0, 255); break;     // Blue
+    case 1:   color = x3d_rgb_to_color(255, 0, 255); break;   // Majenta
+    default:  color = 31;                                     // Red
+  }  
   
   X3D_Prism3D* prism = &seg->prism;
   X3D_Vex2D v2d[prism->base_v * 2];
@@ -496,11 +559,6 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_object_pos(cam, &cam_pos);
   
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
-  
-  //x3d_rasterregion_fill(region, 0x7FFF / (depth));
-  
-  //x3d_prism3d_render(&seg->prism, cam, color);
-  
   
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   
@@ -516,27 +574,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   X3D_RasterEdge edges[total_e + 1];
   X3D_Pair edge_pair[total_e];
   
-  x3d_prism_get_edge_pairs(total_e, edge_pair);
-  
-  
-  for(i = 0; i < total_e; ++i) {
-    x3d_prism_get_edge_index(prism->base_v, i, edge_pair[i].val, edge_pair[i].val + 1);
-    
-    uint16 a, b;
-    
-    a = edge_pair[i].val[0];
-    b = edge_pair[i].val[1];
-    
-    X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
-    X3D_Vex2D dest_a, dest_b;
-    
-    if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
-      x3d_rasteredge_generate(&renderman->stack, edges + i, dest_a, dest_b, region->y_range);
-    }
-    
-    
-    //x3d_rasteredge_generate(&renderman->stack, edges + i, v2d[edge_pair[i].val[0]], v2d[edge_pair[i].val[1]], region->y_range);
-  }
+  x3d_prism_get_edge_pairs(prism->base_v, edge_pair);
   
   X3D_ClipContext clip = {
     .stack = &renderman->stack,
@@ -547,30 +585,18 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .v2d = v2d,
     .edge_pairs = edge_pair
   };
+  
+  x3d_clipcontext_generate_rasteredges(&clip, &renderman->stack);
 
   // Render the connecting segments
   for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
-    uint16 portals[32];
+    // The distance calculation shouldn't be necessary because we should always
+    // be inside a segment...
+    int16 dist = x3d_plane_dist(&face[i].plane, &cam->pseduo_pos);
     
-    uint16 total_p = x3d_wall_get_wallportals(x3d_segfaceid_create(id, i), portals);
-    
-    //if(id == 6 && total_p == 0) continue;
-    
-    if(face[i].portal_seg_face != X3D_FACE_NONE || total_p != 0 || (id == 5 && i == 1)) {
-      // Only render the segment if we're not on the opposite side of the wall
-      // with the portal
-      int16 dist = x3d_plane_dist(&face[i].plane, &cam->pseduo_pos);
-      
-      //printf("Dist: %d\n", dist);
-      
-      if(dist > 0) {
-        if(total_p > 0) {
-          uint16 i;
-          
-          for(i = 0; i < total_p; ++i)
-            x3d_wallportal_render(portals[i], cam, region, list);
-        }
-        else {
+    if(dist > 0) {
+      if(x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0) {
+        if(face[i].portal_seg_face != X3D_FACE_NONE) {
           void* stack_ptr = x3d_stack_save(&renderman->stack);
           uint16 edge_index[prism->base_v + 1];
           X3D_RasterRegion new_region;
@@ -600,20 +626,6 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
           
           if(portal) {
             uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
-           
-            
-#if 0
-            if(id == 0)
-              x3d_rasterregion_fill(&new_region, 0xFFFF);
-            else
-              x3d_rasterregion_fill(&new_region, 31);
-#endif
-            
-            if(id == 5 && i == 1) {
-              X3D_Color cx = x3d_rgb_to_color(128, 128, 128);
-              //x3d_rasterregion_fill(&r, x3d_color_scale_by_depth(cx, dist, 10, 3000));
-              continue;
-            }
             
             x3d_segment_render(seg_id, cam, color * 8, &r, step);
           }
@@ -637,34 +649,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   }
   
   // Render any objects that are in the segment
-  
-  X3D_ObjectEvent ev = {
-    .type = X3D_OBJECT_EVENT_RENDER,
-    .render_event = {
-      .cam = cam,
-      .list = list,
-      .region = region
-    }
-  };
-  
-  X3D_ObjectEvent ev_frame = {
-    .type = X3D_OBJECT_EVENT_FRAME
-  };
-  
-  x3d_displaylinelist_render(list, region);
-  
-  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
-    if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
-      X3D_DynamicObjectBase* obj = x3d_handle_deref(seg->object_list.objects[i]);
-      
-      if(obj->base.frame != step) {
-        obj->base.type->event_handler(obj, ev_frame);
-        obj->base.frame = step;
-      }
-      
-      obj->base.type->event_handler(obj, ev);
-    }
-  }
+  x3d_segment_render_objects(seg, cam, list, region, step);
   
   x3d_stack_restore(&renderman->stack, stack_save);
   

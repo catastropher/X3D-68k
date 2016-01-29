@@ -54,6 +54,7 @@ add_sources(
   C/camera.c
   C/wallportal.c
   C/portal.c
+  C/clipregion.c
 )
 
 add_subdirectory(C/platform)
