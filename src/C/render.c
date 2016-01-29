@@ -511,7 +511,7 @@ void x3d_segment_render_objects(X3D_UncompressedSegment* seg, X3D_CameraObject* 
         (int32)depth[total_d].pos.y * depth[total_d].pos.y + 
         (int32)depth[total_d].pos.z * depth[total_d].pos.z;
         
-      printf("Dist: %d\n", depth[total_d].dist);
+      //printf("Dist: %d\n", depth[total_d].dist);
       
       ++total_d;
     }

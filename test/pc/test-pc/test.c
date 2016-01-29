@@ -497,7 +497,7 @@ void engine_test(void) {
   X3D_BoxObject* box = x3d_handle_deref(box_handle);
   
   X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(8));
-  x3d_prism3d_construct(box_prism, 8, 40, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  x3d_prism3d_construct(box_prism, 4, 35, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
   box->prism = box_prism;
   

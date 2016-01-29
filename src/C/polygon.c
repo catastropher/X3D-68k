@@ -56,6 +56,53 @@ void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Calculates the center of a 3D polygon.
+///
+/// @param poly - poly
+/// @param dest - dest for center of the polygon
+///
+/// @return Nothing.
+/// @note This may lead to division by 0 if poly->total_v == 0
+///////////////////////////////////////////////////////////////////////////////
+void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D* dest) {
+  uint16 i;
+  
+  X3D_Vex3D_int32 center = { 0, 0, 0 };
+  
+  x3d_assert(poly->total_v != 0);
+  
+  for(i = 0; i < poly->total_v; ++i) {
+    center.x += poly->v[i].x;
+    center.y += poly->v[i].y;
+    center.z += poly->v[i].z;
+  }
+  
+  dest->x = center.x / poly->total_v;
+  dest->y = center.y / poly->total_v;
+  dest->z = center.z / poly->total_v;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Scales a polygon relative to its center
+///
+/// @param poly - poly
+/// @param scale  - scaling factor in fp8x8 format
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale) {
+  X3D_Vex3D center;
+  x3d_polygon3d_center(poly, &center);
+  
+  uint16 i;
+  for(i = 0; i < poly->total_v; ++i) {
+    poly->v[i].x = (((int32)(poly->v[i].x - center.x) * scale) >> 8) + center.x;
+    poly->v[i].x = (((int32)(poly->v[i].y - center.y) * scale) >> 8) + center.y;
+    poly->v[i].x = (((int32)(poly->v[i].z - center.z) * scale) >> 8) + center.z;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /// Reverses the points in a 3D polygon. If it was clockwise, it will now be
 ///   counter-clockwise.
 ///
