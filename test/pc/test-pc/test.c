@@ -300,7 +300,7 @@ void engine_test_handle_keys(void) {
     X3D_Vex3D dir;
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
 
-#if 1    
+#if 0    
     X3D_Vex3D_fp8x8 d = {
       dir.x >> 5,
       dir.y >> 5,
@@ -496,6 +496,15 @@ void engine_test(void) {
   x3d_prism3d_construct(box_prism, 4, 25, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
   box->prism = box_prism;
+  
+  
+  
+  X3D_Handle box_handle2 = x3d_object_create(1, (X3D_Vex3D) { 50, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  X3D_BoxObject* box2 = x3d_handle_deref(box_handle2);
+  
+  box2->prism = box_prism;
+  
+  
   
   x3d_game_loop();
   

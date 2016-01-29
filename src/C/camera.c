@@ -89,7 +89,8 @@ void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
     temp_rot.z += cam->shift.z;
     
     // Project it onto the screen
-    x3d_vex3d_int16_project(dest2d + i, &temp_rot);
+    if(dest2d)
+      x3d_vex3d_int16_project(dest2d + i, &temp_rot);
     
     // Store the rotated 3D point, if requested
     if(dest3d) {

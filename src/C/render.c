@@ -454,6 +454,14 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
   }
 }
 
+typedef struct X3D_ObjectDepth {
+  X3D_DynamicObjectBase* obj;
+  int16 depth;
+} X3D_ObjectDepth;
+
+int x3d_objectdepth_compare(X3D_ObjectDepth* a, X3D_ObjectDepth* b) {
+  return b->depth - a->depth;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders any objects that are in a segment.
@@ -476,19 +484,36 @@ void x3d_segment_render_objects(X3D_UncompressedSegment* seg, X3D_CameraObject* 
     .type = X3D_OBJECT_EVENT_FRAME
   };
   
-  x3d_displaylinelist_render(list, region);
+  
+  X3D_ObjectDepth depth[X3D_MAX_OBJECTS_IN_SEG];
+  int16 total_d = 0;
+  
   
   for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
     if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
-      X3D_DynamicObjectBase* obj = x3d_handle_deref(seg->object_list.objects[i]);
+      depth[total_d].obj = x3d_handle_deref(seg->object_list.objects[i]);
       
-      if(obj->base.frame != step) {
-        obj->base.type->event_handler(obj, ev_frame);
-        obj->base.frame = step;
-      }
+      X3D_Vex3D pos;
+      x3d_object_pos(depth[total_d].obj, &pos);
+      x3d_camera_transform_points(cam, &pos, 1, &pos, NULL);
       
-      obj->base.type->event_handler(obj, ev);
+      depth[total_d].depth = pos.z;
+      
+      ++total_d;
     }
+  }
+  
+  qsort(depth, total_d, sizeof(X3D_ObjectDepth), x3d_objectdepth_compare);
+  
+  x3d_displaylinelist_render(list, region);
+  
+  for(i = 0; i < total_d; ++i) {
+    if(depth[i].obj->base.frame != step) {
+      depth[i].obj->base.type->event_handler(depth[i].obj, ev_frame);
+      depth[i].obj->base.frame = step;
+    }
+    
+    depth[i].obj->base.type->event_handler(depth[i].obj, ev);
   }
 }
 
