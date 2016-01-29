@@ -97,8 +97,8 @@ void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale) {
   uint16 i;
   for(i = 0; i < poly->total_v; ++i) {
     poly->v[i].x = (((int32)(poly->v[i].x - center.x) * scale) >> 8) + center.x;
-    poly->v[i].x = (((int32)(poly->v[i].y - center.y) * scale) >> 8) + center.y;
-    poly->v[i].x = (((int32)(poly->v[i].z - center.z) * scale) >> 8) + center.z;
+    poly->v[i].y = (((int32)(poly->v[i].y - center.y) * scale) >> 8) + center.y;
+    poly->v[i].z = (((int32)(poly->v[i].z - center.z) * scale) >> 8) + center.z;
   }
 }
 

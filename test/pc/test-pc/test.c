@@ -441,6 +441,15 @@ void engine_test(void) {
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
   x3d_prism3d_construct(prism, base_v, 200,  300, angle);
+  
+  X3D_Polygon3D p = {
+    .v = alloca(1000)
+  };
+  
+  x3d_prism3d_get_face(prism, 0, &p);
+  x3d_polygon3d_scale(&p, 256 * 3);
+  x3d_prism3d_set_face(prism, 0, &p);
+  
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
   //uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 20);
