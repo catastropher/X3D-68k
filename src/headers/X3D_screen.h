@@ -22,7 +22,8 @@ typedef struct X3D_ScreenManager {
   uint16 w;
   uint16 h;
   angle256 fov;
-  int16 scale;
+  int16 scale_x;
+  int16 scale_y;
   
   X3D_Vex2D center;
   X3D_Vex2D pos;

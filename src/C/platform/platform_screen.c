@@ -47,10 +47,11 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_state->screen_manager.center.x = screen_w / 2;
   x3d_state->screen_manager.center.y = screen_h / 2;
   x3d_state->screen_manager.fov = init->fov;
-  x3d_state->screen_manager.scale = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
+  x3d_state->screen_manager.scale_x = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
+  x3d_state->screen_manager.scale_y =  screen_w * div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2)) / screen_h;
   
   x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
-          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale);
+          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
   
   window = SDL_CreateWindow(
     "X3D",

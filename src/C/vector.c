@@ -204,8 +204,8 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src) 
   }
   else {
     // @todo Replace division by src->z with fixed point multiply
-    dest->x = ((int32)src->x * screen->scale) / src->z + screen->center.x;
-    dest->y = ((int32)src->y * screen->scale) / src->z + screen->center.y;
+    dest->x = ((int32)src->x * screen->scale_x) / src->z + screen->center.x;
+    dest->y = ((int32)src->y * screen->scale_y) / src->z + screen->center.y;
   }
 }
 
