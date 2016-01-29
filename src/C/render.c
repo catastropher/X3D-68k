@@ -456,10 +456,20 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
 
 typedef struct X3D_ObjectDepth {
   X3D_DynamicObjectBase* obj;
+  X3D_Vex3D pos;
   int16 depth;
+  int32 dist;
 } X3D_ObjectDepth;
 
 int x3d_objectdepth_compare(X3D_ObjectDepth* a, X3D_ObjectDepth* b) {
+  return b->dist - a->dist;
+  
+  
+  if(abs(a->depth - b->depth) < 10) {
+    //x3d_assert(a->dist != b->dist);
+    return b->dist - a->dist;
+  }
+  
   return b->depth - a->depth;
 }
 
@@ -488,20 +498,26 @@ void x3d_segment_render_objects(X3D_UncompressedSegment* seg, X3D_CameraObject* 
   X3D_ObjectDepth depth[X3D_MAX_OBJECTS_IN_SEG];
   int16 total_d = 0;
   
-  
+  // Sort the objects from furthest to nearest depth
   for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
     if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
       depth[total_d].obj = x3d_handle_deref(seg->object_list.objects[i]);
       
-      X3D_Vex3D pos;
-      x3d_object_pos(depth[total_d].obj, &pos);
-      x3d_camera_transform_points(cam, &pos, 1, &pos, NULL);
+      x3d_object_pos(depth[total_d].obj, &depth[total_d].pos);
+      x3d_camera_transform_points(cam, &depth[total_d].pos, 1, &depth[total_d].pos, NULL);
       
-      depth[total_d].depth = pos.z;
+      depth[total_d].depth = depth[total_d].pos.z;
+      depth[total_d].dist =  (int32)depth[total_d].pos.x * depth[total_d].pos.x + 
+        (int32)depth[total_d].pos.y * depth[total_d].pos.y + 
+        (int32)depth[total_d].pos.z * depth[total_d].pos.z;
+        
+      printf("Dist: %d\n", depth[total_d].dist);
       
       ++total_d;
     }
   }
+  
+  printf("\n");
   
   qsort(depth, total_d, sizeof(X3D_ObjectDepth), x3d_objectdepth_compare);
   

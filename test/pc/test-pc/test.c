@@ -362,6 +362,8 @@ typedef struct X3D_BoxObject {
   X3D_DynamicObjectBase base;
   X3D_Prism3D* prism;
   _Bool move_up;
+  int16 top;
+  int16 bottom;
 } X3D_BoxObject;
 
 void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
@@ -381,8 +383,9 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
       break;
       
     case X3D_OBJECT_EVENT_FRAME:
+#if 0
       if(box->move_up) {
-        if(pos.y > -100) {
+        if(pos.y > box->top) {
           box->base.base.pos.y -= 1L << 8;
         }
         else {
@@ -390,13 +393,14 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
         }
       }
       else {
-        if(pos.y < 100) {
+        if(pos.y < box->bottom) {
           box->base.base.pos.y += 1L << 8;
         }
         else {
           box->move_up = X3D_TRUE;
         }
       }
+#endif
       
     default:
       break;
@@ -492,16 +496,20 @@ void engine_test(void) {
   X3D_Handle box_handle = x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
   X3D_BoxObject* box = x3d_handle_deref(box_handle);
   
-  X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(4));
-  x3d_prism3d_construct(box_prism, 4, 25, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(8));
+  x3d_prism3d_construct(box_prism, 8, 40, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
   box->prism = box_prism;
   
+  box->top = -100;
+  box->bottom = 100;
   
   
-  X3D_Handle box_handle2 = x3d_object_create(1, (X3D_Vex3D) { 50, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  X3D_Handle box_handle2 = x3d_object_create(1, (X3D_Vex3D) { 0, -50, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
   X3D_BoxObject* box2 = x3d_handle_deref(box_handle2);
   
+  box2->top = 150;
+  box2->bottom = 1000;
   box2->prism = box_prism;
   
   
