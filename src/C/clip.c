@@ -129,11 +129,16 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
 
 #define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->y_range.min])
  
-void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range) {
+void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range, int16 depth_a, int16 depth_b) {
   fp16x16 slope;
   
-  edge->start = a;
-  edge->end = b;
+  edge->start.x = a.x;
+  edge->start.y = a.y;
+  edge->start.z = depth_a;
+  
+  edge->end.x = b.x;
+  edge->end.y = b.y;
+  edge->end.z = depth_b;
   
   //ASSERT(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT);
   
@@ -309,7 +314,7 @@ add_edge:
 //               EDGE(2).y_range.min,EDGE(2).y_range.max,
 //               EDGE(3).y_range.min,EDGE(3).y_range.max);
     
-    x3d_rasteredge_generate(stack, &temp_edge, out_v[0], out_v[1], region->y_range);
+    //x3d_rasteredge_generate(stack, &temp_edge, out_v[0], out_v[1], region->y_range);
     
     //x3d_error("Pos: {%d, %d} - {%d, %d}", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y);
     
@@ -380,7 +385,7 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   
   for(i = 0; i < total_v; ++i) {
     int16 next = (i + 1) % total_v;
-    x3d_rasteredge_generate(stack, edges + i, v[i], v[next], (X3D_Range) { 0, LCD_HEIGHT - 1 });
+    x3d_rasteredge_generate(stack, edges + i, v[i], v[next], (X3D_Range) { 0, LCD_HEIGHT - 1 }, 0, 0);
     
     //printf("es: %d, ee: %d\n", edges[i].min_y, edges[i].max_y);
     
@@ -554,7 +559,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
   
-  x3d_rasteredge_generate(stack, &edge, *start, *end, region->y_range);
+  x3d_rasteredge_generate(stack, &edge, *start, *end, region->y_range, 0, 0);
   
   int16 y_min = X3D_MAX(region->y_range.min, edge.y_range.min);
   int16 y_max = X3D_MIN(region->y_range.max, edge.y_range.max);
@@ -668,8 +673,11 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
 ///   passed into x3d_rasteredge_generate().
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_Vex2D* end) {
-  *start = edge->start;
-  *end = edge->end;
+  start->x = edge->start.x;
+  start->y = edge->start.y;
+  
+  end->x = edge->end.x;
+  end->y = edge->end.y;
   
   #if 0
   x3d_assert(!(edge->flags & EDGE_INVISIBLE));

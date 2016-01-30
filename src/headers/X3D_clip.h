@@ -36,8 +36,8 @@ typedef struct X3D_RasterEdge {
   // int16 max_y;
   // int16 max_x;
   // int16 start_y;
-  X3D_Vex2D start;
-  X3D_Vex2D end;
+  X3D_Vex3D start;
+  X3D_Vex3D end;
   
   
   int16 start_x;
@@ -78,7 +78,7 @@ typedef struct X3D_PolyLine {
 
 _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion* dest, X3D_Vex2D* v, uint16 total_v);
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end);
-void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range);
+void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range, int16 depth_a, int16 depth_b);
 _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e);
 _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* region);
 int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_project, X3D_Vex2D* b_project, X3D_Vex2D* a_dest, X3D_Vex2D* b_dest, int16 z);

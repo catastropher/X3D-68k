@@ -69,7 +69,6 @@ void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1,
   }
 }
 
-
 typedef struct X3D_ClipContext {
   X3D_Stack* stack;
   X3D_RasterRegion* parent;
@@ -127,6 +126,8 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
     
   // Create a two edge between the two points clipped by the near plane
   if(total_out_v == 2) { 
+    /// FIXME please!
+#if 0
     x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_e,
       out_v[0], out_v[1], clip->parent->y_range);
     
@@ -137,6 +138,7 @@ _Bool x3d_construct_clipped_rasterregion(X3D_ClipContext* clip, X3D_RasterRegion
     
     
     vis_e[total_vis_e++] = clip->total_e;
+#endif
   }
   
   //printf("Total vis e: %d\nOut v: %d\n", total_vis_e, total_out_v);
@@ -186,6 +188,19 @@ void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* reg
       region
     );
   }
+}
+
+void x3d_rasteredge_list_render(X3D_RasterEdge* edges, uint16 total_e, X3D_DisplayLineList* list) {
+#if 0
+  uint16 i;
+  
+  for(i = 0; i < total_e; ++i)
+  
+  
+  if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
+        x3d_displaylinelist_add(list, va, v3d[edge_pair[i].val[0]].z, vb, v3d[edge_pair[i].val[1]].z, color);
+  }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,7 +256,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     X3D_Vex2D dest_a, dest_b;
     
     if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
-      x3d_rasteredge_generate(&renderman->stack, edges + i, dest_a, dest_b, region->y_range);
+      x3d_rasteredge_generate(&renderman->stack, edges + i, dest_a, dest_b, region->y_range, v3d[a].z, v3d[b].z);
     }
   }
   
@@ -375,7 +390,7 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
     
     if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
       //x3d_displaylinelist_add(list, va, v3d[a].z, vb, v3d[b].z, color);
-      x3d_rasteredge_generate(&renderman->stack, edge + i, va, vb, region->y_range);
+      x3d_rasteredge_generate(&renderman->stack, edge + i, va, vb, region->y_range, v3d[a].z, v3d[b].z);
     }
     else {
       edge[i].flags |= EDGE_INVISIBLE;
@@ -562,7 +577,7 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     X3D_Vex2D dest_a, dest_b;
     
     if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
-      x3d_rasteredge_generate(stack, clip->edges + i, dest_a, dest_b, clip->parent->y_range);
+      x3d_rasteredge_generate(stack, clip->edges + i, dest_a, dest_b, clip->parent->y_range, clip->v3d[a].z, clip->v3d[b].z);
     }
   }
 }
@@ -684,9 +699,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     X3D_Vex2D va, vb;
     x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
     
-    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
-      x3d_displaylinelist_add(list, va, v3d[edge_pair[i].val[0]].z, vb, v3d[edge_pair[i].val[1]].z, color);
-    }
+    
   }
   
   // Render any objects that are in the segment
