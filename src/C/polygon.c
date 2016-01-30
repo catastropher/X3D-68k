@@ -243,3 +243,4 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
   //printf("%d %d %d\n", x.x, x.y, x.z);
 }
 
+

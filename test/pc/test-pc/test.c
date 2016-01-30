@@ -364,6 +364,7 @@ typedef struct X3D_BoxObject {
   _Bool move_up;
   int16 top;
   int16 bottom;
+  angle256 angle;
 } X3D_BoxObject;
 
 void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
@@ -375,6 +376,7 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
   
   switch(event.type) {
     case X3D_OBJECT_EVENT_CREATE:
+      box->angle = 0;
       box->move_up = X3D_TRUE;
       break;
       
@@ -383,7 +385,10 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
       break;
       
     case X3D_OBJECT_EVENT_FRAME:
-#if 0
+#if 1
+      ++box->angle;
+      //x3d_prism3d_construct(box->prism, 20, 50, 50, (X3D_Vex3D_angle256) { box->angle, box->angle, 0 });
+      
       if(box->move_up) {
         if(pos.y > box->top) {
           box->base.base.pos.y -= 1L << 8;
@@ -447,7 +452,7 @@ void engine_test(void) {
   };
   
   x3d_prism3d_get_face(prism, 0, &p);
-  x3d_polygon3d_scale(&p, 256 * 3);
+  x3d_polygon3d_scale(&p, 256);
   x3d_prism3d_set_face(prism, 0, &p);
   
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
@@ -505,8 +510,12 @@ void engine_test(void) {
   X3D_Handle box_handle = x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
   X3D_BoxObject* box = x3d_handle_deref(box_handle);
   
-  X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(8));
-  x3d_prism3d_construct(box_prism, 4, 35, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(50));
+  x3d_prism3d_construct(box_prism, 20, 50, 50, (X3D_Vex3D_angle256) { ANG_180, 0, 0 });
+  
+  x3d_prism3d_get_face(box_prism, 0, &p);
+  x3d_polygon3d_scale(&p, 0);
+  x3d_prism3d_set_face(box_prism, 0, &p);
   
   box->prism = box_prism;
   
@@ -514,13 +523,14 @@ void engine_test(void) {
   box->bottom = 100;
   
   
+#if 0
   X3D_Handle box_handle2 = x3d_object_create(1, (X3D_Vex3D) { 0, -50, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
   X3D_BoxObject* box2 = x3d_handle_deref(box_handle2);
   
   box2->top = 150;
   box2->bottom = 1000;
   box2->prism = box_prism;
-  
+#endif
   
   
   x3d_game_loop();

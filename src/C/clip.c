@@ -219,7 +219,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   
   //printf("total_e: %d\n", total_e);
   
-  X3D_Vex2D out_v[20];
+  X3D_Vex2D out_v[50];
   int16 total_out_v = 0;
   X3D_RasterEdge* e = NULL;
   
