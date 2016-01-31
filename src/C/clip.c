@@ -702,4 +702,86 @@ void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_V
 #endif
 }
 
+/// Under construction
+_Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion* dest) {
+
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  uint16 i;
+  uint16 total_vis_e = 0;   // How many edges are actually visible
+  int16 near_z = 10;
+  X3D_Vex2D out_v[2];
+  uint16 total_out_v = 0;
+  uint16 vis_e[clip->total_edge_index + 1];
+  _Bool close = X3D_FALSE;
+  int16 depth[2];
+  
+  for(i = 0; i < clip->total_edge_index; ++i) {
+    X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
+    uint16 in[2] = { clip->v3d[edge.val[0]].z >= near_z, clip->v3d[edge.val[1]].z >= near_z };
+
+    if(in[0] || in[1]) {
+      vis_e[total_vis_e++] = clip->edge_index[i];
+      
+      if(in[0] != in[1]) {
+        X3D_Vex2D v[2];
+        
+        x3d_rasteredge_get_endpoints(clip->edges + clip->edge_index[i], v, v + 1);
+        
+        // FIXME
+        if(in[0]) {
+          out_v[total_out_v] = v[0];
+          depth[total_out_v++] = clip->edges[clip->edge_index[i]].start.z;
+        }
+        else {
+          out_v[total_out_v] = v[1];
+          depth[total_out_v++] = clip->edges[clip->edge_index[i]].end.z;
+        }
+          
+        //out_v[total_out_v++] = v[in[0]];
+        
+        //clip->edge_pairs[clip->edge_index[i]].val[in[0]];
+      }
+    }
+    else {
+      close = close || clip->v3d[edge.val[0]].z >= 0 || clip->v3d[edge.val[1]].z >= 0;
+    }
+  }
+  
+  x3d_assert(total_out_v <= 2);
+    
+  // Create a two edge between the two points clipped by the near plane
+  if(total_out_v == 2) { 
+    /// FIXME please!
+#if 1
+    x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_e,
+      out_v[0], out_v[1], clip->parent->y_range, depth[0], depth[1]);
+    
+    //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
+    
+    //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, 0x7FFF);
+    
+    
+    
+    vis_e[total_vis_e++] = clip->total_e;
+#endif
+  }
+  
+  //printf("Total vis e: %d\nOut v: %d\n", total_vis_e, total_out_v);
+  
+  //return total_vis_e > 0 &&
+  if(total_vis_e > 2) {
+    if(x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e) &&
+      x3d_rasterregion_intersect(clip->parent, dest)) {
+  
+      //x3d_rasterregion_fill(dest, 0xFFFF);
+  
+      return X3D_TRUE;
+    }
+  }
+  else {
+    clip->really_close = close;
+  }
+  
+  return X3D_FALSE;
+}
 

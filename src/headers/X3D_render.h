@@ -34,6 +34,19 @@ typedef struct X3D_DisplayLine {
   X3D_Color color;
 } X3D_DisplayLine;
 
+typedef struct X3D_ClipContext {
+  X3D_Stack* stack;
+  X3D_RasterRegion* parent;
+  X3D_RasterEdge* edges;
+  uint16* edge_index;
+  uint16 total_e;
+  uint16 total_edge_index;
+  X3D_Vex3D* v3d;
+  X3D_Vex2D* v2d;
+  X3D_Pair* edge_pairs;
+  _Bool really_close;
+} X3D_ClipContext;
+
 #define X3D_MAX_DISPLAY_LINE 100
 
 typedef struct X3D_DisplayLineList {
@@ -45,7 +58,9 @@ void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color 
 void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color);
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step);
 void x3d_render(X3D_CameraObject* cam);
-void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_DisplayLineList* list, X3D_CameraObject* cam, X3D_Color color);
-void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_DisplayLineList* list, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region);
+void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1, int16 depth2, X3D_Color color, X3D_RasterRegion* region);
+
+void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_depth, X3D_Vex2D b, int16 b_depth, X3D_Color color);
+void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* region);
 
 

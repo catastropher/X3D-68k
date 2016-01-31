@@ -21,6 +21,7 @@
 #include "X3D_vector.h"
 #include "X3D_assert.h"
 #include "X3D_polygon.h"
+#include "X3D_screen.h"
 
 enum {
   X3D_BASE_A = 0,   /// First base of a prism
@@ -84,10 +85,16 @@ static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
   return base_v + 2;
 }
 
+struct X3D_DisplayLineList;
+struct X3D_CameraObject;
+struct X3D_RasterRegion;
+
 void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
 void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
 void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
 uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest);
 void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b);
 void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest);
+void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, struct X3D_DisplayLineList* list, struct X3D_CameraObject* cam, X3D_Color color);
+void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, struct X3D_DisplayLineList* list, struct X3D_CameraObject* cam, X3D_Color color, struct X3D_RasterRegion* region);
 

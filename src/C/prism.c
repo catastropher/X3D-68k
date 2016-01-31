@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <alloca.h>
+
 #include "X3D_common.h"
 #include "X3D_matrix.h"
 #include "X3D_trig.h"
@@ -20,6 +22,8 @@
 #include "X3D_prism.h"
 #include "X3D_polygon.h"
 #include "X3D_camera.h"
+#include "X3D_render.h"
+#include "X3D_enginestate.h"
 
 /**
 * Constructs a 3D prism with regular polygons as the base.
@@ -218,6 +222,134 @@ void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest) {
   
   for(i = 0; i < base_v * 3; ++i) {
     x3d_prism_get_edge_index(base_v, i, dest[i].val, dest[i].val + 1);
+  }
+}
+
+void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_DisplayLineList* list, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region) {
+  X3D_Vex3D v3d[prism->base_v * 2];
+  X3D_Vex2D v2d[prism->base_v * 2];
+  
+  uint16 i;
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    v3d[i].x = prism->v[i].x + translation->x;
+    v3d[i].y = prism->v[i].y + translation->y;
+    v3d[i].z = prism->v[i].z + translation->z;
+  }
+  
+  x3d_camera_transform_points(cam, v3d, prism->base_v * 2, v3d, v2d);
+  
+  X3D_RasterEdge edge[prism->base_v * 3];
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    uint16 a, b;
+    x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
+    
+    X3D_Vex2D va, vb;
+    
+    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
+      //x3d_displaylinelist_add(list, va, v3d[a].z, vb, v3d[b].z, color);
+      x3d_rasteredge_generate(&renderman->stack, edge + i, va, vb, region->y_range, v3d[a].z, v3d[b].z);
+    }
+    else {
+      edge[i].flags |= EDGE_INVISIBLE;
+    }
+  }
+  
+  uint16 edge_list[prism->base_v * 3];
+  
+  for(i = 0; i < prism->base_v * 3; ++i)
+    edge_list[i] = i;
+  
+  X3D_RasterRegion new_region;
+#if 1
+  if(x3d_rasterregion_construct_from_edges(&new_region, &renderman->stack, edge, edge_list, prism->base_v * 3)) {
+    if(x3d_rasterregion_intersect(region, &new_region)) {
+      x3d_rasterregion_fill(&new_region, 0);
+    }
+  }
+#endif
+  
+  _Bool render_edge[prism->base_v * 3];
+  
+  for(i = 0; i < prism->base_v * 3; ++i)
+    render_edge[i] = X3D_FALSE;
+  
+  X3D_Polygon3D poly = {
+    .v = alloca(sizeof(X3D_Vex3D) * prism->base_v)
+  };
+  
+  X3D_Plane plane;
+  
+  X3D_Vex3D cam_pos = cam->pseduo_pos;
+  //x3d_object_pos(cam, &cam_pos);
+  
+  for(i = 0; i < 2; ++i) {//prism->base_v + 2; ++i) {
+    x3d_prism3d_get_face(prism, i, &poly);
+    
+    
+    poly.v[0].x += translation->x;
+    poly.v[0].y += translation->y;
+    poly.v[0].z += translation->z;
+    
+    poly.v[1].x += translation->x;
+    poly.v[1].y += translation->y;
+    poly.v[1].z += translation->z;
+    
+    poly.v[2].x += translation->x;
+    poly.v[2].y += translation->y;
+    poly.v[2].z += translation->z;
+    
+    x3d_plane_construct(&plane, poly.v, poly.v + 1, poly.v + 2);
+    
+    int16 dist = x3d_plane_dist(&plane, &cam_pos);
+    
+    if(dist <= 0) {
+      int16 d;
+      uint16 e[prism->base_v];
+      
+      uint16 total_e = x3d_prism_face_edge_indexes(prism->base_v, i, e);
+      
+      for(d = 0; d < total_e; ++d) {
+        render_edge[e[d]] = X3D_TRUE;
+      }
+    }
+  }
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    X3D_RasterEdge* e = edge + i;
+    
+    if(render_edge[i]) {
+      uint16 a, b;
+      x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
+      
+      x3d_draw_clipped_line(e->start.x, e->start.y, e->end.x, e->end.y, v3d[a].z, v3d[b].z, color, region);
+    }
+  }
+}
+
+void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_DisplayLineList* list, X3D_CameraObject* cam, X3D_Color color) {
+  X3D_Vex3D v3d[prism->base_v * 2];
+  X3D_Vex2D v2d[prism->base_v * 2];
+  
+  uint16 i;
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    v3d[i].x = prism->v[i].x + translation->x;
+    v3d[i].y = prism->v[i].y + translation->y;
+    v3d[i].z = prism->v[i].z + translation->z;
+  }
+  
+  x3d_camera_transform_points(cam, v3d, prism->base_v * 2, v3d, v2d);
+  
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    uint16 a, b;
+    x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
+    
+    X3D_Vex2D va, vb;
+    
+    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
+      x3d_displaylinelist_add(list, va, v3d[a].z, vb, v3d[b].z, color);
+    }
   }
 }
 
