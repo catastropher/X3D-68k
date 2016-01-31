@@ -496,7 +496,7 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
   if(a->z < z) {
     X3D_SWAP(a, b);
     X3D_SWAP(a_project, b_project);
-    //SWAP(a_dest, b_dest);
+    X3D_SWAP(a_dest, b_dest);
   }
   
   *a_dest = *a_project;

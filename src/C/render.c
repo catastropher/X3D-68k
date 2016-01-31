@@ -105,8 +105,10 @@ void x3d_rasteredge_list_render(X3D_RasterEdge* edges, uint16 total_e, X3D_Displ
   for(i = 0; i < total_e; ++i) {
     X3D_Vex2D a, b;
     
-    x3d_rasteredge_get_endpoints(edges + i, &a, &b);
-    x3d_displaylinelist_add(list, a, edges[i].start.z, b, edges[i].end.z, color);
+    if((edges[i].flags & EDGE_INVISIBLE) == 0 && edges[i].start.z > 10 && edges[i].end.z > 10) {
+      x3d_rasteredge_get_endpoints(edges + i, &a, &b);
+      x3d_displaylinelist_add(list, a, edges[i].start.z, b, edges[i].end.z, color);
+    }
   }
 }
 
@@ -173,11 +175,8 @@ void x3d_segment_render_objects(X3D_UncompressedSegment* seg, X3D_CameraObject* 
     }
   }
   
-  printf("\n");
   
   qsort(depth, total_d, sizeof(X3D_ObjectDepth), x3d_objectdepth_compare);
-  
-  x3d_displaylinelist_render(list, region);
   
   for(i = 0; i < total_d; ++i) {
     if(depth[i].obj->base.frame != step) {
@@ -220,10 +219,13 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
       x3d_rasteredge_generate(stack, clip->edges + i, dest_a, dest_b, clip->parent->y_range, clip->v3d[a].z, clip->v3d[b].z);
     }
+    else {
+      clip->edges[i].flags = EDGE_INVISIBLE;
+    }
   }
 }
 
-void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step) {
+void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step  ) {
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
   
@@ -287,8 +289,6 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 
   // Render the connecting segments
   for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
-    // The distance calculation shouldn't be necessary because we should always
-    // be inside a segment...
     int16 dist = x3d_plane_dist(&face[i].plane, &cam->pseduo_pos);
     
     if(dist > 0) {
@@ -337,8 +337,10 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   x3d_rasteredge_list_render(edges, total_e, list, color);
   
+  x3d_displaylinelist_render(list, region);
+  
   // Render any objects that are in the segment
-  x3d_segment_render_objects(seg, cam, list, region, step);
+  //x3d_segment_render_objects(seg, cam, list, region, step);
   
   x3d_stack_restore(&renderman->stack, stack_save);
   
