@@ -745,7 +745,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   //return total_vis_e > 0 &&
   if(total_vis_e > 2) {
     if(x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e)) {
-      if(x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1)) {
+      if(total_out_v == 2 && x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1)) {
         uint16 i;
         
         int16 y_index = out_v[0].y - dest->y_range.min;
@@ -773,7 +773,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
       
       if(x3d_rasterregion_intersect(clip->parent, dest)) {
         X3D_Color gray = x3d_rgb_to_color(64, 64, 64);
-        x3d_rasterregion_fill(dest, gray);
+        //x3d_rasterregion_fill(dest, gray);
         X3D_Color color = x3d_rgb_to_color(255, 255, 255);
         //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, color);
         return X3D_TRUE;

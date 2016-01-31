@@ -126,7 +126,7 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(obj->base.seg);
   
-  if(caster.dist >= 0 && caster.inside) {
+  if(caster.dist > 0 && caster.inside) {
     X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
     
     if(face->portal_seg_face != X3D_FACE_NONE || caster.dist > 10)

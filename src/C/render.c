@@ -315,7 +315,8 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
           }
           else if(clip.really_close) {
             //printf("Really close!\n");
-            portal = region;
+            //portal = region;
+            portal = NULL;
           }
           else {
             portal = NULL;

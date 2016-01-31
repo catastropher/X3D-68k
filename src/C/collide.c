@@ -35,7 +35,7 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
   /// @todo Add bounding sphere to segment cache
   /// Until then, a max radius of 500 is used
   X3D_BoundSphere temp_sphere = {
-    .r = 500,
+    .r = 2000,
   };
   
   X3D_BoundSphere* sphere = &temp_sphere;
@@ -75,7 +75,10 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
     int16 dist_in = x3d_plane_dist(&face[i].plane, &in);
     int16 dist_out = x3d_plane_dist(&face[i].plane, &out);
     
-    if(dist_in < 0) {
+    
+    printf("dddd %d: in %d out[%d]\n", i, dist_in, dist_out);
+    
+    if(dist_in <= 0) {
       caster->inside = X3D_FALSE;
       return;
     }
@@ -115,7 +118,12 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
   
   
   // No face was actually hit...
-  x3d_assert(min_face != -1);
+  //x3d_assert(min_face != -1);
+  if(min_face == -1) {
+    x3d_log(X3D_INFO, "Segment: %d\n", caster->seg);
+    x3d_assert(0);
+  }
+  
   
   // Calculate the point of intersection
   X3D_Vex3D diff = x3d_vex3d_sub(&out, &in);
