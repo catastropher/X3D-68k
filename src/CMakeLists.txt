@@ -4,6 +4,8 @@ project(X3D)
 
 set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
 
+set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
+
 macro (add_sources)
     file (RELATIVE_PATH _relPath "${CMAKE_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
     foreach (_src ${ARGN})

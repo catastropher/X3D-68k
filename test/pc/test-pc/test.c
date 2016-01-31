@@ -185,12 +185,24 @@ enum {
   KEY_DOWN = X3D_KEY_9,
   KEY_1 = X3D_KEY_10,
   KEY_2 = X3D_KEY_11,
-  KEY_RECORD = X3D_KEY_12
+  KEY_9 = X3D_KEY_12,
+  KEY_0 = X3D_KEY_13,
+  
+  KEY_RECORD = X3D_KEY_14
 };
 
 void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   static _Bool rec = X3D_FALSE;
+  
+  if(x3d_key_down(KEY_0)) {
+    x3d_rendermanager_get()->near_z++;
+    printf("Near z: %d\n", x3d_rendermanager_get()->near_z);
+  }
+  else if(x3d_key_down(KEY_9)) {
+    x3d_rendermanager_get()->near_z--;
+    printf("Near z: %d\n", x3d_rendermanager_get()->near_z);
+  }
   
   
   if(x3d_key_down(KEY_RECORD)) {
@@ -436,6 +448,8 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_DOWN, ']');
   x3d_key_map_pc(KEY_1, '1');
   x3d_key_map_pc(KEY_2, '2');
+  x3d_key_map_pc(KEY_0, '0');
+  x3d_key_map_pc(KEY_9, '9');
   x3d_key_map_pc(KEY_RECORD, 'm');
   x3d_key_map_pc(X3D_KEY_15, 'p');
   
@@ -446,7 +460,9 @@ void engine_test(void) {
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
   
-  x3d_prism3d_construct(prism, base_v, 200,  300, angle);
+  x3d_prism3d_construct(prism, base_v, 400,  300, angle);
+  
+  x3d_rendermanager_get()->near_z = 10;
   
   X3D_Polygon3D p = {
     .v = alloca(1000)
@@ -464,11 +480,11 @@ void engine_test(void) {
   //uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 0), 20);
   //uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
   uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 100);
-  uint16 id8 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 4), 100);
-  uint16 id9 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 1), 450);
-  uint16 id10 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 1), 100);
+  //uint16 id8 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 4), 100);
+  //uint16 id9 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 1), 450);
+  //uint16 id10 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 1), 100);
   
-  uint16 id11 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 2000);
+  //uint16 id11 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 2000);
   
   // Create a portal on one of the walls
   uint16 portal_base_v = 8;

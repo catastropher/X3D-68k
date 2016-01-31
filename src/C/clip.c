@@ -32,17 +32,17 @@
 #define LCD_WIDTH x3d_screenmanager_get()->w
 #define LCD_HEIGHT x3d_screenmanager_get()->h
 
-#undef printf
-#define printf(...) ;
+//#undef printf
+//#define printf(...) ;
 
-#define x3d_error(...) ;
+#define x3d_error(args...) x3d_log(X3D_ERROR, args);
 
 #ifndef INT16_MIN
 #define INT16_MIN -32767
 #endif
 
-#define ASSERT(_s) ; //{if(!(_s)) x3d_error("Assert failed! %s (%s %d)", #_s, __FUNCTION__, __LINE__);}
-#define ASSERT_RANGE(_a, _min, _max) ; //ASSERT(_a >= _min && _a <= _max);
+#define ASSERT(_s) x3d_assert(_s); //{if(!(_s)) x3d_error("Assert failed! %s (%s %d)", #_s, __FUNCTION__, __LINE__);}
+#define ASSERT_RANGE(_a, _min, _max) ASSERT(_a >= _min && _a <= _max);
 
 #define ASSERT_EQUAL_INT16(_a, _b) ; // { if((_a) != (_b)) x3d_error("Assert failed (line %d)! %s == %s (%d, %d)", __LINE__, #_a, #_b, (int16)(_a), (int16)(_b)); }
 #define ASSERT_EQUAL_INT32(_a, _b) ; // { if((_a) != (_b)) x3d_error("Assert failed (line %d)! %s == %s (%ld, %ld)", __LINE__, #_a, #_b, (int32)(_a), (int32)(_b)); }
@@ -73,12 +73,13 @@ fp16x16 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
 }
 
 void intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y) {
-  ASSERT((slope >> 16) < 128);    // To prevent overflow when converting to fp8x8 for the slope
+  //x3d_assert((slope >> 16) < 128);    // To prevent overflow when converting to fp8x8 for the slope
   
   int16 dy = y - start->y;
   int16 slope_8x8 = slope >> 8;
-  
-  start->x = start->x + (((int32)dy * slope_8x8) >> 8);
+
+  /// @todo Optomize to not use 64 bit multiplication
+  start->x = start->x + (((int64)dy * slope) >> 16);
   start->y = y;
 }
 
@@ -106,7 +107,7 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
   }
   
   if(!range_overlap(edge->y_range, region_y_range)) {
-    printf("Invisible!\n");
+    //printf("Invisible!\n");
     edge->flags |= EDGE_INVISIBLE;
     
     return X3D_FALSE;
@@ -234,42 +235,6 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   for(edge = 0; edge < total_e; ++edge) {
     e = &EDGE(edge);
     
-    if(e->flags & EDGE_NEAR_CLIPPED) {
-      //ASSERT((e->flags & EDGE_HORIZONTAL) == 0);
-      //ASSERT(e->x_data);
-      
-      if(total_out_v == 2) {
-        x3d_error("%d %d %d %d", EDGE(0).flags, EDGE(1).flags, EDGE(2).flags, EDGE(3).flags);
-      }
-      
-      int16 a_x, b_x;
-      
-      if(e->flags & EDGE_INVISIBLE) {
-        a_x = e->start_x;
-        b_x = e->end_x;
-      }
-      else {
-        a_x = e->x_data[0];
-        b_x = EDGE_VALUE(e, e->y_range.max);
-      }
-      
-      //ASSERT(total_out_v < 2);
-      
-      
-      if(e->flags & EDGE_HORIZONTAL) {
-        out_v[total_out_v++] = (X3D_Vex2D) { (e->flags & EDGE_V_SWAPPED) ? e->x_range.min : e->x_range.max, e->y_range.min };
-      }
-      else {
-        if(e->flags & EDGE_V_SWAPPED) {
-          out_v[total_out_v++] = (X3D_Vex2D) { a_x, e->y_range.min };
-        }
-        else {
-          out_v[total_out_v++] = (X3D_Vex2D) { b_x , e->y_range.max };
-        }
-      }
-    }
-    
-add_edge:
     if(!(e->flags & EDGE_INVISIBLE)) {
       int16* left = region->x_left + e->y_range.min;
       int16* right = region->x_right + e->y_range.min;
@@ -325,6 +290,9 @@ add_edge:
   }
   
   //printf("Min: %d, %d\n", region->y_range.min, region->y_range.max);
+  
+  x3d_assert(((size_t)region->x_left & 1) == 0);
+  x3d_assert(((size_t)region->x_right & 1) == 0);
   
   if(region->y_range.min <= region->y_range.max) {
     region->x_left += region->y_range.min;
@@ -437,6 +405,14 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   }
   
   ASSERT_RANGE(y, region->y_range.min, region->y_range.max);
+
+#if 0  
+  x3d_assert(((size_t)region & 1) == 0);
+  x3d_assert(((size_t)region->x_left & 1) == 0);
+  x3d_assert(((size_t)region->x_right & 1) == 0);
+  x3d_assert(((size_t)portal_left & 1) == 0);
+  x3d_assert(((size_t)portal_right & 1) == 0);
+#endif
   
   // Skip fully clipped spans
   while(y <= region->y_range.max && !CLIP()) {
@@ -504,8 +480,6 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
   int16 dist_a = a->z - z;
   int16 dist_b = z - b->z;
   int16 scale = ((int32)dist_a << 15) / (dist_a + dist_b);
-  
-  printf("Clipped!\n");
   
   X3D_Vex3D new_b = {
     a->x + ((((int32)b->x - a->x) * scale) >> 15),
@@ -592,7 +566,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   int16 i;
   _Bool found = X3D_FALSE;
   int16 x, left, right;
-  
+
   // Find where the line enters the region
   for(i = y_min; i <= y_max; ++i) {
     left = region->x_left[i - region->y_range.min];
@@ -708,7 +682,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   uint16 i;
   uint16 total_vis_e = 0;   // How many edges are actually visible
-  int16 near_z = 10;
+  int16 near_z = x3d_rendermanager_get()->near_z;
   X3D_Vex2D out_v[2];
   uint16 total_out_v = 0;
   uint16 vis_e[clip->total_edge_index + 1];
@@ -729,11 +703,11 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
         
         // FIXME
         if(in[0]) {
-          out_v[total_out_v] = v[0];
+          out_v[total_out_v] = v[1];
           depth[total_out_v++] = clip->edges[clip->edge_index[i]].start.z;
         }
         else {
-          out_v[total_out_v] = v[1];
+          out_v[total_out_v] = v[0];
           depth[total_out_v++] = clip->edges[clip->edge_index[i]].end.z;
         }
           
@@ -747,7 +721,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     }
   }
   
-  x3d_assert(total_out_v <= 2);
+  //x3d_assert(total_out_v <= 2);
     
   // Create a two edge between the two points clipped by the near plane
   if(total_out_v == 2) { 
@@ -756,10 +730,10 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_e,
       out_v[0], out_v[1], clip->parent->y_range, depth[0], depth[1]);
     
+    
     //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
     
     //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, 0x7FFF);
-    
     
     
     vis_e[total_vis_e++] = clip->total_e;
@@ -770,12 +744,40 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   
   //return total_vis_e > 0 &&
   if(total_vis_e > 2) {
-    if(x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e) &&
-      x3d_rasterregion_intersect(clip->parent, dest)) {
-  
-      //x3d_rasterregion_fill(dest, 0xFFFF);
-  
-      return X3D_TRUE;
+    if(x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e)) {
+      if(x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1)) {
+        uint16 i;
+        
+        int16 y_index = out_v[0].y - dest->y_range.min;
+        
+        x3d_assert(y_index >= dest->y_range.min);
+        
+        if(abs(out_v[0].x - dest->x_left[y_index]) < abs(out_v[0].x - dest->x_right[y_index])) {
+          //printf("Left!\n");
+          
+          if(!x3d_key_down(X3D_KEY_15)) {
+            for(i = 0; i < dest->y_range.max - dest->y_range.min + 1; ++i)
+              dest->x_left[i] = 0;
+          }
+        }
+        else {
+          if(!x3d_key_down(X3D_KEY_15)) {
+            for(i = 0; i < dest->y_range.max - dest->y_range.min + 1; ++i)
+              dest->x_right[i] = x3d_screenmanager_get()->w - 1;
+          }
+          
+          //printf("Right!\n");
+        }
+      }
+        
+      
+      if(x3d_rasterregion_intersect(clip->parent, dest)) {
+        X3D_Color gray = x3d_rgb_to_color(64, 64, 64);
+        x3d_rasterregion_fill(dest, gray);
+        X3D_Color color = x3d_rgb_to_color(255, 255, 255);
+        //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, color);
+        return X3D_TRUE;
+      }
     }
   }
   else {

@@ -222,14 +222,22 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src) 
 */
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat3x3* mat) {
   fp0x16* m = mat->data;
+
+  src->x *= 32;
+  src->y *= 32;
+  src->z *= 32;
   
   X3D_Vex3D_int16 x = (X3D_Vex3D_int16){ m[MAT3x3(0, 0)], m[MAT3x3(1, 0)], m[MAT3x3(2, 0)] };
   X3D_Vex3D_int16 y = (X3D_Vex3D_int16){ m[MAT3x3(0, 1)], m[MAT3x3(1, 1)], m[MAT3x3(2, 1)] };
   X3D_Vex3D_int16 z = (X3D_Vex3D_int16){ m[MAT3x3(0, 2)], m[MAT3x3(1, 2)], m[MAT3x3(2, 2)] };
 
-  dest->x = x3d_vex3d_fp0x16_dot(&x, src);
-  dest->y = x3d_vex3d_fp0x16_dot(&y, src);
-  dest->z = x3d_vex3d_fp0x16_dot(&z, src);
+  dest->x = x3d_vex3d_fp0x16_dot(&x, src) / 32;
+  dest->y = x3d_vex3d_fp0x16_dot(&y, src) / 32;
+  dest->z = x3d_vex3d_fp0x16_dot(&z, src) / 32;
+  
+  src->x /= 32;
+  src->y /= 32;
+  src->z /= 32;
 }
 
 // Calculates the cross product of two vectors. This creates a vector that
