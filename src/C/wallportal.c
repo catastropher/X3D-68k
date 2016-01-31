@@ -196,3 +196,144 @@ X3D_WallPortal* x3d_wallportal_get(uint16 portal_id) {
   return wall_portals + portal_id;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders a wall portal and anything that can be seen through the portal
+///   from the perspective of the camera looking through it.
+///
+/// @param wall_portal_id - ID of the wall portal
+/// @param cam            - camera object that is looking though the portal
+/// @param region         - raster region that describes the clipping region
+///
+/// @return The number of portals attached to the given face.
+///////////////////////////////////////////////////////////////////////////////
+#if 0
+void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region, X3D_DisplayLineList* list) {
+#if 1
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  // Save the stack pointer so we can free any allocations made later
+  void* stack_ptr = x3d_stack_save(&renderman->stack);
+  
+  // The wall portal to be rendered (using the temporary global implementation)
+  X3D_WallPortal* portal = x3d_wallportal_get(wall_portal_id);
+  
+  // Outline of the portal projected onto the screen
+  X3D_Vex2D v2d[portal->portal_poly.total_v];
+  
+  // 3D points that make up the outline and have been rotated relative to the
+  // camera, but haven't been projected yet
+  X3D_Vex3D v3d[portal->portal_poly.total_v];
+  
+  // Transform the points so they are relative to the camera
+  x3d_camera_transform_points(cam, portal->portal_poly.v, portal->portal_poly.total_v,
+    v3d, v2d);
+  
+  uint16 i;
+
+  
+  X3D_RasterEdge edges[portal->portal_poly.total_v + 1];
+  
+  X3D_Pair edge_pair[portal->portal_poly.total_v];
+  
+  // Construct the portal's raster region, which has to be clipped against the
+  // parent raster region
+  for(i = 0; i < portal->portal_poly.total_v; ++i) {
+    uint16 a, b;
+    
+    a = i;
+    b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
+    
+    edge_pair[i].val[0] = a;
+    edge_pair[i].val[1] = b;
+    
+    X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
+    X3D_Vex2D dest_a, dest_b;
+    
+    if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
+      x3d_rasteredge_generate(&renderman->stack, edges + i, dest_a, dest_b, region->y_range, v3d[a].z, v3d[b].z);
+    }
+  }
+  
+  X3D_RasterRegion clipped_region;
+  uint16 edge_index[portal->portal_poly.total_v + 1];
+  
+  for(i = 0; i < portal->portal_poly.total_v; ++i)
+    edge_index[i] = i;
+  
+  X3D_ClipContext clip = {
+    .stack = &renderman->stack,
+    .parent = region,
+    .edges = edges,
+    .total_e = portal->portal_poly.total_v,
+    .v3d = v3d,
+    .v2d = v2d,
+    .edge_pairs = edge_pair,
+    .edge_index = edge_index,
+    .total_edge_index = portal->portal_poly.total_v
+  };
+  
+  // The new camera that has been adjusted to rasterize things on the other
+  // side of the portal properly.
+  X3D_CameraObject new_cam = *cam;
+  
+  // Rending through a portal is a bit complicated. We have two portals that
+  // are in different parts of the world and that are oriented in different
+  // directions. When a camera looks through portal A, they are actually
+  // looking into the room with portal B as follows:
+  //
+  //  __________         _________
+  //  |        |         |       |
+  //  |        |         |   B   |
+  //  O<-- A   |         |   ^   |
+  //  |________|         |___|___|
+  //
+  // However, we have to make it look like this when rendering the portal:
+  //
+  //          __________
+  //  ________|        |
+  // |        |        |
+  // |    B<--O<-- A   |
+  // |________|________|
+  //
+  //
+  
+  if(portal->portal_id != 0xFFFF && x3d_construct_clipped_rasterregion(&clip, &clipped_region)) {
+    // Portal that 'portal' is connected to
+    X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
+    
+    // Calculate the new view matrix
+    x3d_mat3x3_mul(&new_cam.base.mat, &portal->transform, &cam->base.mat);
+    
+    // Calculate the geometry shift for everything on the other side of the portal
+    x3d_camera_calculate_shift(&new_cam, cam, &portal->center, &other_side->center);
+    
+    new_cam.pseduo_pos = other_side->center;
+    
+    if(x3d_rasterregion_intersect(region, &clipped_region)) {
+      uint16 seg_id = x3d_segfaceid_seg(other_side->face);
+      
+      x3d_segment_render(seg_id, &new_cam, 31, &clipped_region, x3d_enginestate_get_step());
+    }
+  }
+  
+  // Draw the portal outline
+  for(i = 0; i < portal->portal_poly.total_v; ++i) {
+    uint16 a, b;
+    X3D_Vex2D va, vb;
+    
+    a = i;
+    b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
+    
+    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
+      //x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, portal->color, region);
+      
+      x3d_displaylinelist_add(list, va, v3d[edge_pair[i].val[0]].z, vb, v3d[edge_pair[i].val[1]].z, portal->color);
+    }
+  }
+  
+  x3d_stack_restore(&renderman->stack, stack_ptr);
+#endif
+}
+
+#endif
+

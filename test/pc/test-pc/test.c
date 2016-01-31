@@ -387,7 +387,7 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
     case X3D_OBJECT_EVENT_FRAME:
 #if 1
       ++box->angle;
-      //x3d_prism3d_construct(box->prism, 20, 50, 50, (X3D_Vex3D_angle256) { box->angle, box->angle, 0 });
+      x3d_prism3d_construct(box->prism, 20, 50, 50, (X3D_Vex3D_angle256) { box->angle, box->angle, 0 });
       
       if(box->move_up) {
         if(pos.y > box->top) {
@@ -437,6 +437,7 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_1, '1');
   x3d_key_map_pc(KEY_2, '2');
   x3d_key_map_pc(KEY_RECORD, 'm');
+  x3d_key_map_pc(X3D_KEY_15, 'p');
   
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
