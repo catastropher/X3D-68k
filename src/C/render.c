@@ -235,6 +235,7 @@ typedef struct X3D_SegmentRenderContext {
   X3D_RasterRegion* parent;
   X3D_CameraObject* cam;
   X3D_ClipContext* clip;
+  X3D_DisplayLineList* list;
   uint16 step;
 } X3D_SegmentRenderContext;
 
@@ -289,6 +290,52 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
           
           
           x3d_stack_restore(&context->renderman->stack, stack_ptr);
+        }
+      }
+    }
+  }
+}
+
+void x3d_segment_render_textures(X3D_SegmentRenderContext* context) {
+  X3D_Prism3D* prism = &context->seg->prism;
+  
+  uint16 i;
+  // Render any textures
+  for(i = 0; i < prism->base_v + 2; ++i) {
+    if(context->faces[i].texture != X3D_INVALID_HANDLE) {
+      X3D_Polygon3D* poly = x3d_handle_deref(context->faces[i].texture);
+      X3D_Vex3D center;
+      
+      //printf("Handle: %d\n", face[i].texture);
+      
+      X3D_Polygon3D p = {
+        .v = alloca(1000)
+      };
+      
+      x3d_prism3d_get_face(prism, i, &p);
+      x3d_polygon3d_center(&p, &center);
+      
+      X3D_Vex2D pv2d[poly->total_v];
+      X3D_Vex3D pv3d[poly->total_v];
+      
+      uint16 d;
+      for(d = 0; d < poly->total_v; ++d) {
+        pv3d[d] = x3d_vex3d_add(poly->v + d, &center);
+      }
+      
+      x3d_camera_transform_points(context->cam, pv3d, poly->total_v, pv3d, pv2d);
+      
+      for(d = 0; d < poly->total_v; ++d) {
+        X3D_Color blue = x3d_rgb_to_color(192, 0, 192);
+        
+        int16 a = d;
+        int16 b = (d + 1) % poly->total_v;
+    
+        X3D_Vex3D temp_a = pv3d[a], temp_b = pv3d[b];
+        X3D_Vex2D dest_a, dest_b;
+    
+        if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, pv2d + a, pv2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z) != EDGE_INVISIBLE) {
+          x3d_displaylinelist_add(context->list, dest_a, pv3d[d].z, dest_b, pv3d[(d + 1) % poly->total_v].z, blue);
         }
       }
     }
@@ -371,53 +418,14 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .parent = region,
     .cam = cam,
     .clip = &clip,
-    .step = step
+    .step = step,
+    .list = list
   };
   
   x3d_rasteredge_list_render(edges, total_e, list, color);
   
   x3d_segment_render_connecting_segments(&context);
-  
-  // Render any textures
-  for(i = 0; i < prism->base_v + 2; ++i) {
-    if(face[i].texture != X3D_INVALID_HANDLE) {
-      X3D_Polygon3D* poly = x3d_handle_deref(face[i].texture);
-      X3D_Vex3D center;
-      
-      //printf("Handle: %d\n", face[i].texture);
-      
-      X3D_Polygon3D p = {
-        .v = alloca(1000)
-      };
-      
-      x3d_prism3d_get_face(prism, i, &p);
-      x3d_polygon3d_center(&p, &center);
-      
-      X3D_Vex2D pv2d[poly->total_v];
-      X3D_Vex3D pv3d[poly->total_v];
-      
-      uint16 d;
-      for(d = 0; d < poly->total_v; ++d) {
-        pv3d[d] = x3d_vex3d_add(poly->v + d, &center);
-      }
-      
-      x3d_camera_transform_points(cam, pv3d, poly->total_v, pv3d, pv2d);
-      
-      for(d = 0; d < poly->total_v; ++d) {
-        X3D_Color blue = x3d_rgb_to_color(192, 0, 192);
-        
-        int16 a = d;
-        int16 b = (d + 1) % poly->total_v;
-    
-        X3D_Vex3D temp_a = pv3d[a], temp_b = pv3d[b];
-        X3D_Vex2D dest_a, dest_b;
-    
-        if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, pv2d + a, pv2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z) != EDGE_INVISIBLE) {
-          x3d_displaylinelist_add(list, dest_a, pv3d[d].z, dest_b, pv3d[(d + 1) % poly->total_v].z, blue);
-        }
-      }
-    }
-  }
+  x3d_segment_render_textures(&context);
   
   
   x3d_displaylinelist_render(list, region);
