@@ -750,7 +750,10 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
         
         int16 y_index = out_v[0].y - dest->y_range.min;
         
-        x3d_assert(y_index >= dest->y_range.min);
+        //x3d_assert(y_index >= dest->y_range.min);
+        
+        if(y_index < dest->y_range.min)
+          y_index = 0;
         
         if(abs(out_v[0].x - dest->x_left[y_index]) < abs(out_v[0].x - dest->x_right[y_index])) {
           //printf("Left!\n");
@@ -780,9 +783,8 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
       }
     }
   }
-  else {
-    clip->really_close = close;
-  }
+  
+  clip->really_close = close;
   
   return X3D_FALSE;
 }

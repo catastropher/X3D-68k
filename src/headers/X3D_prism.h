@@ -97,4 +97,5 @@ void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b);
 void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest);
 void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, struct X3D_DisplayLineList* list, struct X3D_CameraObject* cam, X3D_Color color);
 void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, struct X3D_DisplayLineList* list, struct X3D_CameraObject* cam, X3D_Color color, struct X3D_RasterRegion* region);
+void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest);
 

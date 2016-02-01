@@ -28,6 +28,7 @@ typedef struct X3D_RenderManager {
   X3D_Stack stack;
   X3D_RasterRegion region;
   int16 near_z;
+  _Bool wireframe;
 } X3D_RenderManager;
 
 typedef struct X3D_DisplayLine {

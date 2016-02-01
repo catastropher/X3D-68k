@@ -173,7 +173,7 @@ void freelist_test() {
 }
 
 enum {
-  TEST_KEY_ENTER = X3D_KEY_0,
+  KEY_WIREFRAME = X3D_KEY_0,
   KEY_W = X3D_KEY_1,
   KEY_S = X3D_KEY_2,
   KEY_A = X3D_KEY_3,
@@ -194,6 +194,14 @@ enum {
 void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   static _Bool rec = X3D_FALSE;
+  
+  
+  if(x3d_key_down(KEY_WIREFRAME)) {
+    while(x3d_key_down(KEY_WIREFRAME))
+      x3d_read_keys();
+    
+    x3d_rendermanager_get()->wireframe = !x3d_rendermanager_get()->wireframe;
+  }
   
   if(x3d_key_down(KEY_0)) {
     x3d_rendermanager_get()->near_z++;
@@ -257,9 +265,6 @@ void engine_test_handle_keys(void) {
     x3d_raycaster_init(&caster, 0, cam->base.base.pos, dir);
     x3d_raycaster_cast(&caster);
     
-    while(x3d_key_down(TEST_KEY_ENTER)) {
-      x3d_read_keys();
-    }
     
     printf("Seg: %d, Face: %d, Pos: { %d, %d, %d }\n", x3d_segfaceid_seg(caster.hit_face),
       x3d_segfaceid_face(caster.hit_face), caster.hit_pos.x, caster.hit_pos.y, caster.hit_pos.z);
@@ -284,10 +289,6 @@ void engine_test_handle_keys(void) {
     
     x3d_raycaster_init(&caster, 0, cam->base.base.pos, dir);
     x3d_raycaster_cast(&caster);
-    
-    while(x3d_key_down(TEST_KEY_ENTER)) {
-      x3d_read_keys();
-    }
     
     printf("Seg: %d, Face: %d, Pos: { %d, %d, %d }\n", x3d_segfaceid_seg(caster.hit_face),
       x3d_segfaceid_face(caster.hit_face), caster.hit_pos.x, caster.hit_pos.y, caster.hit_pos.z);
@@ -436,7 +437,7 @@ void engine_test(void) {
   x3d_init(&init);
   
   // Set up key mapping
-  x3d_key_map_pc(TEST_KEY_ENTER, SDLK_RETURN);
+  x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, SDLK_w);
   x3d_key_map_pc(KEY_A, SDLK_a);
@@ -463,6 +464,7 @@ void engine_test(void) {
   x3d_prism3d_construct(prism, base_v, 400,  300, angle);
   
   x3d_rendermanager_get()->near_z = 10;
+  x3d_rendermanager_get()->wireframe = X3D_FALSE;
   
   X3D_Polygon3D p = {
     .v = alloca(1000)
@@ -479,12 +481,14 @@ void engine_test(void) {
   //uint16 id4 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id3, 1), 20);
   //uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 0), 20);
   //uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id5, 3), 20);
-  uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 400);
-  //uint16 id8 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 4), 100);
-  //uint16 id9 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 1), 450);
-  //uint16 id10 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 1), 100);
+  uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 4), 100);
+  uint16 id8 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 4), 100);
+  uint16 id9 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 1), 450);
+  uint16 id10 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 1), 100);
   
-  //uint16 id11 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 2000);
+  uint16 id11 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 1), 2000);
+  
+  uint16 id12 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, 0), 100);
   
   // Create a portal on one of the walls
   uint16 portal_base_v = 8;
@@ -534,10 +538,54 @@ void engine_test(void) {
   x3d_polygon3d_scale(&p, 0);
   x3d_prism3d_set_face(box_prism, 0, &p);
   
+  X3D_Prism3D* p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id12)))->prism;
+  
+  x3d_prism3d_get_face(p2, 1, &p);
+  x3d_polygon3d_scale(&p, 64);
+  x3d_prism3d_set_face(p2, 1, &p);
+  
+  
+  uint16 id13 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id12, 1), 400);
+  uint16 id14 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id13, 1), 200);
+  
+  p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id14)))->prism;
+  
+  x3d_prism3d_get_face(p2, 1, &p);
+  
+  X3D_Vex3D center;
+  x3d_prism3d_center(p2, &center);
+  x3d_polygon3d_rotate(&p, (X3D_Vex3D_angle256) { ANG_30, 0, 0 }, center);
+  x3d_prism3d_set_face(p2, 1, &p);
+  
+  
+  //==================
+  uint16 id15 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id14, 1), 200);
+  
+  p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id15)))->prism;
+  
+  x3d_prism3d_get_face(p2, 1, &p);
+  
+  x3d_prism3d_center(p2, &center);
+  x3d_polygon3d_rotate(&p, (X3D_Vex3D_angle256) { ANG_30, 0, 0 }, center);
+  x3d_prism3d_set_face(p2, 1, &p);
+  
+  //==================
+  uint16 id16 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id15, 1), 500);
+  
+  p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id16)))->prism;
+  
+  x3d_prism3d_get_face(p2, 1, &p);
+  
+  x3d_prism3d_center(p2, &center);
+  x3d_polygon3d_rotate(&p, (X3D_Vex3D_angle256) { ANG_30, 0, 0 }, center);
+  x3d_prism3d_set_face(p2, 1, &p);
+  
+  
   box->prism = box_prism;
   
   box->top = -100;
   box->bottom = 100;
+  
   
   
 #if 0

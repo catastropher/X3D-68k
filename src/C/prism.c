@@ -353,3 +353,18 @@ void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, X3
   }
 }
 
+void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest) {
+  uint16 i;
+  X3D_Vex3D_int32 sum = { 0, 0, 0 };
+  
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    sum.x += prism->v[i].x;
+    sum.y += prism->v[i].y;
+    sum.z += prism->v[i].z;
+  }
+  
+  dest->x = sum.x / (prism->base_v * 2);
+  dest->y = sum.y / (prism->base_v * 2);
+  dest->z = sum.z / (prism->base_v * 2);
+}
+

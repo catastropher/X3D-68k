@@ -243,4 +243,16 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
   //printf("%d %d %d\n", x.x, x.y, x.z);
 }
 
+void x3d_polygon3d_rotate(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex3D center) {
+  X3D_Mat3x3 mat;
+  x3d_mat3x3_construct(&mat, &angle);
+  
+  uint16 i;
+  for(i = 0; i < poly->total_v; ++i) {
+    X3D_Vex3D temp = x3d_vex3d_sub(poly->v + i, &center);
+    x3d_vex3d_int16_rotate(poly->v + i, &temp, &mat);
+    
+    poly->v[i] = x3d_vex3d_add(poly->v + i, &center);
+  }
+}
 

@@ -76,7 +76,7 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
     int16 dist_out = x3d_plane_dist(&face[i].plane, &out);
     
     
-    printf("dddd %d: in %d out[%d]\n", i, dist_in, dist_out);
+    //printf("dddd %d: in %d out[%d]\n", i, dist_in, dist_out);
     
     if(dist_in <= 0) {
       caster->inside = X3D_FALSE;

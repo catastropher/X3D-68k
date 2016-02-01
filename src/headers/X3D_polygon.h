@@ -41,6 +41,7 @@ void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle25
 
 void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D* dest);
 void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale);
+void x3d_polygon3d_rotate(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex3D center);
 
 static inline uint16 x3d_polygon3d_size(uint16 total_v) {
   return sizeof(X3D_Polygon3D) + total_v * sizeof(X3D_Vex3D);

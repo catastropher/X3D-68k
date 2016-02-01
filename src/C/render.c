@@ -27,6 +27,9 @@
 
 
 int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {  
+  if(x3d_rendermanager_get()->wireframe)
+    return value;
+  
   if(depth > max_depth)
     return 0;
   
@@ -235,11 +238,17 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   // Make sure we don't blow the stack from recursing too deep
   static int16 depth = 0;
   
+  if(x3d_rendermanager_get()->wireframe) {
+    if(seg->last_engine_step == step)
+      return;
+  }
+ 
   if(depth >= 16)
     return;
   
   ++depth;
   
+  seg->last_engine_step = step;
   
   // Select a color based on the id of the segment because I'm too lazy to implement
   // colored segments atm
@@ -291,7 +300,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
     int16 dist = x3d_plane_dist(&face[i].plane, &cam->pseduo_pos);
     
-    if(dist > 0) {
+    if(dist > 0 || renderman->wireframe) {
       if(x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0) {
         if(face[i].portal_seg_face != X3D_FACE_NONE) {
           void* stack_ptr = x3d_stack_save(&renderman->stack);
@@ -313,19 +322,22 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
           if(use_new) {
             portal = &r;
           }
-          else if(clip.really_close) {
+          else if(dist <= 10) {
             //printf("Really close!\n");
-            //portal = region;
-            portal = NULL;
+            portal = region;
           }
           else {
             portal = NULL;
           }
           
+          if(renderman->wireframe) {
+            portal = region;
+          }
+          
           if(portal) {
             uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
             
-            x3d_segment_render(seg_id, cam, color * 8, &r, step);
+            x3d_segment_render(seg_id, cam, color * 8, portal, step);
           }
           
           

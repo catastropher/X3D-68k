@@ -43,7 +43,7 @@ X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init) {
   x3d_allocmanager_init(60000);
   x3d_handlemanager_init(100);
   
-  x3d_segmentmanager_init(10, 2000);
+  x3d_segmentmanager_init(30, 30000);
   
   x3d_keymanager_get()->key_handler = x3d_dummy_void_callback;
   
