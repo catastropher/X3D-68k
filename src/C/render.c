@@ -227,6 +227,74 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
   }
 }
 
+typedef struct X3D_SegmentRenderContext {
+  X3D_UncompressedSegment* seg;
+  uint16 seg_id;
+  X3D_UncompressedSegmentFace* faces;
+  X3D_RenderManager* renderman;
+  X3D_RasterRegion* parent;
+  X3D_CameraObject* cam;
+  X3D_ClipContext* clip;
+  uint16 step;
+} X3D_SegmentRenderContext;
+
+void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
+  uint16 i;
+  
+  X3D_Prism3D* prism = &context->seg->prism;
+  
+  // Render the connecting segments
+  for(i = 0; i < x3d_prism3d_total_f(prism->base_v); ++i) {
+    int16 dist = x3d_plane_dist(&context->faces[i].plane, &context->cam->pseduo_pos);
+    
+    if(dist > 0 || context->renderman->wireframe) {
+      if(1 /*x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0*/) {
+        if(context->faces[i].portal_seg_face != X3D_FACE_NONE) {
+          void* stack_ptr = x3d_stack_save(&context->renderman->stack);
+          uint16 edge_index[prism->base_v + 1];
+          X3D_RasterRegion new_region;
+
+          
+          uint16 face_e = x3d_prism_face_edge_indexes(prism->base_v, i, edge_index);
+          
+          
+          X3D_RasterRegion r;
+          X3D_RasterRegion* portal;
+          
+          context->clip->edge_index = edge_index;
+          context->clip->total_edge_index = face_e;
+             
+          _Bool use_new = x3d_rasterregion_construct_clipped(context->clip, &r);
+          
+          if(use_new) {
+            portal = &r;
+          }
+          else if(dist <= 10) {
+            portal = context->parent;
+          }
+          else {
+            portal = NULL;
+          }
+          
+          if(context->renderman->wireframe) {
+            portal = context->parent;
+          }
+          
+          if(portal) {
+            uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
+            
+            x3d_segment_render(seg_id, context->cam, 0, portal, context->step);
+          }
+          
+          
+          
+          x3d_stack_restore(&context->renderman->stack, stack_ptr);
+        }
+      }
+    }
+  }
+}
+
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step  ) {
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
@@ -295,59 +363,20 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   x3d_clipcontext_generate_rasteredges(&clip, &renderman->stack);
 
-  // Render the connecting segments
-  for(i = 0; i < x3d_prism3d_total_f(seg->prism.base_v); ++i) {
-    int16 dist = x3d_plane_dist(&face[i].plane, &cam->pseduo_pos);
-    
-    if(dist > 0 || renderman->wireframe) {
-      if(x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0) {
-        if(face[i].portal_seg_face != X3D_FACE_NONE) {
-          void* stack_ptr = x3d_stack_save(&renderman->stack);
-          uint16 edge_index[prism->base_v + 1];
-          X3D_RasterRegion new_region;
-
-          
-          uint16 face_e = x3d_prism_face_edge_indexes(prism->base_v, i, edge_index);
-          
-          
-          X3D_RasterRegion r;
-          X3D_RasterRegion* portal;
-          
-          clip.edge_index = edge_index;
-          clip.total_edge_index = face_e;
-             
-          _Bool use_new = x3d_rasterregion_construct_clipped(&clip, &r);
-          
-          if(use_new) {
-            portal = &r;
-          }
-          else if(dist <= 10) {
-            //printf("Really close!\n");
-            portal = region;
-          }
-          else {
-            portal = NULL;
-          }
-          
-          if(renderman->wireframe) {
-            portal = region;
-          }
-          
-          if(portal) {
-            uint16 seg_id = x3d_segfaceid_seg(face[i].portal_seg_face);
-            
-            x3d_segment_render(seg_id, cam, color * 8, portal, step);
-          }
-          
-          
-          
-          x3d_stack_restore(&renderman->stack, stack_ptr);
-        }
-      }
-    }
-  }
+  X3D_SegmentRenderContext context = {
+    .seg = seg,
+    .seg_id = id,
+    .faces = face,
+    .renderman = renderman,
+    .parent = region,
+    .cam = cam,
+    .clip = &clip,
+    .step = step
+  };
   
   x3d_rasteredge_list_render(edges, total_e, list, color);
+  
+  x3d_segment_render_connecting_segments(&context);
   
   // Render any textures
   for(i = 0; i < prism->base_v + 2; ++i) {
