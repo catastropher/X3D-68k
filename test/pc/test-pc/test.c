@@ -413,7 +413,7 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
     case X3D_OBJECT_EVENT_FRAME:
 #if 1
       ++box->angle;
-      x3d_prism3d_construct(box->prism, 20, 50, 50, (X3D_Vex3D_angle256) { box->angle, box->angle, 0 });
+      //x3d_prism3d_construct(box->prism, 20, 50, 50, (X3D_Vex3D_angle256) { box->angle, box->angle, 0 });
       
       if(box->move_up) {
         if(pos.y > box->top) {
@@ -438,10 +438,43 @@ void boxobject_event_handler(X3D_ObjectBase* object, X3D_ObjectEvent event) {
   }
 }
 
+void polygon2d_add_x(X3D_Polygon2D* poly, int16 w, int16 h) {
+  int16 s_x = w / 6;
+  int16 s_y = h / 6;
+ 
+#if 1
+  x3d_polygon2d_add_point(poly, -w / 2, -h / 2);
+  x3d_polygon2d_add_point(poly, -w / 2 + s_x, -h / 2);
+  x3d_polygon2d_add_point(poly, 0, -s_y);
+  x3d_polygon2d_add_point(poly, w / 2 - s_x, -h / 2);
+  x3d_polygon2d_add_point(poly, w / 2, -h / 2);
+  x3d_polygon2d_add_point(poly, w / 2, -h / 2 + s_y);
+  x3d_polygon2d_add_point(poly, s_x / 2, s_y / 2);
+  
+  x3d_polygon2d_add_point(poly, w / 2, h / 2);
+  x3d_polygon2d_add_point(poly, w / 2, h / 2 + s_y);
+  x3d_polygon2d_add_point(poly, w / 2 - s_x, h / 2 + s_y);
+  x3d_polygon2d_add_point(poly, 0, s_y + s_y);
+  x3d_polygon2d_add_point(poly, -(w / 2 - s_x), h / 2 + s_y);
+  x3d_polygon2d_add_point(poly, -w / 2, h / 2 + s_y);
+  x3d_polygon2d_add_point(poly, -w / 2, h / 2);
+  x3d_polygon2d_add_point(poly, -s_x / 2, s_y / 2);
+  x3d_polygon2d_add_point(poly, -w / 2, -h / 2 + s_y);
+  
+#if 0
+  x3d_polygon2d_add_point(poly, w / 2, h / 2 + s_y);
+  x3d_polygon2d_add_point(poly, w / 2 - s_x , h / 2 + s_y);
+  x3d_polygon2d_add_point(poly, 0, s_y);
+  
+  x3d_polygon2d_add_point(poly, -w / 2, -h / 2 + s_y);
+#endif
+#endif
+}
+
 void engine_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 640,
-    .screen_h = 480,
+    .screen_w = 320,
+    .screen_h = 240,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
@@ -510,12 +543,13 @@ void engine_test(void) {
   };
   
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 30, 0);
+#if 0
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
   uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
   
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);
-  
+#endif
   
   //X3D_Color blue = x3d_rgb_to_color(0, 0, 255);
   //uint16 portal_blue = x3d_wallportal_add(x3d_segfaceid_create(0, 5), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, portal_poly, blue);
@@ -524,13 +558,6 @@ void engine_test(void) {
   
   
   
-  // Setup the camera
-  x3d_camera_init();
-  X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
-  
-  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, 0 };
-  cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
-  x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   
   
   
@@ -538,18 +565,6 @@ void engine_test(void) {
     .event_handler = boxobject_event_handler,
     .size = sizeof(X3D_BoxObject)
   };
-  
-  // Create a new box
-  x3d_object_create_type(1, &box_type);
-  X3D_Handle box_handle = x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
-  X3D_BoxObject* box = x3d_handle_deref(box_handle);
-  
-  X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(50));
-  x3d_prism3d_construct(box_prism, 20, 50, 50, (X3D_Vex3D_angle256) { ANG_180, 0, 0 });
-  
-  x3d_prism3d_get_face(box_prism, 0, &p);
-  x3d_polygon3d_scale(&p, 0);
-  x3d_prism3d_set_face(box_prism, 0, &p);
   
   X3D_Prism3D* p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id12)))->prism;
   
@@ -594,11 +609,64 @@ void engine_test(void) {
   x3d_prism3d_set_face(p2, 1, &p);
   
   
+  X3D_Polygon2D texture = {
+    .v = alloca(2000),
+    .total_v = 0
+  };
+  
+  X3D_Polygon3D texture3d = {
+    .v = alloca(2000)
+  };
+  
+  X3D_UncompressedSegment* ss = x3d_segmentmanager_get_internal(id);
+
+  int16 face_id = 8;
+  uint16 top_left_v = face_id - 2;
+  uint16 bottom_right_v = ((top_left_v + 1) % ss->prism.base_v) + ss->prism.base_v;
+  
+  X3D_Mat3x3 mat;
+
+  polygon2d_add_x(&texture, 125, 100);
+  
+  // Project the 2D polygon onto the wall
+  
+  X3D_Plane plane;
+  x3d_prism3d_get_face(&ss->prism, face_id, &p);
+  x3d_plane_construct(&plane, p.v, p.v + 1, p.v + 2);
+  
+  
+  x3d_polygon2d_to_polygon3d(
+    &texture,
+    &texture3d,
+    &plane,
+    ss->prism.v + top_left_v,
+    ss->prism.v + bottom_right_v,
+    &mat
+  );
+  
+  X3D_Handle h = x3d_handle_add(&texture3d);
+  
+  x3d_log(X3D_ERROR, "Handle: %d\n", h);
+  
+  x3d_uncompressedsegment_get_faces(ss)[face_id].texture = h;
+  
+#if 0  
   box->prism = box_prism;
+  
+  
   
   box->top = -100;
   box->bottom = 100;
+#endif
   
+  
+  // Setup the camera
+  x3d_camera_init();
+  X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
+  
+  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, 0 };
+  cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
+  x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   
   
 #if 0
@@ -610,6 +678,21 @@ void engine_test(void) {
   box2->prism = box_prism;
 #endif
   
+#if 0
+  // Create a new box
+  x3d_object_create_type(1, &box_type);
+  X3D_Handle box_handle = x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  X3D_BoxObject* box = x3d_handle_deref(box_handle);
+  
+  X3D_Prism3D* box_prism = alloca(x3d_prism3d_size(50));
+  x3d_prism3d_construct(box_prism, 20, 50, 50, (X3D_Vex3D_angle256) { ANG_180, 0, 0 });
+  
+  x3d_prism3d_get_face(box_prism, 0, &p);
+  x3d_polygon3d_scale(&p, 0);
+  x3d_prism3d_set_face(box_prism, 0, &p);
+  
+  box->prism = box_prism;
+#endif
   
   x3d_game_loop();
   
@@ -620,7 +703,6 @@ typedef struct Test {
   const char* name;
   void (*run)(void);
 } Test;
-
 
 int main() {
   x3d_log(X3D_INFO, "X3D manual tests for PC");

@@ -52,6 +52,10 @@ X3D_INTERNAL X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segmen
   seg->base.flags = X3D_SEGMENT_UNCOMPRESSED;
   seg->base.base_v = prism->base_v;
   
+  for(i = 0; i < seg->base.base_v + 2; ++i) {
+    face[i].texture = X3D_INVALID_HANDLE;
+  }
+  
   return seg;
 }
 

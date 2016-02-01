@@ -124,6 +124,9 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
       for(d = 0; d < x3d_prism3d_total_f(seg->base_v); ++d) {
         x3d_prism3d_get_face(&seg_manager->cache.entry[i].seg.prism, d, &poly);
         x3d_plane_construct(&face[d].plane, poly.v, poly.v + 1, poly.v + 2);
+        face[d].texture = x3d_uncompressedsegment_get_faces(((X3D_UncompressedSegment *)seg))[d].texture;
+        
+        printf("TEXTURE: %d\n", face[d].texture);
       }
       
       // Make it so no objects are in the segment

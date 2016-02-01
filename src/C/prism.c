@@ -284,7 +284,7 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
   X3D_Vex3D cam_pos = cam->pseduo_pos;
   //x3d_object_pos(cam, &cam_pos);
   
-  for(i = 0; i < 2; ++i) {//prism->base_v + 2; ++i) {
+  for(i = 0; i < prism->base_v + 2; ++i) {
     x3d_prism3d_get_face(prism, i, &poly);
     
     

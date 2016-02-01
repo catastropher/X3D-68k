@@ -25,7 +25,6 @@
 #include "X3D_collide.h"
 #include "X3D_wallportal.h"
 
-
 int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {  
   if(x3d_rendermanager_get()->wireframe)
     return value;
@@ -65,8 +64,8 @@ void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1,
   X3D_Vex2D v2 = { x2, y2 };
   
   if(x3d_rasterregion_clip_line(region, &renderman->stack, &v1, &v2)) {
-    X3D_Color new1 = x3d_color_scale_by_depth(color, depth1, 10, 1000);
-    X3D_Color new2 = x3d_color_scale_by_depth(color, depth2, 10, 1000);
+    X3D_Color new1 = x3d_color_scale_by_depth(color, depth1, 10, 1500);
+    X3D_Color new2 = x3d_color_scale_by_depth(color, depth2, 10, 1500);
     
     x3d_screen_draw_line_grad(v1.x, v1.y, v2.x, v2.y, new1, new2);
   }
@@ -350,10 +349,52 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   x3d_rasteredge_list_render(edges, total_e, list, color);
   
+  // Render any textures
+  for(i = 0; i < prism->base_v + 2; ++i) {
+    if(face[i].texture != X3D_INVALID_HANDLE) {
+      X3D_Polygon3D* poly = x3d_handle_deref(face[i].texture);
+      X3D_Vex3D center;
+      
+      //printf("Handle: %d\n", face[i].texture);
+      
+      X3D_Polygon3D p = {
+        .v = alloca(1000)
+      };
+      
+      x3d_prism3d_get_face(prism, i, &p);
+      x3d_polygon3d_center(&p, &center);
+      
+      X3D_Vex2D pv2d[poly->total_v];
+      X3D_Vex3D pv3d[poly->total_v];
+      
+      uint16 d;
+      for(d = 0; d < poly->total_v; ++d) {
+        pv3d[d] = x3d_vex3d_add(poly->v + d, &center);
+      }
+      
+      x3d_camera_transform_points(cam, pv3d, poly->total_v, pv3d, pv2d);
+      
+      for(d = 0; d < poly->total_v; ++d) {
+        X3D_Color blue = x3d_rgb_to_color(192, 0, 192);
+        
+        int16 a = d;
+        int16 b = (d + 1) % poly->total_v;
+    
+        X3D_Vex3D temp_a = pv3d[a], temp_b = pv3d[b];
+        X3D_Vex2D dest_a, dest_b;
+    
+        if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, pv2d + a, pv2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z) != EDGE_INVISIBLE) {
+          x3d_displaylinelist_add(list, dest_a, pv3d[d].z, dest_b, pv3d[(d + 1) % poly->total_v].z, blue);
+        }
+      }
+    }
+  }
+  
+  
   x3d_displaylinelist_render(list, region);
   
   // Render any objects that are in the segment
-  //x3d_segment_render_objects(seg, cam, list, region, step);
+  x3d_segment_render_objects(seg, cam, list, region, step);
   
   x3d_stack_restore(&renderman->stack, stack_save);
   

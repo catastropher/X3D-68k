@@ -93,6 +93,7 @@ typedef struct X3D_UncompressedSegmentFace {
   X3D_SegFaceID portal_seg_face;  ///< Face ID that the portal on the face is
                                   ///  connected to
   X3D_Plane plane;                ///< Plane equation of the face
+  X3D_Handle texture;
 } X3D_UncompressedSegmentFace;
 
 
