@@ -65,7 +65,7 @@
 
 #define ADDRESS(_a) ;
 
-fp16x16 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
+fp16x16 x3d_vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
   if(v1.y == v2.y)
     return 0;
   
@@ -101,13 +101,13 @@ void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_rasteredge_set_horizontal(X3D_RasterEdge* edge) {
+void x3d_rasteredge_set_horizontal_flag(X3D_RasterEdge* edge) {
   if(edge->rect.y_range.min == edge->rect.y_range.max) {
     edge->flags |= EDGE_HORIZONTAL;
   }
 }
 
-void x3d_rasteredge_set_invisible(X3D_RasterEdge* edge, X3D_Range region_y_range) {
+void x3d_rasteredge_set_invisible_flag(X3D_RasterEdge* edge, X3D_Range region_y_range) {
   if(!range_overlap(edge->rect.y_range, region_y_range)) {
     edge->flags |= EDGE_INVISIBLE;
   }
@@ -121,6 +121,10 @@ _Bool x3d_rasteredge_horizontal(X3D_RasterEdge* edge) {
   return edge->flags & EDGE_HORIZONTAL;
 }
 
+void x3d_rasteredge_set_y_range(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b) {
+  edge->rect.y_range = get_range(a->y, b->y);
+}
+
 _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16* slope, X3D_Range region_y_range) {
   edge->flags = 0;
   edge->x_data = NULL;
@@ -129,23 +133,34 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
   if(a->y > b->y)
     X3D_SWAP(*a, *b);
   
-  edge->rect.y_range = get_range(a->y, b->y);
+  x3d_rasteredge_set_y_range(edge, a, b);
   
-  x3d_rasteredge_set_horizontal(edge);
-  x3d_rasteredge_set_invisible(edge, region_y_range);
+  x3d_rasteredge_set_horizontal_flag(edge);
+  x3d_rasteredge_set_invisible_flag(edge, region_y_range);
+  
+  // This next section clips the raster edge against the line y=region_y_range.min.
+  // That way, we don't waste effort calculating values of the edge that are
+  // invisible. But, we only want to do this if 1) the line isn't invisible
+  // and 2) if the edge isn't horizontal (if the edge is visible and is horizontal,
+  // it can't possibly need to be clipped)
   
   if(x3d_rasteredge_invisible(edge))
     return X3D_FALSE;
   
-  if(!x3d_rasteredge_horizontal(edge)) {         // Only clip visible and non-horizontal edges
-    *slope = vertical_slope(*a, *b);
+  if(!x3d_rasteredge_horizontal(edge)) {
+    // Calculate the slope of the edge
+    *slope = x3d_vertical_slope(*a, *b);
     
+    // Clip the edge, if necessary
     if(a->y < region_y_range.min) {
       x3d_intersect_line_with_horizontal(*slope, a, region_y_range.min);
+      
+      // Update the minumum y of the edge, since it was just clipped
       edge->rect.y_range.min = region_y_range.min;
     }
     
-    // Clamp the max y
+    // Clamp the max y of the edge, which is either the max y of the region or the max
+    // y of the edge (it should be the minumum of the two)
     edge->rect.y_range.max = b->y = X3D_MIN(edge->rect.y_range.max, region_y_range.max);
   }
   
@@ -155,7 +170,6 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
 #define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->rect.y_range.min])
  
 void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range, int16 depth_a, int16 depth_b) {
-  fp16x16 slope;
   
   edge->start.x = a.x;
   edge->start.y = a.y;
@@ -165,13 +179,13 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
   edge->end.y = b.y;
   edge->end.z = depth_b;
   
-  //ASSERT(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT);
-  
-  if(!(region_y_range.min >= 0 && region_y_range.max < LCD_HEIGHT)) {
-    x3d_error("range min: %d, %d", region_y_range.min, region_y_range.max);
-  }
+  // Check to make sure we have a valid "parent" raster region y range
+  x3d_assert(region_y_range.min >= 0 && region_y_range.max < x3d_screenmanager_get()->h);
+
   
   //printf("a: %d, b: %d\n", a.x, b.x);
+  
+  fp16x16 slope;
   
   if(x3d_rasteredge_clip(edge, &a, &b, &slope, region_y_range)) {     // Only generate the edge if it's (potentially) visible
     fp16x16 x = ((int32)a.x) * 65536L;
