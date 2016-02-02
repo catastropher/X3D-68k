@@ -41,29 +41,11 @@
 #define INT16_MIN -32767
 #endif
 
-#define ASSERT(_s) x3d_assert(_s); //{if(!(_s)) x3d_error("Assert failed! %s (%s %d)", #_s, __FUNCTION__, __LINE__);}
-#define ASSERT_RANGE(_a, _min, _max) ASSERT(_a >= _min && _a <= _max);
-
-#define ASSERT_EQUAL_INT16(_a, _b) ; // { if((_a) != (_b)) x3d_error("Assert failed (line %d)! %s == %s (%d, %d)", __LINE__, #_a, #_b, (int16)(_a), (int16)(_b)); }
-#define ASSERT_EQUAL_INT32(_a, _b) ; // { if((_a) != (_b)) x3d_error("Assert failed (line %d)! %s == %s (%ld, %ld)", __LINE__, #_a, #_b, (int32)(_a), (int32)(_b)); }
 
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
-#if 0
-#define ENTER() printf("enter %d\n", __LINE__);
-#define EXIT() printf("Exit\n");
-#else
-
-#define ENTER() ;
-#define EXIT() ;
-
-#endif
 
 
-#define ADDRESS(_a) ;
+
 
 fp16x16 x3d_vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
   if(v1.y == v2.y)
@@ -191,10 +173,10 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
     int16 y = a.y;
     int16 height = b.y - a.y + 1;
     
-    ASSERT(parent->rect.y_range.min <= parent->rect.y_range.max);
-    ASSERT(in_range(SCREEN_Y_RANGE, height - 1));
-    ASSERT(in_range(parent->rect.y_range, a.y));
-    ASSERT(in_range(parent->rect.y_range, b.y));
+    x3d_assert(parent->rect.y_range.min <= parent->rect.y_range.max);
+    x3d_assert(in_range(SCREEN_Y_RANGE, height - 1));
+    x3d_assert(in_range(parent->rect.y_range, a.y));
+    x3d_assert(in_range(parent->rect.y_range, b.y));
     
     // Allocate space for the values
     edge->x_data = x3d_stack_alloc(stack, height * 2);
@@ -304,7 +286,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     }
   }
   
-  ASSERT(total_out_v == 0 || total_out_v == 2);
+  x3d_assert(total_out_v == 0 || total_out_v == 2);
   
   if(total_out_v != 0 && e != &temp_edge) {
     
@@ -434,10 +416,10 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   int16* region_left = region->x_left;
   int16* region_right = region->x_right;
   
-  ASSERT(region_left);
-  ASSERT(region_right);
-  ASSERT(portal_left);
-  ASSERT(region_right);
+  x3d_assert(region_left);
+  x3d_assert(region_right);
+  x3d_assert(portal_left);
+  x3d_assert(region_right);
   
   int16 y = region->rect.y_range.min;
 
@@ -450,15 +432,7 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
     x3d_error("y = %d, %d", y, region->rect.y_range.max);
   }
   
-  ASSERT_RANGE(y, region->rect.y_range.min, region->rect.y_range.max);
-
-#if 0  
-  x3d_assert(((size_t)region & 1) == 0);
-  x3d_assert(((size_t)region->x_left & 1) == 0);
-  x3d_assert(((size_t)region->x_right & 1) == 0);
-  x3d_assert(((size_t)portal_left & 1) == 0);
-  x3d_assert(((size_t)portal_right & 1) == 0);
-#endif
+  x3d_assert_range(y, region->rect.y_range.min, region->rect.y_range.max + 1);
   
   // Skip fully clipped spans
   while(y <= region->rect.y_range.max && !CLIP()) {
@@ -480,7 +454,6 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   
   region->rect.y_range.min = y;
   
-  ENTER();
   while(y <= region->rect.y_range.max && CLIP()) {
     ++y;
     ++portal_left;
@@ -488,7 +461,6 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
     ++region_left;
     ++region_right;
   }
-  EXIT();
   
   region->rect.y_range.max = y - 1;
   
