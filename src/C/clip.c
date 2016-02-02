@@ -93,6 +93,20 @@ void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y
   start->y = y;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Checks if an edge is horizontal; if so, it sets the X3D_EDGE_HORIZONTAL
+///     flag.
+///
+/// @param edge - edge
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_rasteredge_check_horizontal(X3D_RasterEdge* edge) {
+  if(edge->rect.y_range.min == edge->rect.y_range.max) {
+    edge->flags |= EDGE_HORIZONTAL;
+  }
+}
+
 _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16* slope, X3D_Range region_y_range) {
   edge->flags = 0;
   edge->x_data = NULL;
@@ -104,9 +118,7 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
   
   edge->rect.y_range = get_range(a->y, b->y);
   
-  if(edge->rect.y_range.min == edge->rect.y_range.max) {
-    edge->flags |= EDGE_HORIZONTAL;
-  }
+  x3d_rasteredge_check_horizontal(edge);
   
   if(!range_overlap(edge->rect.y_range, region_y_range)) {
     //printf("Invisible!\n");
