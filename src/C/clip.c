@@ -100,17 +100,12 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
   // Swap points if out of order vertically
   if(a->y > b->y) {
     X3D_SWAP(*a, *b);
-    edge->flags |= EDGE_V_SWAPPED;
   }
   
   edge->rect.y_range = get_range(a->y, b->y);
   
   if(edge->rect.y_range.min == edge->rect.y_range.max) {
     edge->flags |= EDGE_HORIZONTAL;
-    
-    if(a->x > b->x) {
-      edge->flags |= EDGE_V_SWAPPED;
-    }
   }
   
   if(!range_overlap(edge->rect.y_range, region_y_range)) {
