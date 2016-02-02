@@ -29,13 +29,12 @@ static inline _Bool in_range(X3D_Range r, int16 val) {
   return val >= r.min && val <= r.max;
 }
 
+typedef struct X3D_BoundRect {
+  X3D_Range x_range;
+  X3D_Range y_range;
+} X3D_BoundRect;
 
 typedef struct X3D_RasterEdge {  
-  // int16 min_y;
-  // int16 min_x;
-  // int16 max_y;
-  // int16 max_x;
-  // int16 start_y;
   X3D_Vex3D start;
   X3D_Vex3D end;
   
@@ -47,8 +46,7 @@ typedef struct X3D_RasterEdge {
   
   int16* x_data;
   
-  X3D_Range x_range;
-  X3D_Range y_range;
+  X3D_BoundRect rect; 
   
 } X3D_RasterEdge;
 

@@ -16,6 +16,8 @@
 #include "X3D_common.h"
 #include "X3D_vector.h"
 
+#if 0
+
 typedef struct X3D_BoundRect {
   X3D_Vex2D v[2];
 } X3D_BoundRect;
@@ -46,4 +48,6 @@ typedef struct X3D_ClipRegion {
     uint8* x_right_small;
   };
 } X3D_ClipRegion;
+
+#endif
 

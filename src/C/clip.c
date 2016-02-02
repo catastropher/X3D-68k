@@ -106,9 +106,9 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
     edge->flags |= EDGE_V_SWAPPED;
   }
   
-  edge->y_range = get_range(a->y, b->y);
+  edge->rect.y_range = get_range(a->y, b->y);
   
-  if(edge->y_range.min == edge->y_range.max) {
+  if(edge->rect.y_range.min == edge->rect.y_range.max) {
     edge->flags |= EDGE_HORIZONTAL;
     
     if(a->x > b->x) {
@@ -116,7 +116,7 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
     }
   }
   
-  if(!range_overlap(edge->y_range, region_y_range)) {
+  if(!range_overlap(edge->rect.y_range, region_y_range)) {
     //printf("Invisible!\n");
     edge->flags |= EDGE_INVISIBLE;
     
@@ -128,17 +128,17 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
     
     if(a->y < region_y_range.min) {
       x3d_intersect_line_with_horizontal(*slope, a, region_y_range.min);
-      edge->y_range.min = region_y_range.min;
+      edge->rect.y_range.min = region_y_range.min;
     }
     
     // Clamp the max y
-    edge->y_range.max = b->y = X3D_MIN(edge->y_range.max, region_y_range.max);
+    edge->rect.y_range.max = b->y = X3D_MIN(edge->rect.y_range.max, region_y_range.max);
   }
   
   return X3D_TRUE;
 }
 
-#define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->y_range.min])
+#define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->rect.y_range.min])
  
 void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range, int16 depth_a, int16 depth_b) {
   fp16x16 slope;
@@ -181,7 +181,7 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
     b.x = (x - slope) >> 16;
   }
   
-  edge->x_range = get_range(a.x, b.x); 
+  edge->rect.x_range = get_range(a.x, b.x); 
 }
 
 #define EDGE(_edge) raster_edge[edge_index[_edge]]
@@ -207,13 +207,13 @@ void draw_edge(X3D_RasterEdge* edge) {
   
   
   if(edge->flags & EDGE_HORIZONTAL) {
-    FastDrawHLine(LCD_MEM, edge->x_range.min, edge->x_range.max, edge->y_range.min, A_XOR);
+    FastDrawHLine(LCD_MEM, edge->x_range.min, edge->x_range.max, edge->rect.y_range.min, A_XOR);
   }
   else {
-    int16 y = edge->y_range.min;
+    int16 y = edge->rect.y_range.min;
     
-    while(y <= edge->y_range.max) {
-      DrawPix(edge->x_data[y - edge->y_range.min], y, A_XOR);
+    while(y <= edge->rect.y_range.max) {
+      DrawPix(edge->x_data[y - edge->rect.y_range.min], y, A_XOR);
       ++y;
     }
   }
@@ -246,12 +246,12 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     e = &EDGE(edge);
     
     if(!(e->flags & EDGE_INVISIBLE)) {
-      int16* left = region->x_left + e->y_range.min;
-      int16* right = region->x_right + e->y_range.min;
+      int16* left = region->x_left + e->rect.y_range.min;
+      int16* right = region->x_right + e->rect.y_range.min;
       
       if(e->flags & EDGE_HORIZONTAL) {
-        if(e->x_range.min < *left)    *left = e->x_range.min;
-        if(e->x_range.max > *right)   *right = e->x_range.max;
+        if(e->rect.x_range.min < *left)    *left = e->rect.x_range.min;
+        if(e->rect.x_range.max > *right)   *right = e->rect.x_range.max;
       }
       else {
         int16 i;
@@ -259,7 +259,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
         
         //draw_edge(e);
       
-        for(i = e->y_range.min; i <= e->y_range.max; ++i) {
+        for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
           if(*x < *left)    *left = *x;
           if(*x > *right)   *right = *x;
           
@@ -269,8 +269,8 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
         }
       }
       
-      region->y_range.min = X3D_MIN(region->y_range.min, e->y_range.min);
-      region->y_range.max = X3D_MAX(region->y_range.max, e->y_range.max);
+      region->y_range.min = X3D_MIN(region->y_range.min, e->rect.y_range.min);
+      region->y_range.max = X3D_MAX(region->y_range.max, e->rect.y_range.max);
     }
     else {
       //printf("Invisible!\n");
@@ -545,8 +545,8 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   
   x3d_rasteredge_generate(stack, &edge, *start, *end, region->y_range, 0, 0);
   
-  int16 y_min = X3D_MAX(region->y_range.min, edge.y_range.min);
-  int16 y_max = X3D_MIN(region->y_range.max, edge.y_range.max);
+  int16 y_min = X3D_MAX(region->y_range.min, edge.rect.y_range.min);
+  int16 y_max = X3D_MIN(region->y_range.max, edge.rect.y_range.max);
   
   if(edge.flags & EDGE_INVISIBLE || y_min > y_max) {
     x3d_stack_restore(stack, stack_ptr);
@@ -581,7 +581,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   for(i = y_min; i <= y_max; ++i) {
     left = region->x_left[i - region->y_range.min];
     right = region->x_right[i - region->y_range.min];
-    x = edge.x_data[i - edge.y_range.min];
+    x = edge.x_data[i - edge.rect.y_range.min];
     
     
     if(x >= left && x <= right) {
@@ -600,7 +600,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   }
   else {
     X3D_Vex2D in = { x, i };
-    X3D_Vex2D out = { edge.x_data[i - 1 - edge.y_range.min], i - 1 };
+    X3D_Vex2D out = { edge.x_data[i - 1 - edge.rect.y_range.min], i - 1 };
     
     bin_search(in, out, start, region);
   }
@@ -668,17 +668,17 @@ void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_V
   
   if(edge->flags & EDGE_HORIZONTAL) {
     start->x = edge->x_range.min;
-    start->y = edge->y_range.min;
+    start->y = edge->rect.y_range.min;
     
     end->x = edge->x_range.max;
-    end->y = edge->y_range.min;
+    end->y = edge->rect.y_range.min;
   }
   else {
     start->x = edge->x_data[0];
-    start->y = edge->y_range.min;
+    start->y = edge->rect.y_range.min;
     
-    end->x = edge->x_data[edge->y_range.max - edge->y_range.min];
-    end->y = edge->y_range.max;
+    end->x = edge->x_data[edge->rect.y_range.max - edge->rect.y_range.min];
+    end->y = edge->rect.y_range.max;
   }
   
   if(edge->flags & EDGE_V_SWAPPED)
