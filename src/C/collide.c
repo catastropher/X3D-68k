@@ -35,7 +35,7 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
   /// @todo Add bounding sphere to segment cache
   /// Until then, a max radius of 500 is used
   X3D_BoundSphere temp_sphere = {
-    .r = 2000,
+    .r = 3000,
   };
   
   X3D_BoundSphere* sphere = &temp_sphere;

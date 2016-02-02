@@ -72,13 +72,23 @@ fp16x16 vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
   return (((int32)(v2.x - v1.x)) << 16) / (v2.y - v1.y);
 }
 
-void intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y) {
+///////////////////////////////////////////////////////////////////////////////
+/// Finds the intersection point between a line and a horizontal line.
+///
+/// @param slope  - slope of the line
+/// @param start  - starting position of the line
+/// @param y      - y position of the horizontal line
+///
+/// @return Nothing.
+/// @note The intersection point is written back to start.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y) {
   //x3d_assert((slope >> 16) < 128);    // To prevent overflow when converting to fp8x8 for the slope
   
   int16 dy = y - start->y;
   int16 slope_8x8 = slope >> 8;
 
-  /// @todo Optomize to not use 64 bit multiplication
+  /// @todo Optomize to not use 64 bit multiplication (maybe using a binary search?)
   start->x = start->x + (((int64)dy * slope) >> 16);
   start->y = y;
 }
@@ -117,7 +127,7 @@ _Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16*
     *slope = vertical_slope(*a, *b);
     
     if(a->y < region_y_range.min) {
-      intersect_line_with_horizontal(*slope, a, region_y_range.min);
+      x3d_intersect_line_with_horizontal(*slope, a, region_y_range.min);
       edge->y_range.min = region_y_range.min;
     }
     
