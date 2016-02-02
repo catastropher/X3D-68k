@@ -169,7 +169,7 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
 
 #define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->rect.y_range.min])
  
-void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_Range region_y_range, int16 depth_a, int16 depth_b) {
+void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_RasterRegion* parent, int16 depth_a, int16 depth_b) {
   
   edge->start.x = a.x;
   edge->start.y = a.y;
@@ -180,22 +180,21 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
   edge->end.z = depth_b;
   
   // Check to make sure we have a valid "parent" raster region y range
-  x3d_assert(region_y_range.min >= 0 && region_y_range.max < x3d_screenmanager_get()->h);
+  x3d_assert(parent->rect.y_range.min >= 0 && parent->rect.y_range.max < x3d_screenmanager_get()->h);
 
-  
-  //printf("a: %d, b: %d\n", a.x, b.x);
   
   fp16x16 slope;
   
-  if(x3d_rasteredge_clip(edge, &a, &b, &slope, region_y_range)) {     // Only generate the edge if it's (potentially) visible
+  // Only generate the edge if it's (potentially) visible
+  if(x3d_rasteredge_clip(edge, &a, &b, &slope, parent->rect.y_range)) {
     fp16x16 x = ((int32)a.x) * 65536L;
     int16 y = a.y;
     int16 height = b.y - a.y + 1;
     
-    ASSERT(region_y_range.min <= region_y_range.max);
+    ASSERT(parent->rect.y_range.min <= parent->rect.y_range.max);
     ASSERT(in_range(SCREEN_Y_RANGE, height - 1));
-    ASSERT(in_range(region_y_range, a.y));
-    ASSERT(in_range(region_y_range, b.y));
+    ASSERT(in_range(parent->rect.y_range, a.y));
+    ASSERT(in_range(parent->rect.y_range, b.y));
     
     // Allocate space for the values
     edge->x_data = x3d_stack_alloc(stack, height * 2);
@@ -389,9 +388,18 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   uint16 edge_index[total_v];
   uint16 i;
   
+  // Create a fake parent region that takes up the whole screen
+  X3D_RasterRegion fake_parent_region = {
+    .rect = {
+      .y_range = {
+        0, x3d_screenmanager_get()->h - 1
+      }
+    }
+  };
+  
   for(i = 0; i < total_v; ++i) {
     int16 next = (i + 1) % total_v;
-    x3d_rasteredge_generate(stack, edges + i, v[i], v[next], (X3D_Range) { 0, LCD_HEIGHT - 1 }, 0, 0);
+    x3d_rasteredge_generate(stack, edges + i, v[i], v[next], &fake_parent_region, 0, 0);
     
     //printf("es: %d, ee: %d\n", edges[i].min_y, edges[i].max_y);
     
@@ -571,7 +579,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
   
-  x3d_rasteredge_generate(stack, &edge, *start, *end, region->rect.y_range, 0, 0);
+  x3d_rasteredge_generate(stack, &edge, *start, *end, region, 0, 0);
   
   int16 y_min = X3D_MAX(region->rect.y_range.min, edge.rect.y_range.min);
   int16 y_max = X3D_MIN(region->rect.y_range.max, edge.rect.y_range.max);
@@ -766,7 +774,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     /// FIXME please!
 #if 1
     x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_e,
-      out_v[0], out_v[1], clip->parent->rect.y_range, depth[0], depth[1]);
+      out_v[0], out_v[1], clip->parent, depth[0], depth[1]);
     
     
     //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);

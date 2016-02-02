@@ -249,7 +249,7 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
     
     if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
       //x3d_displaylinelist_add(list, va, v3d[a].z, vb, v3d[b].z, color);
-      x3d_rasteredge_generate(&renderman->stack, edge + i, va, vb, region->rect.y_range, v3d[a].z, v3d[b].z);
+      x3d_rasteredge_generate(&renderman->stack, edge + i, va, vb, region, v3d[a].z, v3d[b].z);
     }
     else {
       edge[i].flags |= EDGE_INVISIBLE;
