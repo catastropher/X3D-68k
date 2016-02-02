@@ -158,8 +158,20 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
 
 #define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->rect.y_range.min])
 
-
-void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_RasterRegion* parent, int16 depth_a, int16 depth_b) {
+///////////////////////////////////////////////////////////////////////////////
+/// Generates a raster edge from two endpoints.
+///
+/// @param edge     - edge
+/// @param a        - first vertex
+/// @param b        - second vertex
+/// @param parent   - parent clipping region that the edge is inside of
+/// @param depth_a  - depth of the first vertex (after transformed to be
+///     relative to the camera)
+/// @param depth_b  - depth of the second vertex (after transformed to be)
+///     relative to the camera
+/// @param stack    - stack to allocate x values on
+///////////////////////////////////////////////////////////////////////////////
+void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_RasterRegion* parent, int16 depth_a, int16 depth_b, X3D_Stack* stack) {
   // Set start/end endpoints before clipping, as we want the original points.
   // Note that the Z component is the depth of the point after it was transformed
   // relative to the camera. It's not used directly by anything here, but is useful
@@ -175,12 +187,14 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
   edge->flags = 0;
   edge->x_data = NULL;
   
+  
+  
   // Swap points if out of order vertically
   if(a.y > b.y)
     X3D_SWAP(a, b);
   
+  // Set some flags and the y range for the edge
   x3d_rasteredge_set_y_range(edge, &a, &b);
-  
   x3d_rasteredge_set_horizontal_flag(edge);
   x3d_rasteredge_set_invisible_flag(edge, parent->rect.y_range);
   
@@ -197,6 +211,7 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
     int16 y = a.y;                          // Current y position
     int16 height = b.y - a.y + 1;           // Height of the edge
     
+    // More checks to prevent invalid clipping
     x3d_assert(in_range(SCREEN_Y_RANGE, height - 1));
     x3d_assert(in_range(parent->rect.y_range, a.y));
     x3d_assert(in_range(parent->rect.y_range, b.y));
@@ -214,6 +229,9 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
     b.x = (x - slope) >> 16;
   }
 
+  // The x range has to be set after clipping because b.x may have been updated
+  // by the clip (b hold either the real end of the edge or where it exits the
+  // region vertically)
   x3d_rasteredge_set_x_range(edge, &a, &b);
 }
 
@@ -230,8 +248,8 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   
   int16 i;
   for(i = 0; i < LCD_HEIGHT; ++i) {
-    region->x_left[i] = 1000;//INT16_MAX;
-    region->x_right[i] = -1000;//INT16_MIN;
+    region->x_left[i] = INT16_MAX;
+    region->x_right[i] = INT16_MIN;
   }
   
   //printf("total_e: %d\n", total_e);
@@ -373,7 +391,7 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   
   for(i = 0; i < total_v; ++i) {
     int16 next = (i + 1) % total_v;
-    x3d_rasteredge_generate(stack, edges + i, v[i], v[next], &fake_parent_region, 0, 0);
+    x3d_rasteredge_generate(edges + i, v[i], v[next], &fake_parent_region, 0, 0, stack);
     
     //printf("es: %d, ee: %d\n", edges[i].min_y, edges[i].max_y);
     
@@ -543,7 +561,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
   
-  x3d_rasteredge_generate(stack, &edge, *start, *end, region, 0, 0);
+  x3d_rasteredge_generate(&edge, *start, *end, region, 0, 0, stack);
   
   int16 y_min = X3D_MAX(region->rect.y_range.min, edge.rect.y_range.min);
   int16 y_max = X3D_MIN(region->rect.y_range.max, edge.rect.y_range.max);
@@ -737,8 +755,8 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   if(total_out_v == 2) { 
     /// FIXME please!
 #if 1
-    x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_e,
-      out_v[0], out_v[1], clip->parent, depth[0], depth[1]);
+    x3d_rasteredge_generate(clip->edges + clip->total_e,
+      out_v[0], out_v[1], clip->parent, depth[0], depth[1], &renderman->stack);
     
     
     //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
