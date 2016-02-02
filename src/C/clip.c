@@ -93,12 +93,9 @@ void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y
   start->y = y;
 }
 
-_Bool clip_rasteredge(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16* slope, X3D_Range region_y_range) {
+_Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16* slope, X3D_Range region_y_range) {
   edge->flags = 0;
   edge->x_data = NULL;
-  
-  edge->start_x = a->x;
-  edge->end_x = b->x;
   
   // Swap points if out of order vertically
   if(a->y > b->y) {
@@ -159,7 +156,7 @@ void x3d_rasteredge_generate(X3D_Stack* stack, X3D_RasterEdge* edge, X3D_Vex2D a
   
   //printf("a: %d, b: %d\n", a.x, b.x);
   
-  if(clip_rasteredge(edge, &a, &b, &slope, region_y_range)) {     // Only generate the edge if it's (potentially) visible
+  if(x3d_rasteredge_clip(edge, &a, &b, &slope, region_y_range)) {     // Only generate the edge if it's (potentially) visible
     fp16x16 x = ((int32)a.x) * 65536L;
     int16 y = a.y;
     int16 height = b.y - a.y + 1;

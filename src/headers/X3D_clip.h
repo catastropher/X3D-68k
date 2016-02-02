@@ -37,11 +37,7 @@ typedef struct X3D_BoundRect {
 typedef struct X3D_RasterEdge {  
   X3D_Vex3D start;
   X3D_Vex3D end;
-  
-  
-  int16 start_x;
-  int16 end_x;
-  
+
   uint8 flags;
   
   int16* x_data;
