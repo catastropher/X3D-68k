@@ -101,10 +101,24 @@ void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_rasteredge_check_horizontal(X3D_RasterEdge* edge) {
+void x3d_rasteredge_set_horizontal(X3D_RasterEdge* edge) {
   if(edge->rect.y_range.min == edge->rect.y_range.max) {
     edge->flags |= EDGE_HORIZONTAL;
   }
+}
+
+void x3d_rasteredge_set_invisible(X3D_RasterEdge* edge, X3D_Range region_y_range) {
+  if(!range_overlap(edge->rect.y_range, region_y_range)) {
+    edge->flags |= EDGE_INVISIBLE;
+  }
+}
+
+_Bool x3d_rasteredge_invisible(X3D_RasterEdge* edge) {
+  return edge->flags & EDGE_INVISIBLE;
+}
+
+_Bool x3d_rasteredge_horizontal(X3D_RasterEdge* edge) {
+  return edge->flags & EDGE_HORIZONTAL;
 }
 
 _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16x16* slope, X3D_Range region_y_range) {
@@ -112,22 +126,18 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
   edge->x_data = NULL;
   
   // Swap points if out of order vertically
-  if(a->y > b->y) {
+  if(a->y > b->y)
     X3D_SWAP(*a, *b);
-  }
   
   edge->rect.y_range = get_range(a->y, b->y);
   
-  x3d_rasteredge_check_horizontal(edge);
+  x3d_rasteredge_set_horizontal(edge);
+  x3d_rasteredge_set_invisible(edge, region_y_range);
   
-  if(!range_overlap(edge->rect.y_range, region_y_range)) {
-    //printf("Invisible!\n");
-    edge->flags |= EDGE_INVISIBLE;
-    
+  if(x3d_rasteredge_invisible(edge))
     return X3D_FALSE;
-  }
   
-  if(!(edge->flags & EDGE_HORIZONTAL)) {         // Only clip visible and non-horizontal edges
+  if(!x3d_rasteredge_horizontal(edge)) {         // Only clip visible and non-horizontal edges
     *slope = vertical_slope(*a, *b);
     
     if(a->y < region_y_range.min) {
