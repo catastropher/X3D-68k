@@ -249,8 +249,8 @@ void draw_edge(X3D_RasterEdge* edge) {
 }
 
 _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
-  region->y_range.min = INT16_MAX;
-  region->y_range.max = INT16_MIN;
+  region->rect.y_range.min = INT16_MAX;
+  region->rect.y_range.max = INT16_MIN;
   
   region->x_left = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16));
   region->x_right = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16));
@@ -297,8 +297,8 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
         }
       }
       
-      region->y_range.min = X3D_MIN(region->y_range.min, e->rect.y_range.min);
-      region->y_range.max = X3D_MAX(region->y_range.max, e->rect.y_range.max);
+      region->rect.y_range.min = X3D_MIN(region->rect.y_range.min, e->rect.y_range.min);
+      region->rect.y_range.max = X3D_MAX(region->rect.y_range.max, e->rect.y_range.max);
     }
     else {
       //printf("Invisible!\n");
@@ -317,7 +317,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
 //               EDGE(2).y_range.min,EDGE(2).y_range.max,
 //               EDGE(3).y_range.min,EDGE(3).y_range.max);
     
-    //x3d_rasteredge_generate(stack, &temp_edge, out_v[0], out_v[1], region->y_range);
+    //x3d_rasteredge_generate(stack, &temp_edge, out_v[0], out_v[1], region->rect.y_range);
     
     //x3d_error("Pos: {%d, %d} - {%d, %d}", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y);
     
@@ -327,14 +327,14 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     //goto add_edge;
   }
   
-  //printf("Min: %d, %d\n", region->y_range.min, region->y_range.max);
+  //printf("Min: %d, %d\n", region->rect.y_range.min, region->rect.y_range.max);
   
   x3d_assert(((size_t)region->x_left & 1) == 0);
   x3d_assert(((size_t)region->x_right & 1) == 0);
   
-  if(region->y_range.min <= region->y_range.max) {
-    region->x_left += region->y_range.min;
-    region->x_right += region->y_range.min;
+  if(region->rect.y_range.min <= region->rect.y_range.max) {
+    region->x_left += region->rect.y_range.min;
+    region->x_right += region->rect.y_range.min;
     return X3D_TRUE;
   }
   
@@ -343,7 +343,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
 
 void rasterize_rasterregion(X3D_RasterRegion* region, void* screen, uint16 color) {
 #if 0
-  int16 y = region->y_range.min;
+  int16 y = region->rect.y_range.min;
   
   //return;
 
@@ -356,12 +356,12 @@ void rasterize_rasterregion(X3D_RasterRegion* region, void* screen, uint16 color
     GrayDrawSpan_BLACK_R
   }[color];
   
-  printf("y: %d, %d\n", region->y_range.min, region->y_range.max);
+  printf("y: %d, %d\n", region->rect.y_range.min, region->rect.y_range.max);
   
-  while(y <= region->y_range.max) {
+  while(y <= region->rect.y_range.max) {
     
     
-    render_span(region->x_left[y - region->y_range.min], region->x_right[y - region->y_range.min], span);
+    render_span(region->x_left[y - region->rect.y_range.min], region->x_right[y - region->rect.y_range.min], span);
     
     span += LCD_WIDTH / 8;
     
@@ -420,8 +420,8 @@ _Bool clip_span(int16 portal_left, int16 portal_right, int16* span_left, int16* 
 }
 
 _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* region) {
-  int16* portal_left = portal->x_left + region->y_range.min - portal->y_range.min;
-  int16* portal_right = portal->x_right + region->y_range.min - portal->y_range.min;
+  int16* portal_left = portal->x_left + region->rect.y_range.min - portal->rect.y_range.min;
+  int16* portal_right = portal->x_right + region->rect.y_range.min - portal->rect.y_range.min;
   
   int16* region_left = region->x_left;
   int16* region_right = region->x_right;
@@ -431,7 +431,7 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   ASSERT(portal_left);
   ASSERT(region_right);
   
-  int16 y = region->y_range.min;
+  int16 y = region->rect.y_range.min;
 
   //return X3D_FALSE;
   
@@ -439,10 +439,10 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   //ASSERT(y >= 0 && y < LCD_HEIGHT);
   
   if(y < 0 || y >= LCD_HEIGHT) {
-    x3d_error("y = %d, %d", y, region->y_range.max);
+    x3d_error("y = %d, %d", y, region->rect.y_range.max);
   }
   
-  ASSERT_RANGE(y, region->y_range.min, region->y_range.max);
+  ASSERT_RANGE(y, region->rect.y_range.min, region->rect.y_range.max);
 
 #if 0  
   x3d_assert(((size_t)region & 1) == 0);
@@ -453,7 +453,7 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
 #endif
   
   // Skip fully clipped spans
-  while(y <= region->y_range.max && !CLIP()) {
+  while(y <= region->rect.y_range.max && !CLIP()) {
     ++y;
     ++portal_left;
     ++portal_right;
@@ -462,7 +462,7 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   }
   
   // If all the spans are fully clipped, it's invisible!
-  if(y > region->y_range.max) {
+  if(y > region->rect.y_range.max) {
     return X3D_FALSE;
   }
   
@@ -470,10 +470,10 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   region->x_left = region_left;
   region->x_right = region_right;
   
-  region->y_range.min = y;
+  region->rect.y_range.min = y;
   
   ENTER();
-  while(y <= region->y_range.max && CLIP()) {
+  while(y <= region->rect.y_range.max && CLIP()) {
     ++y;
     ++portal_left;
     ++portal_right;
@@ -482,16 +482,16 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   }
   EXIT();
   
-  region->y_range.max = y - 1;
+  region->rect.y_range.max = y - 1;
   
   return X3D_TRUE;
 }
 
 static _Bool rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p) {
-  if(p.y < region->y_range.min || p.y > region->y_range.max)
+  if(p.y < region->rect.y_range.min || p.y > region->rect.y_range.max)
     return X3D_FALSE;
   
-  uint16 offsety = p.y - region->y_range.min;
+  uint16 offsety = p.y - region->rect.y_range.min;
   
   return p.x >= region->x_left[offsety] && p.x <= region->x_right[offsety];
 }
@@ -571,10 +571,10 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
   
-  x3d_rasteredge_generate(stack, &edge, *start, *end, region->y_range, 0, 0);
+  x3d_rasteredge_generate(stack, &edge, *start, *end, region->rect.y_range, 0, 0);
   
-  int16 y_min = X3D_MAX(region->y_range.min, edge.rect.y_range.min);
-  int16 y_max = X3D_MIN(region->y_range.max, edge.rect.y_range.max);
+  int16 y_min = X3D_MAX(region->rect.y_range.min, edge.rect.y_range.min);
+  int16 y_max = X3D_MIN(region->rect.y_range.max, edge.rect.y_range.max);
   
   if(edge.flags & EDGE_INVISIBLE || y_min > y_max) {
     x3d_stack_restore(stack, stack_ptr);
@@ -583,7 +583,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   
   // Horizontal lines
   if(start->y == end->y) {
-    int16 y_offset = start->y - region->y_range.min;
+    int16 y_offset = start->y - region->rect.y_range.min;
     
     if(start->x > end->x) {
       X3D_SWAP(start, end);
@@ -607,8 +607,8 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
 
   // Find where the line enters the region
   for(i = y_min; i <= y_max; ++i) {
-    left = region->x_left[i - region->y_range.min];
-    right = region->x_right[i - region->y_range.min];
+    left = region->x_left[i - region->rect.y_range.min];
+    right = region->x_right[i - region->rect.y_range.min];
     x = edge.x_data[i - edge.rect.y_range.min];
     
     
@@ -667,8 +667,8 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
 void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   int16 i;
   
-  for(i = region->y_range.min; i < region->y_range.max; ++i) {
-    uint16 index = i - region->y_range.min;
+  for(i = region->rect.y_range.min; i < region->rect.y_range.max; ++i) {
+    uint16 index = i - region->rect.y_range.min;
     x3d_screen_draw_line(region->x_left[index], i, region->x_right[index], i, color);
   }
 }
@@ -766,7 +766,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     /// FIXME please!
 #if 1
     x3d_rasteredge_generate(&renderman->stack, clip->edges + clip->total_e,
-      out_v[0], out_v[1], clip->parent->y_range, depth[0], depth[1]);
+      out_v[0], out_v[1], clip->parent->rect.y_range, depth[0], depth[1]);
     
     
     //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
@@ -786,24 +786,24 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
       if(total_out_v == 2 && x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1)) {
         uint16 i;
         
-        int16 y_index = out_v[0].y - dest->y_range.min;
+        int16 y_index = out_v[0].y - dest->rect.y_range.min;
         
         //x3d_assert(y_index >= dest->y_range.min);
         
-        if(y_index < dest->y_range.min)
+        if(y_index < dest->rect.y_range.min)
           y_index = 0;
         
         if(abs(out_v[0].x - dest->x_left[y_index]) < abs(out_v[0].x - dest->x_right[y_index])) {
           //printf("Left!\n");
           
           if(!x3d_key_down(X3D_KEY_15)) {
-            for(i = 0; i < dest->y_range.max - dest->y_range.min + 1; ++i)
+            for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
               dest->x_left[i] = 0;
           }
         }
         else {
           if(!x3d_key_down(X3D_KEY_15)) {
-            for(i = 0; i < dest->y_range.max - dest->y_range.min + 1; ++i)
+            for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
               dest->x_right[i] = x3d_screenmanager_get()->w - 1;
           }
           

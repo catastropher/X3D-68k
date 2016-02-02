@@ -55,10 +55,7 @@ enum {
 typedef X3D_Stack X3D_RenderStack;
 
 typedef struct X3D_RasterRegion {
-  // int16 min_y;
-  // int16 max_y;
-  
-  X3D_Range y_range;
+  X3D_BoundRect rect;
   
   int16* x_left;
   int16* x_right;
