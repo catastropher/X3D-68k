@@ -18,22 +18,11 @@
 #include "X3D_screen.h"
 #include "X3D_clip.h"
 #include "X3D_plane.h"
+#include "X3D_portal.h"
 
-enum {
-  X3D_PORTAL_REMOTE = 1,
-  X3D_PORTAL_DRAW_OUTLINE = 2,
-  X3D_PORTAL_FILL = 3
-};
-
-typedef struct X3D_Portal {
-  uint16 flags;
-  uint16 total_v;
-  X3D_Vex3D* v;
-  
-  X3D_Color outline_color;
-  X3D_Color fill_color;
-  
-  X3D_RasterRegion* region;
-  X3D_Plane* plane;
-} X3D_Portal;
+void x3d_portal_render(X3D_Portal* portal) {
+  if(x3d_portal_fill(portal)) {
+    x3d_rasterregion_fill(portal->region, x3d_portal_fill_color(portal));
+  }
+}
 

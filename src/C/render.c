@@ -24,6 +24,7 @@
 #include "X3D_trig.h"
 #include "X3D_collide.h"
 #include "X3D_wallportal.h"
+#include "X3D_portal.h"
 
 int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {  
   if(x3d_rendermanager_get()->wireframe)
@@ -253,38 +254,42 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
         if(context->faces[i].portal_seg_face != X3D_FACE_NONE) {
           void* stack_ptr = x3d_stack_save(&context->renderman->stack);
           uint16 edge_index[prism->base_v + 1];
-          X3D_RasterRegion new_region;
+          X3D_RasterRegion portal_region;
 
           
           uint16 face_e = x3d_prism_face_edge_indexes(prism->base_v, i, edge_index);
           
           
           X3D_RasterRegion r;
-          X3D_RasterRegion* portal;
           
           context->clip->edge_index = edge_index;
           context->clip->total_edge_index = face_e;
              
-          _Bool use_new = x3d_rasterregion_construct_clipped(context->clip, &r);
+          _Bool use_new = x3d_rasterregion_construct_clipped(context->clip, &portal_region);
+          
+          X3D_Portal portal;
+          
+          x3d_portal_set_fill(&portal, 31);
           
           if(use_new) {
-            portal = &r;
+            portal.region = &portal_region;
           }
           else if(dist <= 10) {
-            portal = context->parent;
+            portal.region = context->parent;
           }
           else {
-            portal = NULL;
+            portal.region = NULL;
           }
           
           if(context->renderman->wireframe) {
-            portal = context->parent;
+            portal.region = context->parent;
           }
           
-          if(portal) {
+          if(portal.region) {
             uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
             
-            x3d_segment_render(seg_id, context->cam, 0, portal, context->step);
+            x3d_portal_render(&portal);
+            x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step);
           }
           
           
