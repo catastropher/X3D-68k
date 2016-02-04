@@ -245,30 +245,29 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   
   region->x_left = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16));
   region->x_right = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16));
-  
+ 
+  // Initially, set each scanline to have invalid values. They will get replaced
+  // as each edge is filled in
   int16 i;
   for(i = 0; i < LCD_HEIGHT; ++i) {
     region->x_left[i] = INT16_MAX;
     region->x_right[i] = INT16_MIN;
   }
   
-  //printf("total_e: %d\n", total_e);
+  X3D_RasterEdge* e;
   
-  X3D_Vex2D out_v[50];
-  int16 total_out_v = 0;
-  X3D_RasterEdge* e = NULL;
   
-  X3D_RasterEdge temp_edge;
-  
+  // Add each edge to the raster region
   int16 edge;
   for(edge = 0; edge < total_e; ++edge) {
     e = &EDGE(edge);
     
-    if(!(e->flags & EDGE_INVISIBLE)) {
+    if(!x3d_rasteredge_invisible(e)) {
       int16* left = region->x_left + e->rect.y_range.min;
       int16* right = region->x_right + e->rect.y_range.min;
       
-      if(e->flags & EDGE_HORIZONTAL) {
+      if(x3d_rasteredge_horizontal(e)) {
+        // Just replace the left/right values of the horizontal line, if necessary
         if(e->rect.x_range.min < *left)    *left = e->rect.x_range.min;
         if(e->rect.x_range.max > *right)   *right = e->rect.x_range.max;
       }
@@ -276,8 +275,8 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
         int16 i;
         int16* x = e->x_data;
         
-        //draw_edge(e);
-      
+        // For each x value in the edge, check if the x_left and x_right values
+        // in the raster region need to be replaced by it
         for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
           if(*x < *left)    *left = *x;
           if(*x > *right)   *right = *x;
@@ -288,37 +287,12 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
         }
       }
       
+      // Update the y_range of the raster region
+      /// @todo Calculate the x_rangew so we can construct a bounding rectangle
       region->rect.y_range.min = X3D_MIN(region->rect.y_range.min, e->rect.y_range.min);
       region->rect.y_range.max = X3D_MAX(region->rect.y_range.max, e->rect.y_range.max);
     }
-    else {
-      //printf("Invisible!\n");
-    }
   }
-  
-  x3d_assert(total_out_v == 0 || total_out_v == 2);
-  
-  if(total_out_v != 0 && e != &temp_edge) {
-    
-    
-    
-//     x3d_error("Range: {%d, %d}\n{%d, %d}\n{%d, %d}\n{%d, %d}\n",
-//               EDGE(0).y_range.min,EDGE(0).y_range.max,
-//               EDGE(1).y_range.min,EDGE(1).y_range.max,
-//               EDGE(2).y_range.min,EDGE(2).y_range.max,
-//               EDGE(3).y_range.min,EDGE(3).y_range.max);
-    
-    //x3d_rasteredge_generate(stack, &temp_edge, out_v[0], out_v[1], region->rect.y_range);
-    
-    //x3d_error("Pos: {%d, %d} - {%d, %d}", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y);
-    
-    //x3d_log(X3D_WARN, "Doing stupid things\n");
-    
-    e = &temp_edge;
-    //goto add_edge;
-  }
-  
-  //printf("Min: %d, %d\n", region->rect.y_range.min, region->rect.y_range.max);
   
   x3d_assert(((size_t)region->x_left & 1) == 0);
   x3d_assert(((size_t)region->x_right & 1) == 0);
