@@ -8,6 +8,7 @@ include_directories($ENV{X3D}/src/headers)
 
 add_executable(X3D-test-pc
 	test.c
+	fontedit.c
 )
 
 set_target_properties(X3D-test-pc PROPERTIES OUTPUT_NAME test-pc)

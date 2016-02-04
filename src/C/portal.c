@@ -21,8 +21,11 @@
 #include "X3D_portal.h"
 
 void x3d_portal_render(X3D_Portal* portal) {
-  if(x3d_portal_fill(portal)) {
-    x3d_rasterregion_fill(portal->region, x3d_portal_fill_color(portal));
+  //if(x3d_portal_fill(portal))
+  //  x3d_rasterregion_fill(portal->region, x3d_portal_fill_color(portal));
+  
+  if(x3d_portal_outline(portal)) {
+    /// @todo Implement portal outlining
   }
 }
 

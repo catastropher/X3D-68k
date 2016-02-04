@@ -26,6 +26,8 @@
 #include "X3D_wallportal.h"
 #include "X3D_portal.h"
 
+int16 line_count;
+
 int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {  
   if(x3d_rendermanager_get()->wireframe)
     return value;
@@ -63,6 +65,10 @@ void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1,
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   X3D_Vex2D v1 = { x1, y1 };
   X3D_Vex2D v2 = { x2, y2 };
+
+  if(depth1 > 1500 && depth2 > 1500)
+    return;
+
   
   if(x3d_rasterregion_clip_line(region, &renderman->stack, &v1, &v2)) {
     X3D_Color new1 = x3d_color_scale_by_depth(color, depth1, 10, 1500);
@@ -70,6 +76,8 @@ void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1,
     
     x3d_screen_draw_line_grad(v1.x, v1.y, v2.x, v2.y, new1, new2);
   }
+  
+  ++line_count;
 }
 
 void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_depth, X3D_Vex2D b, int16 b_depth, X3D_Color color) {
@@ -454,8 +462,12 @@ void x3d_render(X3D_CameraObject* cam) {
   static int32 tick = 0;
   
   //printf("Tick: %d\n", tick++);
+
+  line_count = 0;
   
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
+  
+  printf("Line count: %d\n", line_count);
   
   int16 cx = x3d_screenmanager_get()->w / 2;
   int16 cy = x3d_screenmanager_get()->h / 2;

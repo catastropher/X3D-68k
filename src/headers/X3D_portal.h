@@ -15,11 +15,18 @@
 
 #include "X3D_common.h"
 #include "X3D_screen.h"
+#include "X3D_clip.h"
 
 enum {
   X3D_PORTAL_REMOTE = 1,
-  X3D_PORTAL_DRAW_OUTLINE = 2,
-  X3D_PORTAL_FILL = 3
+  X3D_PORTAL_OUTLINE = 2,
+  X3D_PORTAL_FILL = 4,
+};
+
+enum {
+  X3D_PORTAL_TARGET_IMPLICIT,
+  X3D_PORTAL_TARGET_WALL,
+  X3D_PORTAL_TARGET_FREESTAND
 };
 
 typedef struct X3D_Portal {
@@ -30,7 +37,9 @@ typedef struct X3D_Portal {
   X3D_Color outline_color;
   X3D_Color fill_color;
   
+  X3D_RasterEdge* edges;
   X3D_RasterRegion* region;
+  X3D_RasterRegion* parent;
   X3D_Plane* plane;
 } X3D_Portal;
 
@@ -54,6 +63,15 @@ static inline _Bool x3d_portal_fill(X3D_Portal* portal) {
 
 static inline X3D_Color x3d_portal_fill_color(X3D_Portal* portal) {
   return portal->fill_color;
+}
+
+static inline _Bool x3d_portal_outline(X3D_Portal* portal) {
+  return portal->flags & X3D_PORTAL_OUTLINE;
+}
+
+static inline X3D_Color x3d_portal_set_outline(X3D_Portal* portal, X3D_Color color) {
+  portal->flags |= X3D_PORTAL_OUTLINE;
+  portal->outline_color = color;
 }
 
 void x3d_portal_render(X3D_Portal* portal);

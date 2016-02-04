@@ -704,6 +704,8 @@ typedef struct Test {
   void (*run)(void);
 } Test;
 
+void font_editor(void);
+
 int main() {
   x3d_log(X3D_INFO, "X3D manual tests for PC");
   
@@ -723,6 +725,10 @@ int main() {
     {
       "Engine test",
       engine_test
+    },
+    {
+      "Font Editor",
+      font_editor
     }
   };
   
