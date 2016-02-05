@@ -264,7 +264,7 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
   X3D_RasterRegion new_region;
 #if 1
   if(x3d_rasterregion_construct_from_edges(&new_region, &renderman->stack, edge, edge_list, prism->base_v * 3)) {
-    if(x3d_rasterregion_intersect(region, &new_region)) {
+    if(x3d_rasterregion_intersect(&new_region, region)) {
       x3d_rasterregion_fill(&new_region, 0);
     }
   }

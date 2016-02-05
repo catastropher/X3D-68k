@@ -348,29 +348,40 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   return x3d_rasterregion_construct_from_edges(dest, stack, edges, edge_index, total_v);
 }
 
-#define CLIP() clip_span(parent_span->left, parent_span->right, &region_span->left, &region_span->right)
+#define CLIP() x3d_span_clip(region_span, *parent_span)
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Clips a single span against another span (from the parent region)
 ///
-/// @param 
-_Bool clip_span(int16 parent_left, int16 parent_right, int16* span_left, int16* span_right) {
-  *span_left = X3D_MAX(parent_left, *span_left);
-  *span_right = X3D_MIN(parent_right, *span_right);
+/// @param span         - span to clip
+/// @param parent_span  - span in the parent region to clip against
+///
+/// @return Whether a valid span remains after clipping.
+///////////////////////////////////////////////////////////////////////////////
+_Bool x3d_span_clip(X3D_Span* span, X3D_Span parent_span) {
+  span->left =  X3D_MAX(parent_span.left, span->left);
+  span->right = X3D_MIN(parent_span.right, span->right);
   
-  return *span_left <= *span_right;
+  return span->left <= span->right;
 }
 
-_Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* region) {
-  X3D_Span* parent_span = portal->span + region->rect.y_range.min - portal->rect.y_range.min;
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the intersection between two raster regions.
+///
+/// @param region - first region to intersect (result written here)
+/// @param parent - the second region to intersect (the "parent" region)
+///
+/// @return Whether a valid region is produced after doing the intersection
+/// @todo   This function really needs to be optimized.
+///////////////////////////////////////////////////////////////////////////////
+_Bool x3d_rasterregion_intersect(X3D_RasterRegion* region, X3D_RasterRegion* parent) {
+  X3D_Span* parent_span = parent->span + region->rect.y_range.min - parent->rect.y_range.min;
   X3D_Span* region_span = region->span;
   
   int16 y = region->rect.y_range.min;
 
-  if(y < 0 || y >= LCD_HEIGHT) {
-    x3d_error("y = %d, %d", y, region->rect.y_range.max);
-  }
-  
+  // Check to make sure we have valid y ranges
+  x3d_assert(y >= 0 && y < x3d_screenmanager_get()->h);  
   x3d_assert_range(y, region->rect.y_range.min, region->rect.y_range.max + 1);
   
   // Skip fully clipped spans
@@ -401,7 +412,15 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   return X3D_TRUE;
 }
 
-static _Bool rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p) {
+///////////////////////////////////////////////////////////////////////////////
+/// Determines whether a point is inside a raster region.
+///
+/// @param region - region
+/// @param p      - point
+///
+/// @return Whether the point is inside the region.
+///////////////////////////////////////////////////////////////////////////////
+static _Bool x3d_rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p) {
   if(p.y < region->rect.y_range.min || p.y > region->rect.y_range.max)
     return X3D_FALSE;
   
@@ -466,7 +485,7 @@ void bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* r
       break;
     
     
-    if(rasterregion_point_inside(region, mid)) {
+    if(x3d_rasterregion_point_inside(region, mid)) {
       in = mid;
     }
     else {
@@ -552,7 +571,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     return X3D_FALSE;
   }
   
-  if(rasterregion_point_inside(region, *end)) {
+  if(x3d_rasterregion_point_inside(region, *end)) {
     x3d_stack_restore(stack, stack_ptr);
     return X3D_TRUE;
   }
@@ -726,7 +745,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
       }
         
       
-      if(x3d_rasterregion_intersect(clip->parent, dest)) {
+      if(x3d_rasterregion_intersect(dest, clip->parent)) {
         X3D_Color gray = x3d_rgb_to_color(64, 64, 64);
         //x3d_rasterregion_fill(dest, gray);
         X3D_Color color = x3d_rgb_to_color(255, 255, 255);
