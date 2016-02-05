@@ -29,25 +29,33 @@ config:
 	@echo Configuring X3D
 	#@tput setaf 7
 	@mkdir -p build/X3D
-	@cd build/X3D && cmake ../../src
+	@cd build/X3D && cmake ../../src -DX3D_TARGET=pc
 	
 	#@tput setaf 2
 	@echo Configuring Unit Tests
 	#@tput setaf 7
 	@mkdir -p build/unit
-	@cd build/unit && cmake ../../test/unit
+	@cd build/unit && cmake ../../test/unit -DX3D_TARGET=pc
 	
 	#@tput setaf 2
 	@echo Configuring Manual Tests
 	#@tput setaf 7
 	@mkdir -p build/manual
-	@cd build/manual && cmake ../../test/pc/test-pc
+	@cd build/manual && cmake ../../test/pc/test-pc -DX3D_TARGET=pc
 
 config-68k:
 	@echo "Configuring X3D-68k"
 	@mkdir -p build/X3D-68k
-	@cd build/X3D-68k && cmake ../../src -DX3D_TARGET=68k -DX3D_SUBTARGET=ti92plus
+	@cd build/X3D-68k && cmake ../../src -DX3D_TARGET=68k -DX3D_SUBTARGET=ti89
 
+config-68k-test:
+	#@tput setaf 2
+	@echo Configuring Manual Tests for 68k
+	#@tput setaf 7
+	@mkdir -p build/manual-68k
+	@cd build/manual-68k && cmake ../../test/pc/test-pc -DX3D_TARGET=68k -DX3D_SUBTARGET=ti89
+	
+	
 	
 # Builds X3D
 x3d:
@@ -64,6 +72,9 @@ test: x3d
 # Builds X3D and builds/runs the manual tests
 test-manual: x3d
 	@cd build/manual && make --no-print-directory && ./test-pc
+	
+test-manual-68k: x3d-68k
+	@cd build/manual-68k && make --no-print-directory
 
 # Builds the documentation
 docs:

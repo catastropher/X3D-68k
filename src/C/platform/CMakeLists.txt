@@ -2,9 +2,16 @@
 
 if(${X3D_TARGET} STREQUAL "pc")
   add_sources(
-    platform_screen.c
-    platform_init.c
-    platform_keys.c
-    platform_assert.c
+    pc/platform_screen.c
+    pc/platform_init.c
+    pc/platform_keys.c
+    pc/platform_assert.c
+  )
+elseif(${X3D_TARGET} STREQUAL "68k")
+  add_sources(
+    68k/platform_screen.c
+    68k/platform_init.c
+    68k/platform_keys.c
+    68k/platform_assert.c
   )
 endif()

@@ -38,7 +38,7 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D* a, X3D_Vex3D* b) {
   int32 p_z = (int32)a->z * b->z;
   
   // Check for overflow
-  x3d_assert(!x3d_addi32_check_overflow(3, p_x, p_y, p_z));
+  //x3d_assert(!x3d_addi32_check_overflow(3, p_x, p_y, p_z));
   
   return p_x + p_y + p_z; 
 }

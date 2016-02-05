@@ -15,6 +15,8 @@
 
 #pragma once
 
+#define printf(...) ;
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -22,6 +24,11 @@
 #include <alloca.h>
 #elif defined(__68k__)
 #include <alloc.h>
+
+#ifdef __x3d_build__
+
+#define _GENERIC_ARCHIVE
+#endif
 #endif
 
 

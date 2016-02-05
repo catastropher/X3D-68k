@@ -16,26 +16,11 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_vector.h"
+#include "X3D_screen.h"
+#include "X3D_init.h"
 
-// AX + BY + CZ - D = 0
-typedef struct X3D_Plane {
-  X3D_Normal3D normal;
-  int16 d;
-} X3D_Plane;
+X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init);
+X3D_INTERNAL void x3d_platform_screen_cleanup(void);
 
-void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
-void x3d_plane_print(X3D_Plane* p);
-
-///////////////////////////////////////////////////////////////////////////////
-/// Calculates the distance from a point to a plane.
-///
-/// @param p  - plane
-/// @param v  - point
-///
-/// @return The distance from p to v.
-///////////////////////////////////////////////////////////////////////////////
-static inline int16 x3d_plane_dist(X3D_Plane* p, X3D_Vex3D* v) {
-  return ((int16)x3d_vex3d_fp0x16_dot(&p->normal, v) - p->d);
-}
+X3D_INTERNAL void x3d_platform_keys_init(X3D_InitSettings* settings);
 

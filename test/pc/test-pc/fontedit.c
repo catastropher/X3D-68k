@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#if 0
 #include "X3D.h"
 #include <SDL2/SDL.h>
 
@@ -86,5 +87,5 @@ void font_editor(void) {
   x3d_cleanup();
 }
 
-
+#endif
 

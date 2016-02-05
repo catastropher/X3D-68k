@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 project(X3D)
 
+add_definitions(-D__x3d_build__)
+
 if(${X3D_TARGET} STREQUAL "68k")
   INCLUDE(CMakeForceCompiler)
   CMAKE_FORCE_C_COMPILER(tigcc-x3d tigcc-x3d)
@@ -40,7 +42,7 @@ if(${X3D_TARGET} STREQUAL "68k")
   elseif(${X3D_SUBTARGET} STREQUAL "ti89")
     set(CMAKE_C_FLAGS "-DUSE_TI89 -O3 -Wall")
   endif()
-elseif(${X3D_SUBTARGET} STREQUAL "pc")
+elseif(${X3D_TARGET} STREQUAL "pc")
   set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
 endif()

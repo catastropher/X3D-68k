@@ -17,160 +17,11 @@
 //
 // test.c -> test for PC
 
-#include <SDL2/SDL.h>
-#include <stddef.h>
-
 #include "X3D.h"
 
-void color_test(void) {
-  X3D_InitSettings init = {
-    .screen_w = 256,
-    .screen_h = 256,
-    .screen_scale = 2,
-    .fullscreen = X3D_FALSE,
-    .fov = ANG_60
-  };
-  
-  x3d_init(&init);
-  
-  x3d_log(X3D_INFO, "Running color test");
-  x3d_log(X3D_WARN, "PC uses 15-bit color, so gradients will not be completely smooth\n");
-  
-  x3d_log(X3D_INFO, "Clearing screen with shades of red");
-  
-  int16 i;
-  for(i = 0; i < 256; ++i) {
-    X3D_Color color = x3d_rgb_to_color(i, 0, 0);
-    
-    x3d_screen_clear(color);
-    x3d_screen_flip();
-    
-    SDL_Delay(25);
-  }
-  
-  x3d_log(X3D_INFO, "Clearing screen with shades of green");
-  
-  for(i = 0; i < 256; ++i) {
-    X3D_Color color = x3d_rgb_to_color(0, i, 0);
-    
-    x3d_screen_clear(color);
-    x3d_screen_flip();
-    
-    SDL_Delay(25);
-  }
-  
-  x3d_log(X3D_INFO, "Clearing screen with shades of blue");
-  
-  for(i = 0; i < 256; ++i) {
-    X3D_Color color = x3d_rgb_to_color(0, 0, i);
-    
-    x3d_screen_clear(color);
-    x3d_screen_flip();
-    
-    SDL_Delay(25);
-  }
-  
-  x3d_log(X3D_INFO, "Placing gradient pixel by pixel"); 
-  
-  int16 r, g, b;
-  for(g = 0; g < 256; ++g) {
-    for(r = 0; r < 256; ++r) {
-      for(b = 0; b < 256; ++b) {
-        X3D_Color color = x3d_rgb_to_color(r, g, b);
-        
-        x3d_screen_draw_pix(r, b, color);
-      }
-    }
-    
-    x3d_screen_flip();
-    
-    SDL_Delay(25);
-  }
-  
-  x3d_log(X3D_INFO, "Finished running color test");
-  
-  x3d_cleanup();
-}
-
-void key_test() {
-  X3D_InitSettings init = {
-    .screen_w = 256,
-    .screen_h = 256,
-    .screen_scale = 2,
-    .fullscreen = X3D_FALSE,
-    .fov = ANG_60
-  };
-  
-  x3d_init(&init);
-  
-  x3d_log(X3D_INFO, "Running key test");
-  x3d_log(X3D_INFO, "Enter=display message, Escape=quit\n");
-  
-  x3d_key_map_pc(X3D_KEY_0, SDLK_RETURN);
-  x3d_key_map_pc(X3D_KEY_1, SDLK_ESCAPE);
-  
-  do {
-    x3d_read_keys();
-    
-    if(x3d_key_down(X3D_KEY_0)) {
-      x3d_log(X3D_INFO, "You pressed enter!");
-      SDL_Delay(1000);
-    }
-  } while(!x3d_key_down(X3D_KEY_1));
-  
-  x3d_cleanup();
-}
-
-typedef struct FreeListBlock {
-  int16 id;
-  int16 pad0;
-  void* safe_to_overwrite;
-  int16 pad1;
-  int16 pad2;
-} FreeListBlock;
-
-void freelist_test() {
-  X3D_InitSettings init = {
-    .screen_w = 256,
-    .screen_h = 256,
-    .screen_scale = 2,
-    .fullscreen = X3D_FALSE,
-    .fov = ANG_60
-  };
-  
-  x3d_init(&init);
-  
-  X3D_FreeList list;
-  FreeListBlock blocks[64];
-  
-  x3d_freelist_create(&list, blocks, sizeof(blocks), sizeof(FreeListBlock),
-    offsetof(FreeListBlock, safe_to_overwrite),
-    offsetof(FreeListBlock, id), 0);
-  
-  uint16 i;
-  
-  for(i = 0; i < 128; ++i) {
-    FreeListBlock* block = x3d_freelist_alloc(&list);
-    x3d_log(X3D_INFO, "Alloced block: %d", block->id);
-    
-    x3d_assert(((FreeListBlock *)x3d_freelist_get_block(&list, block->id))->id == block->id);
-    
-    x3d_freelist_free(&list, block);
-  }
-  
-  FreeListBlock* block;
-  
-  for(i = 0; i < 64; ++i) {
-    block = x3d_freelist_alloc(&list);
-  }
-  
-  
-  // Test when alloc pool is empty
-  x3d_freelist_free(&list, block);
-  block = x3d_freelist_alloc(&list);
-  
-  x3d_cleanup();
-}
+#if defined(__linux__)
+#include <SDL2/SDL.h>
+#endif
 
 enum {
   KEY_WIREFRAME = X3D_KEY_0,
@@ -186,8 +37,7 @@ enum {
   KEY_1 = X3D_KEY_10,
   KEY_2 = X3D_KEY_11,
   KEY_9 = X3D_KEY_12,
-  KEY_0 = X3D_KEY_13,
-  
+  KEY_0 = X3D_KEY_13,  
   KEY_RECORD = X3D_KEY_14
 };
 
@@ -202,7 +52,8 @@ void engine_test_handle_keys(void) {
     
     x3d_rendermanager_get()->wireframe = !x3d_rendermanager_get()->wireframe;
   }
-  
+
+#if 0
   if(x3d_key_down(KEY_0)) {
     x3d_rendermanager_get()->near_z++;
     printf("Near z: %d\n", x3d_rendermanager_get()->near_z);
@@ -211,8 +62,10 @@ void engine_test_handle_keys(void) {
     x3d_rendermanager_get()->near_z--;
     printf("Near z: %d\n", x3d_rendermanager_get()->near_z);
   }
+#endif
   
-  
+ 
+#ifdef __linux__
   if(x3d_key_down(KEY_RECORD)) {
     while(x3d_key_down(KEY_RECORD)) {
       x3d_read_keys();
@@ -255,6 +108,7 @@ void engine_test_handle_keys(void) {
       rec = X3D_FALSE;
     }
   }
+#endif
   
   if(x3d_key_down(KEY_1)) {
     X3D_RayCaster caster;
@@ -471,18 +325,33 @@ void polygon2d_add_x(X3D_Polygon2D* poly, int16 w, int16 h) {
 #endif
 }
 
+#ifdef __68k__
+#include <tigcclib.h>
+#endif
+
 void engine_test(void) {
   X3D_InitSettings init = {
-    .screen_w = 640,
-    .screen_h = 480,
+    .screen_w = 160,
+    .screen_h = 100,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
   };
   
+  //clrscr();
+  
+  
   x3d_init(&init);
   
+  x3d_screen_clear(0);
+  x3d_screen_draw_line(0, 0, 30, 30, 1);
+  x3d_screen_flip();
+  
+  //while(1) ;
+  
+  
   // Set up key mapping
+#ifdef __linux__
   x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, SDLK_w);
@@ -499,6 +368,15 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_9, '9');
   x3d_key_map_pc(KEY_RECORD, 'm');
   x3d_key_map_pc(X3D_KEY_15, 'p');
+#else
+  x3d_key_map_68k(KEY_Q, RR_UP);
+  x3d_key_map_68k(KEY_A, RR_LEFT);
+  x3d_key_map_68k(KEY_E, RR_DOWN);
+  x3d_key_map_68k(KEY_D, RR_RIGHT);
+  x3d_key_map_68k(KEY_W, RR_1);
+  x3d_key_map_68k(KEY_S, RR_2);
+  
+#endif
   
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
@@ -704,32 +582,37 @@ typedef struct Test {
   void (*run)(void);
 } Test;
 
+#ifdef __68k__
+
+void SDL_Delay(int ms) {
+  
+}
+
+#endif
+
 void font_editor(void);
 
+#ifdef __linux__
 int main() {
+#else
+void _main() {
+#endif
+  
+  engine_test();
+  
   x3d_log(X3D_INFO, "X3D manual tests for PC");
   
   Test tests[] = {
     {
-      "Color test",
-      color_test
-    },
-    {
-      "Key test",
-      key_test
-    },
-    {
-      "Freelist test",
-      freelist_test
-    },
-    {
       "Engine test",
       engine_test
     },
+#if 0
     {
       "Font Editor",
       font_editor
     }
+#endif
   };
   
   int total_tests = sizeof(tests) / sizeof(Test);

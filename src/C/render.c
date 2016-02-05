@@ -41,6 +41,8 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
   uint8 r, g, b;
   x3d_color_to_rgb(color, &r, &g, &b);
   
+  return color;
+  
   return x3d_rgb_to_color(
     x3d_scale_by_depth(r, depth, min_depth, max_depth),
     x3d_scale_by_depth(g, depth, min_depth, max_depth),
@@ -247,6 +249,12 @@ typedef struct X3D_SegmentRenderContext {
   uint16 step;
 } X3D_SegmentRenderContext;
 
+#include <tigcclib.h>
+
+void printnum(int16 num) {
+  char buf[16];
+}
+
 void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   uint16 i;
   
@@ -263,7 +271,6 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
           uint16 edge_index[prism->base_v + 1];
           X3D_RasterRegion portal_region;
 
-          
           uint16 face_e = x3d_prism_face_edge_indexes(prism->base_v, i, edge_index);
           
           
@@ -311,6 +318,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 void x3d_segment_render_textures(X3D_SegmentRenderContext* context) {
   X3D_Prism3D* prism = &context->seg->prism;
   
+  return;
+  
   uint16 i;
   // Render any textures
   for(i = 0; i < prism->base_v + 2; ++i) {
@@ -354,15 +363,20 @@ void x3d_segment_render_textures(X3D_SegmentRenderContext* context) {
   }
 }
 
+int16 depth = 0;
+
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step  ) {
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  void* stack_save = x3d_stack_save(&renderman->stack);
+  
   // Load the segment into the cache
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
   
-  X3D_DisplayLineList* list = alloca(sizeof(X3D_DisplayLineList));
+  X3D_DisplayLineList* list = x3d_stack_alloc(&renderman->stack, sizeof(X3D_DisplayLineList));
   list->total_l = 0;
   
   // Make sure we don't blow the stack from recursing too deep
-  static int16 depth = 0;
   
   if(x3d_rendermanager_get()->wireframe) {
     if(seg->last_engine_step == step)
@@ -385,8 +399,8 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   }  
   
   X3D_Prism3D* prism = &seg->prism;
-  X3D_Vex2D v2d[prism->base_v * 2];
-  X3D_Vex3D v3d[prism->base_v * 2];
+  X3D_Vex2D* v2d = x3d_stack_alloc(&renderman->stack, sizeof(X3D_Vex2D) * prism->base_v * 2);
+  X3D_Vex3D* v3d = x3d_stack_alloc(&renderman->stack, sizeof(X3D_Vex3D) * prism->base_v * 2);
   uint16 i;
   
   X3D_Vex3D cam_pos;
@@ -395,10 +409,6 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
   
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-  
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-  
-  void* stack_save = x3d_stack_save(&renderman->stack);
   
   /// @todo It's a waste to calculate this for every edge if we don't need it,
   /// so add a bitmask to the cache to determine which faces actually need
@@ -464,6 +474,7 @@ void x3d_render(X3D_CameraObject* cam) {
 
   line_count = 0;
   
+  depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
   
   printf("Line count: %d\n", line_count);
