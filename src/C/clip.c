@@ -239,6 +239,19 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
 
 #define REGION_OFFSET(_region, _y) (_y - _region->min_y)
 
+///////////////////////////////////////////////////////////////////////////////
+/// Constructs a raster region from a list of edges.
+///
+/// @param region       - dest region
+/// @param stack        - stack to allocate the region x_data on
+/// @param raster_edge  - an array of raster edges
+/// @param edge_index   - a list of edges to select from raster_edge to
+///     construct the region
+/// @param total_e      - number of edges in edge_index
+///
+/// @return Whether a potentially visible raster region has been constructed
+/// @todo   This function can be very easily optimized!
+///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
   region->rect.y_range.min = INT16_MAX;
   region->rect.y_range.max = INT16_MIN;
@@ -297,6 +310,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   x3d_assert(((size_t)region->x_left & 1) == 0);
   x3d_assert(((size_t)region->x_right & 1) == 0);
   
+  // A region is only valud if the region's min_y <= max_y
   if(region->rect.y_range.min <= region->rect.y_range.max) {
     region->x_left += region->rect.y_range.min;
     region->x_right += region->rect.y_range.min;
