@@ -5,6 +5,9 @@
 #include "X3D_vector.h"
 #include "memory/X3D_stack.h"
 
+typedef struct X3D_Span {
+  int16 left, right;
+} X3D_Span;
 
 typedef struct X3D_Range {
   int16 min;
@@ -56,9 +59,8 @@ typedef X3D_Stack X3D_RenderStack;
 
 typedef struct X3D_RasterRegion {
   X3D_BoundRect rect;
+  X3D_Span* span;
   
-  int16* x_left;
-  int16* x_right;
 } X3D_RasterRegion;
 
 typedef struct X3D_PolyLine {

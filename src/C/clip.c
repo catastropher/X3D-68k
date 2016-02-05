@@ -256,15 +256,14 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   region->rect.y_range.min = INT16_MAX;
   region->rect.y_range.max = INT16_MIN;
   
-  region->x_left = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16));
-  region->x_right = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16));
+  region->span = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16) * 2);
  
   // Initially, set each scanline to have invalid values. They will get replaced
   // as each edge is filled in
   int16 i;
   for(i = 0; i < LCD_HEIGHT; ++i) {
-    region->x_left[i] = INT16_MAX;
-    region->x_right[i] = INT16_MIN;
+    region->span[i].left = INT16_MAX;
+    region->span[i].right = INT16_MIN;
   }
   
   X3D_RasterEdge* e;
@@ -276,13 +275,12 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     e = &EDGE(edge);
     
     if(!x3d_rasteredge_invisible(e)) {
-      int16* left = region->x_left + e->rect.y_range.min;
-      int16* right = region->x_right + e->rect.y_range.min;
+      X3D_Span* span = region->span + e->rect.y_range.min;
       
       if(x3d_rasteredge_horizontal(e)) {
         // Just replace the left/right values of the horizontal line, if necessary
-        if(e->rect.x_range.min < *left)    *left = e->rect.x_range.min;
-        if(e->rect.x_range.max > *right)   *right = e->rect.x_range.max;
+        if(e->rect.x_range.min < span->left)    span->left = e->rect.x_range.min;
+        if(e->rect.x_range.max > span->right)   span->right = e->rect.x_range.max;
       }
       else {
         int16 i;
@@ -291,12 +289,11 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
         // For each x value in the edge, check if the x_left and x_right values
         // in the raster region need to be replaced by it
         for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
-          if(*x < *left)    *left = *x;
-          if(*x > *right)   *right = *x;
+          if(*x < span->left)    span->left = *x;
+          if(*x > span->right)   span->right = *x;
           
           ++x;
-          ++left;
-          ++right;
+          ++span;
         }
       }
       
@@ -307,51 +304,16 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     }
   }
   
-  x3d_assert(((size_t)region->x_left & 1) == 0);
-  x3d_assert(((size_t)region->x_right & 1) == 0);
+  x3d_assert(((size_t)region->span & 1) == 0);
   
-  // A region is only valud if the region's min_y <= max_y
+  // A region is only valid if the region's min_y <= max_y
   if(region->rect.y_range.min <= region->rect.y_range.max) {
-    region->x_left += region->rect.y_range.min;
-    region->x_right += region->rect.y_range.min;
+    region->span += region->rect.y_range.min;
     return X3D_TRUE;
   }
   
   return X3D_FALSE;
 }
-
-void rasterize_rasterregion(X3D_RasterRegion* region, void* screen, uint16 color) {
-#if 0
-  int16 y = region->rect.y_range.min;
-  
-  //return;
-
-  uint8* span = screen + y * (LCD_WIDTH / 8);
-  
-  void (*render_span)(short x1 asm("%d0"), short x2 asm("%d1"), void * addrs asm("%a0")) = (void* []) {
-    GrayDrawSpan_WHITE_R,
-    GrayDrawSpan_LGRAY_R,
-    GrayDrawSpan_DGRAY_R,
-    GrayDrawSpan_BLACK_R
-  }[color];
-  
-  printf("y: %d, %d\n", region->rect.y_range.min, region->rect.y_range.max);
-  
-  while(y <= region->rect.y_range.max) {
-    
-    
-    render_span(region->x_left[y - region->rect.y_range.min], region->x_right[y - region->rect.y_range.min], span);
-    
-    span += LCD_WIDTH / 8;
-    
-    //FastDrawHLine(LCD_MEM, region->x_left[y - region->min_y], region->x_right[y - region->min_y], y, A_XOR);
-    ++y;
-  }
-#endif
-}
-
-
-//_Bool get_rasterregion(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e)
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Constructs a raster region from a list of points that define a 2D polygon.
@@ -380,52 +342,31 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   for(i = 0; i < total_v; ++i) {
     int16 next = (i + 1) % total_v;
     x3d_rasteredge_generate(edges + i, v[i], v[next], &fake_parent_region, 0, 0, stack);
-    
-    //printf("es: %d, ee: %d\n", edges[i].min_y, edges[i].max_y);
-    
     edge_index[i] = i;
   }
-  
-  //printf("Min: %d, %d\n", dest->y_range.min, dest-> 
   
   return x3d_rasterregion_construct_from_edges(dest, stack, edges, edge_index, total_v);
 }
 
-#if 0
-void x3d_init_clip_window(X3D_Stack* stack, X3D_Context* context, X3D_RasterRegion* region, X3D_Vex2D* v, uint16 total_v) {
-  construct_rasterregion_from_points(stack, region, v, total_v);
-}
-#endif
+#define CLIP() clip_span(parent_span->left, parent_span->right, &region_span->left, &region_span->right)
 
-#define CLIP() clip_span(*portal_left, *portal_right, region_left, region_right)
-
-// Clips a single span against another span (from a portal polygon)
-_Bool clip_span(int16 portal_left, int16 portal_right, int16* span_left, int16* span_right) {
-  *span_left = X3D_MAX(portal_left, *span_left);
-  *span_right = X3D_MIN(portal_right, *span_right);
+///////////////////////////////////////////////////////////////////////////////
+/// Clips a single span against another span (from the parent region)
+///
+/// @param 
+_Bool clip_span(int16 parent_left, int16 parent_right, int16* span_left, int16* span_right) {
+  *span_left = X3D_MAX(parent_left, *span_left);
+  *span_right = X3D_MIN(parent_right, *span_right);
   
   return *span_left <= *span_right;
 }
 
 _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* region) {
-  int16* portal_left = portal->x_left + region->rect.y_range.min - portal->rect.y_range.min;
-  int16* portal_right = portal->x_right + region->rect.y_range.min - portal->rect.y_range.min;
-  
-  int16* region_left = region->x_left;
-  int16* region_right = region->x_right;
-  
-  x3d_assert(region_left);
-  x3d_assert(region_right);
-  x3d_assert(portal_left);
-  x3d_assert(region_right);
+  X3D_Span* parent_span = portal->span + region->rect.y_range.min - portal->rect.y_range.min;
+  X3D_Span* region_span = region->span;
   
   int16 y = region->rect.y_range.min;
 
-  //return X3D_FALSE;
-  
-  
-  //ASSERT(y >= 0 && y < LCD_HEIGHT);
-  
   if(y < 0 || y >= LCD_HEIGHT) {
     x3d_error("y = %d, %d", y, region->rect.y_range.max);
   }
@@ -435,10 +376,8 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   // Skip fully clipped spans
   while(y <= region->rect.y_range.max && !CLIP()) {
     ++y;
-    ++portal_left;
-    ++portal_right;
-    ++region_left;
-    ++region_right;
+    ++region_span;
+    ++parent_span;
   }
   
   // If all the spans are fully clipped, it's invisible!
@@ -447,17 +386,14 @@ _Bool x3d_rasterregion_intersect(X3D_RasterRegion* portal, X3D_RasterRegion* reg
   }
   
   // We need to actually adjust x_left and x_right to point to the first visible span
-  region->x_left = region_left;
-  region->x_right = region_right;
+  region->span = region_span;
   
   region->rect.y_range.min = y;
   
   while(y <= region->rect.y_range.max && CLIP()) {
     ++y;
-    ++portal_left;
-    ++portal_right;
-    ++region_left;
-    ++region_right;
+    ++parent_span;
+    ++region_span;
   }
   
   region->rect.y_range.max = y - 1;
@@ -471,7 +407,7 @@ static _Bool rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p) {
   
   uint16 offsety = p.y - region->rect.y_range.min;
   
-  return p.x >= region->x_left[offsety] && p.x <= region->x_right[offsety];
+  return p.x >= region->span[offsety].left && p.x <= region->span[offsety].right;
 }
 
 
@@ -567,11 +503,11 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
       X3D_SWAP(start, end);
     }
     
-    if(start->x < region->x_left[y_offset])
-      start->x = region->x_left[y_offset];
+    if(start->x < region->span[y_offset].left)
+      start->x = region->span[y_offset].left;
     
-    if(end->x > region->x_right[y_offset])
-      end->x = region->x_right[y_offset];
+    if(end->x > region->span[y_offset].right)
+      end->x = region->span[y_offset].right;
     
     x3d_stack_restore(stack, stack_ptr);
     
@@ -585,8 +521,8 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
 
   // Find where the line enters the region
   for(i = y_min; i <= y_max; ++i) {
-    left = region->x_left[i - region->rect.y_range.min];
-    right = region->x_right[i - region->rect.y_range.min];
+    left = region->span[i - region->rect.y_range.min].left;
+    right = region->span[i - region->rect.y_range.min].right;
     x = edge.x_data[i - edge.rect.y_range.min];
     
     
@@ -647,7 +583,7 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   
   for(i = region->rect.y_range.min; i < region->rect.y_range.max; ++i) {
     uint16 index = i - region->rect.y_range.min;
-    x3d_screen_draw_line(region->x_left[index], i, region->x_right[index], i, color);
+    x3d_screen_draw_line(region->span[index].left, i, region->span[index].right, i, color);
   }
 }
 
@@ -771,18 +707,18 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
         if(y_index < dest->rect.y_range.min)
           y_index = 0;
         
-        if(abs(out_v[0].x - dest->x_left[y_index]) < abs(out_v[0].x - dest->x_right[y_index])) {
+        if(abs(out_v[0].x - dest->span[y_index].left) < abs(out_v[0].x - dest->span[y_index].right)) {
           //printf("Left!\n");
           
           if(!x3d_key_down(X3D_KEY_15)) {
             for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
-              dest->x_left[i] = 0;
+              dest->span[i].left = 0;
           }
         }
         else {
           if(!x3d_key_down(X3D_KEY_15)) {
             for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
-              dest->x_right[i] = x3d_screenmanager_get()->w - 1;
+              dest->span[i].right = x3d_screenmanager_get()->w - 1;
           }
           
           //printf("Right!\n");
