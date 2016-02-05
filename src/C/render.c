@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <alloca.h>
-
 #include "X3D_common.h"
 #include "X3D_prism.h"
 #include "X3D_camera.h"
@@ -25,6 +23,7 @@
 #include "X3D_collide.h"
 #include "X3D_wallportal.h"
 #include "X3D_portal.h"
+#include "X3D_object.h"
 
 int16 line_count;
 

@@ -36,13 +36,13 @@ struct X3D_RasterRegion;
 typedef struct X3D_ObjectEvent {
   uint8 type;
   
-  union {
+  //union {
     struct {
       struct X3D_CameraObject* cam;
       struct X3D_DisplayLineList* list;
       struct X3D_RasterRegion* region;
     } render_event;
-  };
+  //};
   
 } X3D_ObjectEvent;
 

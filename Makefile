@@ -42,10 +42,20 @@ config:
 	#@tput setaf 7
 	@mkdir -p build/manual
 	@cd build/manual && cmake ../../test/pc/test-pc
+
+config-68k:
+	@echo "Configuring X3D-68k"
+	@mkdir -p build/X3D-68k
+	@cd build/X3D-68k && cmake ../../src -DX3D_TARGET=68k -DX3D_SUBTARGET=ti92plus
+
 	
 # Builds X3D
 x3d:
 	@cd build/X3D && make --no-print-directory
+
+x3d-68k:
+	@cd build/X3D-68k && make --no-print-directory
+
 	
 # Builds X3D and builds/runs the unit tests
 test: x3d

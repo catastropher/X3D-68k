@@ -18,6 +18,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if defined(__linux__)
+#include <alloca.h>
+#elif defined(__68k__)
+#include <alloc.h>
+#endif
+
+
 #define X3D_WORD_ALIGN 8
 
 #include "X3D_int.h"

@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <alloca.h>
-
 #include "X3D_common.h"
 #include "X3D_segmentbuilder.h"
 #include "X3D_enginestate.h"
