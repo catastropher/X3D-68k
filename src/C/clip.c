@@ -259,28 +259,29 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
 /// @todo   This function can be very easily optimized!
 ///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
-  region->rect.y_range.min = INT16_MAX;
-  region->rect.y_range.max = INT16_MIN;
-  
-  region->span = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16) * 2);
-
-  
+  X3D_Range* y_range = &region->rect.y_range;
   
   // Initially, set each scanline to have invalid values. They will get replaced
   // as each edge is filled in
   int16 i;
   
-  int16 min_y = INT16_MAX;
-  int16 max_y = INT16_MIN;
+  y_range->min = INT16_MAX;
+  y_range->max = INT16_MIN;
   
   for(i = 0; i < total_e; ++i) {
-    min_y = X3D_MIN(min_y, EDGE(i).rect.y_range.min);
-    max_y = X3D_MAX(max_y, EDGE(i).rect.y_range.max);
+    if(!x3d_rasteredge_invisible(&EDGE(i))) {
+      y_range->min = X3D_MIN(y_range->min, EDGE(i).rect.y_range.min);
+      y_range->max = X3D_MAX(y_range->max, EDGE(i).rect.y_range.max);
+    }
   }
   
-  for(i = min_y; i <= max_y; ++i) {
-    region->span[i - min_y].left = INT16_MAX;
-    region->span[i - min_y].right = INT16_MIN;
+  //x3d_log(X3D_INFO, "Range: %d-%d\n", y_range->min, y_range->max);
+  
+  region->span = x3d_stack_alloc(stack, sizeof(X3D_Span) * (y_range->max - y_range->min + 1));
+  
+  for(i = y_range->min; i <= y_range->max; ++i) {
+    region->span[i - y_range->min].left = INT16_MAX;
+    region->span[i - y_range->min].right = INT16_MIN;
   }
   
   X3D_RasterEdge* e;
@@ -292,7 +293,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     e = &EDGE(edge);
     
     if(!x3d_rasteredge_invisible(e)) {
-      X3D_Span* span = region->span + e->rect.y_range.min - min_y;
+      X3D_Span* span = region->span + e->rect.y_range.min - y_range->min;
       
       if(x3d_rasteredge_horizontal(e)) {
         // Just replace the left/right values of the horizontal line, if necessary
@@ -312,12 +313,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
           ++x;
           ++span;
         }
-      }
-      
-      // Update the y_range of the raster region
-      /// @todo Calculate the x_rangew so we can construct a bounding rectangle
-      region->rect.y_range.min = X3D_MIN(region->rect.y_range.min, e->rect.y_range.min);
-      region->rect.y_range.max = X3D_MAX(region->rect.y_range.max, e->rect.y_range.max);
+      }      
     }
   }
   

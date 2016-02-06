@@ -249,7 +249,6 @@ typedef struct X3D_SegmentRenderContext {
   uint16 step;
 } X3D_SegmentRenderContext;
 
-#include <tigcclib.h>
 
 void printnum(int16 num) {
   char buf[16];
