@@ -27,7 +27,7 @@ if(${X3D_TARGET} STREQUAL "68k")
 
   # Custom configuration for the linker
   set(CMAKE_LINKER $ENV{X3D}/tools/tigcc-x3d)
-  set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> $ENV{X3D}/build/X3D-68k/libX3D.a -n X3D")
+  set(CMAKE_C_LINK_EXECUTABLE "<CMAKE_LINKER> <OBJECTS> -o <TARGET> <LINK_LIBRARIES> $ENV{X3D}/lib/extgraph.a $ENV{X3D}/build/X3D-68k/libX3D.a -n X3D")
   set(CMAKE_EXECUTABLE_SUFFIX "")
 
   # Lets the X3D source know to include the TIGCC header files

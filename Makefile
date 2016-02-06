@@ -83,3 +83,7 @@ docs:
 
 concat-build:
 	find "src/C" -type f -name "*.c" -exec cat {} \; >output.txt
+
+fetch-lib:
+	wget https://raw.githubusercontent.com/debrouxl/ExtGraph/master/lib/extgraph.h -P ./lib
+	wget https://github.com/debrouxl/ExtGraph/raw/master/lib/extgraph.a -P ./lib

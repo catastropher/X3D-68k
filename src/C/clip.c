@@ -71,8 +71,14 @@ void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y
   int16 slope_8x8 = slope >> 8;
 
   /// @todo Optomize to not use 64 bit multiplication (maybe using a binary search?)
+#if 0
   start->x = start->x + (((int64)dy * slope) >> 16);
   start->y = y;
+#else
+  start->x = start->x + (((int32)dy * slope_8x8) >> 8);
+  start->y = y;
+  
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -257,13 +263,24 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   region->rect.y_range.max = INT16_MIN;
   
   region->span = x3d_stack_alloc(stack, LCD_HEIGHT * sizeof(int16) * 2);
- 
+
+  
+  
   // Initially, set each scanline to have invalid values. They will get replaced
   // as each edge is filled in
   int16 i;
-  for(i = 0; i < LCD_HEIGHT; ++i) {
-    region->span[i].left = INT16_MAX;
-    region->span[i].right = INT16_MIN;
+  
+  int16 min_y = INT16_MAX;
+  int16 max_y = INT16_MIN;
+  
+  for(i = 0; i < total_e; ++i) {
+    min_y = X3D_MIN(min_y, EDGE(i).rect.y_range.min);
+    max_y = X3D_MAX(max_y, EDGE(i).rect.y_range.max);
+  }
+  
+  for(i = min_y; i <= max_y; ++i) {
+    region->span[i - min_y].left = INT16_MAX;
+    region->span[i - min_y].right = INT16_MIN;
   }
   
   X3D_RasterEdge* e;
@@ -275,7 +292,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     e = &EDGE(edge);
     
     if(!x3d_rasteredge_invisible(e)) {
-      X3D_Span* span = region->span + e->rect.y_range.min;
+      X3D_Span* span = region->span + e->rect.y_range.min - min_y;
       
       if(x3d_rasteredge_horizontal(e)) {
         // Just replace the left/right values of the horizontal line, if necessary
@@ -308,7 +325,7 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
   
   // A region is only valid if the region's min_y <= max_y
   if(region->rect.y_range.min <= region->rect.y_range.max) {
-    region->span += region->rect.y_range.min;
+    //region->span += region->rect.y_range.min;
     return X3D_TRUE;
   }
   

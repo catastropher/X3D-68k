@@ -468,6 +468,8 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_object_pos(cam, &cam->pseduo_pos);
   
   
+  x3d_screen_draw_pix(x3d_enginestate_get_step() & (32 - 1), 0, 0);
+  
   static int32 tick = 0;
   
   //printf("Tick: %d\n", tick++);
@@ -482,11 +484,12 @@ void x3d_render(X3D_CameraObject* cam) {
   int16 cx = x3d_screenmanager_get()->w / 2;
   int16 cy = x3d_screenmanager_get()->h / 2;
   
-  
+#if 0  
   x3d_screen_draw_pix(cx, cy - 1, 0xFFFF);
   x3d_screen_draw_pix(cx, cy + 1, 0xFFFF);
   x3d_screen_draw_pix(cx - 1, cy, 0xFFFF);
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
+#endif
   
   X3D_Color red = x3d_rgb_to_color(255, 0, 0);
   X3D_Color white = x3d_rgb_to_color(255, 255, 255);

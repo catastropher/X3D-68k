@@ -15,6 +15,8 @@
 
 #include <tigcclib.h>
 
+#include "extgraph.h"
+
 #include "X3D_common.h"
 #include "X3D_init.h"
 #include "X3D_screen.h"
@@ -82,8 +84,26 @@ void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
   DrawPix(x, y, A_NORMAL);
 }
 
+
+
 void x3d_screen_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color) {
-  DrawLine(x0, y0, x1, y1, A_NORMAL);
+  //DrawLine(x0, y0, x1, y1, A_NORMAL);
+  //return;
+  
+  if(x0 < 0) x0 = 0;
+  if(x1 < 0) x1 = 0;
+  
+  if(y0 < 0) y0 = 0;
+  if(y1 < 0) y1 = 0;
+  
+  if(x0 >= screen_w) x0 = screen_w - 1;
+  if(x1 >= screen_w) x1 = screen_w - 1;
+  if(y0 >= screen_w) y0 = screen_h - 1;
+  if(y1 >= screen_w) y1 = screen_h - 1;
+  
+  
+  
+  FastLine_Draw_R(screen, x0, y0, x1, y1);
   return;
   
   int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;

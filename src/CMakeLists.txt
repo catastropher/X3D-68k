@@ -9,7 +9,7 @@ if(${X3D_TARGET} STREQUAL "68k")
   CMAKE_FORCE_C_COMPILER(tigcc-x3d tigcc-x3d)
   
   add_definitions(-D__68k__)
-
+  include_directories($ENV{X3D}/lib)
   
   set(CMAKE_C_FLAGS "-std=c99")
   
