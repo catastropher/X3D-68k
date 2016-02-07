@@ -101,6 +101,7 @@ add_sources(
   C/wallportal.c
   C/portal.c
   C/clipregion.c
+  C/clip2.c
 )
 
 add_subdirectory(C/platform)

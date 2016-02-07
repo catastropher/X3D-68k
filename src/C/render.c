@@ -317,8 +317,6 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 void x3d_segment_render_textures(X3D_SegmentRenderContext* context) {
   X3D_Prism3D* prism = &context->seg->prism;
   
-  return;
-  
   uint16 i;
   // Render any textures
   for(i = 0; i < prism->base_v + 2; ++i) {
