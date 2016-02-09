@@ -69,7 +69,7 @@ void x3d_key_map_pc(X3D_Key x3d_key, int32 sdl_key) {
   // Multiple keys aren't supported yet
   x3d_assert(x3d_key == 1);
   
-  key_map[id] = sdl_key;
+  key_map[id] = sdl_key & (~SDLK_SCANCODE_MASK);
   
   if(sdl_key != X3D_KEY_NONE)
     x3d_log(X3D_INFO, "Mapped key '%s' to 'X3D_KEY_%d'", SDL_GetKeyName(sdl_key), id);
@@ -87,11 +87,11 @@ X3D_PLATFORM void x3d_read_keys() {
     switch(event.type) {
       case SDL_KEYDOWN:
         //printf("Key: %d\n", event.key.keysym.sym);
-        sdl_keys[event.key.keysym.sym] = X3D_TRUE;
+        sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_TRUE;
         break;
         
       case SDL_KEYUP:
-        sdl_keys[event.key.keysym.sym] = X3D_FALSE;
+        sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_FALSE;
         break;
         
       default:
