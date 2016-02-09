@@ -45,6 +45,10 @@ if(${X3D_TARGET} STREQUAL "68k")
 elseif(${X3D_TARGET} STREQUAL "pc")
   set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
+  
+elseif(${X3D_TARGET} STREQUAL "nspire")
+  set(CMAKE_C_COMPILER nspire-gcc)
+  add_definitions(-D__nspire__)
 endif()
 
 

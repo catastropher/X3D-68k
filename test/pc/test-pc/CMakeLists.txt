@@ -43,6 +43,13 @@ if(${X3D_TARGET} STREQUAL "68k")
 elseif(${X3D_TARGET} STREQUAL "pc")
   set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
+elseif(${X3D_TARGET} STREQUAL "nspire")
+  set(CMAKE_C_FLAGS "-std=c99")
+  set(CMAKE_C_COMPILER nspire-gcc)
+  set(CMAKE_C_LINK_EXECUTABLE nspire-ld)
+  
+  
+  add_definitions(-D__nspire__)
 endif()
 
 include_directories($ENV{X3D}/src/headers)
@@ -61,5 +68,6 @@ if(${X3D_TARGET} STREQUAL "pc")
   target_link_libraries(X3D-test-pc ${SDL2_LIBRARY})
   target_link_libraries(X3D-test-pc $ENV{X3D}/build/X3D/libX3D.a)
 
-elseif(${X3D_TARGET} STREQUAL "pc")
+elseif(${X3D_TARGET} STREQUAL "nspire")
+  target_link_libraries(X3D-test-pc $ENV{X3D}/build/nX3D/libX3D.a)
 endif()

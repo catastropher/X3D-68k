@@ -14,4 +14,11 @@ elseif(${X3D_TARGET} STREQUAL "68k")
     68k/platform_keys.c
     68k/platform_assert.c
   )
+elseif(${X3D_TARGET} STREQUAL "nspire")
+  add_sources(
+    nspire/platform_screen.c
+    nspire/platform_init.c
+    nspire/platform_keys.c
+    nspire/platform_assert.c
+  )
 endif()

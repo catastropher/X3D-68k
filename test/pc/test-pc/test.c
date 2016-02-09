@@ -17,10 +17,17 @@
 //
 // test.c -> test for PC
 
+
 #include "X3D.h"
 
 #if defined(__linux__)
 #include <SDL2/SDL.h>
+#include <alloca.h>
+#endif
+
+#if defined(__nspire__)
+#include <SDL/SDL.h>
+#include <alloca.h>
 #endif
 
 enum {
@@ -330,6 +337,8 @@ void polygon2d_add_x(X3D_Polygon2D* poly, int16 w, int16 h) {
 #endif
 
 void engine_test(void) {
+  
+#if defined(__linux__)
   X3D_InitSettings init = {
     .screen_w = 160,
     .screen_h = 100,
@@ -337,6 +346,16 @@ void engine_test(void) {
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
   };
+#elif defined(__nspire__)
+  X3D_InitSettings init = {
+    .screen_w = 320,
+    .screen_h = 240,
+    .screen_scale = 1,
+    .fullscreen = X3D_FALSE,
+    .fov = ANG_60
+  };
+#endif
+  
   
   //clrscr();
   
@@ -351,7 +370,7 @@ void engine_test(void) {
   
   
   // Set up key mapping
-#ifdef __linux__
+#if defined(__linux__) || defined(__nspire__)
   x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, SDLK_w);
@@ -594,17 +613,22 @@ void font_editor(void);
 
 void x3d_clipregion_test();
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__nspire__)
 int main() {
 #else
 void _main() {
 #endif
 
-  x3d_clipregion_test();
+  //x3d_clipregion_test();
+  //x3d_cleanup();
+
   
-  return 0;
+  //return 0;
   
   engine_test();
+  x3d_cleanup();
+  return;
+  
   
   x3d_log(X3D_INFO, "X3D manual tests for PC");
   

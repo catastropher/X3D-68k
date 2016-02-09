@@ -48,12 +48,25 @@ config-68k:
 	@mkdir -p build/X3D-68k
 	@cd build/X3D-68k && cmake ../../src -DX3D_TARGET=68k -DX3D_SUBTARGET=ti89
 
+config-nspire:
+	@echo "Configuring nX3D"
+	@mkdir -p build/nX3D
+	@cd build/nX3D && cmake ../../src -DX3D_TARGET=nspire
+	
+	
 config-68k-test:
 	#@tput setaf 2
 	@echo Configuring Manual Tests for 68k
 	#@tput setaf 7
 	@mkdir -p build/manual-68k
 	@cd build/manual-68k && cmake ../../test/pc/test-pc -DX3D_TARGET=68k -DX3D_SUBTARGET=ti89
+
+config-nspire-test:
+	#@tput setaf 2
+	@echo Configuring Manual Tests for nspire
+	#@tput setaf 7
+	@mkdir -p build/manual-nspire
+	@cd build/manual-nspire && cmake ../../test/pc/test-pc -DX3D_TARGET=nspire
 	
 	
 	
@@ -64,6 +77,9 @@ x3d:
 x3d-68k:
 	@cd build/X3D-68k && make --no-print-directory
 
+nx3d:
+	@cd build/nX3D && make --no-print-directory
+	
 	
 # Builds X3D and builds/runs the unit tests
 test: x3d
@@ -76,6 +92,9 @@ test-manual: x3d
 test-manual-68k: x3d-68k
 	@cd build/manual-68k && make --no-print-directory
 
+test-manual-nspire: nx3d
+	@cd build/manual-nspire && make --no-print-directory
+	
 # Builds the documentation
 docs:
 	@cd docs && doxygen Doxyfile
