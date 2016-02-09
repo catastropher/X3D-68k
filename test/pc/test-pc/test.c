@@ -370,7 +370,7 @@ void engine_test(void) {
   
   
   // Set up key mapping
-#if defined(__linux__) || defined(__nspire__)
+#if defined(__linux__)
   x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, SDLK_w);
@@ -387,7 +387,17 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_9, '9');
   x3d_key_map_pc(KEY_RECORD, 'm');
   x3d_key_map_pc(X3D_KEY_15, 'p');
-#else
+  
+#elif defined(__nspire__)
+  x3d_key_map_pc(KEY_W, SDLK_7);
+  x3d_key_map_pc(KEY_S, SDLK_4);
+  x3d_key_map_pc(KEY_A, SDLK_LEFT);
+  x3d_key_map_pc(KEY_D, SDLK_RIGHT);
+  x3d_key_map_pc(KEY_E, SDLK_UP);
+  x3d_key_map_pc(KEY_Q, SDLK_DOWN);
+  x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
+  
+#elif defined(__68k__)
   x3d_key_map_68k(KEY_Q, RR_UP);
   x3d_key_map_68k(KEY_A, RR_LEFT);
   x3d_key_map_68k(KEY_E, RR_DOWN);
@@ -626,7 +636,6 @@ void _main() {
   //return 0;
   
   engine_test();
-  x3d_cleanup();
   return;
   
   

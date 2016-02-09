@@ -41,7 +41,7 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
   uint8 r, g, b;
   x3d_color_to_rgb(color, &r, &g, &b);
   
-  return color;
+  //return color;
   
   return x3d_rgb_to_color(
     x3d_scale_by_depth(r, depth, min_depth, max_depth),
