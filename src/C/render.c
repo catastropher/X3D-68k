@@ -50,6 +50,53 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
   );
 }
 
+void x3d_rendermanager_init(X3D_InitSettings* settings) {
+  // Initialize the render stack
+  uint32 stack_size = 600000;
+  void* render_stack_mem = malloc(stack_size);
+  
+  x3d_assert(render_stack_mem);
+  
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
+  
+  int16 offx = 0, offy = 0;
+    
+  if(0) {
+    offx = settings->screen_w / 4;
+    offy = settings->screen_h / 4;
+  }
+  
+  X3D_ScreenManager* screenman = x3d_screenmanager_get();
+  
+  screenman->w = settings->screen_w;
+  screenman->h = settings->screen_h;
+  
+  // Create the raster region for the whole screen
+  X3D_Vex2D screen_v[] = {
+    { offx, offy },
+    { settings->screen_w - offx - 1, offy },
+    { settings->screen_w - offx - 1, settings->screen_h - offy - 1 },
+    { offx, settings->screen_h - offy - 1}
+  };
+  
+  _Bool region = x3d_rasterregion_construct_from_points(
+    &renderman->stack,
+    &renderman->region,
+    screen_v,
+    4
+  );
+  
+  x3d_assert(region);
+  
+  x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.rect.y_range.min, renderman->region.rect.y_range.max);
+}
+
+void x3d_rendermanager_cleanup(void) {
+  free(x3d_rendermanager_get()->stack.base);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Clips a line to a raster region and draws it, if it's visible.
 ///

@@ -42,6 +42,7 @@ X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init) {
   
   x3d_allocmanager_init(12000);
   x3d_handlemanager_init(100);
+  x3d_rendermanager_init(init);
   
   x3d_segmentmanager_init(30, 8000);
   
@@ -50,5 +51,14 @@ X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init) {
   // Reset engine step
   /// @todo Should engine_step be moved into the render manager?
   x3d_state->engine_step = 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Cleans up the engine state.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_enginestate_cleanup(void) {
+  x3d_handlemanager_cleanup();
+  x3d_allocmanager_cleanup();
+  x3d_segmentmanager_cleanup();
 }
 

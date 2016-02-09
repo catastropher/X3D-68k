@@ -24,45 +24,6 @@ void x3d_init(X3D_InitSettings* settings) {
   x3d_enginestate_init(settings);
   x3d_platform_init(settings);
   
-  // Initialize the render stack
-  uint32 stack_size = 600000;
-  void* render_stack_mem = malloc(stack_size);
-  
-  x3d_assert(render_stack_mem);
-  
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-  
-  x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
-  
-  int16 offx = 0, offy = 0;
-    
-  if(0) {
-    offx = settings->screen_w / 4;
-    offy = settings->screen_h / 4;
-  }
-  
-  // Create the raster region for the whole screen
-  X3D_Vex2D screen_v[] = {
-    { offx, offy },
-    { settings->screen_w - offx - 1, offy },
-    { settings->screen_w - offx - 1, settings->screen_h - offy - 1 },
-    { offx, settings->screen_h - offy - 1}
-  };
-  
-  _Bool region = x3d_rasterregion_construct_from_points(
-    &renderman->stack,
-    &renderman->region,
-    screen_v,
-    4
-  );
-  
-  x3d_assert(region);
-  
-  
-  x3d_log(X3D_INFO, "%d\n", x3d_screenmanager_get()->h);
-  
-  x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.rect.y_range.min, renderman->region.rect.y_range.max);
-  
   // Init wall portals
   x3d_wallportals_init();
 }
@@ -70,5 +31,6 @@ void x3d_init(X3D_InitSettings* settings) {
 void x3d_cleanup(void) {
   x3d_log(X3D_INFO, "X3D cleanup");
   x3d_platform_cleanup();
+  x3d_enginestate_cleanup();
 }
 

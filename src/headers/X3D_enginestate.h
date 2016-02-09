@@ -92,4 +92,5 @@ static inline X3D_HandleManager* x3d_handlemanager_get(void) {
 
 
 X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init);
+void x3d_enginestate_cleanup(void);
 

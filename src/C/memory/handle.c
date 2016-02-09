@@ -114,3 +114,15 @@ void x3d_handlemanager_init(uint16 total_h) {
   handman->tail = handman->handles + total_h - 1;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Cleans up the handle manager.
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_handlemanager_cleanup(void) {
+  const X3D_HandleManager* handleman = x3d_handlemanager_get();
+  x3d_assert(handleman->handles);
+  
+  free(handleman->handles);
+}
+

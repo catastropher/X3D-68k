@@ -42,6 +42,10 @@ X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_s
   }
 }
 
+void x3d_segmentmanager_cleanup(void) {
+  x3d_varsizeallocator_cleanup(&x3d_segmentmanager_get()->alloc);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Creates a new segment.
 ///////////////////////////////////////////////////////////////////////////////

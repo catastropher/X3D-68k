@@ -19,7 +19,7 @@
 
 /// Asserts that a condition is true. If not, it throws an error.
 /// @todo This should be wrapped in an ifdef if debugging is not enabled
-#if 0
+#if 1
 #define x3d_assert(_cond) if(!(_cond)){ x3d_platform_assert_failed(#_cond, __FILE__, __LINE__); }
 #else
 #define x3d_assert(...) ;

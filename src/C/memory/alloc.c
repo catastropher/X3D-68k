@@ -30,6 +30,10 @@ void x3d_allocmanager_init(size_t mem_size) {
   x3d_slaballocator_init(&x3d_allocmanager_get()->alloc, mem_size);
 }
 
+void x3d_allocmanager_cleanup(void) {
+  x3d_slaballocator_cleanup(&x3d_allocmanager_get()->alloc);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Allocates a small block ( < 512 bytes) from the global engine slab
 ///   allocator.

@@ -32,4 +32,4 @@ X3D_Handle x3d_handle_add(void* ptr);
 void x3d_handle_delete(X3D_Handle handle);
 void* x3d_handle_deref(X3D_Handle handle);
 void x3d_handlemanager_init(uint16 total_h);
-
+void x3d_handlemanager_cleanup(void);

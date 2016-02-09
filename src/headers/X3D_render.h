@@ -56,6 +56,10 @@ typedef struct X3D_DisplayLineList {
   X3D_DisplayLine lines[X3D_MAX_DISPLAY_LINE];
 } X3D_DisplayLineList;
 
+struct X3D_InitSettings;
+
+void x3d_rendermanager_init(struct X3D_InitSettings* settings);
+
 void x3d_prism3d_render(X3D_Prism3D* prism, X3D_CameraObject* object, X3D_Color color);
 void x3d_polygon3d_render_wireframe_no_clip(X3D_Polygon3D* poly, X3D_CameraObject* object, X3D_Color color);
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step);
