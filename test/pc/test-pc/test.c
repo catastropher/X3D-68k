@@ -592,11 +592,17 @@ void SDL_Delay(int ms) {
 
 void font_editor(void);
 
+void x3d_clipregion_test();
+
 #ifdef __linux__
 int main() {
 #else
 void _main() {
 #endif
+
+  x3d_clipregion_test();
+  
+  return 0;
   
   engine_test();
   
