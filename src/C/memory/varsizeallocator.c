@@ -75,5 +75,4 @@ void* x3d_varsizeallocator_get(X3D_VarSizeAllocator* alloc, uint16 id) {
 /// @todo Document.
 void x3d_varsizeallocator_cleanup(X3D_VarSizeAllocator* alloc) {
   free(alloc->alloc_offset.data);
-  free(alloc->alloc_pool.base);
 }

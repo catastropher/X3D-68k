@@ -131,6 +131,6 @@ void x3d_slaballocator_init(X3D_SlabAllocator* alloc, size_t mem_size) {
 
 /// @todo Document
 void x3d_slaballocator_cleanup(X3D_SlabAllocator* alloc) {
-  free(&alloc->stack.ptr);
+  free(alloc->stack.base);
 }
 

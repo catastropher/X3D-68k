@@ -71,7 +71,7 @@ void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y
   int16 slope_8x8 = slope >> 8;
 
   /// @todo Optomize to not use 64 bit multiplication (maybe using a binary search?)
-#if 0
+#if !defined(__68k__)
   start->x = start->x + (((int64)dy * slope) >> 16);
   start->y = y;
 #else

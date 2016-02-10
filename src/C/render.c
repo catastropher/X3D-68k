@@ -312,7 +312,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
     
     if(dist > 0 || context->renderman->wireframe) {
       if(1 /*x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0*/) {
-        if(context->faces[i].portal_seg_face != X3D_FACE_NONE) {
+        if(context->faces[i].portal_seg_face != X3D_FACE_NONE || 1) {
           void* stack_ptr = x3d_stack_save(&context->renderman->stack);
           uint16 edge_index[prism->base_v + 1];
           X3D_RasterRegion portal_region;
@@ -340,6 +340,47 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
           else {
             portal.region = NULL;
           }
+          
+          if(portal.region && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
+            X3D_Vex3D dir;
+            
+            
+            x3d_dynamicobject_forward_vector(context->cam, &dir);
+            
+            fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&dir, &context->faces[i].plane.normal));
+            
+            X3D_Vex3D_int16 colors[] = {
+              { 255, 0, 0 },
+              { 0, 255, 0 },
+              { 0, 0, 255 },
+              { 255, 0, 255 },
+              { 255, 255, 0 },
+              { 0, 255, 255 },
+              { 255, 255, 255 },
+              { 255, 0, 128 },
+              { 128, 64, 64 },
+              { 64, 128, 64 }
+            };
+            
+            
+            X3D_Vex3D_fp0x16 color = { 255, 0, 0 };
+            
+            dot = X3D_MIN((int32)dot + 8192, 32767);
+            
+            color.x = (int32)color.x * dot / 32768;
+            color.y = (int32)color.y * dot / 32768;
+            color.z = (int32)color.z * dot / 32768;
+            
+            X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
+            
+            
+            
+            x3d_rasterregion_fill(portal.region, c);
+            continue;
+          }
+          
+          if(context->faces[i].portal_seg_face == X3D_FACE_NONE)
+            continue;
           
           if(context->renderman->wireframe) {
             portal.region = context->parent;

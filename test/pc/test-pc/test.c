@@ -340,8 +340,8 @@ void engine_test(void) {
   
 #if defined(__linux__)
   X3D_InitSettings init = {
-    .screen_w = 160,
-    .screen_h = 100,
+    .screen_w = 640,
+    .screen_h = 480,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60

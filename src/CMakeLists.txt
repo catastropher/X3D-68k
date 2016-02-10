@@ -49,6 +49,7 @@ elseif(${X3D_TARGET} STREQUAL "pc")
 elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_COMPILER nspire-gcc)
   add_definitions(-D__nspire__)
+  set(CMAKE_C_FLAGS "-Wall -O2")
 endif()
 
 

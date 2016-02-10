@@ -99,14 +99,14 @@ void x3d_screen_clear(X3D_Color color) {
   SDL_FillRect(window_surface, NULL, map_color_to_uint32(color));
 }
 
-void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
+inline void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
   uint32 c = map_color_to_uint32(color);
   
   if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
     return;
   
-  for(int32 i = 0; i < screen_scale; ++i) {
-    for(int32 d = 0; d < screen_scale; ++d) {
+  for(int32 i = 0; i < 1; ++i) {
+    for(int32 d = 0; d < 1; ++d) {
       int32 xx = x * screen_scale + d;
       int32 yy = y * screen_scale + i;
       
@@ -120,6 +120,23 @@ void x3d_screen_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color colo
   int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
   int err = (dx>dy ? dx : -dy)/2, e2;
  
+  if(y0 == y1) {
+    int16 start = X3D_MIN(x0, x1);
+    int16 end = X3D_MAX(x0, x1);
+    
+    start = X3D_MAX(start, 0);
+    end = X3D_MIN(end, screen_w - 1);
+    
+    int16 i;
+    
+    uint16 c = map_color_to_uint32(color);
+    
+    for(i = start; i <= end; ++i) {
+      ((uint16 *)window_surface->pixels)[y0 * window_surface->w + i] = c;
+    }
+    return;
+  }
+  
   for(;;){
     x3d_screen_draw_pix(x0, y0, color);
     if (x0==x1 && y0==y1) break;
