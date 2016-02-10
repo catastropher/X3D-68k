@@ -483,6 +483,9 @@ void engine_test(void) {
   uint16 id13 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id12, 1), 400);
   uint16 id14 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id13, 1), 200);
   
+  
+  x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id12, 6), 500);
+  
   p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id14)))->prism;
   
   x3d_prism3d_get_face(p2, 1, &p);

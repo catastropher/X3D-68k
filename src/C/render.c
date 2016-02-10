@@ -331,17 +331,18 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
           
           x3d_portal_set_fill(&portal, 31);
           
-          if(use_new) {
-            portal.region = &portal_region;
-          }
-          else if(dist <= 10) {
+          if(context->faces[i].portal_seg_face != X3D_FACE_NONE && dist <= 10) {
             portal.region = context->parent;
+            printf("Close!\n");
+          }
+          else if(use_new) {
+            portal.region = &portal_region;
           }
           else {
             portal.region = NULL;
           }
           
-          if(portal.region && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
+          if(portal.region && portal.region != context->parent && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
             X3D_Vex3D dir;
             
             
@@ -363,7 +364,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             };
             
             
-            X3D_Vex3D_fp0x16 color = { 255, 0, 0 };
+            X3D_Vex3D_fp0x16 color = { 255, 0, 255 };
             
             dot = X3D_MIN((int32)dot + 8192, 32767);
             
@@ -373,9 +374,31 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             
             X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
             
+            X3D_Polygon3D poly = {
+              .v = alloca(1000)
+            };
             
+            x3d_prism3d_get_face(prism, i, &poly);
+            
+            X3D_Vex3D center;
+            x3d_polygon3d_center(&poly, &center);
+            
+            x3d_camera_transform_points(context->cam, &center, 1, &center, NULL);
+            
+            
+            c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
             
             x3d_rasterregion_fill(portal.region, c);
+            
+#if 0
+            if(x3d_key_down(X3D_KEY_15)) {
+              x3d_screen_flip();
+              printf("id: %d   face: %d\n", context->seg_id, i);
+              SDL_Delay(1000);
+              x3d_screen_flip();
+            }
+#endif
+            
             continue;
           }
           
@@ -492,6 +515,17 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_object_pos(cam, &cam_pos);
   
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
+
+#if 0
+  if(id == 5) {
+    for(i = 0; i < prism->base_v * 2; ++i) {
+      printf("p%d: { %d, %d }\n", u, v2d[i].x, v2d[i].y);
+    }
+    
+    printf("=======================\n");
+  }
+#endif
+
   
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   
@@ -564,7 +598,7 @@ void x3d_render(X3D_CameraObject* cam) {
   depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step());
   
-  printf("Line count: %d\n", line_count);
+  //printf("Line count: %d\n", line_count);
   
   int16 cx = x3d_screenmanager_get()->w / 2;
   int16 cy = x3d_screenmanager_get()->h / 2;

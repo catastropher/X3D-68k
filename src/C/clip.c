@@ -193,8 +193,6 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
   edge->flags = 0;
   edge->x_data = NULL;
   
-  
-  
   // Swap points if out of order vertically
   if(a.y > b.y)
     X3D_SWAP(a, b);
@@ -447,11 +445,24 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
   if(a->z < z && b->z < z) {
     return EDGE_INVISIBLE;
   }
-  else if(a->z >= z && b->z >= z) {
+  
+  // Check if below pseduo bottom plane
+  if(a->y > a->z && b->y > b->z) {
+    //printf("INVISIBLE!!!\n");
+    //return EDGE_INVISIBLE;
+  }
+  
+  
+  
+  if(a->z >= z && b->z >= z) {
     *a_dest = *a_project;
     *b_dest = *b_project;
     return 0;
   }
+  
+  // Check against the pseudo left plane
+  //if(a->x < -a->z && b->x < -b->z)
+  //  return EDGE_INVISIBLE;
   
   if(a->z < z) {
     X3D_SWAP(a, b);
@@ -482,7 +493,7 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
 //               new_b.x, new_b.y, new_b.z, a_dest->x, a_dest->y, b_dest->x, b_dest->y);
 //   }
   
-  return EDGE_NEAR_CLIPPED;
+  return 0;//EDGE_NEAR_CLIPPED;
 }
 
 void bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* region) {
@@ -677,7 +688,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
     uint16 in[2] = { clip->v3d[edge.val[0]].z >= near_z, clip->v3d[edge.val[1]].z >= near_z };
 
-    if(in[0] || in[1]) {
+    if((in[0] || in[1]) && !x3d_rasteredge_invisible(clip->edges + i)) {
       vis_e[total_vis_e++] = clip->edge_index[i];
       
       if(in[0] != in[1]) {
@@ -701,7 +712,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
       }
     }
     else {
-      close = close || clip->v3d[edge.val[0]].z >= 0 || clip->v3d[edge.val[1]].z >= 0;
+      //close = close || clip->v3d[edge.val[0]].z >= 0 || clip->v3d[edge.val[1]].z >= 0;
     }
   }
   
