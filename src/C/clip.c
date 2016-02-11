@@ -810,7 +810,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   //printf("Total vis e: %d\nOut v: %d\n", total_vis_e, total_out_v);
   
   //return total_vis_e > 0 &&
-  if(total_vis_e > 2) {
+  if(1) {
     if(x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e)) {
       if(total_out_v == 2 && x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1)) {
         uint16 i;
@@ -840,12 +840,12 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
         }
       }
       
-      if(left_clipped && x3d_key_down(X3D_KEY_15)) {
+      if(left_clipped) {
         for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
           dest->span[i].left = 0;
       }
       
-      if(right_clipped && x3d_key_down(X3D_KEY_15)) {
+      if(right_clipped) {
         for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
           dest->span[i].right = x3d_screenmanager_get()->w - 1;
       }
