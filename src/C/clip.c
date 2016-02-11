@@ -443,16 +443,38 @@ static _Bool x3d_rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p
 
 int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_project, X3D_Vex2D* b_project, X3D_Vex2D* a_dest, X3D_Vex2D* b_dest, int16 z) {
   if(a->z < z && b->z < z) {
-    return EDGE_INVISIBLE;
+    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
   }
   
-  // Check if below pseduo bottom plane
+  // Quick rejection against pseudo view frustum planes
+  
+   if(!x3d_key_down(X3D_KEY_15)) {
+  // Bottom plane
   if(a->y > a->z && b->y > b->z) {
     //printf("INVISIBLE!!!\n");
     //return EDGE_INVISIBLE;
+    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
   }
   
+  // Top plane
+  if(a->y < -a->z && b->y < -b->z) {
+    //printf("INVISIBLE!!!\n");
+    //return EDGE_INVISIBLE;
+    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
+  }
   
+
+#if 0 
+  // Left
+  if(a->x < -a->z && b->x < -b->z)
+    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
+  
+  // Right
+  if(a->x > a->z && b->x > b->z)
+    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
+#endif
+  
+   }
   
   if(a->z >= z && b->z >= z) {
     *a_dest = *a_project;
@@ -461,8 +483,7 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
   }
   
   // Check against the pseudo left plane
-  //if(a->x < -a->z && b->x < -b->z)
-  //  return EDGE_INVISIBLE;
+  
   
   if(a->z < z) {
     X3D_SWAP(a, b);
@@ -688,7 +709,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
     uint16 in[2] = { clip->v3d[edge.val[0]].z >= near_z, clip->v3d[edge.val[1]].z >= near_z };
 
-    if((in[0] || in[1]) && !x3d_rasteredge_invisible(clip->edges + i)) {
+    if((in[0] || in[1]) && !(clip->edges[clip->edge_index[i]].flags & EDGE_NEAR_CLIPPED)) {
       vis_e[total_vis_e++] = clip->edge_index[i];
       
       if(in[0] != in[1]) {

@@ -275,11 +275,13 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     X3D_Vex3D temp_a = clip->v3d[a], temp_b = clip->v3d[b];
     X3D_Vex2D dest_a, dest_b;
     
-    if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z) != EDGE_INVISIBLE) {
+    uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
+    
+    if(!(res & EDGE_INVISIBLE)) {
       x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack);
     }
     else {
-      clip->edges[i].flags = EDGE_INVISIBLE;
+      clip->edges[i].flags |= res;
     }
   }
 }

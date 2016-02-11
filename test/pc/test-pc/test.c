@@ -219,21 +219,21 @@ void engine_test_handle_keys(void) {
   
 #if 1
   if(x3d_key_down(KEY_Q)) {
-    --cam->base.angle.x;
+    cam->base.angle.x -= 2;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
   else if(x3d_key_down(KEY_E)) {
-    ++cam->base.angle.x;
+    cam->base.angle.x += 2;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
 #endif
   
   if(x3d_key_down(KEY_A)) {
-    --cam->base.angle.y;
+    cam->base.angle.y -= 2;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
   else if(x3d_key_down(KEY_D)) {
-    ++cam->base.angle.y;
+    cam->base.angle.y += 2;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
   
@@ -374,11 +374,11 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, SDLK_w);
-  x3d_key_map_pc(KEY_A, SDLK_a);
+  x3d_key_map_pc(KEY_A, SDLK_LEFT);
   x3d_key_map_pc(KEY_S, SDLK_s);
-  x3d_key_map_pc(KEY_D, SDLK_d);
-  x3d_key_map_pc(KEY_Q, SDLK_q);
-  x3d_key_map_pc(KEY_E, SDLK_e);
+  x3d_key_map_pc(KEY_D, SDLK_RIGHT);
+  x3d_key_map_pc(KEY_Q, SDLK_DOWN);
+  x3d_key_map_pc(KEY_E, SDLK_UP);
   x3d_key_map_pc(KEY_UP, '[');
   x3d_key_map_pc(KEY_DOWN, ']');
   x3d_key_map_pc(KEY_1, '1');
