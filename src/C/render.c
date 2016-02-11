@@ -41,7 +41,7 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
   uint8 r, g, b;
   x3d_color_to_rgb(color, &r, &g, &b);
   
-  //return color;
+  return color;
   
   return x3d_rgb_to_color(
     x3d_scale_by_depth(r, depth, min_depth, max_depth),
@@ -164,6 +164,26 @@ void x3d_rasteredge_list_render(X3D_RasterEdge* edges, uint16 total_e, X3D_Displ
   for(i = 0; i < total_e; ++i) {
     X3D_Vex2D a, b;
     
+    X3D_Vex3D_int16 colors[] = {
+              { 255, 0, 0 },
+              { 0, 255, 0 },
+              { 0, 0, 255 },
+              { 255, 0, 255 },
+              { 255, 255, 0 },
+              { 0, 255, 255 },
+              { 255, 255, 255 },
+              { 255, 0, 128 },
+              { 128, 64, 64 },
+              { 64, 128, 64 }
+            };
+    
+            
+    if(i >= total_e / 3 * 2) {
+      X3D_Vex3D_int16 c = colors[i - total_e / 3 * 2];
+      color = x3d_rgb_to_color(c.x, c.y, c.z);
+    }
+    
+            
     if((edges[i].flags & EDGE_INVISIBLE) == 0) {
       x3d_rasteredge_get_endpoints(edges + i, &a, &b);
       x3d_displaylinelist_add(list, a, edges[i].start.z, b, edges[i].end.z, color);
@@ -374,7 +394,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             color.y = (int32)color.y * dot / 32768;
             color.z = (int32)color.z * dot / 32768;
             
-            X3D_Color c = x3d_rgb_to_color(0, 0, 255);
+            X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
             
             X3D_Polygon3D poly = {
               .v = alloca(1000)
@@ -430,6 +450,9 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 void x3d_segment_render_textures(X3D_SegmentRenderContext* context) {
   X3D_Prism3D* prism = &context->seg->prism;
   
+  // FIXME
+  return;
+  
   uint16 i;
   // Render any textures
   for(i = 0; i < prism->base_v + 2; ++i) {
@@ -477,9 +500,6 @@ int16 depth = 0;
 
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step  ) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
-
-  if(id != 0 && id != 6)
-    return;
   
   void* stack_save = x3d_stack_save(&renderman->stack);
   

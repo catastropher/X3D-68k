@@ -469,14 +469,16 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
  //  if(!x3d_key_down(X3D_KEY_15)) {
   // Bottom plane
   
-  if(a->y > a->z && b->y > b->z) {
+  if(!x3d_key_down(X3D_KEY_15)) {
+  
+  if(a->y > a->z / 2 && b->y > b->z / 2) {
     //printf("INVISIBLE!!!\n");
     //return EDGE_INVISIBLE;
     return EDGE_INVISIBLE | EDGE_BOTTOM_CLIPPED;
   }
   
   // Top plane
-  if(a->y < -a->z && b->y < -b->z) {
+  if(a->y < -a->z / 2 && b->y < -b->z / 2) {
     //printf("INVISIBLE!!!\n");
     //return EDGE_INVISIBLE;
     return EDGE_INVISIBLE | EDGE_TOP_CLIPPED;
@@ -492,6 +494,8 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
     return EDGE_INVISIBLE | EDGE_RIGHT_CLIPPED;
   
    //}
+  
+  }
   
   if(a->z >= z && b->z >= z) {
     *a_dest = *a_project;
@@ -789,7 +793,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   // Create a two edge between the two points clipped by the near plane
   if(total_out_v == 2) { 
     /// FIXME please!
-#if 1
+#if 0
     x3d_rasteredge_generate(clip->edges + total_e,
       out_v[0], out_v[1], clip->parent, depth[0], depth[1], &renderman->stack);
     
@@ -828,9 +832,9 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   //printf("Total vis e: %d\nOut v: %d\n", total_vis_e, total_out_v);
   
   //return total_vis_e > 0 &&
-  if(1) {
+  if(total_vis_e > 0) {
     if(x3d_rasterregion_construct_from_edges(dest, clip->parent, &renderman->stack, clip->edges, vis_e, total_vis_e)) {
-      if(total_out_v == 2 && x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1)) {
+      if(total_out_v == 2 && x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1) && 0) {
         uint16 i;
         
         int16 y_index = out_v[0].y - dest->rect.y_range.min;
