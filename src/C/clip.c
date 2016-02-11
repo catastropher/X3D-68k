@@ -448,33 +448,32 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
   
   // Quick rejection against pseudo view frustum planes
   
-   if(!x3d_key_down(X3D_KEY_15)) {
+ //  if(!x3d_key_down(X3D_KEY_15)) {
   // Bottom plane
+  
   if(a->y > a->z && b->y > b->z) {
     //printf("INVISIBLE!!!\n");
     //return EDGE_INVISIBLE;
-    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
+    return EDGE_INVISIBLE | EDGE_BOTTOM_CLIPPED;
   }
   
   // Top plane
   if(a->y < -a->z && b->y < -b->z) {
     //printf("INVISIBLE!!!\n");
     //return EDGE_INVISIBLE;
-    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
+    return EDGE_INVISIBLE | EDGE_TOP_CLIPPED;
   }
   
-
-#if 0 
+ 
   // Left
   if(a->x < -a->z && b->x < -b->z)
-    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
-  
+    return EDGE_INVISIBLE | EDGE_LEFT_CLIPPED;
+
   // Right
   if(a->x > a->z && b->x > b->z)
-    return EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
-#endif
+    return EDGE_INVISIBLE | EDGE_RIGHT_CLIPPED;
   
-   }
+   //}
   
   if(a->z >= z && b->z >= z) {
     *a_dest = *a_project;
@@ -694,22 +693,52 @@ void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_V
 
 /// Under construction
 _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion* dest) {
-
+  uint16 total_e = clip->total_e;
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   uint16 i;
   uint16 total_vis_e = 0;   // How many edges are actually visible
   int16 near_z = x3d_rendermanager_get()->near_z;
   X3D_Vex2D out_v[2];
   uint16 total_out_v = 0;
-  uint16 vis_e[clip->total_edge_index + 1];
+  uint16 vis_e[clip->total_edge_index + 5];
   _Bool close = X3D_FALSE;
   int16 depth[2];
+  
+  _Bool left_clipped = X3D_FALSE;
+  _Bool right_clipped = X3D_FALSE;
+  _Bool top_clipped = X3D_FALSE;
+  _Bool bottom_clipped = X3D_FALSE;
   
   for(i = 0; i < clip->total_edge_index; ++i) {
     X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
     uint16 in[2] = { clip->v3d[edge.val[0]].z >= near_z, clip->v3d[edge.val[1]].z >= near_z };
 
-    if((in[0] || in[1]) && !(clip->edges[clip->edge_index[i]].flags & EDGE_NEAR_CLIPPED)) {
+    _Bool frustum_clipped = X3D_FALSE;
+    
+    if((clip->edges[clip->edge_index[i]].flags & EDGE_NEAR_CLIPPED))
+      frustum_clipped = X3D_TRUE;
+    
+    if((clip->edges[clip->edge_index[i]].flags & EDGE_LEFT_CLIPPED)) {
+      frustum_clipped = X3D_TRUE;
+      left_clipped = X3D_TRUE;
+    }
+    
+    if((clip->edges[clip->edge_index[i]].flags & EDGE_RIGHT_CLIPPED)) {
+      frustum_clipped = X3D_TRUE;
+      right_clipped = X3D_TRUE;
+    }
+    
+    if((clip->edges[clip->edge_index[i]].flags & EDGE_TOP_CLIPPED)) {
+      frustum_clipped = X3D_TRUE;
+      top_clipped = X3D_TRUE;
+    }
+    
+    if((clip->edges[clip->edge_index[i]].flags & EDGE_BOTTOM_CLIPPED)) {
+      frustum_clipped = X3D_TRUE;
+      bottom_clipped = X3D_TRUE;
+    }
+    
+    if((in[0] || in[1]) && !frustum_clipped) {
       vis_e[total_vis_e++] = clip->edge_index[i];
       
       if(in[0] != in[1]) {
@@ -743,7 +772,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   if(total_out_v == 2) { 
     /// FIXME please!
 #if 1
-    x3d_rasteredge_generate(clip->edges + clip->total_e,
+    x3d_rasteredge_generate(clip->edges + total_e,
       out_v[0], out_v[1], clip->parent, depth[0], depth[1], &renderman->stack);
     
     
@@ -752,9 +781,31 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, 0x7FFF);
     
     
-    vis_e[total_vis_e++] = clip->total_e;
+    vis_e[total_vis_e++] = total_e++;
 #endif
   }
+  
+#if 0
+  if(top_clipped && x3d_key_down(X3D_KEY_15)) {
+    X3D_Vex2D a = { 0, 0 };
+    X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, 0 };
+    
+    x3d_rasteredge_generate(clip->edges + total_e,
+      a, b, clip->parent, 10, 10, &renderman->stack);
+    
+    vis_e[total_vis_e++] = total_e++;
+  }
+  
+  if(bottom_clipped && x3d_key_down(X3D_KEY_15)) {
+    X3D_Vex2D a = { 0, x3d_screenmanager_get()->h - 1 };
+    X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, x3d_screenmanager_get()->h - 1 };
+    
+    x3d_rasteredge_generate(clip->edges + total_e,
+      a, b, clip->parent, 10, 10, &renderman->stack);
+    
+    vis_e[total_vis_e++] = total_e++;
+  }
+#endif
   
   //printf("Total vis e: %d\nOut v: %d\n", total_vis_e, total_out_v);
   
@@ -788,7 +839,28 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
           //printf("Right!\n");
         }
       }
+      
+      if(left_clipped && x3d_key_down(X3D_KEY_15)) {
+        for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
+          dest->span[i].left = 0;
+      }
+      
+      if(right_clipped && x3d_key_down(X3D_KEY_15)) {
+        for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
+          dest->span[i].right = x3d_screenmanager_get()->w - 1;
+      }
+      
+#if 0
+      if(right_clipped && x3d_key_down(X3D_KEY_15)) {
+        X3D_Vex2D a = { x3d_screenmanager_get()->w - 1, 0 };
+        X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, x3d_screenmanager_get()->h - 1 };
         
+        x3d_rasteredge_generate(clip->edges + total_e,
+          a, b, clip->parent, 10, 10, &renderman->stack);
+        
+        vis_e[total_vis_e++] = total_e++;
+      }
+#endif
       
       if(x3d_rasterregion_intersect(dest, clip->parent)) {
         X3D_Color gray = x3d_rgb_to_color(64, 64, 64);

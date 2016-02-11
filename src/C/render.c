@@ -281,7 +281,7 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
       x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack);
     }
     else {
-      clip->edges[i].flags |= res;
+      clip->edges[i].flags = res;
     }
   }
 }
@@ -536,7 +536,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   /// raster edges generated.
   
   uint16 total_e = seg->prism.base_v * 3;
-  X3D_RasterEdge edges[total_e + 2];
+  X3D_RasterEdge edges[total_e + 5];
   X3D_Pair edge_pair[total_e];
   
   x3d_prism_get_edge_pairs(prism->base_v, edge_pair);

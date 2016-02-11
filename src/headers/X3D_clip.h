@@ -52,7 +52,11 @@ typedef struct X3D_RasterEdge {
 enum {
   EDGE_HORIZONTAL = 1,
   EDGE_INVISIBLE = 2,
-  EDGE_NEAR_CLIPPED = 4
+  EDGE_NEAR_CLIPPED = 4,
+  EDGE_LEFT_CLIPPED = 8,
+  EDGE_RIGHT_CLIPPED = 16,
+  EDGE_BOTTOM_CLIPPED = 32,
+  EDGE_TOP_CLIPPED = 64
 };
 
 typedef X3D_Stack X3D_RenderStack;
