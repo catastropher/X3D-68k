@@ -374,7 +374,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             color.y = (int32)color.y * dot / 32768;
             color.z = (int32)color.z * dot / 32768;
             
-            X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
+            X3D_Color c = x3d_rgb_to_color(0, 0, 255);
             
             X3D_Polygon3D poly = {
               .v = alloca(1000)
@@ -388,7 +388,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             x3d_camera_transform_points(context->cam, &center, 1, &center, NULL);
             
             
-            c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
+            //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
             
             x3d_rasterregion_fill(portal.region, c);
             
@@ -477,6 +477,9 @@ int16 depth = 0;
 
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step  ) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
+
+  if(id != 0 && id != 6)
+    return;
   
   void* stack_save = x3d_stack_save(&renderman->stack);
   

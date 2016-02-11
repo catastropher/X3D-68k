@@ -23,6 +23,7 @@
 #include "X3D_enginestate.h"
 #include "memory/X3D_stack.h"
 #include "X3D_assert.h"
+#include "X3D_keys.h"
 
 // This code is absolutely terrible and badly needs to be refactored... it was
 // never intended to *actually* be used... annoy Michael until he refactors
@@ -115,6 +116,10 @@ void x3d_rasteredge_set_y_range(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b
 
 void x3d_rasteredge_set_x_range(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b) {
   edge->rect.x_range = get_range(a->x, b->x);
+}
+
+_Bool x3d_rasteredge_frustum_clipped(X3D_RasterEdge* edge) {
+  return edge->flags & (EDGE_NEAR_CLIPPED | EDGE_LEFT_CLIPPED | EDGE_RIGHT_CLIPPED | EDGE_TOP_CLIPPED | EDGE_BOTTOM_CLIPPED);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -237,6 +242,16 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
   // by the clip (b hold either the real end of the edge or where it exits the
   // region vertically)
   x3d_rasteredge_set_x_range(edge, &a, &b);
+  
+#if 0
+  if(x3d_rasteredge_horizontal(edge) && x3d_rasteredge_invisible(edge)) {
+    edge->rect.y_range.min = parent->rect.y_range.min;
+    edge->rect.y_range.max = parent->rect.y_range.min;
+    edge->rect.x_range.min = INT16_MAX;
+    edge->rect.x_range.max = INT16_MIN;
+    edge->flags &= (~EDGE_INVISIBLE);
+  }
+#endif
 }
 
 #define EDGE(_edge) raster_edge[edge_index[_edge]]
@@ -256,7 +271,7 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
 /// @return Whether a potentially visible raster region has been constructed
 /// @todo   This function can be very easily optimized!
 ///////////////////////////////////////////////////////////////////////////////
-_Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
+_Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_RasterRegion* parent, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e) {
   X3D_Range* y_range = &region->rect.y_range;
   
   // Initially, set each scanline to have invalid values. They will get replaced
@@ -270,6 +285,9 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Stack*
     if(!x3d_rasteredge_invisible(&EDGE(i))) {
       y_range->min = X3D_MIN(y_range->min, EDGE(i).rect.y_range.min);
       y_range->max = X3D_MAX(y_range->max, EDGE(i).rect.y_range.max);
+    }
+    else if(!x3d_rasteredge_frustum_clipped(&EDGE(i))) {
+      y_range->min = X3D_MIN(y_range->min, parent->rect.y_range.min);
     }
   }
   
@@ -356,7 +374,7 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
     edge_index[i] = i;
   }
   
-  return x3d_rasterregion_construct_from_edges(dest, stack, edges, edge_index, total_v);
+  return x3d_rasterregion_construct_from_edges(dest, NULL, stack, edges, edge_index, total_v);
 }
 
 #define CLIP() x3d_span_clip(region_span, *parent_span)
@@ -785,8 +803,8 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
 #endif
   }
   
-#if 0
-  if(top_clipped && x3d_key_down(X3D_KEY_15)) {
+#if 1
+  if(top_clipped) {
     X3D_Vex2D a = { 0, 0 };
     X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, 0 };
     
@@ -796,7 +814,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     vis_e[total_vis_e++] = total_e++;
   }
   
-  if(bottom_clipped && x3d_key_down(X3D_KEY_15)) {
+  if(bottom_clipped) {
     X3D_Vex2D a = { 0, x3d_screenmanager_get()->h - 1 };
     X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, x3d_screenmanager_get()->h - 1 };
     
@@ -811,7 +829,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   
   //return total_vis_e > 0 &&
   if(1) {
-    if(x3d_rasterregion_construct_from_edges(dest, &renderman->stack, clip->edges, vis_e, total_vis_e)) {
+    if(x3d_rasterregion_construct_from_edges(dest, clip->parent, &renderman->stack, clip->edges, vis_e, total_vis_e)) {
       if(total_out_v == 2 && x3d_rasterregion_clip_line(clip->parent, &renderman->stack, out_v, out_v + 1)) {
         uint16 i;
         
@@ -823,7 +841,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
           y_index = 0;
         
         if(abs(out_v[0].x - dest->span[y_index].left) < abs(out_v[0].x - dest->span[y_index].right)) {
-          //printf("Left!\n");
+          printf("Left!\n");
           
           if(!x3d_key_down(X3D_KEY_15)) {
             for(i = 0; i < dest->rect.y_range.max - dest->rect.y_range.min + 1; ++i)
@@ -836,7 +854,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
               dest->span[i].right = x3d_screenmanager_get()->w - 1;
           }
           
-          //printf("Right!\n");
+          printf("Right!\n");
         }
       }
       
