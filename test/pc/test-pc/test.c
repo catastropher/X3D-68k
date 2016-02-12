@@ -362,6 +362,9 @@ void engine_test(void) {
   
   x3d_init(&init);
   
+  
+  
+  
   x3d_screen_clear(0);
   x3d_screen_draw_line(0, 0, 30, 30, 1);
   x3d_screen_flip();
@@ -406,6 +409,10 @@ void engine_test(void) {
   x3d_key_map_68k(KEY_S, RR_2);
   
 #endif
+
+  x3d_clipregion_test();
+  x3d_cleanup();
+  return;
   
   x3d_keymanager_set_callback(engine_test_handle_keys);
   
@@ -632,8 +639,7 @@ int main() {
 void _main() {
 #endif
 
-  //x3d_clipregion_test();
-  //x3d_cleanup();
+  
 
   
   //return 0;

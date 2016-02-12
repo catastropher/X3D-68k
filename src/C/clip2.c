@@ -15,6 +15,8 @@
 
 #include "X3D_common.h"
 #include "X3D_vector.h"
+#include "X3D_screen.h"
+#include "X3D_keys.h"
 
 typedef struct X3D_BoundRect {
   X3D_Vex2D start;
@@ -132,6 +134,15 @@ void x3d_clipregion_create(X3D_ClipRegion* region, X3D_Vex2D* v, uint16 total_v)
   
 }
 
+void draw_polygon(X3D_Vex2D* v, uint16 total_v) {
+  uint16 i;
+  
+  for(i = 0; i < total_v; ++i) {
+    uint16 n = (i + 1) % total_v;
+    x3d_screen_draw_line(v[i].x, v[i].y, v[n].x, v[n].y, 31);
+  }
+}
+
 void x3d_clipregion_test() {
   X3D_Vex2D v[] = {
     { 0, 0 },   // top_left = 0
@@ -143,10 +154,18 @@ void x3d_clipregion_test() {
     { 5, 5 }
   };
   
+  uint16 total_v = sizeof(v) / sizeof(X3D_Vex2D);
   
+  x3d_screen_clear(0);
+  draw_polygon(v, total_v);
+  x3d_screen_flip();
+  
+  
+  while(!x3d_key_down(X3D_KEY_15))
+    x3d_read_keys();
   
   X3D_ClipRegion region;
-  x3d_clipregion_create(&region, v, sizeof(v) / sizeof(X3D_Vex2D));
+  x3d_clipregion_create(&region, v, total_v);
 }
 
 

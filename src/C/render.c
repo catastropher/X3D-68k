@@ -297,7 +297,7 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     
     uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
     
-    if(!(res & EDGE_INVISIBLE)) {
+    if(res == 0) {
       x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack);
     }
     else {
@@ -331,6 +331,9 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   // Render the connecting segments
   for(i = 0; i < x3d_prism3d_total_f(prism->base_v); ++i) {
     int16 dist = x3d_plane_dist(&context->faces[i].plane, &context->cam->pseduo_pos);
+    
+    if(context->seg_id != 0 || i != 2)
+      continue;
     
     if(dist > 0 || context->renderman->wireframe) {
       if(1 /*x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0*/) {
@@ -613,6 +616,67 @@ void x3d_render(X3D_CameraObject* cam) {
   
   
   x3d_screen_draw_pix(x3d_enginestate_get_step() & (32 - 1), 0, 0);
+  
+  
+#if 1
+  X3D_RasterRegion region;
+  
+  X3D_RasterEdge edges[10];
+  
+  uint16 edge_index[] = { 0, 3 };
+  
+  uint16 e = 2;
+  
+  X3D_Vex2D v[] = {
+    { 100, 100 },
+    { -50, -200 },
+    { -100, -200 },
+    { -100, 100 }
+  };
+  
+  X3D_Vex3D v3d[10];
+  
+  uint16 i;
+  for(i = 0; i < 10; ++i) {
+    v3d[i].z = 100;
+  }
+  
+  for(i = 0; i < e; ++i) {
+    x3d_rasteredge_generate(edges + i, v[i], v[(i + 1) % 4], &x3d_rendermanager_get()->region, 10, 10, &x3d_rendermanager_get()->stack);
+  }
+  
+  X3D_Pair pairs[] = {
+    {{ 0, 1 }},
+    {{ 1, 2 }},
+    {{ 2, 3 }},
+    {{ 3, 0 }},
+  };
+  
+  edges[1].flags |= EDGE_INVISIBLE | EDGE_TOP_CLIPPED;
+  edges[2].flags |= EDGE_INVISIBLE | EDGE_TOP_CLIPPED | EDGE_LEFT_CLIPPED;
+  
+  X3D_ClipContext context = {
+    .stack = &x3d_rendermanager_get()->stack,
+    .parent = &x3d_rendermanager_get()->region,
+    .edges = edges,
+    .edge_index = edge_index,
+    .total_e = 4,
+    .total_edge_index = e,
+    .v3d = v3d,
+    .edge_pairs = pairs,
+    .v2d = v
+  };
+  
+  if(x3d_rasterregion_construct_clipped(&context, &region)) {
+    x3d_rasterregion_fill(&region, 31);
+  }
+  
+  
+  
+  return;
+  
+#endif
+  
   
   static int32 tick = 0;
   
