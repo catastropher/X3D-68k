@@ -724,6 +724,7 @@ void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_V
 }
 
 /// Under construction
+/// @todo Refactor!!!!!!!!
 _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion* dest) {
   uint16 total_e = clip->total_e;
   X3D_RenderManager* renderman = x3d_rendermanager_get();
