@@ -618,7 +618,7 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_screen_draw_pix(x3d_enginestate_get_step() & (32 - 1), 0, 0);
   
   
-#if 1
+#if 0
   X3D_RasterRegion region;
   
   X3D_RasterEdge edges[10];

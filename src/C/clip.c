@@ -467,7 +467,7 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
  //  if(!x3d_key_down(X3D_KEY_15)) {
   // Bottom plane
   
-  if(!x3d_key_down(X3D_KEY_15)) {
+  //if(!x3d_key_down(X3D_KEY_15)) {
 
   
   if(a->z < z && b->z < z) {
@@ -475,6 +475,7 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
     return flags;
   }
     
+#if 1
  
   // Left
   if(a->x < -a->z && b->x < -b->z) {
@@ -499,18 +500,18 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
     flags |= EDGE_INVISIBLE | EDGE_TOP_CLIPPED;
   }
   
-  if(flags != 0)
-      return flags;
+#endif
+
   
    //}
   
   
-  }
+//  }
   
   if(a->z >= z && b->z >= z) {
     *a_dest = *a_project;
     *b_dest = *b_project;
-    return 0;
+    return flags;
   }
   
   // Check against the pseudo left plane
@@ -545,7 +546,7 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
 //               new_b.x, new_b.y, new_b.z, a_dest->x, a_dest->y, b_dest->x, b_dest->y);
 //   }
   
-  return 0;//EDGE_NEAR_CLIPPED;
+  return flags;//EDGE_NEAR_CLIPPED;
 }
 
 void bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* region) {
@@ -762,10 +763,11 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     printf("\n");
     
     _Bool frustum_clipped = X3D_FALSE;
-    
+
+#if 0    
     if((clip->edges[clip->edge_index[i]].flags & EDGE_NEAR_CLIPPED))
       frustum_clipped = X3D_TRUE;
-    
+
     if((clip->edges[clip->edge_index[i]].flags & EDGE_LEFT_CLIPPED)) {
       frustum_clipped = X3D_TRUE;
       left_clipped = X3D_TRUE;
@@ -785,6 +787,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
       frustum_clipped = X3D_TRUE;
       bottom_clipped = X3D_TRUE;
     }
+#endif
     
     if((in[0] || in[1]) && !frustum_clipped) {
       vis_e[total_vis_e++] = clip->edge_index[i];
