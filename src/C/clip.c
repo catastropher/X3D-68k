@@ -469,35 +469,36 @@ int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_proje
   
   //if(!x3d_key_down(X3D_KEY_15)) {
 
-  
-  if(a->z < z && b->z < z) {
-    flags |= EDGE_INVISIBLE | EDGE_NEAR_CLIPPED;
-    return flags;
-  }
     
 #if 1
  
   // Left
   if(a->x < -a->z && b->x < -b->z) {
-    flags |= EDGE_INVISIBLE | EDGE_LEFT_CLIPPED;
+    flags |= EDGE_LEFT_CLIPPED;
   }
 
   // Right
   if(a->x > a->z && b->x > b->z) {
-    flags |= EDGE_INVISIBLE | EDGE_RIGHT_CLIPPED;
+    flags |= EDGE_RIGHT_CLIPPED;
   }
   
   if(a->y > a->z / 2 && b->y > b->z / 2) {
     //printf("INVISIBLE!!!\n");
     //return EDGE_INVISIBLE;
-    flags |= EDGE_INVISIBLE | EDGE_BOTTOM_CLIPPED;
+    flags |= EDGE_BOTTOM_CLIPPED;
   }
   
   // Top plane
   if(a->y < -a->z / 2 && b->y < -b->z / 2) {
     //printf("INVISIBLE!!!\n");
     //return EDGE_INVISIBLE;
-    flags |= EDGE_INVISIBLE | EDGE_TOP_CLIPPED;
+    flags |= EDGE_TOP_CLIPPED;
+  }
+
+  
+  if(a->z < z && b->z < z) {
+    flags |= EDGE_NEAR_CLIPPED | EDGE_INVISIBLE;
+    return flags;
   }
   
 #endif
@@ -743,7 +744,10 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   _Bool top_clipped = X3D_FALSE;
   _Bool bottom_clipped = X3D_FALSE;
   
-  printf("====================\n");
+
+
+  uint16 flags = EDGE_NEAR_CLIPPED | EDGE_LEFT_CLIPPED | EDGE_RIGHT_CLIPPED | EDGE_TOP_CLIPPED | EDGE_BOTTOM_CLIPPED;
+
   
   for(i = 0; i < clip->total_edge_index; ++i) {
     X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
@@ -751,16 +755,10 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
 
     int16 d;
     
-    printf("flags %d: ", clip->edge_index[i]);
+    flags &= clip->edges[clip->edge_index[i]].flags;
     
-    printf("%c", (clip->edges[clip->edge_index[i]].flags & EDGE_NEAR_CLIPPED) ? 'N' : ' ');
-    printf("%c", (clip->edges[clip->edge_index[i]].flags & EDGE_LEFT_CLIPPED) ? 'L' : ' ');
-    printf("%c", (clip->edges[clip->edge_index[i]].flags & EDGE_RIGHT_CLIPPED) ? 'R' : ' ');
-    printf("%c", (clip->edges[clip->edge_index[i]].flags & EDGE_TOP_CLIPPED) ? 'T' : ' ');
-    printf("%c", (clip->edges[clip->edge_index[i]].flags & EDGE_BOTTOM_CLIPPED) ? 'B' : ' ');
-    printf("%c", (clip->edges[clip->edge_index[i]].flags & EDGE_INVISIBLE) ? 'I' : ' ');
+    //printf("Flags: %d\n", flags);
     
-    printf("\n");
     
     _Bool frustum_clipped = X3D_FALSE;
 
@@ -789,6 +787,8 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     }
 #endif
     
+    
+    
     if((in[0] || in[1]) && !frustum_clipped) {
       vis_e[total_vis_e++] = clip->edge_index[i];
       
@@ -799,12 +799,12 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
         
         // FIXME
         if(in[0]) {
-          printf("OUT!!!\n");
+          //printf("OUT!!!\n");
           out_v[total_out_v] = v[1];
           depth[total_out_v++] = clip->edges[clip->edge_index[i]].start.z;
         }
         else {
-          printf("OUT!!!\n");
+          //printf("OUT!!!\n");
           out_v[total_out_v] = v[0];
           depth[total_out_v++] = clip->edges[clip->edge_index[i]].end.z;
         }
@@ -817,6 +817,25 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     else {
       //close = close || clip->v3d[edge.val[0]].z >= 0 || clip->v3d[edge.val[1]].z >= 0;
     }
+  }
+  
+  if(flags) {
+    printf("fail flags: ");
+    
+    printf("%c", (flags & EDGE_NEAR_CLIPPED) ? 'N' : ' ');
+    printf("%c", (flags & EDGE_LEFT_CLIPPED) ? 'L' : ' ');
+    printf("%c", (flags & EDGE_RIGHT_CLIPPED) ? 'R' : ' ');
+    printf("%c", (flags & EDGE_TOP_CLIPPED) ? 'T' : ' ');
+    printf("%c", (flags & EDGE_BOTTOM_CLIPPED) ? 'B' : ' ');
+    printf("%c", (flags & EDGE_INVISIBLE) ? 'I' : ' ');
+
+    printf("\n");
+    
+    for(i = 0; i < clip->total_edge_index; ++i) {
+      clip->edges[clip->edge_index[i]].flags |= EDGE_NO_DRAW;
+    }
+    
+    return X3D_FALSE;
   }
   
   //x3d_assert(total_out_v <= 2);

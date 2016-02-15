@@ -184,7 +184,7 @@ void x3d_rasteredge_list_render(X3D_RasterEdge* edges, uint16 total_e, X3D_Displ
     }
     
             
-    if((edges[i].flags & EDGE_INVISIBLE) == 0) {
+    if((edges[i].flags & EDGE_INVISIBLE) == 0 && (edges[i].flags & EDGE_NO_DRAW) == 0) {
       x3d_rasteredge_get_endpoints(edges + i, &a, &b);
       x3d_displaylinelist_add(list, a, edges[i].start.z, b, edges[i].end.z, color);
     }
@@ -297,8 +297,9 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     
     uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
     
-    if(res == 0) {
+    if(!(res & EDGE_INVISIBLE)) {
       x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack);
+      clip->edges[i].flags |= res;
     }
     else {
       clip->edges[i].flags = res;
@@ -332,8 +333,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   for(i = 0; i < x3d_prism3d_total_f(prism->base_v); ++i) {
     int16 dist = x3d_plane_dist(&context->faces[i].plane, &context->cam->pseduo_pos);
     
-    if(context->seg_id != 0 || i != 2)
-      continue;
+    //if(context->seg_id != 0 || i != 2)
+    //  continue;
     
     if(dist > 0 || context->renderman->wireframe) {
       if(1 /*x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0*/) {
@@ -413,7 +414,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
             
-            x3d_rasterregion_fill(portal.region, c);
+            //x3d_rasterregion_fill(portal.region, c);
             
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {
@@ -591,9 +592,10 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .list = list
   };
   
+  x3d_segment_render_connecting_segments(&context);
+  
   x3d_rasteredge_list_render(edges, total_e, list, color);
   
-  x3d_segment_render_connecting_segments(&context);
   x3d_segment_render_textures(&context);
   
   

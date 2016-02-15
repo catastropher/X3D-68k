@@ -41,7 +41,7 @@ typedef struct X3D_RasterEdge {
   X3D_Vex3D start;
   X3D_Vex3D end;
 
-  uint8 flags;
+  uint16 flags;
   
   int16* x_data;
   
@@ -56,7 +56,8 @@ enum {
   EDGE_LEFT_CLIPPED = 8,
   EDGE_RIGHT_CLIPPED = 16,
   EDGE_BOTTOM_CLIPPED = 32,
-  EDGE_TOP_CLIPPED = 64
+  EDGE_TOP_CLIPPED = 64,
+  EDGE_NO_DRAW = 128
 };
 
 typedef X3D_Stack X3D_RenderStack;
