@@ -143,6 +143,7 @@ void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_dep
 }
 
 void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* region) {
+ return;
   uint16 i;
   for(i = 0; i < list->total_l; ++i) {
     x3d_draw_clipped_line(
@@ -380,9 +381,9 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
               { 255, 0, 0 },
               { 0, 255, 0 },
               { 0, 0, 255 },
-              { 255, 0, 255 },
+              { 128, 0, 128},
               { 255, 255, 0 },
-              { 0, 255, 255 },
+              { 0, 64, 64},
               { 255, 255, 255 },
               { 255, 0, 128 },
               { 128, 64, 64 },
@@ -391,6 +392,20 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             
             
             X3D_Vex3D_fp0x16 color = { 255, 0, 255 };
+            
+            int cid = 0;
+            
+            switch(context->seg_id) {
+              case 0:   cid = 5; break;
+              case 1:   cid = 1; break;
+              case 2:   cid = 2; break;
+              case 3:   cid = 3; break;
+            }
+            
+            cid = context->seg_id % 10;
+            
+            
+            color = colors[cid];
             
             dot = X3D_MIN((int32)dot + 8192, 32767);
             
@@ -414,7 +429,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
             
-            //x3d_rasterregion_fill(portal.region, c);
+            
+            x3d_rasterregion_fill(portal.region, c);
             
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {
@@ -545,10 +561,10 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
 
-#if 0
+#if 1
   if(id == 5) {
     for(i = 0; i < prism->base_v * 2; ++i) {
-      printf("p%d: { %d, %d }\n", u, v2d[i].x, v2d[i].y);
+      printf("p%d: { %d, %d }\n", i, v2d[i].x, v2d[i].y);
     }
     
     printf("=======================\n");

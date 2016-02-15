@@ -151,8 +151,17 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
     // Calculate the slope of the edge
     *slope = x3d_vertical_slope(*a, *b);
     
+    
     // Clip the edge, if necessary
     if(a->y < parent_y_range.min) {
+      printf("Enter loop\n");
+      while(a->y < -5000) {
+        a->x = (a->x + b->x) / 2;
+        a->y = (a->y + b->y) / 2;
+      }
+      
+      printf("Exit loop\n");
+      
       x3d_intersect_line_with_horizontal(*slope, a, parent_y_range.min);
       
       // Update the minumum y of the edge, since it was just clipped
@@ -198,6 +207,7 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
   edge->flags = 0;
   edge->x_data = NULL;
   
+  
   // Swap points if out of order vertically
   if(a.y > b.y)
     X3D_SWAP(a, b);
@@ -226,7 +236,7 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
     x3d_assert(in_range(parent->rect.y_range, b.y));
     
     // Allocate space for the values
-    edge->x_data = x3d_stack_alloc(stack, height * 2);
+    edge->x_data = x3d_stack_alloc(stack, height * sizeof(int16));
 
     // For each y, generate an x value for the edge
     do {
@@ -578,14 +588,31 @@ void bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* r
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end) {
   // This is a terribly inefficient way to implement this...
   
+  return X3D_FALSE;
   
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
+ 
+  if(start->y > end->y) {
+    X3D_SWAP(start, end);    
+  }
+  
+  if(start->y < 0 && end->y > 0) {
+    while(start->y < -5000) {
+      start->x = (start->x + end->x) / 2;
+      start->y = (start->y + end->y) / 2;
+    }
+    
+    while(end->y > 5000) {
+      end->x = (start->x + end->x) / 2;
+      end->y = (start->y + end->y) / 2;
+    }
+  }
   
   x3d_rasteredge_generate(&edge, *start, *end, region, 0, 0, stack);
   
-  int16 y_min = X3D_MAX(region->rect.y_range.min, edge.rect.y_range.min);
-  int16 y_max = X3D_MIN(region->rect.y_range.max, edge.rect.y_range.max);
+  int32 y_min = X3D_MAX(region->rect.y_range.min, edge.rect.y_range.min);
+  int32 y_max = X3D_MIN(region->rect.y_range.max, edge.rect.y_range.max);
   
   if((edge.flags & EDGE_INVISIBLE) || y_min > y_max) {
     x3d_stack_restore(stack, stack_ptr);
@@ -612,7 +639,13 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     
   }
   
-  int16 i;
+  start->x = edge.x_data[0];
+  start->y = edge.rect.y_range.min;
+  
+  end->x = edge.x_data[edge.rect.y_range.max - edge.rect.y_range.min];
+  end->y = edge.rect.y_range.max;
+  
+  int32 i;
   _Bool found = X3D_FALSE;
   int16 x, left, right;
 
@@ -820,6 +853,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   }
   
   if(flags) {
+#if 0
     printf("fail flags: ");
     
     printf("%c", (flags & EDGE_NEAR_CLIPPED) ? 'N' : ' ');
@@ -830,6 +864,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     printf("%c", (flags & EDGE_INVISIBLE) ? 'I' : ' ');
 
     printf("\n");
+#endif
     
     for(i = 0; i < clip->total_edge_index; ++i) {
       clip->edges[clip->edge_index[i]].flags |= EDGE_NO_DRAW;
@@ -850,7 +885,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     
     //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
     
-    x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, 0x7FFF);
+    //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, 0);
     
     
     vis_e[total_vis_e++] = total_e++;

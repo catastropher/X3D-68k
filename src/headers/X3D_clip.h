@@ -10,8 +10,8 @@ typedef struct X3D_Span {
 } X3D_Span;
 
 typedef struct X3D_Range {
-  int16 min;
-  int16 max;
+  int32 min;
+  int32 max;
 } X3D_Range;
 
 #define SCREEN_X_RANGE get_range(0, LCD_WIDTH - 1)
@@ -20,7 +20,7 @@ typedef struct X3D_Range {
 
 
 
-static inline X3D_Range get_range(int16 a, int16 b) {
+static inline X3D_Range get_range(int32 a, int32 b) {
   return (X3D_Range) { X3D_MIN(a, b), X3D_MAX(a, b) };
 }
 
@@ -38,8 +38,8 @@ typedef struct X3D_BoundRange {
 } X3D_BoundRange;
 
 typedef struct X3D_RasterEdge {  
-  X3D_Vex3D start;
-  X3D_Vex3D end;
+  X3D_Vex3D_int32 start;
+  X3D_Vex3D_int32 end;
 
   uint16 flags;
   

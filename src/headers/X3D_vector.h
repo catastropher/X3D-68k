@@ -51,8 +51,8 @@ typedef struct X3D_Vex3D_int32 {
 /// A 2D vector with int16 components.
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Vex2D_int16 {
-  int16 x;
-  int16 y;
+  int32 x;
+  int32 y;
 } X3D_Vex2D_int16;
 
 typedef struct X3D_Vex2D_int32 {
