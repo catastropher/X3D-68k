@@ -74,11 +74,12 @@ include_directories(headers)
 include_directories(C/src/platform)
 
 add_sources(
-  C/gameloop.c
-  C/log.c
-  C/init.c
   C/resource.c
-  C/vector.c
+  
+  C/engine/gameloop.c
+  C/engine/log.c
+  C/engine/init.c
+  C/engine/enginestate.c
   
   C/memory/freeslist.c
   C/memory/stack.c
@@ -88,25 +89,29 @@ add_sources(
   C/memory/alloc.c
   C/memory/handle.c
   
-  C/enginestate.c
-  C/segment.c
-  C/segmentbuilder.c
-  C/trig.c
-  C/matrix.c
-  C/prism.c
-  C/render.c
+  C/math/vector.c
+  C/math/trig.c
+  C/math/matrix.c
+  C/math/fastsqrt.c
   
-  C/plane.c
-  C/fastsqrt.c
-  C/polygon.c
-  C/clip.c
-  C/collide.c
-  C/object.c
-  C/camera.c
-  C/wallportal.c
-  C/portal.c
-  C/clipregion.c
-  C/clip2.c
+  C/geo/prism.c
+  C/geo/plane.c
+  C/geo/polygon.c
+  
+  C/level/segment.c
+  C/level/segmentbuilder.c
+  
+  C/render/render.c
+  C/render/clip2.c
+  C/render/clipregion.c
+  C/render/wallportal.c
+  C/render/portal.c
+  C/render/clip.c
+  
+  C/physics/collide.c
+  
+  C/object/object.c
+  C/object/camera.c
 )
 
 add_subdirectory(C/platform)
