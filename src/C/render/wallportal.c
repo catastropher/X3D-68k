@@ -18,6 +18,7 @@
 #include "X3D_enginestate.h"
 #include "X3D_wallportal.h"
 #include "X3D_trig.h"
+#include "X3D_clip.h"
 
 #define X3D_MAX_WALL_PORTALS 32
 
@@ -204,7 +205,7 @@ X3D_WallPortal* x3d_wallportal_get(uint16 portal_id) {
 ///
 /// @return The number of portals attached to the given face.
 ///////////////////////////////////////////////////////////////////////////////
-#if 0
+#if 1
 void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region, X3D_DisplayLineList* list) {
 #if 1
   X3D_RenderManager* renderman = x3d_rendermanager_get();
@@ -247,9 +248,14 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
     X3D_Vex2D dest_a, dest_b;
     
-    if(x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, 10) != EDGE_INVISIBLE) {
-      x3d_rasteredge_generate(&renderman->stack, edges + i, dest_a, dest_b, region->y_range, v3d[a].z, v3d[b].z);
-    }
+    uint16 flags = x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, 10);
+    
+    edges[i].flags = 0;
+    
+    if(!(flags & EDGE_INVISIBLE))
+      x3d_rasteredge_generate(edges + i, dest_a, dest_b, region, v3d[a].z, v3d[b].z, &renderman->stack);
+    
+    edges[i].flags |= flags;
   }
   
   X3D_RasterRegion clipped_region;
@@ -295,25 +301,28 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   //
   //
   
-  if(portal->portal_id != 0xFFFF && x3d_construct_clipped_rasterregion(&clip, &clipped_region)) {
-    // Portal that 'portal' is connected to
-    X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
-    
-    // Calculate the new view matrix
-    x3d_mat3x3_mul(&new_cam.base.mat, &portal->transform, &cam->base.mat);
-    
-    // Calculate the geometry shift for everything on the other side of the portal
-    x3d_camera_calculate_shift(&new_cam, cam, &portal->center, &other_side->center);
-    
-    new_cam.pseduo_pos = other_side->center;
-    
-    if(x3d_rasterregion_intersect(region, &clipped_region)) {
-      uint16 seg_id = x3d_segfaceid_seg(other_side->face);
+  if(portal->portal_id != 0xFFFF) {
+    if(x3d_rasterregion_construct_clipped(&clip, &clipped_region)) {
       
+      
+      // Portal that 'portal' is connected to
+      X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
+      
+      // Calculate the new view matrix
+      x3d_mat3x3_mul(&new_cam.base.mat, &portal->transform, &cam->base.mat);
+      
+      // Calculate the geometry shift for everything on the other side of the portal
+      x3d_camera_calculate_shift(&new_cam, cam, &portal->center, &other_side->center);
+      
+      new_cam.pseduo_pos = other_side->center;
+      
+      uint16 seg_id = x3d_segfaceid_seg(other_side->face);
+        
       x3d_segment_render(seg_id, &new_cam, 31, &clipped_region, x3d_enginestate_get_step());
     }
   }
   
+#if 1
   // Draw the portal outline
   for(i = 0; i < portal->portal_poly.total_v; ++i) {
     uint16 a, b;
@@ -322,12 +331,13 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     a = i;
     b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
     
-    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
-      //x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, portal->color, region);
+    if((x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) & EDGE_INVISIBLE) == 0) {
+      x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, 0, region);
       
-      x3d_displaylinelist_add(list, va, v3d[edge_pair[i].val[0]].z, vb, v3d[edge_pair[i].val[1]].z, portal->color);
+      //x3d_displaylinelist_add(list, va, v3d[edge_pair[i].val[0]].z, vb, v3d[edge_pair[i].val[1]].z, portal->color);
     }
   }
+#endif
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
 #endif

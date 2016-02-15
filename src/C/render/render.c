@@ -277,8 +277,8 @@ uint16 x3d_segment_render_wall_portals(X3D_SegFaceID wall_id, X3D_CameraObject* 
   if(total_p > 0) {
     uint16 i;
     
-    //for(i = 0; i < total_p; ++i)
-    //  x3d_wallportal_render(portals[i], cam, region, list);
+    for(i = 0; i < total_p; ++i)
+      x3d_wallportal_render(portals[i], cam, region, list);
   }
   
   return total_p;
@@ -338,7 +338,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
     //  continue;
     
     if(dist > 0 || context->renderman->wireframe) {
-      if(1 /*x3d_segment_render_wall_portals(x3d_segfaceid_create(id, i), cam, region, list) == 0*/) {
+      if(1) {
         if(context->faces[i].portal_seg_face != X3D_FACE_NONE || 1) {
           void* stack_ptr = x3d_stack_save(&context->renderman->stack);
           uint16 edge_index[prism->base_v + 1];
@@ -441,11 +441,11 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             }
 #endif
             
-            continue;
+            goto render_portals;
           }
           
           if(context->faces[i].portal_seg_face == X3D_FACE_NONE)
-            continue;
+            goto render_portals;
           
           if(context->renderman->wireframe) {
             portal.region = context->parent;
@@ -457,8 +457,10 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             x3d_portal_render(&portal);
             x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step);
           }
-          
-          
+          else {
+render_portals:
+            x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent, context->list);
+          }
           
           x3d_stack_restore(&context->renderman->stack, stack_ptr);
         }
@@ -536,7 +538,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
       return;
   }
  
-  if(depth >= 16)
+  if(depth >= 5)
     return;
   
   ++depth;

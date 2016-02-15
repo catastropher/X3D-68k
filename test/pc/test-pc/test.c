@@ -136,7 +136,7 @@ void engine_test_handle_keys(void) {
       .v = alloca(sizeof(X3D_Vex2D) * 20)
     };
     
-    x3d_polygon2d_construct(&portal_poly, portal_base_v, 30, 0);
+    x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
     x3d_wallportal_construct(0, caster.hit_face, caster.hit_pos, 1, &portal_poly, 5000);
     x3d_wallportal_update(0);
     x3d_wallportal_update(1);
@@ -160,7 +160,7 @@ void engine_test_handle_keys(void) {
       .v = alloca(sizeof(X3D_Vex2D) * 20)
     };
     
-    x3d_polygon2d_construct(&portal_poly, portal_base_v, 30, 0);
+    x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
     x3d_wallportal_construct(1, caster.hit_face, caster.hit_pos, 0, &portal_poly, 31);
     x3d_wallportal_update(0);
     x3d_wallportal_update(1);
@@ -456,8 +456,8 @@ void engine_test(void) {
     .v = alloca(sizeof(X3D_Vex3D) * 20)
   };
   
-  x3d_polygon2d_construct(&portal_poly, portal_base_v, 30, 0);
-#if 0
+  x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
+#if 1
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
   uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
   

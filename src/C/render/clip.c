@@ -588,11 +588,11 @@ void bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* r
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end) {
   // This is a terribly inefficient way to implement this...
   
-  return X3D_FALSE;
   
   void* stack_ptr = x3d_stack_save(stack);
   X3D_RasterEdge edge;
- 
+
+#if 0
   if(start->y > end->y) {
     X3D_SWAP(start, end);    
   }
@@ -608,6 +608,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
       end->y = (start->y + end->y) / 2;
     }
   }
+#endif
   
   x3d_rasteredge_generate(&edge, *start, *end, region, 0, 0, stack);
   
@@ -639,11 +640,13 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
     
   }
   
+#if 0
   start->x = edge.x_data[0];
   start->y = edge.rect.y_range.min;
   
   end->x = edge.x_data[edge.rect.y_range.max - edge.rect.y_range.min];
   end->y = edge.rect.y_range.max;
+#endif
   
   int32 i;
   _Bool found = X3D_FALSE;
