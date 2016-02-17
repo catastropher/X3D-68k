@@ -15,16 +15,21 @@
 
 #include "X3D_common.h"
 #include "X3D_vector.h"
-#include "X3D_screen.h"
-#include "X3D_clip.h"
-#include "X3D_plane.h"
-#include "X3D_portal.h"
 
-void x3d_portal_render(X3D_Portal* portal) {
-  //if(x3d_portal_fill(portal))
-  //  x3d_rasterregion_fill(portal->region, x3d_portal_fill_color(portal));
+// Portal
+// Wall art
 
-  if(x3d_portal_outline(portal)) {
-    /// @todo Implement portal outlining
-  }
-}
+
+typedef struct FaceAttachment {
+  uint8 type;
+  uint8 flags;
+  uint16 value;
+} FaceAttachment;
+
+typedef struct Face {
+
+} Face;
+
+typedef struct Seg {
+
+} Seg;

@@ -30,29 +30,28 @@ void x3d_game_loop_quit(void) {
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_game_loop() {
   X3D_EngineState* state = x3d_enginestate_get();
-  
+
   do {
     // Update the key state
     x3d_read_keys();
     x3d_keymanager_get()->key_handler();
-    
+
     X3D_Color color = x3d_rgb_to_color(0, 32, 0);
-    
+
     // Render from the player's perspective
     x3d_screen_clear(0);
     x3d_render(x3d_playermanager_get()->player[0].cam);
     x3d_screen_flip();
-    
+
     /// @todo Platform-independent solution
-    
+
 #ifdef __linux__
     if(x3d_key_down(X3D_KEY_15))
       SDL_Delay(500);
     else
       SDL_Delay(25);
 #endif
-    
+
     x3d_enginestate_next_step();
   } while(!state->exit_gameloop);
 }
-

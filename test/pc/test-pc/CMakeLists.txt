@@ -5,12 +5,12 @@ project(test)
 if(${X3D_TARGET} STREQUAL "68k")
   INCLUDE(CMakeForceCompiler)
   CMAKE_FORCE_C_COMPILER(tigcc-x3d tigcc-x3d)
-  
+
   add_definitions(-D__68k__)
 
-  
+
   set(CMAKE_C_FLAGS "-std=c99")
-  
+
   # Disable ranlib
   set(CMAKE_RANLIB "echo")
 
@@ -47,8 +47,8 @@ elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_FLAGS "-std=c99")
   set(CMAKE_C_COMPILER nspire-gcc)
   set(CMAKE_C_LINK_EXECUTABLE nspire-ld)
-  
-  
+
+
   add_definitions(-D__nspire__)
 endif()
 
@@ -67,6 +67,7 @@ if(${X3D_TARGET} STREQUAL "pc")
   find_package(SDL2 REQUIRED)
   target_link_libraries(X3D-test-pc ${SDL2_LIBRARY})
   target_link_libraries(X3D-test-pc $ENV{X3D}/build/X3D/libX3D.a)
+  target_link_libraries(X3D-test-pc m)
 
 elseif(${X3D_TARGET} STREQUAL "nspire")
   target_link_libraries(X3D-test-pc $ENV{X3D}/build/nX3D/libX3D.a)

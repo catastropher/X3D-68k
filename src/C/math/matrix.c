@@ -109,15 +109,33 @@ void x3d_mat3x3_print(X3D_Mat3x3* mat) {
 /// @todo Document.
 void x3d_mat3x3_transpose(X3D_Mat3x3* mat) {
   X3D_Mat3x3 temp;
-  
+
   uint16 i, j;
-  
+
   for(i = 0; i < 3; ++i) {
     for(j = 0; j < 3; ++j) {
       temp.data[i * 3 + j] = mat->data[j * 3 + i];
     }
   }
-  
+
   *mat = temp;
+}
+
+void x3d_mat3x3_set_column(X3D_Mat3x3* mat, int16 col, X3D_Vex3D_fp0x16* v) {
+  mat->data[col] = v->x;
+  mat->data[col + 3] = v->y;
+  mat->data[col + 6] = v->z;
+}
+
+void x3d_mat3x3_set_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* v) {
+  mat->data[row * 3] = v->x;
+  mat->data[row * 3 + 1] = v->y;
+  mat->data[row * 3 + 2] = v->z;
+}
+
+void x3d_mat3x3_get_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* dest) {
+  dest->x = mat->data[row * 3];
+  dest->y = mat->data[row * 3 + 1];
+  dest->z = mat->data[row * 3 + 2];
 }
 

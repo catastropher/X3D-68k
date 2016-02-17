@@ -18,6 +18,7 @@
 #include "X3D_common.h"
 #include "X3D_vector.h"
 #include "X3D_plane.h"
+#include "X3D_matrix.h"
 
 /**
 * Constructs a plane from 3 points on the plane.
@@ -36,7 +37,7 @@ void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X
   X3D_Vex3D v2 = x3d_vex3d_sub(c, b);
 
   x3d_vex3d_fp0x16_cross(&p->normal, &v1, &v2);
-  
+
 #ifdef __68k__
   p->normal = x3d_vex3d_neg(&p->normal);
 #endif
@@ -50,3 +51,85 @@ void x3d_plane_print(X3D_Plane* p) {
     p->normal.x, p->normal.y, p->normal.z, p->d);
 }
 
+#include <math.h>
+
+_Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D* p) {
+  X3D_Vex3D x, y, z;
+
+#if 1
+  float A = plane->normal.x / 32768.0;
+  float B = plane->normal.y / 32768.0;
+  float C = plane->normal.z / 32768.0;
+
+  float D = plane->d;
+
+  float u = 10000;
+  
+  if(plane->normal.z > 0)
+    u = -u;
+  
+  float v = p->z - (-B * p->y + D - A * (p->x + u)) / C;
+
+  float len = sqrt(u * u + v * v);
+
+  u /= len;
+  v /= len;
+
+  x.x = -u * 32767;
+  x.z = v * 32767;
+  x.y = 0;
+
+  y.x = 0;
+  y.z = 0;
+  y.y = 32767;
+
+  
+  /*if(plane->normal.z < 0) {
+    x.x = -x.x;
+    x.z = -x.z;
+  }*/
+
+  //x3d_vex3d_fp0x16_cross(&y, &x, &plane->normal);
+
+  x3d_log(X3D_INFO, "U: %f", u);
+  x3d_log(X3D_INFO, "V: %f", v);
+
+#else
+  if(plane->normal.z != 0) {
+    int32 mul = 65536;
+    int64 u = 1024 * mul;
+
+    int64 nx = plane->normal.x;
+    int64 ny = plane->normal.y;
+
+    int64 axu = nx * p->x + ((nx * u) >> 15);
+    int64 by = ny * p->y;
+    int64 d = (int32)plane->d * 32768;
+
+    int64 n = (by + d - axu);
+
+    int64 v = p->z - (((int64)n) / plane->normal.z);
+
+    x = (X3D_Vex3D) { u / mul, 0, v };
+
+    x3d_vex3d_fp0x16_normalize(&x);
+
+    x3d_log(X3D_INFO, "U: %d", x.x);
+    x3d_log(X3D_INFO, "V: %d", x.z);
+
+    x3d_vex3d_fp0x16_cross(&y, &x, &plane->normal);
+
+    //x3d_log(X3D_INFO, "AXU: %ld", axu);
+    //x3d_log(X3D_INFO, "by: %d", by);
+    //x3d_log(X3D_INFO, "N: %d\n", n);
+    //x3d_log(X3D_INFO, "D: %d\n", d);
+  }
+#endif
+
+  x3d_mat3x3_set_column(dest, 0, &x);
+  x3d_mat3x3_set_column(dest, 1, &y);
+  x3d_mat3x3_set_column(dest, 2, &plane->normal);
+
+  x3d_mat3x3_transpose(dest);
+
+}
