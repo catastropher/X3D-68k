@@ -57,31 +57,46 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
   X3D_Vex3D x, y, z;
 
 #if 1
-  float A = plane->normal.x / 32768.0;
-  float B = plane->normal.y / 32768.0;
-  float C = plane->normal.z / 32768.0;
+  if(plane->normal.z != 0) {
+    float A = plane->normal.x / 32768.0;
+    float B = plane->normal.y / 32768.0;
+    float C = plane->normal.z / 32768.0;
 
-  float D = plane->d;
+    float D = plane->d;
 
-  float u = 10000;
-  
-  if(plane->normal.z > 0)
-    u = -u;
-  
-  float v = p->z - (-B * p->y + D - A * (p->x + u)) / C;
+    float u = 10000;
+    
+    if(plane->normal.z > 0)
+      u = -u;
+    
+    float v = p->z - (-B * p->y + D - A * (p->x + u)) / C;
 
-  float len = sqrt(u * u + v * v);
+    float len = sqrt(u * u + v * v);
 
-  u /= len;
-  v /= len;
+    u /= len;
+    v /= len;
 
-  x.x = -u * 32767;
-  x.z = v * 32767;
-  x.y = 0;
+    x.x = -u * 32767;
+    x.z = v * 32767;
+    x.y = 0;
 
-  y.x = 0;
-  y.z = 0;
-  y.y = 32767;
+    y.x = 0;
+    y.z = 0;
+    y.y = 32767;
+    
+    x3d_log(X3D_INFO, "U: %f", u);
+    x3d_log(X3D_INFO, "V: %f", v);
+  }
+  else {
+    x.x = -32767;
+    x.y = 0;
+    x.z = 0;
+    
+    y.x = 0;
+    y.y = 0;
+    y.z = -32767;
+    
+  }
 
   
   /*if(plane->normal.z < 0) {
@@ -91,8 +106,7 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
 
   //x3d_vex3d_fp0x16_cross(&y, &x, &plane->normal);
 
-  x3d_log(X3D_INFO, "U: %f", u);
-  x3d_log(X3D_INFO, "V: %f", v);
+  
 
 #else
   if(plane->normal.z != 0) {

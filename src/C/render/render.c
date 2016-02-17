@@ -178,7 +178,7 @@ void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_dep
 }
 
 void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* region) {
- //return;
+ return;
   uint16 i;
   for(i = 0; i < list->total_l; ++i) {
     x3d_draw_clipped_line(
@@ -446,7 +446,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             cid = context->seg_id % 10;
 
 
-            color = colors[i];
+            color = colors[cid];
 
             dot = X3D_MIN((int32)dot + 8192, 32767);
 
@@ -471,7 +471,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
 
 
-            //x3d_rasterregion_fill(portal.region, c);
+            x3d_rasterregion_fill(portal.region, c);
 
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {
@@ -588,7 +588,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
       return;
   }
 
-  if(depth >= 5)
+  if(depth >= 15)
     return;
 
   ++depth;

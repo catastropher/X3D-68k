@@ -331,7 +331,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     b = i + 1 < portal->portal_poly.total_v ? i + 1 : 0;
 
     if((x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) & EDGE_INVISIBLE) == 0) {
-      x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, 31, region);
+      x3d_draw_clipped_line(va.x, va.y, vb.x, vb.y, v3d[edge_pair[i].val[0]].z, v3d[edge_pair[i].val[1]].z, 0, region);
 
       //x3d_displaylinelist_add(list, va, v3d[edge_pair[i].val[0]].z, vb, v3d[edge_pair[i].val[1]].z, portal->color);
     }

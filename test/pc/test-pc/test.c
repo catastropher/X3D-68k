@@ -123,7 +123,7 @@ void engine_test_handle_keys(void) {
 
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
 
-    x3d_raycaster_init(&caster, 0, cam->base.base.pos, dir);
+    x3d_raycaster_init(&caster, cam->base.base.seg, cam->base.base.pos, dir);
     x3d_raycaster_cast(&caster);
 
 
