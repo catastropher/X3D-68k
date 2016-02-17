@@ -52,16 +52,22 @@ void x3d_wallportal_construct(uint16 wall_portal, X3D_SegFaceID face, X3D_Vex3D 
   /// @todo Add support for BASE_A and BASE_B face portals
   //x3d_assert(face_id >= 2);
 
-  uint16 top_left_v = face_id - 2;
-  uint16 bottom_right_v = ((top_left_v + 1) % seg->prism.base_v) + seg->prism.base_v;
-
+  X3D_Polygon3D p = {
+    .v = alloca(sizeof(X3D_Vex3D_int16) * seg->prism.base_v)
+  };
+  
+  x3d_prism3d_get_face(&seg->prism, face_id, &p);
+  
+  X3D_Vex3D center;
+  x3d_polygon3d_center(&p, &center);
+  
   // Project the 2D polygon onto the wall
   x3d_polygon2d_to_polygon3d(
     poly,
     &portal->portal_poly,
     &x3d_uncompressedsegment_get_faces(seg)[face_id].plane,
-    seg->prism.v + top_left_v,
-    seg->prism.v + bottom_right_v,
+    &center,
+    &center,
     &portal->mat
   );
 
@@ -318,6 +324,8 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       uint16 seg_face = x3d_segfaceid_face(other_side->face);
       
       X3D_Color c = x3d_rgb_to_color(255, 69, 0);
+      
+      new_cam.pseduo_pos = other_side->center;
       
       x3d_rasterregion_fill(&clipped_region, c);
 

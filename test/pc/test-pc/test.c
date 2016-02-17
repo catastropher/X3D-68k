@@ -162,7 +162,7 @@ void engine_test_handle_keys(void) {
 
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
 
-    x3d_raycaster_init(&caster, 0, cam->base.base.pos, dir);
+    x3d_raycaster_init(&caster, cam->base.base.seg, cam->base.base.pos, dir);
     x3d_raycaster_cast(&caster);
 
     printf("Seg: %d, Face: %d, Pos: { %d, %d, %d }\n", x3d_segfaceid_seg(caster.hit_face),
@@ -624,6 +624,8 @@ void engine_test(void) {
 
   box->prism = box_prism;
 #endif
+  
+  x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 5), 200);
 
   x3d_game_loop();
 

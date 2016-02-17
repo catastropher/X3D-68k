@@ -574,13 +574,6 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   list->total_l = 0;
 
   
-  if(id == 0 && depth == 0) {
-    X3D_Vex3D a = { 0, 0, 0 };
-    X3D_WallPortal* portal = x3d_wallportal_get(0);
-    
-    x3d_mat3x3_visualize(&portal->mat, a, cam);
-  }
-  
   // Make sure we don't blow the stack from recursing too deep
 
   if(x3d_rendermanager_get()->wireframe) {
@@ -676,6 +669,13 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_stack_restore(&renderman->stack, stack_save);
 
   --depth;
+  
+  if(id == 0 && depth == 0) {
+    X3D_Vex3D a = { 0, 0, 0 };
+    X3D_WallPortal* portal = x3d_wallportal_get(0);
+    
+    x3d_mat3x3_visualize(&portal->mat, a, cam);
+  }
 }
 
 

@@ -54,7 +54,7 @@ void x3d_plane_print(X3D_Plane* p) {
 #include <math.h>
 
 _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D* p) {
-  X3D_Vex3D x, y, z;
+  X3D_Vex3D x, y, z = plane->normal;
 
 #if 1
   if(plane->normal.z != 0) {
@@ -88,13 +88,15 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
     x3d_log(X3D_INFO, "V: %f", v);
   }
   else {
-    x.x = -32767;
+    x.x = 32767;
     x.y = 0;
     x.z = 0;
     
     y.x = 0;
     y.y = 0;
-    y.z = -32767;
+    y.z = 32767;
+    
+    x3d_log(X3D_INFO, "Normal: %d", z.y);
     
   }
 
@@ -142,8 +144,8 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
 
   x3d_mat3x3_set_column(dest, 0, &x);
   x3d_mat3x3_set_column(dest, 1, &y);
-  x3d_mat3x3_set_column(dest, 2, &plane->normal);
-
+  x3d_mat3x3_set_column(dest, 2, &z);
+  
   x3d_mat3x3_transpose(dest);
 
 }
