@@ -76,11 +76,11 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
     u /= len;
     v /= len;
 
-    x.x = -u * 32767;
-    x.z = v * 32767;
+    x.x = u * 32767;
+    x.z = -v * 32767;
     x.y = 0;
 
-    x3d_vex3d_fp0x16_cross(&y, &x, &z);
+    x3d_vex3d_fp0x16_cross(&y, &z, &x);
     
     //y.x = 0;
     //y.z = 0;
@@ -148,6 +148,6 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
   x3d_mat3x3_set_column(dest, 1, &y);
   x3d_mat3x3_set_column(dest, 2, &z);
   
-  x3d_mat3x3_transpose(dest);
+  //x3d_mat3x3_transpose(dest);
 
 }

@@ -201,6 +201,36 @@ X3D_WallPortal* x3d_wallportal_get(uint16 portal_id) {
   return wall_portals + portal_id;
 }
 
+#include <stdarg.h>
+
+void x3d_mat3x3_mul_chain(X3D_Mat3x3* dest, const char* format, ...) {
+  va_list list;
+  va_start(list, format);
+  
+  X3D_Mat3x3 res;
+  X3D_Vex3D_angle256 angle = { 0, 0, 0 };
+  x3d_mat3x3_construct(&res, &angle);
+  
+  while(*format) {
+    X3D_Mat3x3* mat = va_arg(list, X3D_Mat3x3*);
+    X3D_Mat3x3 transpose;
+    
+    if(*format == 't') {
+      transpose = *mat;
+      x3d_mat3x3_transpose(&transpose);
+      mat = &transpose;
+    }
+    
+    X3D_Mat3x3 temp;
+    x3d_mat3x3_mul(&temp, &res, mat);
+    res = temp;
+    
+    ++format;
+  }
+  
+  *dest = res;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders a wall portal and anything that can be seen through the portal
 ///   from the perspective of the camera looking through it.
@@ -306,6 +336,50 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   // |________|________|
   //
   //
+  
+  
+  
+  X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
+  
+  X3D_Mat3x3 new_mat;
+  
+  X3D_Mat3x3 m4;
+  X3D_Vex3D_angle256 ang = { 0, 0, 0 };
+  x3d_mat3x3_construct(&m4, &ang);
+  
+  {
+    X3D_Vex3D x;
+    x3d_mat3x3_get_column(&m4, 0, &x);
+    //x = x3d_vex3d_neg(&x);
+    x3d_mat3x3_set_column(&m4, 0, &x);
+    
+    X3D_Vex3D y;
+    x3d_mat3x3_get_column(&m4, 1, &y);
+    
+    y = x3d_vex3d_neg(&y);
+    x3d_mat3x3_set_column(&m4, 1, &y);
+  }
+  
+  x3d_mat3x3_mul_chain(&new_mat, "mtm", &other_side->mat, &portal->mat, &cam->base.mat);
+    
+  #if 1
+      X3D_Vex3D x;
+      x3d_mat3x3_get_column(&new_mat, 0, &x);
+      x = x3d_vex3d_neg(&x);
+      x3d_mat3x3_set_column(&new_mat, 0, &x);
+      
+      X3D_Vex3D z;
+      x3d_mat3x3_get_column(&new_mat, 2, &z);
+      
+      z = x3d_vex3d_neg(&z);
+      x3d_mat3x3_set_column(&new_mat, 2, &z);
+      
+      X3D_Vex3D y;
+      x3d_mat3x3_get_column(&new_mat, 1, &y);
+      
+      y = x3d_vex3d_neg(&y);
+      x3d_mat3x3_set_column(&new_mat, 1, &y);
+#endif  
 
   if(portal->portal_id != 0xFFFF) {
     if(x3d_rasterregion_construct_clipped(&clip, &clipped_region)) {
@@ -318,7 +392,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       x3d_mat3x3_mul(&new_cam.base.mat, &portal->transform, &cam->base.mat);
 
       // Calculate the geometry shift for everything on the other side of the portal
-      x3d_camera_calculate_shift(&new_cam, cam, &portal->center, &other_side->center);
+      //x3d_camera_calculate_shift(&new_cam, cam, &portal->center, &other_side->center);
 
       uint16 seg_id = x3d_segfaceid_seg(other_side->face);
       uint16 seg_face = x3d_segfaceid_face(other_side->face);
@@ -326,6 +400,12 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       X3D_Color c = x3d_rgb_to_color(255, 69, 0);
       
       new_cam.pseduo_pos = other_side->center;
+      
+      new_cam.base.base.pos.x = (int32)other_side->center.x << 8;
+      new_cam.base.base.pos.y = (int32)other_side->center.y << 8;
+      new_cam.base.base.pos.z = (int32)other_side->center.z << 8;
+      
+      new_cam.base.mat = new_mat;
       
       x3d_rasterregion_fill(&clipped_region, c);
 

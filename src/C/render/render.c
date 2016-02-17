@@ -74,7 +74,7 @@ void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, X3D_CameraObject* cam)
   
   for(i = 0; i < 3; ++i) {
     X3D_Vex3D p;
-    x3d_mat3x3_get_row(mat, i, &p);
+    x3d_mat3x3_get_column(mat, i, &p);
     
     p.x = (p.x >> 9) + pos.x;
     p.y = (p.y >> 9) + pos.y;
@@ -419,7 +419,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
 
             X3D_Vex3D_int16 colors[] = {
-              { 255, 0, 0 },
+              { 64, 64, 64 },
               { 0, 255, 0 },
               { 0, 0, 255 },
               { 128, 0, 128},
@@ -470,8 +470,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
 
-
-            x3d_rasterregion_fill(portal.region, c);
+            if(context->seg_id != 0)
+              x3d_rasterregion_fill(portal.region, c);
 
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {
@@ -671,7 +671,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   --depth;
   
   if(id == 0 && depth == 0) {
-    X3D_Vex3D a = { 0, 0, 0 };
+    X3D_Vex3D a = { 0, 100, 0 };
     X3D_WallPortal* portal = x3d_wallportal_get(0);
     
     x3d_mat3x3_visualize(&portal->mat, a, cam);

@@ -127,6 +127,12 @@ void x3d_mat3x3_set_column(X3D_Mat3x3* mat, int16 col, X3D_Vex3D_fp0x16* v) {
   mat->data[col + 6] = v->z;
 }
 
+void x3d_mat3x3_get_column(X3D_Mat3x3* mat, int16 col, X3D_Vex3D_fp0x16* dest) {
+  dest->x = mat->data[col];
+  dest->y = mat->data[col + 3];
+  dest->z = mat->data[col + 6];
+}
+
 void x3d_mat3x3_set_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* v) {
   mat->data[row * 3] = v->x;
   mat->data[row * 3 + 1] = v->y;
