@@ -80,9 +80,11 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
     x.z = v * 32767;
     x.y = 0;
 
-    y.x = 0;
-    y.z = 0;
-    y.y = 32767;
+    x3d_vex3d_fp0x16_cross(&y, &x, &z);
+    
+    //y.x = 0;
+    //y.z = 0;
+    //y.y = 32767;
     
     x3d_log(X3D_INFO, "U: %f", u);
     x3d_log(X3D_INFO, "V: %f", v);
