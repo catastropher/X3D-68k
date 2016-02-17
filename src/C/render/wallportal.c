@@ -316,6 +316,10 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
 
       uint16 seg_id = x3d_segfaceid_seg(other_side->face);
       uint16 seg_face = x3d_segfaceid_face(other_side->face);
+      
+      X3D_Color c = x3d_rgb_to_color(255, 69, 0);
+      
+      x3d_rasterregion_fill(&clipped_region, c);
 
       x3d_segment_render(seg_id, &new_cam, 31, &clipped_region, x3d_enginestate_get_step(), seg_face);
     }
