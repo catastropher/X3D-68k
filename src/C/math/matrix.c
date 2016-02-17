@@ -145,3 +145,35 @@ void x3d_mat3x3_get_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* dest) {
   dest->z = mat->data[row * 3 + 2];
 }
 
+#if 0
+
+fp8x8 x3d_fp8x8_mul(fp8x8 a, fp8x8 b) {
+  
+}
+
+#endif
+
+
+void x3d_mat3x3_from_axis_angle(X3D_Mat3x3* dest, X3D_Vex3D* axis, angle256 angle) {
+#if 0
+  fp8x8 c = x3d_cos(angle) >> 7;
+  fp8x8 s = x3d_sin(angle) >> 7;
+  fp8x8 C = 256 - C;
+  
+  fp8x8 xx = x3d_fp8x8_mul(axis->x, axis->x);
+  fp8x8 xy = x3d_fp8x8_mul(axis->x, axis->y);
+  fp8x8 xz = x3d_fp8x8_mul(axis->x, axis->z);
+  
+  fp8x8 yy = x3d_fp8x8_mul(axis->y, axis->y);
+  fp8x8 yz = x3d_fp8x8_mul(axis->y, axis->z);
+  
+  fp8x8 zz = x3d_fp8x8_mul(axis->z, axis->z);
+  
+  fp8x8 zs = x3d_fp8x8_mul(axis->z, 
+  
+  
+  dest->data[0] = x3d_fp8x8_mul(xx, C) + c;
+  dest->data[1] = x3d_fp8x8_mul(xy, C) + c;
+#endif
+}
+

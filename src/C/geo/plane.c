@@ -147,7 +147,4 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
   x3d_mat3x3_set_column(dest, 0, &x);
   x3d_mat3x3_set_column(dest, 1, &y);
   x3d_mat3x3_set_column(dest, 2, &z);
-  
-  //x3d_mat3x3_transpose(dest);
-
 }

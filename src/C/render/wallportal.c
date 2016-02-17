@@ -345,34 +345,38 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   
   X3D_Mat3x3 m4;
   X3D_Vex3D_angle256 ang = { 0, 0, 0 };
-  x3d_mat3x3_construct(&m4, &ang);
+  m4 = portal->mat;
   
   {
+    X3D_Vex3D z;
+    x3d_mat3x3_get_column(&m4, 2, &z);
+    
+    z = x3d_vex3d_neg(&z);
+    x3d_mat3x3_set_column(&m4, 2, &z);
+    
     X3D_Vex3D x;
     x3d_mat3x3_get_column(&m4, 0, &x);
-    //x = x3d_vex3d_neg(&x);
+    
+    x = x3d_vex3d_neg(&x);
     x3d_mat3x3_set_column(&m4, 0, &x);
-    
-    X3D_Vex3D y;
-    x3d_mat3x3_get_column(&m4, 1, &y);
-    
-    y = x3d_vex3d_neg(&y);
-    x3d_mat3x3_set_column(&m4, 1, &y);
   }
   
-  x3d_mat3x3_mul_chain(&new_mat, "mtm", &other_side->mat, &portal->mat, &cam->base.mat);
+  x3d_mat3x3_mul_chain(&new_mat, "mtm", &other_side->mat, &m4, &cam->base.mat);
     
-  #if 1
+  
+  X3D_Vex3D z;
+  x3d_mat3x3_get_column(&new_mat, 2, &z);
+  
+  //z = x3d_vex3d_neg(&z);
+  x3d_mat3x3_set_column(&new_mat, 2, &z);
+  
+  #if 0
       X3D_Vex3D x;
       x3d_mat3x3_get_column(&new_mat, 0, &x);
       x = x3d_vex3d_neg(&x);
       x3d_mat3x3_set_column(&new_mat, 0, &x);
       
-      X3D_Vex3D z;
-      x3d_mat3x3_get_column(&new_mat, 2, &z);
       
-      z = x3d_vex3d_neg(&z);
-      x3d_mat3x3_set_column(&new_mat, 2, &z);
       
       X3D_Vex3D y;
       x3d_mat3x3_get_column(&new_mat, 1, &y);
@@ -404,6 +408,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       new_cam.base.base.pos.x = (int32)other_side->center.x << 8;
       new_cam.base.base.pos.y = (int32)other_side->center.y << 8;
       new_cam.base.base.pos.z = (int32)other_side->center.z << 8;
+   
       
       new_cam.base.mat = new_mat;
       

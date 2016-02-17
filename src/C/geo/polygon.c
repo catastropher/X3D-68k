@@ -239,6 +239,8 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
   
   dest->total_v = poly->total_v;
   
+  x3d_mat3x3_transpose(mat);
+  
   uint16 i;
   for(i = 0; i < poly->total_v; ++i) {
     X3D_Vex3D vv = { poly->v[i].x, poly->v[i].y, 0 };
@@ -251,10 +253,10 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
     //dest->v[i].y += v->y;
     //dest->v[i].z += v->z;
   }
+
   
+  x3d_mat3x3_transpose(mat);
   //mat->data[0] = -mat->data[0];
-  
-  //x3d_mat3x3_transpose(mat);
 
   //printf("%d %d %d\n", x.x, x.y, x.z);
 }
