@@ -21,6 +21,7 @@
 #include "memory/X3D_alloc.h"
 #include "X3D_segment.h"
 #include "X3D_render.h"
+#include "X3D_wallportal.h"
 
 static uint16 active_objects[X3D_MAX_OBJECTS];
 static uint16 total_active_objects;
@@ -126,10 +127,13 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   
   X3D_UncompressedSegment* seg = x3d_segmentmanager_load(obj->base.seg);
   
-  if(caster.dist > 0 && caster.inside) {
+  uint16 portals[32];
+  uint16 total_p = x3d_wall_get_wallportals(caster.hit_face, portals);
+  
+  if(caster.dist > (total_p == 1 ? 0 : 0) && caster.inside) {
     X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
     
-    if(face->portal_seg_face != X3D_FACE_NONE || caster.dist > 10)
+    if(face->portal_seg_face != X3D_FACE_NONE || caster.dist > 10 || total_p == 1)
       obj->base.pos = new_pos;
   }
   else {
@@ -140,12 +144,42 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
     
     X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
     
-    printf("Here!\n");
+    total_p = x3d_wall_get_wallportals(caster.hit_face, portals);
     
-    if(face->portal_seg_face != X3D_FACE_NONE) {
+    x3d_log(X3D_INFO, "Here!");
+    
+    if(total_p != 0) {
+      X3D_Vex3D pos = {
+        new_pos.x >> 8,
+        new_pos.y >> 8,
+        new_pos.z >> 8,
+      };
+      
+      x3d_log(X3D_INFO, "Move through portal");
+      
+      X3D_WallPortal* portal = x3d_wallportal_get(portals[0]);
+      
+      X3D_Vex3D portal_pos;
+      x3d_wallportal_transform_point(portal, &pos, &portal_pos);
+      
+      obj->base.pos.x = (int32)portal_pos.x << 8;
+      obj->base.pos.y = (int32)portal_pos.y << 8;
+      obj->base.pos.z = (int32)portal_pos.z << 8;
+      
+      obj->base.seg = x3d_segfaceid_seg(x3d_wallportal_get(portal->portal_id)->face);
+      
+      X3D_Mat3x3 new_mat;
+      x3d_mat3x3_mul(&new_mat, &portal->transform, &obj->mat);
+      
+      obj->mat = new_mat;
+      
+      x3d_mat3x3_extract_angles(&new_mat, &obj->angle);
+      
+    }
+    else if(face->portal_seg_face != X3D_FACE_NONE) {
       obj->base.pos = new_pos;
       obj->base.seg = x3d_segfaceid_seg(face->portal_seg_face);
-      
+    
       printf("Segment: %d\n", obj->base.seg);
     }
   }

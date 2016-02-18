@@ -70,3 +70,77 @@ fp8x8 x3d_tan(angle256 angle) {
   return div_fp0x16_by_fp0x16(x3d_sin(angle), x3d_cos(angle));
 }
 
+#define ANGLE_000    0
+#define ANGLE_015   24
+#define ANGLE_030   48
+#define ANGLE_045   72
+#define ANGLE_060   96
+#define ANGLE_090  144
+#define ANGLE_180  288
+#define ANGLE_270  432
+#define ANGLE_360  576 // don't use this value, use ANGLE_000 instead
+
+short GetArcTanYX(short y, short x) {
+  static const unsigned short tab_tan512[144]={
+     0,     6,    11,    17,    22,    28,    34,    39,    45,    50,
+    56,    62,    67,    73,    79,    85,    90,    96,   102,   108,
+   114,   119,   125,   131,   137,   143,   149,   155,   161,   168,
+   174,   180,   186,   193,   199,   206,   212,   219,   225,   232,
+   239,   246,   252,   259,   267,   274,   281,   288,   296,   303,
+   311,   318,   326,   334,   342,   350,   359,   367,   375,   384,
+   393,   402,   411,   420,   430,   439,   449,   459,   469,   480,
+   490,   501,   512,   523,   535,   547,   559,   571,   584,   597,
+   610,   624,   638,   652,   667,   683,   698,   714,   731,   748,
+   766,   785,   804,   823,   844,   865,   887,   910,   933,   958,
+   984,  1010,  1038,  1067,  1098,  1130,  1164,  1199,  1236,  1275,
+  1317,  1360,  1407,  1456,  1508,  1564,  1624,  1688,  1757,  1831,
+  1911,  1998,  2092,  2196,  2309,  2435,  2574,  2729,  2904,  3101,
+  3327,  3586,  3889,  4246,  4675,  5198,  5852,  6692,  7812,  9378,
+ 11727, 15640, 23465, 46935};
+ 
+ 
+    short angle = ANGLE_090;
+
+    if (y==0)  return (x<0 ? ANGLE_180 : ANGLE_000);
+
+    if (x!=0) {
+        long tangent = (long)((512*(long)y)/x);
+        unsigned short low, high, mid, diff=65535, newdiff;
+        short sign = 1;
+
+        if (tangent < 0) {
+            sign = -1;
+            tangent = abs(tangent);
+        }
+
+        // now we perform a binary search to find index of closest value
+        low = 0;
+        high = ANGLE_090-1;
+        while (low <= high) {
+            mid = (low+high)/2;
+            newdiff = abs(tangent-(long)tab_tan512[mid]);
+            if (newdiff < diff) {
+                angle = mid;
+                diff = newdiff;
+                if (diff <= 2)  break;
+            }
+
+            if ((long)tab_tan512[mid] < tangent) low  = mid+1;
+            else                                 high = mid-1;
+        }
+
+        if (sign==-1)  angle = ANGLE_180-angle;
+    }
+
+    if (y<0)  angle += ANGLE_180;
+    if (angle >= ANGLE_360)  angle -= ANGLE_360;
+    return angle;
+}
+
+angle256 x3d_atan2(short y, short x) {
+  int16 a = GetArcTanYX(y, x);
+  
+  x3d_log(X3D_INFO, "A: %d", a);
+  
+  return a * ANG_360 / ANGLE_360;
+}

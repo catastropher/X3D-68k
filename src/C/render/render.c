@@ -769,6 +769,7 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
 #endif
 
+  
   X3D_Color red = x3d_rgb_to_color(255, 0, 0);
   X3D_Color white = x3d_rgb_to_color(255, 255, 255);
 

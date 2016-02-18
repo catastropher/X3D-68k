@@ -20,6 +20,7 @@
 #include "X3D_matrix.h"
 #include "X3D_vector.h"
 #include "X3D_trig.h"
+#include "X3D_fastsqrt.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Multiplies two fp0x16 matricies together (aka matrix concatenation).
@@ -176,4 +177,19 @@ void x3d_mat3x3_from_axis_angle(X3D_Mat3x3* dest, X3D_Vex3D* axis, angle256 angl
   dest->data[1] = x3d_fp8x8_mul(xy, C) + c;
 #endif
 }
+
+void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest) {
+  //dest->x = x3d_atan2(mat->data[7], mat->data[8]);
+  dest->y = x3d_atan2(mat->data[3], mat->data[0]);
+  
+  //dest->x = 0;
+  //dest->y = 0;
+  
+  //fp0x16 cos_y = x3d_fastsqrt(32767 - mat->data[0] * )
+  
+  
+  x3d_log(X3D_INFO, "Angle X: %d", dest->x);
+  x3d_log(X3D_INFO, "Angle Y: %d", dest->y);
+}
+
 
