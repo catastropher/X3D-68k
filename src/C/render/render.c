@@ -419,7 +419,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
 
             X3D_Vex3D_int16 colors[] = {
-              { 64, 64, 64 },
+              { 255, 0, 0 },
               { 0, 255, 0 },
               { 0, 0, 255 },
               { 128, 0, 128},
@@ -470,8 +470,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
 
-            if(context->seg_id != 0)
-              x3d_rasterregion_fill(portal.region, c);
+            x3d_rasterregion_fill(portal.region, c);
 
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {

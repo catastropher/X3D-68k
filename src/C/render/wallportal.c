@@ -361,7 +361,8 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     x3d_mat3x3_set_column(&m4, 0, &x);
   }
   
-  x3d_mat3x3_mul_chain(&new_mat, "mtm", &other_side->mat, &m4, &cam->base.mat);
+  
+  x3d_mat3x3_mul_chain(&new_mat, "mt", &other_side->mat, &m4);
     
   
   X3D_Vex3D z;
@@ -393,7 +394,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       X3D_WallPortal* other_side = x3d_wallportal_get(portal->portal_id);
 
       // Calculate the new view matrix
-      x3d_mat3x3_mul(&new_cam.base.mat, &portal->transform, &cam->base.mat);
+      x3d_mat3x3_mul(&new_cam.base.mat, &new_mat, &cam->base.mat);
 
       // Calculate the geometry shift for everything on the other side of the portal
       //x3d_camera_calculate_shift(&new_cam, cam, &portal->center, &other_side->center);
@@ -405,14 +406,24 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       
       new_cam.pseduo_pos = other_side->center;
       
-      new_cam.base.base.pos.x = (int32)other_side->center.x << 8;
-      new_cam.base.base.pos.y = (int32)other_side->center.y << 8;
-      new_cam.base.base.pos.z = (int32)other_side->center.z << 8;
-   
+      X3D_Vex3D cam_pos;
+      x3d_object_pos(cam, &cam_pos);
       
-      new_cam.base.mat = new_mat;
+      X3D_Vex3D diff = { cam_pos.x - portal->center.x, cam_pos.y - portal->center.y, cam_pos.z - portal->center.z };
       
-      x3d_rasterregion_fill(&clipped_region, c);
+      X3D_Vex3D new_diff;
+      
+      x3d_mat3x3_transpose(&new_mat);
+      
+      x3d_vex3d_int16_rotate(&new_diff, &diff, &new_mat);
+      
+      
+      new_cam.base.base.pos.x = (int32)(other_side->center.x + new_diff.x) << 8;
+      new_cam.base.base.pos.y = (int32)(other_side->center.y + new_diff.y) << 8;
+      new_cam.base.base.pos.z = (int32)(other_side->center.z + new_diff.z) << 8;
+      
+      
+      //x3d_rasterregion_fill(&clipped_region, c);
 
       x3d_segment_render(seg_id, &new_cam, 31, &clipped_region, x3d_enginestate_get_step(), seg_face);
     }
