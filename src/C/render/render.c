@@ -769,6 +769,12 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
 #endif
 
+  X3D_Vex3D_angle256 ang;
+  X3D_Mat3x3 mat = cam-> base.mat;
+  x3d_mat3x3_transpose(&mat);
+  
+  x3d_mat3x3_extract_angles(&mat, &ang);
+  x3d_log(X3D_INFO, "Real angle: %d", (angle256)cam->base.angle.y);
   
   X3D_Color red = x3d_rgb_to_color(255, 0, 0);
   X3D_Color white = x3d_rgb_to_color(255, 255, 255);

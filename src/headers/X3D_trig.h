@@ -35,6 +35,8 @@ enum {
 fp0x16 x3d_sin(angle256 angle);
 fp8x8 x3d_tan(angle256 angle);
 angle256 x3d_atan2(short int y, short int x);
+angle256 x3d_asin(fp0x16 val);
+angle256 x3d_acos(fp0x16 val);
 
 #define x3d_cos(_angle) x3d_sin(ANG_90 - (_angle))
 

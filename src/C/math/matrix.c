@@ -178,18 +178,28 @@ void x3d_mat3x3_from_axis_angle(X3D_Mat3x3* dest, X3D_Vex3D* axis, angle256 angl
 #endif
 }
 
+#include <math.h>
+
 void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest) {
-  //dest->x = x3d_atan2(mat->data[7], mat->data[8]);
-  dest->y = x3d_atan2(mat->data[3], mat->data[0]);
+  int16 len = 2000;
+  X3D_Vex3D v_before = { 0, 0, len };
   
-  //dest->x = 0;
-  //dest->y = 0;
+  X3D_Vex3D v;
+  x3d_vex3d_int16_rotate(&v, &v_before, mat);
   
-  //fp0x16 cos_y = x3d_fastsqrt(32767 - mat->data[0] * )
+  x3d_log(X3D_INFO, "After transform: %d %d %d", v.x, v.y, v.z);
   
+  fp0x16 val = ((int32)v.y * 32767) / len;
   
-  x3d_log(X3D_INFO, "Angle X: %d", dest->x);
-  x3d_log(X3D_INFO, "Angle Y: %d", dest->y);
+  if(val < 0)
+    dest->x = x3d_asin(val) - ANG_180;
+  else
+    dest->x = (angle256)x3d_acos(val) + ANG_270;
+  
+  dest->y = (angle256)ANG_90 - x3d_atan2(v.z, v.x);
+  
+  x3d_log(X3D_INFO, "Angle X: %u", (angle256)dest->x);
+  x3d_log(X3D_INFO, "Angle Y: %u", (angle256)dest->y);
 }
 
 

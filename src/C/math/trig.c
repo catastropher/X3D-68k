@@ -144,3 +144,24 @@ angle256 x3d_atan2(short y, short x) {
   
   return a * ANG_360 / ANGLE_360;
 }
+
+angle256 x3d_asin(fp0x16 val) {
+  int32 min_diff = 0xFFFF;
+  angle256 min_diff_angle = 0;
+  uint16 i;
+  
+  for(i = 0; i < 256; ++i) {
+    fp0x16 s = x3d_sin(i);
+    
+    if(abs(val - s) < min_diff) {
+      min_diff = abs(val - s);
+      min_diff_angle = i;
+    }
+  }
+  
+  return min_diff_angle;
+}
+
+angle256 x3d_acos(fp0x16 val) {
+  return ANG_90 - x3d_asin(val);
+}

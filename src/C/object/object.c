@@ -173,6 +173,8 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
       
       obj->mat = new_mat;
       
+      
+      x3d_mat3x3_transpose(&new_mat);
       x3d_mat3x3_extract_angles(&new_mat, &obj->angle);
       
     }
