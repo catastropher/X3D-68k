@@ -64,6 +64,7 @@ void x3d_draw_3d_line(X3D_Vex3D a, X3D_Vex3D b, X3D_CameraObject* cam, X3D_Color
 }
 
 void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, X3D_CameraObject* cam) {
+  return;
   X3D_Color colors[] = {
     x3d_rgb_to_color(255, 0, 0),
     x3d_rgb_to_color(0, 255, 0),

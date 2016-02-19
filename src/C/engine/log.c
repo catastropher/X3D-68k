@@ -33,7 +33,7 @@
 /// @param format   - printf-like format string
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_log(X3D_LogType type, const char* format, ...) {
-#if !defined(__68k__)
+#if !defined(__68k__) && !defined(__nspire__)
   va_list list;
   const char* color;
   const char* status[3] = {
