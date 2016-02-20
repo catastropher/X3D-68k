@@ -450,8 +450,6 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       
       X3D_Color c = x3d_rgb_to_color(255, 69, 0);
       
-      new_cam.pseduo_pos = other_side->center;
-      
       portal->transform = new_mat;
       
       X3D_Vex3D cam_pos;
@@ -465,6 +463,8 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
       new_cam.base.base.pos.y = (int32)(new_diff.y) << 8;
       new_cam.base.base.pos.z = (int32)(new_diff.z) << 8;
       
+      
+      new_cam.pseduo_pos = new_diff;
       
       //x3d_rasterregion_fill(&clipped_region, c);
 
