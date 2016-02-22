@@ -33,7 +33,7 @@ typedef struct X3D_ScreenManager {
 /// Represents a color. This is platform-dependent and the meaning of the
 ///   contents may vary with what video mode is selected.
 ///////////////////////////////////////////////////////////////////////////////
-typedef uint16 X3D_Color;
+typedef uint32 X3D_Color;
 
 
 ///////////////////////////////////////////////////////////////////////////////

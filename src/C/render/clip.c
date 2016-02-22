@@ -424,8 +424,31 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
 /// @return Whether a valid span remains after clipping.
 ///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_span_clip(X3D_Span* span, X3D_Span parent_span) {
-  span->left =  X3D_MAX(parent_span.left, span->left);
-  span->right = X3D_MIN(parent_span.right, span->right);
+  //span->left =  X3D_MAX(parent_span.left, span->left);
+  //span->right = X3D_MIN(parent_span.right, span->right);
+  
+  
+  
+  if(span->left < parent_span.left) {
+    int32 left = abs(span->left - parent_span.left);
+    int32 right = abs(span->right - parent_span.left);
+    
+    span->left_scale += ((int32)span->right_scale - span->left_scale) * left / (left + right);
+    span->left = parent_span.left;
+  }
+  
+  
+#if 1
+  if(span->right > parent_span.right) {
+    int32 left = abs(span->left - parent_span.right);
+    int32 right = abs(span->right - parent_span.right);
+    
+    span->right_scale += ((int32)span->left_scale - span->right_scale) * right / (left + right);
+    span->right = parent_span.right;
+  }
+  
+#endif
+  
   
   return span->left <= span->right;
 }

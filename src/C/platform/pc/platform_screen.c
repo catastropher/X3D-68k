@@ -86,20 +86,37 @@ X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
 
 #define PURPLE (16 | (16 << 10))
 
+#define BPP 15
+
 static uint32 map_color_to_uint32(X3D_Color color) {
+#if BPP == 15
   const uint16 mask = (1 << 5) - 1;
   uint16 red = 255 * (color & mask) / 31;
   uint16 green = 255 * ((color >> 5) & mask) / 31;
   uint16 blue = 255 * ((color >> 10) & mask) / 31;
   
   return SDL_MapRGB(window_surface->format, red, green, blue);
+#else
+  const uint16 mask = (1 << 8) - 1;
+  uint16 red = 255 * (color & mask) / 255;
+  uint16 green = 255 * ((color >> 8) & mask) / 255;
+  uint16 blue = 255 * ((color >> 16) & mask) / 255;
+  
+  return SDL_MapRGB(window_surface->format, red, green, blue);
+#endif
 }
+
+extern X3D_Vex3D_int16 color_err;
 
 void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right) {
   uint16 i; 
   
   int32 scale = (int32)scale_left << 16;
   int32 scale_slope = (((int32)scale_right - scale_left) << 16) / (right - left + 1);
+  
+  color_err.x = 0;
+  color_err.y = 0;
+  color_err.z = 0;
     
   for(i = left; i <= right; ++i) {
     ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(x3d_color_scale(c, scale >> 16));
@@ -235,16 +252,29 @@ void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color
 }
 
 X3D_Color x3d_rgb_to_color(uint8 r, uint8 g, uint8 b) {
+#if BPP == 15
   return (31 * (uint16)r / 255) +
     ((31 * (uint16)g / 255) << 5) +
     ((31 * (uint16)b / 255) << 10);
+#else
+  return (255 * (uint32)r / 255) +
+    ((255 * (uint32)g / 255) << 8) +
+    ((255 * (uint32)b / 255) << 16);
+#endif
 }
 
 void x3d_color_to_rgb(X3D_Color color, uint8* r, uint8* g, uint8* b) {
+#if BPP == 15
   const uint16 mask = (1 << 5) - 1;
   *r = 255 * (color & mask) / 31;
   *g = 255 * ((color >> 5) & mask) / 31;
   *b = 255 * ((color >> 10) & mask) / 31;
+#else
+  const uint16 mask = (1 << 8) - 1;
+  *r = 255 * (color & mask) / 255;
+  *g = 255 * ((color >> 8) & mask) / 255;
+  *b = 255 * ((color >> 16) & mask) / 255;
+#endif
 }
 
 void x3d_screen_begin_record(const char* name) {
