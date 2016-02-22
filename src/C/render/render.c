@@ -431,11 +431,11 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             X3D_Vex3D dir;
 
 
-//             x3d_dynamicobject_forward_vector(context->cam, &dir);
-// 
-//             X3D_Vex3D d = { 0, 0, 32767 };
-// 
-//             fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
+             x3d_dynamicobject_forward_vector(context->cam, &dir);
+ 
+             X3D_Vex3D d = { 0, 0, 32767 };
+ 
+             fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
 
             X3D_Vex3D_int16 colors[] = {
               { 255, 0, 0 },
@@ -465,13 +465,13 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             cid = context->seg_id % 10;
 
 
-            color = colors[0];
+            color = colors[9];
 
-//             dot = X3D_MIN((int32)dot + 8192, 32767);
-// 
-//             color.x = (int32)color.x * dot / 32768;
-//             color.y = (int32)color.y * dot / 32768;
-//             color.z = (int32)color.z * dot / 32768;
+             dot = X3D_MIN((int32)dot + 8192, 32767);
+ 
+             color.x = (int32)color.x * dot / 32768;
+             color.y = (int32)color.y * dot / 32768;
+             color.z = (int32)color.z * dot / 32768;
 
             X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
 
@@ -642,7 +642,11 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     
     dot = X3D_MIN((int32)dot + 8192, 32767);
     
-    depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);//((int32)x3d_depth_scale(v3d[i].z, 10, 1500) * dot) >> 15;
+#if 1
+    depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);
+#else
+    depth_scale[i] = ((int32)x3d_depth_scale(v3d[i].z, 10, 1500) * dot) >> 15;
+#endif
   }
 
 #if 1
@@ -789,8 +793,12 @@ void x3d_render(X3D_CameraObject* cam) {
 #endif
 
 
+  
+  
   static int32 tick = 0;
 
+  if((x3d_enginestate_get_step() % 2) == 0)
+    tick = (tick + 1) % 4;        
   //printf("Tick: %d\n", tick++);
 
   line_count = 0;
@@ -798,6 +806,15 @@ void x3d_render(X3D_CameraObject* cam) {
   depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
 
+  
+#if 0
+  uint16 i;
+  for(i = tick; i < x3d_screenmanager_get()->h; i+= 4) {
+    x3d_screen_draw_line(0, i, x3d_screenmanager_get()->w, i, 0);
+    x3d_screen_draw_line(0, i + 1, x3d_screenmanager_get()->w, i + 10, 0);
+  }
+#endif
+  
   //printf("Line count: %d\n", line_count);
 
   int16 cx = x3d_screenmanager_get()->w / 2;
