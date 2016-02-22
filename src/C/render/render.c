@@ -60,6 +60,10 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
 uint16 scale_down(uint32 value, int16* error) {
   int16 v = (value >> 15) + *error;
   
+  if(x3d_key_down(X3D_KEY_15)) {
+    return v;
+  }
+  
   int16 lo = (v / 8) * 8;
   int16 hi = (v / 8) * 8 + 8;
   
@@ -80,10 +84,7 @@ uint16 scale_down(uint32 value, int16* error) {
   
   *error = v - new_v;
   
-  if(x3d_key_down(X3D_KEY_15))
-    return new_v;
-  else
-    return v;
+  return new_v;
 }
 
 X3D_Vex3D_int16 color_err;
@@ -498,7 +499,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             cid = context->seg_id % 10;
 
 
-            color = colors[9];
+            color = colors[0];
 
              dot = X3D_MIN((int32)dot + 8192, 32767);
  

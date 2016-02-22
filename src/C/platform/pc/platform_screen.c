@@ -106,7 +106,15 @@ static uint32 map_color_to_uint32(X3D_Color color) {
 #endif
 }
 
-extern X3D_Vex3D_int16 color_err;
+static uint32 scale_color(X3D_Color c, uint16 scale) {
+  uint8 r, g, b;
+  
+  x3d_color_to_rgb(c, &r, &g, &b);
+  
+  return SDL_MapRGB(window_surface->format, ((uint32)r * scale) >> 15, ((uint32)g * scale) >> 15, ((uint32)b * scale) >> 15);
+}
+
+extern X3D_Vex3D color_err;
 
 void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right) {
   uint16 i; 
@@ -124,6 +132,83 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   }
 }
 
+uint16 scale_value_down(uint32 value, int16* error) {
+  int16 v = (value >> 15) + *error;
+  
+  int16 lo = (v / 8) * 8;
+  int16 hi = (v / 8) * 8 + 8;
+  
+  int16 new_v;
+  
+  if(v > 255)
+    v = 255;
+  
+  if(v < 0)
+    v = 0;
+  
+  if(abs(lo - v) < abs(hi - v)) {
+    new_v = lo;
+  }
+  else {
+    new_v = hi;
+  }
+  
+  *error = v - new_v;
+  
+  if(x3d_key_down(X3D_KEY_15))
+    return new_v;
+  else
+    return v;
+}
+
+void dither_pixel(X3D_Vex3D* err, int16 x, int16 w, int16 y, int16 h, uint32 val) {
+  uint8 r, g, b;
+  //SDL_GetRGB(val, &r, &g, &b);
+  
+  X3D_Vex3D error = err[x];
+  
+  X3D_Color color = x3d_rgb_to_color(
+    scale_value_down((uint32)r, &error.x),
+    scale_value_down((uint32)g, &error.y),
+    scale_value_down((uint32)b, &error.z)
+  );
+  
+  err[x].x += 5 * error.x / 16;
+  err[x].y += 5 * error.y / 16;
+  err[x].z += 5 * error.z / 16;
+  
+  if(x + 1 < w) {
+    err[x + 1].x += 7 * error.x / 16;
+    err[x + 1].y += 7 * error.y / 16;
+    err[x + 1].z += 7 * error.z / 16;
+    
+    if(y + 1 < h) {
+    }
+  }
+}
+
+void dither() {
+  int16 w = screen_w;
+  int16 h = screen_h;
+  
+  X3D_Vex3D err[w];
+  
+  int16 i;
+  for(i = 0; i < w; ++i) {
+    err[i].x = 0;
+    err[i].y = 0;
+    err[i].z = 0;
+  }
+  
+  int16 x, y;
+  
+  for(y = 0; y < h; ++y) {
+    for(x = 0; x < w; ++x) {
+      
+    }
+  }
+}
+ 
 void x3d_screen_flip() {
   if(record) {
     char str[1100];
