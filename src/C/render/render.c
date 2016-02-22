@@ -431,11 +431,11 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             X3D_Vex3D dir;
 
 
-            x3d_dynamicobject_forward_vector(context->cam, &dir);
-
-            X3D_Vex3D d = { 0, 0, 32767 };
-
-            fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
+//             x3d_dynamicobject_forward_vector(context->cam, &dir);
+// 
+//             X3D_Vex3D d = { 0, 0, 32767 };
+// 
+//             fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
 
             X3D_Vex3D_int16 colors[] = {
               { 255, 0, 0 },
@@ -465,13 +465,13 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             cid = context->seg_id % 10;
 
 
-            color = colors[cid];
+            color = colors[0];
 
-            dot = X3D_MIN((int32)dot + 8192, 32767);
-
-            color.x = (int32)color.x * dot / 32768;
-            color.y = (int32)color.y * dot / 32768;
-            color.z = (int32)color.z * dot / 32768;
+//             dot = X3D_MIN((int32)dot + 8192, 32767);
+// 
+//             color.x = (int32)color.x * dot / 32768;
+//             color.y = (int32)color.y * dot / 32768;
+//             color.z = (int32)color.z * dot / 32768;
 
             X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
 
@@ -625,9 +625,25 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
   
   fp0x16 depth_scale[prism->base_v * 2];
+  X3D_Vex3D cam_dir;
   
-  for(i = 0;i < prism->base_v * 2; ++i)
-    depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);
+  x3d_dynamicobject_forward_vector(cam, &cam_dir);
+  
+  
+  for(i = 0;i < prism->base_v * 2; ++i) {
+    X3D_Vex3D normal;
+    x3d_segment_point_normal(seg, i, &normal);
+    
+
+    X3D_Vex3D d = { 0, 0, 32767 };
+
+    fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &normal));
+    
+    
+    dot = X3D_MIN((int32)dot + 8192, 32767);
+    
+    depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);//((int32)x3d_depth_scale(v3d[i].z, 10, 1500) * dot) >> 15;
+  }
 
 #if 1
   if(id == 5) {

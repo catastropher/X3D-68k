@@ -173,3 +173,26 @@ void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object) {
   }
 }
 
+void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Vex3D* dest) {
+  uint16 p[3];
+  X3D_Vex3D_int32 sum = { 0, 0, 0 };
+  
+  x3d_prism_point_faces(seg->prism.base_v, point, p);
+  
+  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  uint16 i;
+  
+  for(i = 0; i < 3; ++i) {
+    X3D_Vex3D* normal = &face[p[i]].plane.normal;
+    
+    sum.x += normal->x;
+    sum.y += normal->y;
+    sum.z += normal->z;
+  }
+  
+  dest->x = sum.x / 3;
+  dest->y = sum.y / 3;
+  dest->z = sum.z / 3;
+}
+
+

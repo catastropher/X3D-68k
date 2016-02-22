@@ -366,3 +366,17 @@ void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest) {
   dest->z = sum.z / (prism->base_v * 2);
 }
 
+void x3d_prism_point_faces(uint16 base_v, uint16 point, uint16* dest) {
+  if(point < base_v) {
+    dest[0] = X3D_BASE_A;
+  }
+  else {
+    dest[1] = X3D_BASE_B;
+    point -= base_v;
+  }
+  
+  dest[1] = point + 2;
+  dest[2] = (point + 1 < base_v ? point + 1 : 0) + 2;
+}
+
+

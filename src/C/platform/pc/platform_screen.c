@@ -95,6 +95,17 @@ static uint32 map_color_to_uint32(X3D_Color color) {
   return SDL_MapRGB(window_surface->format, red, green, blue);
 }
 
+void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right) {
+  uint16 i; 
+  
+  int32 scale = (int32)scale_left << 16;
+  int32 scale_slope = (((int32)scale_right - scale_left) << 16) / (right - left + 1);
+    
+  for(i = left; i <= right; ++i) {
+    ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(x3d_color_scale(c, scale >> 16));
+    scale += scale_slope;
+  }
+}
 
 void x3d_screen_flip() {
   if(record) {

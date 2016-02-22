@@ -118,3 +118,5 @@ void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color
 void x3d_screen_begin_record(const char* name);
 void x3d_screen_record_end(void);
 
+void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right);
+

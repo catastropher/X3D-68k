@@ -344,20 +344,20 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Raster
 	if(e->rect.y_range.max != e->rect.y_range.min) {
 	
 	  // Calculate the scale interpolation slope
-	  fp0x16 scale_slope = ((int32)e->end_scale - e->start_scale) / (e->rect.y_range.max - e->rect.y_range.min);
-	  fp0x16 scale = e->start_scale;
+	  int32 scale_slope = (((int32)e->end_scale - e->start_scale) << 16) / (e->rect.y_range.max - e->rect.y_range.min);
+	  int32 scale = (int32)e->start_scale << 16;
 	  
 	  // For each x value in the edge, check if the x_left and x_right values
 	  // in the raster region need to be replaced by it
 	  for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
 	    if(*x < span->left) {
 	      span->left = *x;
-	      span->left_scale = scale;
+	      span->left_scale = scale >> 16;
 	    }
 	    
 	    if(*x > span->right) {
 	      span->right = *x;
-	      span->right_scale = scale;
+	      span->right_scale = scale >> 16;
 	    }
 	    
 	    ++x;
@@ -728,6 +728,8 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   return X3D_TRUE;
 }
 
+uint32 map_color_to_uint32(X3D_Color color);
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Fills a raster region.
 ///
@@ -745,8 +747,10 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
     
     X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
     X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
+
+    x3d_screen_draw_scanline_grad(i, region->span[index].left, region->span[index].right, color, region->span[index].left_scale, region->span[index].right_scale);
     
-    x3d_screen_draw_line_grad(region->span[index].left, i, region->span[index].right, i, color_left, color_right);
+    //x3d_screen_draw_line_grad(region->span[index].left, i, region->span[index].right, i, color_left, color_right);
   }
 }
 
