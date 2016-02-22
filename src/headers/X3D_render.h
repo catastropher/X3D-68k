@@ -47,6 +47,7 @@ typedef struct X3D_ClipContext {
   X3D_Vex2D* v2d;
   X3D_Pair* edge_pairs;
   _Bool really_close;
+  fp0x16* depth_scale;
 } X3D_ClipContext;
 
 #define X3D_MAX_DISPLAY_LINE 100
@@ -68,5 +69,7 @@ void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1,
 
 void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_depth, X3D_Vex2D b, int16 b_depth, X3D_Color color);
 void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* region);
+X3D_Color x3d_color_scale(X3D_Color color, fp0x16 scale);
+int16 x3d_depth_scale(int16 depth, int16 min_depth, int16 max_depth);
 
 

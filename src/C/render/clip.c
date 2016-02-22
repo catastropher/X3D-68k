@@ -191,7 +191,7 @@ _Bool x3d_rasteredge_clip(X3D_RasterEdge* edge, X3D_Vex2D* a, X3D_Vex2D* b, fp16
 ///     relative to the camera
 /// @param stack    - stack to allocate x values on
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_RasterRegion* parent, int16 depth_a, int16 depth_b, X3D_Stack* stack) {
+void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_RasterRegion* parent, int16 depth_a, int16 depth_b, X3D_Stack* stack, fp0x16 scale_a, fp0x16 scale_b) {
   // Set start/end endpoints before clipping, as we want the original points.
   // Note that the Z component is the depth of the point after it was transformed
   // relative to the camera. It's not used directly by anything here, but is useful
@@ -209,8 +209,13 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
   
   
   // Swap points if out of order vertically
-  if(a.y > b.y)
+  if(a.y > b.y) {
     X3D_SWAP(a, b);
+    X3D_SWAP(scale_a, scale_b);
+  }
+  
+  edge->start_scale = scale_a;
+  edge->end_scale = scale_b;
   
   // Set some flags and the y range for the edge
   x3d_rasteredge_set_y_range(edge, &a, &b);
@@ -323,22 +328,43 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Raster
       
       if(x3d_rasteredge_horizontal(e)) {
         // Just replace the left/right values of the horizontal line, if necessary
-        if(e->rect.x_range.min < span->left)    span->left = e->rect.x_range.min;
-        if(e->rect.x_range.max > span->right)   span->right = e->rect.x_range.max;
+        if(e->rect.x_range.min < span->left) {
+	  span->left = e->rect.x_range.min;
+	  span->left_scale = e->start_scale;
+	}
+	  
+	if(e->rect.x_range.max > span->right) {
+	  span->right = e->rect.x_range.max;
+	  span->right_scale = e->end_scale;
+	}
       }
       else {
         int16 i;
         int16* x = e->x_data;
-        
-        // For each x value in the edge, check if the x_left and x_right values
-        // in the raster region need to be replaced by it
-        for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
-          if(*x < span->left)    span->left = *x;
-          if(*x > span->right)   span->right = *x;
-          
-          ++x;
-          ++span;
-        }
+	if(e->rect.y_range.max != e->rect.y_range.min) {
+	
+	  // Calculate the scale interpolation slope
+	  fp0x16 scale_slope = ((int32)e->end_scale - e->start_scale) / (e->rect.y_range.max - e->rect.y_range.min);
+	  fp0x16 scale = e->start_scale;
+	  
+	  // For each x value in the edge, check if the x_left and x_right values
+	  // in the raster region need to be replaced by it
+	  for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
+	    if(*x < span->left) {
+	      span->left = *x;
+	      span->left_scale = scale;
+	    }
+	    
+	    if(*x > span->right) {
+	      span->right = *x;
+	      span->right_scale = scale;
+	    }
+	    
+	    ++x;
+	    ++span;
+	    scale += scale_slope;
+	  }
+	}
       }      
     }
   }
@@ -380,7 +406,7 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   
   for(i = 0; i < total_v; ++i) {
     int16 next = (i + 1) % total_v;
-    x3d_rasteredge_generate(edges + i, v[i], v[next], &fake_parent_region, 0, 0, stack);
+    x3d_rasteredge_generate(edges + i, v[i], v[next], &fake_parent_region, 0, 0, stack, 0x7FFF, 0x7FFF);
     edge_index[i] = i;
   }
   
@@ -610,7 +636,7 @@ _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D
   }
 #endif
   
-  x3d_rasteredge_generate(&edge, *start, *end, region, 0, 0, stack);
+  x3d_rasteredge_generate(&edge, *start, *end, region, 0, 0, stack, 0x7FFF, 0x7FFF);
   
   int32 y_min = X3D_MAX(region->rect.y_range.min, edge.rect.y_range.min);
   int32 y_max = X3D_MIN(region->rect.y_range.max, edge.rect.y_range.max);
@@ -716,7 +742,11 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   
   for(i = region->rect.y_range.min; i < region->rect.y_range.max; ++i) {
     uint16 index = i - region->rect.y_range.min;
-    x3d_screen_draw_line(region->span[index].left, i, region->span[index].right, i, color);
+    
+    X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
+    X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
+    
+    x3d_screen_draw_line_grad(region->span[index].left, i, region->span[index].right, i, color_left, color_right);
   }
 }
 
@@ -883,7 +913,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     /// FIXME please!
 #if 1
     x3d_rasteredge_generate(clip->edges + total_e,
-      out_v[0], out_v[1], clip->parent, depth[0], depth[1], &renderman->stack);
+      out_v[0], out_v[1], clip->parent, depth[0], depth[1], &renderman->stack, 0x7FFF, 0x7FFF);
     
     
     //printf("Line: {%d,%d} - {%d,%d}, %d\n", out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, total_vis_e + 1);
@@ -901,7 +931,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, 0 };
     
     x3d_rasteredge_generate(clip->edges + total_e,
-      a, b, clip->parent, 10, 10, &renderman->stack);
+      a, b, clip->parent, 10, 10, &renderman->stack, 0x7FFF, 0x7FFF);
     
     vis_e[total_vis_e++] = total_e++;
   }
@@ -911,7 +941,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, x3d_screenmanager_get()->h - 1 };
     
     x3d_rasteredge_generate(clip->edges + total_e,
-      a, b, clip->parent, 10, 10, &renderman->stack);
+      a, b, clip->parent, 10, 10, &renderman->stack, 0x7FFF, 0x7FFF);
     
     vis_e[total_vis_e++] = total_e++;
   }

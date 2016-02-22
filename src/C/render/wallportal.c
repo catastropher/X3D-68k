@@ -305,7 +305,7 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
     edges[i].flags = 0;
 
     if(!(flags & EDGE_INVISIBLE))
-      x3d_rasteredge_generate(edges + i, dest_a, dest_b, region, v3d[a].z, v3d[b].z, &renderman->stack);
+      x3d_rasteredge_generate(edges + i, dest_a, dest_b, region, v3d[a].z, v3d[b].z, &renderman->stack, 0x7FFF, 0x7FFF);
 
     edges[i].flags |= flags;
   }

@@ -37,6 +37,13 @@ int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_de
   return value - ((int32)value * (depth - min_depth) / (max_depth - min_depth));
 }
 
+int16 x3d_depth_scale(int16 depth, int16 min_depth, int16 max_depth) {
+  if(depth > max_depth)
+    return 0;
+  
+  return 0x7FFF - (((int32)depth - min_depth) << 15) / (max_depth - min_depth);
+}
+
 X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth, int16 max_depth) {
   uint8 r, g, b;
   x3d_color_to_rgb(color, &r, &g, &b);
@@ -47,6 +54,17 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
     x3d_scale_by_depth(r, depth, min_depth, max_depth),
     x3d_scale_by_depth(g, depth, min_depth, max_depth),
     x3d_scale_by_depth(b, depth, min_depth, max_depth)
+  );
+}
+
+X3D_Color x3d_color_scale(X3D_Color color, fp0x16 scale) {
+  uint8 r, g, b;
+  x3d_color_to_rgb(color, &r, &g, &b);
+  
+  x3d_rgb_to_color(
+    ((uint32)r * scale) >> 15,
+    ((uint32)g * scale) >> 15,
+    ((uint32)b * scale) >> 15
   );
 }
 
@@ -335,7 +353,7 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
 
     if(!(res & EDGE_INVISIBLE)) {
-      x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack);
+      x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack, clip->depth_scale[a], clip->depth_scale[b]);
       clip->edges[i].flags |= res;
     }
     else {
@@ -605,6 +623,11 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_object_pos(cam, &cam_pos);
 
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
+  
+  fp0x16 depth_scale[prism->base_v * 2];
+  
+  for(i = 0;i < prism->base_v * 2; ++i)
+    depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);
 
 #if 1
   if(id == 5) {
@@ -636,7 +659,8 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .total_e = total_e,
     .v3d = v3d,
     .v2d = v2d,
-    .edge_pairs = edge_pair
+    .edge_pairs = edge_pair,
+    .depth_scale = depth_scale
   };
 
   x3d_clipcontext_generate_rasteredges(&clip, &renderman->stack);

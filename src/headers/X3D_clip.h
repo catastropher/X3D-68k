@@ -7,6 +7,7 @@
 
 typedef struct X3D_Span {
   int16 left, right;
+  fp0x16 left_scale, right_scale;
 } X3D_Span;
 
 typedef struct X3D_Range {
@@ -40,6 +41,9 @@ typedef struct X3D_BoundRange {
 typedef struct X3D_RasterEdge {  
   X3D_Vex3D_int32 start;
   X3D_Vex3D_int32 end;
+  
+  fp0x16 start_scale;
+  fp0x16 end_scale;
 
   uint16 flags;
   
@@ -76,7 +80,7 @@ struct X3D_ClipContext;
 
 _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion* dest, X3D_Vex2D* v, uint16 total_v);
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end);
-void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_RasterRegion* region, int16 depth_a, int16 depth_b, X3D_Stack* stack);
+void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D_RasterRegion* parent, int16 depth_a, int16 depth_b, X3D_Stack* stack, fp0x16 scale_a, fp0x16 scale_b);
 _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_RasterRegion* parent, X3D_Stack* stack, X3D_RasterEdge raster_edge[], int16 edge_index[], int16 total_e);
 _Bool x3d_rasterregion_intersect(X3D_RasterRegion* region, X3D_RasterRegion* portal);
 int16 x3d_clip_line_to_near_plane(X3D_Vex3D* a, X3D_Vex3D* b, X3D_Vex2D* a_project, X3D_Vex2D* b_project, X3D_Vex2D* a_dest, X3D_Vex2D* b_dest, int16 z);
