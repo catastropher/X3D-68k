@@ -49,7 +49,7 @@ void x3d_game_loop() {
     if(x3d_key_down(X3D_KEY_15))
       SDL_Delay(500);
     else
-      SDL_Delay(25);
+      ;//SDL_Delay(25);
 #endif
 
     x3d_enginestate_next_step();

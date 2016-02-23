@@ -20,9 +20,9 @@
 #include "X3D_wallportal.h"
 
 void x3d_init(X3D_InitSettings* settings) {
-  x3d_log(X3D_INFO, "X3D init");  
-  x3d_enginestate_init(settings);
+  x3d_log(X3D_INFO, "X3D init"); 
   x3d_platform_init(settings);
+  x3d_enginestate_init(settings);
   
   // Init wall portals
   x3d_wallportals_init();

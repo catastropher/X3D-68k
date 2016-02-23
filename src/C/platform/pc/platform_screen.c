@@ -38,6 +38,30 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
+  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
+          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
+  
+  window = SDL_CreateWindow(
+    "X3D",
+    SDL_WINDOWPOS_UNDEFINED,
+    SDL_WINDOWPOS_UNDEFINED,
+    init->screen_w * init->screen_scale,
+    init->screen_h * init->screen_scale,
+    (init->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0)
+  );
+  
+  window_surface = SDL_GetWindowSurface(window);
+  
+  if(init->fullscreen) {
+    init->screen_w = window_surface->w;
+    init->screen_h = window_surface->h;
+  }
+  
+  if(!window) {
+    x3d_log(X3D_ERROR, "Failed to create window");
+    return X3D_FALSE;
+  }
+  
   screen_w = init->screen_w;
   screen_h = init->screen_h;
   screen_scale = init->screen_scale;
@@ -50,29 +74,11 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_state->screen_manager.scale_x = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
   x3d_state->screen_manager.scale_y = x3d_state->screen_manager.scale_x;  //screen_w * div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2)) / screen_h;
   
-  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
-          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
-  
-  window = SDL_CreateWindow(
-    "X3D",
-    SDL_WINDOWPOS_UNDEFINED,
-    SDL_WINDOWPOS_UNDEFINED,
-    init->screen_w * init->screen_scale,
-    init->screen_h * init->screen_scale,
-    (init->fullscreen ? SDL_WINDOW_FULLSCREEN : 0)
-  );
-  
-  if(!window) {
-    x3d_log(X3D_ERROR, "Failed to create window");
-    return X3D_FALSE;
-  }
   
   record = X3D_FALSE;
   record_frame = 0;
   
   x3d_log(X3D_INFO, "Window created");
-  
-  window_surface = SDL_GetWindowSurface(window);
   
   return X3D_TRUE;
   
@@ -126,9 +132,41 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   color_err.y = 0;
   color_err.z = 0;
     
+  uint8 r1, g1, b1;
+  x3d_color_to_rgb(c, &r1, &g1, &b1);
+  
+  int16 rr1, gg1, bb1;
+  rr1 = ((int32)r1 * scale_left) >> 15;
+  gg1 = ((int32)g1 * scale_left) >> 15;
+  bb1 = ((int32)b1 * scale_left) >> 15;
+  
+  color_err.x = 0;
+  color_err.y = 0;
+  color_err.z = 0;
+    
+  uint8 r2, g2, b2;
+  x3d_color_to_rgb(c, &r2, &g2, &b2);
+  
+  int16 rr2, gg2, bb2;
+  rr2 = ((int32)r2 * scale_right) >> 15;
+  gg2 = ((int32)g2 * scale_right) >> 15;
+  bb2 = ((int32)b2 * scale_right) >> 15;
+
+  
+  int32 r_slope = (((int32)rr2 - rr1) << 15) / (right - left + 1);
+  int32 g_slope = (((int32)gg2 - gg1) << 15) / (right - left + 1);
+  int32 b_slope = (((int32)bb2 - bb1) << 15) / (right - left + 1);
+  
+  int32 r = rr1 << 15;
+  int32 g = gg1 << 15;
+  int32 b = bb1 << 15;
+  
   for(i = left; i <= right; ++i) {
-    ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(x3d_color_scale(c, scale >> 16));
-    scale += scale_slope;
+    ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(x3d_color_scale(r, g, b));
+    
+    r += r_slope;
+    g += g_slope;
+    b += b_slope;
   }
 }
 

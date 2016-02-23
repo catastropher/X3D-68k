@@ -768,8 +768,8 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   for(i = region->rect.y_range.min; i < region->rect.y_range.max; ++i) {
     uint16 index = i - region->rect.y_range.min;
     
-    X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
-    X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
+    //X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
+    //X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
 
     x3d_screen_draw_scanline_grad(i, region->span[index].left, region->span[index].right, color, region->span[index].left_scale, region->span[index].right_scale);
     

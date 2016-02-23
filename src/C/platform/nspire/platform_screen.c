@@ -240,3 +240,53 @@ void x3d_screen_begin_record(const char* name) {
 void x3d_screen_record_end(void) {
   record = X3D_FALSE;
 }
+
+extern X3D_Vex3D color_err;
+
+void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right) {
+  uint16 i; 
+  
+  int32 scale = (int32)scale_left << 16;
+  int32 scale_slope = (((int32)scale_right - scale_left) << 16) / (right - left + 1);
+  
+  color_err.x = 0;
+  color_err.y = 0;
+  color_err.z = 0;
+    
+  uint8 r1, g1, b1;
+  x3d_color_to_rgb(c, &r1, &g1, &b1);
+  
+  int16 rr1, gg1, bb1;
+  rr1 = ((int32)r1 * scale_left) >> 15;
+  gg1 = ((int32)g1 * scale_left) >> 15;
+  bb1 = ((int32)b1 * scale_left) >> 15;
+  
+  color_err.x = 0;
+  color_err.y = 0;
+  color_err.z = 0;
+    
+  uint8 r2, g2, b2;
+  x3d_color_to_rgb(c, &r2, &g2, &b2);
+  
+  int16 rr2, gg2, bb2;
+  rr2 = ((int32)r2 * scale_right) >> 15;
+  gg2 = ((int32)g2 * scale_right) >> 15;
+  bb2 = ((int32)b2 * scale_right) >> 15;
+
+  
+  int32 r_slope = (((int32)rr2 - rr1) << 15) / (right - left + 1);
+  int32 g_slope = (((int32)gg2 - gg1) << 15) / (right - left + 1);
+  int32 b_slope = (((int32)bb2 - bb1) << 15) / (right - left + 1);
+  
+  int32 r = rr1 << 15;
+  int32 g = gg1 << 15;
+  int32 b = bb1 << 15;
+  
+  for(i = left; i <= right; ++i) {
+    ((uint16 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(x3d_color_scale(r, g, b));
+    
+    r += r_slope;
+    g += g_slope;
+    b += b_slope;
+  }
+}

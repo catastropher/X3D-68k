@@ -259,7 +259,9 @@ void x3d_wallportal_transform_point(X3D_WallPortal* portal, X3D_Vex3D* v, X3D_Ve
 ///////////////////////////////////////////////////////////////////////////////
 #if 1
 void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_RasterRegion* region, X3D_DisplayLineList* list) {
-#if 1
+
+  return;
+  #if 1
   X3D_RenderManager* renderman = x3d_rendermanager_get();
 
   // Save the stack pointer so we can free any allocations made later

@@ -60,10 +60,6 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
 uint16 scale_down(uint32 value, int16* error) {
   int16 v = (value >> 15) + *error;
   
-  if(x3d_key_down(X3D_KEY_15)) {
-    return v;
-  }
-  
   int16 lo = (v / 8) * 8;
   int16 hi = (v / 8) * 8 + 8;
   
@@ -89,16 +85,11 @@ uint16 scale_down(uint32 value, int16* error) {
 
 X3D_Vex3D_int16 color_err;
 
-X3D_Color x3d_color_scale(X3D_Color color, fp0x16 scale) {
-  uint8 r, g, b;
-  x3d_color_to_rgb(color, &r, &g, &b);
-  
-  
-  
-  x3d_rgb_to_color(
-    scale_down((uint32)r * scale, &color_err.x),
-    scale_down((uint32)g * scale, &color_err.y),
-    scale_down((uint32)b * scale, &color_err.z)
+X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b) {
+  return x3d_rgb_to_color(
+    scale_down((uint32)r, &color_err.x),
+    scale_down((uint32)g, &color_err.y),
+    scale_down((uint32)b, &color_err.z)
   );
 }
 
@@ -499,7 +490,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             cid = context->seg_id % 10;
 
 
-            color = colors[0];
+            color = colors[9];
 
              dot = X3D_MIN((int32)dot + 8192, 32767);
  
@@ -831,8 +822,8 @@ void x3d_render(X3D_CameraObject* cam) {
   
   static int32 tick = 0;
 
-  if((x3d_enginestate_get_step() % 2) == 0)
-    tick = (tick + 1) % 4;        
+  //if((x3d_enginestate_get_step() % 2) == 0)
+  //  tick = (tick + 1) % 4;        
   //printf("Tick: %d\n", tick++);
 
   line_count = 0;
@@ -845,7 +836,7 @@ void x3d_render(X3D_CameraObject* cam) {
   uint16 i;
   for(i = tick; i < x3d_screenmanager_get()->h; i+= 4) {
     x3d_screen_draw_line(0, i, x3d_screenmanager_get()->w, i, 0);
-    x3d_screen_draw_line(0, i + 1, x3d_screenmanager_get()->w, i + 10, 0);
+    x3d_screen_draw_line(0, i + 1, x3d_screenmanager_get()->w, i + 1, 0);
   }
 #endif
   
