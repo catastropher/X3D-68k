@@ -241,52 +241,81 @@ void x3d_screen_record_end(void) {
   record = X3D_FALSE;
 }
 
-extern X3D_Vex3D color_err;
+X3D_Vex3D color_err;
 
-void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right) {
-  uint16 i; 
+uint16 scale_down(uint32 value, int16* error) {
+  int16 v = (value >> 8) + *error;
   
-  int32 scale = (int32)scale_left << 16;
-  int32 scale_slope = (((int32)scale_right - scale_left) << 16) / (right - left + 1);
+  int16 new_v;
   
-  color_err.x = 0;
-  color_err.y = 0;
-  color_err.z = 0;
-    
-  uint8 r1, g1, b1;
-  x3d_color_to_rgb(c, &r1, &g1, &b1);
+#if 0
+  if(v > 255)
+    v = 255;
   
-  int16 rr1, gg1, bb1;
-  rr1 = ((int32)r1 * scale_left) >> 15;
-  gg1 = ((int32)g1 * scale_left) >> 15;
-  bb1 = ((int32)b1 * scale_left) >> 15;
+  if(v < 0)
+    v = 0;
+#endif
   
-  color_err.x = 0;
-  color_err.y = 0;
-  color_err.z = 0;
-    
-  uint8 r2, g2, b2;
-  x3d_color_to_rgb(c, &r2, &g2, &b2);
+  if((v & 7) < 4) {
+    new_v = v & ~7;
+  }
+  else {
+    new_v = (v & ~7) + 8;
+  }
   
-  int16 rr2, gg2, bb2;
-  rr2 = ((int32)r2 * scale_right) >> 15;
-  gg2 = ((int32)g2 * scale_right) >> 15;
-  bb2 = ((int32)b2 * scale_right) >> 15;
+  *error = v - new_v;
+  
+  return new_v;
+}
 
+X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b) {
+  return x3d_rgb_to_color(
+    scale_down((uint32)r, &color_err.x),
+    scale_down((uint32)g, &color_err.y),
+    scale_down((uint32)b, &color_err.z)
+  );
+}
+
+uint32 x3d_color_to_internal(X3D_Color c) {
+  return map_color_to_uint32(c);
+}
+
+void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab) {
+  uint16 i;
   
-  int32 r_slope = (((int32)rr2 - rr1) << 15) / (right - left + 1);
-  int32 g_slope = (((int32)gg2 - gg1) << 15) / (right - left + 1);
-  int32 b_slope = (((int32)bb2 - bb1) << 15) / (right - left + 1);
+#if 0
+  if(x3d_key_down(X3D_KEY_15)) {
+    x3d_screen_draw_scanline_grad2(y, left, right, c, scale_left, scale_right);
+    return;
+  }
+#endif
   
-  int32 r = rr1 << 15;
-  int32 g = gg1 << 15;
-  int32 b = bb1 << 15;
+  uint16 total_c = 32;
+  uint16 scale_bits = 5;
+  
+  int16 scale_slope = (scale_right - scale_left) / (right - left + 1);
+  int16 scale = scale_left;
+  
+  int32 error = 0;
+  
+  int32 mask = (1 << (16 - scale_bits)) - 1;
+  int32 half = mask / 2;
+  
   
   for(i = left; i <= right; ++i) {
-    ((uint16 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(x3d_color_scale(r, g, b));
+    int32 val = scale + error;
     
-    r += r_slope;
-    g += g_slope;
-    b += b_slope;
+    int16 index = val >> (15 - scale_bits);
+    
+    error = (int32)(val & mask);
+    
+    if((val & mask) >= half) {
+      error = -(mask + 1 - (val & mask));
+      ++index;
+    }
+    
+    ((uint16 *)window_surface->pixels)[y * window_surface->w + i] = color_tab[index];
+    scale += scale_slope;
   }
+  
 }

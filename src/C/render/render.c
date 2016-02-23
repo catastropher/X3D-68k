@@ -57,42 +57,6 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
   );
 }
 
-uint16 scale_down(uint32 value, int16* error) {
-  int16 v = (value >> 15) + *error;
-  
-  int16 lo = (v / 8) * 8;
-  int16 hi = (v / 8) * 8 + 8;
-  
-  int16 new_v;
-  
-  if(v > 255)
-    v = 255;
-  
-  if(v < 0)
-    v = 0;
-  
-  if(abs(lo - v) < abs(hi - v)) {
-    new_v = lo;
-  }
-  else {
-    new_v = hi;
-  }
-  
-  *error = v - new_v;
-  
-  return new_v;
-}
-
-X3D_Vex3D_int16 color_err;
-
-X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b) {
-  return x3d_rgb_to_color(
-    scale_down((uint32)r, &color_err.x),
-    scale_down((uint32)g, &color_err.y),
-    scale_down((uint32)b, &color_err.z)
-  );
-}
-
 void x3d_draw_3d_line(X3D_Vex3D a, X3D_Vex3D b, X3D_CameraObject* cam, X3D_Color color) {
   X3D_Vex3D v[2] = { a, b };
   X3D_Vex2D v2d[2];
