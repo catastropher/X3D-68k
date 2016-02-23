@@ -281,7 +281,7 @@ uint32 x3d_color_to_internal(X3D_Color c) {
 }
 
 void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab) {
-  uint16 i;
+uint16 i;
   
 #if 0
   if(x3d_key_down(X3D_KEY_15)) {
@@ -289,33 +289,73 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
     return;
   }
 #endif
+
+#if 1
+  int16 map[3][3] = {
+    { 1, 8, 4 },
+    { 7, 6, 3 },
+    { 5, 2, 9 }
+  };
+#endif
   
-  uint16 total_c = 32;
-  uint16 scale_bits = 5;
   
-  int16 scale_slope = (scale_right - scale_left) / (right - left + 1);
-  int16 scale = scale_left;
+#if 0
+  int16 map[4][4] = {
+    { 1, 9, 3, 11 },
+    { 13, 5, 15, 7 },
+    { 4, 12, 2, 10 },
+    { 16, 8, 14, 16 }
+  };
+#endif
   
-  int32 error = 0;
+#if 0
+  int16 map[8][8] = {
+    { 1, 49, 13, 61, 4, 52, 16, 64 },
+    { 33, 17, 45, 29, 36, 20, 48, 32 },
+    { 9, 57, 5, 53, 12, 60, 8, 56 },
+    { 41, 25, 37, 21, 44, 28, 40, 24 },
+    { 3, 51, 15, 63, 2, 50, 14, 62 },
+    { 25, 19, 47, 31, 34, 18, 46, 30 },
+    { 11, 59, 7, 55, 10, 58, 6, 54 },
+    { 43, 27, 39, 23, 42, 26, 38, 22 }
+  };
+#endif
+  
+  uint16 total_c = 64;
+  uint16 scale_bits = 6;
+  
+  uint16 scale_slope = (scale_right - scale_left) / (right - left + 1);
+  uint16 scale = scale_left;
+  
+  int32 err = 0;
   
   int32 mask = (1 << (16 - scale_bits)) - 1;
   int32 half = mask / 2;
   
-  
   for(i = left; i <= right; ++i) {
-    int32 val = scale + error;
+    int32 val;
+    
+    if(!x3d_key_down(X3D_KEY_15))
+      val = scale + scale * map[i % 3][y % 3] / 10;
+    else
+      val = scale;
+    
     
     int16 index = val >> (15 - scale_bits);
     
-    error = (int32)(val & mask);
+    if(index >= total_c)
+      index = total_c - 1;
+    
+#if 0
+    err = (int32)(val & mask);
     
     if((val & mask) >= half) {
-      error = -(mask + 1 - (val & mask));
+      err = -(mask + 1 - (val & mask));
       ++index;
     }
     
+#endif
     ((uint16 *)window_surface->pixels)[y * window_surface->w + i] = color_tab[index];
     scale += scale_slope;
   }
-  
 }

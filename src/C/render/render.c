@@ -454,7 +454,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             cid = context->seg_id % 10;
 
 
-            color = colors[9];
+            color = colors[6];
 
              dot = X3D_MIN((int32)dot + 8192, 32767);
  

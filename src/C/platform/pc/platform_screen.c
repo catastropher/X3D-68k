@@ -214,6 +214,12 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
     return;
   }
 #endif
+
+  int16 map[3][3] = {
+    { 1, 8, 4 },
+    { 7, 6, 3 },
+    { 5, 2, 9 }
+  };
   
   uint16 total_c = 32;
   uint16 scale_bits = 5;
@@ -221,30 +227,28 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   uint16 scale_slope = (scale_right - scale_left) / (right - left + 1);
   uint16 scale = scale_left;
   
-  int32 error = 0;
+  int32 err = 0;
   
   int32 mask = (1 << (16 - scale_bits)) - 1;
   int32 half = mask / 2;
   
-  if(scale_left < 1024 && scale_right < 1024) {
-    scale = 0;
-    scale_slope = 0;
-  }
-  
   for(i = left; i <= right; ++i) {
-    int32 val = scale + error;
+    int32 val = scale + scale * map[i % 3][y % 3] / 10;
     
     int16 index = val >> (15 - scale_bits);
     
-    error = (int32)(val & mask);
+    if(index >= total_c)
+      index = total_c - 1;
     
-    if(abs(scale_left - scale_right) < 4096) {
-      if((val & mask) >= half) {
-        error = -(mask + 1 - (val & mask));
-        ++index;
-      }
+#if 0
+    err = (int32)(val & mask);
+    
+    if((val & mask) >= half) {
+      err = -(mask + 1 - (val & mask));
+      ++index;
     }
     
+#endif
     ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(color_tab[index]);
     scale += scale_slope;
   }

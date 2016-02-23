@@ -354,8 +354,8 @@ void engine_test(void) {
 
 #if defined(__linux__)
   X3D_InitSettings init = {
-    .screen_w = 640,
-    .screen_h = 480,
+    .screen_w = 320,
+    .screen_h = 240,
     .screen_scale = 1,
     .fullscreen = X3D_FALSE,
     .fov = ANG_60
@@ -413,6 +413,7 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_E, SDLK_UP);
   x3d_key_map_pc(KEY_Q, SDLK_DOWN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
+  x3d_key_map_pc(X3D_KEY_15, SDLK_9);
 
 #elif defined(__68k__)
   x3d_key_map_68k(KEY_Q, RR_UP);

@@ -765,7 +765,7 @@ uint32 x3d_color_to_internal(X3D_Color c);
 void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   int16 i;
 
-  uint16 total_c = 32;
+  uint16 total_c = 64;
   
   X3D_Color color_tab[total_c + 10];
   
@@ -798,11 +798,6 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
     g += g_slope;
     b += b_slope;
   }
-  
-  int16 error[640];
-  
-  for(i = 0; i < 640; ++i)
-    error[i] = 0;
   
   for(i = 0; i < 5; ++i) {
     color_tab[i] = 0;
