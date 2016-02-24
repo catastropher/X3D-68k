@@ -17,12 +17,17 @@
 
 #include "X3D_common.h"
 
+enum {
+  X3D_INIT_VIRTUAL_SCREEN = 1
+};
+
 typedef struct X3D_InitSettings {
   int16 screen_w;         ///< Width of the screen
   int16 screen_h;         ///< Height of the screen
   int16 screen_scale;     ///< Screen scaling factor
   _Bool fullscreen;       ///< Fullscreen
   angle256 fov;           ///< Camera field-of-view angle
+  uint16 flags;
 } X3D_InitSettings;
 
 

@@ -28,6 +28,7 @@ static int16 screen_scale;
 static _Bool record;
 static int16 record_frame;
 static char record_name[1024];
+static _Bool virtual_window;
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
@@ -40,6 +41,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   screen_w = init->screen_w;
   screen_h = init->screen_h;
   screen_scale = init->screen_scale;
+  virtual_window = init->flags & X3D_INIT_VIRTUAL_SCREEN;
   
   x3d_state->screen_manager.w = screen_w;
   x3d_state->screen_manager.h = screen_h;
@@ -52,22 +54,51 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
           init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
   
-  window_surface = SDL_SetVideoMode(
-    init->screen_w * init->screen_scale,
-    init->screen_h * init->screen_scale,
-    32,
-    SDL_SWSURFACE
-  );
-  
-  if(!window_surface) {
-    x3d_log(X3D_ERROR, "Failed to create window");
-    return X3D_FALSE;
+  if(!(init->flags & X3D_INIT_VIRTUAL_SCREEN)) {
+    window_surface = SDL_SetVideoMode(
+      init->screen_w * init->screen_scale,
+      init->screen_h * init->screen_scale,
+      32,
+      SDL_SWSURFACE
+    );
+    
+    if(!window_surface) {
+      x3d_log(X3D_ERROR, "Failed to create window");
+      return X3D_FALSE;
+    }
+    
+    x3d_log(X3D_INFO, "Window created");
+  }
+  else {
+    uint32 rmask, gmask, bmask, amask;
+
+    /* SDL interprets each pixel as a 32-bit number, so our masks must depend
+       on the endianness (byte order) of the machine */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    window_surface = SDL_CreateRGBSurface(0, init->screen_w * init->screen_scale, init->screen_h * init->screen_scale, 32,
+                                   rmask, gmask, bmask, amask);
+    
+    if(!window_surface) {
+      x3d_log(X3D_ERROR, "Failed to create virtual window");
+      return X3D_FALSE;
+    }
+    
+    x3d_log(X3D_INFO, "Created virtual window");
   }
   
   record = X3D_FALSE;
   record_frame = 0;
-  
-  x3d_log(X3D_INFO, "Window created");
   
   return X3D_TRUE;
   
@@ -339,7 +370,12 @@ void x3d_screen_flip() {
     ++record_frame;
   }
   
-  SDL_Flip(window_surface);
+  if(!virtual_window)
+    SDL_Flip(window_surface);
+}
+
+void* x3d_screen_get_internal(void) {
+  return window_surface;
 }
 
 void x3d_screen_clear(X3D_Color color) {
