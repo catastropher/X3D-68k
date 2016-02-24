@@ -21,7 +21,7 @@
 #include "X3D.h"
 
 #if defined(__linux__)
-#include <SDL2/SDL.h>
+#include <SDL/SDL.h>
 #include <alloca.h>
 #endif
 

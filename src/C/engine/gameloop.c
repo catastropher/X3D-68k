@@ -13,7 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-//#include <SDL2/SDL.h>
 
 #include "X3D_common.h"
 #include "X3D_enginestate.h"
@@ -49,7 +48,7 @@ void x3d_game_loop() {
     if(x3d_key_down(X3D_KEY_15))
       SDL_Delay(500);
     else
-      ;//SDL_Delay(25);
+      SDL_Delay(25);
 #endif
 
     x3d_enginestate_next_step();

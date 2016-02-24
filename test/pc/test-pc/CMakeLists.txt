@@ -62,10 +62,8 @@ add_executable(X3D-test-pc
 set_target_properties(X3D-test-pc PROPERTIES OUTPUT_NAME test-pc)
 
 if(${X3D_TARGET} STREQUAL "pc")
-  set(SDL2_DIR $ENV{X3D}/test/pc/test-pc)
-
-  find_package(SDL2 REQUIRED)
-  target_link_libraries(X3D-test-pc ${SDL2_LIBRARY})
+  find_package(SDL REQUIRED)
+  target_link_libraries(X3D-test-pc ${SDL_LIBRARY})
   target_link_libraries(X3D-test-pc $ENV{X3D}/build/X3D/libX3D.a)
   target_link_libraries(X3D-test-pc m)
 

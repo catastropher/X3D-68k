@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <SDL2/SDL.h>
+#include <SDL/SDL.h>
 
 #include "X3D_common.h"
 #include "X3D_init.h"
@@ -21,7 +21,6 @@
 #include "X3D_enginestate.h"
 #include "X3D_trig.h"
 
-static SDL_Window* window;
 static SDL_Surface* window_surface;
 static int16 screen_w;
 static int16 screen_h;
@@ -38,30 +37,6 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
-          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
-  
-  window = SDL_CreateWindow(
-    "X3D",
-    SDL_WINDOWPOS_UNDEFINED,
-    SDL_WINDOWPOS_UNDEFINED,
-    init->screen_w * init->screen_scale,
-    init->screen_h * init->screen_scale,
-    (init->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0)
-  );
-  
-  window_surface = SDL_GetWindowSurface(window);
-  
-  if(init->fullscreen) {
-    init->screen_w = window_surface->w;
-    init->screen_h = window_surface->h;
-  }
-  
-  if(!window) {
-    x3d_log(X3D_ERROR, "Failed to create window");
-    return X3D_FALSE;
-  }
-  
   screen_w = init->screen_w;
   screen_h = init->screen_h;
   screen_scale = init->screen_scale;
@@ -74,6 +49,20 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_state->screen_manager.scale_x = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
   x3d_state->screen_manager.scale_y = x3d_state->screen_manager.scale_x;  //screen_w * div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2)) / screen_h;
   
+  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
+          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
+  
+  window_surface = SDL_SetVideoMode(
+    init->screen_w * init->screen_scale,
+    init->screen_h * init->screen_scale,
+    32,
+    SDL_SWSURFACE
+  );
+  
+  if(!window_surface) {
+    x3d_log(X3D_ERROR, "Failed to create window");
+    return X3D_FALSE;
+  }
   
   record = X3D_FALSE;
   record_frame = 0;
@@ -85,7 +74,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
 }
 
 X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
-  SDL_DestroyWindow(window);
+  SDL_FreeSurface(window_surface);
   SDL_Quit();
 }
 
@@ -350,7 +339,7 @@ void x3d_screen_flip() {
     ++record_frame;
   }
   
-  SDL_UpdateWindowSurface(window);
+  SDL_Flip(window_surface);
 }
 
 void x3d_screen_clear(X3D_Color color) {
