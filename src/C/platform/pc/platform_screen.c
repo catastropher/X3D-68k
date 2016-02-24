@@ -86,7 +86,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     amask = 0xff000000;
 #endif
 
-    window_surface = SDL_CreateRGBSurface(0, init->screen_w * init->screen_scale, init->screen_h * init->screen_scale, 32,
+    window_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, init->screen_w * init->screen_scale, init->screen_h * init->screen_scale, 32,
                                    rmask, gmask, bmask, amask);
     
     if(!window_surface) {
