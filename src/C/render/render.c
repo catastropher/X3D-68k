@@ -102,6 +102,9 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
 
   X3D_RenderManager* renderman = x3d_rendermanager_get();
 
+  // Reset segment face render callback
+  renderman->segment_face_render_callback = NULL;
+  
   x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
 
   int16 offx = 0, offy = 0;
@@ -454,7 +457,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             cid = context->seg_id % 10;
 
 
-            color = colors[0];
+            color = colors[6];
 
              dot = X3D_MIN((int32)dot + 8192, 32767);
  
@@ -463,6 +466,15 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
              color.z = (int32)color.z * dot / 32768;
 
             X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
+            
+            X3D_SegmentRenderFace rface = {
+              .id = x3d_segfaceid_create(context->seg_id, i),
+              .color = c,
+              .region = portal.region
+            };
+            
+            if(x3d_rendermanager_get()->segment_face_render_callback)
+              x3d_rendermanager_get()->segment_face_render_callback(&rface);
 
             X3D_Polygon3D poly = {
               .v = alloca(1000)
@@ -478,7 +490,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
 
-            x3d_rasterregion_fill(portal.region, c);
+            x3d_rasterregion_fill(portal.region, rface.color);
 
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {

@@ -24,13 +24,6 @@
 #include "X3D_clip.h"
 
 
-typedef struct X3D_RenderManager {
-  X3D_Stack stack;
-  X3D_RasterRegion region;
-  int16 near_z;
-  _Bool wireframe;
-} X3D_RenderManager;
-
 typedef struct X3D_DisplayLine {
   X3D_Vex3D v[2];
   X3D_Color color;
@@ -49,6 +42,20 @@ typedef struct X3D_ClipContext {
   _Bool really_close;
   fp0x16* depth_scale;
 } X3D_ClipContext;
+
+typedef struct X3D_SegmentRenderFace {
+  X3D_RasterRegion* region;
+  X3D_SegFaceID id;
+  X3D_Color color;
+} X3D_SegmentRenderFace;
+
+typedef struct X3D_RenderManager {
+  X3D_Stack stack;
+  X3D_RasterRegion region;
+  int16 near_z;
+  _Bool wireframe;
+  void (*segment_face_render_callback)(X3D_SegmentRenderFace* face);
+} X3D_RenderManager;
 
 #define X3D_MAX_DISPLAY_LINE 100
 
