@@ -225,6 +225,8 @@ void x3d_screen_draw_scanline_grad2(int16 y, int16 left, int16 right, X3D_Color 
   }
 }
 
+extern int16 render_mode;
+
 void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab) {
   uint16 i;
   
@@ -234,6 +236,11 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
     return;
   }
 #endif
+
+  if(render_mode == 0) {
+    scale_left = 0x7FFF;
+    scale_right = 0x7FFF;
+  }
 
   int16 map[3][3] = {
     { 1, 8, 4 },
@@ -253,7 +260,7 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   int32 half = mask / 2;
   
   for(i = left; i <= right; ++i) {
-    int32 val = scale + scale * map[i % 3][y % 3] / 10;
+    int32 val = scale + (render_mode >= 2 ? scale * map[i % 3][y % 3] / 10 : 0);
     
     int16 index = val >> (15 - scale_bits);
     

@@ -214,5 +214,6 @@ X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id);
 X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id);
 
 void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object);
-void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Vex3D* dest);
+void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle);
+void x3d_segmentmanager_cache_purge(void);
 

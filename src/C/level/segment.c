@@ -18,6 +18,7 @@
 #include "X3D_enginestate.h"
 #include "memory/X3D_varsizeallocator.h"
 #include "X3D_prism.h"
+#include "X3D_trig.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Initializes the segment manager.
@@ -149,6 +150,20 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
   return NULL;
 }
 
+void x3d_segmentmanager_cache_purge(void) {
+  X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
+  uint16 i;
+  
+  for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
+    if(seg_manager->cache.entry[i].seg.base.id != X3D_SEGMENT_NONE) {
+      X3D_UncompressedSegment* seg = x3d_segmentmanager_get_internal(seg_manager->cache.entry[i].seg.base.id);
+      
+      seg->base.flags = seg_manager->cache.entry[i].seg.base.flags;
+      seg_manager->cache.entry[i].seg.base.id = X3D_SEGMENT_NONE;
+    }
+  }
+}
+
 void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object) {
   _Bool exists = X3D_FALSE;
   uint16 free_pos = 0xFFFF;
@@ -173,26 +188,49 @@ void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object) {
   }
 }
 
-void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Vex3D* dest) {
+void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle) {
   uint16 p[3];
   X3D_Vex3D_int32 sum = { 0, 0, 0 };
   
   x3d_prism_point_faces(seg->prism.base_v, point, p);
   
+  fp0x16 angle_cos = x3d_cos(ANG_90 - 1);
+  
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   uint16 i;
+  
+  int16 total = 0;
   
   for(i = 0; i < 3; ++i) {
     X3D_Vex3D* normal = &face[p[i]].plane.normal;
     
-    sum.x += normal->x;
-    sum.y += normal->y;
-    sum.z += normal->z;
+    x3d_log(X3D_INFO, "DOT: %d", x3d_vex3d_fp0x16_dot(normal, face_normal));
+    
+    _Bool eq = face_normal->x == normal->x && face_normal->y == normal->y && face_normal->z == normal->z;
+    
+    x3d_log(X3D_INFO, "eq%d", eq);
+    
+    if(x3d_vex3d_fp0x16_dot(normal, face_normal) > angle_cos || eq) {
+      sum.x += normal->x;
+      sum.y += normal->y;
+      sum.z += normal->z;
+      ++total;
+    }
   }
   
-  dest->x = sum.x / 3;
-  dest->y = sum.y / 3;
-  dest->z = sum.z / 3;
+  //x3d_assert(total != 0);
+  
+  //x3d_log(X3D_INFO, "total: %d", total);
+  
+  if(total != 0) {
+    dest->x = sum.x / total;
+    dest->y = sum.y / total;
+    dest->z = sum.z / total;
+  }
+  else {
+    *dest = *face_normal;
+    x3d_log(X3D_INFO, "Case!");
+  }
 }
 
 

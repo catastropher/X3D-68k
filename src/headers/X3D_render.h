@@ -41,6 +41,8 @@ typedef struct X3D_ClipContext {
   X3D_Pair* edge_pairs;
   _Bool really_close;
   fp0x16* depth_scale;
+  X3D_Vex3D* normal;
+  X3D_UncompressedSegment* seg;
 } X3D_ClipContext;
 
 typedef struct X3D_SegmentRenderFace {

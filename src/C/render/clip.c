@@ -25,6 +25,8 @@
 #include "X3D_assert.h"
 #include "X3D_keys.h"
 
+int16 render_mode;
+
 // This code is absolutely terrible and badly needs to be refactored... it was
 // never intended to *actually* be used... annoy Michael until he refactors
 // this mess.
@@ -212,6 +214,7 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
   if(a.y > b.y) {
     X3D_SWAP(a, b);
     X3D_SWAP(scale_a, scale_b);
+    edge->flags |= EDGE_SWAPPED;
   }
   
   edge->start_scale = scale_a;
@@ -857,6 +860,23 @@ void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_V
 #endif
 }
 
+fp0x16 x3d_point_intensity(X3D_UncompressedSegment* seg, uint16 p, X3D_Vex3D* face_normal, int16 z) {
+  if(face_normal) {
+    X3D_Vex3D normal;
+    x3d_segment_point_normal(seg, p, &normal, face_normal, ANG_90 - 5);
+      
+
+    X3D_Vex3D d = { 0, 0, 32767 };
+    fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &normal));
+    
+    dot = X3D_MIN((int32)dot + 8192, 32767);
+
+    return ((int32)x3d_depth_scale(z, 10, 1500) * dot) >> 15;
+  }
+  
+  return NULL;
+}
+
 /// Under construction
 /// @todo Refactor!!!!!!!!
 _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion* dest) {
@@ -924,10 +944,17 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     if((in[0] || in[1]) && !frustum_clipped) {
       vis_e[total_vis_e++] = clip->edge_index[i];
       
+      if(render_mode == 3) {
+        X3D_Pair p = clip->edge_pairs[clip->edge_index[i]];
+        int16 ia = x3d_point_intensity(clip->seg, p.val[0], clip->normal, clip->v3d[p.val[0]].z);
+        int16 ib = x3d_point_intensity(clip->seg, p.val[1], clip->normal, clip->v3d[p.val[1]].z);
+        x3d_rasteredge_set_intensity(&clip->edges[clip->edge_index[i]], ia, ib);
+      }
+      
       if(in[0] != in[1]) {
         X3D_Vex2D v[2];
         
-        x3d_rasteredge_get_endpoints(clip->edges + clip->edge_index[i], v, v + 1);
+        x3d_rasteredge_get_endpoints(clip->edges + clip->edge_index[i], v, v + 1);        
         
         // FIXME
         if(in[0]) {
@@ -1085,4 +1112,16 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   
   return X3D_FALSE;
 }
+
+void x3d_rasteredge_set_intensity(X3D_RasterEdge* edge, fp0x16 ia, fp0x16 ib) {
+  if(edge->flags & EDGE_SWAPPED) {
+    edge->end_scale = ia;
+    edge->start_scale = ib;
+  }
+  else {
+    edge->start_scale = ia;
+    edge->end_scale = ib;
+  }
+}
+
 

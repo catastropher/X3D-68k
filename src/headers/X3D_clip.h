@@ -61,7 +61,8 @@ enum {
   EDGE_RIGHT_CLIPPED = 16,
   EDGE_BOTTOM_CLIPPED = 32,
   EDGE_TOP_CLIPPED = 64,
-  EDGE_NO_DRAW = 128
+  EDGE_NO_DRAW = 128,
+  EDGE_SWAPPED = 256
 };
 
 typedef X3D_Stack X3D_RenderStack;
@@ -88,3 +89,5 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color);
 void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_Vex2D* end);
 
 _Bool x3d_rasterregion_construct_clipped(struct X3D_ClipContext* clip, X3D_RasterRegion* dest);
+void x3d_rasteredge_set_intensity(X3D_RasterEdge* edge, fp0x16 ia, fp0x16 ib);
+

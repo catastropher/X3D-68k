@@ -27,6 +27,8 @@
 
 int16 line_count;
 
+extern int16 render_mode;
+
 int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {
   if(x3d_rendermanager_get()->wireframe)
     return value;
@@ -401,6 +403,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
           context->clip->edge_index = edge_index;
           context->clip->total_edge_index = face_e;
+          
+          context->clip->normal = &context->faces[i].plane.normal;
 
           _Bool use_new = x3d_rasterregion_construct_clipped(context->clip, &portal_region);
 
@@ -461,9 +465,12 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
              dot = X3D_MIN((int32)dot + 8192, 32767);
  
-             color.x = (int32)color.x * dot / 32768;
-             color.y = (int32)color.y * dot / 32768;
-             color.z = (int32)color.z * dot / 32768;
+            if(render_mode != 3) { 
+             
+              color.x = (int32)color.x * dot / 32768;
+              color.y = (int32)color.y * dot / 32768;
+              color.z = (int32)color.z * dot / 32768;
+            }
 
             X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
             
@@ -633,21 +640,22 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   
   for(i = 0;i < prism->base_v * 2; ++i) {
     X3D_Vex3D normal;
-    x3d_segment_point_normal(seg, i, &normal);
+    //x3d_segment_point_normal(seg, i, &normal);
     
 
     X3D_Vex3D d = { 0, 0, 32767 };
 
-    fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &normal));
+    fp0x16 dot = x3d_vex3d_fp0x16_dot(&d, &normal);
     
     
     dot = X3D_MIN((int32)dot + 8192, 32767);
     
-#if 1
-    depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);
-#else
-    depth_scale[i] = ((int32)x3d_depth_scale(v3d[i].z, 10, 1500) * dot) >> 15;
-#endif
+    dot = X3D_MAX(dot, 0);
+
+    if(render_mode != 3)
+      depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);
+    //else
+    //  depth_scale[i] = ((int32)x3d_depth_scale(v3d[i].z, 10, 1500) * dot) >> 15;
   }
 
 #if 1
@@ -681,7 +689,8 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .v3d = v3d,
     .v2d = v2d,
     .edge_pairs = edge_pair,
-    .depth_scale = depth_scale
+    .depth_scale = depth_scale,
+    .seg = seg
   };
 
   x3d_clipcontext_generate_rasteredges(&clip, &renderman->stack);
