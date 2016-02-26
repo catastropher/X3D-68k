@@ -194,7 +194,7 @@ void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Ve
   
   x3d_prism_point_faces(seg->prism.base_v, point, p);
   
-  fp0x16 angle_cos = x3d_cos(ANG_90 - 1);
+  fp0x16 angle_cos = x3d_cos(ANG_30);
   
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   uint16 i;
@@ -204,11 +204,7 @@ void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Ve
   for(i = 0; i < 3; ++i) {
     X3D_Vex3D* normal = &face[p[i]].plane.normal;
     
-    x3d_log(X3D_INFO, "DOT: %d", x3d_vex3d_fp0x16_dot(normal, face_normal));
-    
     _Bool eq = face_normal->x == normal->x && face_normal->y == normal->y && face_normal->z == normal->z;
-    
-    x3d_log(X3D_INFO, "eq%d", eq);
     
     if(x3d_vex3d_fp0x16_dot(normal, face_normal) > angle_cos || eq) {
       sum.x += normal->x;

@@ -25,7 +25,7 @@
 #include "X3D_assert.h"
 #include "X3D_keys.h"
 
-int16 render_mode;
+int16 render_mode = 3;
 
 // This code is absolutely terrible and badly needs to be refactored... it was
 // never intended to *actually* be used... annoy Michael until he refactors

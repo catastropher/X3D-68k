@@ -48,6 +48,8 @@ enum {
   KEY_RECORD = X3D_KEY_14
 };
 
+extern int16 render_mode;
+
 void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   static _Bool rec = X3D_FALSE;
@@ -60,14 +62,11 @@ void engine_test_handle_keys(void) {
     x3d_rendermanager_get()->wireframe = !x3d_rendermanager_get()->wireframe;
   }
 
-#if 0
-  if(x3d_key_down(KEY_0)) {
-    x3d_rendermanager_get()->near_z++;
-    printf("Near z: %d\n", x3d_rendermanager_get()->near_z);
-  }
-  else if(x3d_key_down(KEY_9)) {
-    x3d_rendermanager_get()->near_z--;
-    printf("Near z: %d\n", x3d_rendermanager_get()->near_z);
+#if 1
+  if(x3d_key_down(KEY_9)) {
+    render_mode = (render_mode + 1) % 4;
+    
+    while(x3d_key_down(KEY_9)) x3d_read_keys();
   }
 #endif
 
@@ -412,6 +411,7 @@ void engine_test(void) {
   x3d_key_map_pc(KEY_D, SDLK_RIGHT);
   x3d_key_map_pc(KEY_E, SDLK_UP);
   x3d_key_map_pc(KEY_Q, SDLK_DOWN);
+  x3d_key_map_pc(KEY_9, SDLK_3);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(X3D_KEY_15, SDLK_9);
 
