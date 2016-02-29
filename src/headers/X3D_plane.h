@@ -25,6 +25,11 @@ typedef struct X3D_Plane {
   int16 d;
 } X3D_Plane;
 
+typedef struct X3D_Frustum {
+  uint16 total_p;
+  X3D_Plane* p;
+} X3D_Frustum;
+
 void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
 void x3d_plane_print(X3D_Plane* p);
 _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D* p);

@@ -277,3 +277,12 @@ void x3d_polygon3d_rotate(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex
 void x3d_polygon2d_add_point(X3D_Polygon2D* poly, int16 x, int16 y) {
   poly->v[poly->total_v++] = (X3D_Vex2D) { x, y };
 }
+
+void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest) {
+  dest->total_v = src->total_v;
+  
+  uint16 i;
+  for(i = 0; i < src->total_v; ++i)
+    dest->v[i] = src->v[i];
+}
+

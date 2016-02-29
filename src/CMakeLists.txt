@@ -110,6 +110,7 @@ add_sources(
   C/render/wallportal.c
   C/render/portal.c
   C/render/clip.c
+  C/render/clip3.c
   
   C/physics/collide.c
   

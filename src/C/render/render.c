@@ -374,6 +374,8 @@ void printnum(int16 num) {
   char buf[16];
 }
 
+void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam);
+
 void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   uint16 i;
 
@@ -488,6 +490,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             };
 
             x3d_prism3d_get_face(prism, i, &poly);
+            
+            test_clip(&poly, context->cam);
 
             X3D_Vex3D center;
             x3d_polygon3d_center(&poly, &center);
