@@ -409,11 +409,11 @@ _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion*
   
   for(i = 0; i < total_v; ++i) {
     int16 next = (i + 1) % total_v;
-    x3d_rasteredge_generate(edges + i, v[i], v[next], &fake_parent_region, 0, 0, stack, 0x7FFF, 0x7FFF);
+    x3d_rasteredge_generate(edges + i, v[i], v[next], &fake_parent_region, 100, 100, stack, 0x7FFF / 2, 0x7FFF / 2);
     edge_index[i] = i;
   }
   
-  return x3d_rasterregion_construct_from_edges(dest, NULL, stack, edges, edge_index, total_v);
+  return x3d_rasterregion_construct_from_edges(dest, (dest != &x3d_rendermanager_get()->region ? &x3d_rendermanager_get()->region : NULL), stack, edges, edge_index, total_v);
 }
 
 #define CLIP() x3d_span_clip(region_span, *parent_span)

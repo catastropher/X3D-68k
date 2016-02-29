@@ -492,6 +492,34 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             x3d_prism3d_get_face(prism, i, &poly);
             
             test_clip(&poly, context->cam);
+            
+            if(poly.total_v < 3)
+              continue;
+            
+            X3D_Vex2D v2d[100];
+            X3D_Vex2D v3d[100];
+            
+            
+            if(!use_new)
+              continue;
+            
+            x3d_camera_transform_points(context->cam, poly.v, poly.total_v, v3d, v2d);
+            
+            uint16 k;
+            
+            _Bool ok = 1;
+            
+            for(k = 0; k < poly.total_v; ++k) {
+              uint16 next = (k + 1) % poly.total_v;
+              x3d_screen_draw_line(v2d[k].x, v2d[k].y, v2d[next].x, v2d[next].y, 31);
+            }
+            
+            continue;
+            
+            x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v2d, poly.total_v);
+            
+            
+            
 
             X3D_Vex3D center;
             x3d_polygon3d_center(&poly, &center);
@@ -501,7 +529,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
 
-            x3d_rasterregion_fill(portal.region, rface.color);
+            //x3d_rasterregion_fill(&r, rface.color);
 
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {

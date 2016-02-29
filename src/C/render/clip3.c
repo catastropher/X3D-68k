@@ -18,6 +18,14 @@
 #include "X3D_polygon.h"
 #include "X3D_vector.h"
 #include "X3D_camera.h"
+#include "X3D_enginestate.h"
+
+#define FIXDIV8(_n, _d) (((long)(_n) << 8) / (_d))
+
+#define FIXMULN(_a, _b, _n) (((long)(_a) * (_b)) >> (_n))
+
+#define FIXMUL8(_a, _b) FIXMULN(_a, _b, 8)
+#define FIXMUL15(_a, _b) FIXMULN(_a, _b, 15)
 
 // Clips a polygon against a plane. Returns whether a valid polygon remains.
 _Bool clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D* dest) {
@@ -31,6 +39,7 @@ _Bool clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D
         short out_pos = 0;
         
         dot = x3d_vex3d_fp0x16_dot(&poly->v[0], &plane->normal);
+        
         in = (dot >= plane->d);
         
         short total_outside = !in;
@@ -42,13 +51,13 @@ _Bool clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D
         short clipped = 0;
         
         for(i = 0; i < poly->total_v; i++) {
-                if(clipped == 2) {
+                if(clipped == 2 && 0) {
                         // A convex polygon can at most have two edges clipped, so if we've reached it
                         // just copy over the other ones (assuming we're back to being inside the poly)
                         
                         if(in) {
                                 for(; i < poly->total_v; i++) {
-                                        dest->v[dest->total_v] = poly->v[i];
+                                        dest->v[dest->total_v++] = poly->v[i];
                                 }
                         }
                         
@@ -63,7 +72,7 @@ _Bool clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D
                 
                 // The vertex is inside the plane, so don't clip it
                 if(in) {
-                        dest->v[dest->total_v] = poly->v[i];
+                        dest->v[dest->total_v++] = poly->v[i];
                 }
                         
                 //errorif(!in, "Point not in!");
@@ -161,8 +170,15 @@ void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam) {
   X3D_Vex3D fv;
   x3d_dynamicobject_forward_vector(cam, &fv);
   
+   pos.x += fv.x >> 8;
+   pos.y += fv.y >> 8;
+   pos.z += fv.z >> 8;
+  
   p.normal = fv;
-  p.d = x3d_vex3d_fp0x16_dot(&pos, &fv) + 20;
+  p.d = x3d_vex3d_fp0x16_dot(&pos, &fv);
+  
+  
+  x3d_log(X3D_INFO, "dot: %d", p.d);
   
   X3D_Polygon3D c = {
     .v = alloca(1000)
