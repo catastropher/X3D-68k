@@ -33,15 +33,18 @@ int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_de
   if(x3d_rendermanager_get()->wireframe)
     return value;
 
-  if(depth > max_depth)
+  if(depth >= max_depth)
     return 0;
 
   return value - ((int32)value * (depth - min_depth) / (max_depth - min_depth));
 }
 
 int16 x3d_depth_scale(int16 depth, int16 min_depth, int16 max_depth) {
-  if(depth > max_depth)
+  if(depth >= max_depth)
     return 0;
+  
+  if(depth <= min_depth)
+    return 0x7FFF;
   
   return 0x7FFF - (((int32)depth - min_depth) << 15) / (max_depth - min_depth);
 }
@@ -338,8 +341,18 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
   for(i = 0; i < clip->total_e; ++i) {
     uint16 a, b;
 
+    
+    
     a = clip->edge_pairs[i].val[0];
     b = clip->edge_pairs[i].val[1];
+    
+    int16 scale_a = clip->depth_scale[a];
+    int16 scale_b = clip->depth_scale[b];
+    
+    if(clip->v3d[a].z < 15 || clip->v3d[b].z < 15) {
+      scale_a = 0x7FFF;
+      scale_b = 0x7FFF;
+    }
 
     X3D_Vex3D temp_a = clip->v3d[a], temp_b = clip->v3d[b];
     X3D_Vex2D dest_a, dest_b;
@@ -347,7 +360,7 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, clip->v2d + a, clip->v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
 
     if(!(res & EDGE_INVISIBLE)) {
-      x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack, clip->depth_scale[a], clip->depth_scale[b]);
+      x3d_rasteredge_generate(clip->edges + i, dest_a, dest_b, clip->parent, clip->v3d[a].z, clip->v3d[b].z, stack, scale_a, scale_b);
       clip->edges[i].flags |= res;
     }
     else {
@@ -491,7 +504,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
             x3d_prism3d_get_face(prism, i, &poly);
             
-            test_clip(&poly, context->cam);
+            //test_clip(&poly, context->cam);
             
             if(poly.total_v < 3)
               continue;
@@ -503,7 +516,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             if(!use_new)
               continue;
             
-            x3d_camera_transform_points(context->cam, poly.v, poly.total_v, v3d, v2d);
+            //x3d_camera_transform_points(context->cam, poly.v, poly.total_v, v3d, v2d);
             
             uint16 k;
             
@@ -515,10 +528,10 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 //             }
 //             
 //             continue;
-            
+          /*  
             if(!x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v2d, poly.total_v)) continue;
             
-            if(!x3d_rasterregion_intersect(&r, context->parent)) continue;
+            if(!x3d_rasterregion_intersect(&r, context->parent)) continue;*/
             
             
 
@@ -530,7 +543,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
 
-            x3d_rasterregion_fill(&r, rface.color);
+            x3d_rasterregion_fill(portal.region, rface.color);
 
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {

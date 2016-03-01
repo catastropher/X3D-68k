@@ -217,6 +217,15 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
     edge->flags |= EDGE_SWAPPED;
   }
   
+  if(a.y < parent->rect.y_range.min && b.y > parent->rect.y_range.min) {
+    int16 dist_in = abs(b.y - parent->rect.y_range.min);
+    int16 dist_out = abs(a.y - parent->rect.y_range.min);
+    
+    int16 scale = ((int32)dist_in << 15) / (dist_in + dist_out);
+    
+    scale_a = scale_b + (((int32)(scale_a - scale_b) * scale) >> 15);
+  }
+  
   edge->start_scale = scale_a;
   edge->end_scale = scale_b;
   
@@ -347,20 +356,25 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Raster
 	if(e->rect.y_range.max != e->rect.y_range.min) {
 	
 	  // Calculate the scale interpolation slope
-	  int32 scale_slope = (((int32)e->end_scale - e->start_scale) << 16) / (e->rect.y_range.max - e->rect.y_range.min);
-	  int32 scale = (int32)e->start_scale << 16;
+    //x3d_assert(e->start_scale >= 0 && e->end_scale >= 0);
+    
+    e->start_scale = X3D_MAX(0, e->start_scale);
+    e->end_scale = X3D_MAX(0, e->end_scale);
+    
+	  int32 scale_slope = (((int32)e->end_scale - e->start_scale) << 15) / (e->rect.y_range.max - e->rect.y_range.min);
+	  int32 scale = (int32)e->start_scale << 15;
 	  
 	  // For each x value in the edge, check if the x_left and x_right values
 	  // in the raster region need to be replaced by it
 	  for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
 	    if(*x < span->left) {
 	      span->left = *x;
-	      span->left_scale = scale >> 16;
+	      span->left_scale = scale >> 15;
 	    }
 	    
 	    if(*x > span->right) {
 	      span->right = *x;
-	      span->right_scale = scale >> 16;
+	      span->right_scale = scale >> 15;
 	    }
 	    
 	    ++x;
@@ -871,7 +885,11 @@ fp0x16 x3d_point_intensity(X3D_UncompressedSegment* seg, uint16 p, X3D_Vex3D* fa
     
     dot = X3D_MIN((int32)dot + 8192, 32767);
 
-    return ((int32)x3d_depth_scale(z, 10, 1500) * dot) >> 15;
+    int16 val = ((int32)x3d_depth_scale(z, 10, 1500) * dot) >> 15;
+    
+    x3d_assert(val >= 0);
+    
+    return val;
   }
   
   return NULL;
@@ -1022,6 +1040,8 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   if(top_clipped) {
     X3D_Vex2D a = { 0, 0 };
     X3D_Vex2D b = { x3d_screenmanager_get()->w - 1, 0 };
+    
+    x3d_log(X3D_INFO, "Loc!");
     
     x3d_rasteredge_generate(clip->edges + total_e,
       a, b, clip->parent, 10, 10, &renderman->stack, 0x7FFF, 0x7FFF);

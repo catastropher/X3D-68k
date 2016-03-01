@@ -472,7 +472,7 @@ void engine_test(void) {
   };
 
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
-#if 0
+#if 1
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
   uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
 
