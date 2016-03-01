@@ -189,9 +189,9 @@ void engine_test_handle_keys(void) {
 
 #if 1
     X3D_Vex3D_fp8x8 d = {
-      dir.x >> 4,
-      dir.y >> 4,
-      dir.z >> 4
+      dir.x >> 3,
+      dir.y >> 3,
+      dir.z >> 3
     };
 
     cam->base.velocity = d;
@@ -212,9 +212,9 @@ void engine_test_handle_keys(void) {
 
     #if 1
     X3D_Vex3D_fp8x8 d = {
-      -dir.x >> 4,
-      -dir.y >> 4,
-      -dir.z >> 4
+      -dir.x >> 3,
+      -dir.y >> 3,
+      -dir.z >> 3
     };
 
     cam->base.velocity = d;
@@ -232,21 +232,21 @@ void engine_test_handle_keys(void) {
 
 #if 1
   if(x3d_key_down(KEY_Q)) {
-    cam->base.angle.x -= 2;
+    cam->base.angle.x -= 4;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
   else if(x3d_key_down(KEY_E)) {
-    cam->base.angle.x += 2;
+    cam->base.angle.x += 4;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
 #endif
 
   if(x3d_key_down(KEY_A)) {
-    cam->base.angle.y -= 2;
+    cam->base.angle.y -= 4;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
   else if(x3d_key_down(KEY_D)) {
-    cam->base.angle.y += 2;
+    cam->base.angle.y += 4;
     x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
   }
 
