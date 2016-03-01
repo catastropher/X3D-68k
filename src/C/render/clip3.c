@@ -126,6 +126,10 @@ _Bool clip_polygon_to_plane(X3D_Polygon3D* poly, X3D_Plane* plane, X3D_Polygon3D
 char clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* dest) {
 #if 1
         X3D_Polygon3D temp[2];
+        
+        temp[0].v = alloca(1000);
+        temp[1].v = alloca(1000);
+        
         int current_temp = 0;
         X3D_Polygon3D* poly = src;
         int i;
@@ -162,40 +166,13 @@ char clip_polygon_to_frustum(X3D_Polygon3D* src, X3D_Frustum* f, X3D_Polygon3D* 
 #endif
 }
 
-void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam) {
-  X3D_Vex3D pos;
-  x3d_object_pos(cam, &pos);
-  
-  X3D_Plane p;
-  X3D_Vex3D fv;
-  x3d_dynamicobject_forward_vector(cam, &fv);
-  
-   pos.x += fv.x >> 8;
-   pos.y += fv.y >> 8;
-   pos.z += fv.z >> 8;
-  
-  p.normal = fv;
-  p.d = x3d_vex3d_fp0x16_dot(&pos, &fv);
-  
-  
-  x3d_log(X3D_INFO, "dot: %d", p.d);
-  
-  X3D_Polygon3D c = {
-    .v = alloca(1000)
-  };
-  
-  clip_polygon_to_plane(poly, &p, &c);
-  x3d_polygon3d_copy(&c, poly);
-}
-
-
 // Calculates the normals of the unrotated planes of the view frustum
 void calculate_frustum_plane_normals(X3D_Frustum* f) {
   X3D_ScreenManager* screenman = x3d_screenmanager_get();
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   
-  int16 w = screenman->w;
-  int16 h = screenman->h;
+  int16 w = screenman->w + 20;
+  int16 h = screenman->h + 20;
   int16 dist = screenman->scale_x;
   
   X3D_Vex3D top_left = { -w / 2, -h / 2, dist };
@@ -237,5 +214,90 @@ void calculate_frustum_plane_normals(X3D_Frustum* f) {
   
   f->total_p = 5;
 }
+
+// Calculates the distance from each plane in the view frustum to the origin
+void calculate_frustum_plane_distances(X3D_Frustum* f, X3D_CameraObject* cam) {
+  int i;
+  
+  const int PLAYER_HEIGHT = 0;
+  X3D_Vex3D cam_pos;
+  
+  x3d_object_pos(cam, &cam_pos);
+  
+  X3D_Vex3D eye_cam_pos = { cam_pos.x, cam_pos.y - PLAYER_HEIGHT, cam_pos.z };
+  
+  for(i = 0; i < f->total_p; ++i) {
+    f->p[i].d = x3d_vex3d_fp0x16_dot(&f->p[i].normal, &eye_cam_pos);
+  }
+  
+  X3D_Vex3D out;
+  x3d_dynamicobject_forward_vector(cam, &out);
+  
+  short dist = 15;//c->dist - DIST_TO_NEAR_PLANE;
+  
+  out.x = ((int32)out.x * dist) >> X3D_NORMAL_BITS;
+  out.y = ((int32)out.y * dist) >> X3D_NORMAL_BITS;
+  out.z = ((int32)out.z * dist) >> X3D_NORMAL_BITS;
+  
+  out.x += cam_pos.x;
+  out.y += cam_pos.y - PLAYER_HEIGHT;
+  out.z += cam_pos.z;
+  
+  f->p[0].d = x3d_vex3d_fp0x16_dot(&f->p[0].normal, &out);  
+}
+
+// Calculates the rotated plane normals of the view frustum
+void calculate_frustum_rotated_normals(X3D_Frustum* src, X3D_Frustum* f, X3D_CameraObject* cam) {
+  int16 i, d;
+  
+  X3D_Mat3x3 transpose = cam->base.mat;
+  x3d_mat3x3_transpose(&transpose);
+  
+  for(i = 0; i < src->total_p; ++i) {
+    X3D_Vex3D n = src->p[i].normal;
+    
+    n.x >>= 1;
+    n.y >>= 1;
+    n.z >>= 1;
+    
+    x3d_vex3d_int16_rotate(&f->p[i].normal, &n, &transpose);
+    
+    f->p[i].normal.x <<= 1;
+    f->p[i].normal.y <<= 1;
+    f->p[i].normal.z <<= 1;
+  }
+  
+  // Near plane normal
+  x3d_dynamicobject_forward_vector(cam, &f->p[0].normal);
+
+  //printf("P: %d\nNear plane normal: ", c->frustum_unrotated.total_p);
+  //print_vex3d(&c->frustum.p[4].normal);
+  
+  f->total_p = src->total_p;
+}
+
+void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam) {
+  X3D_Frustum f = {
+    .p = alloca(1000)
+  };
+
+  X3D_Frustum f2 = {
+    .p = alloca(1000)
+  };
+  
+  calculate_frustum_plane_normals(&f);
+  calculate_frustum_rotated_normals(&f, &f2, cam);
+  calculate_frustum_plane_distances(&f2, cam);
+  
+  X3D_Polygon3D c = {
+    .v = alloca(1000)
+  };
+  
+  x3d_log(X3D_INFO, "Vex: %d %d %d", f2.p[3].normal.x, f2.p[3].normal.y, f2.p[3].normal.z);
+  
+  clip_polygon_to_frustum(poly, &f2, &c);
+  x3d_polygon3d_copy(&c, poly);
+}
+
 
 

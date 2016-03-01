@@ -223,7 +223,7 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src) 
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat3x3* mat) {
   fp0x16* m = mat->data;
 
-  int16 scale = 4;
+  int16 scale = 1;
   
   src->x *= scale;
   src->y *= scale;

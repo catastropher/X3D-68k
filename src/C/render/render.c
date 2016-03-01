@@ -509,15 +509,16 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             
             _Bool ok = 1;
             
-            for(k = 0; k < poly.total_v; ++k) {
-              uint16 next = (k + 1) % poly.total_v;
-              x3d_screen_draw_line(v2d[k].x, v2d[k].y, v2d[next].x, v2d[next].y, 31);
-            }
+//             for(k = 0; k < poly.total_v; ++k) {
+//               uint16 next = (k + 1) % poly.total_v;
+//               x3d_screen_draw_line(v2d[k].x, v2d[k].y, v2d[next].x, v2d[next].y, 31);
+//             }
+//             
+//             continue;
             
-            continue;
+            if(!x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v2d, poly.total_v)) continue;
             
-            x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v2d, poly.total_v);
-            
+            if(!x3d_rasterregion_intersect(&r, context->parent)) continue;
             
             
 
@@ -529,7 +530,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
             //c = x3d_color_scale_by_depth(c, center.z, 10, 2000);
 
-            //x3d_rasterregion_fill(&r, rface.color);
+            x3d_rasterregion_fill(&r, rface.color);
 
 #if 0
             if(x3d_key_down(X3D_KEY_15)) {
