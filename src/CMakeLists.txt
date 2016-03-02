@@ -111,6 +111,7 @@ add_sources(
   C/render/portal.c
   C/render/clip.c
   C/render/clip3.c
+  C/render/rasteredge.c
   
   C/physics/collide.c
   

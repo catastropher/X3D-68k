@@ -17,6 +17,7 @@
 #include "X3D_vector.h"
 #include "X3D_screen.h"
 #include "X3D_keys.h"
+#include "X3D_clip.h"
 
 typedef struct X3D_BoundRect {
   X3D_Vex2D start;
@@ -143,29 +144,36 @@ void draw_polygon(X3D_Vex2D* v, uint16 total_v) {
   }
 }
 
+void bin_search2(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* region) {
+  X3D_Vex2D mid;
+  
+  do {
+    mid.x = (in.x + out.x) >> 1;
+    mid.y = (in.y + out.y) >> 1;
+    
+    //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
+    
+    if(abs(in.x - out.x) < 2 && abs(in.y - out.y) < 2)
+      break;
+    
+    
+    if(x3d_rasterregion_point_inside(region, mid)) {
+      in = mid;
+    }
+    else {
+      out = mid;
+    }
+  } while(1);
+  
+  res->x = mid.x;
+  res->y = mid.y;
+}
+
+
+
+
+
 void x3d_clipregion_test() {
-  X3D_Vex2D v[] = {
-    { 0, 0 },   // top_left = 0
-    { 1, 0 },
-    { 2, 0 },
-    { 3, 0 },
-    { 20, 0 },  // top_right = 4
-    { 10, 5 },
-    { 5, 5 }
-  };
-  
-  uint16 total_v = sizeof(v) / sizeof(X3D_Vex2D);
-  
-  x3d_screen_clear(0);
-  draw_polygon(v, total_v);
-  x3d_screen_flip();
-  
-  
-  while(!x3d_key_down(X3D_KEY_15))
-    x3d_read_keys();
-  
-  X3D_ClipRegion region;
-  x3d_clipregion_create(&region, v, total_v);
 }
 
 
