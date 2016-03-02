@@ -29,6 +29,8 @@ typedef struct X3D_Mat3x3_fp0x16 {
 
 typedef X3D_Mat3x3_fp0x16 X3D_Mat3x3;
 
+struct X3D_CameraObject;
+
 void x3d_mat3x3_mul(X3D_Mat3x3* dest, X3D_Mat3x3* a, X3D_Mat3x3* b);
 void x3d_mat3x3_print(X3D_Mat3x3* mat);
 void x3d_mat3x3_construct(X3D_Mat3x3 *dest, X3D_Vex3D_angle256 *angle);
@@ -39,4 +41,6 @@ void x3d_mat3x3_set_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* v);
 void x3d_mat3x3_get_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* dest);
 
 void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest);
+
+void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, struct X3D_CameraObject* cam);
 

@@ -112,6 +112,7 @@ add_sources(
   C/render/clip.c
   C/render/clip3.c
   C/render/rasteredge.c
+  C/render/util.c
   
   C/physics/collide.c
   

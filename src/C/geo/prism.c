@@ -327,28 +327,7 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
 }
 
 void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_DisplayLineList* list, X3D_CameraObject* cam, X3D_Color color) {
-  X3D_Vex3D v3d[prism->base_v * 2];
-  X3D_Vex2D v2d[prism->base_v * 2];
-  
-  uint16 i;
-  for(i = 0; i < prism->base_v * 2; ++i) {
-    v3d[i].x = prism->v[i].x + translation->x;
-    v3d[i].y = prism->v[i].y + translation->y;
-    v3d[i].z = prism->v[i].z + translation->z;
-  }
-  
-  x3d_camera_transform_points(cam, v3d, prism->base_v * 2, v3d, v2d);
-  
-  for(i = 0; i < prism->base_v * 3; ++i) {
-    uint16 a, b;
-    x3d_prism_get_edge_index(prism->base_v, i, &a, &b);
-    
-    X3D_Vex2D va, vb;
-    
-    if(x3d_clip_line_to_near_plane(v3d + a, v3d + b, v2d + a, v2d + b, &va, &vb, 10) != EDGE_INVISIBLE) {
-      x3d_displaylinelist_add(list, va, v3d[a].z, vb, v3d[b].z, color);
-    }
-  }
+
 }
 
 void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest) {

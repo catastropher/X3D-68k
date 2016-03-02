@@ -21,6 +21,8 @@
 #include "X3D_vector.h"
 #include "X3D_trig.h"
 #include "X3D_fastsqrt.h"
+#include "render/X3D_util.h"
+#include "X3D_camera.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Multiplies two fp0x16 matricies together (aka matrix concatenation).
@@ -202,4 +204,23 @@ void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest) {
   x3d_log(X3D_INFO, "Angle Y: %u", (angle256)dest->y);
 }
 
-
+void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, X3D_CameraObject* cam) {
+  X3D_Color colors[] = {
+    x3d_rgb_to_color(255, 0, 0),
+    x3d_rgb_to_color(0, 255, 0),
+    x3d_rgb_to_color(0, 0, 255)
+  };
+  
+  uint16 i;
+  
+  for(i = 0; i < 3; ++i) {
+    X3D_Vex3D p;
+    x3d_mat3x3_get_column(mat, i, &p);
+    
+    p.x = (p.x >> 9) + pos.x;
+    p.y = (p.y >> 9) + pos.y;
+    p.z = (p.z >> 9) + pos.z;
+    
+    x3d_draw_3d_line(pos, p, cam, colors[i]);
+  }
+}
