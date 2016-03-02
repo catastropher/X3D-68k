@@ -227,6 +227,7 @@ void x3d_prism3d_render_solid(X3D_Prism3D* prism, X3D_Vex3D* translation, X3D_Di
   X3D_Vex3D v3d[prism->base_v * 2];
   X3D_Vex2D v2d[prism->base_v * 2];
   
+  
   uint16 i;
   for(i = 0; i < prism->base_v * 2; ++i) {
     v3d[i].x = prism->v[i].x + translation->x;

@@ -610,7 +610,7 @@ void engine_test(void) {
   box2->prism = box_prism;
 #endif
 
-#if 0
+#if 1
   // Create a new box
   x3d_object_create_type(1, &box_type);
   X3D_Handle box_handle = x3d_object_create(1, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D) { 0, 0, 0 }, 0, (X3D_Vex3D_angle256) { 0, 0, 0 });
