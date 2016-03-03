@@ -70,3 +70,5 @@ _Bool x3d_rasterregion_point_inside(X3D_RasterRegion* region, X3D_Vex2D p);
 _Bool x3d_rasterregion_construct_clipped(struct X3D_ClipContext* clip, X3D_RasterRegion* dest);
 void x3d_rasteredge_set_intensity(X3D_RasterEdge* edge, fp0x16 ia, fp0x16 ib);
 
+void x3d_rasterregion_fill_zbuf(X3D_RasterRegion* region, X3D_Color color, int16 z);
+

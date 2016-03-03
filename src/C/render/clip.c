@@ -639,6 +639,73 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   }
 }
 
+//=============================================
+
+///////////////////////////////////////////////////////////////////////////////
+/// Fills a raster region.
+///
+/// @param region - region
+/// @param color  - color to the fill the region with
+///
+/// @return Nothing.
+/// @note No clipping is performed (it is assumed to already be clipped).
+///////////////////////////////////////////////////////////////////////////////
+void x3d_rasterregion_fill_zbuf(X3D_RasterRegion* region, X3D_Color color, int16 z) {
+  int16 i;
+
+  uint16 total_c = 64;
+  
+  X3D_Color color_tab[total_c + 10];
+  
+  uint8 rr, gg, bb;
+  x3d_color_to_rgb(color, &rr, &gg, &bb);
+  
+  uint32 r_slope = ((uint16)rr << 16) / (total_c + 1);
+  uint32 g_slope = ((uint16)gg << 16) / (total_c + 1);
+  uint32 b_slope = ((uint16)bb << 16) / (total_c + 1);
+  
+  uint32 r = 0, g = 0, b = 0;
+ 
+#if 0
+  for(i = 0; i < 5; ++i) {
+#ifdef __nspire__
+    color_tab[4 - i] = x3d_color_to_internal(x3d_rgb_to_color((r_slope / (i + 1)) >> 16, (g_slope / (i + 1)) >> 16, (b_slope / (i + 1)) >> 16));
+#else
+    color_tab[4 - i] = x3d_rgb_to_color((r_slope / (i + 1)) >> 16, (g_slope / (i + 1)) >> 16, (b_slope / (i + 1)) >> 16);
+#endif
+  }
+#endif
+  
+  for(i = 0; i < total_c; ++i) {
+#ifdef __nspire__
+    color_tab[i + 5] = x3d_color_to_internal(x3d_rgb_to_color(r >> 16, g >> 16, b >> 16));
+#else
+    color_tab[i + 5] = x3d_rgb_to_color(r >> 16, g >> 16, b >> 16);
+#endif
+    r += r_slope;
+    g += g_slope;
+    b += b_slope;
+  }
+  
+  for(i = 0; i < 5; ++i) {
+    color_tab[i] = 0;
+    color_tab[i + total_c + 5] = color_tab[total_c - 1];
+  }
+  
+  for(i = region->rect.y_range.min; i < region->rect.y_range.max; ++i) {
+    uint16 index = i - region->rect.y_range.min;
+    
+    //X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
+    //X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
+
+    x3d_screen_draw_scanline_grad(i, region->span[index].left, region->span[index].right, color, region->span[index].left_scale, region->span[index].right_scale, color_tab + 5, z);
+    
+    //x3d_screen_draw_line_grad(region->span[index].left, i, region->span[index].right, i, color_left, color_right);
+  }
+}
+
+//=============================================
+
 fp0x16 x3d_point_intensity(X3D_UncompressedSegment* seg, uint16 p, X3D_Vex3D* face_normal, int16 z) {
   if(face_normal) {
     X3D_Vex3D normal;

@@ -306,12 +306,15 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
 
   void* stack_ptr = x3d_stack_save(&renderman->stack);
   
+  int16 min_z = 0x7FFF;
   
   for(i = 0; i < poly->total_v; ++i) {
     uint16 a = i;
     uint16 b = (i + 1 < poly->total_v ? i + 1 : 0);
     
     depth_scale[i] = 0x7FFF;
+    
+    min_z = X3D_MIN(min_z, v3d[a].z);
     
     pairs[i].val[0] = a;
     pairs[i].val[1] = b;
@@ -347,9 +350,11 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
     .total_edge_index = poly->total_v
   };
   
+  min_z = X3D_MAX(min_z, 1);
+  
   X3D_RasterRegion r;
   if(x3d_rasterregion_construct_clipped(&clip, &r)) {
-    x3d_rasterregion_fill(&r, color);
+    x3d_rasterregion_fill_zbuf(&r, color, min_z);
   }
   
   x3d_stack_restore(&renderman->stack, stack_ptr);

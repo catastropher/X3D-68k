@@ -238,13 +238,6 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   uint16 i;
   
   int16* z_buf = x3d_rendermanager_get()->zbuf;
-  
-#if 1
-  if(x3d_key_down(X3D_KEY_15)) {
-    x3d_screen_draw_scanline_grad2(y, left, right, c, scale_left, scale_right);
-    return;
-  }
-#endif
 
   if(render_mode == 0) {
     scale_left = 0x7FFF;

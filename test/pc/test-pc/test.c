@@ -436,7 +436,7 @@ void engine_test(void) {
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
 
-  x3d_prism3d_construct(prism, base_v, 400,  600, angle);
+  x3d_prism3d_construct(prism, base_v, 800,  600, angle);
 
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;

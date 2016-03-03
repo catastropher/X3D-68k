@@ -520,8 +520,6 @@ void x3d_render(X3D_CameraObject* cam) {
   //printf("Tick: %d\n", tick++);
 
   line_count = 0;
-
-  x3d_screen_zbuf_clear();
   
   depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
@@ -538,7 +536,21 @@ void x3d_render(X3D_CameraObject* cam) {
     .total_v = 4
   };
   
-  //x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, 31);
+  
+  x3d_screen_zbuf_clear();
+  
+  x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, 31);
+  
+  X3D_Vex3D v2[] = {
+    { -100, 100, 100 },
+    { -100, -100, 100 },
+    { 100, -100, 100 },
+    { 100, 100, 100 }
+  };
+  
+  p.v = v2;
+  
+  x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, x3d_rgb_to_color(0, 0, 255));
   
 #if 0
   uint16 i;
