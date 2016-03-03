@@ -25,6 +25,8 @@
 #include "X3D_portal.h"
 #include "X3D_object.h"
 
+#include <stdio.h>
+
 int16 line_count;
 
 extern int16 render_mode;
@@ -74,6 +76,8 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   x3d_assert(region);
 
   x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.rect.y_range.min, renderman->region.rect.y_range.max);
+  
+  renderman->zbuf = malloc(sizeof(int16) * screenman->w * screenman->h);
 }
 
 void x3d_rendermanager_cleanup(void) {
@@ -517,6 +521,8 @@ void x3d_render(X3D_CameraObject* cam) {
 
   line_count = 0;
 
+  x3d_screen_zbuf_clear();
+  
   depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
 

@@ -227,8 +227,17 @@ void x3d_screen_draw_scanline_grad2(int16 y, int16 left, int16 right, X3D_Color 
 
 extern int16 render_mode;
 
-void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab) {
+void x3d_screen_zbuf_clear(void) {
+  uint32 i;
+  
+  for(i = 0; i < (int32)screen_w * screen_h; ++i)
+    x3d_rendermanager_get()->zbuf[i] = 0x7FFF;
+}
+
+void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab, int16 z) {
   uint16 i;
+  
+  int16* z_buf = x3d_rendermanager_get()->zbuf;
   
 #if 1
   if(x3d_key_down(X3D_KEY_15)) {
@@ -266,17 +275,14 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
     
     if(index >= total_c)
       index = total_c - 1;
-    
-#if 0
-    err = (int32)(val & mask);
-    
-    if((val & mask) >= half) {
-      err = -(mask + 1 - (val & mask));
-      ++index;
+
+    if(z < z_buf[y * window_surface->w + i]) {
+      ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(color_tab[index]);
+      
+      if(z > 0)
+        z_buf[y * window_surface->w + i] = z;
     }
-    
-#endif
-    ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(color_tab[index]);
+      
     scale += scale_slope;
   }
   

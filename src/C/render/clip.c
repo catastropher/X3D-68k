@@ -633,7 +633,7 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
     //X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
     //X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
 
-    x3d_screen_draw_scanline_grad(i, region->span[index].left, region->span[index].right, color, region->span[index].left_scale, region->span[index].right_scale, color_tab + 5);
+    x3d_screen_draw_scanline_grad(i, region->span[index].left, region->span[index].right, color, region->span[index].left_scale, region->span[index].right_scale, color_tab + 5, 0);
     
     //x3d_screen_draw_line_grad(region->span[index].left, i, region->span[index].right, i, color_left, color_right);
   }
