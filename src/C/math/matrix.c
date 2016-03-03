@@ -205,6 +205,7 @@ void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest) {
 }
 
 void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, X3D_CameraObject* cam) {
+  return;
   X3D_Color colors[] = {
     x3d_rgb_to_color(255, 0, 0),
     x3d_rgb_to_color(0, 255, 0),

@@ -520,6 +520,19 @@ void x3d_render(X3D_CameraObject* cam) {
   depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
 
+  X3D_Vex3D v[] = {
+    { -100, 100, 0 },
+    { -100, -100, 0 },
+    { 100, -100, 0 },
+    { 100, 100, 0 }
+  };
+  
+  X3D_Polygon3D p = {
+    .v = v,
+    .total_v = 4
+  };
+  
+  //x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, 31);
   
 #if 0
   uint16 i;

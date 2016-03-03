@@ -19,6 +19,10 @@
 #include "X3D_polygon.h"
 #include "X3D_trig.h"
 #include "X3D_matrix.h"
+#include "X3D_clip.h"
+#include "X3D_camera.h"
+#include "X3D_enginestate.h"
+
 
 #include "X3D_keys.h"
 
@@ -285,4 +289,73 @@ void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest) {
   for(i = 0; i < src->total_v; ++i)
     dest->v[i] = src->v[i];
 }
+
+void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color) {
+  X3D_Vex3D v3d[poly->total_v];
+  X3D_Vex2D v2d[poly->total_v];
+  X3D_RasterEdge edges[poly->total_v + 1];
+  X3D_Pair pairs[poly->total_v];
+  int16 depth_scale[poly->total_v];
+  
+  x3d_camera_transform_points(cam, poly->v, poly->total_v, v3d, v2d);
+  
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
+  uint16 i;
+  uint16 edge_index[poly->total_v];
+
+  void* stack_ptr = x3d_stack_save(&renderman->stack);
+  
+  
+  for(i = 0; i < poly->total_v; ++i) {
+    uint16 a = i;
+    uint16 b = (i + 1 < poly->total_v ? i + 1 : 0);
+    
+    depth_scale[i] = 0x7FFF;
+    
+    pairs[i].val[0] = a;
+    pairs[i].val[1] = b;
+    
+    X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
+    X3D_Vex2D dest_a, dest_b;
+
+    uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
+
+    if(!(res & EDGE_INVISIBLE)) {
+      x3d_rasteredge_generate(edges + i, dest_a, dest_b, parent, v3d[a].z, v3d[b].z, &renderman->stack, 0x7FFF, 0x7FFF);
+      edges[i].flags |= res;
+    }
+    else {
+      edges[i].flags = res;
+    }
+    
+    edge_index[i] = i;
+  }
+  
+  X3D_ClipContext clip = {
+    .stack = &renderman->stack,
+    .parent = parent,
+    .edges = edges,
+    .total_e = poly->total_v,
+    .v3d = v3d,
+    .v2d = v2d,
+    .edge_pairs = pairs,
+    .depth_scale = depth_scale,
+    .seg = NULL,
+    .normal = NULL,
+    .edge_index = edge_index,
+    .total_edge_index = poly->total_v
+  };
+  
+  X3D_RasterRegion r;
+  if(x3d_rasterregion_construct_clipped(&clip, &r)) {
+    x3d_rasterregion_fill(&r, color);
+  }
+  
+  x3d_stack_restore(&renderman->stack, stack_ptr);
+}
+
+
+
+
 
