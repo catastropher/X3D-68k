@@ -290,7 +290,9 @@ void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest) {
     dest->v[i] = src->v[i];
 }
 
-void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color) {
+extern int16 render_mode;
+
+void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal) {
   X3D_Vex3D v3d[poly->total_v];
   X3D_Vex2D v2d[poly->total_v];
   X3D_RasterEdge edges[poly->total_v + 1];
@@ -308,11 +310,33 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   
   int16 min_z = 0x7FFF;
   
+  int16 scale;
+  
+  //x3d_segment_point_normal(seg, i, &normal);
+    
+
+  X3D_Vex3D d = { 0, 0, 32767 };
+  
+  for(i = 0; i < poly->total_v; ++i) {
+    fp0x16 dot = x3d_vex3d_fp0x16_dot(&d, &normal[i]);
+    
+    
+    dot = X3D_MIN((int32)dot + 8192, 32767);
+    
+    dot = X3D_MAX(dot, 0);
+
+    if(render_mode != 3)
+      depth_scale[i] = dot;//x3d_depth_scale(v3d[i].z, 10, 1500);
+  }
+  
+  if(render_mode == 0) {
+  }
+  
   for(i = 0; i < poly->total_v; ++i) {
     uint16 a = i;
     uint16 b = (i + 1 < poly->total_v ? i + 1 : 0);
     
-    depth_scale[i] = 0x7FFF;
+    //depth_scale[i] = 0x7FFF;
     
     min_z = X3D_MIN(min_z, v3d[a].z);
     
@@ -325,7 +349,7 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
     uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
 
     if(!(res & EDGE_INVISIBLE)) {
-      x3d_rasteredge_generate(edges + i, dest_a, dest_b, parent, v3d[a].z, v3d[b].z, &renderman->stack, 0x7FFF, 0x7FFF);
+      x3d_rasteredge_generate(edges + i, dest_a, dest_b, parent, v3d[a].z, v3d[b].z, &renderman->stack, depth_scale[a], depth_scale[b]);
       edges[i].flags |= res;
     }
     else {

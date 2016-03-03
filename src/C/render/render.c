@@ -24,6 +24,8 @@
 #include "X3D_wallportal.h"
 #include "X3D_portal.h"
 #include "X3D_object.h"
+#include "X3D_fastsqrt.h"
+#include "X3D_polygon.h"
 
 #include <stdio.h>
 
@@ -505,6 +507,87 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   }
 }
 
+void x3d_sphere_normal(X3D_Vex3D* center, X3D_Vex3D* v, X3D_Vex3D* dest) {
+  dest->x = v->x - center->x;
+  dest->y = v->y - center->y;
+  dest->z = v->z - center->z;
+  
+  x3d_vex3d_fp0x16_normalize(dest);
+}
+
+void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_CameraObject* cam, X3D_RasterRegion* region) {
+  int16 rad[steps + 1];
+  
+  int16 i;
+  for(i = 0; i <= steps; ++i) {
+    int16 rr = -r + (r * 2 / steps) * i;
+    rad[i] = x3d_fastsqrt(r * r - rr * rr);
+  }
+  
+  X3D_Vex3D v1[steps];
+  X3D_Vex3D v2[steps];
+  
+  X3D_Vex3D* top = v1;
+  X3D_Vex3D* bottom = v2;
+  
+  for(i = 0; i < steps; ++i) {
+    top[i].x = center.x;
+    top[i].y = center.y - r;
+    top[i].z = center.z;
+  }
+  
+  X3D_Vex3D norm[4];
+  
+  int16 d;
+  for(i = 1; i <= steps; ++i) {
+    ufp8x8 angle = 0;
+    
+    for(d = 0; d < steps; ++d) {
+      bottom[d].x = (((int32)rad[i] * x3d_cos(angle >> 8)) >> 15) + center.x;
+      bottom[d].z = (((int32)rad[i] * x3d_sin(angle >> 8)) >> 15) + center.z;
+      bottom[d].y = top[0].y + r * 2 / steps;
+      
+      angle += (uint16)65535 / steps;
+    }
+    
+    for(d = 0; d < steps; ++d) {
+      uint16 next = (d + 1 < steps ? d + 1 : 0);
+      X3D_Vex3D v[4] = {
+        top[d],
+        top[next],
+        bottom[next],
+        bottom[d]
+      };
+      
+      X3D_Polygon3D p = {
+        .v = v,
+        .total_v = 4
+      };
+      
+      X3D_Plane plane;
+      
+      //x3d_plane_construct(&plane, p.v + 0, p.v + 1, p.v + 2);
+      
+      X3D_Vex3D norm[4];
+      
+      int16 k;
+      for(k = 0; k < 4; ++k) {
+        if(render_mode != 0) {
+          x3d_sphere_normal(&center, p.v + k, norm + k);
+        }
+        else {
+          x3d_plane_construct(&plane, p.v + 1, p.v + 2, p.v + 0);
+          norm[k] = plane.normal;
+        }
+      }
+      
+      x3d_polygon3d_render(&p, cam, region, c, norm);
+    }
+    
+    X3D_SWAP(top, bottom);
+  }
+  
+}
 
 void x3d_render(X3D_CameraObject* cam) {
   X3D_Color color = 31;//x3d_rgb_to_color(0, 0, 255);
@@ -539,7 +622,22 @@ void x3d_render(X3D_CameraObject* cam) {
   
   x3d_screen_zbuf_clear();
   
-  x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, 31);
+  //x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, 31);
+  
+  int16 orbit = 100;
+  int16 r = 200;
+  
+  angle256 angle = (x3d_enginestate_get_step() % orbit) * 256 / orbit;
+  
+  X3D_Vex3D pos = {
+    ((int32)x3d_cos(angle) * r) >> 15,
+    0,
+    ((int32)x3d_sin(angle) * r) >> 15
+  };
+  
+  x3d_sphere_render((X3D_Vex3D) { 0, 0, 0 }, 75, 10, 31, cam, &x3d_rendermanager_get()->region);
+  
+  x3d_sphere_render(pos, 30, 10, x3d_rgb_to_color(0, 0, 255), cam, &x3d_rendermanager_get()->region);
   
   X3D_Vex3D v2[] = {
     { -100, 100, 100 },
@@ -550,7 +648,7 @@ void x3d_render(X3D_CameraObject* cam) {
   
   p.v = v2;
   
-  x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, x3d_rgb_to_color(0, 0, 255));
+  //x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, x3d_rgb_to_color(0, 0, 255));
   
 #if 0
   uint16 i;
