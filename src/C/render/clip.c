@@ -256,7 +256,7 @@ _Bool x3d_span_clip(X3D_Span* span, X3D_Span parent_span) {
     int32 left = abs(span->left - parent_span.left);
     int32 right = abs(span->right - parent_span.left);
     
-    span->left_scale += ((int32)span->right_scale - span->left_scale) * left / (left + right);
+    span->left_scale = span->right_scale + ((int32)span->left_scale - span->right_scale) * right / (left + right);
     span->left = parent_span.left;
   }
   
@@ -266,7 +266,7 @@ _Bool x3d_span_clip(X3D_Span* span, X3D_Span parent_span) {
     int32 left = abs(span->left - parent_span.right);
     int32 right = abs(span->right - parent_span.right);
     
-    span->right_scale += ((int32)span->left_scale - span->right_scale) * right / (left + right);
+    span->right_scale = span->left_scale + ((int32)span->right_scale - span->left_scale) * left / (left + right);
     span->right = parent_span.right;
   }
   
@@ -897,5 +897,6 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
   
   return X3D_FALSE;
 }
+
 
 
