@@ -174,7 +174,7 @@ typedef struct X3D_PolyVertex {
 
 typedef struct X3D_PolyLine {
   uint16 total_v;
-  X3D_PolyVertex* v;
+  X3D_PolyVertex** v;
 } X3D_PolyLine;
 
 typedef struct X3D_PolyRegion {
@@ -214,8 +214,8 @@ int16 x3d_polyline_find_y_edge(X3D_PolyLine* p, int16 y) {
   // This can be replaced by a binary search... but is it worth it???
   int16 i;
   for(i = 0; i < p->total_v - 1; ++i) {
-    if(y >= p->v[i].v2d.y && y <= p->v[i + 1].v2d.y)
-      return i;
+  //  if(y >= p->v[i].v2d.y && y <= p->v[i + 1].v2d.y)
+  //    return i;
   }
   
   x3d_assert(!"Y value not in polyline");
@@ -237,53 +237,100 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_RasterRegion* parent, X3D_Ra
 }
 
 
-_Bool x3d_polyline_split(X3D_Vex2D* v, uint16 total_v, uint16 left[], uint16 right[]) {
+_Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, X3D_PolyLine* right) {
   int16 top_left = 0;
   int16 top_right = 0;
-  int16 max_y = v[0].y;
+  int16 max_y = v[0].v2d.y;
   
   int16 i;
   for(i = 1; i < total_v; ++i) {
-    if (v[i].y < v[top_left].y) {
+    if (v[i].v2d.y < v[top_left].v2d.y) {
       top_left = i;
       top_right = i;
     }
-    else if(v[i].y == v[top_left].y) {
-      if(v[i].x < v[top_left].x)    top_left = i;
-      if(v[i].x > v[top_right].x)   top_right = i;
+    else if(v[i].v2d.y == v[top_left].v2d.y) {
+      if(v[i].v2d.x < v[top_left].v2d.x)    top_left = i;
+      if(v[i].v2d.x > v[top_right].v2d.x)   top_right = i;
     }
     
-    max_y = X3D_MAX(max_y, v[i].y);
+    max_y = X3D_MAX(max_y, v[i].v2d.y);
   }
   
   uint16 next_left = (top_left + 1 < total_v ? top_left + 1 : 0);
+  uint16 prev_left = (top_left != 0 ? top_left - 1 : total_v - 1);
   
-  if(v[next_left].y > v[top_left].y) {
-    do {
-      
-    } while(1);
+  left->total_v = 0;
+  right->total_v = 0;
+  
+  if(v[top_left].v2d.y == v[next_left].v2d.y || v[next_left].v2d.x > v[prev_left].v2d.x) {
+    X3D_SWAP(left, right);
+    X3D_SWAP(top_left, top_right);
   }
+  
+  do {
+    left->v[left->total_v] = v + top_left;
+    top_left = (top_left + 1 < total_v ? top_left + 1 : 0);
+  } while(left->v[left->total_v++]->v2d.y != max_y);
+  
+  do {
+    right->v[right->total_v] = v + top_right;
+    top_right = (top_right != 0 ? top_right - 1 : total_v - 1);
+  } while(right->v[right->total_v++]->v2d.y != max_y);
 }
 
-
+void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
+  uint16 i;
+  for(i = 0; i < p->total_v - 1; ++i) {
+    uint16 next = (i + 1 < p->total_v ? i + 1 : 0);
+    
+    x3d_screen_draw_line(p->v[i]->v2d.x, p->v[i]->v2d.y, p->v[next]->v2d.x, p->v[next]->v2d.y, c);
+  }
+}
 
 
 void x3d_clipregion_test() {
   X3D_RasterRegion r;
   
+  uint16 total_v = 7;
+  
   X3D_Vex2D v[] = {
-    { 200, 200 },
-    { 400, 200 },
-    { 400, 400 },
-    { 200, 400 }
+    { 250, 350 },
+    { 300, 350 },
+    { 400, 300 },
+    { 350, 200 },
+    { 300, 200 },
+    { 250, 200 },
+    { 200, 250 }
   };
   
+  uint16 d;
+  for(d = 0; d < total_v / 2; ++d)
+    X3D_SWAP(v[d], v[total_v - d - 1]);
+  
   x3d_screen_clear(0);
-  if(!x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v, 4))
+  if(!x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v, total_v))
     x3d_assert(0);
+  
+  X3D_PolyVertex pv[total_v];
+  
+  uint16 i;
+  for(i = 0; i < total_v; ++i)
+    pv[i].v2d = v[i];
+  
+  X3D_PolyLine left, right;
+  
+  left.v = alloca(1000);
+  right.v = alloca(1000);
+  
+  x3d_polyline_split(pv, total_v, &left, &right);
     
   x3d_screen_zbuf_clear();
   x3d_rasterregion_fill(&r, 31);
+  
+  x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
+  x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
+  
+  
   x3d_screen_flip();
   
   X3D_RasterRegion dest;
