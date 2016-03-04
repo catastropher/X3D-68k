@@ -207,7 +207,6 @@ typedef struct X3D_ScanlineGenerator {
   fp16x16 intensity;
   fp16x16 intensity_slope;
   X3D_PolyVertex temp;
-  int16 min_y;
 } X3D_ScanlineGenerator;
 
 void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
@@ -247,13 +246,30 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen) {
   
 }
 
+int16 x3d_t_clip(int16 start, int16 end, uint16 scale) {
+  return start + ((((int32)end - start) * scale) >> 15);
+}
+
 _Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
-  if(gen->b->v2d.y < gen->parent->rect.y_range.min)
+  if(gen->b->v2d.y < gen->dest->rect.y_range.min)
     return X3D_FALSE;
   
-  if(gen->a->v2d.y < gen->parent->rect.y_range.min) {
-    // Clip the edge...
-    x3d_assert(!"No edge clipping...");
+  if(gen->a->v2d.y < gen->dest->rect.y_range.min) {
+    // Clip the edge using the temporary vertex
+    
+    int16 in = gen->b->v2d.y - gen->dest->rect.y_range.min;
+    int16 out = gen->dest->rect.y_range.min - gen->a->v2d.y;
+    uint16 scale = ((int32)in << 15) / (in + out);
+    
+    gen->temp.v2d.x = x3d_t_clip(gen->b->v2d.x, gen->a->v2d.x, scale);
+    gen->temp.v2d.y = gen->dest->rect.y_range.min;
+    
+    gen->a = &gen->temp;
+    
+    x3d_log(X3D_INFO, "New x: %d", gen->a->v2d.x);
+    x3d_log(X3D_INFO, "Scale: %d", scale);
+    
+    gen->x = (int32)gen->a->v2d.x << 16;
   }
   
   return X3D_TRUE;
@@ -264,7 +280,7 @@ _Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex
   gen->a = a;
   gen->b = b;
   
-  int16 dy = b->v2d.y - a->v2d.y;
+  int16 dy = b->v2d.y - a->v2d.y + 1;
   
   gen->x_slope = (((int32)b->v2d.x - a->v2d.x) << 16) / dy;
   
@@ -403,6 +419,7 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   
   dest->rect.y_range.min = min_y;
   dest->rect.y_range.max = max_y;
+
   dest->span = x3d_stack_alloc(&x3d_rendermanager_get()->stack, sizeof(X3D_Span) * (max_y - min_y + 1));
   
   x3d_rasterregion_generate_left(dest, parent, &left, min_y, max_y);
@@ -458,6 +475,11 @@ void x3d_clipregion_test() {
   
   x3d_screen_zbuf_clear();
   x3d_rasterregion_fill(&r, 31);
+  
+  
+  x3d_rendermanager_get()->region.rect.y_range.min = 300;
+  
+  x3d_screen_draw_line(0, 300, 639, 300, 0x7FFF);
   
   X3D_RasterRegion r2;
   x3d_rasterregion_make(&r2, pv, total_v, &x3d_rendermanager_get()->region);
