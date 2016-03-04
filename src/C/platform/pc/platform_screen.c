@@ -253,8 +253,8 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   uint16 total_c = 32;
   uint16 scale_bits = 5;
   
-  uint16 scale_slope = (scale_right - scale_left) / (right - left + 1);
-  uint16 scale = scale_left;
+  int32 scale_slope = (((int32)scale_right - scale_left) << 8) / (right - left + 1);
+  int32 scale = (int32)scale_left << 8;
   
   int32 err = 0;
   
@@ -262,9 +262,14 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   int32 half = mask / 2;
   
   for(i = left; i <= right; ++i) {
-    int32 val = scale + (render_mode >= 2 ? scale * map[i % 3][y % 3] / 10 : 0);
+    if(scale < 0 && scale_slope < 0 && scale + scale_slope >= 0) x3d_assert(0);
+    
+    
+    int32 val = (scale >> 8) + (render_mode >= 2 ? (int32)(scale >> 8) * map[i % 3][y % 3] / 10 : 0);
     
     int16 index = val >> (15 - scale_bits);
+    
+    if(index < 0) index = 0;
     
     if(index >= total_c)
       index = total_c - 1;

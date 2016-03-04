@@ -425,9 +425,9 @@ void engine_test(void) {
 
 #endif
 
-  //x3d_clipregion_test();
-  //x3d_cleanup();
-  //return;
+  x3d_clipregion_test();
+  x3d_cleanup();
+  return;
 
   x3d_keymanager_set_callback(engine_test_handle_keys);
 
