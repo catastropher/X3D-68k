@@ -6,8 +6,14 @@
 #include "memory/X3D_stack.h"
 #include "X3D_screen.h"
 
+typedef struct X3D_SpanValue {
+  int16 x;
+  int16 intensity;
+} X3D_SpanValue;
+
 typedef struct X3D_Span {
-  int16 left, right;
+  X3D_SpanValue left, right;
+  int16 old_left_val, old_right_val;
   fp0x16 left_scale, right_scale;
 } X3D_Span;
 
