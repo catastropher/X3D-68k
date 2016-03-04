@@ -197,17 +197,32 @@ int16 x3d_line_parametric_t(X3D_Vex2D* a, X3D_Vex2D* b, X3D_Vex2D* v) {
 }
 
 typedef struct X3D_ScanlineGenerator {
+  X3D_RasterRegion* dest;
+  X3D_RasterRegion* parent;
   X3D_PolyVertex* a;
   X3D_PolyVertex* b;
-  int16 y;
+  X3D_Span* span;
   fp16x16 x;
   fp16x16 x_slope;
   fp16x16 intensity;
   fp16x16 intensity_slope;
+  X3D_PolyVertex temp;
+  int16 min_y;
 } X3D_ScanlineGenerator;
 
-void x3d_rasterregion_generate_spans_left(X3D_RasterRegion* dest, X3D_ScanlineGenerator* gen, int16 end_y) {
+void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
+  gen->x += gen->x_slope;
+  ++gen->span;
+}
+
+void x3d_rasterregion_generate_spans_left(X3D_ScanlineGenerator* gen, int16 end_y) {
+  X3D_Span* end_span = gen->dest->span + end_y - gen->dest->rect.y_range.min;
   
+  while(gen->span < end_span) {
+    gen->span->left = gen->x >> 16;
+    
+    x3d_scanline_generator_next(gen);
+  }
 }
 
 int16 x3d_polyline_find_y_edge(X3D_PolyLine* p, int16 y) {
@@ -221,30 +236,98 @@ int16 x3d_polyline_find_y_edge(X3D_PolyLine* p, int16 y) {
   x3d_assert(!"Y value not in polyline");
 }
 
-void x3d_rasterregion_generate_spans_a_in_b_out(X3D_RasterRegion* parent, X3D_RasterRegion* dest, X3D_PolyVertex* a, X3D_PolyVertex* b) {
+void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen) {
   X3D_Vex2D clip;
-  x3d_rasterregion_bin_search(a->v2d, b->v2d, &clip, parent);
+  x3d_rasterregion_bin_search(gen->a->v2d, gen->b->v2d, &clip, gen->parent);
   
-  int16 t = x3d_line_parametric_t(&a->v2d, &b->v2d, &clip);
-  
-  X3D_ScanlineGenerator gen;
+  int16 t = x3d_line_parametric_t(&gen->a->v2d, &gen->b->v2d, &clip);
   
   // Generate the part of the span that's inside the region
-  x3d_rasterregion_generate_spans_left(dest, &gen, clip.y);
-  
-  
+  //x3d_rasterregion_generate_spans_left(gen->dest, &gen, clip.y);
   
 }
 
+_Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
+  if(gen->b->v2d.y < gen->parent->rect.y_range.min)
+    return X3D_FALSE;
+  
+  if(gen->a->v2d.y < gen->parent->rect.y_range.min) {
+    // Clip the edge...
+    x3d_assert(!"No edge clipping...");
+  }
+  
+  return X3D_TRUE;
+}
 
+
+_Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex* a, X3D_PolyVertex* b) {
+  gen->a = a;
+  gen->b = b;
+  
+  int16 dy = b->v2d.y - a->v2d.y;
+  
+  gen->x_slope = (((int32)b->v2d.x - a->v2d.x) << 16) / dy;
+  
+  return x3d_scanline_generator_vertically_clip_edge(gen);
+}
+
+
+void x3d_rasterregion_generate_left(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, int16 min_y, int16 max_y) {
+  uint16 i;
+  uint16 prev = 0;
+  
+  X3D_ScanlineGenerator gen;
+  
+  gen.b = p->v[0];
+  gen.parent = parent;
+  gen.dest = dest;
+  gen.span = dest->span + min_y - dest->rect.y_range.min;
+  gen.x = (int32)p->v[0]->v2d.x << 16;
+  
+  _Bool done = X3D_FALSE;
+  
+  for(i = 1; i < p->total_v && !done; ++i) {    
+    if(x3d_scanline_generator_set_edge(&gen, gen.b, p->v[i])) {
+      _Bool a_in = x3d_rasterregion_point_inside(parent, gen.a->v2d);
+      _Bool b_in = x3d_rasterregion_point_inside(gen.parent, gen.b->v2d);
+      
+      // Check if this is the last edge that is visible within vertical range
+      // of the parent
+      int16 end_y = gen.b->v2d.y;
+      if(end_y >= max_y) {
+        end_y = max_y + 1;
+        done = X3D_TRUE;
+      }
+      
+      if(a_in && b_in) {
+        x3d_rasterregion_generate_spans_left(&gen, end_y);
+      }
+    }
+  }
+  
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Splits a convex polygon into two polylines, one for the left and one for
+///   the right.
+///
+/// @param v        - vertices
+/// @param total_v  - total number of vertices
+/// @param left     - left polyline dest
+/// @param right    - right polyline dest
+///
+/// @return Whether a non-degenerate polygon remains.
+/// @note   Make sure the polylines have enough space to store the result!
+///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, X3D_PolyLine* right) {
   int16 top_left = 0;
   int16 top_right = 0;
   int16 max_y = v[0].v2d.y;
   
+  // Find the top left point, the top right point, and the maximum y value
   int16 i;
   for(i = 1; i < total_v; ++i) {
-    if (v[i].v2d.y < v[top_left].v2d.y) {
+    if(v[i].v2d.y < v[top_left].v2d.y) {
       top_left = i;
       top_right = i;
     }
@@ -262,21 +345,35 @@ _Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, 
   left->total_v = 0;
   right->total_v = 0;
   
+  // Check if we need to switch left and right (in the following loops the left
+  // polyline is assumed to move forwards and the right polyline is assumed to move
+  // backwards in the array). We need to switch if:
+  //
+  // 1) From the top left the next point has the same y value (y must decrease) or
+  // 2) From the top left the next point has an x value > the previous point (we're
+  //    the left side after all!)
   if(v[top_left].v2d.y == v[next_left].v2d.y || v[next_left].v2d.x > v[prev_left].v2d.x) {
     X3D_SWAP(left, right);
     X3D_SWAP(top_left, top_right);
   }
   
+  // Grab the points for the left polyline
   do {
     left->v[left->total_v] = v + top_left;
     top_left = (top_left + 1 < total_v ? top_left + 1 : 0);
   } while(left->v[left->total_v++]->v2d.y != max_y);
   
+  // Grab the points for the right polyline
   do {
     right->v[right->total_v] = v + top_right;
     top_right = (top_right != 0 ? top_right - 1 : total_v - 1);
   } while(right->v[right->total_v++]->v2d.y != max_y);
+  
+  // Hmm... if there is only one point on either side, should we just duplicate
+  // the point to allow polygons that are 1 pixel tall?
+  return left->total_v > 1 && right->total_v > 1;
 }
+
 
 void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
   uint16 i;
@@ -286,6 +383,48 @@ void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
     x3d_screen_draw_line(p->v[i]->v2d.x, p->v[i]->v2d.y, p->v[next]->v2d.x, p->v[next]->v2d.y, c);
   }
 }
+
+_Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 total_v, X3D_RasterRegion* parent) {
+  X3D_PolyLine left, right;
+  left.v = alloca(1000);
+  right.v = alloca(1000);
+  
+  /// @todo Bounding rectangle test
+  
+  // Split the polygon into left and right polylines
+  if(!x3d_polyline_split(v, total_v, &left, &right))
+    return X3D_FALSE;
+  
+  int16 min_y = X3D_MAX(parent->rect.y_range.min, left.v[0]->v2d.y);
+  int16 max_y = X3D_MIN(parent->rect.y_range.max, left.v[left.total_v - 1]->v2d.y);
+  
+  if(min_y >= max_y)
+    return X3D_FALSE;
+  
+  dest->rect.y_range.min = min_y;
+  dest->rect.y_range.max = max_y;
+  dest->span = x3d_stack_alloc(&x3d_rendermanager_get()->stack, sizeof(X3D_Span) * (max_y - min_y + 1));
+  
+  x3d_rasterregion_generate_left(dest, parent, &left, min_y, max_y);
+  
+  x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
+  x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
+  
+  return X3D_TRUE;
+  
+}
+
+
+void x3d_rasterregion_draw_outline(X3D_RasterRegion* region, X3D_Color c) {
+  uint16 i;
+  
+  for(i = region->rect.y_range.min; i <= region->rect.y_range.max; ++i) {
+    X3D_Span* span = region->span + i - region->rect.y_range.min;
+    x3d_screen_draw_pix(span->left, i, c);
+  }
+}
+
+
 
 
 void x3d_clipregion_test() {
@@ -317,18 +456,13 @@ void x3d_clipregion_test() {
   for(i = 0; i < total_v; ++i)
     pv[i].v2d = v[i];
   
-  X3D_PolyLine left, right;
-  
-  left.v = alloca(1000);
-  right.v = alloca(1000);
-  
-  x3d_polyline_split(pv, total_v, &left, &right);
-    
   x3d_screen_zbuf_clear();
   x3d_rasterregion_fill(&r, 31);
   
-  x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
-  x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
+  X3D_RasterRegion r2;
+  x3d_rasterregion_make(&r2, pv, total_v, &x3d_rendermanager_get()->region);
+  
+  x3d_rasterregion_draw_outline(&r2, x3d_rgb_to_color(255, 0, 255));
   
   
   x3d_screen_flip();
