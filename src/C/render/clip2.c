@@ -41,6 +41,22 @@ enum {
   X3D_BOUNDRECT_FAIL_BOTTOM = 8
 };
 
+/// Determines whether a point is inside a raster region.
+///
+/// @param region - region
+/// @param p      - point
+///
+/// @return Whether the point is inside the region.
+///////////////////////////////////////////////////////////////////////////////
+_Bool x3d_rasterregion_point_inside2(X3D_RasterRegion* region, X3D_Vex2D p) {
+  if(p.y < region->rect.y_range.min || p.y > region->rect.y_range.max)
+    return X3D_FALSE;
+  
+  uint16 offsety = p.y - region->rect.y_range.min;
+  
+  return p.x >= region->span[offsety].left.x && p.x <= region->span[offsety].right.x;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Determines whether two bounding rectangle intersect. If they don't,
 ///   this function also determines how b compares to a (i.e. whether
@@ -207,6 +223,8 @@ typedef struct X3D_ScanlineGenerator {
   fp16x16 intensity;
   fp16x16 intensity_slope;
   X3D_PolyVertex temp;
+  X3D_Range intersect_range;
+  _Bool prev_visible_edge;
 } X3D_ScanlineGenerator;
 
 void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
@@ -235,7 +253,40 @@ int16 x3d_polyline_find_y_edge(X3D_PolyLine* p, int16 y) {
   x3d_assert(!"Y value not in polyline");
 }
 
-void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen) {
+X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
+  return r->span + y - r->rect.y_range.min;
+}
+
+void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, int16 end_y) {
+  uint16 i;
+    
+  X3D_Span* parent_span = x3d_rasterregion_get_span(gen->parent, clip->y);
+  X3D_SpanValue* span_val;
+  
+  if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x))
+    span_val = &parent_span->left;
+  else
+    span_val = &parent_span->right;
+  
+  // Copy over the x values from the parent edge, based on which side the line intersects
+  // with. But, only copy it over if there was at least one visible edge before this
+  if(gen->prev_visible_edge || 1) {
+    for(i = start_y; i < end_y; ++i) {
+      gen->span->x = span_val->x;
+      x3d_scanline_generator_next(gen);
+      span_val = (X3D_SpanValue* )((uint8 *)span_val + sizeof(X3D_Span));
+    }
+  }
+  else {
+    int16 advance = end_y - start_y - 1;
+    span_val = (X3D_SpanValue* )((uint8 *)span_val + sizeof(X3D_Span) * advance);
+    gen->span = (X3D_SpanValue* )((uint8 *)gen->span + sizeof(X3D_Span) * advance);
+    
+    gen->x = (int32)span_val->x << 16;
+  }
+}
+
+void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int16 end_y) {
   X3D_Vex2D clip;
   x3d_rasterregion_bin_search(gen->a->v2d, gen->b->v2d, &clip, gen->parent);
   
@@ -243,6 +294,54 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen) {
   
   // Generate the part of the span that's inside the region
   x3d_rasterregion_generate_spans_left(gen, clip.y);
+  
+  x3d_rasterregion_copy_intersection_spans(gen, &clip, clip.y, end_y);
+  
+  gen->prev_visible_edge = X3D_TRUE;
+}
+
+void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int16 end_y) {
+  X3D_Vex2D clip;
+  x3d_rasterregion_bin_search(gen->b->v2d, gen->a->v2d, &clip, gen->parent);
+  
+  int16 t = x3d_line_parametric_t(&gen->a->v2d, &gen->b->v2d, &clip);
+  
+  x3d_rasterregion_copy_intersection_spans(gen, &clip, gen->a->v2d.y, clip.y);
+  
+  // Generate the part of the span that's inside the region
+  x3d_rasterregion_generate_spans_left(gen, end_y);
+  
+  gen->prev_visible_edge = X3D_TRUE;
+}
+
+int16 x3d_rasterregion_edge_x_value(X3D_ScanlineGenerator* gen, int16 y) {
+  return gen->a->v2d.x + ((gen->x_slope) * (y - gen->a->v2d.y) >> 16);
+}
+
+void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int16 end_y) {
+  X3D_Span* span_a = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
+  X3D_Span* span_b = x3d_rasterregion_get_span(gen->parent, gen->b->v2d.y);
+  
+  // Case 1: both enpoints are too far left
+  if(gen->a->v2d.x < span_a->left.x && gen->b->v2d.x < span_b->left.x) {
+    // If the extreme left point on the parent region isn't in the y range of the edge,
+    // then it can't intersect the parent region
+    if(gen->b->v2d.y < gen->parent->extreme_left_y || gen->a->v2d.y > gen->parent->extreme_left_y) {
+      x3d_log(X3D_ERROR, "Case D.left -> invisible by extreme point y");
+      return;
+    }
+    
+    X3D_Vex2D v;
+    v.x = x3d_rasterregion_edge_x_value(gen, gen->parent->extreme_left_y);
+    v.y = gen->parent->extreme_left_y;
+    
+    if(x3d_rasterregion_point_inside2(gen->parent, v)) {
+      x3d_log(X3D_ERROR, "Case D.left -> visible");
+    }
+    else {
+      x3d_log(X3D_ERROR, "Case D.left -> not visible");
+    }
+  }
 }
 
 int16 x3d_t_clip(int16 start, int16 end, uint16 scale) {
@@ -286,24 +385,10 @@ _Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex
   return x3d_scanline_generator_vertically_clip_edge(gen);
 }
 
-/// Determines whether a point is inside a raster region.
-///
-/// @param region - region
-/// @param p      - point
-///
-/// @return Whether the point is inside the region.
-///////////////////////////////////////////////////////////////////////////////
-_Bool x3d_rasterregion_point_inside2(X3D_RasterRegion* region, X3D_Vex2D p) {
-  if(p.y < region->rect.y_range.min || p.y > region->rect.y_range.max)
-    return X3D_FALSE;
-  
-  uint16 offsety = p.y - region->rect.y_range.min;
-  
-  return p.x >= region->span[offsety].left.x && p.x <= region->span[offsety].right.x;
-}
 
 
-void x3d_rasterregion_generate_left(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, int16 min_y, int16 max_y) {
+
+void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, int16 min_y, int16 max_y, X3D_SpanValue* spans) {
   uint16 i;
   uint16 prev = 0;
   
@@ -312,8 +397,9 @@ void x3d_rasterregion_generate_left(X3D_RasterRegion* dest, X3D_RasterRegion* pa
   gen.b = p->v[0];
   gen.parent = parent;
   gen.dest = dest;
-  gen.span = &dest->span[min_y - dest->rect.y_range.min].left;
+  gen.span = spans;
   gen.x = (int32)p->v[0]->v2d.x << 16;
+  gen.prev_visible_edge = X3D_FALSE;
   
   _Bool done = X3D_FALSE;
   
@@ -332,16 +418,19 @@ void x3d_rasterregion_generate_left(X3D_RasterRegion* dest, X3D_RasterRegion* pa
       
       if(a_in && b_in) {
         x3d_rasterregion_generate_spans_left(&gen, end_y);
+        gen.prev_visible_edge = X3D_TRUE;
         x3d_log(X3D_INFO, "Case A");
       }
       else if(a_in) {
-        x3d_rasterregion_generate_spans_a_in_b_out(&gen);
+        x3d_rasterregion_generate_spans_a_in_b_out(&gen, end_y);
         x3d_log(X3D_ERROR, "Case B");
       }
       else if(b_in) {
+        x3d_rasterregion_generate_spans_a_out_b_in(&gen, end_y);
         x3d_log(X3D_ERROR, "Case C");
       }
       else {
+        x3d_rasterregion_generate_spans_a_out_b_out(&gen, end_y);
         x3d_log(X3D_ERROR, "Case D");
       }
     }
@@ -448,7 +537,9 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
 
   dest->span = x3d_stack_alloc(&x3d_rendermanager_get()->stack, sizeof(X3D_Span) * (max_y - min_y + 1));
   
-  x3d_rasterregion_generate_left(dest, parent, &left, min_y, max_y);
+  x3d_rasterregion_generate_polyline_spans(dest, parent, &left, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].left);
+  x3d_log(X3D_INFO, "=================Right=================");
+  x3d_rasterregion_generate_polyline_spans(dest, parent, &right, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].right);
   
   x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
   x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
@@ -464,6 +555,7 @@ void x3d_rasterregion_draw_outline(X3D_RasterRegion* region, X3D_Color c) {
   for(i = region->rect.y_range.min; i <= region->rect.y_range.max; ++i) {
     X3D_Span* span = region->span + i - region->rect.y_range.min;
     x3d_screen_draw_pix(span->left.x, i, c);
+    x3d_screen_draw_pix(span->right.x, i, c);
   }
 }
 
@@ -477,6 +569,69 @@ void x3d_rasterregion_update(X3D_RasterRegion* r) {
   }
 }
 
+enum {
+  KEY_WIREFRAME = X3D_KEY_0,
+  KEY_W = X3D_KEY_1,
+  KEY_S = X3D_KEY_2,
+  KEY_A = X3D_KEY_3,
+  KEY_D = X3D_KEY_4,
+  TEST_KEY_ESCAPE = X3D_KEY_5,
+  KEY_Q = X3D_KEY_6,
+  KEY_E = X3D_KEY_7,
+  KEY_UP = X3D_KEY_8,
+  KEY_DOWN = X3D_KEY_9,
+  KEY_1 = X3D_KEY_10,
+  KEY_2 = X3D_KEY_11,
+  KEY_9 = X3D_KEY_12,
+  KEY_0 = X3D_KEY_13,
+  KEY_RECORD = X3D_KEY_14
+};
+
+_Bool key_pressed(uint16 key) {
+  if(x3d_key_down(key)) {
+    while(x3d_key_down(key)) x3d_read_keys();
+    
+    return X3D_TRUE;
+  }
+  
+  return X3D_FALSE;
+}
+
+uint16 get_polygon(X3D_PolyVertex* v) {
+  int16 cx = 640 / 2;
+  int16 cy = 480 / 2;
+  uint16 total_v = 0;
+  
+  do {
+    x3d_read_keys();
+    x3d_screen_draw_pix(cx, cy, 0x7FFF);
+    x3d_screen_flip();
+    
+    if(key_pressed(KEY_WIREFRAME)) {
+      v[total_v].v2d.x = cx;
+      v[total_v].v2d.y = cy;
+      
+      ++total_v;
+      
+      if(total_v >= 2) {
+        x3d_screen_draw_line(v[total_v - 1].v2d.x, v[total_v - 1].v2d.y, v[total_v - 2].v2d.x, v[total_v - 2].v2d.y, 31);
+        x3d_screen_flip();
+      }
+    }
+    
+    if(x3d_key_down(KEY_W))  --cy;
+    if(x3d_key_down(KEY_S))  ++cy;
+    if(x3d_key_down(KEY_A))  --cx;
+    if(x3d_key_down(KEY_D))  ++cx;
+    
+    SDL_Delay(10);
+    
+    if(key_pressed(TEST_KEY_ESCAPE))
+      break;
+  } while(1);
+  
+  return total_v;
+}
 
 void x3d_clipregion_test() {
   X3D_RasterRegion r;
@@ -501,39 +656,47 @@ void x3d_clipregion_test() {
   if(!x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v, total_v))
     x3d_assert(0);
   
-  X3D_PolyVertex pv[total_v];
+  X3D_PolyVertex pv[30];
   
-  uint16 i;
-  for(i = 0; i < total_v; ++i)
-    pv[i].v2d = v[i];
   
   x3d_screen_zbuf_clear();
   x3d_rasterregion_fill(&r, 31);
   
-  X3D_RasterRegion* rm = &x3d_rendermanager_get()->region;
-  
   x3d_rasterregion_update(&r);
-  x3d_rasterregion_update(rm);
   
-  uint16 left = 150;
+  total_v = get_polygon(pv);
   
-  uint16 min_y = 225;
-  uint16 max_y = 300;
+  int16 left = 0x7FFF;
+  int16 right = -0x7FFF;
   
-  for(i = 0; i < 480; ++i) {
-    rm->span[i].old_left_val = left;
+  uint16 i;
+  for(i = r.rect.y_range.min; i <= r.rect.y_range.max; ++i) {
+    if(r.span[i -r.rect.y_range.min].left.x < left) {
+      left = r.span[i - r.rect.y_range.min].left.x;
+      r.extreme_left_y = i;
+    }
+    else if(r.span[i -r.rect.y_range.min].left.x > right) {
+      right = r.span[i - r.rect.y_range.min].right.x;
+      r.extreme_right_y = i;
+    }
   }
   
-  rm->rect.y_range.min = min_y;
-  rm->rect.y_range.max = max_y;
+  x3d_screen_clear(0);
+  x3d_screen_zbuf_clear();
+  x3d_rasterregion_fill(&r, 31);
   
-  x3d_screen_draw_line(0, min_y, 639, min_y, 0x7FFF);
-  x3d_screen_draw_line(0, max_y, 639, max_y, 0x7FFF);
   
-  x3d_screen_draw_line(left, 0, left, 479, 0x7FFF);
+  
+  
+  //x3d_screen_draw_line(0, min_y, 639, min_y, 0x7FFF);
+  //x3d_screen_draw_line(0, max_y, 639, max_y, 0x7FFF);
+  
+  //x3d_screen_draw_line(left, 0, left, 479, 0x7FFF);
+  
+  
   
   X3D_RasterRegion r2;
-  x3d_rasterregion_make(&r2, pv, total_v, &x3d_rendermanager_get()->region);
+  x3d_rasterregion_make(&r2, pv, total_v, &r);
   
   x3d_rasterregion_draw_outline(&r2, x3d_rgb_to_color(255, 0, 255));
   

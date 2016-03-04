@@ -389,10 +389,10 @@ void engine_test(void) {
 #if defined(__linux__)
   x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
   x3d_key_map_pc(TEST_KEY_ESCAPE, SDLK_ESCAPE);
-  x3d_key_map_pc(KEY_W, SDLK_w);
-  x3d_key_map_pc(KEY_A, SDLK_LEFT);
-  x3d_key_map_pc(KEY_S, SDLK_s);
-  x3d_key_map_pc(KEY_D, SDLK_RIGHT);
+  x3d_key_map_pc(KEY_W, 'w');
+  x3d_key_map_pc(KEY_A, 'a');
+  x3d_key_map_pc(KEY_S, 's');
+  x3d_key_map_pc(KEY_D, 'd');
   x3d_key_map_pc(KEY_Q, SDLK_DOWN);
   x3d_key_map_pc(KEY_E, SDLK_UP);
   x3d_key_map_pc(KEY_UP, '[');
@@ -425,10 +425,12 @@ void engine_test(void) {
 
 #endif
 
+#if 0
   x3d_clipregion_test();
   x3d_cleanup();
   return;
-
+#endif
+  
   x3d_keymanager_set_callback(engine_test_handle_keys);
 
   // Create a new segment

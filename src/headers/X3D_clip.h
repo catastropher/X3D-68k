@@ -58,6 +58,8 @@ typedef X3D_Stack X3D_RenderStack;
 typedef struct X3D_RasterRegion {
   X3D_BoundRange rect;
   X3D_Span* span;
+  int16 extreme_left_y;
+  int16 extreme_right_y;
 } X3D_RasterRegion;
 
 
