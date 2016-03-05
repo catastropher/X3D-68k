@@ -328,6 +328,9 @@ void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int
     // then it can't intersect the parent region
     if(gen->b->v2d.y < gen->parent->extreme_left_y || gen->a->v2d.y > gen->parent->extreme_left_y) {
       x3d_log(X3D_ERROR, "Case D.left -> invisible by extreme point y");
+      
+      x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, gen->b->v2d.y);
+      
       return;
     }
     
@@ -336,10 +339,17 @@ void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int
     v.y = gen->parent->extreme_left_y;
     
     if(x3d_rasterregion_point_inside2(gen->parent, v)) {
+      X3D_Vex2D clip;
+      x3d_rasterregion_bin_search(v, gen->a->v2d, &clip, gen->parent);
+      
+      
+      
       x3d_log(X3D_ERROR, "Case D.left -> visible");
     }
     else {
       x3d_log(X3D_ERROR, "Case D.left -> not visible");
+      
+      x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, gen->b->v2d.y);
     }
   }
 }
@@ -378,14 +388,14 @@ _Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex
   gen->a = a;
   gen->b = b;
   
-  int16 dy = b->v2d.y - a->v2d.y + 1;
+  int16 dy = b->v2d.y - a->v2d.y;
   
   gen->x_slope = (((int32)b->v2d.x - a->v2d.x) << 16) / dy;
   
   return x3d_scanline_generator_vertically_clip_edge(gen);
 }
 
-
+//_Bool x3d_scanline_generator_set_edge_vex2d(X3D_ScanlineGenerator)
 
 
 void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, int16 min_y, int16 max_y, X3D_SpanValue* spans) {
