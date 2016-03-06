@@ -222,7 +222,8 @@ typedef struct X3D_ScanlineGenerator {
   fp16x16 x_slope;
   fp16x16 intensity;
   fp16x16 intensity_slope;
-  X3D_PolyVertex temp;
+  X3D_PolyVertex temp_a;
+  X3D_PolyVertex temp_b;
   X3D_Range intersect_range;
   _Bool prev_visible_edge;
 } X3D_ScanlineGenerator;
@@ -260,10 +261,10 @@ X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
 void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, int16 end_y) {
   uint16 i;
     
-  X3D_Span* parent_span = x3d_rasterregion_get_span(gen->parent, clip->y);
+  X3D_Span* parent_span = x3d_rasterregion_get_span(gen->parent, start_y);
   X3D_SpanValue* span_val;
   
-  if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x))
+  if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x))
     span_val = &parent_span->left;
   else
     span_val = &parent_span->right;
@@ -322,11 +323,16 @@ void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int
   X3D_Span* span_a = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
   X3D_Span* span_b = x3d_rasterregion_get_span(gen->parent, gen->b->v2d.y);
   
-  // Case 1: both enpoints are too far left
-  if(gen->a->v2d.x < span_a->left.x && gen->b->v2d.x < span_b->left.x) {
+  _Bool out_left = gen->a->v2d.x < span_a->left.x && gen->b->v2d.x < span_b->left.x;
+  _Bool out_right = gen->a->v2d.x > span_a->right.x && gen->b->v2d.x > span_b->right.x;
+  int16 extreme_y = (out_left ? gen->parent->extreme_left_y : gen->parent->extreme_right_y);
+  _Bool fail_exteme_point = gen->b->v2d.y < extreme_y || gen->a->v2d.y > extreme_y;
+
+  // Case 1: both enpoints are too far left or too far right
+  if(out_left || out_right) {
     // If the extreme left point on the parent region isn't in the y range of the edge,
     // then it can't intersect the parent region
-    if(gen->b->v2d.y < gen->parent->extreme_left_y || gen->a->v2d.y > gen->parent->extreme_left_y) {
+    if(fail_exteme_point) {
       x3d_log(X3D_ERROR, "Case D.left -> invisible by extreme point y");
       
       x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, gen->b->v2d.y);
@@ -335,12 +341,25 @@ void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int
     }
     
     X3D_Vex2D v;
-    v.x = x3d_rasterregion_edge_x_value(gen, gen->parent->extreme_left_y);
-    v.y = gen->parent->extreme_left_y;
+    v.x = x3d_rasterregion_edge_x_value(gen, extreme_y);
+    v.y = extreme_y;
+    
+    x3d_log(X3D_INFO, "V.y: %d, %d", v.y, v.x);
     
     if(x3d_rasterregion_point_inside2(gen->parent, v)) {
-      X3D_Vex2D clip;
-      x3d_rasterregion_bin_search(v, gen->a->v2d, &clip, gen->parent);
+      X3D_Vex2D clip_a;
+      x3d_rasterregion_bin_search(v, gen->a->v2d, &clip_a, gen->parent);
+      
+      X3D_Vex2D clip_b;
+      x3d_rasterregion_bin_search(v, gen->b->v2d, &clip_b, gen->parent);
+      
+      x3d_rasterregion_copy_intersection_spans(gen, &clip_a, gen->a->v2d.y, clip_a.y);
+      x3d_rasterregion_generate_spans_left(gen,clip_b.y);
+      x3d_rasterregion_copy_intersection_spans(gen, &clip_a, clip_b.y, gen->b->v2d.y);
+      
+      
+      
+      
       
       
       
@@ -362,22 +381,41 @@ _Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
   if(gen->b->v2d.y < gen->dest->rect.y_range.min)
     return X3D_FALSE;
   
+  if(gen->a->v2d.y > gen->dest->rect.y_range.max)
+    return X3D_FALSE;
+  
   if(gen->a->v2d.y < gen->dest->rect.y_range.min) {
-    // Clip the edge using the temporary vertex
+    // Clip the edge using the temporary a vertex
     
     int16 in = gen->b->v2d.y - gen->dest->rect.y_range.min;
     int16 out = gen->dest->rect.y_range.min - gen->a->v2d.y;
     uint16 scale = ((int32)in << 15) / (in + out);
     
-    gen->temp.v2d.x = x3d_t_clip(gen->b->v2d.x, gen->a->v2d.x, scale);
-    gen->temp.v2d.y = gen->dest->rect.y_range.min;
+    gen->temp_a.v2d.x = x3d_t_clip(gen->b->v2d.x, gen->a->v2d.x, scale);
+    gen->temp_a.v2d.y = gen->dest->rect.y_range.min;
     
-    gen->a = &gen->temp;
+    gen->a = &gen->temp_a;
     
     x3d_log(X3D_INFO, "New x: %d", gen->a->v2d.x);
     x3d_log(X3D_INFO, "Scale: %d", scale);
     
     gen->x = (int32)gen->a->v2d.x << 16;
+  }
+  
+  if(gen->b->v2d.y > gen->dest->rect.y_range.max) {
+    // Clip the edge using the temporary a vertex
+    
+    int16 in = gen->dest->rect.y_range.max - gen->a->v2d.y;
+    int16 out =  gen->b->v2d.y - gen->dest->rect.y_range.max;
+    uint16 scale = ((int32)in << 15) / (in + out);
+    
+    gen->temp_b.v2d.x = x3d_t_clip(gen->a->v2d.x, gen->b->v2d.x, scale);
+    gen->temp_b.v2d.y = gen->dest->rect.y_range.max;
+    
+    gen->b = &gen->temp_b;
+    
+    x3d_log(X3D_INFO, "New x: %d", gen->b->v2d.x);
+    x3d_log(X3D_INFO, "Scale: %d", scale);
   }
   
   return X3D_TRUE;
@@ -414,7 +452,7 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   _Bool done = X3D_FALSE;
   
   for(i = 1; i < p->total_v && !done; ++i) {    
-    if(x3d_scanline_generator_set_edge(&gen, gen.b, p->v[i])) {
+    if(x3d_scanline_generator_set_edge(&gen, p->v[i - 1], p->v[i])) {
       _Bool a_in = x3d_rasterregion_point_inside2(parent, gen.a->v2d);
       _Bool b_in = x3d_rasterregion_point_inside2(gen.parent, gen.b->v2d);
       
@@ -437,11 +475,11 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
       }
       else if(b_in) {
         x3d_rasterregion_generate_spans_a_out_b_in(&gen, end_y);
-        x3d_log(X3D_ERROR, "Case C");
+        x3d_log(X3D_ERROR, "Case C");d
       }
       else {
-        x3d_rasterregion_generate_spans_a_out_b_out(&gen, end_y);
         x3d_log(X3D_ERROR, "Case D");
+        x3d_rasterregion_generate_spans_a_out_b_out(&gen, end_y);
       }
     }
   }
@@ -565,7 +603,7 @@ void x3d_rasterregion_draw_outline(X3D_RasterRegion* region, X3D_Color c) {
   for(i = region->rect.y_range.min; i <= region->rect.y_range.max; ++i) {
     X3D_Span* span = region->span + i - region->rect.y_range.min;
     x3d_screen_draw_pix(span->left.x, i, c);
-    x3d_screen_draw_pix(span->right.x, i, c);
+    x3d_screen_draw_pix(span->right.x, i, x3d_rgb_to_color(0, 255, 255));
   }
 }
 
@@ -685,7 +723,7 @@ void x3d_clipregion_test() {
       left = r.span[i - r.rect.y_range.min].left.x;
       r.extreme_left_y = i;
     }
-    else if(r.span[i -r.rect.y_range.min].left.x > right) {
+    else if(r.span[i - r.rect.y_range.min].right.x > right) {
       right = r.span[i - r.rect.y_range.min].right.x;
       r.extreme_right_y = i;
     }
