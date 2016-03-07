@@ -539,7 +539,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
   X3D_Vex3D norm[4];
   
   int16 d;
-  for(i = 1; i <= steps; ++i) {
+  for(i = 1; i <= 1; ++i) {
     ufp8x8 angle = 0;
     
     for(d = 0; d < steps; ++d) {
@@ -550,7 +550,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
       angle += (uint16)65535 / steps;
     }
     
-    for(d = 0; d < steps; ++d) {
+    for(d = 0; d < 1; ++d) {
       uint16 next = (d + 1 < steps ? d + 1 : 0);
       X3D_Vex3D v[4] = {
         top[d],
@@ -637,7 +637,7 @@ void x3d_render(X3D_CameraObject* cam) {
   
   x3d_sphere_render((X3D_Vex3D) { 0, 0, 0 }, 75, 10, 31, cam, &x3d_rendermanager_get()->region);
   
-  x3d_sphere_render(pos, 30, 10, x3d_rgb_to_color(0, 0, 255), cam, &x3d_rendermanager_get()->region);
+  //x3d_sphere_render(pos, 30, 10, x3d_rgb_to_color(0, 0, 255), cam, &x3d_rendermanager_get()->region);
   
   X3D_Vex3D v2[] = {
     { -100, 100, 100 },

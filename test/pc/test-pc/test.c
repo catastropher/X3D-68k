@@ -425,7 +425,7 @@ void engine_test(void) {
 
 #endif
 
-#if 1
+#if 0
   x3d_clipregion_test();
   x3d_cleanup();
   return;

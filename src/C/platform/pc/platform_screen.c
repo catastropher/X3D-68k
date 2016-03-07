@@ -252,6 +252,8 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   
   uint16 total_c = 32;
   uint16 scale_bits = 5;
+
+  if(right < left) return;
   
   int32 scale_slope = (((int32)scale_right - scale_left) << 8) / (right - left + 1);
   int32 scale = (int32)scale_left << 8;
