@@ -43,6 +43,7 @@ enum {
   X3D_BOUNDRECT_FAIL_BOTTOM = 8
 };
 
+///////////////////////////////////////////////////////////////////////////////
 /// Determines whether a point is inside a raster region.
 ///
 /// @param region - region
@@ -57,108 +58,6 @@ _Bool x3d_rasterregion_point_inside2(X3D_RasterRegion* region, X3D_Vex2D p) {
   uint16 offsety = p.y - region->rect.y_range.min;
   
   return p.x >= region->span[offsety].left.x && p.x <= region->span[offsety].right.x;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Determines whether two bounding rectangle intersect. If they don't,
-///   this function also determines how b compares to a (i.e. whether
-///   b is too far left of a).
-///////////////////////////////////////////////////////////////////////////////
-uint16 x3d_boundrect_intersect(X3D_BoundRect* a, X3D_BoundRect* b) {
-  uint16 flags = 0;
-  
-  if(b->end.x < a->start.x)
-    flags |= X3D_BOUNDRECT_FAIL_LEFT;
-  else if(b->start.x > a->end.x)
-    flags |= X3D_BOUNDRECT_FAIL_RIGHT;
-
-  if(b->end.y < a->start.y)
-    flags |= X3D_BOUNDRECT_FAIL_TOP;
-  else if(b->start.y > a->end.y)
-    flags |= X3D_BOUNDRECT_FAIL_BOTTOM;
-  
-  return flags;
-}
-
-void x3d_boundrect_create(X3D_BoundRect* rect, X3D_Vex2D a, X3D_Vex2D b) {
-  rect->start.x = X3D_MIN(a.x, b.x);
-  rect->start.y = X3D_MIN(a.y, b.y);
-  
-  rect->end.x = X3D_MAX(a.x, b.x);
-  rect->end.y = X3D_MAX(a.y, b.y);
-}
-
-uint16 x3d_boundrect_point_inside(X3D_BoundRect* rect, X3D_Vex2D v) {
-  X3D_BoundRect temp_rect = { v, v };
-  return x3d_boundrect_intersect(rect, &temp_rect);
-}
-
-void x3d_clipregion_create(X3D_ClipRegion* region, X3D_Vex2D* v, uint16 total_v) {
-  
-#if 0
-  uint16 i;
-  uint16 top_before = total_v - 2;
-  uint16 top_after = 0;
-  uint16 top_left = total_v - 1;
-  uint16 top_right = total_v - 1;
-  int16 bottom_y = INT16_MIN;
-  
-  uint16 prev = total_v - 1;
-  
-  for(i = 0; i < total_v - 1; ++i) {
-    if(v[i].y < v[top_left].y) {
-      top_left = i;
-      top_right = i;
-      top_before = prev;
-      top_after = i + 1;
-    }
-    else if(v[i].y == v[top_left].y) {
-      if(v[i].x < v[top_left].x)        top_left = i;
-      else if(v[i].x > v[top_right].y)  top_right = i;
-      
-      if(v[prev].y != v[i].y)           top_before = prev;
-      if(v[i + 1].y != v[i].y)          top_after = i + 1;
-    }
-    
-    bottom_y = X3D_MAX(bottom_y, v[i].y);
-  }
-  
-  region->left.v[0] = v[top_left];
-  region->left.total_v = 1;
-  
-  region->right.v[0] = v[top_right];
-  region->right.total_v = 1;
-  
-  // Special case for when top_before == top_after
-  // This means the entire polygon consists of one line consisting of at least
-  // two points that is on top of a point that on the bottom
-  if(top_before == top_after) {
-    region->left.v[region->left.total_v++] = v[top_before];
-    region->right.v[region->right.total_v++] = v[top_before];
-    
-    return;
-  }
-  
-  
-  
-  
-  printf("Top before: %d\n", top_before);
-  printf("Top after: %d\n", top_after);
-  printf("Top left: %d\n", top_left);
-  printf("Top right: %d\n", top_right);
-  
-  
-#endif
-  
-}
-
-void draw_polygon(X3D_Vex2D* v, uint16 total_v) {
-  uint16 i;
-  
-  for(i = 0; i < total_v; ++i) {
-    uint16 n = (i + 1) % total_v;
-    x3d_screen_draw_line(v[i].x, v[i].y, v[n].x, v[n].y, 31);
-  }
 }
 
 void x3d_rasterregion_bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* region) {
