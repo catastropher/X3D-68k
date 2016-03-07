@@ -581,7 +581,8 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
         }
       }
       
-      x3d_polygon3d_render(&p, cam, region, c, norm);
+      //if(i == 3 && d == 7)
+        x3d_polygon3d_render(&p, cam, region, c, norm);
     }
     
     X3D_SWAP(top, bottom);
