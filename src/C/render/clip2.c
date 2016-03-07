@@ -816,15 +816,22 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   
   render_mode = 1;
   
+  X3D_Polygon2D poly = {
+    .v = v,
+    .total_v = total_v
+  };
+  
+  x3d_polygon2d_remove_duplicate(&poly);
+  
   uint16 i;
-  for(i = 0; i < total_v; ++i) {
+  for(i = 0; i < poly.total_v; ++i) {
     pv[i].v2d = v[i];
   }
   
   X3D_RasterRegion r;
   x3d_rasterregion_update(parent);
   
-  if(x3d_rasterregion_make(&r, pv, total_v, parent)) {
+  if(x3d_rasterregion_make(&r, pv, poly.total_v, parent)) {
     x3d_rasterregion_downgrade(&r);
     x3d_rasterregion_fill_zbuf(&r, c, z);
   }

@@ -385,7 +385,18 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   x3d_stack_restore(&renderman->stack, stack_ptr);
 }
 
-
+void x3d_polygon2d_remove_duplicate(X3D_Polygon2D* poly) {
+  uint16 i;
+  uint16 pos = 1;
+  
+  for(i = 1; i < poly->total_v; ++i) {
+    if(poly->v[i].x != poly->v[i - 1].x || poly->v[i].y != poly->v[i - 1].y) {
+      poly->v[pos++] = poly->v[i];
+    }
+  }
+  
+  poly->total_v = pos;
+}
 
 
 
