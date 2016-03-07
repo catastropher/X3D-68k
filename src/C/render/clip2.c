@@ -585,6 +585,13 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   *y_range = gen.y_range;
 }
 
+_Bool x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex* c) {
+  int32 t1 = ((int32)b->v2d.x - a->v2d.x) * (c->v2d.y - a->v2d.y);
+  int32 t2 = ((int32)c->v2d.x - a->v2d.x) * (b->v2d.y - a->v2d.y);
+  
+  return t1 - t2 < 0;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Splits a convex polygon into two polylines, one for the left and one for
 ///   the right.
@@ -619,6 +626,7 @@ _Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, 
 
   uint16 next_left = (top_left + 1 < total_v ? top_left + 1 : 0);
   uint16 prev_left = (top_left != 0 ? top_left - 1 : total_v - 1);
+  uint16 next_right = (top_right != 0 ? top_right - 1 : total_v - 1);
   
   left->total_v = 0;
   right->total_v = 0;
@@ -630,7 +638,27 @@ _Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, 
   // 1) From the top left the next point has the same y value (y must decrease) or
   // 2) From the top left the next point has an x value > the previous point (we're
   //    the left side after all!)
-  if(v[top_left].v2d.y == v[next_left].v2d.y || v[next_left].v2d.x > v[prev_left].v2d.x) {
+  
+  int16 sl = X3D_SIGNOF(v[next_left].v2d.x - v[top_left].v2d.x);
+  int16 sr = X3D_SIGNOF(v[next_right].v2d.x - v[top_right].v2d.x);
+  
+  _Bool swap = X3D_FALSE;
+  
+  if(v[top_left].v2d.y == v[next_left].v2d.y) {
+    swap = X3D_TRUE;
+    x3d_log(X3D_INFO, "PL A");
+  }
+  if(sl != sr || v[next_left].v2d.y == v[next_right].v2d.y) {
+    swap = v[next_left].v2d.x > v[next_right].v2d.x;
+    x3d_log(X3D_INFO, "PL B");
+  }
+  else {
+    uint16 next_next_left = (next_left + 1 < total_v ? next_left + 1 : 0);
+    
+    swap = !x3d_points_clockwise(v + top_left, v + next_left, v + next_next_left);
+  }
+  
+  if(swap) {
     X3D_SWAP(left, right);
     X3D_SWAP(top_left, top_right);
   }
