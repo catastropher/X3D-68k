@@ -23,25 +23,125 @@
 
 //#define x3d_log(...) ;
 
-typedef struct X3D_BoundRect {
-  X3D_Vex2D start;
-  X3D_Vex2D end;
-} X3D_BoundRect;
+typedef struct X3D_PolyVertex {
+  X3D_Vex2D v2d;
+  int16 intensity;
+} X3D_PolyVertex;
 
-typedef struct X3D_ClipRegion {
-  //X3D_PolyLine left;
-  //X3D_PolyLine right;
-} X3D_ClipRegion;
+typedef struct X3D_PolyLine {
+  uint16 total_v;
+  X3D_PolyVertex** v;
+} X3D_PolyLine;
+
+typedef struct X3D_PolyRegion {
+  X3D_PolyLine left;
+  X3D_PolyLine right;
+} X3D_PolyRegion;
+
+_Bool x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex* c) {
+  int32 t1 = ((int32)b->v2d.x - a->v2d.x) * (c->v2d.y - a->v2d.y);
+  int32 t2 = ((int32)c->v2d.x - a->v2d.x) * (b->v2d.y - a->v2d.y);
+  
+  return t1 - t2 < 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Splits a convex polygon into two polylines, one for the left and one for
+///   the right.
+///
+/// @param v        - vertices
+/// @param total_v  - total number of vertices
+/// @param left     - left polyline dest
+/// @param right    - right polyline dest
+///
+/// @return Whether a non-degenerate polygon remains.
+/// @note   Make sure the polylines have enough space to store the result!
+///////////////////////////////////////////////////////////////////////////////
+_Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, X3D_PolyLine* right) {
+  int16 top_left = 0;
+  int16 top_right = 0;
+  int16 max_y = v[0].v2d.y;
+  
+  int16 i;
+  // Find the top left point, the top right point, and the maximum y value
+  for(i = 1; i < total_v; ++i) {
+    if(v[i].v2d.y < v[top_left].v2d.y) {
+      top_left = i;
+      top_right = i;
+    }
+    else if(v[i].v2d.y == v[top_left].v2d.y) {
+      if(v[i].v2d.x < v[top_left].v2d.x)    top_left = i;
+      if(v[i].v2d.x > v[top_right].v2d.x)   top_right = i;
+    }
+    
+    max_y = X3D_MAX(max_y, v[i].v2d.y);
+  }
+
+  uint16 next_left = (top_left + 1 < total_v ? top_left + 1 : 0);
+  uint16 prev_left = (top_left != 0 ? top_left - 1 : total_v - 1);
+  uint16 next_right = (top_right != 0 ? top_right - 1 : total_v - 1);
+  
+  left->total_v = 0;
+  right->total_v = 0;
+  
+  // Check if we need to switch left and right (in the following loops the left
+  // polyline is assumed to move forwards and the right polyline is assumed to move
+  // backwards in the array). We need to switch if:
+  //
+  // 1) From the top left the next point has the same y value (y must decrease) or
+  // 2) From the top left the next point has an x value > the previous point (we're
+  //    the left side after all!)
+  
+  int16 sl = X3D_SIGNOF(v[next_left].v2d.x - v[top_left].v2d.x);
+  int16 sr = X3D_SIGNOF(v[next_right].v2d.x - v[top_right].v2d.x);
+  
+  _Bool swap = X3D_FALSE;
+  
+  if(v[top_left].v2d.y == v[next_left].v2d.y) {
+    swap = X3D_TRUE;
+    x3d_log(X3D_INFO, "PL A");
+  }
+  if(sl != sr || v[next_left].v2d.y == v[next_right].v2d.y) {
+    swap = v[next_left].v2d.x > v[next_right].v2d.x;
+    x3d_log(X3D_INFO, "PL B");
+  }
+  else {
+    uint16 next_next_left = (next_left + 1 < total_v ? next_left + 1 : 0);
+    
+    swap = !x3d_points_clockwise(v + top_left, v + next_left, v + next_next_left);
+  }
+  
+  if(swap) {
+    X3D_SWAP(left, right);
+    X3D_SWAP(top_left, top_right);
+  }
+  
+  // Grab the points for the left polyline
+  do {
+    left->v[left->total_v] = v + top_left;
+    top_left = (top_left + 1 < total_v ? top_left + 1 : 0);
+  } while(left->v[left->total_v++]->v2d.y != max_y);
+  
+  // Grab the points for the right polyline
+  do {
+    right->v[right->total_v] = v + top_right;
+    top_right = (top_right != 0 ? top_right - 1 : total_v - 1);
+  } while(right->v[right->total_v++]->v2d.y != max_y);
+  
+  // Hmm... if there is only one point on either side, should we just duplicate
+  // the point to allow polygons that are 1 pixel tall?
+  return left->total_v > 1 && right->total_v > 1;
+}
 
 
-
-enum {
-  X3D_BOUNDRECT_INTERSECT = 0,
-  X3D_BOUNDRECT_FAIL_LEFT = 1,
-  X3D_BOUNDRECT_FAIL_RIGHT = 2,
-  X3D_BOUNDRECT_FAIL_TOP = 4,
-  X3D_BOUNDRECT_FAIL_BOTTOM = 8
-};
+void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
+  uint16 i;
+  for(i = 0; i < p->total_v - 1; ++i) {
+    uint16 next = (i + 1 < p->total_v ? i + 1 : 0);
+    
+    x3d_screen_draw_line(p->v[i]->v2d.x, p->v[i]->v2d.y, p->v[next]->v2d.x, p->v[next]->v2d.y, c);
+  }
+}
 
 fp16x16 x3d_val_slope(int16 d_a, int16 d_b) {
   return ((int32)d_a << 16) / d_b;
@@ -89,24 +189,10 @@ void x3d_rasterregion_bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3
   res->y = mid.y;
 }
 
-typedef struct X3D_PolyVertex {
-  X3D_Vex2D v2d;
-  int16 intensity;
-} X3D_PolyVertex;
-
-typedef struct X3D_PolyLine {
-  uint16 total_v;
-  X3D_PolyVertex** v;
-} X3D_PolyLine;
-
-typedef struct X3D_PolyRegion {
-  X3D_PolyLine left;
-  X3D_PolyLine right;
-} X3D_PolyRegion;
 
 int16 x3d_line_parametric_t(X3D_Vex2D* a, X3D_Vex2D* b, X3D_Vex2D* v) {
-  int16 dx = v->x - a->x;
-  int16 dy = v->y - a->y;
+  int16 dx = abs(v->x - a->x);
+  int16 dy = abs(v->y - a->y);
   
   // Calculate t using whichever variable has a larger difference, to increase
   // accuracy
@@ -133,6 +219,7 @@ typedef struct X3D_ScanlineGenerator {
   X3D_Range intersect_range;
   _Bool prev_visible_edge;
   X3D_Range y_range;
+  X3D_PolyLine* other_side;
 } X3D_ScanlineGenerator;
 
 void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
@@ -161,23 +248,38 @@ void x3d_rasterregion_generate_spans_left(X3D_ScanlineGenerator* gen, int16 star
   }
 }
 
-void x3d_polyline_get_value(X3D_PolyLine* p, int16 y) {
+void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   // This can be replaced by a binary search... but is it worth it???
   int16 i;
   for(i = 0; i < p->total_v - 1; ++i) {
-    if(y >= p->v[i]->v2d.y && y <= p->v[i + 1]->v2d.y)
+    if(y >= p->v[i]->v2d.y && y <= p->v[i + 1]->v2d.y) {
+      x3d_log(X3D_INFO, "Stopped at %d", i);
       break;
+    }
   }
   
-  int16 dy = p->v[i + 1]->v2d.y - p->v[i]->v2d.y;
+  int16 s_dy = p->v[i + 1]->v2d.y - p->v[i]->v2d.y;
   
-  X3D_PolyVertex* a = p->v + i;
-  X3D_PolyVertex* b = p->v + i + 1;
+  X3D_PolyVertex* a = p->v[i];
+  X3D_PolyVertex* b = p->v[i + 1];
+  fp16x16 x_slope = 0;
+  fp16x16 intensity_slope = 0;
   
-  if(dy != 0) {
-    fp16x16 slope = x3d_val_slope(a->v2d.x - b->v2d.x, dy);
+  
+  if(s_dy != 0) {
+    x_slope = x3d_val_slope(b->v2d.x - a->v2d.x, s_dy);
+    intensity_slope = x3d_val_slope(b->intensity - a->intensity, s_dy);
+    
+    x3d_log(X3D_INFO, "Intensity slope: %d (s_dy: %d, diff: %d)", intensity_slope >> 16, s_dy, b->intensity - a->intensity);
   }
- 
+  
+  int16 dy = y - a->v2d.y;
+  
+  v->v2d.x = a->v2d.x + ((x_slope * dy) >> 16);
+  v->v2d.y = y;
+  v->intensity = a->intensity + ((intensity_slope * dy) >> 16);
+  
+  x3d_log(X3D_INFO, "Get slope %d, inten %d", v->v2d.x, v->intensity);
 }
 
 X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
@@ -200,6 +302,7 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   if(gen->prev_visible_edge || 1) {
     for(i = start_y; i < end_y; ++i) {
       gen->span->x = span_val->x;
+      gen->span->intensity = gen->intensity >> 16;
       x3d_scanline_generator_next(gen);
       span_val = (X3D_SpanValue* )((uint8 *)span_val + sizeof(X3D_Span));
     }
@@ -213,6 +316,38 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   }
 }
 
+void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, _Bool left, int16 edge_t) {
+  int16 end_y = gen->b->v2d.y;
+  X3D_Span* end_span = x3d_rasterregion_get_span(gen->parent, end_y);
+  int16 in, out;
+  
+  X3D_PolyVertex other_side;
+  x3d_polyline_get_value(gen->other_side, end_y, &other_side);
+  
+  if(left) {
+    in = abs(other_side.v2d.x - end_span->left.x);
+    out = abs(end_span->left.x - gen->b->v2d.x);
+  }
+  else {
+    //in = end_span->right.x - end_span->left.x;
+    //out = gen->b->v2d.x - end_span->right.x;
+  }
+  
+  int16 span_t = ((int32)in << 15) / (in + out);
+  x3d_log(X3D_INFO, "Span t: %d, %d %d", span_t, in, out);
+  
+  int16 dy = gen->b->v2d.y - start_y;
+  int16 end_intensity = other_side.intensity + ((((int32)gen->b->intensity - other_side.intensity) * span_t) >> 15);
+  
+  x3d_log(X3D_INFO, "inten: %d", end_intensity);
+  x3d_log(X3D_INFO, "intengen: %d", gen->intensity_slope >> 16);
+  
+  
+  gen->intensity_slope = x3d_val_slope(end_intensity - (gen->intensity >> 16), dy);
+  
+  x3d_log(X3D_INFO, "End intensity: %d", gen->intensity_slope >> 16);
+}
+
 void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int16 end_y) {
   X3D_Vex2D clip;
   x3d_rasterregion_bin_search(gen->a->v2d, gen->b->v2d, &clip, gen->parent);
@@ -221,11 +356,18 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int1
   
   X3D_Span* span = x3d_rasterregion_get_span(gen->parent, clip.y);
   int16 x;
+  _Bool left;
   
-  if(abs(span->left.x - clip.x) < abs(span->right.x - clip.x))
+  x3d_log(X3D_INFO, "BCLIP: %d, %d -> %d", clip.x, clip.y, t);
+  
+  if(abs(span->left.x - clip.x) < abs(span->right.x - clip.x)) {
     x = span->left.x;
-  else
+    left = X3D_TRUE;
+  }
+  else {
     x = span->right.x;
+    left = X3D_FALSE;
+  }
   
   int16 dy = gen->a->v2d.y - clip.y;
   
@@ -234,6 +376,8 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int1
     // Generate the part of the span that's inside the region
     x3d_rasterregion_generate_spans_left(gen, gen->a->v2d.y, clip.y);
   }
+  
+  x3d_scaline_generator_adjust_slopes(gen, &clip, clip.y, left, t);
   
   x3d_rasterregion_copy_intersection_spans(gen, &clip, clip.y, end_y);
   
@@ -470,7 +614,7 @@ _Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex
 //_Bool x3d_scanline_generator_set_edge_vex2d(X3D_ScanlineGenerator)
 
 
-void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, int16 min_y, int16 max_y, X3D_SpanValue* spans, X3D_Range* y_range) {
+void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, X3D_PolyLine* other, int16 min_y, int16 max_y, X3D_SpanValue* spans, X3D_Range* y_range) {
   uint16 i;
   uint16 prev = 0;
   
@@ -485,6 +629,7 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   gen.prev_visible_edge = X3D_FALSE;
   gen.y_range.min = 0x7FFF;
   gen.y_range.max = -0x7FFF;
+  gen.other_side = other;
   
   _Bool done = X3D_FALSE;
   
@@ -524,110 +669,6 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   *y_range = gen.y_range;
 }
 
-_Bool x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex* c) {
-  int32 t1 = ((int32)b->v2d.x - a->v2d.x) * (c->v2d.y - a->v2d.y);
-  int32 t2 = ((int32)c->v2d.x - a->v2d.x) * (b->v2d.y - a->v2d.y);
-  
-  return t1 - t2 < 0;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Splits a convex polygon into two polylines, one for the left and one for
-///   the right.
-///
-/// @param v        - vertices
-/// @param total_v  - total number of vertices
-/// @param left     - left polyline dest
-/// @param right    - right polyline dest
-///
-/// @return Whether a non-degenerate polygon remains.
-/// @note   Make sure the polylines have enough space to store the result!
-///////////////////////////////////////////////////////////////////////////////
-_Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, X3D_PolyLine* right) {
-  int16 top_left = 0;
-  int16 top_right = 0;
-  int16 max_y = v[0].v2d.y;
-  
-  int16 i;
-  // Find the top left point, the top right point, and the maximum y value
-  for(i = 1; i < total_v; ++i) {
-    if(v[i].v2d.y < v[top_left].v2d.y) {
-      top_left = i;
-      top_right = i;
-    }
-    else if(v[i].v2d.y == v[top_left].v2d.y) {
-      if(v[i].v2d.x < v[top_left].v2d.x)    top_left = i;
-      if(v[i].v2d.x > v[top_right].v2d.x)   top_right = i;
-    }
-    
-    max_y = X3D_MAX(max_y, v[i].v2d.y);
-  }
-
-  uint16 next_left = (top_left + 1 < total_v ? top_left + 1 : 0);
-  uint16 prev_left = (top_left != 0 ? top_left - 1 : total_v - 1);
-  uint16 next_right = (top_right != 0 ? top_right - 1 : total_v - 1);
-  
-  left->total_v = 0;
-  right->total_v = 0;
-  
-  // Check if we need to switch left and right (in the following loops the left
-  // polyline is assumed to move forwards and the right polyline is assumed to move
-  // backwards in the array). We need to switch if:
-  //
-  // 1) From the top left the next point has the same y value (y must decrease) or
-  // 2) From the top left the next point has an x value > the previous point (we're
-  //    the left side after all!)
-  
-  int16 sl = X3D_SIGNOF(v[next_left].v2d.x - v[top_left].v2d.x);
-  int16 sr = X3D_SIGNOF(v[next_right].v2d.x - v[top_right].v2d.x);
-  
-  _Bool swap = X3D_FALSE;
-  
-  if(v[top_left].v2d.y == v[next_left].v2d.y) {
-    swap = X3D_TRUE;
-    x3d_log(X3D_INFO, "PL A");
-  }
-  if(sl != sr || v[next_left].v2d.y == v[next_right].v2d.y) {
-    swap = v[next_left].v2d.x > v[next_right].v2d.x;
-    x3d_log(X3D_INFO, "PL B");
-  }
-  else {
-    uint16 next_next_left = (next_left + 1 < total_v ? next_left + 1 : 0);
-    
-    swap = !x3d_points_clockwise(v + top_left, v + next_left, v + next_next_left);
-  }
-  
-  if(swap) {
-    X3D_SWAP(left, right);
-    X3D_SWAP(top_left, top_right);
-  }
-  
-  // Grab the points for the left polyline
-  do {
-    left->v[left->total_v] = v + top_left;
-    top_left = (top_left + 1 < total_v ? top_left + 1 : 0);
-  } while(left->v[left->total_v++]->v2d.y != max_y);
-  
-  // Grab the points for the right polyline
-  do {
-    right->v[right->total_v] = v + top_right;
-    top_right = (top_right != 0 ? top_right - 1 : total_v - 1);
-  } while(right->v[right->total_v++]->v2d.y != max_y);
-  
-  // Hmm... if there is only one point on either side, should we just duplicate
-  // the point to allow polygons that are 1 pixel tall?
-  return left->total_v > 1 && right->total_v > 1;
-}
-
-
-void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
-  uint16 i;
-  for(i = 0; i < p->total_v - 1; ++i) {
-    uint16 next = (i + 1 < p->total_v ? i + 1 : 0);
-    
-    x3d_screen_draw_line(p->v[i]->v2d.x, p->v[i]->v2d.y, p->v[next]->v2d.x, p->v[next]->v2d.y, c);
-  }
-}
 
 _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 total_v, X3D_RasterRegion* parent) {
   X3D_PolyLine left, right;
@@ -655,9 +696,9 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   X3D_Range y_range_right;
   
   x3d_log(X3D_INFO, "=================Left=================");
-  x3d_rasterregion_generate_polyline_spans(dest, parent, &left, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].left, &y_range_left);
+  x3d_rasterregion_generate_polyline_spans(dest, parent, &left, &right, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].left, &y_range_left);
   x3d_log(X3D_INFO, "=================Right=================");
-  x3d_rasterregion_generate_polyline_spans(dest, parent, &right, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].right, &y_range_right);
+  x3d_rasterregion_generate_polyline_spans(dest, parent, &right, &left, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].right, &y_range_right);
   
   //x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
   //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
@@ -851,7 +892,17 @@ void x3d_clipregion_test() {
   if(!x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v, total_v))
     x3d_assert(0);
   
-  X3D_PolyVertex pv[30];
+  X3D_PolyVertex pv[30] = {
+    {
+      .v2d = { 320, 350 },
+    },
+    {
+      .v2d = { 250, 390 },
+    },
+    {
+      .v2d = { 390, 390 }
+    }
+  };
   
   
   x3d_screen_zbuf_clear();
@@ -859,11 +910,15 @@ void x3d_clipregion_test() {
   
   x3d_rasterregion_update(&r);
   
-  total_v = get_polygon(pv);
+  total_v = 3;//get_polygon(pv);
   
   for(d  = 0; d < total_v; ++d) {
     pv[d].intensity = 0x7FFF / (d + 1);
   }
+  
+  pv[0].intensity = 0x7FFF;
+  pv[1].intensity = 2 * 0x7FFF / 3;
+  pv[2].intensity = 0x7FFF / 2;
   
   
   int16 left = 0x7FFF;
