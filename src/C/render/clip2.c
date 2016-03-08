@@ -319,8 +319,7 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   }
 }
 
-void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, _Bool left, int16 edge_t) {
-  int16 end_y = gen->b->v2d.y;
+void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start_y, int16 end_y, int16 end_x, _Bool left, int16 edge_t) {
   X3D_Span* end_span = x3d_rasterregion_get_span(gen->parent, end_y);
   int16 in, out;
   
@@ -329,17 +328,17 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, X3D_Vex2D* 
   
   if(left) {
     in = abs(other_side.v2d.x - end_span->left.x);
-    out = abs(end_span->left.x - gen->b->v2d.x);
+    out = abs(end_span->left.x - end_x);
   }
   else {
     in = abs(other_side.v2d.x - end_span->right.x);
-    out = abs(end_span->right.x - gen->b->v2d.x);
+    out = abs(end_span->right.x - end_x);
   }
   
   int16 span_t = ((int32)in << 15) / (in + out);
   x3d_log(X3D_INFO, "Span t: %d, %d %d", span_t, in, out);
   
-  int16 dy = gen->b->v2d.y - start_y;
+  int16 dy = end_y - start_y;
   int16 end_intensity = other_side.intensity + ((((int32)gen->b->intensity - other_side.intensity) * span_t) >> 15);
   
   x3d_log(X3D_INFO, "inten: %d", end_intensity);
@@ -380,7 +379,7 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int1
     x3d_rasterregion_generate_spans_left(gen, gen->a->v2d.y, clip.y);
   }
   
-  x3d_scaline_generator_adjust_slopes(gen, &clip, clip.y, left, t);
+  x3d_scaline_generator_adjust_slopes(gen, clip.y, end_y - 1, gen->b->v2d.x, left, t);
   
   x3d_rasterregion_copy_intersection_spans(gen, &clip, clip.y, end_y);
   
