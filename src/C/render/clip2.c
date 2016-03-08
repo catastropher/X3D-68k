@@ -43,6 +43,10 @@ enum {
   X3D_BOUNDRECT_FAIL_BOTTOM = 8
 };
 
+fp16x16 x3d_val_slope(int16 d_a, int16 d_b) {
+  return ((int32)d_a << 16) / d_b;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Determines whether a point is inside a raster region.
 ///
@@ -157,15 +161,23 @@ void x3d_rasterregion_generate_spans_left(X3D_ScanlineGenerator* gen, int16 star
   }
 }
 
-int16 x3d_polyline_find_y_edge(X3D_PolyLine* p, int16 y) {
+void x3d_polyline_get_value(X3D_PolyLine* p, int16 y) {
   // This can be replaced by a binary search... but is it worth it???
   int16 i;
   for(i = 0; i < p->total_v - 1; ++i) {
-  //  if(y >= p->v[i].v2d.y && y <= p->v[i + 1].v2d.y)
-  //    return i;
+    if(y >= p->v[i]->v2d.y && y <= p->v[i + 1]->v2d.y)
+      break;
   }
   
-  x3d_assert(!"Y value not in polyline");
+  int16 dy = p->v[i + 1]->v2d.y - p->v[i]->v2d.y;
+  
+  X3D_PolyVertex* a = p->v + i;
+  X3D_PolyVertex* b = p->v + i + 1;
+  
+  if(dy != 0) {
+    fp16x16 slope = x3d_val_slope(a->v2d.x - b->v2d.x, dy);
+  }
+ 
 }
 
 X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
@@ -439,10 +451,6 @@ _Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
   }
   
   return X3D_TRUE;
-}
-
-fp16x16 x3d_val_slope(int16 d_a, int16 d_b) {
-  return ((int32)d_a << 16) / d_b;
 }
 
 _Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex* a, X3D_PolyVertex* b) {
@@ -853,6 +861,11 @@ void x3d_clipregion_test() {
   
   total_v = get_polygon(pv);
   
+  for(d  = 0; d < total_v; ++d) {
+    pv[d].intensity = 0x7FFF / (d + 1);
+  }
+  
+  
   int16 left = 0x7FFF;
   int16 right = -0x7FFF;
   
@@ -886,7 +899,12 @@ void x3d_clipregion_test() {
   x3d_rasterregion_make(&r2, pv, total_v, &r);
   
   x3d_rasterregion_draw_outline(&r2, x3d_rgb_to_color(255, 0, 255));
+
+  x3d_rasterregion_downgrade(&r2);
   
+  render_mode = 1;
+  
+  x3d_rasterregion_fill(&r2, x3d_rgb_to_color(0, 0, 255));
   
   x3d_screen_flip();
   
