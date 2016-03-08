@@ -289,6 +289,9 @@ X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
 void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, int16 end_y) {
   uint16 i;
     
+  gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
+  gen->y_range.max = X3D_MAX(gen->y_range.max, end_y - 1);
+  
   X3D_Span* parent_span = x3d_rasterregion_get_span(gen->parent, start_y);
   X3D_SpanValue* span_val;
   
@@ -329,8 +332,8 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, X3D_Vex2D* 
     out = abs(end_span->left.x - gen->b->v2d.x);
   }
   else {
-    //in = end_span->right.x - end_span->left.x;
-    //out = gen->b->v2d.x - end_span->right.x;
+    in = abs(other_side.v2d.x - end_span->right.x);
+    out = abs(end_span->right.x - gen->b->v2d.x);
   }
   
   int16 span_t = ((int32)in << 15) / (in + out);
@@ -910,15 +913,15 @@ void x3d_clipregion_test() {
   
   x3d_rasterregion_update(&r);
   
-  total_v = 3;//get_polygon(pv);
+  total_v = get_polygon(pv);
   
   for(d  = 0; d < total_v; ++d) {
-    pv[d].intensity = 0x7FFF / (d + 1);
+    pv[d].intensity = (d + 1) * 0x7FFFL / (d + 2);
   }
   
-  pv[0].intensity = 0x7FFF;
-  pv[1].intensity = 2 * 0x7FFF / 3;
-  pv[2].intensity = 0x7FFF / 2;
+  //pv[0].intensity = 0x7FFF;
+  //pv[1].intensity = 2 * 0x7FFF / 3;
+  //pv[2].intensity = 0x7FFF / 2;
   
   
   int16 left = 0x7FFF;
