@@ -127,7 +127,8 @@ void x3d_screen_zbuf_clear(void);
 
 struct X3D_Span;
 
-void x3d_screen_draw_scanline_texture(struct X3D_Span* span, int16 y, int16 z);
+void x3d_screen_draw_scanline_texture(struct X3D_Span* span, int16 y);
+void x3d_screen_zbuf_visualize(void);
 
 void* x3d_screen_get_internal(void);
 

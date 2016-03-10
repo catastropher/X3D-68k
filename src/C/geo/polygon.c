@@ -379,7 +379,7 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   X3D_RasterRegion r;
   if(x3d_rasterregion_construct_clipped(&clip, &r)) {
     //x3d_rasterregion_fill_zbuf(&r, color, min_z);
-    x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal);
+    x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d);
   }
   
   x3d_stack_restore(&renderman->stack, stack_ptr);

@@ -708,7 +708,7 @@ void x3d_rasterregion_fill_texture(X3D_RasterRegion* r, int16 z) {
   uint16 i;
   
   for(i = r->rect.y_range.min; i <= r->rect.y_range.max; ++i) {
-    x3d_screen_draw_scanline_texture(x3d_rasterregion_get_span(r, i), i, z);
+    x3d_screen_draw_scanline_texture(x3d_rasterregion_get_span(r, i), i);
   }
 }
 

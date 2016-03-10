@@ -28,6 +28,7 @@ typedef struct X3D_PolyVertex {
   X3D_Vex2D v2d;
   int16 intensity;
   int16 u, v;
+  fp0x16 z;
 } X3D_PolyVertex;
 
 typedef struct X3D_PolyLine {
@@ -219,6 +220,8 @@ typedef struct X3D_ScanlineGenerator {
   fp16x16 u, v;
   fp16x16 u_slope;
   fp16x16 v_slope;
+  fp16x16 z;
+  fp16x16 z_slope;
   X3D_PolyVertex temp_a;
   X3D_PolyVertex temp_b;
   X3D_Range intersect_range;
@@ -233,6 +236,7 @@ void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
   gen->intensity += gen->intensity_slope;
   gen->u += gen->u_slope;
   gen->v += gen->v_slope;
+  gen->z += gen->z_slope;
   gen->span = (X3D_SpanValue* )((uint8 *)gen->span + sizeof(X3D_Span));
 }
 
@@ -250,6 +254,7 @@ void x3d_rasterregion_generate_spans_left(X3D_ScanlineGenerator* gen, int16 star
     gen->span->intensity = gen->intensity >> 16;
     gen->span->u = gen->u >> 16;
     gen->span->v = gen->v >> 16;
+    gen->span->z = gen->z >> 16;
     //x3d_log(X3D_INFO, "X: %d", gen->span->x);
     
     x3d_scanline_generator_next(gen);
@@ -316,6 +321,7 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
       gen->span->intensity = gen->intensity >> 16;
       gen->span->u = gen->u >> 16;
       gen->span->v = gen->v >> 16;
+      gen->span->z = gen->z >> 16;
       x3d_scanline_generator_next(gen);
       span_val = (X3D_SpanValue* )((uint8 *)span_val + sizeof(X3D_Span));
     }
@@ -642,7 +648,7 @@ _Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex
   gen->intensity_slope = x3d_val_slope(b->intensity - a->intensity, dy);
   gen->u_slope = x3d_val_slope(b->u - a->u, dy);
   gen->v_slope = x3d_val_slope(b->v - a->v, dy);
-
+  gen->z_slope = x3d_val_slope(b->z - a->z, dy);
   
   return x3d_scanline_generator_vertically_clip_edge(gen);
 }
@@ -662,8 +668,9 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   gen.span = spans;
   gen.x = (int32)p->v[0]->v2d.x << 16;
   gen.intensity = (int32)p->v[0]->intensity << 16;
-  gen.u = (int16)p->v[0]->u << 16;
-  gen.v = (int16)p->v[0]->v << 16;
+  gen.u = (int32)p->v[0]->u << 16;
+  gen.v = (int32)p->v[0]->v << 16;
+  gen.z = (int32)p->v[0]->z << 16;
   gen.prev_visible_edge = X3D_FALSE;
   gen.y_range.min = 0x7FFF;
   gen.y_range.max = -0x7FFF;
@@ -869,7 +876,7 @@ void x3d_rasterregion_downgrade(X3D_RasterRegion* r) {
 
 extern int16 render_mode;
 
-void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_RasterRegion* parent, int16 z, X3D_Vex3D* normal) {
+void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_RasterRegion* parent, int16 z, X3D_Vex3D* normal, X3D_Vex3D* v3d) {
   X3D_PolyVertex pv[total_v];
   
   
@@ -884,6 +891,7 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   for(i = 0; i < poly.total_v; ++i) {
     pv[i].v2d = v[i];
     pv[i].intensity = 0x7FFF / (i + 1);
+    pv[i].z = 0x7FFF / v3d[i].z;
     
     float a = normal[i].x / 32768.0 / 2 + .5;  //x3d_asin(normal[i].x) / 128.0 + .5;
     float b = normal[i].y / 32768.0 / 2 + .5;//x3d_asin(normal[i].y) / 128.0 + .5;
@@ -899,15 +907,21 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   pv[0].u = 0;
   pv[0].v = 0;
   
-  pv[1].u = 191;
+  pv[1].u = 0x7FFF;
   pv[1].v = 0;
   
-  pv[2].u = 191;
-  pv[2].v = 191;
+  pv[2].u = 0x7FFF;
+  pv[2].v = 0x7FFF;
   
   pv[3].u = 0;
-  pv[3].v = 191;
+  pv[3].v = 0x7FFF;
 #endif
+  
+  
+  for(i = 0; i < 4; ++i) {
+    pv[i].u = pv[i].u / v3d[i].z;
+    pv[i].v = pv[i].v / v3d[i].z;
+  }
   
   X3D_RasterRegion r;
   x3d_rasterregion_update(parent);
