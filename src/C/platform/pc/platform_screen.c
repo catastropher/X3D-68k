@@ -40,7 +40,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  brick_tex.surface = SDL_LoadBMP("checker.bmp");
+  brick_tex.surface = SDL_LoadBMP("cube.bmp");
 
   if(!brick_tex.surface)
     x3d_log(X3D_ERROR, "Failed to load brick texture");
@@ -165,7 +165,7 @@ X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
 
 #define PURPLE (16 | (16 << 10))
 
-#define BPP 24
+#define BPP 15
 
 static uint32 map_color_to_uint32(X3D_Color color) {
 #if BPP == 15

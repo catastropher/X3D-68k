@@ -601,7 +601,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   X3D_Prism3D* prism = alloca(1000);
-  x3d_prism3d_construct(prism, 4, w, w, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  x3d_prism3d_construct(prism, 4, w, w, (X3D_Vex3D_angle256) { 0, x3d_enginestate_get_step() * 2, 0 });
   X3D_Polygon3D p = {
     .v = alloca(1000)
   };

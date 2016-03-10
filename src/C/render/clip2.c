@@ -601,6 +601,7 @@ _Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
     gen->x = (int32)gen->a->v2d.x << 16;
     gen->u += gen->u_slope * dy;
     gen->v += gen->v_slope * dy;
+    gen->z += gen->z_slope * dy;
     gen->intensity += gen->intensity_slope * dy;
   }
   
@@ -622,6 +623,7 @@ _Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
     
     gen->temp_b.u = gen->a->u + ((gen->u_slope * dy) >> 16);
     gen->temp_b.v = gen->a->v + ((gen->v_slope * dy) >> 16);
+    gen->temp_b.z = gen->a->z + ((gen->z_slope * dy) >> 16);
     
     gen->b = &gen->temp_b;
     
@@ -907,14 +909,14 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   pv[0].u = 0;
   pv[0].v = 0;
   
-  pv[1].u = 0x7FFF;
-  pv[1].v = 0;
+  pv[3].u = 0x7FFF;
+  pv[3].v = 0;
   
   pv[2].u = 0x7FFF;
   pv[2].v = 0x7FFF;
   
-  pv[3].u = 0;
-  pv[3].v = 0x7FFF;
+  pv[1].u = 0;
+  pv[1].v = 0x7FFF;
 #endif
   
   
