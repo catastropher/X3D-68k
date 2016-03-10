@@ -538,14 +538,22 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
   
   X3D_Vex3D norm[4];
   
+  X3D_Mat3x3 mat;
+  X3D_Vex3D_angle256 angle = { 0, 0, 0 };//x3d_enginestate_get_step(), x3d_enginestate_get_step(), 0 };
+  x3d_mat3x3_construct(&mat, &angle);
+  
   int16 d;
-  for(i = 1; i <= steps; ++i) {
+  for(i = 0; i <= steps; ++i) {
     ufp8x8 angle = 0;
     
     for(d = 0; d < steps; ++d) {
       bottom[d].x = (((int32)rad[i] * x3d_cos(angle >> 8)) >> 15) + center.x;
       bottom[d].z = (((int32)rad[i] * x3d_sin(angle >> 8)) >> 15) + center.z;
       bottom[d].y = top[0].y + r * 2 / steps;
+      
+      X3D_Vex3D rot;
+      x3d_vex3d_int16_rotate(&rot, bottom + d, &mat);
+      bottom[d] = rot;
       
       angle += (uint16)65535 / steps;
     }
@@ -582,6 +590,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
       }
       
       //if(i == 3 && d == 7)
+      //if(i == 2 && d == 2)
         x3d_polygon3d_render(&p, cam, region, c, norm);
     }
     

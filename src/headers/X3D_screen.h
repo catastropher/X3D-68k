@@ -18,6 +18,10 @@
 #include "X3D_common.h"
 #include "X3D_vector.h"
 
+typedef struct X3D_Texture {
+  void* surface;
+} X3D_Texture;
+
 typedef struct X3D_ScreenManager {
   uint16 w;
   uint16 h;
@@ -121,6 +125,9 @@ void x3d_screen_record_end(void);
 void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab, int16 z);
 void x3d_screen_zbuf_clear(void);
 
+struct X3D_Span;
+
+void x3d_screen_draw_scanline_texture(struct X3D_Span* span, int16 y, int16 z);
 
 void* x3d_screen_get_internal(void);
 

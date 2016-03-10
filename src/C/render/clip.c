@@ -704,6 +704,14 @@ void x3d_rasterregion_fill_zbuf(X3D_RasterRegion* region, X3D_Color color, int16
   }
 }
 
+void x3d_rasterregion_fill_texture(X3D_RasterRegion* r, int16 z) {
+  uint16 i;
+  
+  for(i = r->rect.y_range.min; i <= r->rect.y_range.max; ++i) {
+    x3d_screen_draw_scanline_texture(x3d_rasterregion_get_span(r, i), i, z);
+  }
+}
+
 //=============================================
 
 fp0x16 x3d_point_intensity(X3D_UncompressedSegment* seg, uint16 p, X3D_Vex3D* face_normal, int16 z) {
