@@ -41,6 +41,12 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   }
   
   brick_tex.surface = SDL_LoadBMP("cube.bmp");
+ 
+#if 0
+  x3d_gray_dither(brick_tex.surface);
+  SDL_SaveBMP(brick_tex.surface, "self2_dither.bmp");
+  exit(0);
+#endif
 
   if(!brick_tex.surface)
     x3d_log(X3D_ERROR, "Failed to load brick texture");
@@ -111,6 +117,39 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   
 }
 
+void putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
+{
+    int bpp = surface->format->BytesPerPixel;
+    /* Here p is the address to the pixel we want to set */
+    Uint8 *p = (Uint8 *)surface->pixels + y * surface->pitch + x * bpp;
+
+    switch(bpp) {
+    case 1:
+        *p = pixel;
+        break;
+
+    case 2:
+        *(Uint16 *)p = pixel;
+        break;
+
+    case 3:
+        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {
+            p[0] = (pixel >> 16) & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = pixel & 0xff;
+        } else {
+            p[0] = pixel & 0xff;
+            p[1] = (pixel >> 8) & 0xff;
+            p[2] = (pixel >> 16) & 0xff;
+        }
+        break;
+
+    case 4:
+        *(Uint32 *)p = pixel;
+        break;
+    }
+}
+
 Uint32 getpixel(SDL_Surface *surface, int x, int y)
 {
     int bpp = surface->format->BytesPerPixel;
@@ -140,6 +179,41 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y)
     default:
         return 0;       /* shouldn't happen, but avoids warnings */
     }
+}
+
+
+void x3d_gray_dither(SDL_Surface* s) {
+  int32 x, y;
+  
+  int16 map[8][8] = {
+    { 1, 49, 13, 61, 4, 52, 16, 64 },
+    { 33, 17, 45, 29, 36, 20, 48, 32 },
+    { 9, 57, 5, 53, 12, 60, 8, 56 },
+    { 41, 25, 37, 21, 44, 28, 40, 24 },
+    { 3, 51, 15, 63, 2, 50, 14, 62 },
+    { 25, 19, 47, 31, 34, 18, 46, 30 },
+    { 11, 59, 7, 55, 10, 58, 6, 54 },
+    { 43, 27, 39, 23, 42, 26, 38, 22 }
+  };
+  
+  for(y = 0; y < s->h; ++y) {
+    for(x = 0; x < s->w; ++x) {
+      uint32 pix = getpixel(s, x, y);
+      uint8 r, g, b;
+      SDL_GetRGB(pix, s->format, &r, &g, &b);
+      
+      float in = .299 * r + .587 * g + .114 * b;
+      
+      int16 val = in + in * map[y % 8][x % 8] / 63;
+      
+      if(val >= 192)
+        val = 255;
+      else
+        val = 0;
+      
+      putpixel(s, x, y, SDL_MapRGB(s->format, val, val, val));
+    }
+  }
 }
 
 X3D_Color x3d_texture_get_pix(X3D_Texture* tex, int16 u, int16 v) {
@@ -349,13 +423,13 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
     if(index >= total_c)
       index = total_c - 1;
 
-#if 0
-    if(zz > z_buf[y * window_surface->w + i]) {
+#if 1
+    //if(zz > z_buf[y * window_surface->w + i]) {
       ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(color_tab[index]);
       
       if(z > 0)
-        z_buf[y * window_surface->w + i] = z;
-    }
+        z_buf[y * window_surface->w + i] = zz;
+    //}
 #endif
       
     scale += scale_slope;
@@ -383,6 +457,8 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
   uint16 i;
   for(i = span->left.x; i <= span->right.x; ++i) {
     fp0x16 zz = z >> 16;
+    
+    if(zz <= 0) zz = 0x7FFF;
     
     int16 uu = (((u / zz) >> 1) * 191) >> 15;
     int16 vv = (((v / zz) >> 1) * 191) >> 15;
@@ -502,8 +578,10 @@ void x3d_screen_flip() {
     ++record_frame;
   }
   
-  if(!virtual_window)
+  if(!virtual_window) {
+    //x3d_gray_dither(window_surface);
     SDL_Flip(window_surface);
+  }
 }
 
 void* x3d_screen_get_internal(void) {

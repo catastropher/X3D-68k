@@ -22,7 +22,7 @@
 #include "X3D_enginestate.h"
 #include "X3D_trig.h"
 
-//#define x3d_log(...) ;
+#define x3d_log(...) ;
 
 typedef struct X3D_PolyVertex {
   X3D_Vex2D v2d;
@@ -277,11 +277,20 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   X3D_PolyVertex* b = p->v[i + 1];
   fp16x16 x_slope = 0;
   fp16x16 intensity_slope = 0;
-  
+  fp16x16 u_slope;
+  fp16x16 v_slope;
+  fp16x16 z_slope;
   
   if(s_dy != 0) {
     x_slope = x3d_val_slope(b->v2d.x - a->v2d.x, s_dy);
+    u_slope = x3d_val_slope(b->u - a->u, s_dy);
+    v_slope = x3d_val_slope(b->v - a->v, s_dy);
+    z_slope = x3d_val_slope(b->z - a->z, s_dy);
+    
+    
     intensity_slope = x3d_val_slope(b->intensity - a->intensity, s_dy);
+    
+    
     
     x3d_log(X3D_INFO, "Intensity slope: %d (s_dy: %d, diff: %d)", intensity_slope >> 16, s_dy, b->intensity - a->intensity);
   }
@@ -291,6 +300,9 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   v->v2d.x = a->v2d.x + ((x_slope * dy) >> 16);
   v->v2d.y = y;
   v->intensity = a->intensity + ((intensity_slope * dy) >> 16);
+  v->u = a->u + ((u_slope * dy) >> 16);
+  v->v = a->v + ((v_slope * dy) >> 16);
+  v->z = a->z + ((z_slope * dy) >> 16);
   
   x3d_log(X3D_INFO, "Get slope %d, inten %d", v->v2d.x, v->intensity);
 }
@@ -358,6 +370,7 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   int16 end_intensity = other_side.intensity + ((((int32)gen->b->intensity - other_side.intensity) * span_t) >> 15);
   int16 end_u = other_side.u + ((((int32)gen->b->u - other_side.u) * span_t) >> 15);
   int16 end_v = other_side.v + ((((int32)gen->b->v - other_side.v) * span_t) >> 15);
+  int16 end_z = other_side.z + ((((int32)gen->b->z - other_side.z) * span_t) >> 15);
   
   x3d_log(X3D_INFO, "inten: %d", end_intensity);
   x3d_log(X3D_INFO, "intengen: %d", gen->intensity_slope >> 16);
@@ -366,6 +379,7 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   gen->intensity_slope = x3d_val_slope(end_intensity - (gen->intensity >> 16), dy);
   gen->u_slope = x3d_val_slope(end_u - (gen->u >> 16), dy);
   gen->v_slope = x3d_val_slope(end_v - (gen->v >> 16), dy);
+  gen->z_slope = x3d_val_slope(end_z - (gen->z >> 16), dy);
   
   x3d_log(X3D_INFO, "End intensity: %d", gen->u_slope >> 16);
 }
@@ -887,6 +901,8 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
     .total_v = total_v
   };
   
+  v[2].y = v[1].y;
+  
   x3d_polygon2d_remove_duplicate(&poly);
   
   uint16 i;
@@ -921,8 +937,10 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   
   
   for(i = 0; i < 4; ++i) {
-    pv[i].u = pv[i].u / v3d[i].z;
-    pv[i].v = pv[i].v / v3d[i].z;
+    if(v3d[i].z != 0) {
+      pv[i].u = pv[i].u / v3d[i].z;
+      pv[i].v = pv[i].v / v3d[i].z;
+    }
   }
   
   X3D_RasterRegion r;

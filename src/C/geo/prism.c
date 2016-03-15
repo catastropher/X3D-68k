@@ -43,6 +43,8 @@ void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_
 
   s->base_v = steps;
 
+  r = ((int32)r << 15) / (2 * x3d_sin(ANG_180 / steps));  
+  
   // Construct the two bases (regular polygons)
   for(i = 0; i < steps; ++i) {
     s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cos(x3d_uint16_upper(angle)), r);

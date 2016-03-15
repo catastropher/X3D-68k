@@ -601,12 +601,28 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   X3D_Prism3D* prism = alloca(1000);
-  x3d_prism3d_construct(prism, 4, w, w, (X3D_Vex3D_angle256) { 0, x3d_enginestate_get_step() * 2, 0 });
+  int16 steps = 4;
+  x3d_prism3d_construct(prism, steps, w, w, (X3D_Vex3D_angle256) { ANG_45, 0, 0 }); //x3d_enginestate_get_step() * 2, x3d_enginestate_get_step() * 2, 0 });
   X3D_Polygon3D p = {
     .v = alloca(1000)
   };
   
-  X3D_Vex3D norm[4] = {
+  X3D_RasterRegion* rr = &x3d_rendermanager_get()->region;
+  
+  uint16 k;
+  
+  for(k = 0; k < 480; ++k) {
+    rr->span[k].right.x = X3D_MIN(639 - + k / 2, 639);
+    rr->span[k].old_right_val = X3D_MIN(639 - + k / 2, 639);
+  }
+  
+  X3D_Vex3D norm[10] = {
+    { 0x7FFF, 0, 0 },
+    { 0x7FFF, 0, 0 },
+    { 0x7FFF, 0, 0 },
+    { 0x7FFF, 0, 0 },
+    { 0x7FFF, 0, 0 },
+    { 0x7FFF, 0, 0 },
     { 0x7FFF, 0, 0 },
     { 0x7FFF, 0, 0 },
     { 0x7FFF, 0, 0 },
@@ -614,17 +630,27 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   };
   
   uint16 i;
-  for(i = 0; i < 8; ++i) {
+  for(i = 0; i < steps * 2; ++i) {
     prism->v[i].x += center.x;
     prism->v[i].y += center.y;
     prism->v[i].z += center.z;
   }
   
+  x3d_prism3d_get_face(prism, 1, &p);
+  x3d_polygon3d_scale(&p, 256 + 128);
+  //x3d_prism3d_set_face(prism, 1, &p);
+
+  p.v[0] = (X3D_Vex3D) { 100, -100, 100 };
+  p.v[1] = (X3D_Vex3D) { -100, 100, 100 };
+  p.v[2] = (X3D_Vex3D) { 100, 100, 100 };
   
-  for(i = 0; i < 6; ++i) {
-    x3d_prism3d_get_face(prism, i, &p);
+  p.total_v = 3;
+  
+  for(i = 0; i < steps + 2; ++i) {
+    //x3d_prism3d_get_face(prism, i, &p);
     
-    x3d_polygon3d_render(&p, cam, region, 0, norm);
+    if(i == 2)
+      x3d_polygon3d_render(&p, cam, region, 0, norm);
   }
 }
 
@@ -676,7 +702,8 @@ void x3d_render(X3D_CameraObject* cam) {
   
   //x3d_sphere_render((X3D_Vex3D) { 0, 0, 0 }, 75, 10, 31, cam, &x3d_rendermanager_get()->region);
   
-  x3d_cube_render((X3D_Vex3D) { 100, 0, 100 }, 75, cam, &x3d_rendermanager_get()->region);
+  x3d_cube_render((X3D_Vex3D) { 100, 0, 100 }, 100, cam, &x3d_rendermanager_get()->region);
+  //x3d_cube_render((X3D_Vex3D) { 150, 150, 150 }, 150, cam, &x3d_rendermanager_get()->region);
   
   
   //x3d_sphere_render(pos, 30, 10, x3d_rgb_to_color(0, 0, 255), cam, &x3d_rendermanager_get()->region);
