@@ -22,7 +22,7 @@
 #include "X3D_enginestate.h"
 #include "X3D_trig.h"
 
-#define x3d_log(...) ;
+//#define x3d_log(...) ;
 
 typedef struct X3D_PolyVertex {
   X3D_Vex2D v2d;
@@ -426,16 +426,39 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   
   int16 t = x3d_line_parametric_t(&gen->a->v2d, &gen->b->v2d, &clip);
   
-  x3d_rasterregion_copy_intersection_spans(gen, &clip, gen->a->v2d.y, clip.y);
+  int16 dy = clip.y - gen->a->v2d.y;
   
   X3D_Span* span = x3d_rasterregion_get_span(gen->parent, clip.y);
   int16 x;
   
-  if(abs(span->left.x - clip.x) < abs(span->right.x - clip.x))
-    x = span->left.x;
-  else
-    x = span->right.x;
+  _Bool left;
   
+  if(abs(span->left.x - clip.x) < abs(span->right.x - clip.x)) {
+    x = span->left.x;
+    left = X3D_TRUE;
+  }
+  else {
+    x = span->right.x;
+    left = X3D_FALSE;
+  }
+  
+#if 0
+  gen->u += gen->u_slope * dy;
+  gen->v += gen->v_slope * dy;
+  gen->intensity += gen->intensity_slope * dy;
+  gen->z += gen->z_slope * dy;
+#endif
+  
+  fp16x16 save_u_slope = gen->u_slope;
+  fp16x16 save_v_slope = gen->v_slope;
+  
+  x3d_scaline_generator_adjust_slopes(gen, gen->a->v2d.y, clip.y, clip.x, left, t);
+  
+  x3d_rasterregion_copy_intersection_spans(gen, &clip, gen->a->v2d.y, clip.y);
+  
+  
+  gen->u_slope = save_u_slope;
+  gen->v_slope = save_v_slope;
   
   gen->x_slope = (((int32)gen->b->v2d.x - x) << 16) / (gen->b->v2d.y - clip.y); 
   

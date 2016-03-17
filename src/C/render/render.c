@@ -612,8 +612,8 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   uint16 k;
   
   for(k = 0; k < 480; ++k) {
-    rr->span[k].right.x = X3D_MIN(639 - + k / 2, 639);
-    rr->span[k].old_right_val = X3D_MIN(639 - + k / 2, 639);
+    rr->span[k].right.x = X3D_MIN(640 / 2 + k / 2, 639);
+    rr->span[k].old_right_val = X3D_MIN(640 / 2 + k / 2, 639);
   }
   
   X3D_Vex3D norm[10] = {
@@ -640,9 +640,9 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   x3d_polygon3d_scale(&p, 256 + 128);
   //x3d_prism3d_set_face(prism, 1, &p);
 
-  p.v[0] = (X3D_Vex3D) { 100, -100, 100 };
-  p.v[1] = (X3D_Vex3D) { -100, 100, 100 };
-  p.v[2] = (X3D_Vex3D) { 100, 100, 100 };
+  p.v[0] = (X3D_Vex3D) { 100, 100, 100 };
+  p.v[1] = (X3D_Vex3D) { -100, -100, 100 };
+  p.v[2] = (X3D_Vex3D) { 100, -100, 100 };
   
   p.total_v = 3;
   
