@@ -113,6 +113,9 @@ add_sources(
   C/render/clip3.c
   C/render/rasteredge.c
   C/render/util.c
+  C/render/rasterregion.c
+  C/render/scanline.c
+  C/render/polyline.c
   
   C/physics/collide.c
   
