@@ -112,6 +112,8 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   
   int16 dy = y - a->v2d.y;
   
+  x3d_log(X3D_INFO, "Polyline u slope: %d", slope.u);
+  
   v->v2d.x = a->v2d.x + ((slope.x * dy) >> 16);
   v->v2d.y = y;
   v->intensity = a->intensity + ((slope.intensity * dy) >> 16);

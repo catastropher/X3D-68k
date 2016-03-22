@@ -187,14 +187,14 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   pv[0].u = 0;
   pv[0].v = 0;
   
-  pv[3].u = 0x7FFF;
-  pv[3].v = 0;
+  pv[1].u = 0x7FFF / 2;
+  pv[1].v = 0x7FFF / 2;
   
   pv[2].u = 0x7FFF;
   pv[2].v = 0x7FFF;
   
-  pv[1].u = 0;
-  pv[1].v = 0x7FFF;
+  //pv[1].u = 0;
+  //pv[1].v = 0x7FFF;
 #endif
   
   

@@ -39,6 +39,7 @@ typedef struct X3D_ScanlineGenerator {
   X3D_Range intersect_range;
   _Bool prev_visible_edge;
   X3D_Range y_range;
+  X3D_PolyLine* line;
   X3D_PolyLine* other_side;             ///< The polyline on the other side of what we're working on
 } X3D_ScanlineGenerator;
 

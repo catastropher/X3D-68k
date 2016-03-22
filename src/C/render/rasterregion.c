@@ -211,6 +211,7 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   gen.prev_visible_edge = X3D_FALSE;
   gen.y_range.min = 0x7FFF;
   gen.y_range.max = -0x7FFF;
+  gen.line = p;
   gen.other_side = other;
   
   _Bool done = X3D_FALSE;
