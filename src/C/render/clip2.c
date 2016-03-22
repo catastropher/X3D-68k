@@ -354,6 +354,10 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   X3D_PolyVertex other_side;
   x3d_polyline_get_value(gen->other_side, end_y, &other_side);
   
+  x3d_log(X3D_INFO, "Other side x: %d", other_side.v2d.x);
+  
+  x3d_screen_draw_line(other_side.v2d.x, 0, other_side.v2d.x, 439, 0x7FFF);
+  
   if(left) {
     in = abs(other_side.v2d.x - end_span->left.x);
     out = abs(end_span->left.x - end_x);
@@ -372,8 +376,9 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   int16 end_v = other_side.v + ((((int32)gen->b->v - other_side.v) * span_t) >> 15);
   int16 end_z = other_side.z + ((((int32)gen->b->z - other_side.z) * span_t) >> 15);
   
-  x3d_log(X3D_INFO, "inten: %d", end_intensity);
-  x3d_log(X3D_INFO, "intengen: %d", gen->intensity_slope >> 16);
+  x3d_log(X3D_INFO, "end_u: %d", end_u);
+  x3d_log(X3D_INFO, "a_u: %d", gen->a->u);
+  x3d_log(X3D_INFO, "b_u: %d", gen->b->u);
   
   
   gen->intensity_slope = x3d_val_slope(end_intensity - (gen->intensity >> 16), dy);
@@ -381,7 +386,8 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   gen->v_slope = x3d_val_slope(end_v - (gen->v >> 16), dy);
   gen->z_slope = x3d_val_slope(end_z - (gen->z >> 16), dy);
   
-  x3d_log(X3D_INFO, "End intensity: %d", gen->u_slope >> 16);
+  
+  x3d_log(X3D_INFO, "End u slope: %d", gen->u_slope >> 16);
 }
 
 void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int16 end_y) {
@@ -440,6 +446,7 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   else {
     x = span->right.x;
     left = X3D_FALSE;
+    x3d_log(X3D_INFO, "Right!!!!!!");
   }
   
 #if 0
@@ -457,10 +464,21 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   x3d_rasterregion_copy_intersection_spans(gen, &clip, gen->a->v2d.y, clip.y);
   
   
-  gen->u_slope = save_u_slope;
-  gen->v_slope = save_v_slope;
+  //gen->u_slope = save_u_slope;
+  //gen->v_slope = save_v_slope;
   
   gen->x_slope = (((int32)gen->b->v2d.x - x) << 16) / (gen->b->v2d.y - clip.y); 
+  
+#if 0
+  fp0x16 u = gen->u >> 16;
+  fp0x16 v = gen->v >> 16;
+  fp0x16 z = gen->z >> 16;
+  
+  gen->u_slope = x3d_val_slope(gen->b->u - u, gen->b->v2d.y - clip.y);
+  gen->v_slope = x3d_val_slope(gen->b->v - v, gen->b->v2d.y - clip.y);
+  gen->z_slope = x3d_val_slope(gen->b->z - z, gen->b->v2d.y - clip.y);
+#endif
+  
   
   gen->x = (int32)x << 16;
   
@@ -634,6 +652,7 @@ _Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
     
     x3d_log(X3D_INFO, "New x: %d", gen->a->v2d.x);
     x3d_log(X3D_INFO, "Scale: %d", scale);
+    x3d_log(X3D_INFO, "!!!!!Clip top!!!!!");
     
     gen->x = (int32)gen->a->v2d.x << 16;
     gen->u += gen->u_slope * dy;
@@ -656,6 +675,7 @@ _Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
     x3d_log(X3D_INFO, "Before u: %d", gen->b->u);
     x3d_log(X3D_INFO, "Before v: %d", gen->b->v);
     x3d_log(X3D_INFO, "Slope: %d", gen->u_slope);
+    x3d_log(X3D_INFO, "!!!!!Clip bottom!!!!!");
     
     
     gen->temp_b.u = gen->a->u + ((gen->u_slope * dy) >> 16);

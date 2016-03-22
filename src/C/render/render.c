@@ -641,7 +641,7 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   //x3d_prism3d_set_face(prism, 1, &p);
 
   p.v[0] = (X3D_Vex3D) { 100, 100, 100 };
-  p.v[1] = (X3D_Vex3D) { -100, -100, 100 };
+  p.v[1] = (X3D_Vex3D) { -100, -150, 100 };
   p.v[2] = (X3D_Vex3D) { 100, -100, 100 };
   
   p.total_v = 3;
