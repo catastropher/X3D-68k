@@ -172,7 +172,7 @@ void setup_camera(void) {
   x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
 }
 
-void engine_test(void) {
+int main() {
 #if defined(__linux__)
   int16 w = 640;
   int16 h = 480;
@@ -202,10 +202,6 @@ void engine_test(void) {
   x3d_game_loop();
 
   x3d_cleanup();
+  
+  return 0;
 }
-
-int main() {
-  engine_test();
-  return;
-}
-

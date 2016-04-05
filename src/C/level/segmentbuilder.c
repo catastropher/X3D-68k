@@ -99,7 +99,7 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
   // BASE_B of the new prism becomes the translated polygon (but it has to be
   // because x3d_prism3d_set_face() expects BASE_B to be reversed).
   x3d_polygon3d_reverse(&poly);
-  x3d_polygon3d_translate(&poly, &plane.normal, dist);
+  x3d_polygon3d_translate_normal(&poly, &plane.normal, dist);
   x3d_prism3d_set_face(new_prism, X3D_BASE_B, &poly);
   
   // Create a new segment with the new prism

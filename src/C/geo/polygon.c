@@ -26,19 +26,26 @@
 
 #include "X3D_keys.h"
 
+///////////////////////////////////////////////////////////////////////////////
+/// Prints out the points in a polygon (for debugging).
+///
+/// @param p - polygon
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_print(X3D_Polygon3D* p) {
-  printf("X3D_Polygon3D (v = %d)\n", p->total_v);
+  x3d_log(X3D_INFO, "X3D_Polygon3D (v = %d)\n", p->total_v);
 
   uint16 i;
   for(i = 0; i < p->total_v; ++i) {
-    printf("\t{%d, %d, %d}\n", p->v[i].x, p->v[i].y, p->v[i].z);
+    x3d_log(X3D_INFO, "\t{%d, %d, %d}\n", p->v[i].x, p->v[i].y, p->v[i].z);
   }
 
-  printf("\n");
+  x3d_log(X3D_INFO, "\n");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-/// Translates a 3D polygon.
+/// Translates a 3D polygon along a normal vector by a certain amount.
 ///
 /// @param poly - polygon to translate
 /// @param dir  - direction to translate in
@@ -46,7 +53,7 @@ void x3d_polygon3d_print(X3D_Polygon3D* p) {
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist) {
+void x3d_polygon3d_translate_normal(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist) {
   X3D_Vex3D shift = {
     ((int32)dist * dir->x) >> X3D_NORMAL_BITS,
     ((int32)dist * dir->y) >> X3D_NORMAL_BITS,
@@ -62,6 +69,20 @@ void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+/// Translates a polygon by a shift vector.
+///
+/// @param poly   - polygon to shift
+/// @param shift  - vector to shift by
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Vex3D shift) {
+  uint16 i;
+  for(i = 0; i < poly->total_v; ++i)
+    poly->v[i] = x3d_vex3d_add(poly->v + i, &shift);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 /// Calculates the center of a 3D polygon.
 ///
 /// @param poly - poly
@@ -71,12 +92,12 @@ void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist)
 /// @note This may lead to division by 0 if poly->total_v == 0
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D* dest) {
-  uint16 i;
-
+  // To prevent division by 0...
+  x3d_assert(poly->total_v != 0);
+  
   X3D_Vex3D_int32 center = { 0, 0, 0 };
 
-  x3d_assert(poly->total_v != 0);
-
+  uint16 i;
   for(i = 0; i < poly->total_v; ++i) {
     center.x += poly->v[i].x;
     center.y += poly->v[i].y;
@@ -124,15 +145,27 @@ void x3d_polygon3d_reverse(X3D_Polygon3D* poly) {
   }
 }
 
-/// @todo Document.
+///////////////////////////////////////////////////////////////////////////////
+/// Constructs a regular 2D polygon (all the sides have the same length).
+///
+/// @param poly   - poly
+/// @param steps  - numbers of steps in the polygon i.e. number of sides
+/// @param r      - radius of the polygon
+/// @param ang    - angle of the orientation of the polygon
+///
+/// @todo Apply the fix that was created for x3d_prism3d_construct() because
+///       we wind up creating a polygon with unexpected side lengths.
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle256 ang) {
   ufp8x8 angle = (uint16)ang << 8;
   ufp8x8 angle_step = 65536L / steps;
-  uint16 i;
 
   poly->total_v = steps;
 
-  // Construct the two bases (regular polygons)
+  uint16 i;
+  // Construct the polygon
   for(i = 0; i < steps; ++i) {
     poly->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cos(x3d_uint16_upper(angle)), r);
     poly->v[i].y = mul_fp0x16_by_int16_as_int16(x3d_sin(x3d_uint16_upper(angle)), r);
@@ -141,147 +174,87 @@ void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle25
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Attemps to take a 2D polygon and orient it on a 3D surface.
+///
+/// @param poly         - 2D polygon
+/// @param dest         - dest
+/// @param plane        - plane equation of the 3D surface
+/// @param top_left     - unused (todo: remove)
+/// @param bottom_right - unused (todo: remove)
+/// @param mat          - where to put a 3x3 matrix describing the guessed
+///                       orientation of the the polygon.
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, X3D_Vex3D* top_left, X3D_Vex3D* bottom_right, X3D_Mat3x3* mat) {
-  X3D_Vex3D_fp0x16 x, y, z;
-
-#if 0
-
-  X3D_Vex3D* v = top_left;
-
-  z = plane->normal;
-
-  // Calculate x axis
-  x.y = 0;
-
-  if(plane->normal.x != 0) {
-    //x.z = 16384;
-
-
-    float nx = plane->normal.x / 32767.0;
-    float ny = plane->normal.y / 32767.0;
-    float nz = plane->normal.z / 32767.0;
-
-
-
-    float xz = .7; //top_left->z <= bottom_right->z ? 50 : -50;
-
-
-
-    //float xx = v->x - ((plane->d - (plane->normal.y / 32767.0) * v->y - (plane->normal.z / 32767.0) * (
-    //  v->z + xz)) / (plane->normal.x / 32767.0));
-
-    float xx = (plane->d - ny * v->y - nz * (v->z + xz)) / nx - v->x;
-
-
-    if(dest->total_v == 2) {
-      //xx = .5;
-      //xz = -.5;
-    }
-
-
-
-    x.x = bottom_right->x - top_left->x;
-    x.z = bottom_right->z - top_left->z;
-
-    //x.x = xx * 4096;
-    //x.z = xz * 4096;
-
-
-#if 0
-    x.x = (x.x < 0 ? -x.x : x.x);
-
-    if(top_left->x >= bottom_right->x)
-      x.x = -x.x;
-#endif
-
-
-    //if(plane->normal.z > 0)
-    //  x.z = -x.z;
-
-
-    //if(plane->normal.x < 0)
-    //  x.x = -x.x;
-
-
-    //int16 z_part = ((int32)plane->normal.z * ((int32)v->z + x.z)) >> 15;
-
-    //x.x = (((int32)plane->d - (((int32)plane->normal.y * v->y) >> 15) - z_part) << 15) / plane->normal.x;
-
-    //x.x -= v->x;
-
-    x3d_vex3d_fp0x16_normalize(&x);
-
-  }
-  else {
-    //x.x = 0;
-    //x.z = 0x7FFF;
-  }
-
-  y = (X3D_Vex3D) { 0, 0x7FFF, 0 };
-
-
-  mat->data[0] = x.x;
-  mat->data[1] = x.y;
-  mat->data[2] = x.z;
-
-  mat->data[3] = y.x;
-  mat->data[4] = y.y;
-  mat->data[5] = y.z;
-
-  mat->data[6] = z.x;
-  mat->data[7] = z.y;
-  mat->data[8] = z.z;
-
-#else
-
-  //if(x3d_key_down(X3D_KEY_15)) {
+  // Guess the orientation of the 3D surface
   x3d_plane_guess_orientation(plane, mat, top_left);
-  //  x3d_log(X3D_INFO, "DOWN!");
-  //}
-  
-#endif
-  
   dest->total_v = poly->total_v;
   
   x3d_mat3x3_transpose(mat);
   
+  // Rotate each 2D point onto the 3D surface
   uint16 i;
   for(i = 0; i < poly->total_v; ++i) {
     X3D_Vex3D vv = { poly->v[i].x, poly->v[i].y, 0 };
 
-    //x3d_mat3x3_print(&mat);
-
     x3d_vex3d_int16_rotate(dest->v + i, &vv, mat);
-
-    //dest->v[i].x += v->x;
-    //dest->v[i].y += v->y;
-    //dest->v[i].z += v->z;
   }
-
   
+  // Transpose it back so that we can store the 3D orientation
   x3d_mat3x3_transpose(mat);
-  //mat->data[0] = -mat->data[0];
-
-  //printf("%d %d %d\n", x.x, x.y, x.z);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Rotates a 3D polygon around a center point.
+///
+/// @param poly   - polygon to rotate
+/// @param angle  - euler angles describing the rotation
+/// @param center - center to rotate the poly around
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_rotate(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex3D center) {
   X3D_Mat3x3 mat;
   x3d_mat3x3_construct(&mat, &angle);
 
   uint16 i;
   for(i = 0; i < poly->total_v; ++i) {
+    // Move the point relative to the center
     X3D_Vex3D temp = x3d_vex3d_sub(poly->v + i, &center);
+    
+    // Rotate it
     x3d_vex3d_int16_rotate(poly->v + i, &temp, &mat);
 
+    // Move it back
     poly->v[i] = x3d_vex3d_add(poly->v + i, &center);
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Adds a point to a 2D polygon.
+///
+/// @param poly - poly
+/// @param x    - x coordinate
+/// @param y    - y coordinate
+///
+/// @return Nothing.
+/// @note   Make sure there's enough room for the new point!
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon2d_add_point(X3D_Polygon2D* poly, int16 x, int16 y) {
   poly->v[poly->total_v++] = (X3D_Vex2D) { x, y };
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Copies a 3D polygon.
+///
+/// @param src  - source polygon
+/// @param dest - dest polygon
+///
+/// @return Nothing.
+/// @note   Make sure dest is big enough to hold all of src's points!
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest) {
   dest->total_v = src->total_v;
   
@@ -292,6 +265,18 @@ void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest) {
 
 extern int16 render_mode;
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders a 3D polygon.
+///
+/// @param poly   - polygon to render
+/// @param cam    - camera to render through
+/// @param parent - parent clipping region to draw inside of
+/// @param color  - color of the polygon (will be unused)
+/// @param normal - surface normal of the polygon
+///
+/// @return Nothing.
+/// @todo   Refactor this mess!
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal) {
   X3D_Vex3D v3d[poly->total_v];
   X3D_Vex2D v2d[poly->total_v];
@@ -309,8 +294,6 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   void* stack_ptr = x3d_stack_save(&renderman->stack);
   
   int16 min_z = 0x7FFF;
-  
-  int16 scale;
   
   //x3d_segment_point_normal(seg, i, &normal);
     
@@ -385,6 +368,13 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   x3d_stack_restore(&renderman->stack, stack_ptr);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Removes duplicate points from a 2D polygon.
+///
+/// @param poly - poly
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon2d_remove_duplicate(X3D_Polygon2D* poly) {
   uint16 i;
   uint16 pos = 0;
