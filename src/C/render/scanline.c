@@ -2,7 +2,8 @@
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
 
-
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the slope of the 
 void x3d_scanline_slope_calc(X3D_ScanlineSlope* slope, X3D_PolyVertex* a, X3D_PolyVertex* b) {
   int16 dy = b->v2d.y - a->v2d.y;
   
@@ -19,16 +20,12 @@ void x3d_rasterregion_generate_new_spans(X3D_ScanlineGenerator* gen, int16 start
   gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
   gen->y_range.max = X3D_MAX(gen->y_range.max, end_y - 1);
   
-  x3d_log(X3D_INFO, "New min: %d", gen->y_range.min);
-  x3d_log(X3D_INFO, "New max: %d", gen->y_range.max);
-  
   while(gen->span < end_span) {
     gen->span->x = gen->x >> 16;
     gen->span->intensity = gen->intensity >> 16;
     gen->span->u = gen->u >> 16;
     gen->span->v = gen->v >> 16;
     gen->span->z = gen->z >> 16;
-    //x3d_log(X3D_INFO, "X: %d", gen->span->x);
     
     x3d_scanline_generator_next(gen);
   }
@@ -51,9 +48,6 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   X3D_PolyVertex other_side;
   x3d_polyline_get_value(gen->other_side, end_y, &other_side);
   
-  x3d_screen_draw_line(other_side.v2d.x, 0, other_side.v2d.x, 439, 0x7FFF);
-  
-  
   
   if(left) {
     in = abs(other_side.v2d.x - end_span->left.x);
@@ -64,7 +58,10 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
     out = abs(end_span->right.x - end_x);
   }
   
-  int16 span_t = ((int32)in << 15) / (in + out);
+  if(in + out == 0)
+    return;
+  
+  int16 span_t = 32767;//((int32)in << 15) / (in + out);
   x3d_log(X3D_INFO, "Span t: %d, %d %d", span_t, in, out);
   x3d_log(X3D_INFO, "Other side u: %d", other_side.u);
   
@@ -73,11 +70,6 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   int16 end_u = other_side.u + ((((int32)end->u - other_side.u) * span_t) >> 15);
   int16 end_v = other_side.v + ((((int32)end->v - other_side.v) * span_t) >> 15);
   int16 end_z = other_side.z + ((((int32)end->z - other_side.z) * span_t) >> 15);
-  
-  x3d_log(X3D_INFO, "end_u: %d", end_u);
-  x3d_log(X3D_INFO, "a_u: %d", gen->a->u);
-  x3d_log(X3D_INFO, "b_u: %d", gen->b->u);
-  
   
   gen->intensity_slope = x3d_val_slope(end_intensity - (gen->intensity >> 16), dy);
   gen->slope.u = x3d_val_slope(end_u - (gen->u >> 16), dy);
@@ -341,8 +333,12 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   x3d_polyline_get_value(gen->line, clip.y, &end);
   
   X3D_ScanlineSlope slope = gen->slope;
+
+  x3d_log(X3D_INFO, "\nU slope before: %d", gen->slope.u);
   
   x3d_scaline_generator_adjust_slopes(gen, gen->a->v2d.y, clip.y, clip.x, left, t, &end);
+  
+  x3d_log(X3D_INFO, "U slope after: %d\n", gen->slope.u);
   
   gen->slope = slope;
   

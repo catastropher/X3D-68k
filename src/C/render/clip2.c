@@ -163,15 +163,13 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
     .total_v = total_v
   };
   
-  v[2].y = v[1].y;
-  
   x3d_polygon2d_remove_duplicate(&poly);
   
   uint16 i;
   for(i = 0; i < poly.total_v; ++i) {
     pv[i].v2d = v[i];
     pv[i].intensity = 0x7FFF / (i + 1);
-    pv[i].z = 0x7FFF / v3d[i].z;
+    pv[i].z = (0x7FFF * 16) / v3d[i].z;
     
     float a = normal[i].x / 32768.0 / 2 + .5;  //x3d_asin(normal[i].x) / 128.0 + .5;
     float b = normal[i].y / 32768.0 / 2 + .5;//x3d_asin(normal[i].y) / 128.0 + .5;
@@ -187,14 +185,14 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   pv[0].u = 0;
   pv[0].v = 0;
   
-  pv[1].u = 0x7FFF / 2;
-  pv[1].v = 0x7FFF / 2;
+  pv[3].u = 16 * 0x7FFF;
+  pv[3].v = 0;
   
-  pv[2].u = 0x7FFF;
-  pv[2].v = 0x7FFF;
+  pv[2].u = 16 * 0x7FFF;
+  pv[2].v = 16 * 0x7FFF;
   
-  //pv[1].u = 0;
-  //pv[1].v = 0x7FFF;
+  pv[1].u = 0;
+  pv[1].v = 16 * 0x7FFF;
 #endif
   
   

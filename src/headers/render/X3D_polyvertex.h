@@ -5,8 +5,8 @@
 typedef struct X3D_PolyVertex {
   X3D_Vex2D v2d;
   int16 intensity;
-  int16 u, v;
-  fp0x16 z;
+  int32 u, v;
+  int32 z;
 } X3D_PolyVertex;
 
 typedef struct X3D_PolyLine {

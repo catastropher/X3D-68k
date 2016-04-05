@@ -219,6 +219,8 @@ void x3d_gray_dither(SDL_Surface* s) {
 X3D_Color x3d_texture_get_pix(X3D_Texture* tex, int16 u, int16 v) {
   uint8 r, g, b;
 
+  return rand();
+  
   SDL_Surface* s = tex->surface;
   
   if(u < 0 || u >= s->w || v < 0 || v >= s->h)
@@ -463,6 +465,8 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     int16 uu = (((u / zz) >> 1) * 191) >> 15;
     int16 vv = (((v / zz) >> 1) * 191) >> 15;
     
+    //uu /= 16;
+    //vv /= 16;
     
     //int16 uu = (((u >> 16) * zz) * 192) >> 15;
     //int16 vv = (((v >> 16) * zz) * 192) >> 15;
