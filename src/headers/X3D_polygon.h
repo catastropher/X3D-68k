@@ -22,21 +22,30 @@
 
 #pragma once
 
-/// @todo Document.
+///<  Initializes a 3D polygon and allocates space for the given number of
+///   vertices on the stack.
+#define X3D_POLYGON3D_ALLOCA(_poly, _total_v) { _poly->v = alloca(sizeof(X3D_Vex3D) * total_v); _poly->total_v = _total_v }
 
+///////////////////////////////////////////////////////////////////////////////
+/// A 3D polygon with a variable number of points.
+///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Polygon3D {
-  uint16 total_v;
-  X3D_Vex3D* v;
+  uint16 total_v;     ///< Number of vertices
+  X3D_Vex3D* v;       ///< The vertices
 } X3D_Polygon3D;
 
+///////////////////////////////////////////////////////////////////////////////
+/// A 2D polygon with a variable number of points.
+///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Polygon2D {
-  uint16 total_v;
-  X3D_Vex2D* v;
+  uint16 total_v;     ///< Number of vertices
+  X3D_Vex2D* v;       ///< The vertices
 } X3D_Polygon2D;
 
 struct X3D_CameraObject;
 struct X3D_RasterRegion;
 
+// 3D polygon functions
 void x3d_polygon3d_print(X3D_Polygon3D* p);
 void x3d_polygon3d_translate_normal(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist);
 void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Vex3D shift);
@@ -47,16 +56,21 @@ void x3d_polygon3d_rotate(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex
 void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest);
 void x3d_polygon3d_render(X3D_Polygon3D* poly, struct X3D_CameraObject* cam, struct X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal);
 
+// 2D polygon functions
 void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle256 ang);
 void x3d_polygon2d_add_point(X3D_Polygon2D* poly, int16 x, int16 y);
 void x3d_polygon2d_remove_duplicate(X3D_Polygon2D* poly);
 void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, X3D_Vex3D* top_left, X3D_Vex3D* bottom_right, X3D_Mat3x3* mat);
 
-
-static inline uint16 x3d_polygon3d_size(uint16 total_v) {
-  return sizeof(X3D_Polygon3D) + total_v * sizeof(X3D_Vex3D);
-}
-
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the plane equation of a 3D polygon.
+///
+/// @param poly     - poly
+/// @param plane    - plane equation dest
+///
+/// @return Nothing.
+/// @note   The polygon must have at least 3 points.
+///////////////////////////////////////////////////////////////////////////////
 static inline void x3d_polygon3d_calculate_plane(X3D_Polygon3D* poly, X3D_Plane* plane) {
   x3d_assert(poly->total_v >= 3);
   x3d_plane_construct(plane, poly->v, poly->v + 1, poly->v + 2);

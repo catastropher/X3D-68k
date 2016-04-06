@@ -58,6 +58,11 @@ X3D_SegmentBase* x3d_segmentmanager_add(uint16 size) {
   seg->id = id;
   seg->flags = 0;
   
+  uint16 d;
+  for(d = 0; d < X3D_MAX_OBJECTS_IN_SEG; ++d) {
+    ((X3D_UncompressedSegment* )seg)->object_list.objects[d] = X3D_INVALID_HANDLE;
+  }
+  
   return seg;
 }
 
@@ -88,6 +93,27 @@ X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id) {
 X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
   X3D_SegmentBase* seg = x3d_segmentmanager_get_internal(id);
   X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
+  
+  // Calculate the plane equations for the faces
+  uint16 d;
+  X3D_Polygon3D poly = {
+    .v = alloca(seg->base_v * sizeof(X3D_Vex3D))
+  };
+  
+  X3D_UncompressedSegment* useg = seg;
+  
+  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(
+    seg);
+  
+  //seg_manager->cache.entry[i].seg.last_engine_step = 0;
+  
+  for(d = 0; d < x3d_prism3d_total_f(seg->base_v); ++d) {
+    x3d_prism3d_get_face(&useg->prism, d, &poly);
+    x3d_plane_construct(&face[d].plane, poly.v, poly.v + 1, poly.v + 2);
+    face[d].texture = x3d_uncompressedsegment_get_faces(((X3D_UncompressedSegment *)seg))[d].texture;    
+  }
+  
+  return seg;
   
   // Currently only support uncompressed segments
   x3d_assert(seg->flags & X3D_SEGMENT_UNCOMPRESSED);
