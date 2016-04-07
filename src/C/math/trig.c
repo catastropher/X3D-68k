@@ -18,6 +18,13 @@
 #include "X3D_common.h"
 #include "X3D_trig.h"
 
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the sine of an angle by using a lookup table.
+///
+/// @param angle  - angle (0 - 255)
+///
+/// @return The sine of the angle as an fp0x16 (1 is approximated as .9999)
+///////////////////////////////////////////////////////////////////////////////
 fp0x16 x3d_sin(angle256 angle) {
   /// A table of fp0x16 sin values for angle256
   static const fp0x16 sintab[256] = {
@@ -53,15 +60,15 @@ fp0x16 x3d_sin(angle256 angle) {
 }
 
 
-/// @todo fix formatting
-/**
-* Calculates the tangent of an angle.
-*
-* @param angle - the angle as an angle256
-*
-* @return The tangent of the angle in fp8x8 format
-* @note If angle is ANG_90 or ANG_270, this returns @ref VERTICAL_LINE_SLOPE
-*/
+////////////////////////////////////////////////////////////////////////////////**
+/// Calculates the tangent of an angle.
+///
+/// @param angle - the angle as an angle256
+///
+/// @return The tangent of the angle in fp8x8 format
+/// @note   If angle is ANG_90 or ANG_270, this returns
+///         @ref VERTICAL_LINE_SLOPE
+///////////////////////////////////////////////////////////////////////////////
 fp8x8 x3d_tan(angle256 angle) {
   // Prevent division by 0
   if(angle == ANG_90 || angle == ANG_270)
@@ -69,6 +76,8 @@ fp8x8 x3d_tan(angle256 angle) {
 
   return div_fp0x16_by_fp0x16(x3d_sin(angle), x3d_cos(angle));
 }
+
+/// @todo Documentation...
 
 #define ANGLE_000    0
 #define ANGLE_015   24
