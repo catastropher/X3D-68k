@@ -131,7 +131,7 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   uint16 total_p = x3d_wall_get_wallportals(caster.hit_face, portals);
   
   if(caster.dist > (total_p == 1 ? 0 : 0) && caster.inside) {
-    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
+    X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
     
     if(face->portal_seg_face != X3D_FACE_NONE || caster.dist > 10 || total_p == 1)
       obj->base.pos = new_pos;
@@ -142,7 +142,7 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
     x3d_raycaster_init(&caster, obj->base.seg, obj->base.pos, normal);
     x3d_raycaster_cast(&caster);
     
-    X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
+    X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
     
     total_p = x3d_wall_get_wallportals(caster.hit_face, portals);
     

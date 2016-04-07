@@ -215,7 +215,7 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
 typedef struct X3D_SegmentRenderContext {
   X3D_Segment* seg;
   uint16 seg_id;
-  X3D_UncompressedSegmentFace* faces;
+  X3D_SegmentFace* faces;
   X3D_RenderManager* renderman;
   X3D_RasterRegion* parent;
   X3D_CameraObject* cam;
@@ -450,7 +450,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 #endif
 
 
-  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
 
   /// @todo It's a waste to calculate this for every edge if we don't need it,
   /// so add a bitmask to the cache to determine which faces actually need

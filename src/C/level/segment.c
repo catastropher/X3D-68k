@@ -102,7 +102,7 @@ X3D_Segment* x3d_segmentmanager_load(uint16 id) {
   
   X3D_Segment* useg = seg;
   
-  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(
     seg);
   
   //seg_manager->cache.entry[i].seg.last_engine_step = 0;
@@ -145,7 +145,7 @@ X3D_Segment* x3d_segmentmanager_load(uint16 id) {
         .v = alloca(seg->base_v * sizeof(X3D_Vex3D))
       };
       
-      X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(
+      X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(
         &seg_manager->cache.entry[i].seg);
       
       seg_manager->cache.entry[i].seg.last_engine_step = 0;
@@ -222,7 +222,7 @@ void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X
   
   fp0x16 angle_cos = x3d_cos(ANG_30);
   
-  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   uint16 i;
   
   int16 total = 0;

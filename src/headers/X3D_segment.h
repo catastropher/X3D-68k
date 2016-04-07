@@ -89,12 +89,12 @@ typedef enum {
 ///////////////////////////////////////////////////////////////////////////////
 /// Face of an uncompressed segment.
 ///////////////////////////////////////////////////////////////////////////////
-typedef struct X3D_UncompressedSegmentFace {
+typedef struct X3D_SegmentFace {
   X3D_SegFaceID portal_seg_face;  ///< Face ID that the portal on the face is
                                   ///  connected to
   X3D_Plane plane;                ///< Plane equation of the face
   X3D_Handle texture;
-} X3D_UncompressedSegmentFace;
+} X3D_SegmentFace;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -138,7 +138,7 @@ typedef struct X3D_SegmentCacheEntry {
   
   X3D_Segment seg;  ///< The uncompressed segment
   X3D_Vex3D v[16];
-  X3D_UncompressedSegmentFace face[10];
+  X3D_SegmentFace face[10];
 } X3D_SegmentCacheEntry;
 
 
@@ -190,7 +190,7 @@ static inline uint16 x3d_uncompressedsegment_face_offset(uint16 base_v) {
 ///////////////////////////////////////////////////////////////////////////////
 static inline uint16 x3d_uncompressedsegment_size(uint16 base_v) {
   return x3d_uncompressedsegment_face_offset(base_v) +
-    x3d_prism3d_total_f(base_v) * sizeof(X3D_UncompressedSegmentFace);
+    x3d_prism3d_total_f(base_v) * sizeof(X3D_SegmentFace);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ static inline uint16 x3d_uncompressedsegment_size(uint16 base_v) {
 ///
 /// @return The address of the face data.
 ///////////////////////////////////////////////////////////////////////////////
-static inline X3D_UncompressedSegmentFace* x3d_uncompressedsegment_get_faces(X3D_Segment* seg) {
+static inline X3D_SegmentFace* x3d_uncompressedsegment_get_faces(X3D_Segment* seg) {
   return ((void *)seg) + seg->face_offset;
 }
 

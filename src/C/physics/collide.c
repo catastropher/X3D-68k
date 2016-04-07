@@ -58,7 +58,7 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
   
   X3D_Vex3D out = { caster->pos.x >> 8, caster->pos.y >> 8, caster->pos.z >> 8 };
   
-  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   
   // Find which of the segment faces the ray collides with, and more importantly,
   // which face we hit first. A portion of the line will be "inside" the plane

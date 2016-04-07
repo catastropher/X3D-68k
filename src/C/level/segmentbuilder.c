@@ -38,7 +38,7 @@ X3D_INTERNAL X3D_Segment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3
   
   // Initialize all faces to have nothing connected to them
   uint16 i;
-  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   uint16 total_f = x3d_prism3d_total_f(prism->base_v);
   
   //x3d_assert(((void *)(&seg->prism)) + x3d_prism3d_size(prism->base_v) < (void *)face);
@@ -106,8 +106,8 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
   X3D_Segment* new_seg = x3d_segmentbuilder_add_uncompressed_segment(
     new_prism);
   
-  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-  X3D_UncompressedSegmentFace* new_face = x3d_uncompressedsegment_get_faces(new_seg);
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  X3D_SegmentFace* new_face = x3d_uncompressedsegment_get_faces(new_seg);
   
   // Add the face portal connecting the two segments
   face[face_id].portal_seg_face = x3d_segfaceid_create(new_seg->base.id, X3D_BASE_A);

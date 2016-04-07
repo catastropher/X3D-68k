@@ -30,7 +30,7 @@ void test_segment(void) {
   x3d_assert(seg == r_seg);
   x3d_assert(seg->base.base_v == base_v);
   
-  X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   uint16 total_f = x3d_prism3d_total_f(prism->base_v);
   
   x3d_assert(total_f == 10);
