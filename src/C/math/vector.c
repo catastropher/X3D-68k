@@ -55,80 +55,14 @@ fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
   return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_BITS;
 }
 
-/// @todo clean up formatting
 
-#if 0
-
-void x3d_normalize_vex2d_fp0x16(Vex2D_fp0x16* v) {
-  int32 distance_squared = 
-    (((int32)v->x * v->x)) +
-    (((int32)v->y * v->y));
-    
-  // If distance_squared is negative, the only possible explaination is that
-  // it overflowed (should never happen because we divide each term by 4)
-  x3d_errorif(distance_squared <= 0, "normalize overflow");
-  
-  
-  // Calculate the actual length of the vector
-  // Notice that we multiply the square root by 2 and add 1: we multiply by 2
-  // because distance_squared is actually (x^2 + y^2 + z^2) / 4, so
-  // sqrt((x^2 + y^2 + z^2) / 4) = .5 * sqrt(x^2 + y^2 + z^2). Thus, we multiply
-  // by 2 to get the real result. We add 1 to prevent division by 0 and to make
-  // sure we never get 0x8000 after the division (because that's to big to fit in
-  // an int16)
-  uint16 len = (x3d_fastsqrt(distance_squared));
-  
-  
-  
-  /// @todo Add check to make sure the sign of the components is the same after
-  /// dividing?
-  
-  if(len == 0) {
-    x3d_error("NORMALIZE 2D ERROR\n");
-  }
-  
-  // Divide each component by the length
-  /// @todo Replace with fixed point division
-  
-  //x3d_errorif(abs(v->x) == len, "v->x == len");
-  //x3d_errorif(abs(v->y) == len, "v->y == len");
-  
-  if(abs(v->y) == len) {
-    if(v->y < 0) {
-      v->y = -0x7FFF;
-    }
-    else {
-      v->y = 0x7FFF;
-    }
-  }
-  else {
-    v->y = ((int32)v->y << X3D_NORMAL_SHIFT) / len;
-  }
-  
-  
-  
-  if(abs(v->x) == len) {
-    if(v->x < 0) {
-      v->x = -0x7FFF;
-    }
-    else {
-      v->x = 0x7FFF;
-    }
-  }
-  else {
-    v->x = ((int32)v->x << X3D_NORMAL_SHIFT) / len;
-  }
-}
-
-#endif
-
-/**
- * Normalizes an fp0x16 3D vector (makes the entire length 1).
- *
- * @param v - pointer to the 3D vector to normalize
- *
- * @return nothing
- */
+///////////////////////////////////////////////////////////////////////////////
+///  Normalizes an fp0x16 3D vector (makes the entire length 1).
+///
+/// @param v - 3D vector to normalize
+///
+/// @return nothing
+///////////////////////////////////////////////////////////////////////////////
 inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
   // Calculate x^2 + y^2 + z^2 for the distance formula.
   //
@@ -171,29 +105,29 @@ inline void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v) {
   v->z = ((int32)v->z * (1 << X3D_NORMAL_BITS)) / len;
 }
 
-/**
- * Prints out an int16 Vex3D on the screen.
- *
- * @param v - pointer to the 3D vector to print.
- *
- * @return nothing
- */
+///////////////////////////////////////////////////////////////////////////////
+/// Prints out a 3D vector.
+///
+/// @param v - pointer to the 3D vector to print.
+///
+/// @return nothing
+///////////////////////////////////////////////////////////////////////////////
 void x3d_vex3d_int16_print(X3D_Vex3D_int16* v) {
- // printf("{%d, %d, %d}\n", v->x, v->y, v->z);
+  x3d_log(X3D_INFO, "{%d, %d, %d}\n", v->x, v->y, v->z);
 }
 
 
-/**
-* Projects a 3D point onto a screen.
-*
-* @param dest - destination vector
-* @param src - source vector
-* @param context - rendering context
-*
-* @return nothing
-* @note If src->z is 0, dest->x and dest->y are set to 0 to prevent division
-*     by 0.
-*/
+///////////////////////////////////////////////////////////////////////////////
+/// Projects a 3D point onto a screen.
+///
+/// @param dest    - destination vector
+/// @param src     - source vector
+/// @param context - rendering context
+///
+/// @return nothing
+/// @note   If src->z is 0, dest->x and dest->y are set to 0 to prevent
+///         division by 0.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src) {
   const X3D_ScreenManager* screen = x3d_screenmanager_get();
   
@@ -203,27 +137,26 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src) 
     dest->y = 0;
   }
   else {
-    // @todo Replace division by src->z with fixed point multiply
     dest->x = ((int32)src->x * screen->scale_x) / src->z + screen->center.x;
     dest->y = ((int32)src->y * screen->scale_y) / src->z + screen->center.y;
   }
 }
 
 
-/**
-* Rotates a 3D vector around the origin.
-*
-* @param dest - destination vector
-* @param src - source vector
-* @param mat - fp0x16 rotation matrix
-*
-* @return nothing
-* @todo Replace with assembly version
-*/
+///////////////////////////////////////////////////////////////////////////////
+/// Rotates a 3D vector around the origin.
+///
+/// @param dest - destination vector
+/// @param src  - source vector
+/// @param mat  - fp0x16 rotation matrix
+///
+/// @return nothing
+///////////////////////////////////////////////////////////////////////////////
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat3x3* mat) {
   fp0x16* m = mat->data;
 
-  int16 scale = 1;
+  // Hmm... is this necessary?
+  const int16 scale = 1;
   
   src->x *= scale;
   src->y *= scale;
@@ -242,9 +175,13 @@ void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, X3D_Mat
   src->z /= scale;
 }
 
-// Calculates the cross product of two vectors. This creates a vector that
-// is perpendicular to both vectors
-// Note: this routine will normalize the result
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the cross product of two vectors. This creates a vector that
+///   is perpendicular to both vectors.
+///
+/// @return Nothing.
+/// @note   This routine will normalize the result.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
   int32 xxx = ((((int32)a->y * b->z) >> 1) - (((int32)a->z * b->y) >> 1));
   int32 yyy = ((((int32)a->z * b->x) >> 1) - (((int32)a->x * b->z) >> 1));
@@ -263,8 +200,14 @@ void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex
   x3d_vex3d_fp0x16_normalize(dest);
 }
 
-/// @todo document
-uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v) {
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the magnitude (length) of a 3D vector.
+///
+/// @param v  - vector
+///
+/// @return The magnitude of the vector.
+///////////////////////////////////////////////////////////////////////////////
+uint16 x3d_vex3d_int16_mag(X3D_Vex3D* v) {
   int32 distance_squared =
     (((int32)v->x * v->x) >> 2) +
     (((int32)v->y * v->y) >> 2) +
@@ -272,3 +215,4 @@ uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v) {
 
   return (x3d_fastsqrt(distance_squared) << 1) + 1;
 }
+
