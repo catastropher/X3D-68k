@@ -121,6 +121,8 @@ add_sources(
   
   C/object/object.c
   C/object/camera.c
+  
+  C/clipper/clipper.c
 )
 
 add_subdirectory(C/platform)
