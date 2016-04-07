@@ -46,7 +46,7 @@ void x3d_wallportal_construct(uint16 wall_portal, X3D_SegFaceID face, X3D_Vex3D 
   uint16 seg_id = x3d_segfaceid_seg(face);
   uint16 face_id = x3d_segfaceid_face(face);
 
-  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(seg_id);
+  X3D_Segment* seg = x3d_segmentmanager_load(seg_id);
 
   x3d_assert(seg_id == seg->base.id);
 

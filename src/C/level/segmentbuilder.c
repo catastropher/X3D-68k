@@ -27,8 +27,8 @@
 /// @note All faces of the segment are set to not be connected to anything.
 /// @note For internal use only.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_INTERNAL X3D_UncompressedSegment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D* prism) {  
-  X3D_UncompressedSegment* seg = (X3D_UncompressedSegment*)x3d_segmentmanager_add(
+X3D_INTERNAL X3D_Segment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D* prism) {  
+  X3D_Segment* seg = (X3D_Segment*)x3d_segmentmanager_add(
     x3d_uncompressedsegment_size(prism->base_v));
   
   seg->face_offset = x3d_uncompressedsegment_face_offset(prism->base_v);
@@ -73,7 +73,7 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
   uint16 face_id = x3d_segfaceid_face(id);
   
   /// @todo This implementation will only work uncompressed segments. Fix this!
-  X3D_UncompressedSegment* seg = (X3D_UncompressedSegment*)x3d_segmentmanager_get_internal(seg_id);
+  X3D_Segment* seg = (X3D_Segment*)x3d_segmentmanager_get_internal(seg_id);
   X3D_Polygon3D poly = {
     .v = alloca(sizeof(X3D_Vex3D) * seg->base.base_v)
   };
@@ -103,7 +103,7 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
   x3d_prism3d_set_face(new_prism, X3D_BASE_B, &poly);
   
   // Create a new segment with the new prism
-  X3D_UncompressedSegment* new_seg = x3d_segmentbuilder_add_uncompressed_segment(
+  X3D_Segment* new_seg = x3d_segmentbuilder_add_uncompressed_segment(
     new_prism);
   
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(seg);

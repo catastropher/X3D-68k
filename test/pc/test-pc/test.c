@@ -62,7 +62,7 @@ void create_test_level(void) {
   uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 0), 100);
 
   // Scale the face of one of the segments
-  X3D_Prism3D* p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id6)))->prism;
+  X3D_Prism3D* p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id6)))->prism;
 
   x3d_prism3d_get_face(p2, 1, &p);
   x3d_polygon3d_scale(&p, 64);
@@ -73,7 +73,7 @@ void create_test_level(void) {
 
   x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id6, 6), 500);
 
-  p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id8)))->prism;
+  p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id8)))->prism;
 
   x3d_prism3d_get_face(p2, 1, &p);
 
@@ -87,7 +87,7 @@ void create_test_level(void) {
   // Pipe piece 2
   uint16 id9 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id8, 1), 200);
 
-  p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id9)))->prism;
+  p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id9)))->prism;
 
   x3d_prism3d_get_face(p2, 1, &p);
 
@@ -98,7 +98,7 @@ void create_test_level(void) {
   // Pipe piece 3
   uint16 id10 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 1), 500);
 
-  p2 = &((X3D_UncompressedSegment* )(x3d_segmentmanager_get_internal(id10)))->prism;
+  p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id10)))->prism;
 
   x3d_prism3d_get_face(p2, 1, &p);
 
@@ -121,7 +121,7 @@ void create_test_level(void) {
     .v = alloca(2000)
   };
 
-  X3D_UncompressedSegment* ss = x3d_segmentmanager_get_internal(id0);
+  X3D_Segment* ss = x3d_segmentmanager_get_internal(id0);
 
   int16 face_id = 8;
   uint16 top_left_v = face_id - 2;

@@ -24,8 +24,8 @@ void test_segment(void) {
 
   x3d_prism3d_construct(prism, base_v, 50, 100, angle);
   
-  X3D_UncompressedSegment* seg = x3d_segmentbuilder_add_uncompressed_segment(prism);
-  X3D_UncompressedSegment* r_seg = (X3D_UncompressedSegment* )x3d_segmentmanager_get_internal(seg->base.id);
+  X3D_Segment* seg = x3d_segmentbuilder_add_uncompressed_segment(prism);
+  X3D_Segment* r_seg = (X3D_Segment* )x3d_segmentmanager_get_internal(seg->base.id);
   
   x3d_assert(seg == r_seg);
   x3d_assert(seg->base.base_v == base_v);

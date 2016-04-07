@@ -60,7 +60,7 @@ X3D_SegmentBase* x3d_segmentmanager_add(uint16 size) {
   
   uint16 d;
   for(d = 0; d < X3D_MAX_OBJECTS_IN_SEG; ++d) {
-    ((X3D_UncompressedSegment* )seg)->object_list.objects[d] = X3D_INVALID_HANDLE;
+    ((X3D_Segment* )seg)->object_list.objects[d] = X3D_INVALID_HANDLE;
   }
   
   return seg;
@@ -90,7 +90,7 @@ X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id) {
 /// @todo Implemented some sort of locking mechinism?
 /// @todo Implement LRU strategy for deciding which block should be replaced.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
+X3D_Segment* x3d_segmentmanager_load(uint16 id) {
   X3D_SegmentBase* seg = x3d_segmentmanager_get_internal(id);
   X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
   
@@ -100,7 +100,7 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
     .v = alloca(seg->base_v * sizeof(X3D_Vex3D))
   };
   
-  X3D_UncompressedSegment* useg = seg;
+  X3D_Segment* useg = seg;
   
   X3D_UncompressedSegmentFace* face = x3d_uncompressedsegment_get_faces(
     seg);
@@ -110,7 +110,7 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
   for(d = 0; d < x3d_prism3d_total_f(seg->base_v); ++d) {
     x3d_prism3d_get_face(&useg->prism, d, &poly);
     x3d_plane_construct(&face[d].plane, poly.v, poly.v + 1, poly.v + 2);
-    face[d].texture = x3d_uncompressedsegment_get_faces(((X3D_UncompressedSegment *)seg))[d].texture;    
+    face[d].texture = x3d_uncompressedsegment_get_faces(((X3D_Segment *)seg))[d].texture;    
   }
   
   return seg;
@@ -153,7 +153,7 @@ X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id) {
       for(d = 0; d < x3d_prism3d_total_f(seg->base_v); ++d) {
         x3d_prism3d_get_face(&seg_manager->cache.entry[i].seg.prism, d, &poly);
         x3d_plane_construct(&face[d].plane, poly.v, poly.v + 1, poly.v + 2);
-        face[d].texture = x3d_uncompressedsegment_get_faces(((X3D_UncompressedSegment *)seg))[d].texture;
+        face[d].texture = x3d_uncompressedsegment_get_faces(((X3D_Segment *)seg))[d].texture;
         
         printf("TEXTURE: %d\n", face[d].texture);
       }
@@ -182,7 +182,7 @@ void x3d_segmentmanager_cache_purge(void) {
   
   for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
     if(seg_manager->cache.entry[i].seg.base.id != X3D_SEGMENT_NONE) {
-      X3D_UncompressedSegment* seg = x3d_segmentmanager_get_internal(seg_manager->cache.entry[i].seg.base.id);
+      X3D_Segment* seg = x3d_segmentmanager_get_internal(seg_manager->cache.entry[i].seg.base.id);
       
       seg->base.flags = seg_manager->cache.entry[i].seg.base.flags;
       seg_manager->cache.entry[i].seg.base.id = X3D_SEGMENT_NONE;
@@ -194,7 +194,7 @@ void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object) {
   _Bool exists = X3D_FALSE;
   uint16 free_pos = 0xFFFF;
   
-  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(seg_id);
+  X3D_Segment* seg = x3d_segmentmanager_load(seg_id);
   
   uint16 i;
   for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
@@ -214,7 +214,7 @@ void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object) {
   }
 }
 
-void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle) {
+void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle) {
   uint16 p[3];
   X3D_Vex3D_int32 sum = { 0, 0, 0 };
   

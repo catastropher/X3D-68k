@@ -119,14 +119,14 @@ typedef struct X3D_SegmentObjectList {
 ///
 /// @note This is a two-part variable-sized data structure.
 ///////////////////////////////////////////////////////////////////////////////
-typedef struct X3D_UncompressedSegment {
+typedef struct X3D_Segment {
   X3D_SegmentBase base;       ///< "Base" segment struct
   uint16 face_offset;         ///< Offset from the beginning of the struct of
                               ///  the face data.
   uint16 last_engine_step;    ///< Last step the segment was rendered
   X3D_SegmentObjectList object_list; ///< List of objects currently in the segment
   X3D_Prism3D prism;          ///< Prism data (MUST BE LAST MEMBER)
-} X3D_UncompressedSegment;
+} X3D_Segment;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -136,7 +136,7 @@ typedef struct X3D_SegmentCacheEntry {
   uint8 prev;                   ///< The previous most recently used segment
   uint8 next;                   ///< The next most recently used segment
   
-  X3D_UncompressedSegment seg;  ///< The uncompressed segment
+  X3D_Segment seg;  ///< The uncompressed segment
   X3D_Vex3D v[16];
   X3D_UncompressedSegmentFace face[10];
 } X3D_SegmentCacheEntry;
@@ -177,7 +177,7 @@ typedef struct X3D_SegmentManager {
 /// @return The offset, in bytes.
 ///////////////////////////////////////////////////////////////////////////////
 static inline uint16 x3d_uncompressedsegment_face_offset(uint16 base_v) {
-  return sizeof(X3D_UncompressedSegment) + 2 * base_v * sizeof(X3D_Vex3D);
+  return sizeof(X3D_Segment) + 2 * base_v * sizeof(X3D_Vex3D);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ static inline uint16 x3d_uncompressedsegment_size(uint16 base_v) {
 ///
 /// @return The address of the face data.
 ///////////////////////////////////////////////////////////////////////////////
-static inline X3D_UncompressedSegmentFace* x3d_uncompressedsegment_get_faces(X3D_UncompressedSegment* seg) {
+static inline X3D_UncompressedSegmentFace* x3d_uncompressedsegment_get_faces(X3D_Segment* seg) {
   return ((void *)seg) + seg->face_offset;
 }
 
@@ -211,9 +211,9 @@ void x3d_segmentmanager_cleanup(void);
 
 X3D_SegmentBase* x3d_segmentmanager_add(uint16 size);
 X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id);
-X3D_UncompressedSegment* x3d_segmentmanager_load(uint16 id);
+X3D_Segment* x3d_segmentmanager_load(uint16 id);
 
 void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object);
-void x3d_segment_point_normal(X3D_UncompressedSegment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle);
+void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle);
 void x3d_segmentmanager_cache_purge(void);
 

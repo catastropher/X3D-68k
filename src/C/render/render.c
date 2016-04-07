@@ -108,7 +108,7 @@ int x3d_objectdepth_compare(X3D_ObjectDepth* a, X3D_ObjectDepth* b) {
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders any objects that are in a segment.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_segment_render_objects(X3D_UncompressedSegment* seg, X3D_CameraObject* cam,X3D_DisplayLineList* list,
+void x3d_segment_render_objects(X3D_Segment* seg, X3D_CameraObject* cam,X3D_DisplayLineList* list,
       X3D_RasterRegion* region, uint16 step) {
 
   uint16 i;
@@ -213,7 +213,7 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
 }
 
 typedef struct X3D_SegmentRenderContext {
-  X3D_UncompressedSegment* seg;
+  X3D_Segment* seg;
   uint16 seg_id;
   X3D_UncompressedSegmentFace* faces;
   X3D_RenderManager* renderman;
@@ -375,7 +375,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   void* stack_save = x3d_stack_save(&renderman->stack);
 
   // Load the segment into the cache
-  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(id);
+  X3D_Segment* seg = x3d_segmentmanager_load(id);
 
   X3D_DisplayLineList* list = x3d_stack_alloc(&renderman->stack, sizeof(X3D_DisplayLineList));
   list->total_l = 0;

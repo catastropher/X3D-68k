@@ -714,7 +714,7 @@ void x3d_rasterregion_fill_texture(X3D_RasterRegion* r, int16 z) {
 
 //=============================================
 
-fp0x16 x3d_point_intensity(X3D_UncompressedSegment* seg, uint16 p, X3D_Vex3D* face_normal, int16 z) {
+fp0x16 x3d_point_intensity(X3D_Segment* seg, uint16 p, X3D_Vex3D* face_normal, int16 z) {
   if(face_normal) {
     X3D_Vex3D normal;
     x3d_segment_point_normal(seg, p, &normal, face_normal, ANG_90 - 5);

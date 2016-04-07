@@ -125,7 +125,7 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   x3d_raycaster_init(&caster, obj->base.seg, new_pos, normal);
   x3d_raycaster_cast(&caster);
   
-  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(obj->base.seg);
+  X3D_Segment* seg = x3d_segmentmanager_load(obj->base.seg);
   
   uint16 portals[32];
   uint16 total_p = x3d_wall_get_wallportals(caster.hit_face, portals);

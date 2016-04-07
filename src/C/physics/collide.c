@@ -30,7 +30,7 @@ void x3d_raycaster_init(X3D_RayCaster* caster, uint16 seg_id, X3D_Vex3D_fp16x8 p
 }
 
 void x3d_raycaster_cast(X3D_RayCaster* caster) {
-  X3D_UncompressedSegment* seg = x3d_segmentmanager_load(caster->seg);
+  X3D_Segment* seg = x3d_segmentmanager_load(caster->seg);
   
   /// @todo Add bounding sphere to segment cache
   /// Until then, a max radius of 500 is used
