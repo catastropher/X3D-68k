@@ -86,81 +86,6 @@ void x3d_rendermanager_cleanup(void) {
   free(x3d_rendermanager_get()->stack.base);
 }
 
-typedef struct X3D_ObjectDepth {
-  X3D_DynamicObjectBase* obj;
-  X3D_Vex3D pos;
-  int16 depth;
-  int32 dist;
-} X3D_ObjectDepth;
-
-int x3d_objectdepth_compare(X3D_ObjectDepth* a, X3D_ObjectDepth* b) {
-  return b->dist - a->dist;
-
-
-  if(abs(a->depth - b->depth) < 10) {
-    //x3d_assert(a->dist != b->dist);
-    return b->dist - a->dist;
-  }
-
-  return b->depth - a->depth;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Renders any objects that are in a segment.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_segment_render_objects(X3D_Segment* seg, X3D_CameraObject* cam,X3D_DisplayLineList* list,
-      X3D_RasterRegion* region, uint16 step) {
-
-  uint16 i;
-
-  X3D_ObjectEvent ev = {
-    .type = X3D_OBJECT_EVENT_RENDER,
-    .render_event = {
-      .cam = cam,
-      .list = list,
-      .region = region
-    }
-  };
-
-  X3D_ObjectEvent ev_frame = {
-    .type = X3D_OBJECT_EVENT_FRAME
-  };
-
-
-  X3D_ObjectDepth depth[X3D_MAX_OBJECTS_IN_SEG];
-  int16 total_d = 0;
-  
-  // Sort the objects from furthest to nearest depth
-  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
-    if(seg->object_list.objects[i] != X3D_INVALID_HANDLE) {
-      depth[total_d].obj = x3d_handle_deref(seg->object_list.objects[i]);
-
-      x3d_object_pos(depth[total_d].obj, &depth[total_d].pos);
-      x3d_camera_transform_points(cam, &depth[total_d].pos, 1, &depth[total_d].pos, NULL);
-
-      depth[total_d].depth = depth[total_d].pos.z;
-      depth[total_d].dist =  (int32)depth[total_d].pos.x * depth[total_d].pos.x +
-        (int32)depth[total_d].pos.y * depth[total_d].pos.y +
-        (int32)depth[total_d].pos.z * depth[total_d].pos.z;
-
-      //printf("Dist: %d\n", depth[total_d].dist);
-
-      ++total_d;
-    }
-  }
-
-
-  //qsort(depth, total_d, sizeof(X3D_ObjectDepth), x3d_objectdepth_compare);
-
-  for(i = 0; i < total_d; ++i) {
-    if(depth[i].obj->base.frame != step) {
-      depth[i].obj->base.type->event_handler(depth[i].obj, ev_frame);
-      depth[i].obj->base.frame = step;
-    }
-
-    depth[i].obj->base.type->event_handler(depth[i].obj, ev);
-  }
-}
 
 uint16 x3d_segment_render_wall_portals(X3D_SegFaceID wall_id, X3D_CameraObject* cam, X3D_RasterRegion* region,
       X3D_DisplayLineList* list) {
@@ -226,11 +151,6 @@ typedef struct X3D_SegmentRenderContext {
 } X3D_SegmentRenderContext;
 
 
-void printnum(int16 num) {
-  char buf[16];
-}
-
-void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam);
 
 void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint16 face, X3D_RasterRegion** dest, X3D_RasterRegion* r, int16 dist) {
   X3D_Prism3D* prism = &context->seg->prism;            // Segment's prism
@@ -374,34 +294,16 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 
   void* stack_save = x3d_stack_save(&renderman->stack);
 
-  // Load the segment into the cache
   X3D_Segment* seg = x3d_segmentmanager_load(id);
-
-  X3D_DisplayLineList* list = x3d_stack_alloc(&renderman->stack, sizeof(X3D_DisplayLineList));
-  list->total_l = 0;
 
   
   // Make sure we don't blow the stack from recursing too deep
-
-  if(x3d_rendermanager_get()->wireframe) {
-    if(seg->last_engine_step == step)
-      return;
-  }
-
   if(depth >= 15)
     return;
 
   ++depth;
 
   seg->last_engine_step = step;
-
-  // Select a color based on the id of the segment because I'm too lazy to implement
-  // colored segments atm
-  switch(id) {
-    case 0:   color = x3d_rgb_to_color(0, 0, 255); break;     // Blue
-    case 1:   color = x3d_rgb_to_color(255, 0, 255); break;   // Majenta
-    default:  color = 31;                                     // Red
-  }
 
   X3D_Prism3D* prism = &seg->prism;
   X3D_Vex2D* v2d = x3d_stack_alloc(&renderman->stack, sizeof(X3D_Vex2D) * prism->base_v * 2);
@@ -435,26 +337,10 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 
     if(render_mode != 3)
       depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);
-    //else
-    //  depth_scale[i] = ((int32)x3d_depth_scale(v3d[i].z, 10, 1500) * dot) >> 15;
   }
-
-#if 1
-  if(id == 5) {
-    for(i = 0; i < prism->base_v * 2; ++i) {
-      printf("p%d: { %d, %d }\n", i, v2d[i].x, v2d[i].y);
-    }
-
-    printf("=======================\n");
-  }
-#endif
 
 
   X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-
-  /// @todo It's a waste to calculate this for every edge if we don't need it,
-  /// so add a bitmask to the cache to determine which faces actually need
-  /// raster edges generated.
 
   uint16 total_e = seg->prism.base_v * 3;
   X3D_RasterEdge edges[total_e + 5];
@@ -485,26 +371,16 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .cam = cam,
     .clip = &clip,
     .step = step,
-    .list = list,
+    .list = NULL,
     .portal_face = portal_face
   };
 
   x3d_segment_render_connecting_segments(&context);
 
 
-  // Render any objects that are in the segment
-  x3d_segment_render_objects(seg, cam, list, region, step);
-
   x3d_stack_restore(&renderman->stack, stack_save);
 
-  --depth;
-  
-  if(id == 0 && depth == 0) {
-    X3D_Vex3D a = { 0, 100, 0 };
-    X3D_WallPortal* portal = x3d_wallportal_get(0);
-    
-    x3d_mat3x3_visualize(&portal->mat, a, cam);
-  }
+  --depth;  
 }
 
 void x3d_sphere_normal(X3D_Vex3D* center, X3D_Vex3D* v, X3D_Vex3D* dest) {
