@@ -176,9 +176,61 @@ void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint1
   }
 }
 
+void x3d_render_level_polygon(X3D_Polygon3D* p, X3D_Vex3D* normal, X3D_SegmentRenderContext* context, X3D_Portal portal, uint16 i) {
+  X3D_Vex3D dir;
+
+
+  x3d_dynamicobject_forward_vector(context->cam, &dir);
+
+  X3D_Vex3D d = { 0, 0, 32767 };
+
+  fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
+
+  X3D_Vex3D_int16 colors[] = {
+    { 255, 0, 0 },
+    { 0, 255, 0 },
+    { 0, 0, 255 },
+    { 128, 0, 128},
+    { 255, 255, 0 },
+    { 0, 64, 64},
+    { 255, 255, 255 },
+    { 255, 0, 128 },
+    { 128, 64, 64 },
+    { 64, 128, 64 }
+  };
+
+
+  X3D_Vex3D_fp0x16 color = { 255, 0, 255 };
+
+  color = colors[6];
+
+  dot = X3D_MIN((int32)dot + 8192, 32767);
+
+  if(render_mode != 3) { 
+  
+    //color.x = (int32)color.x * dot / 32768;
+    //color.y = (int32)color.y * dot / 32768;
+    //color.z = (int32)color.z * dot / 32768;
+  }
+
+  X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
+  
+  X3D_SegmentRenderFace rface = {
+    .id = x3d_segfaceid_create(context->seg_id, i),
+    .color = c,
+    .region = portal.region
+  };
+  
+  if(x3d_rendermanager_get()->segment_face_render_callback)
+    x3d_rendermanager_get()->segment_face_render_callback(&rface);
+  
+
+  x3d_rasterregion_fill(portal.region, rface.color);
+}
+
 void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   uint16 i;
-
+  
   X3D_Prism3D* prism = &context->seg->prism;
 
   // Render the connecting segments
@@ -196,68 +248,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
 
             if(portal.region && portal.region != context->parent && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
-              X3D_Vex3D dir;
-
-
-              x3d_dynamicobject_forward_vector(context->cam, &dir);
-  
-              X3D_Vex3D d = { 0, 0, 32767 };
-  
-              fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
-
-              X3D_Vex3D_int16 colors[] = {
-                { 255, 0, 0 },
-                { 0, 255, 0 },
-                { 0, 0, 255 },
-                { 128, 0, 128},
-                { 255, 255, 0 },
-                { 0, 64, 64},
-                { 255, 255, 255 },
-                { 255, 0, 128 },
-                { 128, 64, 64 },
-                { 64, 128, 64 }
-              };
-
-
-              X3D_Vex3D_fp0x16 color = { 255, 0, 255 };
-
-              int cid = 0;
-
-              switch(context->seg_id) {
-                case 0:   cid = 5; break;
-                case 1:   cid = 1; break;
-                case 2:   cid = 2; break;
-                case 3:   cid = 3; break;
-              }
-
-              cid = context->seg_id % 10;
-
-
-              color = colors[6];
-
-              dot = X3D_MIN((int32)dot + 8192, 32767);
-  
-              if(render_mode != 3) { 
-              
-                color.x = (int32)color.x * dot / 32768;
-                color.y = (int32)color.y * dot / 32768;
-                color.z = (int32)color.z * dot / 32768;
-              }
-
-              X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
-              
-              X3D_SegmentRenderFace rface = {
-                .id = x3d_segfaceid_create(context->seg_id, i),
-                .color = c,
-                .region = portal.region
-              };
-              
-              if(x3d_rendermanager_get()->segment_face_render_callback)
-                x3d_rendermanager_get()->segment_face_render_callback(&rface);
-              
-
-              x3d_rasterregion_fill(portal.region, rface.color);
-
+              x3d_render_level_polygon(NULL, NULL, context, portal, i);
               goto render_portals;
             }
 
