@@ -16,10 +16,28 @@
 #include "X3D_common.h"
 #include "render/X3D_texture.h"
 
+///////////////////////////////////////////////////////////////////////////////
+/// Loads a texture from a file (stored in a bmp file).
+///
+/// @param tex  - texture struct to load into
+/// @param file - name of file to load texture from
+///
+/// @return Whether the texture was successfully loaded.
+/// @note   Only try to load texture that have size which are powers of 2!
+///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_texture_load_from_file(X3D_Texture* tex, const char* file) {
   return x3d_platform_screen_load_texture(tex, file);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Blits a texture onto the screen as a 2D image.
+///
+/// @param tex  - texture
+/// @param x    - x coordinate of top right corner of where the texture goes
+/// @param y    - y coordinate of top right corner of where the texture goes
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y) {
   uint16 i, d;
   
