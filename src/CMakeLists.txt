@@ -116,6 +116,7 @@ add_sources(
   C/render/rasterregion.c
   C/render/scanline.c
   C/render/polyline.c
+  C/render/texture.c
   
   C/physics/collide.c
   

@@ -186,23 +186,7 @@ void x3d_render_level_polygon(X3D_Polygon3D* p, X3D_Vex3D* normal, X3D_SegmentRe
 
   fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
 
-  X3D_Vex3D_int16 colors[] = {
-    { 255, 0, 0 },
-    { 0, 255, 0 },
-    { 0, 0, 255 },
-    { 128, 0, 128},
-    { 255, 255, 0 },
-    { 0, 64, 64},
-    { 255, 255, 255 },
-    { 255, 0, 128 },
-    { 128, 64, 64 },
-    { 64, 128, 64 }
-  };
-
-
-  X3D_Vex3D_fp0x16 color = { 255, 0, 255 };
-
-  color = colors[6];
+  X3D_Vex3D_fp0x16 color = { 255, 255, 255 };
 
   dot = X3D_MIN((int32)dot + 8192, 32767);
 

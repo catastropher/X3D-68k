@@ -14,12 +14,16 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <SDL/SDL.h>
+#include <stdlib.h>
+
 
 #include "X3D_common.h"
 #include "X3D_init.h"
 #include "X3D_screen.h"
 #include "X3D_enginestate.h"
 #include "X3D_trig.h"
+#include "render/X3D_texture.h"
+
 
 static SDL_Surface* window_surface;
 static int16 screen_w;
@@ -40,7 +44,9 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  brick_tex.surface = SDL_LoadBMP("cube.bmp");
+  if (!x3d_texture_load_from_file(&brick_tex, "brick.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load brick texture: %s", SDL_GetError());
+  }
  
 #if 0
   x3d_gray_dither(brick_tex.surface);
@@ -48,9 +54,6 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   exit(0);
 #endif
 
-  if(!brick_tex.surface)
-    x3d_log(X3D_ERROR, "Failed to load brick texture");
-  
   screen_w = init->screen_w;
   screen_h = init->screen_h;
   screen_scale = init->screen_scale;
@@ -181,6 +184,41 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y)
     }
 }
 
+_Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
+  x3d_log(X3D_INFO, "File: %s", file);
+  SDL_Surface* s = SDL_LoadBMP(file);
+  
+  if(!s)
+    return X3D_FALSE;
+  
+  tex->texel = malloc(s->w * s->h * sizeof(X3D_Color));
+  
+  if(!tex->texel) {
+    SDL_FreeSurface(s);
+    return X3D_FALSE;
+  }
+  
+  tex->w = s->w;
+  tex->h = s->h;
+  tex->mask = tex->w - 1;
+  
+  uint16 i, d;
+  for(i = 0; i < s->h; ++i) {
+    for(d = 0; d < s->w; ++d) {
+      uint32 pix = getpixel(s, d, i);
+      uint8 r, g, b;
+      
+      SDL_GetRGB(pix, s->format, &r, &g, &b);
+      
+      x3d_texture_set_texel(tex, d, i, x3d_rgb_to_color(r, g, b));
+    }
+  }
+  
+  SDL_FreeSurface(s);
+  
+  return X3D_TRUE;
+}
+
 
 void x3d_gray_dither(SDL_Surface* s) {
   int32 x, y;
@@ -217,6 +255,7 @@ void x3d_gray_dither(SDL_Surface* s) {
 }
 
 X3D_Color x3d_texture_get_pix(X3D_Texture* tex, int16 u, int16 v) {
+#if 0
   uint8 r, g, b;
 
   return rand();
@@ -231,6 +270,7 @@ X3D_Color x3d_texture_get_pix(X3D_Texture* tex, int16 u, int16 v) {
   SDL_GetRGB(getpixel(s, u, v), s->format, &r, &g, &b);
   
   return x3d_rgb_to_color(r, g, b);
+#endif
 }
 
 X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
@@ -304,54 +344,6 @@ X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b) {
     scale_down((uint32)g, &color_err.y),
     scale_down((uint32)b, &color_err.z)
   );
-}
-
-void x3d_screen_draw_scanline_grad2(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right) {
-  uint16 i; 
-  
-  int32 scale = (int32)scale_left << 16;
-  int32 scale_slope = (((int32)scale_right - scale_left) << 16) / (right - left + 1);
-  
-  color_err.x = 0;
-  color_err.y = 0;
-  color_err.z = 0;
-    
-  uint8 r1, g1, b1;
-  x3d_color_to_rgb(c, &r1, &g1, &b1);
-  
-  int16 rr1, gg1, bb1;
-  rr1 = ((int32)r1 * scale_left) >> 15;
-  gg1 = ((int32)g1 * scale_left) >> 15;
-  bb1 = ((int32)b1 * scale_left) >> 15;
-  
-  color_err.x = 0;
-  color_err.y = 0;
-  color_err.z = 0;
-    
-  uint8 r2, g2, b2;
-  x3d_color_to_rgb(c, &r2, &g2, &b2);
-  
-  int16 rr2, gg2, bb2;
-  rr2 = ((int32)r2 * scale_right) >> 15;
-  gg2 = ((int32)g2 * scale_right) >> 15;
-  bb2 = ((int32)b2 * scale_right) >> 15;
-
-  
-  int16 r_slope = (((int32)rr2 - rr1) << 8) / (right - left + 1);
-  int16 g_slope = (((int32)gg2 - gg1) << 8) / (right - left + 1);
-  int16 b_slope = (((int32)bb2 - bb1) << 8) / (right - left + 1);
-
-  uint16 r = rr1 << 8;
-  uint16 g = gg1 << 8;
-  uint16 b = bb1 << 8;
-  
-  for(i = left; i <= right; ++i) {
-    ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(x3d_color_scale(r, g, b));
-    
-    r += r_slope;
-    g += g_slope;
-    b += b_slope;
-  }
 }
 
 extern int16 render_mode;
@@ -462,8 +454,8 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     
     if(zz <= 0) zz = 0x7FFF;
     
-    int16 uu = (((u / zz) >> 1) * 191) >> 15;
-    int16 vv = (((v / zz) >> 1) * 191) >> 15;
+    int16 uu = (((u / zz) >> 1) * 128) >> 15;
+    int16 vv = (((v / zz) >> 1) * 128) >> 15;
     
     //uu /= 16;
     //vv /= 16;
@@ -472,7 +464,7 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     //int16 vv = (((v >> 16) * zz) * 192) >> 15;
     
     
-    X3D_Color c = x3d_texture_get_pix(&brick_tex, uu, vv);
+    X3D_Color c = x3d_texture_get_texel(&brick_tex, uu, vv);
     
     if(zz > z_buf[y * window_surface->w + i]) {
       ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(c);

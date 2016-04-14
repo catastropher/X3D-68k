@@ -18,10 +18,6 @@
 #include "X3D_common.h"
 #include "X3D_vector.h"
 
-typedef struct X3D_Texture {
-  void* surface;
-} X3D_Texture;
-
 typedef struct X3D_ScreenManager {
   uint16 w;
   uint16 h;
@@ -132,3 +128,6 @@ void x3d_screen_zbuf_visualize(void);
 
 void* x3d_screen_get_internal(void);
 
+struct X3D_Texture;
+
+_Bool x3d_platform_screen_load_texture(struct X3D_Texture* tex, const char* file);

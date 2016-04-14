@@ -174,8 +174,8 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
     float a = normal[i].x / 32768.0 / 2 + .5;  //x3d_asin(normal[i].x) / 128.0 + .5;
     float b = normal[i].y / 32768.0 / 2 + .5;//x3d_asin(normal[i].y) / 128.0 + .5;
     
-    pv[i].u = a * 191;
-    pv[i].v = b * 191;
+    pv[i].u = a * 127;
+    pv[i].v = b * 127;
     
     //pv[i].u = 191 * ((((int32)x3d_asin(normal[i].x) << 15) / 128) + 16384) / 32768;
     //pv[i].v = 191 * ((((int32)x3d_asin(normal[i].y) << 15) / 128) + 16384) / 32768;
