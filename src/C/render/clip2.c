@@ -25,7 +25,16 @@
 
 //#define x3d_log(...) ;
 
-
+///////////////////////////////////////////////////////////////////////////////
+/// Determines whether a polygon is clockwise given three points.
+///
+/// @param a - first vertex
+/// @param b - second vertex
+/// @param c - third vertex
+///
+/// @return Whether the polygon is clockwise or not.
+/// @note   If all 3 points lie in a straight line this will return false.
+///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex* c) {
   int32 t1 = ((int32)b->v2d.x - a->v2d.x) * (c->v2d.y - a->v2d.y);
   int32 t2 = ((int32)c->v2d.x - a->v2d.x) * (b->v2d.y - a->v2d.y);
@@ -34,6 +43,14 @@ _Bool x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex*
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+/// Draws a polyline (for debugging).
+///
+/// @param p - polyline
+/// @param c - color
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
   uint16 i;
   for(i = 0; i < p->total_v - 1; ++i) {
@@ -43,11 +60,28 @@ void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the change in d_a with respect to d_b (the slope).
+///
+/// @param d_a  - e.g. change in x
+/// @param d_b  - e.g. change in y
+///
+/// @return Rate of change as an fp16x16
+///////////////////////////////////////////////////////////////////////////////
 fp16x16 x3d_val_slope(int16 d_a, int16 d_b) {
   if(d_b == 0) return 0;
   return ((int32)d_a << 16) / d_b;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates how far along a line segment a point is.
+///
+/// @param a  - starting point of the line segment
+/// @param b  - ending point of the line segment
+/// @param v  - some point on the line segment
+///
+/// @return How far v is along ab (between 0 and 1 as an fp0x16).
+///////////////////////////////////////////////////////////////////////////////
 int16 x3d_line_parametric_t(X3D_Vex2D* a, X3D_Vex2D* b, X3D_Vex2D* v) {
   int16 dx = abs(v->x - a->x);
   int16 dy = abs(v->y - a->y);

@@ -90,3 +90,8 @@ static inline fp8x8 div_int16_by_int16_as_fp8x8(int16 n, int16 d) {
 }
 
 
+static inline int16 x3d_fp16x6_whole(fp16x16 f) {
+  return f >> 16;
+}
+
+
