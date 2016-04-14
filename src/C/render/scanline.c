@@ -5,8 +5,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.
 ///
-/// @param slope -  scanline slope struct (dest)
-/// @param 
+/// @param slope  - scanline slope struct (dest)
+/// @param a      - top edge vertex
+/// @param b      - bottom vertex
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_scanline_slope_calc(X3D_ScanlineSlope* slope, const X3D_PolyVertex* a, const X3D_PolyVertex* b) {
   int16 dy = b->v2d.y - a->v2d.y;
   
@@ -16,10 +20,38 @@ void x3d_scanline_slope_calc(X3D_ScanlineSlope* slope, const X3D_PolyVertex* a, 
   slope->z = x3d_val_slope(b->z - a->z,         dy);
 }
 
-// Generates new span values between start_y and end_y
+///////////////////////////////////////////////////////////////////////////////
+/// Advances the scanline generator to the next scanline
+///
+/// @param gen - scanline generator
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+static void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
+  gen->x         += gen->slope.x;
+  gen->intensity += gen->intensity_slope;
+  gen->u         += gen->slope.u;
+  gen->v         += gen->slope.v;
+  gen->z         += gen->slope.z;
+  gen->span = (X3D_SpanValue* )((uint8 *)gen->span + sizeof(X3D_Span));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// Generates new span values between start_y and end_y using the current
+///   slopes.
+///
+/// @param gen      - scanline generator
+/// @param start_y  - starting y (should be where the scanline generator is
+///                   currently at!)
+/// @param end_y    - ending y (non-inclusive)
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_rasterregion_generate_new_spans(X3D_ScanlineGenerator* gen, int16 start_y, int16 end_y) {
+  /// @todo This needs to be removed once the implementation of raster region changes
   X3D_SpanValue* end_span = (X3D_SpanValue *)((uint8 *)gen->dest->span + (end_y - gen->dest->rect.y_range.min) * sizeof(X3D_Span));
   
+  /// @bug This is broken! Need to implement new strategy to find the min/max value
   gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
   gen->y_range.max = X3D_MAX(gen->y_range.max, end_y - 1);
   
@@ -32,16 +64,6 @@ void x3d_rasterregion_generate_new_spans(X3D_ScanlineGenerator* gen, int16 start
     
     x3d_scanline_generator_next(gen);
   }
-}
-
-// Advances the scanline generator to the next scanline
-void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
-  gen->x         += gen->slope.x;
-  gen->intensity += gen->intensity_slope;
-  gen->u         += gen->slope.u;
-  gen->v         += gen->slope.v;
-  gen->z         += gen->slope.z;
-  gen->span = (X3D_SpanValue* )((uint8 *)gen->span + sizeof(X3D_Span));
 }
 
 int16 x3d_t_clip(int16 start, int16 end, uint16 scale);
@@ -85,7 +107,11 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   gen->slope.z         = x3d_val_slope(end_z - x3d_fp16x6_whole(gen->z),                 dy);  
 }
 
-_Bool x3d_scanlineg_edge_visible(X3D_ScanlineGenerator* gen) {
+///////////////////////////////////////////////////////////////////////////////
+/// Determines whether the current edge is potentially visible by checking
+/// if it falls within the y range of the parent clipping region.
+///////////////////////////////////////////////////////////////////////////////
+static _Bool x3d_scanlineg_edge_visible(X3D_ScanlineGenerator* gen) {
   if(gen->b->v2d.y < gen->dest->rect.y_range.min)
     return X3D_FALSE;
   
@@ -193,13 +219,14 @@ _Bool x3d_scanlineg_pass_extreme_point(X3D_ScanlineGenerator* gen, X3D_Vex2D* po
 }
 
 void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extreme_y, int16 end_y) {
-  
   // If the extreme left point on the parent region isn't in the y range of the edge,
   // then it can't intersect the parent region
   if(x3d_scanlineg_fail_extreme_range(gen, extreme_y)) {
     x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y);      
     return;
   }
+  
+  X3D_Vex2D point_inside;
   
   if(x3d_scanlineg_pass_extreme_point(gen, &point_inside, extreme_y)) {
     X3D_Vex2D clip_a;
