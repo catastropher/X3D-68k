@@ -66,7 +66,7 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   if(in + out == 0)
     return;
   
-  int16 span_t = 32767;//((int32)in << 15) / (in + out);
+  int16 span_t = ((int32)in << 15) / (in + out);
   x3d_log(X3D_INFO, "Span t: %d, %d %d", span_t, in, out);
   x3d_log(X3D_INFO, "Other side u: %d", other_side.u);
   
@@ -79,77 +79,83 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
   int16 end_z         = x3d_t_clip(other_side.z, end->z, span_t);
   
   
-  
-  gen->intensity_slope = x3d_val_slope(end_intensity - (gen->intensity >> 16), dy);
-  gen->slope.u = x3d_val_slope(end_u - (gen->u >> 16), dy);
-  gen->slope.v = x3d_val_slope(end_v - (gen->v >> 16), dy);
-  gen->slope.z = x3d_val_slope(end_z - (gen->z >> 16), dy);
-  
-  
-  x3d_log(X3D_INFO, "End u slope: %d", gen->slope.u >> 16);
+  gen->intensity_slope = x3d_val_slope(end_intensity - x3d_fp16x6_whole(gen->intensity), dy);
+  gen->slope.u         = x3d_val_slope(end_u - x3d_fp16x6_whole(gen->u),                 dy);
+  gen->slope.v         = x3d_val_slope(end_v - x3d_fp16x6_whole(gen->v),                 dy);
+  gen->slope.z         = x3d_val_slope(end_z - x3d_fp16x6_whole(gen->z),                 dy);  
 }
 
-_Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
+_Bool x3d_scanlineg_edge_visible(X3D_ScanlineGenerator* gen) {
   if(gen->b->v2d.y < gen->dest->rect.y_range.min)
     return X3D_FALSE;
   
   if(gen->a->v2d.y > gen->dest->rect.y_range.max)
     return X3D_FALSE;
   
-  if(gen->a->v2d.y < gen->dest->rect.y_range.min) {
-    // Clip the edge using the temporary a vertex
-    
-    int16 in = gen->b->v2d.y - gen->dest->rect.y_range.min;
-    int16 out = gen->dest->rect.y_range.min - gen->a->v2d.y;
-    int16 scale = ((int32)in << 15) / (in + out);
-    int16 dy = gen->dest->rect.y_range.min - gen->a->v2d.y;
-    
-    gen->temp_a.v2d.x = x3d_t_clip(gen->b->v2d.x, gen->a->v2d.x, scale);
-    gen->temp_a.v2d.y = gen->dest->rect.y_range.min;
-    
-    gen->a = &gen->temp_a;
-    
-    x3d_log(X3D_INFO, "New x: %d", gen->a->v2d.x);
-    x3d_log(X3D_INFO, "Scale: %d", scale);
-    x3d_log(X3D_INFO, "!!!!!Clip top!!!!!");
-    
-    gen->x = (int32)gen->a->v2d.x << 16;
-    gen->u += gen->slope.u * dy;
-    gen->v += gen->slope.v * dy;
-    gen->z += gen->slope.z * dy;
-    gen->intensity += gen->intensity_slope * dy;
-  }
+  return X3D_TRUE;
+}
+
+void x3d_scanline_generator_clip_top(X3D_ScanlineGenerator* gen) {
+  int16 in = gen->b->v2d.y - gen->dest->rect.y_range.min;
+  int16 out = gen->dest->rect.y_range.min - gen->a->v2d.y;
+  int16 scale = ((int32)in << 15) / (in + out);
+  int16 dy = gen->dest->rect.y_range.min - gen->a->v2d.y;
   
-  if(gen->b->v2d.y > gen->dest->rect.y_range.max) {
-    // Clip the edge using the temporary a vertex
+  gen->temp_a.v2d.x = x3d_t_clip(gen->b->v2d.x, gen->a->v2d.x, scale);
+  gen->temp_a.v2d.y = gen->dest->rect.y_range.min;
+  
+  gen->a = &gen->temp_a;
+  
+  x3d_log(X3D_INFO, "New x: %d", gen->a->v2d.x);
+  x3d_log(X3D_INFO, "Scale: %d", scale);
+  x3d_log(X3D_INFO, "!!!!!Clip top!!!!!");
+  
+  gen->x = (int32)gen->a->v2d.x << 16;
+  gen->u += gen->slope.u * dy;
+  gen->v += gen->slope.v * dy;
+  gen->z += gen->slope.z * dy;
+  gen->intensity += gen->intensity_slope * dy;
+}
+
+void x3d_scanline_generator_clip_bottom(X3D_ScanlineGenerator* gen) {
+  // Clip the edge using the temporary a vertex
     
-    int16 in = gen->dest->rect.y_range.max - gen->a->v2d.y;
-    int16 out =  gen->b->v2d.y - gen->dest->rect.y_range.max;
-    uint16 scale = ((int32)in << 15) / (in + out);
-    int16 dy = gen->dest->rect.y_range.max - gen->a->v2d.y;
-    
-    gen->temp_b.v2d.x = gen->a->v2d.x + ((gen->slope.x * dy) >> 16);
-    gen->temp_b.v2d.y = gen->dest->rect.y_range.max;
-    
-    x3d_log(X3D_INFO, "Before u: %d", gen->b->u);
-    x3d_log(X3D_INFO, "Before v: %d", gen->b->v);
-    x3d_log(X3D_INFO, "Slope: %d", gen->slope.u);
-    x3d_log(X3D_INFO, "!!!!!Clip bottom!!!!!");
-    
-    
-    gen->temp_b.u = gen->a->u + ((gen->slope.u * dy) >> 16);
-    gen->temp_b.v = gen->a->v + ((gen->slope.v * dy) >> 16);
-    gen->temp_b.z = gen->a->z + ((gen->slope.z * dy) >> 16);
-    
-    gen->b = &gen->temp_b;
-    
-    int16 ddy = gen->b->v2d.y - gen->a->v2d.y;
-    //gen->slope.u = x3d_val_slope(gen->b->u - gen->a->u, ddy);
-    //gen->slope.v = x3d_val_slope(gen->b->v - gen->a->v, ddy);
-    
-    x3d_log(X3D_INFO, "New u: %d", gen->b->u);
-    x3d_log(X3D_INFO, "New v: %d", gen->b->v);
-  }
+  int16 in = gen->dest->rect.y_range.max - gen->a->v2d.y;
+  int16 out =  gen->b->v2d.y - gen->dest->rect.y_range.max;
+  uint16 scale = ((int32)in << 15) / (in + out);
+  int16 dy = gen->dest->rect.y_range.max - gen->a->v2d.y;
+  
+  gen->temp_b.v2d.x = gen->a->v2d.x + ((gen->slope.x * dy) >> 16);
+  gen->temp_b.v2d.y = gen->dest->rect.y_range.max;
+  
+  gen->temp_b.u = gen->a->u + ((gen->slope.u * dy) >> 16);
+  gen->temp_b.v = gen->a->v + ((gen->slope.v * dy) >> 16);
+  gen->temp_b.z = gen->a->z + ((gen->slope.z * dy) >> 16);
+  
+  gen->b = &gen->temp_b;
+  
+  int16 ddy = gen->b->v2d.y - gen->a->v2d.y;
+  //gen->slope.u = x3d_val_slope(gen->b->u - gen->a->u, ddy);
+  //gen->slope.v = x3d_val_slope(gen->b->v - gen->a->v, ddy);
+}
+
+_Bool x3d_scanlineg_above_top(X3D_ScanlineGenerator* gen) {
+  return gen->a->v2d.y < gen->dest->rect.y_range.min;
+}
+
+_Bool x3d_scanlineg_below_bottom(X3D_ScanlineGenerator* gen) {
+  return gen->b->v2d.y > gen->dest->rect.y_range.max;
+}
+
+_Bool x3d_scanline_generator_vertically_clip_edge(X3D_ScanlineGenerator* gen) {
+  if(!x3d_scanlineg_edge_visible(gen))
+    return X3D_FALSE;  
+  
+  if(x3d_scanlineg_above_top(gen))
+    x3d_scanline_generator_clip_top(gen);
+  
+  if(x3d_scanlineg_below_bottom(gen))
+    x3d_scanline_generator_clip_bottom(gen);
   
   return X3D_TRUE;
 }
@@ -263,11 +269,12 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   // with. But, only copy it over if there was at least one visible edge before this
   if(gen->prev_visible_edge || 1) {
     for(i = start_y; i < end_y; ++i) {
-      gen->span->x = span_val->x;
-      gen->span->intensity = gen->intensity >> 16;
-      gen->span->u = gen->u >> 16;
-      gen->span->v = gen->v >> 16;
-      gen->span->z = gen->z >> 16;
+      gen->span->x         = span_val->x;
+      gen->span->intensity = x3d_fp16x6_whole(gen->intensity);
+      gen->span->u         = x3d_fp16x6_whole(gen->u);
+      gen->span->v         = x3d_fp16x6_whole(gen->v);
+      gen->span->z         = x3d_fp16x6_whole(gen->z);
+      
       x3d_scanline_generator_next(gen);
       span_val = (X3D_SpanValue* )((uint8 *)span_val + sizeof(X3D_Span));
     }
