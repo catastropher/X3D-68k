@@ -113,6 +113,8 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   left.v = alloca(1000);
   right.v = alloca(1000);
   
+  x3d_rasterregion_update(parent);
+  
   /// @todo Bounding rectangle test
   
   // Split the polygon into left and right polylines
@@ -152,7 +154,7 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
     X3D_Vex2D left = { span->left.x, new_min };
     X3D_Vex2D right = { span->right.x, new_min };
     
-    if(x3d_rasterregion_point_inside2(dest, left) && x3d_rasterregion_point_inside2(dest, right))
+    if(x3d_rasterregion_point_inside(parent, left) && x3d_rasterregion_point_inside(parent, right))
       break;
     
     ++new_min;
@@ -163,7 +165,7 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
     X3D_Vex2D left = { span->left.x, new_max };
     X3D_Vex2D right = { span->right.x, new_max };
     
-    if(x3d_rasterregion_point_inside2(dest, left) && x3d_rasterregion_point_inside2(dest, right))
+    if(x3d_rasterregion_point_inside(parent, left) && x3d_rasterregion_point_inside(parent, right))
       break;
     
     --new_max;

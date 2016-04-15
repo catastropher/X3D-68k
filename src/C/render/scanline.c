@@ -271,6 +271,9 @@ void x3d_scanlineg_a_out_b_out_opposite_side(X3D_ScanlineGenerator* gen, int16 e
 void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int16 end_y) {
   X3D_Span* span_a = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
   X3D_Span* span_b = x3d_rasterregion_get_span(gen->parent, gen->b->v2d.y);
+ 
+  /// @bug This causes an infinite loop, so we return...
+  if(gen->a->v2d.y == gen->b->v2d.y) return;
   
   _Bool out_left = x3d_scanlineg_edge_outside_left(gen, span_a, span_b);
   _Bool out_right = x3d_scanlineg_edge_outside_right(gen, span_a, span_b); 
