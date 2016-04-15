@@ -43,3 +43,6 @@ typedef struct X3D_ScanlineGenerator {
   X3D_PolyLine* other_side;             ///< The polyline on the other side of what we're working on
 } X3D_ScanlineGenerator;
 
+
+void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine* p_left, X3D_PolyLine* p_right);
+

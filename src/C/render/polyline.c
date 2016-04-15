@@ -97,7 +97,6 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   int16 i;
   for(i = 0; i < p->total_v - 1; ++i) {
     if(y >= p->v[i]->v2d.y && y <= p->v[i + 1]->v2d.y) {
-      x3d_log(X3D_INFO, "Stopped at %d", i);
       break;
     }
   }
@@ -112,7 +111,6 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   
   int16 dy = y - a->v2d.y;
   
-  x3d_log(X3D_INFO, "Polyline u slope: %d", slope.u);
   
   v->v2d.x = a->v2d.x + ((slope.x * dy) >> 16);
   v->v2d.y = y;
@@ -121,6 +119,5 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   v->v = a->v + ((slope.v * dy) >> 16);
   v->z = a->z + ((slope.z * dy) >> 16);
   
-  x3d_log(X3D_INFO, "Get slope %d, inten %d", v->v2d.x, v->intensity);
 }
 

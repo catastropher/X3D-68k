@@ -138,6 +138,9 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   x3d_log(X3D_INFO, "=================Right=================");
   x3d_rasterregion_generate_polyline_spans(dest, parent, &right, &left, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].right, &y_range_right);
   
+  
+  x3d_rasterregion_cheat_calc_texture(dest, &left, &right);
+  
   //x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
   //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
   

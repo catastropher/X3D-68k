@@ -401,3 +401,40 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   gen->prev_visible_edge = X3D_TRUE;
 }
 
+void x3d_span_get_spanvalue_at_x(X3D_PolyVertex left, X3D_PolyVertex right, int16 x, X3D_SpanValue* dest) {
+  int16 dx = right.v2d.x - left.v2d.x;
+  
+  fp16x16 i_slope = x3d_val_slope(right.intensity - left.intensity, dx);
+  fp16x16 u_slope = x3d_val_slope(right.u - left.u, dx);
+  fp16x16 v_slope = x3d_val_slope(right.v - left.v, dx);
+  fp16x16 z_slope = x3d_val_slope(right.z - left.z, dx);
+  
+  int ddx = x - left.v2d.x;
+  
+  dest->x = x;
+  dest->intensity = left.intensity + ((i_slope * ddx) >> 16);
+  dest->u = left.u + ((u_slope * ddx) >> 16);
+  dest->v = left.v + ((v_slope * ddx) >> 16);
+  dest->z = left.z + ((z_slope * ddx) >> 16);
+}
+
+
+void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine* p_left, X3D_PolyLine* p_right) {
+  uint16 i;
+  
+  for(i = region->rect.y_range.min; i <= region->rect.y_range.max; ++i) {
+    X3D_PolyVertex left, right;
+    x3d_polyline_get_value(p_left, i, &left);
+    x3d_polyline_get_value(p_right, i, &right);
+    
+    X3D_Span* span = x3d_rasterregion_get_span(region, i);
+    X3D_SpanValue new_left, new_right;
+    
+    x3d_span_get_spanvalue_at_x(left, right, span->left.x, &new_left);
+    x3d_span_get_spanvalue_at_x(left, right, span->right.x, &new_right);
+    
+    span->left = new_left;
+    span->right = new_right;
+  }
+}
+
