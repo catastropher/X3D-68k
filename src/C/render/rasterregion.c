@@ -147,10 +147,33 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   int16 new_min = X3D_MIN(y_range_left.min, y_range_right.min);
   int16 new_max = X3D_MAX(y_range_left.max, y_range_right.max);
   
+  while(new_min <= new_max) {
+    X3D_Span* span = x3d_rasterregion_get_span(dest, new_min);
+    X3D_Vex2D left = { span->left.x, new_min };
+    X3D_Vex2D right = { span->right.x, new_min };
+    
+    if(x3d_rasterregion_point_inside2(dest, left) && x3d_rasterregion_point_inside2(dest, right))
+      break;
+    
+    ++new_min;
+  }
+  
+  while(new_min <= new_max) {
+    X3D_Span* span = x3d_rasterregion_get_span(dest, new_max);
+    X3D_Vex2D left = { span->left.x, new_max };
+    X3D_Vex2D right = { span->right.x, new_max };
+    
+    if(x3d_rasterregion_point_inside2(dest, left) && x3d_rasterregion_point_inside2(dest, right))
+      break;
+    
+    --new_max;
+  }
+  
   dest->span += new_min - dest->rect.y_range.min;
   dest->rect.y_range.min = new_min;
   dest->rect.y_range.max = new_max;
-
+  
+  
   x3d_assert(new_max <= parent->rect.y_range.max);
   
   x3d_log(X3D_INFO, "Range: %d - %d", new_min, new_max);

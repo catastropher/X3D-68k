@@ -270,7 +270,6 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   void* stack_save = x3d_stack_save(&renderman->stack);
 
   X3D_Segment* seg = x3d_segmentmanager_load(id);
-
   
   // Make sure we don't blow the stack from recursing too deep
   if(depth >= 15)
@@ -352,6 +351,9 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 
   x3d_segment_render_connecting_segments(&context);
 
+  if(id == 0) {
+    x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
+  }
 
   x3d_stack_restore(&renderman->stack, stack_save);
 
@@ -553,7 +555,6 @@ void x3d_render(X3D_CameraObject* cam) {
   
   //x3d_sphere_render((X3D_Vex3D) { 0, 0, 0 }, 75, 10, 31, cam, &x3d_rendermanager_get()->region);
   
-  x3d_cube_render((X3D_Vex3D) { 100, 0, 100 }, 100, cam, &x3d_rendermanager_get()->region);
   //x3d_cube_render((X3D_Vex3D) { 150, 150, 150 }, 150, cam, &x3d_rendermanager_get()->region);
   
   

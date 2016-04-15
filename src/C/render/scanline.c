@@ -2,6 +2,8 @@
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
 
+#define x3d_log(...) ;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.
 ///
