@@ -6,6 +6,8 @@
 #include "X3D_enginestate.h"
 #include "render/X3D_polyvertex.h"
 
+#define x3d_log(...) ;
+
 void x3d_rasterregion_find_point_inside_left(X3D_RasterRegion* r, X3D_Vex2D left_in, X3D_Vex2D left_out, X3D_Vex2D* dest) {
   X3D_Vex2D mid;
   
@@ -108,6 +110,8 @@ X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
   return r->span + y - r->rect.y_range.min;
 }
 
+_Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, X3D_PolyLine* right);
+
 _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 total_v, X3D_RasterRegion* parent) {
   X3D_PolyLine left, right;
   left.v = alloca(1000);
@@ -118,7 +122,7 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   /// @todo Bounding rectangle test
   
   // Split the polygon into left and right polylines
-  if(!x3d_polyline_split(v, total_v, &left, &right))
+  if(!x3d_polyline_split2(v, total_v, &left, &right))
     return X3D_FALSE;
   
   int16 min_y = X3D_MAX(parent->rect.y_range.min, left.v[0]->v2d.y);
@@ -142,6 +146,9 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   
   
   x3d_rasterregion_cheat_calc_texture(dest, &left, &right);
+  
+  x3d_polyline_draw(&left, 31);
+  x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
   
   //x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
   //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));

@@ -49,8 +49,9 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   }
  
 #if 0
-  x3d_gray_dither(brick_tex.surface);
-  SDL_SaveBMP(brick_tex.surface, "self2_dither.bmp");
+  SDL_Surface* s = SDL_LoadBMP("piano.bmp");
+  x3d_gray_dither(s);
+  SDL_SaveBMP(s, "piano_bw.bmp");
   exit(0);
 #endif
 
@@ -466,10 +467,10 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     
     X3D_Color c = x3d_texture_get_texel(&brick_tex, uu, vv);
     
-    if(zz > z_buf[y * window_surface->w + i]) {
+    //if(zz > z_buf[y * window_surface->w + i]) {
       ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(c);
       z_buf[y * window_surface->w + i] = zz;
-    }
+    //}
     
     u += u_slope;
     v += v_slope;

@@ -25,23 +25,6 @@
 
 #define x3d_log(...) ;
 
-///////////////////////////////////////////////////////////////////////////////
-/// Determines whether a polygon is clockwise given three points.
-///
-/// @param a - first vertex
-/// @param b - second vertex
-/// @param c - third vertex
-///
-/// @return Whether the polygon is clockwise or not.
-/// @note   If all 3 points lie in a straight line this will return false.
-///////////////////////////////////////////////////////////////////////////////
-_Bool x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex* c) {
-  int32 t1 = ((int32)b->v2d.x - a->v2d.x) * (c->v2d.y - a->v2d.y);
-  int32 t2 = ((int32)c->v2d.x - a->v2d.x) * (b->v2d.y - a->v2d.y);
-  
-  return t1 - t2 < 0;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Draws a polyline (for debugging).
