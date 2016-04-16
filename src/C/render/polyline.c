@@ -161,6 +161,8 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
 _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
   int16 clockwise = 0;
   
+  x3d_log(X3D_INFO, "total_v: %d", total_v);
+  
   // Find three non-colinear points
   uint16 i;
   for(i = 0; i < total_v && clockwise == 0; ++i) {
@@ -191,7 +193,7 @@ _Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left,
   
   int16 top_left = 0;
   int16 top_right = 0;
-  int16 max_y = v[0].v2d.y;
+  int32 max_y = v[0].v2d.y;
   
   int16 i;
   // Find the top left point, the top right point, and the maximum y value
@@ -213,6 +215,7 @@ _Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left,
   
   // Grab the points for the left polyline
   do {
+    x3d_log(X3D_INFO, "Add %d (y: %d, max_y: %d) top_left: %d", left->total_v, v[top_left].v2d.y, max_y, top_left);
     left->v[left->total_v] = v + top_left;
     top_left = (top_left + 1 < total_v ? top_left + 1 : 0);
   } while(left->v[left->total_v++]->v2d.y != max_y);

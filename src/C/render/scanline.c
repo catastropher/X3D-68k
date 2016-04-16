@@ -146,6 +146,10 @@ void x3d_scanline_generator_clip_bottom(X3D_ScanlineGenerator* gen) {
     
   int16 in = gen->dest->rect.y_range.max - gen->a->v2d.y;
   int16 out =  gen->b->v2d.y - gen->dest->rect.y_range.max;
+  
+  if(in + out == 0)
+    return;
+  
   uint16 scale = ((int32)in << 15) / (in + out);
   int16 dy = gen->dest->rect.y_range.max - gen->a->v2d.y;
   
@@ -406,7 +410,7 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   
   x3d_rasterregion_copy_intersection_spans(gen, &clip, gen->a->v2d.y, clip.y);
   
-  gen->slope.x = (((int32)gen->b->v2d.x - x) << 16) / (gen->b->v2d.y - clip.y); 
+  gen->slope.x = x3d_val_slope(gen->b->v2d.x - x, gen->b->v2d.y - clip.y);
   
   
   gen->x = (int32)x << 16;

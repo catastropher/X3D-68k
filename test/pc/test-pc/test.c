@@ -35,11 +35,11 @@ void setup_key_map(void);
 // Creates a hard-coded test level
 void create_test_level(void) {
   // Create a new segment
-  uint16 base_v = 8;
+  uint16 base_v = 4;
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
 
-  x3d_prism3d_construct(prism, base_v, 400,  600, angle);
+  x3d_prism3d_construct(prism, base_v, 400,  1000, angle);
 
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
