@@ -158,7 +158,7 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   
 }
 
-void x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
+_Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
   int16 clockwise = 0;
   
   // Find three non-colinear points
@@ -170,8 +170,9 @@ void x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
     clockwise = x3d_points_clockwise(v + i, v + next, v + next_next);
   }
   
-  x3d_assert(clockwise != 0);
-
+  if(clockwise == 0)
+    return X3D_FALSE;
+    
   // Reverse the points if not clockwise
   if(clockwise > 0) {
     x3d_log(X3D_INFO, "not clockwise");
@@ -181,6 +182,8 @@ void x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
   else {
     x3d_log(X3D_INFO, "clockwise");
   }
+  
+  return X3D_TRUE;
 }
 
 _Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, X3D_PolyLine* right) {

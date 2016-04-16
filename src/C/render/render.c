@@ -502,8 +502,7 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   for(i = 0; i < steps + 2; ++i) {
     x3d_prism3d_get_face(prism, i, &p);
     
-    //if(i == 2)
-      x3d_polygon3d_render(&p, cam, region, 0, norm);
+    x3d_polygon3d_render(&p, cam, region, 0, norm);
   }
 }
 

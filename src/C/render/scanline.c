@@ -2,7 +2,7 @@
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
 
-#define x3d_log(...) ;
+//#define x3d_log(...) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.
@@ -221,9 +221,11 @@ _Bool x3d_scanlineg_pass_extreme_point(X3D_ScanlineGenerator* gen, X3D_Vex2D* po
 }
 
 void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extreme_y, int16 end_y) {
+  x3d_log(X3D_INFO, "Out same side!");
   // If the extreme left point on the parent region isn't in the y range of the edge,
   // then it can't intersect the parent region
   if(x3d_scanlineg_fail_extreme_range(gen, extreme_y)) {
+    x3d_log(X3D_INFO, "Fail extreme y range!");
     x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y);      
     return;
   }
@@ -233,7 +235,8 @@ void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extre
   if(x3d_scanlineg_pass_extreme_point(gen, &point_inside, extreme_y)) {
     X3D_Vex2D clip_a;
     X3D_Vex2D clip_b;
-    X3D_Vex2D point_inside;
+    
+    x3d_log(X3D_INFO, "Pass extreme y test");
     
     x3d_rasterregion_bin_search(point_inside, gen->a->v2d, &clip_a, gen->parent);      
     x3d_rasterregion_bin_search(point_inside, gen->b->v2d, &clip_b, gen->parent);
@@ -289,16 +292,24 @@ void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int
 void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, int16 end_y) {
   uint16 i;
     
-  gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
-  gen->y_range.max = X3D_MAX(gen->y_range.max, end_y - 1);
+  //gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
+  //gen->y_range.max = X3D_MAX(gen->y_range.max, end_y - 1);
   
   X3D_Span* parent_span = x3d_rasterregion_get_span(gen->parent, start_y);
   X3D_SpanValue* span_val;
   
-  if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x))
+  
+  x3d_log(X3D_INFO, "Clip->x: %d, y: %d", clip->x, start_y);
+  x3d_log(X3D_INFO, "left: %d, right: %d", parent_span->left.x, parent_span->right.x);
+  
+  if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x)) {
     span_val = &parent_span->left;
-  else
+    x3d_log(X3D_INFO, "Copy from left");
+  }
+  else {
     span_val = &parent_span->right;
+    x3d_log(X3D_INFO, "Copy from right");
+  }
   
   // Copy over the x values from the parent edge, based on which side the line intersects
   // with. But, only copy it over if there was at least one visible edge before this
