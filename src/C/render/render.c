@@ -232,7 +232,20 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
 
             if(portal.region && portal.region != context->parent && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
-              x3d_render_level_polygon(NULL, NULL, context, portal, i);
+              
+              if(context->seg_id != 0)
+                x3d_render_level_polygon(NULL, NULL, context, portal, i);
+              else {
+                X3D_Polygon3D p = {
+                  .v = alloca(1000)
+                };
+                
+                x3d_prism3d_get_face(prism, i, &p);
+                
+                X3D_Vex3D normal[8];
+                
+                x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal);
+              }
               goto render_portals;
             }
 

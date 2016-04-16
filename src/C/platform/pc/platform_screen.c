@@ -467,10 +467,10 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     
     X3D_Color c = x3d_texture_get_texel(&brick_tex, uu, vv);
     
-    //if(zz > z_buf[y * window_surface->w + i]) {
+    if(zz > z_buf[y * window_surface->w + i]) {
       ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(c);
       z_buf[y * window_surface->w + i] = zz;
-    //}
+    }
     
     u += u_slope;
     v += v_slope;
