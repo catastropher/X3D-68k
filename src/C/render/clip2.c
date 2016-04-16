@@ -170,7 +170,7 @@ uint16 get_polygon(X3D_PolyVertex* v) {
 
 extern int16 render_mode;
 
-void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_RasterRegion* parent, int16 z, X3D_Vex3D* normal, X3D_Vex3D* v3d) {
+void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_RasterRegion* parent, int16 z, X3D_Vex3D* normal, X3D_Vex3D* v3d, uint16* uu, uint16* vv) {
   X3D_PolyVertex pv[total_v];
   
 #if 1
@@ -183,22 +183,16 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   x3d_polygon2d_remove_duplicate(&poly);
   
   uint16 i;
-  for(i = 0; i < poly.total_v; ++i) {
+  for(i = 0; i < poly.total_v && i < 4; ++i) {
     pv[i].v2d = v[i];
     pv[i].intensity = 0x7FFF / (i + 1);
-    pv[i].z = (0x7FFF * 16) / v3d[i].z;
+    pv[i].z = (0x7FFF * 16) / (v3d[i].z != 0 ? v3d[i].z : 1);
     
-    float a = normal[i].x / 32768.0 / 2 + .5;  //x3d_asin(normal[i].x) / 128.0 + .5;
-    float b = normal[i].y / 32768.0 / 2 + .5;//x3d_asin(normal[i].y) / 128.0 + .5;
-    
-    pv[i].u = a * 127;
-    pv[i].v = b * 127;
-    
-    //pv[i].u = 191 * ((((int32)x3d_asin(normal[i].x) << 15) / 128) + 16384) / 32768;
-    //pv[i].v = 191 * ((((int32)x3d_asin(normal[i].y) << 15) / 128) + 16384) / 32768;
+    pv[i].u = 16 * ((int32)uu[i] << 15) / 128;
+    pv[i].v = 16 * ((int32)vv[i] << 15) / 128;
   }
   
-#if 1
+#if 0
   pv[0].u = 0;
   pv[0].v = 0;
   

@@ -244,7 +244,11 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 X3D_Vex3D normal[8];
                 
-                x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal);
+                uint16 u[4] = { 0, 256, 256, 0 };
+                uint16 v[4] = { 0, 0, 256, 256 };
+                
+                
+                x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
               }
               goto render_portals;
             }
@@ -457,7 +461,11 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
       
       //if(i == 3 && d == 7)
       //if(i == 2 && d == 2)
-        x3d_polygon3d_render(&p, cam, region, c, norm);
+      
+      uint16 uu[4] = { 0, 127, 127, 0 };
+      uint16 vv[4] = { 0, 0, 127, 127 };
+      
+      x3d_polygon3d_render(&p, cam, region, c, norm, uu, vv);
     }
     
     X3D_SWAP(top, bottom);
@@ -514,8 +522,11 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   
   for(i = 0; i < steps + 2; ++i) {
     x3d_prism3d_get_face(prism, i, &p);
+
+    uint16 u[4] = { 0, 127, 127, 0 };
+    uint16 v[4] = { 0, 0, 127, 127 };
     
-    x3d_polygon3d_render(&p, cam, region, 0, norm);
+    x3d_polygon3d_render(&p, cam, region, 0, norm, u, v);
   }
 }
 

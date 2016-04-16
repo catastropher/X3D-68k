@@ -277,7 +277,7 @@ extern int16 render_mode;
 /// @return Nothing.
 /// @todo   Refactor this mess!
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal) {
+void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal, uint16* u, uint16* v) {
   X3D_Vex3D v3d[poly->total_v];
   X3D_Vex2D v2d[poly->total_v];
   X3D_RasterEdge edges[poly->total_v + 1];
@@ -362,7 +362,7 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   X3D_RasterRegion r;
   if(x3d_rasterregion_construct_clipped(&clip, &r)) {
     //x3d_rasterregion_fill_zbuf(&r, color, min_z);
-    x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d);
+    x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);
   }
   
   x3d_stack_restore(&renderman->stack, stack_ptr);

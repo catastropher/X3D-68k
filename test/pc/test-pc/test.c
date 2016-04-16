@@ -54,6 +54,9 @@ void create_test_level(void) {
 
   // Create some regular segments
   uint16 id0 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+  
+  return;
+  
   uint16 id1 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 4), 100);
   uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 4), 100);
   uint16 id3 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 1), 450);

@@ -44,7 +44,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  if (!x3d_texture_load_from_file(&brick_tex, "brick.bmp")) {
+  if (!x3d_texture_load_from_file(&brick_tex, "checkerboard.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load brick texture: %s", SDL_GetError());
   }
  
