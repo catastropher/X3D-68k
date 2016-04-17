@@ -185,7 +185,7 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   uint16 i;
   for(i = 0; i < poly.total_v; ++i) {
     pv[i].v2d = v[i];
-    pv[i].intensity = 0x7FFF / (i + 1);
+    pv[i].intensity = 0;//0x7FFF / (i + 1);
     pv[i].z = (0x7FFF * 16) / (v3d[i].z != 0 ? v3d[i].z : 1);
     
     pv[i].u = 16 * ((int32)uu[i] << 15) / 128;
@@ -222,6 +222,8 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
     //x3d_rasterregion_fill_zbuf(&r, c, z);
     
     x3d_rasterregion_fill_texture(&r, z);
+    
+    //x3d_rasterregion_draw_outline(&r, 31);
     
     //x3d_rasterregion_draw_outline(&r, x3d_rgb_to_color(255, 0, 255));
   }

@@ -140,6 +140,8 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
     }
   }
   
+  
+  
   int16 s_dy = p->v[i + 1]->v2d.y - p->v[i]->v2d.y;
   
   X3D_PolyVertex* a = p->v[i];
@@ -148,15 +150,15 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   
   x3d_scanline_slope_calc(&slope, a, b);
   
-  int16 dy = y - a->v2d.y;
+  int32 dy = y - a->v2d.y;
   
   
-  v->v2d.x = a->v2d.x + ((slope.x * dy) >> 16);
+  v->v2d.x = a->v2d.x + (((int64)slope.x * dy) >> 16);
   v->v2d.y = y;
   v->intensity = a->intensity + ((slope.intensity * dy) >> 16);
-  v->u = a->u + ((slope.u * dy) >> 16);
-  v->v = a->v + ((slope.v * dy) >> 16);
-  v->z = a->z + ((slope.z * dy) >> 16);
+  v->u = a->u + (((int64)slope.u * dy) >> 16);
+  v->v = a->v + (((int64)slope.v * dy) >> 16);
+  v->z = a->z + (((int64)slope.z * dy) >> 16);
   
 }
 

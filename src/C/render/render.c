@@ -231,7 +231,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             //////
             x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
 
-            if(portal.region && portal.region != context->parent && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
+            if(/*portal.region && portal.region != context->parent &&*/ context->faces[i].portal_seg_face == X3D_FACE_NONE) {
               
               if(context->seg_id != 0)
                 x3d_render_level_polygon(NULL, NULL, context, portal, i);
@@ -247,8 +247,9 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 uint16 u[4] = { 0, 256, 256, 0 };
                 uint16 v[4] = { 0, 0, 256, 256 };
                 
-                if(i == 1)
-                x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
+                if(i == 2) {
+                  x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
+                }
               }
               goto render_portals;
             }
@@ -575,6 +576,7 @@ void x3d_render(X3D_CameraObject* cam) {
     0,
     ((int32)x3d_sin(angle) * r) >> 15
   };
+
   
   //x3d_sphere_render((X3D_Vex3D) { 0, 0, 0 }, 75, 10, 31, cam, &x3d_rendermanager_get()->region);
   

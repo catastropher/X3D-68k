@@ -6,7 +6,7 @@
 #include "X3D_enginestate.h"
 #include "render/X3D_polyvertex.h"
 
-//#define x3d_log(...) ;
+#define x3d_log(...) ;
 
 void x3d_rasterregion_find_point_inside_left(X3D_RasterRegion* r, X3D_Vex2D left_in, X3D_Vex2D left_out, X3D_Vex2D* dest) {
   X3D_Vex2D mid;

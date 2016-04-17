@@ -2,7 +2,7 @@
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
 
-#define x3d_log(...) ;
+//#define //x3d_log(...) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.
@@ -91,8 +91,8 @@ void x3d_scaline_generator_adjust_slopes(X3D_ScanlineGenerator* gen, int16 start
     return;
   
   int16 span_t = ((int32)in << 15) / (in + out);
-  x3d_log(X3D_INFO, "Span t: %d, %d %d", span_t, in, out);
-  x3d_log(X3D_INFO, "Other side u: %d", other_side.u);
+  //x3d_log(X3D_INFO, "Span t: %d, %d %d", span_t, in, out);
+  //x3d_log(X3D_INFO, "Other side u: %d", other_side.u);
   
   int16 dy = end_y - start_y;
   
@@ -124,15 +124,34 @@ static _Bool x3d_scanlineg_edge_visible(X3D_ScanlineGenerator* gen) {
 }
 
 void x3d_scanline_generator_clip_top(X3D_ScanlineGenerator* gen) {
-  int16 in = gen->b->v2d.y - gen->dest->rect.y_range.min;
-  int16 out = gen->dest->rect.y_range.min - gen->a->v2d.y;
+  int32 in = gen->b->v2d.y - gen->dest->rect.y_range.min;
+  int32 out = gen->dest->rect.y_range.min - gen->a->v2d.y;
+  
+  gen->temp_a = *gen->a;
+  
+  while(out > 1000) {
+    x3d_log(X3D_INFO, "Too tall! (%d - %d)", gen->temp_a.v2d.x, gen->b->v2d.x);
+    gen->temp_a.v2d.x = (gen->b->v2d.x + gen->temp_a.v2d.x) / 2;
+    gen->temp_a.v2d.y = (gen->b->v2d.y + gen->temp_a.v2d.y) / 2;
+    
+    gen->temp_a.u = ((int32)gen->temp_a.u + gen->b->u) / 2;
+    gen->temp_a.v = ((int32)gen->temp_a.v + gen->b->v) / 2;
+    gen->temp_a.z = ((int32)gen->temp_a.z + gen->b->z) / 2;
+    
+    out = gen->dest->rect.y_range.min - gen->temp_a.v2d.y;
+  }
+  
+  x3d_log(X3D_INFO, "temp new x: %d", gen->temp_a.v2d.x);
+  
   int16 scale = ((int32)in << 15) / (in + out);
   int16 dy = gen->dest->rect.y_range.min - gen->a->v2d.y;
   
-  gen->temp_a.v2d.x = x3d_t_clip(gen->b->v2d.x, gen->a->v2d.x, scale);
+  gen->temp_a.v2d.x = x3d_t_clip(gen->b->v2d.x, gen->temp_a.v2d.x, scale);
   gen->temp_a.v2d.y = gen->dest->rect.y_range.min;
   
   gen->a = &gen->temp_a;
+
+  x3d_log(X3D_INFO, "new x: %d", gen->temp_a.v2d.x);
   
   gen->x = (int32)gen->a->v2d.x << 16;
   gen->u += gen->slope.u * dy;
@@ -225,11 +244,11 @@ _Bool x3d_scanlineg_pass_extreme_point(X3D_ScanlineGenerator* gen, X3D_Vex2D* po
 }
 
 void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extreme_y, int16 end_y) {
-  x3d_log(X3D_INFO, "Out same side!");
+  //x3d_log(X3D_INFO, "Out same side!");
   // If the extreme left point on the parent region isn't in the y range of the edge,
   // then it can't intersect the parent region
   if(x3d_scanlineg_fail_extreme_range(gen, extreme_y)) {
-    x3d_log(X3D_INFO, "Fail extreme y range!");
+    //x3d_log(X3D_INFO, "Fail extreme y range!");
     x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y);      
     return;
   }
@@ -240,7 +259,7 @@ void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extre
     X3D_Vex2D clip_a;
     X3D_Vex2D clip_b;
     
-    x3d_log(X3D_INFO, "Pass extreme y test");
+    //x3d_log(X3D_INFO, "Pass extreme y test");
     
     x3d_rasterregion_bin_search(point_inside, gen->a->v2d, &clip_a, gen->parent);      
     x3d_rasterregion_bin_search(point_inside, gen->b->v2d, &clip_b, gen->parent);
@@ -303,16 +322,16 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   X3D_SpanValue* span_val;
   
   
-  x3d_log(X3D_INFO, "Clip->x: %d, y: %d", clip->x, start_y);
-  x3d_log(X3D_INFO, "left: %d, right: %d", parent_span->left.x, parent_span->right.x);
+  //x3d_log(X3D_INFO, "Clip->x: %d, y: %d", clip->x, start_y);
+  //x3d_log(X3D_INFO, "left: %d, right: %d", parent_span->left.x, parent_span->right.x);
   
   if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x)) {
     span_val = &parent_span->left;
-    x3d_log(X3D_INFO, "Copy from left");
+    //x3d_log(X3D_INFO, "Copy from left");
   }
   else {
     span_val = &parent_span->right;
-    x3d_log(X3D_INFO, "Copy from right");
+    //x3d_log(X3D_INFO, "Copy from right");
   }
   
   // Copy over the x values from the parent edge, based on which side the line intersects
@@ -348,7 +367,7 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int1
   int16 x;
   _Bool left;
   
-  x3d_log(X3D_INFO, "BCLIP: %d, %d -> %d", clip.x, clip.y, t);
+  //x3d_log(X3D_INFO, "BCLIP: %d, %d -> %d", clip.x, clip.y, t);
   
   if(abs(span->left.x - clip.x) < abs(span->right.x - clip.x)) {
     x = span->left.x;
@@ -400,11 +419,11 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   
   X3D_ScanlineSlope slope = gen->slope;
 
-  x3d_log(X3D_INFO, "\nU slope before: %d", gen->slope.u);
+  //x3d_log(X3D_INFO, "\nU slope before: %d", gen->slope.u);
   
   x3d_scaline_generator_adjust_slopes(gen, gen->a->v2d.y, clip.y, clip.x, left, t, &end);
   
-  x3d_log(X3D_INFO, "U slope after: %d\n", gen->slope.u);
+  //x3d_log(X3D_INFO, "U slope after: %d\n", gen->slope.u);
   
   gen->slope = slope;
   
