@@ -153,9 +153,11 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   //x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
   //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
   
-  int16 new_min = X3D_MIN(y_range_left.min, y_range_right.min);
-  int16 new_max = X3D_MAX(y_range_left.max, y_range_right.max);
-  
+  int16 new_min = min_y;//X3D_MIN(y_range_left.min, y_range_right.min);
+  int16 new_max = max_y;//X3D_MAX(y_range_left.max, y_range_right.max);
+
+  x3d_log(X3D_INFO, "Max y: %d (real %d)", new_max, left.v[left.total_v - 1]->v2d.y);
+#if 0
   while(new_min <= new_max) {
     X3D_Span* span = x3d_rasterregion_get_span(dest, new_min);
     X3D_Vex2D left = { span->left.x, new_min };
@@ -177,6 +179,7 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
     
     --new_max;
   }
+#endif
   
   dest->span += new_min - dest->rect.y_range.min;
   dest->rect.y_range.min = new_min;

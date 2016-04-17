@@ -247,7 +247,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 uint16 u[4] = { 0, 256, 256, 0 };
                 uint16 v[4] = { 0, 0, 256, 256 };
                 
-                
+                if(i == 1)
                 x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
               }
               goto render_portals;
@@ -369,7 +369,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_segment_render_connecting_segments(&context);
 
   if(id == 0) {
-    x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
+    //x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
   }
 
   x3d_stack_restore(&renderman->stack, stack_save);

@@ -3,6 +3,8 @@
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
 
+#define x3d_log(...) ;
+
 void print_vex2d(int16 num, X3D_Vex2D v) {
   x3d_log(X3D_INFO, "p %d: %d %d", num, v.x, v.y);
 }
@@ -228,5 +230,4 @@ _Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left,
   
   return left->total_v > 1 && right->total_v > 1;
 }
-
 

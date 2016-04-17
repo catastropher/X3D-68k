@@ -55,6 +55,7 @@ void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale);
 void x3d_polygon3d_rotate(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex3D center);
 void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest);
 void x3d_polygon3d_render(X3D_Polygon3D* poly, struct X3D_CameraObject* cam, struct X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal, uint16* u, uint16* v);
+_Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, int16 near_z, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va);
 
 // 2D polygon functions
 void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle256 ang);

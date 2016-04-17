@@ -2,7 +2,7 @@
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
 
-//#define x3d_log(...) ;
+#define x3d_log(...) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.
@@ -54,8 +54,8 @@ void x3d_rasterregion_generate_new_spans(X3D_ScanlineGenerator* gen, int16 start
   X3D_SpanValue* end_span = (X3D_SpanValue *)((uint8 *)gen->dest->span + (end_y - gen->dest->rect.y_range.min) * sizeof(X3D_Span));
   
   /// @bug This is broken! Need to implement new strategy to find the min/max value
-  gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
-  gen->y_range.max = X3D_MAX(gen->y_range.max, end_y - 1);
+  //gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
+  //gen->y_range.max = X3D_MAX(gen->y_range.max, end_y - 1);
   
   while(gen->span < end_span) {
     gen->span->x         = x3d_fp16x6_whole(gen->x);
