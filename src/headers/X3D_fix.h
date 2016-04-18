@@ -16,6 +16,7 @@
 #pragma once
 
 #include "X3D_int.h"
+#include "X3D_assert.h"
 
 /// An 8.8 fixed point number
 typedef int16 fp8x8;
@@ -42,11 +43,19 @@ typedef struct x3d_fix_slope {
 } x3d_fix_slope;
 
 static inline _Bool x3d_msb(int32 i) {
-  return i & (1L << 30);
+  return i & (1L << 29);
 }
 
-static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 end, int16 dx) {
+static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 end, int32 dx) {
   slope->shift = 0;
+  
+  _Bool start_neg = start < 0;
+  if(start_neg)
+    start = -start;
+  
+  _Bool end_neg = end < 0;
+  if(end_neg)
+    end = -end;
   
   
   if(start != 0 || end != 0) {
@@ -58,6 +67,14 @@ static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 e
     }
   #endif
   }
+  
+  if(start_neg)
+    start = -start;
+  
+  if(end_neg)
+    end = -end;
+  
+  x3d_assert(((int32)end - start) == ((int64)end - start));
   
   slope->val = (end - start) / dx;
 }
@@ -75,7 +92,9 @@ static inline int32 x3d_fix_slope_val(x3d_fix_slope* s) {
   return s->val >> s->shift;
 }
 
-
+static inline void x3d_fix_slope_add_mul(x3d_fix_slope* add_to, x3d_fix_slope* mul, int32 m) {
+  add_to->val += mul->val * m;
+}
 
 
 

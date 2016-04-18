@@ -198,7 +198,7 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
     pv[i].u = ((int32)uu[i] << 22) / v3d[i].z;
     pv[i].v = ((int32)vv[i] << 22) / v3d[i].z;
     
-    x3d_log(X3D_INFO, "===========>u: %d, v: %d", pv[i].u, pv[i].v);
+    //x3d_log(X3D_INFO, "===========>u: %d, v: %d", pv[i].u, pv[i].v);
     
     //pv[i].u = 16 * ((int32)uu[i] << 15) / 128;
     //pv[i].v = 16 * ((int32)vv[i] << 15) / 128;

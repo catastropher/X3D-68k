@@ -441,20 +441,47 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
 }
 
 void x3d_span_get_spanvalue_at_x(X3D_PolyVertex left, X3D_PolyVertex right, int16 x, X3D_SpanValue* dest) {
-  int16 dx = right.v2d.x - left.v2d.x;
+  int32 dx = right.v2d.x - left.v2d.x;
+  
+  if(dx == 0) dx = 1;
   
   fp16x16 i_slope = x3d_val_slope(right.intensity - left.intensity, dx);
-  fp16x16 u_slope = x3d_val_slope2(right.u - left.u, dx);
-  fp16x16 v_slope = x3d_val_slope2(right.v - left.v, dx);
-  fp16x16 z_slope = x3d_val_slope2(right.z - left.z, dx);
+  //fp16x16 u_slope = x3d_val_slope2(right.u - left.u, dx);
+  //fp16x16 v_slope = x3d_val_slope2(right.v - left.v, dx);
+  //fp16x16 z_slope = x3d_val_slope2(right.z - left.z, dx);
   
-  int16 ddx = x - left.v2d.x;
+  int32 ddx = x - left.v2d.x;
+  
+  if(ddx == 0) ddx = 1;
   
   dest->x = x;
   dest->intensity = left.intensity + ((i_slope * ddx) >> 16);
-  dest->u = left.u + (u_slope * ddx);
-  dest->v = left.v + (v_slope * ddx);
-  dest->z = left.z + (z_slope * ddx);
+  
+  
+  x3d_fix_slope u_slope, v_slope, z_slope;
+  x3d_fix_slope uu, vv, zz;
+  
+  x3d_fix_slope_init(&u_slope, left.u, right.u, dx);
+  x3d_fix_slope_same_shift(&uu, &u_slope, left.u);
+  
+  x3d_fix_slope_init(&v_slope, left.v, right.v, dx);
+  x3d_fix_slope_same_shift(&vv, &v_slope, left.v);
+  
+  x3d_fix_slope_init(&z_slope, left.z, right.z, dx);
+  x3d_fix_slope_same_shift(&zz, &z_slope, left.z);
+  
+  x3d_fix_slope_add_mul(&uu, &u_slope, ddx);
+  x3d_fix_slope_add_mul(&vv, &v_slope, ddx);
+  x3d_fix_slope_add_mul(&zz, &z_slope, ddx);
+
+  dest->u = x3d_fix_slope_val(&uu);
+  dest->v = x3d_fix_slope_val(&vv);
+  dest->z = x3d_fix_slope_val(&zz);
+  
+  
+  //dest->u = left.u + (u_slope * ddx);
+  //dest->v = left.v + (v_slope * ddx);
+  //dest->z = left.z + (z_slope * ddx);
 }
 
 
@@ -466,8 +493,24 @@ void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine*
     x3d_polyline_get_value(p_left, i, &left);
     x3d_polyline_get_value(p_right, i, &right);
     
-    if(i == region->rect.y_range.min) {
-      x3d_log(X3D_INFO, "================================>left and right: %d - %d", left.u, right.u);
+    if(i == region->rect.y_range.min || 1) {
+      if(left.u < 0 || right.u < 0) {
+        x3d_log(X3D_INFO, "================================>left and right: %d - %d", left.u, right.u);
+        
+        x3d_log(X3D_INFO, "wanted y: %d", i);
+        x3d_log(X3D_INFO, "BEGIN V=======================");
+        uint16 k;
+        for(k = 0; k < p_left->total_v; ++k) {
+          if(!p_left) {
+            x3d_log(X3D_INFO, "NULL LEFT");
+          }
+          else if(!p_left->v[k]) {
+            x3d_log(X3D_INFO, "NULL V");
+          }
+          x3d_log(X3D_INFO, "u: %d, y: %d", p_left->v[k]->u, p_left->v[k]->v2d.y);
+        }
+        x3d_log(X3D_INFO, "End V=======================");
+      }
     }
     
     X3D_Span* span = x3d_rasterregion_get_span(region, i);
@@ -475,6 +518,13 @@ void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine*
     
     x3d_span_get_spanvalue_at_x(left, right, span->left.x, &new_left);
     x3d_span_get_spanvalue_at_x(left, right, span->right.x, &new_right);
+    
+    if(new_left.u < 0 || new_right.u < 0) {
+      x3d_log(X3D_INFO, "Invalid range: %d - %d", new_left.u, new_right.u);
+      x3d_log(X3D_INFO, "Real range: %d - %d", left.u, right.u);
+      x3d_log(X3D_INFO, "xrange: %d - %d\n", left.v2d.x, right.v2d.x);
+    }
+    
     
     span->left = new_left;
     span->right = new_right;
