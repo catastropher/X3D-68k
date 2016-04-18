@@ -28,15 +28,32 @@ int32 x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex*
   print_vex2d(0, c->v2d);
   
   x3d_log(X3D_INFO, "");
+ 
+  const int32 MAX_VAL = INT16_MAX / 4;
   
   
-  X3D_Vex3D v1 = { b->v2d.x - a->v2d.x, b->v2d.y - a->v2d.y, 0 };
-  X3D_Vex3D v2 = { c->v2d.x - b->v2d.x, c->v2d.y - b->v2d.y, 0 };
+  X3D_Vex3D_int32 v1 = { b->v2d.x - a->v2d.x, b->v2d.y - a->v2d.y, 0 };
+  X3D_Vex3D_int32 v2 = { c->v2d.x - b->v2d.x, c->v2d.y - b->v2d.y, 0 };
+  
+  while(abs(v1.x) >= MAX_VAL || abs(v1.y) >= MAX_VAL || abs(v1.z) >= MAX_VAL) {
+    v1.x /= 2;
+    v1.y /= 2;
+    v1.z /= 2;
+  }
+  
+  while(abs(v2.x) >= MAX_VAL || abs(v2.y) >= MAX_VAL || abs(v2.z) >= MAX_VAL) {
+    v2.x /= 2;
+    v2.y /= 2;
+    v2.z /= 2;
+  }
+  
+  X3D_Vex3D v1_small = { v1.x, v1.y, v1.z };
+  X3D_Vex3D v2_small = { v2.x, v2.y, v2.z };
   
   X3D_Vex3D dest;
-  x3d_vex3d_fp0x16_cross(&dest, &v1, &v2);
+  //x3d_vex3d_fp0x16_cross(&dest, &v1_small, &v2_small);
   
-  return dest.z;
+  return ((((int32)v1_small.x * v2_small.y) >> 1) - (((int32)v1_small.y * v2_small.x) >> 1));
   
   //return (int32)v1.x * v2.y - (int32)v1.y * v2.x;
 }
@@ -153,12 +170,12 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   int32 dy = y - a->v2d.y;
   
   
-  v->v2d.x = a->v2d.x + (((int64)slope.x * dy) >> 16);
+  //v->v2d.x = a->v2d.x + (((int64)slope.x * dy) >> 16);
   v->v2d.y = y;
   v->intensity = a->intensity + ((slope.intensity * dy) >> 16);
   
-  x3d_fix_slope u_slope, v_slope, z_slope;
-  x3d_fix_slope uu, vv, zz;
+  x3d_fix_slope u_slope, v_slope, z_slope, x_slope;
+  x3d_fix_slope uu, vv, zz, xx;
   
   x3d_fix_slope_init(&u_slope, a->u, b->u, s_dy);
   x3d_fix_slope_same_shift(&uu, &u_slope, a->u);
@@ -169,13 +186,18 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   x3d_fix_slope_init(&z_slope, a->z, b->z, s_dy);
   x3d_fix_slope_same_shift(&zz, &z_slope, a->z);
   
+  x3d_fix_slope_init(&x_slope, a->v2d.x, b->v2d.x, s_dy);
+  x3d_fix_slope_same_shift(&xx, &x_slope, a->v2d.x);
+  
   x3d_fix_slope_add_mul(&uu, &u_slope, dy);
   x3d_fix_slope_add_mul(&vv, &v_slope, dy);
   x3d_fix_slope_add_mul(&zz, &z_slope, dy);
+  x3d_fix_slope_add_mul(&xx, &x_slope, dy);
 
   v->u = x3d_fix_slope_val(&uu);
   v->v = x3d_fix_slope_val(&vv);
   v->z = x3d_fix_slope_val(&zz);
+  v->v2d.x = x3d_fix_slope_val(&xx);
   
   //v->u = (a->u + slope.u * dy);
   //v->v = (a->v + slope.v * dy);
@@ -183,7 +205,7 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
 }
 
 _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
-  int16 clockwise = 0;
+  int32 clockwise = 0;
   
   x3d_log(X3D_INFO, "total_v: %d", total_v);
   
@@ -198,7 +220,7 @@ _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
   
   if(clockwise == 0)
     return X3D_FALSE;
-    
+
   // Reverse the points if not clockwise
   if(clockwise > 0) {
     x3d_log(X3D_INFO, "not clockwise");

@@ -212,6 +212,8 @@ void x3d_render_level_polygon(X3D_Polygon3D* p, X3D_Vex3D* normal, X3D_SegmentRe
   x3d_rasterregion_fill(portal.region, rface.color);
 }
 
+void x3d_set_texture(int16 id);
+
 void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   uint16 i;
   
@@ -231,9 +233,9 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             //////
             x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
 
-            if(/*portal.region && portal.region != context->parent &&*/ context->faces[i].portal_seg_face == X3D_FACE_NONE) {
+            if(portal.region && portal.region != context->parent && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
               
-              if(context->seg_id != 0)
+              if(context->seg_id != 0 && context->seg_id > 3)
                 x3d_render_level_polygon(NULL, NULL, context, portal, i);
               else {
                 X3D_Polygon3D p = {
@@ -242,12 +244,20 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 x3d_prism3d_get_face(prism, i, &p);
                 
-                X3D_Vex3D normal[8];
+                X3D_Vex3D normal[10];
                 
-                uint16 u[4] = { 0, 64, 64, 0 };
-                uint16 v[4] = { 0, 0, 64, 64 };
+                uint16 u[10] = { 0, 256, 256, 0 };
+                uint16 v[10] = { 0, 0, 256, 256 };
                 
-                //if(i == 1) {
+                
+                if(context->seg_id == 0) {
+                  x3d_set_texture(0);
+                }
+                else if(context->seg_id <= 3) {
+                  x3d_set_texture(1);
+                }
+                
+                //if(i == 2) {
                   x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
                 //}
               }

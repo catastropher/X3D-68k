@@ -516,14 +516,19 @@ void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine*
     X3D_Span* span = x3d_rasterregion_get_span(region, i);
     X3D_SpanValue new_left, new_right;
     
-    x3d_span_get_spanvalue_at_x(left, right, span->left.x, &new_left);
-    x3d_span_get_spanvalue_at_x(left, right, span->right.x, &new_right);
+    x3d_span_get_spanvalue_at_x(left, right, X3D_MAX(span->left.x, left.v2d.x), &new_left);
+    x3d_span_get_spanvalue_at_x(left, right, X3D_MIN(span->right.x, right.v2d.x), &new_right);
     
+#if 0
     if(new_left.u < 0 || new_right.u < 0) {
-      x3d_log(X3D_INFO, "Invalid range: %d - %d", new_left.u, new_right.u);
+      x3d_log(X3D_INFO, "Invalid range: %d - %d (y: %d)", new_left.u, new_right.u, i);
       x3d_log(X3D_INFO, "Real range: %d - %d", left.u, right.u);
+      x3d_log(X3D_INFO, "want range: %d - %d", new_left.x, new_right.x);
       x3d_log(X3D_INFO, "xrange: %d - %d\n", left.v2d.x, right.v2d.x);
+      
+      x3d_screen_draw_line(new_left.u, i, new_right.u, i, 31);
     }
+#endif
     
     
     span->left = new_left;

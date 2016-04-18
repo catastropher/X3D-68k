@@ -34,7 +34,15 @@ static int16 record_frame;
 static char record_name[1024];
 static _Bool virtual_window;
 
+X3D_Texture wood_tex;
 X3D_Texture brick_tex;
+
+X3D_Texture* global_texture = &brick_tex;
+
+void x3d_set_texture(int16 id) {
+  if(id == 0)       global_texture = &wood_tex;
+  else if(id == 1)  global_texture = &brick_tex;
+}
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
@@ -44,10 +52,14 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  if (!x3d_texture_load_from_file(&brick_tex, "checkerboard.bmp")) {
+  if(!x3d_texture_load_from_file(&wood_tex, "panel.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load wood texture: %s", SDL_GetError());
+  }
+
+  if(!x3d_texture_load_from_file(&brick_tex, "wood2.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load brick texture: %s", SDL_GetError());
   }
- 
+  
 #if 0
   SDL_Surface* s = SDL_LoadBMP("piano.bmp");
   x3d_gray_dither(s);
@@ -481,9 +493,9 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     
     zz >>= 8;
     
-    X3D_Color c = x3d_texture_get_texel(&brick_tex, uu, vv);
+    X3D_Color c = x3d_texture_get_texel(global_texture, uu, vv);
     
-    if(zz > z_buf[y * window_surface->w + i]) {
+    if(zz >= z_buf[y * window_surface->w + i]) {
       ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(c);
       z_buf[y * window_surface->w + i] = zz;
     }

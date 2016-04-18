@@ -35,11 +35,11 @@ void setup_key_map(void);
 // Creates a hard-coded test level
 void create_test_level(void) {
   // Create a new segment
-  uint16 base_v = 4;
+  uint16 base_v = 8;
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };
 
-  x3d_prism3d_construct(prism, base_v, 400,  1000, angle);
+  x3d_prism3d_construct(prism, base_v, 300,  275, angle);
 
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
@@ -54,8 +54,6 @@ void create_test_level(void) {
 
   // Create some regular segments
   uint16 id0 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
-  
-  return;
   
   uint16 id1 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 4), 100);
   uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 4), 100);
@@ -176,7 +174,7 @@ void setup_camera(void) {
 }
 
 int main() {
-#if defined(__linux__)
+#if defined(__linux__) && 1
   int16 w = 640;
   int16 h = 480;
 #else
@@ -195,6 +193,17 @@ int main() {
 
   x3d_init(&init);
 
+  x3d_fix_slope slope, v;
+  x3d_fix_slope_init(&slope, 100000, 0, 5);
+  x3d_fix_slope_same_shift(&v, &slope, 0);
+  
+  x3d_fix_slope_add_mul(&v, &slope, 5);
+  
+  x3d_log(X3D_INFO, "Slope: %d, shift: %d", slope.val, slope.shift);
+  x3d_log(X3D_INFO, "Val: %d", x3d_fix_slope_val(&v));
+  //exit(0);
+  
+  
   // Set up key mapping
   setup_key_map();
   x3d_keymanager_set_callback(engine_test_handle_keys);

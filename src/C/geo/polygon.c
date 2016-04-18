@@ -26,7 +26,7 @@
 
 #include "X3D_keys.h"
 
-#define x3d_log(...) ;
+//#define x3d_log(...) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Prints out the points in a polygon (for debugging).
@@ -288,6 +288,8 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
 
   x3d_camera_transform_points(cam, poly->v, poly->total_v, v3d, NULL);
   
+  x3d_log(X3D_INFO, "Enter %s", __FUNCTION__);
+  
   X3D_Polygon3D temp = {
       .v = alloca(1000)
     };
@@ -394,7 +396,7 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   min_z = X3D_MAX(min_z, 1);
   
   X3D_RasterRegion r;
-  if(1 || x3d_rasterregion_construct_clipped(&clip, &r)) {
+  if(x3d_rasterregion_construct_clipped(&clip, &r)) {
     //x3d_rasterregion_fill_zbuf(&r, color, min_z);
     
     x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);
