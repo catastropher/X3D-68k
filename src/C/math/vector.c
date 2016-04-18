@@ -138,7 +138,6 @@ void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src) 
   }
   else {
     dest->x = ((int32)src->x * screen->scale_x) / src->z + screen->center.x;
-    x3d_log(X3D_INFO, "Transform x: %d, z: %d scale: %d => %d", src->x, src->z, screen->scale_x, dest->x);
     dest->y = ((int32)src->y * screen->scale_y) / src->z + screen->center.y;
   }
 }

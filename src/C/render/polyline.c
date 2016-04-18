@@ -156,10 +156,9 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   v->v2d.x = a->v2d.x + (((int64)slope.x * dy) >> 16);
   v->v2d.y = y;
   v->intensity = a->intensity + ((slope.intensity * dy) >> 16);
-  v->u = a->u + (((int64)slope.u * dy) >> 16);
-  v->v = a->v + (((int64)slope.v * dy) >> 16);
-  v->z = a->z + (((int64)slope.z * dy) >> 16);
-  
+  v->u = (a->u + slope.u * dy);
+  v->v = (a->v + slope.v * dy);
+  v->z = (a->z + slope.z * dy);
 }
 
 _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {

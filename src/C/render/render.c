@@ -247,9 +247,9 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 uint16 u[4] = { 0, 256, 256, 0 };
                 uint16 v[4] = { 0, 0, 256, 256 };
                 
-                if(i == 2) {
+                //if(i == 1) {
                   x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
-                }
+                //}
               }
               goto render_portals;
             }

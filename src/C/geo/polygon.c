@@ -398,7 +398,8 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
     x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);
     
     for(i = 0; i < poly->total_v; ++i) {
-      x3d_log(X3D_INFO, "2D point %d: { %d, %d }", i, v2d[i].x, v2d[i].y);
+      x3d_log(X3D_INFO, "uv: %d, %d", u[i], v[i]);
+      //x3d_log(X3D_INFO, "2D point %d: { %d, %d }", i, v2d[i].x, v2d[i].y);
     }
     
   }
@@ -458,7 +459,7 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
 
     //x3d_log(X3D_INFO, "point %d: { %d, %d, %d }", v, poly->v[v].x, poly->v[v].y, poly->v[v].z);
     
-    near_z = 15;
+    near_z = 100;
     if(in) {
       x3d_polygon3d_clip_add_point(dest, new_ua, new_va, poly->v[v], ua[v], va[v]);
     }
@@ -483,8 +484,8 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
       int16 new_u = x3d_t_clip(ua[v], ua[next_v], t);
       int16 new_v = x3d_t_clip(va[v], va[next_v], t);
      
-      //x3d_log(X3D_INFO, "u range: %d - %d", ua[v], ua[next_v]);
-      //x3d_log(X3D_INFO, "new u: %d, v: %d", new_u, new_v);
+      x3d_log(X3D_INFO, "u range: %d - %d", ua[v], ua[next_v]);
+      x3d_log(X3D_INFO, "new u: %d, v: %d", new_u, new_v);
       
       x3d_polygon3d_clip_add_point(dest, new_ua, new_va, new_p, new_u, new_v);
       
@@ -493,7 +494,7 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
   }
   
   for(v = 0; v < dest->total_v; ++v) {
-    x3d_log(X3D_INFO, "clipped point %d: { %d, %d, %d } -> %d, %d", v, dest->v[v].x, dest->v[v].y, dest->v[v].z, new_ua[v], new_va[v]);
+    //x3d_log(X3D_INFO, "clipped point %d: { %d, %d, %d } -> %d, %d", v, dest->v[v].x, dest->v[v].y, dest->v[v].z, new_ua[v], new_va[v]);
   }
   
   //x3d_log(X3D_INFO, "Total clip: %d\n", total_clip);

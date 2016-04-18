@@ -17,9 +17,9 @@ void x3d_scanline_slope_calc(X3D_ScanlineSlope* slope, const X3D_PolyVertex* a, 
   int16 dy = b->v2d.y - a->v2d.y;
   
   slope->x = x3d_val_slope(b->v2d.x - a->v2d.x, dy);
-  slope->u = x3d_val_slope(b->u - a->u,         dy);
-  slope->v = x3d_val_slope(b->v - a->v,         dy);
-  slope->z = x3d_val_slope(b->z - a->z,         dy);
+  slope->u = x3d_val_slope2(b->u - a->u,         dy);
+  slope->v = x3d_val_slope2(b->v - a->v,         dy);
+  slope->z = x3d_val_slope2(b->z - a->z,         dy);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -134,9 +134,9 @@ void x3d_scanline_generator_clip_top(X3D_ScanlineGenerator* gen) {
     gen->temp_a.v2d.x = (gen->b->v2d.x + gen->temp_a.v2d.x) / 2;
     gen->temp_a.v2d.y = (gen->b->v2d.y + gen->temp_a.v2d.y) / 2;
     
-    gen->temp_a.u = ((int32)gen->temp_a.u + gen->b->u) / 2;
-    gen->temp_a.v = ((int32)gen->temp_a.v + gen->b->v) / 2;
-    gen->temp_a.z = ((int32)gen->temp_a.z + gen->b->z) / 2;
+ //   gen->temp_a.u = ((int32)gen->temp_a.u + gen->b->u) / 2;
+ //   gen->temp_a.v = ((int32)gen->temp_a.v + gen->b->v) / 2;
+ //   gen->temp_a.z = ((int32)gen->temp_a.z + gen->b->z) / 2;
     
     out = gen->dest->rect.y_range.min - gen->temp_a.v2d.y;
   }
@@ -444,17 +444,17 @@ void x3d_span_get_spanvalue_at_x(X3D_PolyVertex left, X3D_PolyVertex right, int1
   int16 dx = right.v2d.x - left.v2d.x;
   
   fp16x16 i_slope = x3d_val_slope(right.intensity - left.intensity, dx);
-  fp16x16 u_slope = x3d_val_slope(right.u - left.u, dx);
-  fp16x16 v_slope = x3d_val_slope(right.v - left.v, dx);
-  fp16x16 z_slope = x3d_val_slope(right.z - left.z, dx);
+  fp16x16 u_slope = x3d_val_slope2(right.u - left.u, dx);
+  fp16x16 v_slope = x3d_val_slope2(right.v - left.v, dx);
+  fp16x16 z_slope = x3d_val_slope2(right.z - left.z, dx);
   
-  int ddx = x - left.v2d.x;
+  int16 ddx = x - left.v2d.x;
   
   dest->x = x;
   dest->intensity = left.intensity + ((i_slope * ddx) >> 16);
-  dest->u = left.u + ((u_slope * ddx) >> 16);
-  dest->v = left.v + ((v_slope * ddx) >> 16);
-  dest->z = left.z + ((z_slope * ddx) >> 16);
+  dest->u = left.u + (u_slope * ddx);
+  dest->v = left.v + (v_slope * ddx);
+  dest->z = left.z + (z_slope * ddx);
 }
 
 

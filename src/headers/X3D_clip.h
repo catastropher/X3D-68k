@@ -9,8 +9,8 @@
 typedef struct X3D_SpanValue {
   int16 x;
   int16 intensity;
-  int16 u, v;
-  int16 z;
+  int32 u, v;
+  int32 z;
 } X3D_SpanValue;
 
 typedef struct X3D_Span {
@@ -86,5 +86,6 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
 
 
 fp16x16 x3d_val_slope(int16 d_a, int16 d_b);
+fp16x16 x3d_val_slope2(fp16x16 d_a, int16 d_b);
 X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y);
 void x3d_rasterregion_fill_texture(X3D_RasterRegion* r, int16 z);

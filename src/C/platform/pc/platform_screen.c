@@ -437,26 +437,28 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
   fp16x16 u_slope = 0;
   fp16x16 v_slope = 0;
   fp16x16 z_slope = 0;
-  fp16x16 u = (int32)span->left.u << 16;
-  fp16x16 v = (int32)span->left.v << 16;
-  fp16x16 z = (int32)span->left.z << 16;
+  fp16x16 u = (int32)span->left.u;
+  fp16x16 v = (int32)span->left.v;
+  fp16x16 z = (int32)span->left.z;
   
   if(dx != 0) {
-    u_slope = x3d_val_slope(span->right.u - span->left.u, dx);
-    v_slope = x3d_val_slope(span->right.v - span->left.v, dx);
-    z_slope = x3d_val_slope(span->right.z - span->left.z, dx);
+    u_slope = x3d_val_slope2(span->right.u - span->left.u, dx);
+    v_slope = x3d_val_slope2(span->right.v - span->left.v, dx);
+    z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
   }
   
   int16* z_buf = x3d_rendermanager_get()->zbuf;
   
   uint16 i;
   for(i = span->left.x; i <= span->right.x; ++i) {
-    fp0x16 zz = z >> 16;
+    int32 zz = z >> 8;
     
     if(zz <= 0) zz = 0x7FFF;
     
-    int16 uu = (((u / zz) >> 1) * 128) >> 15;
-    int16 vv = (((v / zz) >> 1) * 128) >> 15;
+    int16 uu = (u / zz);   //(((u / zz) >> 1) * 128) >> 15;
+    int16 vv = (v / zz);//(((v / zz) >> 1) * 128) >> 15;
+    
+    //x3d_log(X3D_INFO, "u: %d, v: %d", uu, vv);
     
     //uu /= 16;
     //vv /= 16;
@@ -464,6 +466,8 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     //int16 uu = (((u >> 16) * zz) * 192) >> 15;
     //int16 vv = (((v >> 16) * zz) * 192) >> 15;
     
+    
+    zz >>= 7;
     
     X3D_Color c = x3d_texture_get_texel(&brick_tex, uu, vv);
     

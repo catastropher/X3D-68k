@@ -23,7 +23,7 @@
 #include "X3D_trig.h"
 #include "render/X3D_scanline.h"
 
-#define x3d_log(...) ;
+//#define x3d_log(...) ;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,6 +54,11 @@ void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
 fp16x16 x3d_val_slope(int16 d_a, int16 d_b) {
   if(d_b == 0) return 0;
   return ((int32)d_a << 16) / d_b;
+}
+
+fp16x16 x3d_val_slope2(fp16x16 d_a, int16 d_b) {
+  if(d_b == 0) return 0;
+  return d_a / d_b;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -186,10 +191,17 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   for(i = 0; i < poly.total_v; ++i) {
     pv[i].v2d = v[i];
     pv[i].intensity = 0;//0x7FFF / (i + 1);
-    pv[i].z = (0x7FFF * 16) / (v3d[i].z != 0 ? v3d[i].z : 1);
+    //pv[i].z = (0x7FFF * 16) / (v3d[i].z != 0 ? v3d[i].z : 1);
     
-    pv[i].u = 16 * ((int32)uu[i] << 15) / 128;
-    pv[i].v = 16 * ((int32)vv[i] << 15) / 128;
+    pv[i].z = (1L << 30) / (v3d[i].z != 0 ? v3d[i].z : 1);
+    
+    pv[i].u = ((int32)uu[i] << 22) / v3d[i].z;
+    pv[i].v = ((int32)vv[i] << 22) / v3d[i].z;
+    
+    x3d_log(X3D_INFO, "===========>u: %d, v: %d", pv[i].u, pv[i].v);
+    
+    //pv[i].u = 16 * ((int32)uu[i] << 15) / 128;
+    //pv[i].v = 16 * ((int32)vv[i] << 15) / 128;
   }
   
 #if 0
@@ -209,8 +221,8 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   
   for(i = 0; i < poly.total_v; ++i) {
     if(v3d[i].z != 0) {
-      pv[i].u = pv[i].u / v3d[i].z;
-      pv[i].v = pv[i].v / v3d[i].z;
+      //pv[i].u = pv[i].u / v3d[i].z;
+      //pv[i].v = pv[i].v / v3d[i].z;
     }
   }
   
