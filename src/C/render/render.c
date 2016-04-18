@@ -244,8 +244,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 X3D_Vex3D normal[8];
                 
-                uint16 u[4] = { 0, 256, 256, 0 };
-                uint16 v[4] = { 0, 0, 256, 256 };
+                uint16 u[4] = { 0, 64, 64, 0 };
+                uint16 v[4] = { 0, 0, 64, 64 };
                 
                 //if(i == 1) {
                   x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);

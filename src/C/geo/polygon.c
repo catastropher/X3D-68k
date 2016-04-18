@@ -26,6 +26,8 @@
 
 #include "X3D_keys.h"
 
+#define x3d_log(...) ;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Prints out the points in a polygon (for debugging).
 ///
@@ -459,7 +461,7 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
 
     //x3d_log(X3D_INFO, "point %d: { %d, %d, %d }", v, poly->v[v].x, poly->v[v].y, poly->v[v].z);
     
-    near_z = 100;
+    near_z = 15;
     if(in) {
       x3d_polygon3d_clip_add_point(dest, new_ua, new_va, poly->v[v], ua[v], va[v]);
     }

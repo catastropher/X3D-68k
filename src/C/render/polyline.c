@@ -142,7 +142,7 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
   
   
   
-  int16 s_dy = p->v[i + 1]->v2d.y - p->v[i]->v2d.y;
+  int32 s_dy = p->v[i + 1]->v2d.y - p->v[i]->v2d.y;
   
   X3D_PolyVertex* a = p->v[i];
   X3D_PolyVertex* b = p->v[i + 1];

@@ -130,7 +130,7 @@ void x3d_scanline_generator_clip_top(X3D_ScanlineGenerator* gen) {
   gen->temp_a = *gen->a;
   
   while(out > 1000) {
-    x3d_log(X3D_INFO, "Too tall! (%d - %d)", gen->temp_a.v2d.x, gen->b->v2d.x);
+    //x3d_log(X3D_INFO, "Too tall! (%d - %d)", gen->temp_a.v2d.x, gen->b->v2d.x);
     gen->temp_a.v2d.x = (gen->b->v2d.x + gen->temp_a.v2d.x) / 2;
     gen->temp_a.v2d.y = (gen->b->v2d.y + gen->temp_a.v2d.y) / 2;
     
@@ -141,7 +141,7 @@ void x3d_scanline_generator_clip_top(X3D_ScanlineGenerator* gen) {
     out = gen->dest->rect.y_range.min - gen->temp_a.v2d.y;
   }
   
-  x3d_log(X3D_INFO, "temp new x: %d", gen->temp_a.v2d.x);
+  //3d_log(X3D_INFO, "temp new x: %d", gen->temp_a.v2d.x);
   
   int16 scale = ((int32)in << 15) / (in + out);
   int16 dy = gen->dest->rect.y_range.min - gen->a->v2d.y;
@@ -151,7 +151,7 @@ void x3d_scanline_generator_clip_top(X3D_ScanlineGenerator* gen) {
   
   gen->a = &gen->temp_a;
 
-  x3d_log(X3D_INFO, "new x: %d", gen->temp_a.v2d.x);
+  //x3d_log(X3D_INFO, "new x: %d", gen->temp_a.v2d.x);
   
   gen->x = (int32)gen->a->v2d.x << 16;
   gen->u += gen->slope.u * dy;
@@ -465,6 +465,10 @@ void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine*
     X3D_PolyVertex left, right;
     x3d_polyline_get_value(p_left, i, &left);
     x3d_polyline_get_value(p_right, i, &right);
+    
+    if(i == region->rect.y_range.min) {
+      x3d_log(X3D_INFO, "================================>left and right: %d - %d", left.u, right.u);
+    }
     
     X3D_Span* span = x3d_rasterregion_get_span(region, i);
     X3D_SpanValue new_left, new_right;

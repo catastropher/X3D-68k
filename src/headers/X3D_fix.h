@@ -35,6 +35,50 @@ typedef uint16 ufp8x8;
 /// An angle that goes from 0-255 instead of 0-359
 typedef uint8 angle256;
 
+
+typedef struct x3d_fix_slope {
+  int32 val;
+  int16 shift;
+} x3d_fix_slope;
+
+static inline _Bool x3d_msb(int32 i) {
+  return i & (1L << 30);
+}
+
+static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 end, int16 dx) {
+  slope->shift = 0;
+  
+  
+  if(start != 0 || end != 0) {
+  #if 1
+    while(!x3d_msb(start) && !x3d_msb(end)) {
+      ++slope->shift;
+      start <<= 1;
+      end <<= 1;
+    }
+  #endif
+  }
+  
+  slope->val = (end - start) / dx;
+}
+
+static inline void x3d_fix_slope_same_shift(x3d_fix_slope* slope, x3d_fix_slope* from, int32 val) {
+  slope->shift = from->shift;
+  slope->val = val << from->shift;
+}
+
+static inline void x3d_fix_slope_add(x3d_fix_slope* a, x3d_fix_slope* b) {
+  a->val += b->val;
+}
+
+static inline int32 x3d_fix_slope_val(x3d_fix_slope* s) {
+  return s->val >> s->shift;
+}
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Multiplies two fp0x16 numbers.
 ///
