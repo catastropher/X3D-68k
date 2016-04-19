@@ -15,6 +15,8 @@
 
 #pragma once
 
+#define X3D_NO_LOG
+
 ///////////////////////////////////////////////////////////////////////////////
 /// The types of log messages that can be displayed
 ///////////////////////////////////////////////////////////////////////////////
@@ -24,5 +26,14 @@ typedef enum {
   X3D_ERROR
 } X3D_LogType;
 
+#ifndef X3D_NO_LOG
+
 void x3d_log(X3D_LogType type, const char* format, ...) __attribute__ ((format(printf, 2, 3)));
+
+#else
+
+#define x3d_log(...)
+
+#endif
+
 

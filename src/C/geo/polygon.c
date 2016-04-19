@@ -336,67 +336,10 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   
   X3D_Vex3D d = { 0, 0, 32767 };
   
-  for(i = 0; i < poly->total_v; ++i) {
-    fp0x16 dot = x3d_vex3d_fp0x16_dot(&d, &normal[i]);
-    
-    
-    dot = X3D_MIN((int32)dot + 8192, 32767);
-    
-    dot = X3D_MAX(dot, 0);
-
-    if(render_mode != 3)
-      depth_scale[i] = dot;//x3d_depth_scale(v3d[i].z, 10, 1500);
-  }
-  
-  if(render_mode == 0) {
-  }
-  
-  for(i = 0; i < poly->total_v; ++i) {
-    uint16 a = i;
-    uint16 b = (i + 1 < poly->total_v ? i + 1 : 0);
-    
-    //depth_scale[i] = 0x7FFF;
-    
-    min_z = X3D_MIN(min_z, v3d[a].z);
-    
-    pairs[i].val[0] = a;
-    pairs[i].val[1] = b;
-    
-    X3D_Vex3D temp_a = v3d[a], temp_b = v3d[b];
-    X3D_Vex2D dest_a, dest_b;
-
-    uint16 res = x3d_clip_line_to_near_plane(&temp_a, &temp_b, v2d + a, v2d + b, &dest_a, &dest_b, x3d_rendermanager_get()->near_z);
-
-    if(!(res & EDGE_INVISIBLE)) {
-      x3d_rasteredge_generate(edges + i, dest_a, dest_b, parent, v3d[a].z, v3d[b].z, &renderman->stack, depth_scale[a], depth_scale[b]);
-      edges[i].flags |= res;
-    }
-    else {
-      edges[i].flags = res;
-    }
-    
-    edge_index[i] = i;
-  }
-  
-  X3D_ClipContext clip = {
-    .stack = &renderman->stack,
-    .parent = parent,
-    .edges = edges,
-    .total_e = poly->total_v,
-    .v3d = v3d,
-    .v2d = v2d,
-    .edge_pairs = pairs,
-    .depth_scale = depth_scale,
-    .seg = NULL,
-    .normal = NULL,
-    .edge_index = edge_index,
-    .total_edge_index = poly->total_v
-  };
-  
   min_z = X3D_MAX(min_z, 1);
   
   X3D_RasterRegion r;
-  if(x3d_rasterregion_construct_clipped(&clip, &r)) {
+  if(1) {//x3d_rasterregion_construct_clipped(&clip, &r)) {
     //x3d_rasterregion_fill_zbuf(&r, color, min_z);
     
     x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);

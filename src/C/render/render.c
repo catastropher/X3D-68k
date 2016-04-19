@@ -231,12 +231,14 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             X3D_RasterRegion r;
             
             //////
-            x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
+            if(context->faces[i].portal_seg_face != X3D_FACE_NONE)
+              x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
 
-            if(portal.region && portal.region != context->parent && context->faces[i].portal_seg_face == X3D_FACE_NONE) {
+            if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
               
-              if(context->seg_id != 0 && context->seg_id > 3)
-                x3d_render_level_polygon(NULL, NULL, context, portal, i);
+              if(context->seg_id != 0 && context->seg_id > 3) {
+                //x3d_render_level_polygon(NULL, NULL, context, portal, i);
+              }
               else {
                 X3D_Polygon3D p = {
                   .v = alloca(1000)

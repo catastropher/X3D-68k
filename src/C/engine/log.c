@@ -26,6 +26,8 @@
 #define ANSI_COLOR_CYAN    "\x1b[1;36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+#ifndef X3D_NO_LOG
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Prints a message to the log.
 /// 
@@ -48,3 +50,5 @@ void x3d_log(X3D_LogType type, const char* format, ...) {
   printf("\n");
 #endif
 }
+
+#endif
