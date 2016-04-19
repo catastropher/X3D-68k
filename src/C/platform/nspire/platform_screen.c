@@ -32,12 +32,18 @@ static char record_name[1024];
 
 int32 recip_tab[32768];
 
-int32 fast_recip(int32* tab, int16 val) {
+static inline int32 fast_recip(const int32* tab, int16 val) {
   if(val > 0)
     return tab[val];
   
   return -tab[-val];
 }
+
+static inline uint32 fast_recip_pos(int32* tab, uint16 val) {
+  return tab[val];
+}
+
+
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
@@ -409,15 +415,36 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
   return X3D_FALSE;
 }
 
+#define NEXT_PIXEL(_width) zzz = z >> 15;                         \
+      if(zzz >= z_buf[y * 320 + i]) {                             \
+        int32 recip = fast_recip(tab, z >> 12);                   \
+        uint16 uu = ((x3d_fix_slope_val(&u)) * recip) >> (23);    \
+        uint16 vv = ((x3d_fix_slope_val(&v)) * recip) >> (23);    \
+        uu &= _width - 1;                                         \
+        vv &= _width - 1;                                         \
+        X3D_Color c = tex->texel[vv * _width + uu];               \
+        pixels[y * 320 + i] = c;      \
+        z_buf[y * 320 + i] = zzz;                                 \
+      }                                                           \
+      x3d_fix_slope_add(&u, &u_slope);                            \
+      x3d_fix_slope_add(&v, &v_slope);                            \
+      z += z_slope;                                               \
+      ++i;
+
 void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
   int16 dx = span->right.x - span->left.x;
   //fp16x16 u_slope = 0;
   //fp16x16 v_slope = 0;
   
+  if(span->left.x > span->right.x)
+    return;
+  
   x3d_fix_slope u_slope;
   x3d_fix_slope v_slope;
   x3d_fix_slope u;
   x3d_fix_slope v;
+  
+  uint16* pixels = window_surface->pixels;
   
   fp16x16 z_slope = 0;
   //fp16x16 u = (int32)span->left.u;
@@ -436,40 +463,111 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
   }
   
+  u.shift += 5;
+  v.shift += 5;
+  
   int16* z_buf = x3d_rendermanager_get()->zbuf;
   
-  uint16 i;
+  uint32 i;
   
   X3D_Texture* tex = global_texture;
   int32* tab = recip_tab;
+  uint16 mask = tex->mask;
+  int16 zzz;
   
-  for(i = span->left.x; i <= span->right.x; ++i) {
-    int32 zz = z >> 7;
+  if(tex->w == 128) {
+    i = span->left.x;
     
-    int16 zzz = zz >> 8;
+    int16 size = span->right.x - i + 1;
+    int16 count;
     
-    if(zzz >= z_buf[y * 320 + i]) {
+    do {
+      count = (size >= 32 ? 32 : size);
+      
+      switch(32 - count) {
+        case 0:       NEXT_PIXEL(128);
+        case 1:       NEXT_PIXEL(128);
+        case 2:       NEXT_PIXEL(128);
+        case 3:       NEXT_PIXEL(128);
+        case 4:       NEXT_PIXEL(128);
+        case 5:       NEXT_PIXEL(128);
+        case 6:       NEXT_PIXEL(128);
+        case 7:       NEXT_PIXEL(128);
+        case 8:       NEXT_PIXEL(128);
+        case 9:       NEXT_PIXEL(128);
+        case 10:      NEXT_PIXEL(128);
+        case 11:       NEXT_PIXEL(128);
+        case 12:       NEXT_PIXEL(128);
+        case 13:       NEXT_PIXEL(128);
+        case 14:       NEXT_PIXEL(128);
+        case 15:       NEXT_PIXEL(128);
+        case 16:       NEXT_PIXEL(128);
+        case 17:       NEXT_PIXEL(128);
+        case 18:       NEXT_PIXEL(128);
+        case 19:       NEXT_PIXEL(128);
+        case 20:       NEXT_PIXEL(128);
+        case 21:       NEXT_PIXEL(128);
+        case 22:       NEXT_PIXEL(128);
+        case 23:       NEXT_PIXEL(128);
+        case 24:       NEXT_PIXEL(128);
+        case 25:       NEXT_PIXEL(128);
+        case 26:       NEXT_PIXEL(128);
+        case 27:       NEXT_PIXEL(128);
+        case 28:       NEXT_PIXEL(128);
+        case 29:       NEXT_PIXEL(128);
+        case 30:       NEXT_PIXEL(128);
+        case 31:       NEXT_PIXEL(128);
+      }
+      
+      size -= count;
+    } while(size > 0);
+  }
+  else if(tex->w == 32) {
+    i = span->left.x;
     
-      
-      if(zz <= 0) zz = 0x7FFF;
-      
-      
-      int32 recip = fast_recip(tab, z >> 12);
-      
-      int16 uu = ((int64)x3d_fix_slope_val(&u) * recip) >> (23 + 5);   //(((u / zz) >> 1) * 128) >> 15;
-      int16 vv = ((int64)x3d_fix_slope_val(&v) * recip) >> (23 + 5);//(((v / zz) >> 1) * 128) >> 15;
-      
-      
-      X3D_Color c = x3d_texture_get_texel(tex, uu, vv);
+    int16 size = span->right.x - i + 1;
+    int16 count;
     
-      ((uint16 *)window_surface->pixels)[y * 320 + i] = c;//map_color_to_uint32(c);
-      z_buf[y * 320 + i] = zzz;
-    }
-    
-    x3d_fix_slope_add(&u, &u_slope);
-    x3d_fix_slope_add(&v, &v_slope);
-    
-    z += z_slope;
+    do {
+      count = (size >= 32 ? 32 : size);
+      
+      switch(32 - count) {
+        case 0:       NEXT_PIXEL(32);
+        case 1:       NEXT_PIXEL(32);
+        case 2:       NEXT_PIXEL(32);
+        case 3:       NEXT_PIXEL(32);
+        case 4:       NEXT_PIXEL(32);
+        case 5:       NEXT_PIXEL(32);
+        case 6:       NEXT_PIXEL(32);
+        case 7:       NEXT_PIXEL(32);
+        case 8:       NEXT_PIXEL(32);
+        case 9:       NEXT_PIXEL(32);
+        case 10:      NEXT_PIXEL(32);
+        case 11:       NEXT_PIXEL(32);
+        case 12:       NEXT_PIXEL(32);
+        case 13:       NEXT_PIXEL(32);
+        case 14:       NEXT_PIXEL(32);
+        case 15:       NEXT_PIXEL(32);
+        case 16:       NEXT_PIXEL(32);
+        case 17:       NEXT_PIXEL(32);
+        case 18:       NEXT_PIXEL(32);
+        case 19:       NEXT_PIXEL(32);
+        case 20:       NEXT_PIXEL(32);
+        case 21:       NEXT_PIXEL(32);
+        case 22:       NEXT_PIXEL(32);
+        case 23:       NEXT_PIXEL(32);
+        case 24:       NEXT_PIXEL(32);
+        case 25:       NEXT_PIXEL(32);
+        case 26:       NEXT_PIXEL(32);
+        case 27:       NEXT_PIXEL(32);
+        case 28:       NEXT_PIXEL(32);
+        case 29:       NEXT_PIXEL(32);
+        case 30:       NEXT_PIXEL(32);
+        case 31:       NEXT_PIXEL(32);
+      }
+      
+      size -= count;
+    } while(size > 0);
   }
 }
 
