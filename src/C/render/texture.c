@@ -64,6 +64,8 @@ void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name) {
   fprintf(file, "\n};\n\n");
 }
 
+void x3d_fix_texture(X3D_Texture* tex);
+
 void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
   dest->w = data[0];
   dest->h = data[1];
@@ -76,7 +78,12 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
   uint32 i;
   for(i = 0; i < (uint32)dest->w * dest->h; ++i) {
     dest->texel[i] = x3d_rgb_to_color(data[2 + i * 3], data[2 + i * 3 + 1], data[2 + i * 3 + 2]);
+    
   }
+  
+#ifdef __nspire__
+  x3d_fix_texture(dest);
+#endif
 }
 
 

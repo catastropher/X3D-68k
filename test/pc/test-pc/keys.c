@@ -37,6 +37,7 @@ enum {
 
 
 void setup_key_map(void) {
+#ifdef __linux__
   x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
   x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, 'w');
@@ -53,6 +54,17 @@ void setup_key_map(void) {
   x3d_key_map_pc(KEY_9, '9');
   x3d_key_map_pc(KEY_RECORD, 'm');
   x3d_key_map_pc(X3D_KEY_15, 'p');
+#elif defined(__nspire__)
+  x3d_key_map_pc(KEY_W, SDLK_7);
+  x3d_key_map_pc(KEY_S, SDLK_4);
+  x3d_key_map_pc(KEY_A, SDLK_LEFT);
+  x3d_key_map_pc(KEY_D, SDLK_RIGHT);
+  x3d_key_map_pc(KEY_E, SDLK_UP);
+  x3d_key_map_pc(KEY_Q, SDLK_DOWN);
+  x3d_key_map_pc(KEY_9, SDLK_3);
+  x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
+  x3d_key_map_pc(X3D_KEY_15, SDLK_9);
+#endif
 }
 
 extern int16 render_mode;

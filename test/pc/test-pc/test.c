@@ -176,9 +176,11 @@ void setup_camera(void) {
 extern X3D_Texture panel_tex;
 extern X3D_Texture brick_tex;
 extern X3D_Texture floor_panel_tex;
+extern X3D_Texture cube_tex;
 extern uint8 panel_tex_data[];
 extern uint8 wood_tex_data[];
 extern uint8 floor_panel_tex_data[];
+extern uint8 cube_tex_data[];
 
 int main() {
 #if defined(__linux__) && 1
@@ -203,7 +205,8 @@ int main() {
   x3d_texture_from_array(&panel_tex, panel_tex_data);
   x3d_texture_from_array(&brick_tex, wood_tex_data);
   x3d_texture_from_array(&floor_panel_tex, floor_panel_tex_data);
-
+  x3d_texture_from_array(&cube_tex, cube_tex_data);
+  
   x3d_fix_slope slope, v;
   x3d_fix_slope_init(&slope, 100000, 0, 5);
   x3d_fix_slope_same_shift(&v, &slope, 0);

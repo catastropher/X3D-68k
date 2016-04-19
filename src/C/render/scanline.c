@@ -2,7 +2,7 @@
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
 
-//#define //x3d_log(...) ;
+#define x3d_log(...) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.
@@ -17,9 +17,6 @@ void x3d_scanline_slope_calc(X3D_ScanlineSlope* slope, const X3D_PolyVertex* a, 
   int16 dy = b->v2d.y - a->v2d.y;
   
   slope->x = x3d_val_slope(b->v2d.x - a->v2d.x, dy);
-  slope->u = x3d_val_slope2(b->u - a->u,         dy);
-  slope->v = x3d_val_slope2(b->v - a->v,         dy);
-  slope->z = x3d_val_slope2(b->z - a->z,         dy);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -31,10 +28,6 @@ void x3d_scanline_slope_calc(X3D_ScanlineSlope* slope, const X3D_PolyVertex* a, 
 ///////////////////////////////////////////////////////////////////////////////
 static void x3d_scanline_generator_next(X3D_ScanlineGenerator* gen) {
   gen->x         += gen->slope.x;
-  gen->intensity += gen->intensity_slope;
-  gen->u         += gen->slope.u;
-  gen->v         += gen->slope.v;
-  gen->z         += gen->slope.z;
   gen->span = (X3D_SpanValue* )((uint8 *)gen->span + sizeof(X3D_Span));
 }
 
@@ -59,11 +52,7 @@ void x3d_rasterregion_generate_new_spans(X3D_ScanlineGenerator* gen, int16 start
   
   while(gen->span < end_span) {
     gen->span->x         = x3d_fp16x6_whole(gen->x);
-    gen->span->intensity = x3d_fp16x6_whole(gen->intensity);
-    gen->span->u         = x3d_fp16x6_whole(gen->u);
-    gen->span->v         = x3d_fp16x6_whole(gen->v);
-    gen->span->z         = x3d_fp16x6_whole(gen->z);
-    
+
     x3d_scanline_generator_next(gen);
   }
 }
@@ -339,10 +328,6 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   if(gen->prev_visible_edge || 1) {
     for(i = start_y; i < end_y; ++i) {
       gen->span->x         = span_val->x;
-      gen->span->intensity = x3d_fp16x6_whole(gen->intensity);
-      gen->span->u         = x3d_fp16x6_whole(gen->u);
-      gen->span->v         = x3d_fp16x6_whole(gen->v);
-      gen->span->z         = x3d_fp16x6_whole(gen->z);
       
       x3d_scanline_generator_next(gen);
       span_val = (X3D_SpanValue* )((uint8 *)span_val + sizeof(X3D_Span));

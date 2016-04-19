@@ -30,6 +30,15 @@ static _Bool record;
 static int16 record_frame;
 static char record_name[1024];
 
+int32 recip_tab[32768];
+
+int32 fast_recip(int32* tab, int16 val) {
+  if(val > 0)
+    return tab[val];
+  
+  return -tab[-val];
+}
+
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
   
@@ -37,6 +46,13 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     x3d_log(X3D_ERROR, "Failed to init SDL: %s", SDL_GetError());
     return X3D_FALSE;
   }
+  
+  int32 i;
+  for(i = 2; i < 32768; ++i)
+    recip_tab[i] = (1L << 23) / i;
+  
+  recip_tab[0] = 0;
+  recip_tab[1] = (1L << 23) - 1;
   
   screen_w = init->screen_w;
   screen_h = init->screen_h;
@@ -289,7 +305,8 @@ uint32 x3d_color_to_internal(X3D_Color c) {
 }
 
 void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab, int16 z) {
-uint16 i;
+  return;
+  uint16 i;
   
 #if 0
   if(x3d_key_down(X3D_KEY_15)) {
@@ -363,7 +380,7 @@ uint16 i;
     }
     
 #endif
-    ((uint16 *)window_surface->pixels)[y * window_surface->w + i] = color_tab[index];
+    ((uint16 *)window_surface->pixels)[y * 320 + i] = color_tab[index];
     scale += scale_slope;
   }
 }
@@ -371,12 +388,21 @@ uint16 i;
 X3D_Texture panel_tex;
 X3D_Texture brick_tex;
 X3D_Texture floor_panel_tex;
+X3D_Texture cube_tex;
+
 X3D_Texture* global_texture = &panel_tex;
+
+void x3d_fix_texture(X3D_Texture* tex) {
+  uint32 i;
+  for(i = 0; i < (uint32)tex->w * tex->h; ++i)
+    tex->texel[i] = map_color_to_uint32(tex->texel[i]);
+}
 
 void x3d_set_texture(int16 id) {
   if(id == 0)       global_texture = &panel_tex;
   else if(id == 1)  global_texture = &brick_tex;
   else if(id == 2)  global_texture = &floor_panel_tex;
+  else if(id == 3)  global_texture = &cube_tex;
 }
 
 _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
@@ -413,37 +439,35 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
   int16* z_buf = x3d_rendermanager_get()->zbuf;
   
   uint16 i;
+  
+  X3D_Texture* tex = global_texture;
+  int32* tab = recip_tab;
+  
   for(i = span->left.x; i <= span->right.x; ++i) {
     int32 zz = z >> 7;
     
-    if(zz <= 0) zz = 0x7FFF;
+    int16 zzz = zz >> 8;
     
-    int16 uu = (x3d_fix_slope_val(&u) / zz);   //(((u / zz) >> 1) * 128) >> 15;
-    int16 vv = (x3d_fix_slope_val(&v) / zz);//(((v / zz) >> 1) * 128) >> 15;
+    if(zzz >= z_buf[y * 320 + i]) {
     
-    //x3d_log(X3D_INFO, "u: %d, v: %d", uu, vv);
+      
+      if(zz <= 0) zz = 0x7FFF;
+      
+      
+      int32 recip = fast_recip(tab, z >> 12);
+      
+      int16 uu = ((int64)x3d_fix_slope_val(&u) * recip) >> (23 + 5);   //(((u / zz) >> 1) * 128) >> 15;
+      int16 vv = ((int64)x3d_fix_slope_val(&v) * recip) >> (23 + 5);//(((v / zz) >> 1) * 128) >> 15;
+      
+      
+      X3D_Color c = x3d_texture_get_texel(tex, uu, vv);
     
-    //uu /= 16;
-    //vv /= 16;
-    
-    //int16 uu = (((u >> 16) * zz) * 192) >> 15;
-    //int16 vv = (((v >> 16) * zz) * 192) >> 15;
-    
-    
-    zz >>= 8;
-    
-    X3D_Color c = x3d_texture_get_texel(global_texture, uu, vv);
-    
-    if(zz >= z_buf[y * window_surface->w + i]) {
-      ((uint16 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(c);
-      z_buf[y * window_surface->w + i] = zz;
+      ((uint16 *)window_surface->pixels)[y * 320 + i] = c;//map_color_to_uint32(c);
+      z_buf[y * 320 + i] = zzz;
     }
     
-    //u += u_slope;
-    //v += v_slope;
     x3d_fix_slope_add(&u, &u_slope);
     x3d_fix_slope_add(&v, &v_slope);
-    
     
     z += z_slope;
   }

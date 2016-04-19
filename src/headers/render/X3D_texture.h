@@ -54,6 +54,10 @@ static inline X3D_Color x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, 
   return tex->texel[x3d_texture_index(tex, u, v)];
 }
 
+static inline X3D_Color x3d_texture_get_texel_128(const X3D_Texture* tex, uint16 u, uint16 v) {
+  return tex->texel[(uint32)(v & tex->mask) * 128 + (u & tex->mask)];
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Sets the color of a texel in a texture.
 ///

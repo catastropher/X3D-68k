@@ -56,11 +56,12 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  if(!x3d_texture_load_from_file(&cube_tex, "cube.bmp")) {
+  
+#if 0
+  if(!x3d_texture_load_from_file(&cube_tex, "xiao.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
   }
   
-#if 0
   if(!x3d_texture_load_from_file(&panel_tex, "panel.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load wood texture: %s", SDL_GetError());
   }
@@ -72,14 +73,22 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   if(!x3d_texture_load_from_file(&floor_panel_tex, "floor_panel2.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load floor panel texture: %s", SDL_GetError());
   }
-#endif
-
-#if 0
-  FILE* f = fopen("texturepack.c", "wb");
+  
+  if(!x3d_texture_load_from_file(&cube_tex, "cube.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
+  }
+  
+  FILE* f = fopen("/home/michael/code/X3D-68k/test/pc/test-pc/texturepack.c", "wb");
+  
+  fprintf(f, "#include \"X3D_common.h\"\n\n");
+  
   x3d_texture_to_array(&panel_tex, f, "panel_tex");
   x3d_texture_to_array(&brick_tex, f, "wood_tex");
   x3d_texture_to_array(&floor_panel_tex, f, "floor_panel_tex");
+  x3d_texture_to_array(&cube_tex, f, "cube_tex");
   fclose(f);
+  
+  exit(0);
 #endif
   
 #if 0
@@ -501,8 +510,16 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     
     if(zz <= 0) zz = 0x7FFF;
     
-    int16 uu = (x3d_fix_slope_val(&u) / zz);   //(((u / zz) >> 1) * 128) >> 15;
-    int16 vv = (x3d_fix_slope_val(&v) / zz);//(((v / zz) >> 1) * 128) >> 15;
+    //int16 uu = (x3d_fix_slope_val(&u) / zz);   //(((u / zz) >> 1) * 128) >> 15;
+    //int16 vv = (x3d_fix_slope_val(&v) / zz);//(((v / zz) >> 1) * 128) >> 15;
+    
+    int16 recip = (1.0 / (z >> 15)) * 32767; //fast_recip(z >> 15);
+    
+    //x3d_log(X3D_INFO, "recip: %d", recip);
+    
+    
+    int16 uu = ((int64)x3d_fix_slope_val(&u) * recip) >> (23);   //(((u / zz) >> 1) * 128) >> 15;
+    int16 vv = ((int64)x3d_fix_slope_val(&v) * recip) >> (23);//(((v / zz) >> 1) * 128) >> 15;
     
     //x3d_log(X3D_INFO, "u: %d, v: %d", uu, vv);
     
