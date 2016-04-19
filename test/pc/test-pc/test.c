@@ -59,7 +59,7 @@ void create_test_level(void) {
   uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 4), 100);
   uint16 id3 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 1), 450);
   uint16 id4 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id3, 1), 100);
-  uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 1), 2000);
+  //uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 1), 2000);
   uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 0), 100);
 
   // Scale the face of one of the segments
@@ -173,6 +173,13 @@ void setup_camera(void) {
   x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
 }
 
+extern X3D_Texture panel_tex;
+extern X3D_Texture brick_tex;
+extern X3D_Texture floor_panel_tex;
+extern uint8 panel_tex_data[];
+extern uint8 wood_tex_data[];
+extern uint8 floor_panel_tex_data[];
+
 int main() {
 #if defined(__linux__) && 1
   int16 w = 640;
@@ -192,6 +199,10 @@ int main() {
   };
 
   x3d_init(&init);
+  
+  x3d_texture_from_array(&panel_tex, panel_tex_data);
+  x3d_texture_from_array(&brick_tex, wood_tex_data);
+  x3d_texture_from_array(&floor_panel_tex, floor_panel_tex_data);
 
   x3d_fix_slope slope, v;
   x3d_fix_slope_init(&slope, 100000, 0, 5);

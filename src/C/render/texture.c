@@ -48,3 +48,35 @@ void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y) {
   }
 }
 
+
+void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name) {
+  fprintf(file, "uint8 %s_data[] = {\n  %d,\n  %d", name, texture->w, texture->h);
+  
+  uint32 i;
+  for(i = 0; i < (uint32)texture->w * texture->h; ++i) {
+    X3D_Color c = texture->texel[i];
+    uint8 r, g, b;
+    x3d_color_to_rgb(c, &r, &g, &b);
+    
+    fprintf(file, ",\n  %d,\n  %d,  \n  %d", r, g, b);
+  }
+  
+  fprintf(file, "\n};\n\n");
+}
+
+void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
+  dest->w = data[0];
+  dest->h = data[1];
+  dest->texel = malloc(sizeof(X3D_Color) * dest->w * dest->h);
+  dest->mask = dest->w - 1;
+  
+  x3d_log(X3D_INFO, "width: %d", dest->w);
+  x3d_log(X3D_INFO, "height: %d", dest->h);
+  
+  uint32 i;
+  for(i = 0; i < (uint32)dest->w * dest->h; ++i) {
+    dest->texel[i] = x3d_rgb_to_color(data[2 + i * 3], data[2 + i * 3 + 1], data[2 + i * 3 + 2]);
+  }
+}
+
+

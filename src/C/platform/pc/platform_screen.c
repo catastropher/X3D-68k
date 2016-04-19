@@ -15,7 +15,7 @@
 
 #include <SDL/SDL.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 
 #include "X3D_common.h"
 #include "X3D_init.h"
@@ -34,14 +34,18 @@ static int16 record_frame;
 static char record_name[1024];
 static _Bool virtual_window;
 
-X3D_Texture wood_tex;
+X3D_Texture panel_tex;
 X3D_Texture brick_tex;
+X3D_Texture floor_panel_tex;
+X3D_Texture cube_tex;
 
 X3D_Texture* global_texture = &brick_tex;
 
 void x3d_set_texture(int16 id) {
-  if(id == 0)       global_texture = &wood_tex;
+  if(id == 0)       global_texture = &panel_tex;
   else if(id == 1)  global_texture = &brick_tex;
+  else if(id == 2)  global_texture = &floor_panel_tex;
+  else if(id == 3)  global_texture = &cube_tex;
 }
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
@@ -52,13 +56,31 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
-  if(!x3d_texture_load_from_file(&wood_tex, "panel.bmp")) {
+  if(!x3d_texture_load_from_file(&cube_tex, "cube.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
+  }
+  
+#if 0
+  if(!x3d_texture_load_from_file(&panel_tex, "panel.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load wood texture: %s", SDL_GetError());
   }
 
   if(!x3d_texture_load_from_file(&brick_tex, "wood2.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load brick texture: %s", SDL_GetError());
   }
+  
+  if(!x3d_texture_load_from_file(&floor_panel_tex, "floor_panel2.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load floor panel texture: %s", SDL_GetError());
+  }
+#endif
+
+#if 0
+  FILE* f = fopen("texturepack.c", "wb");
+  x3d_texture_to_array(&panel_tex, f, "panel_tex");
+  x3d_texture_to_array(&brick_tex, f, "wood_tex");
+  x3d_texture_to_array(&floor_panel_tex, f, "floor_panel_tex");
+  fclose(f);
+#endif
   
 #if 0
   SDL_Surface* s = SDL_LoadBMP("piano.bmp");

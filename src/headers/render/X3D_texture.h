@@ -70,4 +70,7 @@ static inline void x3d_texture_set_texel(X3D_Texture* tex, uint16 u, uint16 v, X
 
 _Bool x3d_texture_load_from_file(X3D_Texture* tex, const char* file);
 void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y);
+void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name);
+void x3d_texture_from_array(X3D_Texture* dest, uint8* data);
+
 

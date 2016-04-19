@@ -251,7 +251,21 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 
                 if(context->seg_id == 0) {
-                  x3d_set_texture(0);
+                  if(i != 1)
+                    x3d_set_texture(0);
+                  else {
+                    uint16 d;
+                    int16 r = 128;
+                    int16 cx = 256;
+                    int16 cy = 256;
+                    
+                    for(d = 0; d < 8; ++d) {
+                      u[d] = cx + (((int32)r * x3d_cos(d * 256 / 8 + ANG_45 + ANG_30 - 5)) >> 15);
+                      v[d] = cy + (((int32)r * x3d_sin(d * 256 / 8 + ANG_45 + ANG_30 - 5)) >> 15);
+                    }
+                    
+                    x3d_set_texture(2);
+                  }
                 }
                 else if(context->seg_id <= 3) {
                   x3d_set_texture(1);
@@ -381,6 +395,8 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
 
   if(id == 0) {
     //x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
+    x3d_set_texture(3);
+    x3d_cube_render((X3D_Vex3D) { 150, 100, 150 }, 75, cam, &x3d_rendermanager_get()->region);
   }
 
   x3d_stack_restore(&renderman->stack, stack_save);
@@ -534,8 +550,8 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   for(i = 0; i < steps + 2; ++i) {
     x3d_prism3d_get_face(prism, i, &p);
 
-    uint16 u[4] = { 0, 127, 127, 0 };
-    uint16 v[4] = { 0, 0, 127, 127 };
+    uint16 u[4] = { 0, 256, 256, 0 };
+    uint16 v[4] = { 0, 0, 256, 256 };
     
     x3d_polygon3d_render(&p, cam, region, 0, norm, u, v);
   }

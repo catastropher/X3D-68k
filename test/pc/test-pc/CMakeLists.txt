@@ -58,6 +58,7 @@ add_executable(X3D-test-pc
 	test.c
 	fontedit.c
 	keys.c
+	texturepack.c
 )
 
 set_target_properties(X3D-test-pc PROPERTIES OUTPUT_NAME test-pc)

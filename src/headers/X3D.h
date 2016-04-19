@@ -45,3 +45,4 @@
 #include "X3D_collide.h"
 #include "X3D_wallportal.h"
 
+#include "render/X3D_texture.h"

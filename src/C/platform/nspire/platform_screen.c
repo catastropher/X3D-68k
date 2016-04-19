@@ -20,6 +20,7 @@
 #include "X3D_screen.h"
 #include "X3D_enginestate.h"
 #include "X3D_trig.h"
+#include "render/X3D_texture.h"
 
 static SDL_Surface* window_surface;
 static int16 screen_w;
@@ -276,11 +277,18 @@ X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b) {
   );
 }
 
+void x3d_screen_zbuf_clear(void) {
+  uint32 i;
+  
+  for(i = 0; i < (int32)screen_w * screen_h; ++i)
+    x3d_rendermanager_get()->zbuf[i] = 0;
+}
+
 uint32 x3d_color_to_internal(X3D_Color c) {
   return map_color_to_uint32(c);
 }
 
-void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab) {
+void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab, int16 z) {
 uint16 i;
   
 #if 0
@@ -359,3 +367,85 @@ uint16 i;
     scale += scale_slope;
   }
 }
+
+X3D_Texture panel_tex;
+X3D_Texture brick_tex;
+X3D_Texture floor_panel_tex;
+X3D_Texture* global_texture = &panel_tex;
+
+void x3d_set_texture(int16 id) {
+  if(id == 0)       global_texture = &panel_tex;
+  else if(id == 1)  global_texture = &brick_tex;
+  else if(id == 2)  global_texture = &floor_panel_tex;
+}
+
+_Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
+  return X3D_FALSE;
+}
+
+void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
+  int16 dx = span->right.x - span->left.x;
+  //fp16x16 u_slope = 0;
+  //fp16x16 v_slope = 0;
+  
+  x3d_fix_slope u_slope;
+  x3d_fix_slope v_slope;
+  x3d_fix_slope u;
+  x3d_fix_slope v;
+  
+  fp16x16 z_slope = 0;
+  //fp16x16 u = (int32)span->left.u;
+  //fp16x16 v = (int32)span->left.v;
+  fp16x16 z = (int32)span->left.z;
+  
+  if(dx != 0) {
+    x3d_fix_slope_init(&u_slope, span->left.u, span->right.u, dx);
+    x3d_fix_slope_same_shift(&u, &u_slope, span->left.u);
+    
+    x3d_fix_slope_init(&v_slope, span->left.v, span->right.v, dx);
+    x3d_fix_slope_same_shift(&v, &v_slope, span->left.v);
+    
+    //u_slope = x3d_val_slope2(span->right.u - span->left.u, dx);
+    //v_slope = x3d_val_slope2(span->right.v - span->left.v, dx);
+    z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
+  }
+  
+  int16* z_buf = x3d_rendermanager_get()->zbuf;
+  
+  uint16 i;
+  for(i = span->left.x; i <= span->right.x; ++i) {
+    int32 zz = z >> 7;
+    
+    if(zz <= 0) zz = 0x7FFF;
+    
+    int16 uu = (x3d_fix_slope_val(&u) / zz);   //(((u / zz) >> 1) * 128) >> 15;
+    int16 vv = (x3d_fix_slope_val(&v) / zz);//(((v / zz) >> 1) * 128) >> 15;
+    
+    //x3d_log(X3D_INFO, "u: %d, v: %d", uu, vv);
+    
+    //uu /= 16;
+    //vv /= 16;
+    
+    //int16 uu = (((u >> 16) * zz) * 192) >> 15;
+    //int16 vv = (((v >> 16) * zz) * 192) >> 15;
+    
+    
+    zz >>= 8;
+    
+    X3D_Color c = x3d_texture_get_texel(global_texture, uu, vv);
+    
+    if(zz >= z_buf[y * window_surface->w + i]) {
+      ((uint16 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(c);
+      z_buf[y * window_surface->w + i] = zz;
+    }
+    
+    //u += u_slope;
+    //v += v_slope;
+    x3d_fix_slope_add(&u, &u_slope);
+    x3d_fix_slope_add(&v, &v_slope);
+    
+    
+    z += z_slope;
+  }
+}
+
