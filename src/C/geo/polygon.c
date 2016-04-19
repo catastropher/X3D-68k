@@ -434,6 +434,52 @@ void x3d_polygon2d_remove_duplicate(X3D_Polygon2D* poly) {
   poly->total_v = pos;
 }
 
+uint16 x3d_polygon3d_classify_point(X3D_Vex3D* v, int16 near_z) {
+  uint16 flags = 0;
+  
+  // Left
+  if(v->x < -v->z) {
+    flags |= EDGE_LEFT_CLIPPED;
+  }
+
+  // Right
+  if(v->x > v->z) {
+    flags |= EDGE_RIGHT_CLIPPED;
+  }
+  
+  if(v->y > v->z / 2) {
+    //printf("INVISIBLE!!!\n");
+    //return EDGE_INVISIBLE;
+    flags |= EDGE_BOTTOM_CLIPPED;
+  }
+  
+  // Top plane
+  if(v->y < -v->z / 2) {
+    //printf("INVISIBLE!!!\n");
+    //return EDGE_INVISIBLE;
+    flags |= EDGE_TOP_CLIPPED;
+  }
+
+  
+  if(v->z < near_z) {
+    flags |= EDGE_NEAR_CLIPPED | EDGE_INVISIBLE;
+  }
+  
+  return flags;
+}
+
+_Bool x3d_polygon3d_frustum_clipped(X3D_Polygon3D* p, int16 near_z) {
+  uint16 flags = 0xFFFF;
+  
+  uint16 i;
+  for(i = 0; i < p->total_v; ++i) {
+    flags &= x3d_polygon3d_classify_point(p->v + i, near_z);
+  }
+  
+  return flags != 0;
+}
+
+
 _Bool x3d_polygon3d_point_in_near(X3D_Polygon3D* p, uint16 v, int16 near_z) {
   return p->v[v].z >= near_z;
 }
@@ -451,6 +497,10 @@ int16 x3d_t_clip(int16 start, int16 end, uint16 scale);
 _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, int16 near_z, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va) {
   int16 next_v;
   int16 v = poly->total_v - 1;
+  
+  
+  if(x3d_polygon3d_frustum_clipped(poly, near_z))
+    return X3D_FALSE;
   
   dest->total_v = 0;
   
