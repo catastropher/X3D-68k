@@ -15,7 +15,7 @@
 
 #pragma once
 
-#define X3D_NO_LOG
+//#define X3D_NO_LOG
 
 ///////////////////////////////////////////////////////////////////////////////
 /// The types of log messages that can be displayed

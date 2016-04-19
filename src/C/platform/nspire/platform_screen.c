@@ -431,7 +431,13 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
       z += z_slope;                                               \
       ++i;
 
+      
+void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y);
+      
 void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
+  x3d_screen_draw_scanline_texture_affine(span, y);
+  return;
+  
   int16 dx = span->right.x - span->left.x;
   //fp16x16 u_slope = 0;
   //fp16x16 v_slope = 0;
@@ -570,4 +576,96 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     } while(size > 0);
   }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
+  if(span->right.x < span->left.x) return;
+  
+  int32* tab = recip_tab;
+  int32 recip_z_left = fast_recip(tab, span->left.z >> 12);
+  int32 recip_z_right = fast_recip(tab, span->right.z >> 12);
+  
+  int32 u_left = ((span->left.u >> 5) * recip_z_left) >> (23 - 16);
+  int32 v_left = ((span->left.v >> 5) * recip_z_left) >> (23 - 16);
+  
+  int32 u_right = ((span->right.u >> 5) * recip_z_right) >> (23 - 16);
+  int32 v_right = ((span->right.v >> 5) * recip_z_right) >> (23 - 16);
+  
+  int32 u = (int32)u_left;
+  int32 v = (int32)v_left;
+  int32 z = span->left.z;
+  
+  int16 dx = span->right.x - span->left.x;
+  
+  fp16x16 u_slope = x3d_val_slope2(u_right - u_left, dx);
+  fp16x16 v_slope = x3d_val_slope2(v_right - v_left, dx);
+  int32 z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
+  
+  int32 i = span->left.x;
+  
+  X3D_Texture* tex = global_texture;
+  int16* z_buf = x3d_rendermanager_get()->zbuf;
+  uint16* pixels = window_surface->pixels;
+  
+  if(tex->w == 128) {
+    do {
+      uint16 uu = (u >> 16) & (tex->w - 1);
+      uint16 vv = (v >> 16) & (tex->w - 1);
+      
+      uint16 zz = z >> 15;
+      
+      if(zz >= z_buf[y * 320 + i]) {
+        pixels[y * 320 + i] = tex->texel[vv * 128 + uu];
+        z_buf[y * 320 + i] = zz;
+      }
+      
+      u += u_slope;
+      v += v_slope;
+      z += z_slope;
+      
+    } while(++i <= span->right.x);
+  }
+  else if(tex->w == 32) {
+    do {
+      uint16 uu = (u >> 16) & (tex->w - 1);
+      uint16 vv = (v >> 16) & (tex->w - 1);
+      
+      uint16 zz = z >> 15;
+      
+      if(zz >= z_buf[y * 320 + i]) {
+        pixels[y * 320 + i] = tex->texel[vv * 32 + uu];
+        z_buf[y * 320 + i] = zz;
+      }
+      
+      u += u_slope;
+      v += v_slope;
+      z += z_slope;
+      
+    } while(++i <= span->right.x);
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -38,6 +38,7 @@ X3D_Texture panel_tex;
 X3D_Texture brick_tex;
 X3D_Texture floor_panel_tex;
 X3D_Texture cube_tex;
+X3D_Texture aperture_tex;
 
 X3D_Texture* global_texture = &brick_tex;
 
@@ -46,6 +47,7 @@ void x3d_set_texture(int16 id) {
   else if(id == 1)  global_texture = &brick_tex;
   else if(id == 2)  global_texture = &floor_panel_tex;
   else if(id == 3)  global_texture = &cube_tex;
+  else if(id == 4)  global_texture = &aperture_tex;
 }
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
@@ -56,6 +58,9 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
+  if(!x3d_texture_load_from_file(&aperture_tex, "aperture.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
+  }
   
 #if 0
   if(!x3d_texture_load_from_file(&cube_tex, "xiao.bmp")) {
@@ -475,7 +480,63 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   
 }
 
+int32 recip_tab[1];
+
+int32 fast_recip(int32* tab, uint16 val) {
+  return (1L << 23) / val;
+}
+
+void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
+  if(span->right.x < span->left.x) return;
+  
+  int32* tab = recip_tab;
+  int32 recip_z_left = fast_recip(tab, span->left.z >> 12);
+  int32 recip_z_right = fast_recip(tab, span->right.z >> 12);
+  
+  int32 u_left = ((span->left.u >> 5) * recip_z_left);
+  int32 v_left = ((span->left.v >> 5) * recip_z_left);
+  
+  int32 u_right = ((span->right.u >> 5) * recip_z_right);
+  int32 v_right = ((span->right.v >> 5) * recip_z_right);
+  
+  int32 u = (int32)u_left;
+  int32 v = (int32)v_left;
+  int32 z = span->left.z;
+  
+  int16 dx = span->right.x - span->left.x;
+  
+  fp16x16 u_slope = x3d_val_slope2(u_right - u_left, dx);
+  fp16x16 v_slope = x3d_val_slope2(v_right - v_left, dx);
+  int32 z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
+  
+  int32 i = span->left.x;
+  
+  X3D_Texture* tex = global_texture;
+  int16* z_buf = x3d_rendermanager_get()->zbuf;
+  uint32* pixels = window_surface->pixels;
+  
+  do {
+    uint16 uu = (u >> 23) & (tex->w - 1);
+    uint16 vv = (v >> 23) & (tex->w - 1);
+    
+    uint16 zz = z >> 15;
+    
+    if(zz >= z_buf[y * 640L + i]) {
+      pixels[y * 640L + i] = map_color_to_uint32(tex->texel[(int32)vv * tex->w + uu]);
+      z_buf[y * 640L + i] = zz;
+    }
+    
+    u += u_slope;
+    v += v_slope;
+    z += z_slope;
+    
+  } while(++i <= span->right.x);
+}
+
 void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
+  x3d_screen_draw_scanline_texture_affine(span, y);
+  return;
+  
   int16 dx = span->right.x - span->left.x;
   //fp16x16 u_slope = 0;
   //fp16x16 v_slope = 0;
@@ -518,8 +579,8 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     //x3d_log(X3D_INFO, "recip: %d", recip);
     
     
-    int16 uu = ((int64)x3d_fix_slope_val(&u) * recip) >> (23);   //(((u / zz) >> 1) * 128) >> 15;
-    int16 vv = ((int64)x3d_fix_slope_val(&v) * recip) >> (23);//(((v / zz) >> 1) * 128) >> 15;
+    int16 uu = (int64)x3d_fix_slope_val(&u) / zz;   //(((u / zz) >> 1) * 128) >> 15;
+    int16 vv = (int64)x3d_fix_slope_val(&v) / zz;//(((v / zz) >> 1) * 128) >> 15;
     
     //x3d_log(X3D_INFO, "u: %d, v: %d", uu, vv);
     

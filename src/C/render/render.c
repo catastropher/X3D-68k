@@ -223,7 +223,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   for(i = 0; i < x3d_prism3d_total_f(prism->base_v); ++i) {
     if(i != context->portal_face) {
       int16 dist = x3d_plane_dist(&context->faces[i].plane, &context->cam->pseduo_pos);
-      
+
       if(dist > 0) {
           if(context->faces[i].portal_seg_face != X3D_FACE_NONE || 1) {
             void* stack_ptr = x3d_stack_save(&context->renderman->stack);
@@ -253,13 +253,17 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 
                 if(context->seg_id == 0) {
-                  if(i != 1)
-                    x3d_set_texture(0);
+                  if(i != 1) {
+                    if(i != 8)
+                      x3d_set_texture(0);
+                    else
+                      x3d_set_texture(4);
+                  }
                   else {
                     uint16 d;
-                    int16 r = 128;
-                    int16 cx = 256;
-                    int16 cy = 256;
+                    int16 r = 127;
+                    int16 cx = 128;
+                    int16 cy = 128;
                     
                     for(d = 0; d < 8; ++d) {
                       u[d] = cx + (((int32)r * x3d_cos(d * 256 / 8 + ANG_45 + ANG_30 - 5)) >> 15);
@@ -549,11 +553,20 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   
   //p.total_v = 3;
   
+  X3D_Vex3D cam_pos;
+  x3d_object_pos(cam, &cam_pos);
+  
   for(i = 0; i < steps + 2; ++i) {
     x3d_prism3d_get_face(prism, i, &p);
 
     uint16 u[4] = { 0, 256, 256, 0 };
     uint16 v[4] = { 0, 0, 256, 256 };
+    
+    X3D_Plane plane;
+    x3d_polygon3d_calculate_plane(&p, &plane);
+    
+    if(x3d_plane_dist(&plane, &cam_pos) > 0)
+      continue;
     
     x3d_polygon3d_render(&p, cam, region, 0, norm, u, v);
   }
