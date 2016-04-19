@@ -578,7 +578,113 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y);
+
 void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
+  if(span->right.x < span->left.x) return;
+  
+  const int16 RUN = 64;
+  
+  if(span->right.x - span->left.x <= RUN) {
+    x3d_screen_draw_scanline_texture_affine_small(span, y);
+    return;
+  }
+  
+  int32* tab = recip_tab;
+  
+  
+  int32 next_z = fast_recip(tab, span->left.z >> 12);
+  int32 next_u = ((span->left.u >> 5) * next_z);
+  int32 next_v = ((span->left.v >> 5) * next_z);
+  
+  int32 prev_u, prev_v, prev_z;
+  
+  int16 dx = span->right.x - span->left.x;
+  
+  int32 z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
+  
+  int32 uz_slope = x3d_val_slope2(span->right.u - span->left.u, dx) * RUN;
+  int32 vz_slope = x3d_val_slope2(span->right.v - span->left.v, dx) * RUN;
+  int32 zz_slope = z_slope * RUN;
+  
+  int32 uz = span->left.u;
+  int32 vz = span->left.v;
+  int32 zz = span->left.z;
+  
+  int32 i = span->left.x;
+  
+  X3D_Texture* tex = global_texture;
+  int16* z_buf = x3d_rendermanager_get()->zbuf;
+  uint16* pixels = window_surface->pixels;
+  
+  do {
+    prev_u = next_u;
+    prev_v = next_v;
+
+    int32 z = zz;
+    
+    uz += uz_slope;
+    vz += vz_slope;
+    zz += zz_slope;
+    
+    int32 recip_z = fast_recip(tab, zz >> 12);
+    next_u = ((uz >> 5) * recip_z);
+    next_v = ((vz >> 5) * recip_z);
+    
+    int32 u_slope = x3d_val_slope2(next_u - prev_u, RUN);
+    int32 v_slope = x3d_val_slope2(next_v - prev_v, RUN);
+    
+    
+    int16 total = (span->right.x - i + 1 >= RUN ? RUN : span->right.x - i + 1);
+    
+    int32 u = prev_u;
+    int32 v = prev_v;
+    
+    if(tex->w == 128) {
+      do {
+        uint16 uu = (u >> 23) & (tex->w - 1);
+        uint16 vv = (v >> 23) & (tex->w - 1);
+        
+        uint16 zz = z >> 15;
+        
+        if(zz >= z_buf[y * 320 + i]) {
+          pixels[y * 320 + i] = tex->texel[vv * 128 + uu];
+          z_buf[y * 320 + i] = zz;
+        }
+        
+        u += u_slope;
+        v += v_slope;
+        z += z_slope;
+        
+        ++i;
+        
+      } while(--total > 0);
+    }
+    else if(tex->w == 32) {
+      do {
+        uint16 uu = (u >> 23) & (tex->w - 1);
+        uint16 vv = (v >> 23) & (tex->w - 1);
+        
+        uint16 zz = z >> 15;
+        
+        if(zz >= z_buf[y * 320 + i]) {
+          pixels[y * 320 + i] = tex->texel[vv * 32 + uu];
+          z_buf[y * 320 + i] = zz;
+        }
+        
+        u += u_slope;
+        v += v_slope;
+        z += z_slope;
+        
+        ++i;
+        
+      } while(--total > 0);
+    }
+  } while(i <= span->right.x);
+}
+
+void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y) {
   if(span->right.x < span->left.x) return;
   
   int32* tab = recip_tab;
