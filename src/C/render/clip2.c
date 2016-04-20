@@ -23,7 +23,7 @@
 #include "X3D_trig.h"
 #include "render/X3D_scanline.h"
 
-//#define x3d_log(...) ;
+#define x3d_log(...) ;
 
 
 ///////////////////////////////////////////////////////////////////////////////

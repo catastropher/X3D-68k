@@ -240,9 +240,9 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
   if(!s)
     return X3D_FALSE;
   
-  tex->texel = malloc(s->w * s->h * sizeof(X3D_Color));
+  tex->texel.large = malloc(s->w * s->h * sizeof(X3D_Color));
   
-  if(!tex->texel) {
+  if(!tex->texel.large) {
     SDL_FreeSurface(s);
     return X3D_FALSE;
   }
@@ -518,6 +518,8 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   int16* z_buf = x3d_rendermanager_get()->zbuf;
   uint32* pixels = window_surface->pixels;
   
+  int16 same_count = 0;
+  
   do {
     prev_u = next_u;
     prev_v = next_v;
@@ -541,14 +543,24 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
     int32 u = prev_u;
     int32 v = prev_v;
     
+    uint16 last_u = 0xFFFF;
+    uint16 last_v = 0xFFFF;
+    
     do {
       uint16 uu = (u >> 23) & (tex->w - 1);
       uint16 vv = (v >> 23) & (tex->w - 1);
       
+      if(uu == last_u && vv == last_v) {
+        ++same_count;
+      }
+      
+      last_u = uu;
+      last_v = vv;
+      
       uint16 zz = z >> 15;
       
       if(zz >= z_buf[y * 640L + i]) {
-        pixels[y * 640L + i] = map_color_to_uint32(tex->texel[(int32)vv * tex->w + uu]);
+        pixels[y * 640L + i] = map_color_to_uint32(x3d_texture_get_texel(tex, uu, vv));   //tex->texel[(int32)vv * tex->w + uu]);
         z_buf[y * 640L + i] = zz;
       }
       
@@ -560,6 +572,8 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
       
     } while(--total > 0);
   } while(i <= span->right.x);
+  
+  //x3d_log(X3D_INFO, "Same count: %d", same_count);
 }
 
 void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {

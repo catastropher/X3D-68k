@@ -26,7 +26,7 @@
 
 #include "X3D_keys.h"
 
-//#define x3d_log(...) ;
+#define x3d_log(...) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Prints out the points in a polygon (for debugging).

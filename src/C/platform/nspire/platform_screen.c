@@ -400,8 +400,8 @@ X3D_Texture* global_texture = &panel_tex;
 
 void x3d_fix_texture(X3D_Texture* tex) {
   uint32 i;
-  for(i = 0; i < (uint32)tex->w * tex->h; ++i)
-    tex->texel[i] = map_color_to_uint32(tex->texel[i]);
+  for(i = 0; i < tex->total_c; ++i)
+    tex->color_tab[i] = map_color_to_uint32(tex->color_tab[i]);
 }
 
 void x3d_set_texture(int16 id) {
@@ -437,6 +437,8 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y);
 void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
   x3d_screen_draw_scanline_texture_affine(span, y);
   return;
+  
+#if 0
   
   int16 dx = span->right.x - span->left.x;
   //fp16x16 u_slope = 0;
@@ -575,20 +577,56 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
       size -= count;
     } while(size > 0);
   }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y);
 
+
+#define INNER_LOOP(_w) if(tex->flags & X3D_TEXTURE_4BIT) {                   \
+    do {                                                                     \
+        if(zz >= z_buf[y * 320 + i]) {                                       \
+          uint16 uu = (u >> 23) & (tex->w - 1);                              \
+          uint16 vv = (v >> 23) & (tex->w - 1);                              \
+          uint8 byte = tex->texel.small[(vv * _w + uu) >> 1];                \
+          if((uu & 1) == 0) byte >>= 4;                                      \
+          uint16 zz = z >> 15;                                               \
+          pixels[y * 320 + i] = tex->color_tab[byte & 0x0F];                 \
+          z_buf[y * 320 + i] = zz;                                           \
+        }                                                                    \
+        u += u_slope;                                                        \
+        v += v_slope;                                                        \
+        z += z_slope;                                                        \
+        ++i;                                                                 \
+    } while(--total > 0);                                                    \
+} else {                                                                     \
+    do {                                                                     \
+        if(zz >= z_buf[y * 320 + i]) {                                       \
+          uint16 uu = (u >> 23) & (tex->w - 1);                              \
+          uint16 vv = (v >> 23) & (tex->w - 1);                              \
+          uint8 index = tex->texel.large[vv * _w + uu];                      \
+          uint16 zz = z >> 15;                                               \
+          pixels[y * 320 + i] = tex->color_tab[index];                       \
+          z_buf[y * 320 + i] = zz;                                           \
+        }                                                                    \
+        u += u_slope;                                                        \
+        v += v_slope;                                                        \
+        z += z_slope;                                                        \
+        ++i;                                                                 \
+    } while(--total > 0);                                                    \
+}
+    
 void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   if(span->right.x < span->left.x) return;
   
-  const int16 RUN = 64;
+  const int16 RUN_BITS = 6;
+  const int16 RUN = (1 << RUN_BITS);
   
   if(span->right.x - span->left.x <= RUN) {
-    x3d_screen_draw_scanline_texture_affine_small(span, y);
-    return;
+    //x3d_screen_draw_scanline_texture_affine_small(span, y);
+    //return;
   }
   
   int32* tab = recip_tab;
@@ -632,8 +670,8 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
     next_u = ((uz >> 5) * recip_z);
     next_v = ((vz >> 5) * recip_z);
     
-    int32 u_slope = x3d_val_slope2(next_u - prev_u, RUN);
-    int32 v_slope = x3d_val_slope2(next_v - prev_v, RUN);
+    int32 u_slope = (next_u - prev_u) >> RUN_BITS;
+    int32 v_slope = (next_v - prev_v) >> RUN_BITS;
     
     
     int16 total = (span->right.x - i + 1 >= RUN ? RUN : span->right.x - i + 1);
@@ -641,45 +679,14 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
     int32 u = prev_u;
     int32 v = prev_v;
     
+    uint16 last_u = 0xFFFF;
+    uint16 last_v = 0xFFFF;
+    
     if(tex->w == 128) {
-      do {
-        uint16 uu = (u >> 23) & (tex->w - 1);
-        uint16 vv = (v >> 23) & (tex->w - 1);
-        
-        uint16 zz = z >> 15;
-        
-        if(zz >= z_buf[y * 320 + i]) {
-          pixels[y * 320 + i] = tex->texel[vv * 128 + uu];
-          z_buf[y * 320 + i] = zz;
-        }
-        
-        u += u_slope;
-        v += v_slope;
-        z += z_slope;
-        
-        ++i;
-        
-      } while(--total > 0);
+      INNER_LOOP(128);
     }
     else if(tex->w == 32) {
-      do {
-        uint16 uu = (u >> 23) & (tex->w - 1);
-        uint16 vv = (v >> 23) & (tex->w - 1);
-        
-        uint16 zz = z >> 15;
-        
-        if(zz >= z_buf[y * 320 + i]) {
-          pixels[y * 320 + i] = tex->texel[vv * 32 + uu];
-          z_buf[y * 320 + i] = zz;
-        }
-        
-        u += u_slope;
-        v += v_slope;
-        z += z_slope;
-        
-        ++i;
-        
-      } while(--total > 0);
+      INNER_LOOP(32);
     }
   } while(i <= span->right.x);
 }
@@ -721,7 +728,7 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y) {
       uint16 zz = z >> 15;
       
       if(zz >= z_buf[y * 320 + i]) {
-        pixels[y * 320 + i] = tex->texel[vv * 128 + uu];
+        pixels[y * 320 + i] = x3d_texture_get_texel(tex, uu, vv);//tex->texel[vv * 128 + uu];
         z_buf[y * 320 + i] = zz;
       }
       
@@ -739,7 +746,7 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y) {
       uint16 zz = z >> 15;
       
       if(zz >= z_buf[y * 320 + i]) {
-        pixels[y * 320 + i] = tex->texel[vv * 32 + uu];
+        pixels[y * 320 + i] = x3d_texture_get_texel(tex, uu, vv);//tex->texel[vv * 32 + uu];
         z_buf[y * 320 + i] = zz;
       }
       

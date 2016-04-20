@@ -54,7 +54,7 @@ void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name) {
   
   uint32 i;
   for(i = 0; i < (uint32)texture->w * texture->h; ++i) {
-    X3D_Color c = texture->texel[i];
+    X3D_Color c = texture->texel.large[i];
     uint8 r, g, b;
     x3d_color_to_rgb(c, &r, &g, &b);
     
@@ -66,20 +66,118 @@ void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name) {
 
 void x3d_fix_texture(X3D_Texture* tex);
 
+uint8 x3d_texture_get_color_index(X3D_Texture* tex, X3D_Color c) {
+  uint16 i;
+  for(i = 0; i < tex->total_c; ++i) {
+    if(tex->color_tab[i] == c) {
+      return i;
+    }
+  }
+  
+  tex->color_tab[tex->total_c] = c;
+  
+  return tex->total_c++;
+}
+
+static int16 color_diff(int16 r1, int16 g1, int16 b1, int16 r2, int16 g2, int16 b2) {
+  return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2);
+}
+
+void x3d_texture_replace_most_similar_color(X3D_Texture* tex, X3D_Color* texel) {
+  uint16 i, d;
+  int16 min_diff = 0x7FFF;
+  int16 min_a = -1;
+  int16 min_b = -1;
+  
+  for(i = 0; i < tex->total_c; ++i) {
+    for(d = i + 1; d < tex->total_c; ++d) {
+      uint8 r1, g1, b1;
+      x3d_color_to_rgb(tex->color_tab[i], &r1, &g1, &b1);
+      
+      uint8 r2, g2, b2;
+      x3d_color_to_rgb(tex->color_tab[d], &r2, &g2, &b2);
+      
+      int16 diff = color_diff(r1, g1, b1, r2, g2, b2);
+      
+      if(diff < min_diff) {
+        min_diff = diff;
+        min_a = i;
+        min_b = d;
+      }
+    }
+  }
+  
+  X3D_Color find = tex->color_tab[min_a];
+  X3D_Color replace = tex->color_tab[min_b];
+  
+  for(i = 0; i < tex->w * tex->h; ++i) {
+    if(texel[i] == find) {
+      texel[i] = replace;
+    }
+  }
+  
+  for(i = min_a; i < tex->total_c - 1; ++i) {
+    tex->color_tab[i] = tex->color_tab[i + 1];
+  }
+  
+  --tex->total_c;
+}
+
+void x3d_texture_pack_4bit(X3D_Texture* tex, X3D_Color* texel) {
+  tex->flags |= X3D_TEXTURE_4BIT;
+  tex->texel.small = malloc(tex->w * tex->h / 2);
+
+  x3d_log(X3D_INFO, "Packed into 4 bit texture");
+  
+  uint16 i;
+  for(i = 0; i < tex->w * tex->h; i += 2) {
+    tex->texel.small[i / 2] = (x3d_texture_get_color_index(tex, texel[i]) << 4) |
+      x3d_texture_get_color_index(tex, texel[i + 1]);
+  }
+}
+
+void x3d_texture_pack_8bit(X3D_Texture* tex, X3D_Color* texel) {
+  tex->texel.large = malloc(tex->w * tex->h);
+  
+  uint16 i;
+  for(i = 0; i < tex->w * tex->h; ++i) {
+    tex->texel.large[i] = x3d_texture_get_color_index(tex, texel[i]);
+  }
+}
+
+
 void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
   dest->w = data[0];
   dest->h = data[1];
-  dest->texel = malloc(sizeof(X3D_Color) * dest->w * dest->h);
+  X3D_Color* texel = malloc(sizeof(X3D_Color) * dest->w * dest->h);
+  dest->color_tab = malloc(256 * sizeof(X3D_Color));
+  dest->total_c = 0;
   dest->mask = dest->w - 1;
   
-  x3d_log(X3D_INFO, "width: %d", dest->w);
-  x3d_log(X3D_INFO, "height: %d", dest->h);
+  //x3d_log(X3D_INFO, "width: %d", dest->w);
+  //x3d_log(X3D_INFO, "height: %d", dest->h);
   
   uint32 i;
   for(i = 0; i < (uint32)dest->w * dest->h; ++i) {
-    dest->texel[i] = x3d_rgb_to_color(data[2 + i * 3], data[2 + i * 3 + 1], data[2 + i * 3 + 2]);
+    texel[i] = x3d_rgb_to_color(data[2 + i * 3], data[2 + i * 3 + 1], data[2 + i * 3 + 2]);
     
+    x3d_texture_get_color_index(dest, texel[i]);
   }
+  
+  if(dest->total_c <= 20) {
+    while(dest->total_c > 16) {
+      x3d_texture_replace_most_similar_color(dest, texel);
+    }
+    
+    x3d_texture_pack_4bit(dest, texel);
+  }
+  else {
+    x3d_texture_pack_8bit(dest, texel);
+  }
+  
+  free(texel);
+  
+  x3d_log(X3D_INFO, "Texture has %d colors", dest->total_c);
   
 #ifdef __nspire__
   x3d_fix_texture(dest);
