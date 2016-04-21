@@ -145,10 +145,22 @@ void x3d_texture_pack_8bit(X3D_Texture* tex, X3D_Color* texel) {
   }
 }
 
+void x3d_texture_resize_to_64(X3D_Color* texel) {
+  uint16 i, d;
+  uint16 pos = 0;
+  
+  for(i = 0; i < 128; i += 2) {
+    for(d = 0; d < 128; d += 2) {
+      texel[pos++] = texel[i * 128 + d];
+    }
+  }
+}
+
 
 void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
   dest->w = data[0];
   dest->h = data[1];
+  
   X3D_Color* texel = malloc(sizeof(X3D_Color) * dest->w * dest->h);
   dest->color_tab = malloc(256 * sizeof(X3D_Color));
   dest->total_c = 0;
@@ -162,6 +174,15 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
     texel[i] = x3d_rgb_to_color(data[2 + i * 3], data[2 + i * 3 + 1], data[2 + i * 3 + 2]);
     
     x3d_texture_get_color_index(dest, texel[i]);
+  }
+  
+  if(dest->w == 128) {
+    dest->w = 64;
+    dest->h = 64;
+    dest->mask = dest->w - 1;
+    
+    x3d_texture_resize_to_64(texel);
+    
   }
   
   if(dest->total_c <= 20) {

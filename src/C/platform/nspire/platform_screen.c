@@ -625,8 +625,8 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   const int16 RUN = (1 << RUN_BITS);
   
   if(span->right.x - span->left.x <= RUN) {
-    //x3d_screen_draw_scanline_texture_affine_small(span, y);
-    //return;
+    x3d_screen_draw_scanline_texture_affine_small(span, y);
+    return;
   }
   
   int32* tab = recip_tab;
@@ -688,6 +688,9 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
     else if(tex->w == 32) {
       INNER_LOOP(32);
     }
+    else if(tex->w == 64) {
+      INNER_LOOP(64);
+    }
   } while(i <= span->right.x);
 }
 
@@ -720,10 +723,10 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y) {
   int16* z_buf = x3d_rendermanager_get()->zbuf;
   uint16* pixels = window_surface->pixels;
   
-  if(tex->w == 128) {
+  if(tex->w == 128 || 1) {
     do {
-      uint16 uu = (u >> 16) & (tex->w - 1);
-      uint16 vv = (v >> 16) & (tex->w - 1);
+      uint16 uu = u >> 16;//(u >> 16) & (tex->w - 1);
+      uint16 vv = v >> 16;//(v >> 16) & (tex->w - 1);
       
       uint16 zz = z >> 15;
       

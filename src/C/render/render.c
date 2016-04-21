@@ -248,8 +248,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 X3D_Vex3D normal[10];
                 
-                uint16 u[10] = { 0, 256, 256, 0 };
-                uint16 v[10] = { 0, 0, 256, 256 };
+                uint16 u[10] = { 0, 128, 128, 0 };
+                uint16 v[10] = { 0, 0, 128, 128 };
                 
                 
                 if(context->seg_id == 0) {
@@ -495,8 +495,8 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
       //if(i == 3 && d == 7)
       //if(i == 2 && d == 2)
       
-      uint16 uu[4] = { 0, 127, 127, 0 };
-      uint16 vv[4] = { 0, 0, 127, 127 };
+      uint16 uu[4] = { 0, 63, 63, 0 };
+      uint16 vv[4] = { 0, 0, 63, 63 };
       
       x3d_polygon3d_render(&p, cam, region, c, norm, uu, vv);
     }
@@ -509,6 +509,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   X3D_Prism3D* prism = alloca(1000);
   int16 steps = 4;
+  
   x3d_prism3d_construct(prism, steps, w, w, (X3D_Vex3D_angle256) { 0, 0, 0 }); //x3d_enginestate_get_step() * 2, x3d_enginestate_get_step() * 2, 0 });
   X3D_Polygon3D p = {
     .v = alloca(1000)
@@ -559,8 +560,8 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   for(i = 0; i < steps + 2; ++i) {
     x3d_prism3d_get_face(prism, i, &p);
 
-    uint16 u[4] = { 0, 256, 256, 0 };
-    uint16 v[4] = { 0, 0, 256, 256 };
+    uint16 u[4] = { 0, 128, 128, 0 };
+    uint16 v[4] = { 0, 0, 128, 128 };
     
     X3D_Plane plane;
     x3d_polygon3d_calculate_plane(&p, &plane);
