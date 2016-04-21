@@ -2,11 +2,14 @@
 #include "X3D_assert.h"
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
+#include "X3D_enginestate.h"
+
+#include "X3D_keys.h"
 
 #define x3d_log(...) ;
 
 void print_vex2d(int16 num, X3D_Vex2D v) {
-  x3d_log(X3D_INFO, "p %d: %d %d", num, v.x, v.y);
+  //x3d_log(X3D_INFO, "p %d: %d %d", num, v.x, v.y);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -27,7 +30,7 @@ int32 x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex*
   print_vex2d(0, b->v2d);
   print_vex2d(0, c->v2d);
   
-  x3d_log(X3D_INFO, "");
+  //x3d_log(X3D_INFO, "");
  
   const int32 MAX_VAL = INT16_MAX / 4;
   
@@ -112,11 +115,11 @@ _Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, 
   
   if(v[top_left].v2d.y == v[next_left].v2d.y) {
     swap = X3D_TRUE;
-    x3d_log(X3D_INFO, "PL A");
+    //x3d_log(X3D_INFO, "PL A");
   }
   if(sl != sr || v[next_left].v2d.y == v[next_right].v2d.y) {
     swap = v[next_left].v2d.x > v[next_right].v2d.x;
-    x3d_log(X3D_INFO, "PL B");
+    //x3d_log(X3D_INFO, "PL B");
   }
   else {
     uint16 next_next_left = (next_left + 1 < total_v ? next_left + 1 : 0);
@@ -207,22 +210,59 @@ void x3d_polyline_get_value(X3D_PolyLine* p, int16 y, X3D_PolyVertex* v) {
 _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
   int32 clockwise = 0;
   
-  x3d_log(X3D_INFO, "total_v: %d", total_v);
+  int16 total_clockwise = 0;
+  int16 total_counter = 0;
+  
+  //x3d_log(X3D_INFO, "total_v: %d", total_v);
   
   // Find three non-colinear points
   uint16 i;
-  for(i = 0; i < total_v && clockwise == 0; ++i) {
+  for(i = 0; i < total_v; ++i) {
     uint16 next = (i + 1 < total_v ? i + 1 : 0);
     uint16 next_next = (next + 1 < total_v ? next + 1 : 0);
     
     clockwise = x3d_points_clockwise(v + i, v + next, v + next_next);
+    
+    if(clockwise > 0) {
+      ++total_counter;
+    }
+    else if(clockwise < 0) {
+      ++total_clockwise;
+    }
+    
+    if(total_clockwise + total_counter > 2)
+      break;
   }
   
   if(clockwise == 0)
     return X3D_FALSE;
 
+  if(x3d_key_down(X3D_KEY_15)) {
+    clockwise = !clockwise;
+  }
+
+#if 0
+  for(i = 0; i < total_v; ++i) {
+    x3d_log(X3D_INFO, "v %d: %d, %d", i, v[i].v2d.x, v[i].v2d.y);
+    
+    uint16 next = (i + 1) % total_v;
+    
+    int16 cx = x3d_screenmanager_get()->center.x;
+    int16 cy = x3d_screenmanager_get()->center.y;
+    
+    int16 x1 = v[i].v2d.x / 50;
+    int16 x2 = v[next].v2d.x / 50;
+    
+    int16 y1 = v[i].v2d.y / 50;
+    int16 y2 = v[next].v2d.y / 50;
+    
+    x3d_screen_draw_line(x1 + cx, y1 + cy, x2 + cx, y2 + cy, 31);
+  }
+#endif
+  
+  
   // Reverse the points if not clockwise
-  if(clockwise > 0) {
+  if(total_counter > total_clockwise) {
     x3d_log(X3D_INFO, "not clockwise");
     for(i = 0; i < total_v / 2; ++i)
       X3D_SWAP(v[i], v[total_v - i - 1]);
@@ -261,7 +301,7 @@ _Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left,
   
   // Grab the points for the left polyline
   do {
-    x3d_log(X3D_INFO, "Add %d (y: %d, max_y: %d) top_left: %d", left->total_v, v[top_left].v2d.y, max_y, top_left);
+    //x3d_log(X3D_INFO, "Add %d (y: %d, max_y: %d) top_left: %d", left->total_v, v[top_left].v2d.y, max_y, top_left);
     left->v[left->total_v] = v + top_left;
     top_left = (top_left + 1 < total_v ? top_left + 1 : 0);
   } while(left->v[left->total_v++]->v2d.y != max_y);

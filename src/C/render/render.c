@@ -277,9 +277,20 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                   x3d_set_texture(1);
                 }
                 
-                //if(i == 2) {
+                if(context->seg_id == 0 && i == 1) {
+                  //x3d_log(X3D_INFO, "Render bottom face! %d", x3d_enginestate_get_step());
+                }
+                
+                
+                
+                //if(context->seg_id == 0 && i == 1) {
                   x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
                 //}
+                  
+                  
+                if(context->seg_id == 0 && i == 1) {
+                  //x3d_log(X3D_INFO, "====================");
+                }
               }
               goto render_portals;
             }
@@ -507,6 +518,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 }
 
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
+  return;
   X3D_Prism3D* prism = alloca(1000);
   int16 steps = 4;
   

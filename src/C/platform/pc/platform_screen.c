@@ -487,7 +487,9 @@ int32 fast_recip(int32* tab, uint16 val) {
 }
 
 void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
-  if(span->right.x < span->left.x) return;
+  if(span->right.x < span->left.x) {
+    return;
+  }
   
   int32* tab = recip_tab;
   

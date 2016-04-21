@@ -151,7 +151,7 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
   
   //x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
-  //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 0, 255));
+  //x3d_polyline_draw(&right, x3d_rgb_to_color(255, 0, 255));
   
   int16 new_min = min_y;//X3D_MIN(y_range_left.min, y_range_right.min);
   int16 new_max = max_y;//X3D_MAX(y_range_left.max, y_range_right.max);

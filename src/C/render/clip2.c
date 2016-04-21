@@ -23,7 +23,7 @@
 #include "X3D_trig.h"
 #include "render/X3D_scanline.h"
 
-#define x3d_log(...) ;
+//#define //x3d_log(...) ;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,6 +41,9 @@ void x3d_polyline_draw(X3D_PolyLine* p, X3D_Color c) {
     
     x3d_screen_draw_line(p->v[i]->v2d.x, p->v[i]->v2d.y, p->v[next]->v2d.x, p->v[next]->v2d.y, c);
   }
+  
+  
+  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -106,6 +109,9 @@ void x3d_rasterregion_draw_outline(X3D_RasterRegion* region, X3D_Color c) {
     X3D_Span* span = region->span + i - region->rect.y_range.min;
     x3d_screen_draw_pix(span->left.x, i, c);
     x3d_screen_draw_pix(span->right.x, i, x3d_rgb_to_color(0, 255, 255));
+    
+    x3d_rendermanager_get()->zbuf[i * x3d_screenmanager_get()->h + span->left.x] = 0x7FFF;
+    x3d_rendermanager_get()->zbuf[i * x3d_screenmanager_get()->h + span->right.x] = 0x7FFF;
   }
 }
 
@@ -187,7 +193,7 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   
   x3d_polygon2d_remove_duplicate(&poly);
 
-  x3d_log(X3D_INFO, "Enter %s (total_v = %d)", __FUNCTION__, total_v);
+  //x3d_log(X3D_INFO, "Enter %s (total_v = %d)", __FUNCTION__, total_v);
   
   uint16 i;
   for(i = 0; i < poly.total_v; ++i) {
@@ -200,7 +206,7 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
     pv[i].u = ((int32)uu[i] << 22) / v3d[i].z;
     pv[i].v = ((int32)vv[i] << 22) / v3d[i].z;
     
-    //x3d_log(X3D_INFO, "===========>u: %d, v: %d", pv[i].u, pv[i].v);
+    ////x3d_log(X3D_INFO, "===========>u: %d, v: %d", pv[i].u, pv[i].v);
     
     //pv[i].u = 16 * ((int32)uu[i] << 15) / 128;
     //pv[i].v = 16 * ((int32)vv[i] << 15) / 128;
@@ -231,18 +237,19 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   X3D_RasterRegion r;
   x3d_rasterregion_update(parent);
   
-  x3d_log(X3D_INFO, "=======poly v=======");
+  //x3d_log(X3D_INFO, "=======poly v=======");
   
   for(i = 0; i < poly.total_v; ++i) {
-    x3d_log(X3D_INFO, "v %d: %d, %d", i, poly.v[i].x, poly.v[i].y);
+    //x3d_log(X3D_INFO, "v %d: %d, %d", i, poly.v[i].x, poly.v[i].y);
   }
   
   
   if(x3d_rasterregion_make(&r, pv, poly.total_v, parent)) {
+    //x3d_log(X3D_INFO, "Draw %d - %d", r.rect.y_range.min, r.rect.y_range.max);
     //x3d_rasterregion_downgrade(&r);
     //x3d_rasterregion_fill_zbuf(&r, c, z);
     
-    //x3d_log(X3D_INFO, "Filling texture\nRange: %d-%d, start_x: %d - %d", r.rect.y_range.min, r.rect.y_range.max, r.span[0].left.x, r.span[0].right.x);
+    ////x3d_log(X3D_INFO, "Filling texture\nRange: %d-%d, start_x: %d - %d", r.rect.y_range.min, r.rect.y_range.max, r.span[0].left.x, r.span[0].right.x);
     
     
     
@@ -253,7 +260,7 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
     //x3d_rasterregion_draw_outline(&r, x3d_rgb_to_color(255, 0, 255));
   }
   else {
-    x3d_log(X3D_INFO, "Failed to make region");
+    //x3d_log(X3D_INFO, "Failed to make region");
   }
 #endif
 }
