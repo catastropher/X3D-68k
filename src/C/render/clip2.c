@@ -239,14 +239,14 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   
   
   if(x3d_rasterregion_make(&r, pv, poly.total_v, parent)) {
-    x3d_rasterregion_downgrade(&r);
+    //x3d_rasterregion_downgrade(&r);
     //x3d_rasterregion_fill_zbuf(&r, c, z);
     
-    x3d_log(X3D_INFO, "Filling texture\nRange: %d-%d, start_x: %d - %d", r.rect.y_range.min, r.rect.y_range.max, r.span[0].left.x, r.span[0].right.x);
+    //x3d_log(X3D_INFO, "Filling texture\nRange: %d-%d, start_x: %d - %d", r.rect.y_range.min, r.rect.y_range.max, r.span[0].left.x, r.span[0].right.x);
     
     
     
-    x3d_rasterregion_fill_texture(&r, z);
+    //x3d_rasterregion_fill_texture(&r, z);
     
     //x3d_rasterregion_draw_outline(&r, 31);
     

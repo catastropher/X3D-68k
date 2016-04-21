@@ -516,8 +516,15 @@ void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine*
 #endif
     
     
-    span->left = new_left;
-    span->right = new_right;
+    //span->left = new_left;
+    //span->right = new_right;
+    
+    X3D_Span s;
+    
+    s.left = new_left;
+    s.right = new_right;
+    
+    x3d_screen_draw_scanline_texture(&s, i);
   }
 }
 

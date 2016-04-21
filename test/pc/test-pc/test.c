@@ -217,6 +217,7 @@ int main() {
   x3d_log(X3D_INFO, "Val: %d", x3d_fix_slope_val(&v));
   //exit(0);
   
+  x3d_log(X3D_INFO, "Span size: %d", sizeof(X3D_Span));
   
   // Set up key mapping
   setup_key_map();
