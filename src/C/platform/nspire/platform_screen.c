@@ -81,6 +81,10 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     16,
     SDL_SWSURFACE
   );
+ 
+  window_surface->pixels = malloc(sizeof(uint16) * screen_w * screen_h * 2);
+  
+  x3d_rendermanager_get()->zbuf = ((uint16 *)window_surface->pixels) + 320 * 240;
   
   if(!window_surface) {
     x3d_log(X3D_ERROR, "Failed to create window");
@@ -768,9 +772,10 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
   int32 zz = span->left.z;
   
   const X3D_Texture* tex = global_texture;
-  uint16* z_buf = x3d_rendermanager_get()->zbuf + y * 320 + span->left.x;
   uint16* pixels = ((uint16 *)window_surface->pixels) + y * 320 + span->left.x;
   uint16* pixels_end = ((uint16 *)window_surface->pixels) + y * 320 + span->right.x;
+  
+  _Bool repeat = tex->flags & X3D_TEXTURE_REPEAT;
   
   do {
     prev_u = next_u;
@@ -795,23 +800,42 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
     int32 u = prev_u;
     int32 v = prev_v;
     
-    do {
-      uint32 zz = z >> 11;
-      
-      if(zz >= *z_buf) {
-        uint32 uu = (u >> 23) & (tex->w - 1);
-        uint32 vv = (v >> 23) & (tex->w - 1);
-        uint32 index = tex->texel.large[vv * tex->w + uu];
-        *pixels = tex->color_tab[index];
-        *z_buf = zz;
-      }
-      
-      u += u_slope;
-      v += v_slope;
-      z += z_slope;
-      ++z_buf;
-      ++pixels;
-    } while(pixels < run_end);
+    if(repeat) {
+      do {
+        uint32 zz = z >> 11;
+        
+        if(zz >= pixels[320 * 240]) {
+          uint32 uu = (u >> 23) & (tex->w - 1);
+          uint32 vv = (v >> 23) & (tex->w - 1);
+          uint32 index = tex->texel.large[vv * tex->w + uu];
+          *pixels = tex->color_tab[index];
+          pixels[320 * 240] = zz;
+        }
+        
+        u += u_slope;
+        v += v_slope;
+        z += z_slope;
+        ++pixels;
+      } while(pixels < run_end);
+    }
+    else {
+      do {
+        uint32 zz = z >> 11;
+        
+        if(zz >= pixels[320 * 240]) {
+          uint32 uu = (u >> 23);
+          uint32 vv = (v >> 23);
+          uint32 index = tex->texel.large[vv * tex->w + uu];
+          *pixels = tex->color_tab[index];
+           pixels[320 * 240] = zz;
+        }
+        
+        u += u_slope;
+        v += v_slope;
+        z += z_slope;
+        ++pixels;
+      } while(pixels < run_end);
+    }
   } while(pixels < pixels_end);
 }
 

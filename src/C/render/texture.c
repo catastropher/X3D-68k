@@ -168,6 +168,10 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
   dest->color_tab = malloc(256 * sizeof(X3D_Color));
   dest->total_c = 0;
   dest->mask = dest->w - 1;
+
+  if(dest->w == 32) {
+    dest->flags |= X3D_TEXTURE_REPEAT;
+  }
   
   //x3d_log(X3D_INFO, "width: %d", dest->w);
   //x3d_log(X3D_INFO, "height: %d", dest->h);

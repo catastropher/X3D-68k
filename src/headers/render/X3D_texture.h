@@ -19,7 +19,8 @@
 #include "X3D_screen.h"
 
 enum {
-  X3D_TEXTURE_4BIT = 1
+  X3D_TEXTURE_4BIT = 1,
+  X3D_TEXTURE_REPEAT = 2
 };
 
 ///////////////////////////////////////////////////////////////////////////////

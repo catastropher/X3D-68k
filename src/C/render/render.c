@@ -78,8 +78,10 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   x3d_assert(region);
 
   x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.rect.y_range.min, renderman->region.rect.y_range.max);
-  
+
+#ifndef __nspire__  
   renderman->zbuf = malloc(sizeof(int16) * screenman->w * screenman->h);
+#endif
 }
 
 void x3d_rendermanager_cleanup(void) {
