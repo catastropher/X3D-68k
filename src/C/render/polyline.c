@@ -6,7 +6,7 @@
 
 #include "X3D_keys.h"
 
-#define x3d_log(...) ;
+//#define x3d_log(...) ;
 
 void print_vex2d(int16 num, X3D_Vex2D v) {
   //x3d_log(X3D_INFO, "p %d: %d %d", num, v.x, v.y);
@@ -243,32 +243,51 @@ _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
 
 #if 0
   for(i = 0; i < total_v; ++i) {
-    x3d_log(X3D_INFO, "v %d: %d, %d", i, v[i].v2d.x, v[i].v2d.y);
+    //x3d_log(X3D_INFO, "v %d: %d, %d", i, v[i].v2d.x, v[i].v2d.y);
     
     uint16 next = (i + 1) % total_v;
     
     int16 cx = x3d_screenmanager_get()->center.x;
     int16 cy = x3d_screenmanager_get()->center.y;
     
-    int16 x1 = v[i].v2d.x / 50;
-    int16 x2 = v[next].v2d.x / 50;
+    int16 x1 = v[i].v2d.x / 75 ;
+    int16 x2 = v[next].v2d.x / 75;
     
-    int16 y1 = v[i].v2d.y / 50;
-    int16 y2 = v[next].v2d.y / 50;
+    int16 y1 = v[i].v2d.y / 75;
+    int16 y2 = v[next].v2d.y / 75;
     
     x3d_screen_draw_line(x1 + cx, y1 + cy, x2 + cx, y2 + cy, 31);
+    
+    x3d_screen_draw_circle(x1 + cx, y1 + cy, 10, x3d_rgb_to_color(0, 255, 0));
   }
+  
+  if(x3d_key_down(X3D_KEY_15)) {
+    X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
+    X3D_Vex3D pos;
+    x3d_object_pos(cam, &pos);
+    x3d_log(X3D_INFO, "pos { %d, %d, %d }", pos.x, pos.y, pos.z);
+    x3d_log(X3D_INFO, "angle { %d, %d, %d }", (uint16)cam->base.angle.x, (uint16)cam->base.angle.y, (uint16)cam->base.angle.z);
+    
+    cam->base.base.pos.x = -21L << 8;
+    cam->base.base.pos.y = 109L << 8;
+    cam->base.base.pos.z = 63L << 8;
+    
+    cam->base.angle.x = 248;
+    cam->base.angle.y = 248;
+    cam->base.angle.z = 0;
+  }
+  
 #endif
   
   
   // Reverse the points if not clockwise
   if(total_counter > total_clockwise) {
-    x3d_log(X3D_INFO, "not clockwise");
+    //x3d_log(X3D_INFO, "not clockwise");
     for(i = 0; i < total_v / 2; ++i)
       X3D_SWAP(v[i], v[total_v - i - 1]);
   }
   else {
-    x3d_log(X3D_INFO, "clockwise");
+    //x3d_log(X3D_INFO, "clockwise");
   }
   
   return X3D_TRUE;

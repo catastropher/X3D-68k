@@ -253,7 +253,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 
                 if(context->seg_id == 0) {
-                  if(i != 1) {
+                  if(i != 1 && i != 0) {
                     if(i != 8)
                       x3d_set_texture(0);
                     else
@@ -518,7 +518,6 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 }
 
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
-  return;
   X3D_Prism3D* prism = alloca(1000);
   int16 steps = 4;
   

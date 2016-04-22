@@ -52,13 +52,16 @@ void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y) {
 void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name) {
   fprintf(file, "uint8 %s_data[] = {\n  %d,\n  %d", name, texture->w, texture->h);
   
-  uint32 i;
-  for(i = 0; i < (uint32)texture->w * texture->h; ++i) {
-    X3D_Color c = texture->texel.large[i];
-    uint8 r, g, b;
-    x3d_color_to_rgb(c, &r, &g, &b);
-    
-    fprintf(file, ",\n  %d,\n  %d,  \n  %d", r, g, b);
+  uint32 i, d;
+  
+  for(i = 0; i < texture->h; ++i) {
+    for(d = 0; d < texture->w; ++d) {
+      X3D_Color c = x3d_texture_get_texel(texture, d, i);
+      uint8 r, g, b;
+      x3d_color_to_rgb(c, &r, &g, &b);
+      
+      fprintf(file, ",\n  %d,\n  %d,  \n  %d", r, g, b);
+    }
   }
   
   fprintf(file, "\n};\n\n");
@@ -185,7 +188,7 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
     
   }
   
-  if(dest->total_c <= 20) {
+  if(dest->total_c <= 20 && 0) {
     while(dest->total_c > 16) {
       x3d_texture_replace_most_similar_color(dest, texel);
     }

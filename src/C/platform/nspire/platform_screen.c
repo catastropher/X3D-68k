@@ -395,6 +395,7 @@ X3D_Texture panel_tex;
 X3D_Texture brick_tex;
 X3D_Texture floor_panel_tex;
 X3D_Texture cube_tex;
+X3D_Texture aperture_tex;
 
 X3D_Texture* global_texture = &panel_tex;
 
@@ -409,6 +410,7 @@ void x3d_set_texture(int16 id) {
   else if(id == 1)  global_texture = &brick_tex;
   else if(id == 2)  global_texture = &floor_panel_tex;
   else if(id == 3)  global_texture = &cube_tex;
+  else if(id == 4)  global_texture = &aperture_tex;
 }
 
 _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
@@ -621,7 +623,7 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y);
 void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   if(span->right.x < span->left.x) return;
   
-  const int16 RUN_BITS = 6;
+  const int16 RUN_BITS = 5;
   const int16 RUN = (1 << RUN_BITS);
   
   if(span->right.x - span->left.x <= RUN) {

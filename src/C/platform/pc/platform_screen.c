@@ -65,14 +65,14 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     return X3D_FALSE;
   }
   
+#if 0
   if(!x3d_texture_load_from_file(&aperture_tex, "aperture.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
   }
   
-#if 0
-  if(!x3d_texture_load_from_file(&cube_tex, "xiao.bmp")) {
-    x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
-  }
+  //if(!x3d_texture_load_from_file(&cube_tex, "xiao.bmp")) {
+  //  x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
+  //}
   
   if(!x3d_texture_load_from_file(&panel_tex, "panel.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load wood texture: %s", SDL_GetError());
@@ -98,6 +98,7 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_texture_to_array(&brick_tex, f, "wood_tex");
   x3d_texture_to_array(&floor_panel_tex, f, "floor_panel_tex");
   x3d_texture_to_array(&cube_tex, f, "cube_tex");
+  x3d_texture_to_array(&aperture_tex, f, "aperture_tex");
   fclose(f);
   
   exit(0);
@@ -247,16 +248,12 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
   if(!s)
     return X3D_FALSE;
   
-  tex->texel.large = malloc(s->w * s->h * sizeof(X3D_Color));
+  uint8* data = malloc(s->w * s->h * 3L + 2); 
   
-  if(!tex->texel.large) {
-    SDL_FreeSurface(s);
-    return X3D_FALSE;
-  }
+  data[0] = s->w;
+  data[1] = s->h;
   
-  tex->w = s->w;
-  tex->h = s->h;
-  tex->mask = tex->w - 1;
+  uint16 pos = 0;
   
   uint16 i, d;
   for(i = 0; i < s->h; ++i) {
@@ -266,9 +263,17 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
       
       SDL_GetRGB(pix, s->format, &r, &g, &b);
       
-      x3d_texture_set_texel(tex, d, i, x3d_rgb_to_color(r, g, b));
+      data[2 + pos * 3 + 0] = r;
+      data[2 + pos * 3 + 1] = g;
+      data[2 + pos * 3 + 2] = b;
+      
+      ++pos;
+      
+      //x3d_texture_set_texel(tex, d, i, x3d_rgb_to_color(r, g, b));
     }
   }
+
+  x3d_texture_from_array(tex, data);
   
   SDL_FreeSurface(s);
   
@@ -791,8 +796,47 @@ void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
       int32 yy = y * screen_scale + i;
       
       ((uint32 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
+      
+      x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
     }
   }
+}
+
+#define plot(_x, _y) x3d_screen_draw_pix(_x, _y, c)
+
+void x3d_screen_draw_circle(int16 x0, int16 y0, int16 radius, X3D_Color c)
+{
+    int f = 1 - radius;
+    int ddF_x = 0;
+    int ddF_y = -2 * radius;
+    int x = 0;
+    int y = radius;
+ 
+    plot(x0, y0 + radius);
+    plot(x0, y0 - radius);
+    plot(x0 + radius, y0);
+    plot(x0 - radius, y0);
+ 
+    while(x < y) 
+    {
+        if(f >= 0) 
+        {
+            y--;
+            ddF_y += 2;
+            f += ddF_y;
+        }
+        x++;
+        ddF_x += 2;
+        f += ddF_x + 1;    
+        plot(x0 + x, y0 + y);
+        plot(x0 - x, y0 + y);
+        plot(x0 + x, y0 - y);
+        plot(x0 - x, y0 - y);
+        plot(x0 + y, y0 + x);
+        plot(x0 - y, y0 + x);
+        plot(x0 + y, y0 - x);
+        plot(x0 - y, y0 - x);
+    }
 }
 
 void x3d_screen_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color) {

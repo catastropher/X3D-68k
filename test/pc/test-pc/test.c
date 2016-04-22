@@ -54,6 +54,7 @@ void create_test_level(void) {
 
   // Create some regular segments
   uint16 id0 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+
   
   uint16 id1 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 4), 100);
   uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 4), 100);
@@ -156,11 +157,18 @@ void create_test_level(void) {
 
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
 
-  uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
-  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
+  //uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
+  //uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
 
-  x3d_wallportal_connect(portal_red, portal_green);
-  x3d_wallportal_connect(portal_green, portal_red);
+  //x3d_wallportal_connect(portal_red, portal_green);
+  //x3d_wallportal_connect(portal_green, portal_red);
+  
+  uint16 i;
+  for(i = 0; i < 10; ++i) {
+    X3D_Segment* seg = x3d_segmentmanager_load(id0);
+    x3d_uncompressedsegment_get_faces(seg)[i].portal_seg_face = X3D_FACE_NONE;
+  }
+  
 }
 
 // Sets up the camera for player 1
@@ -177,10 +185,13 @@ extern X3D_Texture panel_tex;
 extern X3D_Texture brick_tex;
 extern X3D_Texture floor_panel_tex;
 extern X3D_Texture cube_tex;
+extern X3D_Texture aperture_tex;
+
 extern uint8 panel_tex_data[];
 extern uint8 wood_tex_data[];
 extern uint8 floor_panel_tex_data[];
 extern uint8 cube_tex_data[];
+extern uint8 aperture_tex_data[];
 
 int main() {
 #if defined(__linux__) && 1
@@ -206,6 +217,7 @@ int main() {
   x3d_texture_from_array(&brick_tex, wood_tex_data);
   x3d_texture_from_array(&floor_panel_tex, floor_panel_tex_data);
   x3d_texture_from_array(&cube_tex, cube_tex_data);
+  x3d_texture_from_array(&aperture_tex, aperture_tex_data);
   
   x3d_fix_slope slope, v;
   x3d_fix_slope_init(&slope, 100000, 0, 5);

@@ -19,7 +19,7 @@ endif
 OBJS = $(patsubst %.c, %.o, $(shell find . -name \*.c))
 OBJS += $(patsubst %.cpp, %.o, $(shell find . -name \*.cpp))
 OBJS += $(patsubst %.S, %.o, $(shell find . -name \*.S))
-EXE = helloworld-sdl
+EXE = nPortal
 DISTDIR = .
 vpath %.tns $(DISTDIR)
 vpath %.elf $(DISTDIR)

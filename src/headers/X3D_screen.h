@@ -131,3 +131,4 @@ void* x3d_screen_get_internal(void);
 struct X3D_Texture;
 
 _Bool x3d_platform_screen_load_texture(struct X3D_Texture* tex, const char* file);
+void x3d_screen_draw_circle(int16 x0, int16 y0, int16 radius, X3D_Color c);
