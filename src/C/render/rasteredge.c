@@ -166,9 +166,6 @@ void x3d_rasteredge_generate(X3D_RasterEdge* edge, X3D_Vex2D a, X3D_Vex2D b, X3D
     scale_a = scale_b + (((int32)(scale_a - scale_b) * scale) >> 15);
   }
   
-  edge->start_scale = scale_a;
-  edge->end_scale = scale_b;
-  
   // Set some flags and the y range for the edge
   x3d_rasteredge_set_y_range(edge, &a, &b);
   x3d_rasteredge_set_horizontal_flag(edge);
@@ -264,12 +261,8 @@ void x3d_rasteredge_get_endpoints(X3D_RasterEdge* edge,  X3D_Vex2D* start, X3D_V
 
 void x3d_rasteredge_set_intensity(X3D_RasterEdge* edge, fp0x16 ia, fp0x16 ib) {
   if(edge->flags & EDGE_SWAPPED) {
-    edge->end_scale = ia;
-    edge->start_scale = ib;
   }
   else {
-    edge->start_scale = ia;
-    edge->end_scale = ib;
   }
 }
 

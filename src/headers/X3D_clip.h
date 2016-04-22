@@ -20,7 +20,6 @@ typedef struct X3D_SpanValue2 {
 typedef struct X3D_Span {
   X3D_SpanValue left, right;
   int16 old_left_val, old_right_val;
-  fp0x16 left_scale, right_scale;
 } X3D_Span;
 
 typedef struct X3D_Span2 {

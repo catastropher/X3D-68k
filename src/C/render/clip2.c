@@ -133,58 +133,8 @@ enum {
   KEY_RECORD = X3D_KEY_14
 };
 
-_Bool key_pressed(uint16 key) {
-  if(x3d_key_down(key)) {
-    while(x3d_key_down(key)) x3d_read_keys();
-    
-    return X3D_TRUE;
-  }
-  
-  return X3D_FALSE;
-}
-
-uint16 get_polygon(X3D_PolyVertex* v) {
-  int16 cx = 640 / 2;
-  int16 cy = 480 / 2;
-  uint16 total_v = 0;
-  
-  do {
-    x3d_read_keys();
-    x3d_screen_draw_pix(cx, cy, 0x7FFF);
-    x3d_screen_flip();
-    
-    if(key_pressed(KEY_WIREFRAME)) {
-      v[total_v].v2d.x = cx;
-      v[total_v].v2d.y = cy;
-      
-      ++total_v;
-      
-      if(total_v >= 2) {
-        x3d_screen_draw_line(v[total_v - 1].v2d.x, v[total_v - 1].v2d.y, v[total_v - 2].v2d.x, v[total_v - 2].v2d.y, 31);
-        x3d_screen_flip();
-      }
-    }
-    
-    if(x3d_key_down(KEY_W))  --cy;
-    if(x3d_key_down(KEY_S))  ++cy;
-    if(x3d_key_down(KEY_A))  --cx;
-    if(x3d_key_down(KEY_D))  ++cx;
-    
-    SDL_Delay(10);
-    
-    if(key_pressed(TEST_KEY_ESCAPE))
-      break;
-  } while(1);
-  
-  return total_v;
-}
-
-extern int16 render_mode;
-
 void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_RasterRegion* parent, int16 z, X3D_Vex3D* normal, X3D_Vex3D* v3d, uint16* uu, uint16* vv) {
   X3D_PolyVertex pv[total_v];
-  
-#if 1
   
   X3D_Polygon2D poly = {
     .v = v,
@@ -193,205 +143,18 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   
   x3d_polygon2d_remove_duplicate(&poly);
 
-  //x3d_log(X3D_INFO, "Enter %s (total_v = %d)", __FUNCTION__, total_v);
-  
   uint16 i;
   for(i = 0; i < poly.total_v; ++i) {
     pv[i].v2d = v[i];
     pv[i].intensity = 0;//0x7FFF / (i + 1);
-    //pv[i].z = (0x7FFF * 16) / (v3d[i].z != 0 ? v3d[i].z : 1);
     
     pv[i].z = (1L << 30) / (v3d[i].z != 0 ? v3d[i].z : 1);
     
     pv[i].u = ((int32)uu[i] << 22) / v3d[i].z;
     pv[i].v = ((int32)vv[i] << 22) / v3d[i].z;
-    
-    ////x3d_log(X3D_INFO, "===========>u: %d, v: %d", pv[i].u, pv[i].v);
-    
-    //pv[i].u = 16 * ((int32)uu[i] << 15) / 128;
-    //pv[i].v = 16 * ((int32)vv[i] << 15) / 128;
-  }
-  
-#if 0
-  pv[0].u = 0;
-  pv[0].v = 0;
-  
-  pv[3].u = 16 * 0x7FFF * 4;
-  pv[3].v = 0;
-  
-  pv[2].u = 16 * 0x7FFF * 4;
-  pv[2].v = 16 * 0x7FFF * 4;
-  
-  pv[1].u = 0;
-  pv[1].v = 16 * 0x7FFF * 4;
-#endif
-  
-  
-  for(i = 0; i < poly.total_v; ++i) {
-    if(v3d[i].z != 0) {
-      //pv[i].u = pv[i].u / v3d[i].z;
-      //pv[i].v = pv[i].v / v3d[i].z;
-    }
   }
   
   X3D_RasterRegion r;
   x3d_rasterregion_update(parent);
-  
-  //x3d_log(X3D_INFO, "=======poly v=======");
-  
-  for(i = 0; i < poly.total_v; ++i) {
-    //x3d_log(X3D_INFO, "v %d: %d, %d", i, poly.v[i].x, poly.v[i].y);
-  }
-  
-  
-  if(x3d_rasterregion_make(&r, pv, poly.total_v, parent)) {
-    //x3d_log(X3D_INFO, "Draw %d - %d", r.rect.y_range.min, r.rect.y_range.max);
-    //x3d_rasterregion_downgrade(&r);
-    //x3d_rasterregion_fill_zbuf(&r, c, z);
-    
-    ////x3d_log(X3D_INFO, "Filling texture\nRange: %d-%d, start_x: %d - %d", r.rect.y_range.min, r.rect.y_range.max, r.span[0].left.x, r.span[0].right.x);
-    
-    
-    
-    //x3d_rasterregion_fill_texture(&r, z);
-    
-    //x3d_rasterregion_draw_outline(&r, 31);
-    
-    //x3d_rasterregion_draw_outline(&r, x3d_rgb_to_color(255, 0, 255));
-  }
-  else {
-    //x3d_log(X3D_INFO, "Failed to make region");
-  }
-#endif
+  x3d_rasterregion_make(&r, pv, poly.total_v, parent);
 }
-
-void x3d_clipregion_test() {
-#if 0
-  
-  X3D_RasterRegion r;
-  
-  uint16 total_v = 7;
- 
-#if 0
-  X3D_Vex2D v[] = {
-    { 250, 350 },
-    { 300, 350 },
-    { 400, 300 },
-    { 350, 200 },
-    { 300, 200 },
-    { 250, 200 },
-    { 200, 250 }
-  };
-#else
-  X3D_Vex2D v[] = {
-    { 300, 300 },
-    { 400, 300 },
-    { 400, 400 },
-    { 300, 400 }
-  };
-  
-  total_v = 4;
-#endif
-  
-  uint16 d;
-  for(d = 0; d < total_v / 2; ++d)
-    X3D_SWAP(v[d], v[total_v - d - 1]);
-  
-  x3d_screen_clear(0);
-  if(!x3d_rasterregion_construct_from_points(&x3d_rendermanager_get()->stack, &r, v, total_v))
-    x3d_assert(0);
-  
-  X3D_PolyVertex pv[30] = {
-    {
-      .v2d = { 320, 350 },
-    },
-    {
-      .v2d = { 250, 390 },
-    },
-    {
-      .v2d = { 390, 390 }
-    }
-  };
-  
-  
-  x3d_screen_zbuf_clear();
-  x3d_rasterregion_fill(&r, 31);
-  
-  x3d_rasterregion_update(&r);
-  
-  total_v = get_polygon(pv);
-  
-  for(d  = 0; d < total_v; ++d) {
-    pv[d].intensity = (d + 1) * 0x7FFFL / (d + 2);
-  }
-  
-  //pv[0].intensity = 0x7FFF;
-  //pv[1].intensity = 2 * 0x7FFF / 3;
-  //pv[2].intensity = 0x7FFF / 2;
-  
-  
-  int16 left = 0x7FFF;
-  int16 right = -0x7FFF;
-  
-  uint16 i;
-  for(i = r.rect.y_range.min; i <= r.rect.y_range.max; ++i) {
-    if(r.span[i -r.rect.y_range.min].left.x < left) {
-      left = r.span[i - r.rect.y_range.min].left.x;
-      r.extreme_left_y = i;
-    }
-    else if(r.span[i - r.rect.y_range.min].right.x > right) {
-      right = r.span[i - r.rect.y_range.min].right.x;
-      r.extreme_right_y = i;
-    }
-  }
-  
-  x3d_screen_clear(0);
-  x3d_screen_zbuf_clear();
-  x3d_rasterregion_fill(&r, 31);
-  
-  
-  
-  
-  //x3d_screen_draw_line(0, min_y, 639, min_y, 0x7FFF);
-  //x3d_screen_draw_line(0, max_y, 639, max_y, 0x7FFF);
-  
-  //x3d_screen_draw_line(left, 0, left, 479, 0x7FFF);
-  
-  
-  
-  X3D_RasterRegion r2;
-  x3d_rasterregion_make(&r2, pv, total_v, &r);
-  
-  x3d_rasterregion_draw_outline(&r2, x3d_rgb_to_color(255, 0, 255));
-
-  x3d_rasterregion_downgrade(&r2);
-  
-  render_mode = 1;
-  
-  x3d_rasterregion_fill(&r2, x3d_rgb_to_color(0, 0, 255));
-  
-  x3d_screen_flip();
-  
-  X3D_RasterRegion dest;
-  
-  
-  do {
-    x3d_read_keys();
-    
-    if(x3d_key_down(X3D_KEY_15)) {
-      while(x3d_key_down(X3D_KEY_15)) x3d_read_keys();
-      break;
-    }
-  } while(1);
-  
-#endif
-}
-
-
-
-
-
-
-
-
-

@@ -148,12 +148,10 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Raster
         // Just replace the left/right values of the horizontal line, if necessary
         if(e->rect.x_range.min < span->old_left_val) {
 	  span->old_left_val = e->rect.x_range.min;
-	  span->left_scale = e->start_scale;
 	}
 	  
 	if(e->rect.x_range.max > span->old_right_val) {
 	  span->old_right_val = e->rect.x_range.max;
-	  span->right_scale = e->end_scale;
 	}
       }
       else {
@@ -164,28 +162,21 @@ _Bool x3d_rasterregion_construct_from_edges(X3D_RasterRegion* region, X3D_Raster
 	  // Calculate the scale interpolation slope
     //x3d_assert(e->start_scale >= 0 && e->end_scale >= 0);
     
-    e->start_scale = X3D_MAX(0, e->start_scale);
-    e->end_scale = X3D_MAX(0, e->end_scale);
     
-	  int32 scale_slope = (((int32)e->end_scale - e->start_scale) << 15) / (e->rect.y_range.max - e->rect.y_range.min);
-	  int32 scale = (int32)e->start_scale << 15;
 	  
 	  // For each x value in the edge, check if the x_left and x_right values
 	  // in the raster region need to be replaced by it
 	  for(i = e->rect.y_range.min; i <= e->rect.y_range.max; ++i) {
 	    if(*x < span->old_left_val) {
 	      span->old_left_val = *x;
-	      span->left_scale = scale >> 15;
 	    }
 	    
 	    if(*x > span->old_right_val) {
 	      span->old_right_val = *x;
-	      span->right_scale = scale >> 15;
 	    }
 	    
 	    ++x;
 	    ++span;
-	    scale += scale_slope;
 	  }
 	}
       }      
@@ -256,7 +247,6 @@ _Bool x3d_span_clip(X3D_Span* span, X3D_Span parent_span) {
     int32 left = abs(span->old_left_val - parent_span.old_left_val);
     int32 right = abs(span->old_right_val - parent_span.old_left_val);
     
-    span->left_scale = span->right_scale + ((int32)span->left_scale - span->right_scale) * right / (left + right);
     span->old_left_val = parent_span.old_left_val;
   }
   
@@ -266,7 +256,6 @@ _Bool x3d_span_clip(X3D_Span* span, X3D_Span parent_span) {
     int32 left = abs(span->old_left_val - parent_span.old_right_val);
     int32 right = abs(span->old_right_val - parent_span.old_right_val);
     
-    span->right_scale = span->left_scale + ((int32)span->right_scale - span->left_scale) * left / (left + right);
     span->old_right_val = parent_span.old_right_val;
   }
   
@@ -633,7 +622,7 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
     //X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
     //X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
 
-    x3d_screen_draw_scanline_grad(i, region->span[index].old_left_val, region->span[index].old_right_val, color, region->span[index].left_scale, region->span[index].right_scale, color_tab + 5, 0);
+    //x3d_screen_draw_scanline_grad(i, region->span[index].old_left_val, region->span[index].old_right_val, color, region->span[index].left_scale, region->span[index].right_scale, color_tab + 5, 0);
     
     //x3d_screen_draw_line_grad(region->span[index].left, i, region->span[index].right, i, color_left, color_right);
   }
@@ -698,7 +687,7 @@ void x3d_rasterregion_fill_zbuf(X3D_RasterRegion* region, X3D_Color color, int16
     //X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
     //X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
 
-    x3d_screen_draw_scanline_grad(i, region->span[index].old_left_val, region->span[index].old_right_val, color, region->span[index].left_scale, region->span[index].right_scale, color_tab + 5, z);
+    //x3d_screen_draw_scanline_grad(i, region->span[index].old_left_val, region->span[index].old_right_val, color, region->span[index].left_scale, region->span[index].right_scale, color_tab + 5, z);
     
     //x3d_screen_draw_line_grad(region->span[index].left, i, region->span[index].right, i, color_left, color_right);
   }

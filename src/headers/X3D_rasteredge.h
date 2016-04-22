@@ -27,8 +27,6 @@ typedef struct X3D_RasterEdge {
   X3D_Vex3D_int32 start;
   X3D_Vex3D_int32 end;
   
-  fp0x16 start_scale;
-  fp0x16 end_scale;
 
   uint16 flags;
   
