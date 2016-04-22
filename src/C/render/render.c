@@ -584,6 +584,8 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   }
 }
 
+#include <SDL/SDL.h>
+
 void x3d_render(X3D_CameraObject* cam) {
   X3D_Color color = 31;//x3d_rgb_to_color(0, 0, 255);
 
@@ -598,12 +600,14 @@ void x3d_render(X3D_CameraObject* cam) {
   //printf("Tick: %d\n", tick++);
 
   line_count = 0;
-  
+ 
+  static uint32 start = 0;
+  static uint16 frames = 0;
   x3d_screen_zbuf_clear();
   
   depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
-
+  
   X3D_Vex3D v[] = {
     { -100, 100, 0 },
     { -100, -100, 0 },
@@ -681,5 +685,21 @@ void x3d_render(X3D_CameraObject* cam) {
   X3D_Color red = x3d_rgb_to_color(255, 0, 0);
   X3D_Color white = x3d_rgb_to_color(255, 255, 255);
 
+  static int32 fps = 0;
+  
+  if(++frames == 10) {
+    int32 time = (SDL_GetTicks() - start);
+    if(time != 0)
+      fps = 10000 / time;
+    else
+      fps = 1000;
+    
+    frames = 0;
+    
+    start = SDL_GetTicks();
+  }
+  
+  x3d_screen_draw_uint32(fps, 0, 0, 31);
+  
   //x3d_screen_draw_line_grad(0, 0, 639, 479, red, white);
 }

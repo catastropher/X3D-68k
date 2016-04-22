@@ -619,6 +619,122 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span2* span, int16 y);
         ++i;                                                                 \
     } while(--total > 0);                                                    \
 }
+
+void x3d_screen_draw_digit(char digit, int16 x, int16 y, X3D_Color color) {
+  digit -= '0';
+  
+  static const unsigned char font[10][8] = {
+    {
+      0b00100000,
+      0b01010000,
+      0b10001000,
+      0b10001000,
+      0b10001000,
+      0b10001000,
+      0b01010000,
+      0b00100000
+    },
+    {
+      0b01000000,
+      0b01000000,
+      0b01000000,
+      0b01000000,
+      0b01000000,
+      0b01000000,
+      0b01000000,
+      0b01000000
+    },
+    {
+      0b11110000,
+      0b00010000,
+      0b00010000,
+      0b00010000,
+      0b11110000,
+      0b10000000,
+      0b10000000,
+      0b11110000
+    },
+    {
+      0b11110000,
+      0b00010000,
+      0b00010000,
+      0b00010000,
+      0b11110000,
+      0b00010000,
+      0b00010000,
+      0b11110000
+    },
+    {
+      0b10010000,
+      0b10010000,
+      0b10010000,
+      0b11110000,
+      0b00010000,
+      0b00010000,
+      0b00010000,
+      0b00010000
+    },
+    {
+      0b11110000,
+      0b10000000,
+      0b10000000,
+      0b10000000,
+      0b11110000,
+      0b00010000,
+      0b00010000,
+      0b11110000
+    },
+    {
+      0b11110000,
+      0b10000000,
+      0b10000000,
+      0b10000000,
+      0b11110000,
+      0b10010000,
+      0b10010000,
+      0b11110000
+    },
+    {
+      0b11110000,
+      0b00010000,
+      0b00010000,
+      0b00010000,
+      0b00100000,
+      0b01000000,
+      0b01000000,
+      0b10000000
+    },
+    {
+      0b11110000,
+      0b10010000,
+      0b10010000,
+      0b11110000,
+      0b10010000,
+      0b10010000,
+      0b10010000,
+      0b11110000
+    },
+    {
+      0b11110000,
+      0b10010000,
+      0b10010000,
+      0b11110000,
+      0b00010000,
+      0b00010000,
+      0b00010000,
+      0b00010000
+    }
+  };
+  
+  
+  
+  uint16 i, d;
+  for(i = y; i < y + 8; ++i) {
+    for(d = x; d < x + 5; ++d) {
+      x3d_screen_draw_pix(d, i, font[digit][i - y] & (1 << (7 - (d - x))) ? color : 0x7FFF);
+    }
+  }
+}
     
 void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   if(span->right.x < span->left.x) return;
@@ -667,6 +783,8 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
     uz += uz_slope;
     vz += vz_slope;
     zz += zz_slope;
+    
+    SDL_GetTicks();
     
     int32 recip_z = fast_recip(tab, zz >> 12);
     next_u = ((uz >> 5) * recip_z);
@@ -763,7 +881,15 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span2* span, int16 y) {
   }
 }
 
-
+void x3d_screen_draw_uint32(uint32 num, int16 x, int16 y, X3D_Color c) {
+  char buf[32];
+  sprintf(buf, "%u", num);
+  
+  uint16 i;
+  for(i = 0; i < strlen(buf); ++i) {
+    x3d_screen_draw_digit(buf[i], x + i * 5, y, c);
+  }
+}
 
 
 
