@@ -32,13 +32,6 @@ static char record_name[1024];
 
 int32 recip_tab[32768];
 
-static inline int32 fast_recip(const int32* tab, int16 val) {
-  if(val > 0)
-    return tab[val];
-  
-  return -tab[-val];
-}
-
 static inline uint32 fast_recip_pos(int32* tab, uint16 val) {
   return tab[val];
 }
@@ -775,7 +768,7 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
   uint16* pixels = ((uint16 *)window_surface->pixels) + y * 320 + span->left.x;
   uint16* pixels_end = ((uint16 *)window_surface->pixels) + y * 320 + span->right.x;
   
-  _Bool repeat = tex->flags & X3D_TEXTURE_REPEAT;
+  _Bool repeat = 1;//tex->flags & X3D_TEXTURE_REPEAT;
   
   do {
     prev_u = next_u;

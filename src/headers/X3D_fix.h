@@ -46,8 +46,20 @@ static inline _Bool x3d_msb(int32 i) {
   return i & (1L << 29);
 }
 
+extern int32 recip_tab[32768];
+
+static inline int32 fast_recip(const int32* tab, int16 val) {
+  if(val > 0)
+    return tab[val];
+  
+  return -tab[-val];
+}
+
+
 static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 end, int32 dx) {
   slope->shift = 0;
+  
+  const int32* const tab = recip_tab;
   
   _Bool start_neg = start < 0;
   if(start_neg)
@@ -76,7 +88,7 @@ static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 e
   
   x3d_assert(((int32)end - start) == ((int64)end - start));
   
-  slope->val = (end - start) / dx;
+  slope->val = (((int64)end - start) * fast_recip(tab, dx)) >> 23;
 }
 
 static inline void x3d_fix_slope_same_shift(x3d_fix_slope* slope, x3d_fix_slope* from, int32 val) {
