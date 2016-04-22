@@ -302,8 +302,7 @@ X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b) {
 void x3d_screen_zbuf_clear(void) {
   uint32 i;
   
-  for(i = 0; i < (int32)screen_w * screen_h; ++i)
-    x3d_rendermanager_get()->zbuf[i] = 0;
+  memset(x3d_rendermanager_get()->zbuf, 1, screen_w * screen_h * 2);
 }
 
 uint32 x3d_color_to_internal(X3D_Color c) {
@@ -770,7 +769,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   
   int32 i = span->left.x;
   
-  X3D_Texture* tex = global_texture;
+  const X3D_Texture* tex = global_texture;
   int16* z_buf = x3d_rendermanager_get()->zbuf;
   uint16* pixels = window_surface->pixels;
   
@@ -784,8 +783,6 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
     vz += vz_slope;
     zz += zz_slope;
     
-    SDL_GetTicks();
-    
     int32 recip_z = fast_recip(tab, zz >> 12);
     next_u = ((uz >> 5) * recip_z);
     next_v = ((vz >> 5) * recip_z);
@@ -794,7 +791,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
     int32 v_slope = (next_v - prev_v) >> RUN_BITS;
     
     
-    int16 total = (span->right.x - i + 1 >= RUN ? RUN : span->right.x - i + 1);
+    int32 end_i = (span->right.x - i + 1 >= RUN ? RUN : span->right.x - i + 1) + i;
     
     int32 u = prev_u;
     int32 v = prev_v;
@@ -802,15 +799,22 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
     uint16 last_u = 0xFFFF;
     uint16 last_v = 0xFFFF;
     
-    if(tex->w == 128) {
-      INNER_LOOP(128);
-    }
-    else if(tex->w == 32) {
-      INNER_LOOP(32);
-    }
-    else if(tex->w == 64) {
-      INNER_LOOP(64);
-    }
+    do {
+      uint16 uu = (u >> 23) & (tex->w - 1);
+      uint16 vv = (v >> 23) & (tex->w - 1);
+      uint8 index = tex->texel.large[vv * tex->w + uu];
+      uint16 zz = z >> 11;
+      
+      if(zz >= z_buf[y * 320 + i]) {
+        pixels[y * 320 + i] = tex->color_tab[index];
+        z_buf[y * 320 + i] = zz;
+      }
+      
+      u += u_slope;
+      v += v_slope;
+      z += z_slope;
+      ++i;
+    } while(i < end_i);
   } while(i <= span->right.x);
 }
 
