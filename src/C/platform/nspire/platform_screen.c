@@ -735,7 +735,7 @@ void x3d_screen_draw_digit(char digit, int16 x, int16 y, X3D_Color color) {
   }
 }
     
-void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
+__attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   if(span->right.x < span->left.x) return;
   
   const int16 RUN_BITS = 5;
@@ -767,11 +767,10 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   int32 vz = span->left.v;
   int32 zz = span->left.z;
   
-  int32 i = span->left.x;
-  
   const X3D_Texture* tex = global_texture;
-  int16* z_buf = x3d_rendermanager_get()->zbuf;
-  uint16* pixels = window_surface->pixels;
+  uint16* z_buf = x3d_rendermanager_get()->zbuf + y * 320 + span->left.x;
+  uint16* pixels = ((uint16 *)window_surface->pixels) + y * 320 + span->left.x;
+  uint16* pixels_end = ((uint16 *)window_surface->pixels) + y * 320 + span->right.x;
   
   do {
     prev_u = next_u;
@@ -791,31 +790,29 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
     int32 v_slope = (next_v - prev_v) >> RUN_BITS;
     
     
-    int32 end_i = (span->right.x - i + 1 >= RUN ? RUN : span->right.x - i + 1) + i;
+    uint16* run_end = X3D_MIN(pixels + RUN, pixels_end);
     
     int32 u = prev_u;
     int32 v = prev_v;
     
-    uint16 last_u = 0xFFFF;
-    uint16 last_v = 0xFFFF;
-    
     do {
-      uint16 uu = (u >> 23) & (tex->w - 1);
-      uint16 vv = (v >> 23) & (tex->w - 1);
-      uint8 index = tex->texel.large[vv * tex->w + uu];
-      uint16 zz = z >> 11;
+      uint32 zz = z >> 11;
       
-      if(zz >= z_buf[y * 320 + i]) {
-        pixels[y * 320 + i] = tex->color_tab[index];
-        z_buf[y * 320 + i] = zz;
+      if(zz >= *z_buf) {
+        uint32 uu = (u >> 23) & (tex->w - 1);
+        uint32 vv = (v >> 23) & (tex->w - 1);
+        uint32 index = tex->texel.large[vv * tex->w + uu];
+        *pixels = tex->color_tab[index];
+        *z_buf = zz;
       }
       
       u += u_slope;
       v += v_slope;
       z += z_slope;
-      ++i;
-    } while(i < end_i);
-  } while(i <= span->right.x);
+      ++z_buf;
+      ++pixels;
+    } while(pixels < run_end);
+  } while(pixels < pixels_end);
 }
 
 void x3d_screen_draw_scanline_texture_affine_small(X3D_Span2* span, int16 y) {

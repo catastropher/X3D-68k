@@ -690,9 +690,9 @@ void x3d_render(X3D_CameraObject* cam) {
   if(++frames == 10) {
     int32 time = (SDL_GetTicks() - start);
     if(time != 0)
-      fps = 10000 / time;
+      fps = 1000000 / time;
     else
-      fps = 1000;
+      fps = 100000;
     
     frames = 0;
     
