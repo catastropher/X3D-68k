@@ -434,9 +434,9 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
       ++i;
 
       
-void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y);
+void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y);
       
-void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
+void x3d_screen_draw_scanline_texture(X3D_Span2* span, int16 y) {
   x3d_screen_draw_scanline_texture_affine(span, y);
   return;
   
@@ -584,7 +584,7 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y);
+void x3d_screen_draw_scanline_texture_affine_small(X3D_Span2* span, int16 y);
 
 
 #define INNER_LOOP(_w) if(tex->flags & X3D_TEXTURE_4BIT) {                   \
@@ -620,7 +620,7 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y);
     } while(--total > 0);                                                    \
 }
     
-void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
+void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   if(span->right.x < span->left.x) return;
   
   const int16 RUN_BITS = 5;
@@ -696,7 +696,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   } while(i <= span->right.x);
 }
 
-void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y) {
+void x3d_screen_draw_scanline_texture_affine_small(X3D_Span2* span, int16 y) {
   if(span->right.x < span->left.x) return;
   
   int32* tab = recip_tab;

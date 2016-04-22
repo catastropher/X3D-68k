@@ -503,7 +503,7 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
 
 
 
-void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
+void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   if(span->right.x < span->left.x) {
     return;
   }
@@ -596,7 +596,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   //x3d_log(X3D_INFO, "Same count: %d", same_count);
 }
 
-void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
+void x3d_screen_draw_scanline_texture(X3D_Span2* span, int16 y) {
   x3d_screen_draw_scanline_texture_affine(span, y);
   return;
   

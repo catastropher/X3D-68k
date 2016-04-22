@@ -8,16 +8,25 @@
 
 typedef struct X3D_SpanValue {
   int16 x;
+} X3D_SpanValue;
+
+typedef struct X3D_SpanValue2 {
+  int16 x;
   int16 intensity;
   int32 u, v;
   int32 z;
-} X3D_SpanValue;
+} X3D_SpanValue2;
 
 typedef struct X3D_Span {
   X3D_SpanValue left, right;
   int16 old_left_val, old_right_val;
   fp0x16 left_scale, right_scale;
 } X3D_Span;
+
+typedef struct X3D_Span2 {
+  X3D_SpanValue2 left, right;
+} X3D_Span2;
+
 
 typedef struct X3D_Range {
   int32 min;

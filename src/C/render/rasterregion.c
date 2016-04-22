@@ -225,8 +225,8 @@ void x3d_rasterregion_downgrade(X3D_RasterRegion* r) {
   for(i = 0; i < x3d_rasterregion_total_spans(r); ++i) {
     r->span[i].old_left_val = r->span[i].left.x;
     r->span[i].old_right_val = r->span[i].right.x;
-    r->span[i].left_scale = r->span[i].left.intensity;
-    r->span[i].right_scale = r->span[i].right.intensity;
+    //r->span[i].left_scale = r->span[i].left.intensity;
+    //r->span[i].right_scale = r->span[i].right.intensity;
   }
 }
 

@@ -121,9 +121,9 @@ void x3d_screen_record_end(void);
 void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab, int16 z);
 void x3d_screen_zbuf_clear(void);
 
-struct X3D_Span;
+struct X3D_Span2;
 
-void x3d_screen_draw_scanline_texture(struct X3D_Span* span, int16 y);
+void x3d_screen_draw_scanline_texture(struct X3D_Span2* span, int16 y);
 void x3d_screen_zbuf_visualize(void);
 
 void* x3d_screen_get_internal(void);
