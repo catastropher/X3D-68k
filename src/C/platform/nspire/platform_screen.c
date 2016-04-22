@@ -592,7 +592,7 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y);
           uint16 vv = (v >> 23) & (tex->w - 1);                              \
           uint8 byte = tex->texel.small[(vv * _w + uu) >> 1];                \
           if((uu & 1) == 0) byte >>= 4;                                      \
-          uint16 zz = z >> 15;                                               \
+          uint16 zz = z >> 11;                                               \
           pixels[y * 320 + i] = tex->color_tab[byte & 0x0F];                 \
           z_buf[y * 320 + i] = zz;                                           \
         }                                                                    \
@@ -607,7 +607,7 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y);
           uint16 uu = (u >> 23) & (tex->w - 1);                              \
           uint16 vv = (v >> 23) & (tex->w - 1);                              \
           uint8 index = tex->texel.large[vv * _w + uu];                      \
-          uint16 zz = z >> 15;                                               \
+          uint16 zz = z >> 11;                                               \
           pixels[y * 320 + i] = tex->color_tab[index];                       \
           z_buf[y * 320 + i] = zz;                                           \
         }                                                                    \
@@ -728,7 +728,7 @@ void x3d_screen_draw_scanline_texture_affine_small(X3D_Span* span, int16 y) {
       uint16 uu = u >> 16;//(u >> 16) & (tex->w - 1);
       uint16 vv = v >> 16;//(v >> 16) & (tex->w - 1);
       
-      uint16 zz = z >> 15;
+      uint16 zz = z >> 11;
       
       if(zz >= z_buf[y * 320 + i]) {
         pixels[y * 320 + i] = x3d_texture_get_texel(tex, uu, vv);//tex->texel[vv * 128 + uu];

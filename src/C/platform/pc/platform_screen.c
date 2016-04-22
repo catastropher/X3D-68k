@@ -25,6 +25,13 @@
 #include "render/X3D_texture.h"
 
 
+int32 recip_tab[1];
+
+int32 fast_recip(int32* tab, uint16 val) {
+  if(val == 0) return 1;
+  return (1L << 23) / val;
+}
+
 static SDL_Surface* window_surface;
 static int16 screen_w;
 static int16 screen_h;
@@ -410,11 +417,20 @@ void x3d_screen_zbuf_visualize(void) {
   
   for(y = 0; y < screen_h; ++y) {
     for(x = 0; x < screen_w; ++x) {
-      int16 s = (int32)x3d_rendermanager_get()->zbuf[y * screen_w + x] * 255 * 32 / 0x7FFF;
+      int16 v = x3d_rendermanager_get()->zbuf[y * screen_w + x];
       
-      s = X3D_MIN(s, 255);
-      
-      x3d_screen_draw_pix(x, y, x3d_rgb_to_color(s, s, s));
+      if(v != 0) {
+        int16 s = fast_recip(recip_tab, v) >> 8;
+        
+        s = x3d_rendermanager_get()->zbuf[y * screen_w + x];//X3D_MIN(s, 255);
+        
+        s = X3D_MIN(s, 255);
+        
+        x3d_screen_draw_pix(x, y, x3d_rgb_to_color(s, s, s));
+      }
+      else {
+        x3d_screen_draw_pix(x, y, x3d_rgb_to_color(255, 0, 0));
+      }
     }
   }
 }
@@ -480,16 +496,13 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   
 }
 
-int32 recip_tab[1];
 
-int32 fast_recip(int32* tab, uint16 val) {
-  return (1L << 23) / val;
-}
 
 void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   if(span->right.x < span->left.x) {
     return;
   }
+  
   
   int32* tab = recip_tab;
   
@@ -502,7 +515,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span* span, int16 y) {
   
   int16 dx = span->right.x - span->left.x;
   
-  const int16 RUN = 32;
+  const int16 RUN = 2;
   
   int32 z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
   
@@ -636,7 +649,7 @@ void x3d_screen_draw_scanline_texture(X3D_Span* span, int16 y) {
     //int16 vv = (((v >> 16) * zz) * 192) >> 15;
     
     
-    zz >>= 8;
+    zz >>= 4;
     
     X3D_Color c = x3d_texture_get_texel(global_texture, uu, vv);
     

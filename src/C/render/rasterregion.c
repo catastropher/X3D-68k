@@ -241,7 +241,7 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   gen.parent = parent;
   gen.dest = dest;
   gen.span = spans;
-  gen.x = (int32)p->v[0]->v2d.x << 16;
+  gen.x = ((int32)p->v[0]->v2d.x << 16);
   gen.intensity = (int32)p->v[0]->intensity << 16;
   gen.u = (int32)p->v[0]->u << 16;
   gen.v = (int32)p->v[0]->v << 16;
@@ -251,6 +251,7 @@ void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_Raster
   gen.y_range.max = -0x7FFF;
   gen.line = p;
   gen.other_side = other;
+  gen.y = min_y;
   
   _Bool done = X3D_FALSE;
   

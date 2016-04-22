@@ -57,7 +57,7 @@ typedef struct X3D_RenderManager {
   int16 near_z;
   _Bool wireframe;
   void (*segment_face_render_callback)(X3D_SegmentRenderFace* face);
-  int16* zbuf;
+  uint16* zbuf;
 } X3D_RenderManager;
 
 #define X3D_MAX_DISPLAY_LINE 100

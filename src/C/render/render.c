@@ -600,6 +600,8 @@ void x3d_render(X3D_CameraObject* cam) {
 
   line_count = 0;
   
+  x3d_screen_zbuf_clear();
+  
   depth = 0;
   x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
 
@@ -615,8 +617,6 @@ void x3d_render(X3D_CameraObject* cam) {
     .total_v = 4
   };
   
-  
-  x3d_screen_zbuf_clear();
   
   //x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, 31);
   
