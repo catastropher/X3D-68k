@@ -49,10 +49,15 @@ static inline _Bool x3d_msb(int32 i) {
 extern int32 recip_tab[32768];
 
 static inline int32 fast_recip(const int32* tab, int16 val) {
+#ifdef __nspire__
   if(val > 0)
     return tab[val];
   
   return -tab[-val];
+#else
+  if(val == 0) return 1;
+  return (1L << 23) / val;
+#endif
 }
 
 

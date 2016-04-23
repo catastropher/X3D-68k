@@ -25,12 +25,11 @@
 #include "render/X3D_texture.h"
 
 
-int32 recip_tab[1];
+int32 recip_tab[32768];
 
-int32 fast_recip(int32* tab, uint16 val) {
-  if(val == 0) return 1;
-  return (1L << 23) / val;
-}
+//int32 fast_recip(int32* tab, uint16 val) {
+//  
+//}
 
 static SDL_Surface* window_surface;
 static int16 screen_w;
