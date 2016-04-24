@@ -14,6 +14,11 @@ typedef struct X3D_PolyLine {
   X3D_PolyVertex** v;
 } X3D_PolyLine;
 
+typedef struct X3D_PolyLine2 {
+  uint16 total_v;
+  X3D_PolyVertex* v;
+} X3D_PolyLine2;
+
 typedef struct X3D_PolyRegion {
   X3D_PolyLine left;
   X3D_PolyLine right;

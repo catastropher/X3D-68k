@@ -20,7 +20,7 @@ void x3d_rasterregion_find_point_inside_left(X3D_RasterRegion* r, X3D_Vex2D left
     
     //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
     
-    if(abs(mid.x - span->left.x) < 2)
+    if(abs(mid.x - span->left.x) <= 2)
       break;
     
     if(mid.x < span->left.x)

@@ -500,7 +500,7 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   
 }
 
-
+uint16 geo_render_mode;
 
 void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   if(span->right.x < span->left.x) {
@@ -577,8 +577,8 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
       last_v = vv;
       
       uint16 zz = z >> 15;
-      
-      if(zz >= z_buf[y * 640L + i]) {
+        
+      if(zz >= z_buf[y * 640L + i] && (geo_render_mode != 0 || z_buf[y * 640L + i] == 0)) {
         pixels[y * 640L + i] = map_color_to_uint32(x3d_texture_get_texel(tex, uu, vv));   //tex->texel[(int32)vv * tex->w + uu]);
         z_buf[y * 640L + i] = zz;
       }

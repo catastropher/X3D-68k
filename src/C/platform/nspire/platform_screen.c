@@ -732,6 +732,8 @@ void x3d_screen_draw_digit(char digit, int16 x, int16 y, X3D_Color color) {
   }
 }
     
+uint16 geo_render_mode;
+    
 __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   if(span->right.x < span->left.x) return;
   
@@ -739,8 +741,8 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
   const int16 RUN = (1 << RUN_BITS);
   
   if(span->right.x - span->left.x <= RUN) {
-    x3d_screen_draw_scanline_texture_affine_small(span, y);
-    return;
+    //x3d_screen_draw_scanline_texture_affine_small(span, y);
+    //return;
   }
   
   int32* tab = recip_tab;
@@ -770,6 +772,8 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
   
   _Bool repeat = 1;//tex->flags & X3D_TEXTURE_REPEAT;
   
+  uint16 mode = geo_render_mode;
+  
   do {
     prev_u = next_u;
     prev_v = next_v;
@@ -797,7 +801,7 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
       do {
         uint32 zz = z >> 11;
         
-        if(zz >= pixels[320 * 240]) {
+        if(zz >= pixels[320 * 240] && (geo_render_mode != 0 || pixels[320 * 240] == 0)) {
           uint32 uu = (u >> 23) & (tex->w - 1);
           uint32 vv = (v >> 23) & (tex->w - 1);
           uint32 index = tex->texel.large[vv * tex->w + uu];
@@ -815,7 +819,7 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
       do {
         uint32 zz = z >> 11;
         
-        if(zz >= pixels[320 * 240]) {
+        if(zz >= pixels[320 * 240] && (geo_render_mode != 0 || pixels[320 * 240] == 0)) {
           uint32 uu = (u >> 23);
           uint32 vv = (v >> 23);
           uint32 index = tex->texel.large[vv * tex->w + uu];

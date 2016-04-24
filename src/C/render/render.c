@@ -32,6 +32,7 @@
 int16 line_count;
 
 extern int16 render_mode;
+extern uint16 geo_render_mode;
 
 
 void x3d_rendermanager_init(X3D_InitSettings* settings) {
@@ -225,7 +226,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
   for(i = 0; i < x3d_prism3d_total_f(prism->base_v); ++i) {
     if(i != context->portal_face) {
       int16 dist = x3d_plane_dist(&context->faces[i].plane, &context->cam->pseduo_pos);
-
+      
       if(dist > 0) {
           if(context->faces[i].portal_seg_face != X3D_FACE_NONE || 1) {
             void* stack_ptr = x3d_stack_save(&context->renderman->stack);
@@ -252,6 +253,8 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 
                 uint16 u[10] = { 0, 128, 128, 0 };
                 uint16 v[10] = { 0, 0, 128, 128 };
+                
+                x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent, context->list);
                 
                 
                 if(context->seg_id == 0) {
@@ -284,6 +287,9 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 }
                 
                 
+                geo_render_mode = 0;
+               
+                
                 
                 //if(context->seg_id == 0 && i == 1) {
                   x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
@@ -294,11 +300,14 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                   //x3d_log(X3D_INFO, "====================");
                 }
               }
-              goto render_portals;
+              continue;
             }
 
-            if(context->faces[i].portal_seg_face == X3D_FACE_NONE)
-              goto render_portals;
+            if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
+              x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent, context->list);
+              continue;
+            }
+              //goto render_portals;
 
             if(context->renderman->wireframe) {
               portal.region = context->parent;
@@ -415,7 +424,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   if(id == 0) {
     //x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
     x3d_set_texture(3);
-    x3d_cube_render((X3D_Vex3D) { 150, 100, 150 }, 75, cam, &x3d_rendermanager_get()->region);
+    x3d_cube_render((X3D_Vex3D) { 150, 100, 150 }, 75, cam, region);
   }
 
   x3d_stack_restore(&renderman->stack, stack_save);
@@ -522,8 +531,12 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   X3D_Prism3D* prism = alloca(1000);
   int16 steps = 4;
+
+  geo_render_mode = 1;
   
-  x3d_prism3d_construct(prism, steps, w, w, (X3D_Vex3D_angle256) { 0, 0, 0 }); //x3d_enginestate_get_step() * 2, x3d_enginestate_get_step() * 2, 0 });
+  uint8 angle = x3d_enginestate_get_step() * 4;
+  
+  x3d_prism3d_construct(prism, steps, w, w, (X3D_Vex3D_angle256) { angle, angle, 0 }); //x3d_enginestate_get_step() * 2, x3d_enginestate_get_step() * 2, 0 });
   X3D_Polygon3D p = {
     .v = alloca(1000)
   };

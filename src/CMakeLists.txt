@@ -117,6 +117,7 @@ add_sources(
   C/render/scanline.c
   C/render/polyline.c
   C/render/texture.c
+  C/render/clip4.c
   
   C/physics/collide.c
   
