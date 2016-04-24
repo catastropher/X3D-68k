@@ -801,7 +801,7 @@ __attribute__((hot)) void x3d_screen_draw_scanline_texture_affine(X3D_Span2* spa
       do {
         uint32 zz = z >> 11;
         
-        if(zz >= pixels[320 * 240] && (geo_render_mode != 0 || pixels[320 * 240] == 0)) {
+        if(zz >= pixels[320 * 240]) {
           uint32 uu = (u >> 23) & (tex->w - 1);
           uint32 vv = (v >> 23) & (tex->w - 1);
           uint32 index = tex->texel.large[vv * tex->w + uu];

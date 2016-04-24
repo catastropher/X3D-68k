@@ -112,6 +112,8 @@ X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
 
 _Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, X3D_PolyLine* right);
 
+_Bool x3d_polyline_try_render(X3D_PolyLine* left, X3D_PolyLine* right, X3D_RasterRegion* region);
+
 _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 total_v, X3D_RasterRegion* parent) {
   X3D_PolyLine left, right;
   left.v = alloca(1000);
@@ -143,7 +145,10 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   x3d_rasterregion_generate_polyline_spans(dest, parent, &left, &right, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].left, &y_range_left);
   x3d_log(X3D_INFO, "=================Right=================");
   x3d_rasterregion_generate_polyline_spans(dest, parent, &right, &left, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].right, &y_range_right);
-  
+
+  if(x3d_polyline_try_render(&left, &right, parent)) {
+    return X3D_TRUE;
+  }
   
   x3d_rasterregion_cheat_calc_texture(dest, &left, &right);
   
