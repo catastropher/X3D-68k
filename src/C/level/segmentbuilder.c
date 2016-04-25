@@ -119,6 +119,39 @@ uint16 x3d_segmentbuilder_add_extruded_segment(X3D_SegFaceID id, int16 dist) {
 }
 
 uint16 x3d_segmentbuilder_add_connecting_segment(X3D_SegFaceID a, X3D_SegFaceID b) {
+  X3D_Segment* seg_a = x3d_segmentmanager_load(x3d_segfaceid_seg(a));
+  X3D_Segment* seg_b = x3d_segmentmanager_load(x3d_segfaceid_seg(b));
   
+  X3D_Polygon3D face_a = { .v = alloca(1000) };
+  x3d_prism3d_get_face(&seg_a->prism, x3d_segfaceid_face(a), &face_a);
+  
+  X3D_Polygon3D face_b = { .v = alloca(1000) };
+  x3d_prism3d_get_face(&seg_b->prism, x3d_segfaceid_face(b), &face_b);
+  
+  x3d_assert(face_a.total_v == face_b.total_v);
+  
+  X3D_Prism3D* new_prism = alloca(1000);
+  
+  new_prism->base_v = face_a.total_v;
+  
+  x3d_polygon3d_reverse(&face_a);
+  x3d_polygon3d_reverse(&face_b);
+  
+  x3d_prism3d_set_face(new_prism, X3D_BASE_A, &face_a);
+  x3d_prism3d_set_face(new_prism, X3D_BASE_B, &face_b);
+  
+  X3D_Segment* new_seg = x3d_segmentbuilder_add_uncompressed_segment(new_prism);
+  
+  x3d_uncompressedsegment_get_faces(seg_a)[x3d_segfaceid_face(a)].portal_seg_face = x3d_segfaceid_create(new_seg->base.id, X3D_BASE_A);
+  x3d_uncompressedsegment_get_faces(new_seg)[X3D_BASE_A].portal_seg_face = a;
+  
+  x3d_uncompressedsegment_get_faces(seg_b)[x3d_segfaceid_face(b)].portal_seg_face = x3d_segfaceid_create(new_seg->base.id, X3D_BASE_B);
+  x3d_uncompressedsegment_get_faces(new_seg)[X3D_BASE_B].portal_seg_face = b;
+  
+  return new_seg->base.id;
 }
+
+
+
+
 

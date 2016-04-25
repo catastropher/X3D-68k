@@ -34,6 +34,8 @@ void setup_key_map(void);
 
 // Creates a hard-coded test level
 void create_test_level(void) {
+  uint16 i;
+  
   // Create a new segment
   uint16 base_v = 8;
   X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
@@ -54,7 +56,30 @@ void create_test_level(void) {
 
   // Create some regular segments
   uint16 id0 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+  
+  for(i = 0; i < base_v * 2; ++i) {
+    X3D_Vex3D shift = { 800, -100, 800 };
+    
+    prism->v[i] = x3d_vex3d_add(prism->v + i, &shift);
+  }
+  
+  uint16 id1 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+  
+  uint16 id2 = x3d_segmentbuilder_add_connecting_segment(x3d_segfaceid_create(id0, 3), x3d_segfaceid_create(id1, 7));
 
+  
+  for(i = 0; i < base_v * 2; ++i) {
+    X3D_Vex3D shift = { 800, 0, 800 };
+    
+    prism->v[i] = x3d_vex3d_add(prism->v + i, &shift);
+  }
+  
+  uint16 id4 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+  
+  uint16 id5 = x3d_segmentbuilder_add_connecting_segment(x3d_segfaceid_create(id1, 4), x3d_segfaceid_create(id4, 3));
+  
+  
+#if 0
   
   uint16 id1 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 4), 100);
   uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 4), 100);
@@ -149,6 +174,8 @@ void create_test_level(void) {
   X3D_Handle h = x3d_handle_add(&texture3d);
   x3d_uncompressedsegment_get_faces(ss)[face_id].texture = h;
   
+#endif
+  
   // Create a red and green portal
   uint16 portal_base_v = 8;
   X3D_Polygon2D portal_poly = {
@@ -157,17 +184,18 @@ void create_test_level(void) {
 
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
 
+  /*
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
   uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
 
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);
   
-  uint16 i;
   for(i = 0; i < 10; ++i) {
     X3D_Segment* seg = x3d_segmentmanager_load(id0);
     x3d_uncompressedsegment_get_faces(seg)[i].portal_seg_face = X3D_FACE_NONE;
   }
+  */
   
 }
 
@@ -193,6 +221,8 @@ extern uint8 floor_panel_tex_data[];
 extern uint8 cube_tex_data[];
 extern uint8 aperture_tex_data[];
 
+_Bool x3d_level_run_command(char* str);
+
 int main() {
 #if defined(__linux__) && 1
   int16 w = 640;
@@ -201,7 +231,6 @@ int main() {
   int16 w = 320;
   int16 h = 240;
 #endif
-  
   
   X3D_InitSettings init = {
     .screen_w = w,
@@ -235,7 +264,10 @@ int main() {
   setup_key_map();
   x3d_keymanager_set_callback(engine_test_handle_keys);
 
-  create_test_level();
+  //create_test_level();
+  
+  x3d_level_run_command("addseg v=8 r=300 h=275 pos = { 0, -500, 0 }");
+  
   setup_camera();
   
   x3d_game_loop();

@@ -126,7 +126,7 @@ X3D_EdgeSlope* x3d_polyline_next_switch(X3D_EdgeSlope* left, X3D_EdgeSlope* righ
   return (left->v->v2d.y < right->v->v2d.y ? left : right);
 }
 
-void x3d_polyline2_rasterize_texture(X3D_PolyLine2* left, X3D_PolyLine2* right) {
+__attribute__((hot)) void x3d_polyline2_rasterize_texture(X3D_PolyLine2* left, X3D_PolyLine2* right) {
   int32 y     = left->v[0].v2d.y;
   int32 end_y = left->v[left->total_v - 1].v2d.y;
   
