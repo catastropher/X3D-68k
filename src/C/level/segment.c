@@ -188,3 +188,41 @@ void x3d_segment_reset(X3D_Segment* s) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Adds a new attachment to a segment face.
+///
+/// @param seg_id       - id of the segment
+/// @param face         - face id to add to
+/// @param attach_type  - type of attachment
+/// @param attach_data  - data for the attachment
+/// @param flags        - flags
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_segment_face_attach(uint16 seg_id, uint16 face, uint16 attach_type, void* attach_data, uint16 flags) {
+  X3D_Segment* seg = x3d_segmentmanager_load(seg_id);
+  
+  x3d_assert(face < seg->prism.base_v);
+  
+  X3D_SegmentFace* seg_face = x3d_uncompressedsegment_get_faces(seg) + face;
+  X3D_SegmentFaceAttachement* attach = seg_face->attach;
+  
+  // Create a new wall attachment
+  X3D_SegmentFaceAttachement* new_attach = x3d_slab_alloc(sizeof(X3D_SegmentFaceAttachement));
+  new_attach->type = attach_type;
+  new_attach->flags = flags;
+  new_attach->data = attach_data;
+  new_attach->next = NULL;
+  
+  if(!attach) {
+    seg_face->attach = new_attach;
+  }
+  else {
+    while(attach->next)
+      attach = attach->next;
+    
+    attach->next = new_attach;
+  }
+}
+
+

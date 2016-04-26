@@ -223,3 +223,6 @@ X3D_Segment* x3d_segmentmanager_load(uint16 id);
 void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object);
 void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle);
 void x3d_segment_reset(X3D_Segment* s);
+
+void x3d_segment_face_attach(uint16 seg_id, uint16 face, uint16 attach_type, void* attach_data, uint16 flags);
+
