@@ -11,10 +11,16 @@
 void x3d_rasterregion_find_point_inside_left(X3D_RasterRegion* r, X3D_Vex2D left_in, X3D_Vex2D left_out, X3D_Vex2D* dest) {
   X3D_Vex2D mid;
   
+  X3D_Vex2D last = { -1, -1 };
+  
   do {
     mid.x = (left_in.x + left_out.x) >> 1;
     mid.y = (left_in.y + left_out.y) >> 1;
     
+    if(last.x == mid.x && last.y == mid.y)
+      break;
+    
+    last = mid;
     
     X3D_Span* span = x3d_rasterregion_get_span(r, mid.y);
     
@@ -38,17 +44,22 @@ void x3d_rasterregion_find_point_inside_left(X3D_RasterRegion* r, X3D_Vex2D left
 
 void x3d_rasterregion_find_point_inside_right(X3D_RasterRegion* r, X3D_Vex2D right_in, X3D_Vex2D right_out, X3D_Vex2D* dest) {
   X3D_Vex2D mid;
+  X3D_Vex2D last = { -1, -1 };
   
   do {
     mid.x = (right_in.x + right_out.x) >> 1;
     mid.y = (right_in.y + right_out.y) >> 1;
     
+    if(last.x == mid.x && last.y == mid.y)
+      break;
+    
+    last = mid;
     
     X3D_Span* span = x3d_rasterregion_get_span(r, mid.y);
     
     //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
     
-    if(abs(mid.x - span->right.x) < 2)
+    if(abs(mid.x - span->right.x) <= 2)
       break;
     
     if(mid.x > span->right.x)
@@ -83,10 +94,16 @@ _Bool x3d_rasterregion_point_inside2(X3D_RasterRegion* region, X3D_Vex2D p) {
 
 void x3d_rasterregion_bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* region) {
   X3D_Vex2D mid;
+  X3D_Vex2D last = { -1, -1 };
   
   do {
     mid.x = (in.x + out.x) >> 1;
     mid.y = (in.y + out.y) >> 1;
+    
+    if(mid.x == last.x && mid.y == last.y)
+      break;
+    
+    last = mid;
     
     //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
     
@@ -151,6 +168,9 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   }
   
   x3d_rasterregion_cheat_calc_texture(dest, &left, &right);
+  
+  //x3d_rasterregion_draw_outline(dest, 31);
+  //x3d_rasterregion_draw_outline(parent, 0x7FFF);
   
   //x3d_polyline_draw(&left, 31);
   //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));

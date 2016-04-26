@@ -204,7 +204,10 @@ void setup_camera(void) {
   x3d_camera_init();
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
 
-  cam->base.base.pos = (X3D_Vex3D_fp16x8) { 0, 0, 0 };
+  X3D_Vex3D center;
+  x3d_prism3d_center(&x3d_segmentmanager_load(0)->prism, &center);
+  
+  cam->base.base.pos = (X3D_Vex3D_fp16x8) { (int32)center.x << 8, (int32)center.y << 8, (int32)center.z << 8 };
   cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
   x3d_mat3x3_construct(&cam->base.mat, &cam->base.angle);
 }
@@ -222,6 +225,7 @@ extern uint8 cube_tex_data[];
 extern uint8 aperture_tex_data[];
 
 _Bool x3d_level_run_command(char* str);
+void x3d_level_command_init(void);
 
 int main() {
 #if defined(__linux__) && 1
@@ -266,7 +270,15 @@ int main() {
 
   //create_test_level();
   
-  x3d_level_run_command("addseg v=8 r=300 h=275 pos = { 0, -500, 0 }");
+  x3d_level_command_init();
+  x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { -1000, -400, -1000 }");
+  x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 1000, -800, -1000 }");
+  x3d_level_run_command("addseg id=2 v=8 r=300 h=275 pos = { 1000, -1200, 1000 }");
+  x3d_level_run_command("addseg id=3 v=8 r=300 h=275 pos = { -1000, -1600, 1000 }");
+  x3d_level_run_command("connect_close s1=0 s2=1");
+  x3d_level_run_command("connect_close s1=1 s2=2");
+  x3d_level_run_command("connect_close s1=2 s2=3");
+  x3d_level_run_command("connect_close s1=3 s2=0");
   
   setup_camera();
   
