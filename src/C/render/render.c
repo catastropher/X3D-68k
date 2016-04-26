@@ -206,6 +206,62 @@ void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint1
 
 void x3d_set_texture(int16 id);
 
+void x3d_segment_render_face_set_texture_uv(X3D_SegmentRenderContext* context, X3D_Polygon3D* p, uint16 face, uint16* u_dest, uint16* v_dest) {
+  uint16 u[10] = { 0, 128, 128, 0 };
+  uint16 v[10] = { 0, 0, 128, 128 };
+  
+  if(p->total_v == 8) {
+    uint16 d;
+    int16 r = 127;
+    int16 cx = 128;
+    int16 cy = 128;
+    
+    for(d = 0; d < 8; ++d) {
+      u[d] = cx + (((int32)r * x3d_cos(d * 256 / 8 + ANG_45 + ANG_30 - 5)) >> 15);
+      v[d] = cy + (((int32)r * x3d_sin(d * 256 / 8 + ANG_45 + ANG_30 - 5)) >> 15);
+    }
+  }
+  
+  if(context->seg_id == 0) {
+    if(face != 1 && face != 0) {
+      if(face != 8)
+        x3d_set_texture(0);
+      else
+        x3d_set_texture(4);
+    }
+    else {
+      
+      x3d_set_texture(2);
+    }
+  }
+  else if(context->seg_id <= 3) {
+    x3d_set_texture(1);
+  }
+
+  uint16 i;
+  for(i = 0; i < p->total_v; ++i) {
+    u_dest[i] = u[i];
+    v_dest[i] = v[i];
+  }
+}
+
+void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
+  x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, face), context->cam, context->parent);
+  
+  X3D_Polygon3D p = {
+    .v = alloca(1000)
+  };
+  
+  x3d_prism3d_get_face(&context->seg->prism, face, &p);
+  
+  uint16 u[10];
+  uint16 v[10];
+  x3d_segment_render_face_set_texture_uv(context, &p, face, u, v);
+  
+  X3D_Vex3D normal[10];
+  x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders the faces of a segment.
 ///
@@ -226,102 +282,27 @@ void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
       if(dist > 0) {
           if(context->faces[i].portal_seg_face != X3D_FACE_NONE || 1) {
             void* stack_ptr = x3d_stack_save(&context->renderman->stack);
-            X3D_Portal portal;
-            X3D_RasterRegion r;
             
             x3d_set_texture(1);
             
-            //////
-            if(context->faces[i].portal_seg_face != X3D_FACE_NONE)
-              x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
-
             if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
-              
-              if(context->seg_id != 0 && 0) {
-                //x3d_render_level_polygon(NULL, NULL, context, portal, i);
-              }
-              else {
-                X3D_Polygon3D p = {
-                  .v = alloca(1000)
-                };
+              x3d_segment_render_face(context, i);
                 
-                x3d_prism3d_get_face(prism, i, &p);
-                
-                X3D_Vex3D normal[10];
-                
-                uint16 u[10] = { 0, 128, 128, 0 };
-                uint16 v[10] = { 0, 0, 128, 128 };
-                
-                x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent);
-                
-                
-                if(p.total_v == 8) {
-                  uint16 d;
-                  int16 r = 127;
-                  int16 cx = 128;
-                  int16 cy = 128;
-                  
-                  for(d = 0; d < 8; ++d) {
-                    u[d] = cx + (((int32)r * x3d_cos(d * 256 / 8 + ANG_45 + ANG_30 - 5)) >> 15);
-                    v[d] = cy + (((int32)r * x3d_sin(d * 256 / 8 + ANG_45 + ANG_30 - 5)) >> 15);
-                  }
-                }
-                
-                if(context->seg_id == 0) {
-                  if(i != 1 && i != 0) {
-                    if(i != 8)
-                      x3d_set_texture(0);
-                    else
-                      x3d_set_texture(4);
-                  }
-                  else {
-                    
-                    x3d_set_texture(2);
-                  }
-                }
-                else if(context->seg_id <= 3) {
-                  x3d_set_texture(1);
-                }
-                
-                if(context->seg_id == 0 && i == 1) {
-                  //x3d_log(X3D_INFO, "Render bottom face! %d", x3d_enginestate_get_step());
-                }
-                
-                //geo_render_mode = 0;
-               
-                
-                
-                //if(context->seg_id == 0 && i == 0) {
-                  x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
-                //}
-                  
-                  
-                if(context->seg_id == 0 && i == 1) {
-                  //x3d_log(X3D_INFO, "====================");
-                }
-              }
               continue;
-            }
-
-            if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
-              x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent);
-              continue;
-            }
-              //goto render_portals;
-
-            if(context->renderman->wireframe) {
-              portal.region = context->parent;
-            }
-
-            if(portal.region) {
-              uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
-              uint16 seg_face = x3d_segfaceid_face(context->faces[i].portal_seg_face);
-              
-              x3d_portal_render(&portal);
-              x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
             }
             else {
-              x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent);
+              X3D_Portal portal;
+              X3D_RasterRegion r;
+              
+              x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
+              
+              if(portal.region) {
+                uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
+                uint16 seg_face = x3d_segfaceid_face(context->faces[i].portal_seg_face);
+                
+                x3d_portal_render(&portal);
+                x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
+              }
             }
 
             x3d_stack_restore(&context->renderman->stack, stack_ptr);
