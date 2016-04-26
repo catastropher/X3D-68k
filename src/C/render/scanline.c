@@ -181,7 +181,7 @@ void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extre
   // If the extreme left point on the parent region isn't in the y range of the edge,
   // then it can't intersect the parent region
   if(x3d_scanlineg_fail_extreme_range(gen, extreme_y)) {
-    x3d_log(X3D_INFO, "Fail extreme y range!");
+    //x3d_log(X3D_INFO, "Fail extreme y range!");
     x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y);      
     return;
   }
@@ -270,11 +270,11 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   }
   else if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x)) {
     span_val = &parent_span->left;
-    x3d_log(X3D_INFO, "Copy from left");
+    //x3d_log(X3D_INFO, "Copy from left");
   }
   else {
     span_val = &parent_span->right;
-    x3d_log(X3D_INFO, "Copy from right");
+    //x3d_log(X3D_INFO, "Copy from right");
   }
   
   // Copy over the x values from the parent edge, based on which side the line intersects

@@ -42,6 +42,36 @@ void create_test_level(void) {
   x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, 0, 800 }");
   x3d_level_run_command("connect_close s1=0 s2=1");
   
+  X3D_Polygon2D poly = { .v = alloca(1000) };
+  x3d_polygon2d_construct(&poly, 4, 50, 0);
+  
+  struct {
+    X3D_Polygon3D poly;
+    X3D_Vex3D v[6];
+  }* data = malloc(1000);//x3d_slab_alloc(sizeof(X3D_Vex3D) * 10 + sizeof(X3D_Polygon3D));
+  
+  data->poly.v = data->v;
+  
+  
+  X3D_Segment* seg = x3d_segmentmanager_load(0);
+  uint16 face = 5;
+  X3D_Plane plane = x3d_uncompressedsegment_get_faces(seg)[face].plane;
+  X3D_Mat3x3 mat;
+  
+  X3D_Polygon3D f = { .v = alloca(1000) };
+  x3d_prism3d_get_face(&seg->prism, face, &f);
+  
+  X3D_Vex3D p_center;
+  x3d_polygon3d_center(&f, &p_center);
+  
+  x3d_polygon2d_to_polygon3d(&poly, &data->poly, &plane, &p_center, &p_center, &mat);
+  
+  x3d_polygon3d_translate(&data->poly, p_center);
+  
+  
+  x3d_segment_face_attach(0, face, X3D_ATTACH_WALL_PORTAL, &data->poly, 0);
+  
+  
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
   
@@ -55,18 +85,13 @@ void create_test_level(void) {
 
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
 
-  /*
+  uint16 id0 = 0;
+  
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
   uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
 
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);
-  
-  for(i = 0; i < 10; ++i) {
-    X3D_Segment* seg = x3d_segmentmanager_load(id0);
-    x3d_uncompressedsegment_get_faces(seg)[i].portal_seg_face = X3D_FACE_NONE;
-  }
-  */
   
 }
 

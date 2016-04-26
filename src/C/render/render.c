@@ -245,6 +245,29 @@ void x3d_segment_render_face_set_texture_uv(X3D_SegmentRenderContext* context, X
   }
 }
 
+void x3d_segment_render_face_attachments(X3D_SegmentRenderContext* context, uint16 face) {
+  X3D_SegmentFaceAttachement* a = context->faces[face].attach;
+  
+  geo_render_mode = 1;
+  
+  while(a) {
+    if(a->type == X3D_ATTACH_WALL_PORTAL) {
+      X3D_Polygon3D* data = a->data;
+      
+      uint16 u[10] = { 0, 128, 128, 0 };
+      uint16 v[10] = { 0, 0, 128, 128 };
+      X3D_Vex3D normal[10];
+      
+      X3D_Polygon3D copy = { .v = alloca(1000) };
+      x3d_polygon3d_copy(data, &copy);
+      
+      x3d_polygon3d_render(&copy, context->cam, context->parent, 31, normal, u, v);      
+     }
+    
+    a = a->next;
+  }
+}
+
 void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
   x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, face), context->cam, context->parent);
   
@@ -253,10 +276,14 @@ void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
   };
   
   x3d_prism3d_get_face(&context->seg->prism, face, &p);
+
+  x3d_segment_render_face_attachments(context, face);
   
   uint16 u[10];
   uint16 v[10];
   x3d_segment_render_face_set_texture_uv(context, &p, face, u, v);
+  
+  geo_render_mode = 0;
   
   X3D_Vex3D normal[10];
   x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
@@ -280,33 +307,31 @@ void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
       int16 dist = x3d_plane_dist(&context->faces[i].plane, &context->cam->pseduo_pos);
       
       if(dist > 0) {
-          if(context->faces[i].portal_seg_face != X3D_FACE_NONE || 1) {
-            void* stack_ptr = x3d_stack_save(&context->renderman->stack);
+        void* stack_ptr = x3d_stack_save(&context->renderman->stack);
+        
+        x3d_set_texture(1);
+        
+        if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
+          x3d_segment_render_face(context, i);
             
-            x3d_set_texture(1);
-            
-            if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
-              x3d_segment_render_face(context, i);
-                
-              continue;
-            }
-            else {
-              X3D_Portal portal;
-              X3D_RasterRegion r;
-              
-              x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
-              
-              if(portal.region) {
-                uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
-                uint16 seg_face = x3d_segfaceid_face(context->faces[i].portal_seg_face);
-                
-                x3d_portal_render(&portal);
-                x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
-              }
-            }
-
-            x3d_stack_restore(&context->renderman->stack, stack_ptr);
+          continue;
         }
+        else {
+          X3D_Portal portal;
+          X3D_RasterRegion r;
+          
+          x3d_segment_construct_clipped_face(context, i, &portal.region, &r, dist);
+          
+          if(portal.region) {
+            uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
+            uint16 seg_face = x3d_segfaceid_face(context->faces[i].portal_seg_face);
+            
+            x3d_portal_render(&portal);
+            x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
+          }
+        }
+
+        x3d_stack_restore(&context->renderman->stack, stack_ptr);
       }
     }
   }
@@ -550,7 +575,6 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
-  return;
   X3D_Prism3D* prism = alloca(1000);
   int16 steps = 4;
 

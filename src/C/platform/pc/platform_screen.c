@@ -580,7 +580,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
       
       uint16 zz = z >> 15;
         
-      if(zz >= z_buf[y * 640L + i]) {// && (geo_render_mode != 0 || z_buf[y * 640L + i] == 0)) {
+      if(zz >= z_buf[y * 640L + i] && (geo_render_mode != 0 || z_buf[y * 640L + i] == 0)) {
         pixels[y * 640L + i] = map_color_to_uint32(x3d_texture_get_texel(tex, uu, vv));   //tex->texel[(int32)vv * tex->w + uu]);
         z_buf[y * 640L + i] = zz;
       }
