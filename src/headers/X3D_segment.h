@@ -100,6 +100,7 @@ typedef struct X3D_SegmentFace {
                                   ///  connected to
   X3D_Plane plane;                ///< Plane equation of the face
   X3D_SegmentFaceAttachement* attach;
+  X3D_Handle texture;
 } X3D_SegmentFace;
 
 
@@ -221,5 +222,4 @@ X3D_Segment* x3d_segmentmanager_load(uint16 id);
 
 void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object);
 void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X3D_Vex3D_int16* face_normal, angle256 angle);
-void x3d_segmentmanager_cache_purge(void);
 
