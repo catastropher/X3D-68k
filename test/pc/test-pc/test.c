@@ -69,7 +69,18 @@ void create_test_level(void) {
   x3d_polygon3d_translate(&data->poly, p_center);
   
   
-  x3d_segment_face_attach(0, face, X3D_ATTACH_WALL_PORTAL, &data->poly, 0);
+  X3D_Prism3D* prism = alloca(1000);
+  
+  prism->base_v = 4;
+  
+  x3d_prism3d_set_face(prism, X3D_BASE_A, &data->poly);
+  x3d_polygon3d_translate_normal(&data->poly, &plane.normal, -100);
+  x3d_polygon3d_reverse(&data->poly);
+  x3d_prism3d_set_face(prism, X3D_BASE_B, &data->poly);
+  
+  uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+  
+  x3d_segment_face_attach(0, face, X3D_ATTACH_WALL_PORTAL, &data->poly, x3d_segfaceid_create(id, X3D_BASE_A));
   
   
   x3d_rendermanager_get()->near_z = 10;

@@ -263,9 +263,11 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   if(abs(parent_span->left.x - clip->x) == abs(parent_span->right.x - clip->x)) {
     if(gen->b->v2d.x < gen->a->v2d.x) {
       span_val = &parent_span->left;
+      x3d_log(X3D_INFO, "Copy from left");
     }
     else {
       span_val = &parent_span->right;
+      x3d_log(X3D_INFO, "Copy from right");
     }
   }
   else if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x)) {
