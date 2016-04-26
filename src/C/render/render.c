@@ -42,18 +42,19 @@ extern uint16 geo_render_mode;
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_rendermanager_init(X3D_InitSettings* settings) {
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  
   // Initialize the render stack
   uint32 stack_size = 600000;
   void* render_stack_mem = malloc(stack_size);
 
   x3d_assert(render_stack_mem);
 
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-
+  x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
+  
   // Reset segment face render callback
   renderman->segment_face_render_callback = NULL;
   
-  x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
 
   int16 offx = 0, offy = 0;
 
@@ -87,6 +88,7 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.rect.y_range.min, renderman->region.rect.y_range.max);
 
 #ifndef __nspire__  
+  // nspire has its zbuffer allocated with the screen
   renderman->zbuf = malloc(sizeof(int16) * screenman->w * screenman->h);
 #endif
 }
@@ -319,7 +321,6 @@ void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
               x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
             }
             else {
-  render_portals:
               x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent);
             }
 
@@ -372,7 +373,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   fp0x16 depth_scale[prism->base_v * 2];
   X3D_Vex3D cam_dir;
   
-  x3d_dynamicobject_forward_vector(cam, &cam_dir);
+  x3d_dynamicobject_forward_vector(&cam->base, &cam_dir);
   
   
   for(i = 0;i < prism->base_v * 2; ++i) {
@@ -492,8 +493,6 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
     top[i].z = center.z;
   }
   
-  X3D_Vex3D norm[4];
-  
   X3D_Mat3x3 mat;
   X3D_Vex3D_angle256 angle = { 0, 0, 0 };//x3d_enginestate_get_step(), x3d_enginestate_get_step(), 0 };
   x3d_mat3x3_construct(&mat, &angle);
@@ -582,15 +581,6 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
   X3D_Polygon3D p = {
     .v = alloca(1000)
   };
-  
-  X3D_RasterRegion* rr = &x3d_rendermanager_get()->region;
-  
-  uint16 k;
-  
-  for(k = 0; k < 480; ++k) {
-    //rr->span[k].right.x = X3D_MIN(640 / 2 + k / 2, 639);
-    //rr->span[k].old_right_val = X3D_MIN(640 / 2 + k / 2, 639);
-  }
   
   X3D_Vex3D norm[10] = {
     { 0x7FFF, 0, 0 },

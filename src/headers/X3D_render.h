@@ -95,4 +95,7 @@ void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* reg
 X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b);
 int16 x3d_depth_scale(int16 depth, int16 min_depth, int16 max_depth);
 
+void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region);
+void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_CameraObject* cam, X3D_RasterRegion* region);
+
 
