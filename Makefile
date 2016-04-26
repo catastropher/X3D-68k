@@ -32,10 +32,10 @@ config:
 	@cd build/X3D && cmake ../../src -DX3D_TARGET=pc
 	
 	#@tput setaf 2
-	@echo Configuring Unit Tests
+	#@echo Configuring Unit Tests
 	#@tput setaf 7
-	@mkdir -p build/unit
-	@cd build/unit && cmake ../../test/unit -DX3D_TARGET=pc
+	#@mkdir -p build/unit
+	#@cd build/unit && cmake ../../test/unit -DX3D_TARGET=pc
 	
 	#@tput setaf 2
 	@echo Configuring Manual Tests
