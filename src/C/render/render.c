@@ -204,7 +204,14 @@ void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint1
 
 void x3d_set_texture(int16 id);
 
-void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
+///////////////////////////////////////////////////////////////////////////////
+/// Renders the faces of a segment.
+///
+/// @param context  - segment rendering context
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
   uint16 i;
   
   X3D_Prism3D* prism = &context->seg->prism;
@@ -325,6 +332,18 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
 
 int16 depth = 0;
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders a segment.
+///
+/// @param id           - seg id
+/// @param cam          - camera to render through
+/// @param color        - color of the segment (should be removed as not needed)
+/// @param region       - parent clipping region
+/// @param step         - current engine step
+/// @param portal_face  - face the segment is being rendered through
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step, uint16 portal_face) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
 
@@ -410,7 +429,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .portal_face = portal_face
   };
   
-  x3d_segment_render_connecting_segments(&context);
+  x3d_segment_render_faces(&context);
 
   if(id == 0) {
     //x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
@@ -423,6 +442,15 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   --depth;  
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the surface normal of a point on a sphere.
+///
+/// @param center - center of the sphere
+/// @param v      - point on the sphere
+/// @param dest   - dest
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_sphere_normal(X3D_Vex3D* center, X3D_Vex3D* v, X3D_Vex3D* dest) {
   dest->x = v->x - center->x;
   dest->y = v->y - center->y;
@@ -431,6 +459,18 @@ void x3d_sphere_normal(X3D_Vex3D* center, X3D_Vex3D* v, X3D_Vex3D* dest) {
   x3d_vex3d_fp0x16_normalize(dest);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders a sphere.
+///
+/// @param center   - center of the sphere
+/// @param r        - radius
+/// @param steps    - number of discrete steps used to polygonize the sphere
+/// @param c        - color (unused)
+/// @param cam      - camera to render through
+/// @param region   - clipping region
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   int16 rad[steps + 1];
   
@@ -519,6 +559,16 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
   
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders a cube.
+///
+/// @param center - center of the cube
+/// @param w      - width/height of the cube
+/// @param cam    - camera to render through
+/// @param region - parent clipping region
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   return;
   X3D_Prism3D* prism = alloca(1000);
@@ -593,6 +643,12 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
 
 #include <SDL/SDL.h>
 
+///////////////////////////////////////////////////////////////////////////////
+/// Renders the scene through a camera.
+///
+/// @param cam  - camera to render through
+///
+///////////////////////////////////////////////////////////////////////////////
 void x3d_render(X3D_CameraObject* cam) {
   /// @todo Pseduo position isn't needed anymore since the portal implementation was upgraded
   cam->shift = (X3D_Vex3D) { 0, 0, 0 };
@@ -632,3 +688,4 @@ void x3d_render(X3D_CameraObject* cam) {
   
   x3d_screen_draw_uint32(fps, 0, 0, 31);  
 }
+
