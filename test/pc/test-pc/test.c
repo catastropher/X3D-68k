@@ -29,152 +29,21 @@
 #include <alloca.h>
 #endif
 
+_Bool x3d_level_run_command(char* str);
+void x3d_level_command_init(void);
+
 void engine_test_handle_keys(void);
 void setup_key_map(void);
 
 // Creates a hard-coded test level
 void create_test_level(void) {
-  uint16 i;
+  x3d_level_command_init();
+  x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { 0, 0, 0 }");
   
-  // Create a new segment
-  uint16 base_v = 8;
-  X3D_Prism3D* prism = alloca(x3d_prism3d_size(base_v));
-  X3D_Vex3D_angle256 angle = { 0, 0, 0 };
-
-  x3d_prism3d_construct(prism, base_v, 300,  275, angle);
-
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
-
-  X3D_Polygon3D p = {
-    .v = alloca(1000)
-  };
-
-  x3d_prism3d_get_face(prism, 0, &p);
-  x3d_polygon3d_scale(&p, 256);
-  x3d_prism3d_set_face(prism, 0, &p);
-
-  // Create some regular segments
-  uint16 id0 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   
-  for(i = 0; i < base_v * 2; ++i) {
-    X3D_Vex3D shift = { 800, -100, 800 };
-    
-    prism->v[i] = x3d_vex3d_add(prism->v + i, &shift);
-  }
-  
-  uint16 id1 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
-  
-  uint16 id2 = x3d_segmentbuilder_add_connecting_segment(x3d_segfaceid_create(id0, 3), x3d_segfaceid_create(id1, 7));
-
-  
-  for(i = 0; i < base_v * 2; ++i) {
-    X3D_Vex3D shift = { 800, 0, 800 };
-    
-    prism->v[i] = x3d_vex3d_add(prism->v + i, &shift);
-  }
-  
-  uint16 id4 = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
-  
-  uint16 id5 = x3d_segmentbuilder_add_connecting_segment(x3d_segfaceid_create(id1, 4), x3d_segfaceid_create(id4, 3));
-  
-  
-#if 0
-  
-  uint16 id1 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 4), 100);
-  uint16 id2 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 4), 100);
-  uint16 id3 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id1, 1), 450);
-  uint16 id4 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id3, 1), 100);
-  //uint16 id5 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 1), 2000);
-  uint16 id6 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id0, 0), 100);
-
-  // Scale the face of one of the segments
-  X3D_Prism3D* p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id6)))->prism;
-
-  x3d_prism3d_get_face(p2, 1, &p);
-  x3d_polygon3d_scale(&p, 64);
-  x3d_prism3d_set_face(p2, 1, &p);
-
-  uint16 id7 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id6, 1), 400);
-  uint16 id8 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id7, 1), 200);
-
-  x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id6, 6), 500);
-
-  p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id8)))->prism;
-
-  x3d_prism3d_get_face(p2, 1, &p);
-
-  // Create the pipe in the ceiling by rotating the face
-  X3D_Vex3D center;
-  x3d_prism3d_center(p2, &center);
-  x3d_polygon3d_rotate(&p, (X3D_Vex3D_angle256) { ANG_30, 0, 0 }, center);
-  x3d_prism3d_set_face(p2, 1, &p);
-
-
-  // Pipe piece 2
-  uint16 id9 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id8, 1), 200);
-
-  p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id9)))->prism;
-
-  x3d_prism3d_get_face(p2, 1, &p);
-
-  x3d_prism3d_center(p2, &center);
-  x3d_polygon3d_rotate(&p, (X3D_Vex3D_angle256) { ANG_30, 0, 0 }, center);
-  x3d_prism3d_set_face(p2, 1, &p);
-
-  // Pipe piece 3
-  uint16 id10 = x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id9, 1), 500);
-
-  p2 = &((X3D_Segment* )(x3d_segmentmanager_get_internal(id10)))->prism;
-
-  x3d_prism3d_get_face(p2, 1, &p);
-
-  x3d_prism3d_center(p2, &center);
-  x3d_polygon3d_rotate(&p, (X3D_Vex3D_angle256) { ANG_30, 0, 0 }, center);
-  x3d_prism3d_set_face(p2, 1, &p);
-
-
-  // Another segment
-  x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id3, 5), 200);
-  
-  
-  // Create a new texture and attach it to the wall
-  X3D_Polygon2D texture = {
-    .v = alloca(2000),
-    .total_v = 0
-  };
-
-  X3D_Polygon3D texture3d = {
-    .v = alloca(2000)
-  };
-
-  X3D_Segment* ss = x3d_segmentmanager_get_internal(id0);
-
-  int16 face_id = 8;
-  uint16 top_left_v = face_id - 2;
-  uint16 bottom_right_v = ((top_left_v + 1) % ss->prism.base_v) + ss->prism.base_v;
-
-  X3D_Mat3x3 mat;
-
-  // Project the 2D polygon onto the wall
-  X3D_Plane plane;
-  x3d_prism3d_get_face(&ss->prism, face_id, &p);
-  x3d_plane_construct(&plane, p.v, p.v + 1, p.v + 2);
-
-  x3d_polygon2d_to_polygon3d(
-    &texture,
-    &texture3d,
-    &plane,
-    ss->prism.v + top_left_v,
-    ss->prism.v + bottom_right_v,
-    &mat
-  );
-
-  // Actually attach the texture
-  X3D_Handle h = x3d_handle_add(&texture3d);
-  x3d_uncompressedsegment_get_faces(ss)[face_id].texture = h;
-  
-#endif
+  uint16 i;
   
   // Create a red and green portal
   uint16 portal_base_v = 8;
@@ -224,8 +93,13 @@ extern uint8 floor_panel_tex_data[];
 extern uint8 cube_tex_data[];
 extern uint8 aperture_tex_data[];
 
-_Bool x3d_level_run_command(char* str);
-void x3d_level_command_init(void);
+void init_textures(void) {
+  x3d_texture_from_array(&panel_tex, panel_tex_data);
+  x3d_texture_from_array(&brick_tex, wood_tex_data);
+  x3d_texture_from_array(&floor_panel_tex, floor_panel_tex_data);
+  x3d_texture_from_array(&cube_tex, cube_tex_data);
+  x3d_texture_from_array(&aperture_tex, aperture_tex_data);
+}
 
 int main() {
 #if defined(__linux__) && 1
@@ -246,39 +120,13 @@ int main() {
 
   x3d_init(&init);
   
-  x3d_texture_from_array(&panel_tex, panel_tex_data);
-  x3d_texture_from_array(&brick_tex, wood_tex_data);
-  x3d_texture_from_array(&floor_panel_tex, floor_panel_tex_data);
-  x3d_texture_from_array(&cube_tex, cube_tex_data);
-  x3d_texture_from_array(&aperture_tex, aperture_tex_data);
-  
-  x3d_fix_slope slope, v;
-  x3d_fix_slope_init(&slope, 100000, 0, 5);
-  x3d_fix_slope_same_shift(&v, &slope, 0);
-  
-  x3d_fix_slope_add_mul(&v, &slope, 5);
-  
-  x3d_log(X3D_INFO, "Slope: %d, shift: %d", slope.val, slope.shift);
-  x3d_log(X3D_INFO, "Val: %d", x3d_fix_slope_val(&v));
-  //exit(0);
-  
-  x3d_log(X3D_INFO, "Span size: %d", sizeof(X3D_Span));
+  init_textures();
   
   // Set up key mapping
   setup_key_map();
   x3d_keymanager_set_callback(engine_test_handle_keys);
 
-  //create_test_level();
-  
-  x3d_level_command_init();
-  x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { -1000, -400, -1000 }");
-  x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 1000, -800, -1000 }");
-  x3d_level_run_command("addseg id=2 v=8 r=300 h=275 pos = { 1000, -1200, 1000 }");
-  x3d_level_run_command("addseg id=3 v=8 r=300 h=275 pos = { -1000, -1600, 1000 }");
-  x3d_level_run_command("connect_close s1=0 s2=1");
-  x3d_level_run_command("connect_close s1=1 s2=2");
-  x3d_level_run_command("connect_close s1=2 s2=3");
-  x3d_level_run_command("connect_close s1=3 s2=0");
+  create_test_level();
   
   setup_camera();
   
