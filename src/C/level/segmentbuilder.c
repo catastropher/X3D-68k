@@ -28,31 +28,18 @@
 /// @note For internal use only.
 ///////////////////////////////////////////////////////////////////////////////
 X3D_INTERNAL X3D_Segment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3D* prism) {  
-  X3D_Segment* seg = (X3D_Segment*)x3d_segmentmanager_add(
-    x3d_uncompressedsegment_size(prism->base_v));
+  X3D_Segment* seg = (X3D_Segment*)x3d_segmentmanager_add(x3d_uncompressedsegment_size(prism->base_v));
   
   seg->face_offset = x3d_uncompressedsegment_face_offset(prism->base_v);
   
   // Copy over the prism data
   x3d_prism3d_copy(&seg->prism, prism);
   
-  // Initialize all faces to have nothing connected to them
-  uint16 i;
-  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-  uint16 total_f = x3d_prism3d_total_f(prism->base_v);
-  
-  //x3d_assert(((void *)(&seg->prism)) + x3d_prism3d_size(prism->base_v) < (void *)face);
-  
-  for(i = 0; i < total_f; ++i) {
-    face[i].portal_seg_face = X3D_FACE_NONE;
-  }
   
   seg->base.flags = X3D_SEGMENT_UNCOMPRESSED;
   seg->base.base_v = prism->base_v;
   
-  for(i = 0; i < seg->base.base_v + 2; ++i) {
-    face[i].texture = X3D_INVALID_HANDLE;
-  }
+  x3d_segment_reset(seg);
   
   return seg;
 }

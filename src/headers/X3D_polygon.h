@@ -24,7 +24,7 @@
 
 ///<  Initializes a 3D polygon and allocates space for the given number of
 ///   vertices on the stack.
-#define X3D_POLYGON3D_ALLOCA(_poly, _total_v) { _poly->v = alloca(sizeof(X3D_Vex3D) * total_v); _poly->total_v = _total_v }
+#define X3D_POLYGON3D_ALLOCA(_poly, _total_v) { _poly->v = alloca(sizeof(X3D_Vex3D) * total_v); _poly->total_v = _total_v; }
 
 ///////////////////////////////////////////////////////////////////////////////
 /// A 3D polygon with a variable number of points.

@@ -73,7 +73,7 @@ X3D_SegmentBase* x3d_segmentmanager_add(uint16 size) {
 ///
 /// @return The addess of the interal segment representation.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id) {
+X3D_INTERNAL X3D_Segment* x3d_segmentmanager_get_internal(uint16 id) {
   X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
   
   return x3d_varsizeallocator_get(&seg_manager->alloc, id);
@@ -91,29 +91,7 @@ X3D_INTERNAL X3D_SegmentBase* x3d_segmentmanager_get_internal(uint16 id) {
 /// @todo Implement LRU strategy for deciding which block should be replaced.
 ///////////////////////////////////////////////////////////////////////////////
 X3D_Segment* x3d_segmentmanager_load(uint16 id) {
-  X3D_SegmentBase* seg = x3d_segmentmanager_get_internal(id);
-  X3D_SegmentManager* seg_manager = x3d_segmentmanager_get();
-  
-  // Calculate the plane equations for the faces
-  uint16 d;
-  X3D_Polygon3D poly = {
-    .v = alloca(seg->base_v * sizeof(X3D_Vex3D))
-  };
-  
-  X3D_Segment* useg = seg;
-  
-  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(
-    seg);
-  
-  //seg_manager->cache.entry[i].seg.last_engine_step = 0;
-  
-  for(d = 0; d < x3d_prism3d_total_f(seg->base_v); ++d) {
-    x3d_prism3d_get_face(&useg->prism, d, &poly);
-    x3d_plane_construct(&face[d].plane, poly.v, poly.v + 1, poly.v + 2);
-    face[d].texture = x3d_uncompressedsegment_get_faces(((X3D_Segment *)seg))[d].texture;    
-  }
-  
-  return seg;  
+  return x3d_segmentmanager_get_internal(id);
 }
 
 void x3d_uncompressedsegment_add_object(uint16 seg_id, X3D_Handle object) {
@@ -181,4 +159,32 @@ void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Resets a single segment. This:
+///   - Removes all objects
+///   - Remove any wall attachments
+///   - Recalculates surface normals
+///
+/// @param s  - segment to reset
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_segment_reset(X3D_Segment* s) {
+  uint16 i;
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(s);
+  X3D_Polygon3D poly = { .v = alloca(1000) };
+  
+  for(i = 0; i < x3d_prism3d_total_f(s->prism.base_v); ++i) {
+    face[i].attach = NULL;
+    face[i].portal_seg_face = X3D_FACE_NONE;
+    face[i].texture = X3D_INVALID_HANDLE;
+    
+    x3d_prism3d_get_face(&s->prism, i, &poly);
+    x3d_plane_construct(&face[i].plane, poly.v, poly.v + 1, poly.v + 2);
+  }
+  
+  for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
+    s->object_list.objects[i] = X3D_INVALID_HANDLE;
+  }
+}
 
