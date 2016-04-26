@@ -46,7 +46,7 @@ static inline X3D_SegmentManager* x3d_segmentmanager_get(void) {
   return &x3d_state->segment_manager;
 }
 
-static inline const X3D_ScreenManager* x3d_screenmanager_get(void) {
+static inline X3D_ScreenManager* x3d_screenmanager_get(void) {
   return &x3d_state->screen_manager;
 }
 

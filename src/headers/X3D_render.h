@@ -67,6 +67,19 @@ typedef struct X3D_DisplayLineList {
   X3D_DisplayLine lines[X3D_MAX_DISPLAY_LINE];
 } X3D_DisplayLineList;
 
+typedef struct X3D_SegmentRenderContext {
+  X3D_Segment* seg;
+  uint16 seg_id;
+  X3D_SegmentFace* faces;
+  X3D_RenderManager* renderman;
+  X3D_RasterRegion* parent;
+  X3D_CameraObject* cam;
+  X3D_ClipContext* clip;
+  X3D_DisplayLineList* list;
+  uint16 step;
+  uint16 portal_face;
+} X3D_SegmentRenderContext;
+
 struct X3D_InitSettings;
 
 void x3d_rendermanager_init(struct X3D_InitSettings* settings);

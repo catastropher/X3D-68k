@@ -29,12 +29,18 @@
 
 #include <stdio.h>
 
-int16 line_count;
 
 extern int16 render_mode;
 extern uint16 geo_render_mode;
 
 
+///////////////////////////////////////////////////////////////////////////////
+/// Initializes the render manager.
+///
+/// @param settings - initialization settings
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_rendermanager_init(X3D_InitSettings* settings) {
   // Initialize the render stack
   uint32 stack_size = 600000;
@@ -85,14 +91,25 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
 #endif
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Cleans up the render manager.
+///
+/// @return Nothing.
+///////////////////////////////////////////////////////////////////////////////
 void x3d_rendermanager_cleanup(void) {
   free(x3d_rendermanager_get()->stack.base);
 }
 
-
-uint16 x3d_segment_render_wall_portals(X3D_SegFaceID wall_id, X3D_CameraObject* cam, X3D_RasterRegion* region,
-      X3D_DisplayLineList* list) {
-
+///////////////////////////////////////////////////////////////////////////////
+/// Renders any wall portals that are connected to a wall.
+///
+/// @param wall_id  - id of the wall
+/// @param cam      - camera to render through
+/// @param region   - clipping region to render into
+///
+/// @return The number of portals drawn.
+///////////////////////////////////////////////////////////////////////////////
+uint16 x3d_segment_render_wall_portals(X3D_SegFaceID wall_id, X3D_CameraObject* cam, X3D_RasterRegion* region) {
   uint16 portals[32];
   uint16 total_p = x3d_wall_get_wallportals(wall_id, portals);
 
@@ -100,20 +117,28 @@ uint16 x3d_segment_render_wall_portals(X3D_SegFaceID wall_id, X3D_CameraObject* 
     uint16 i;
 
     for(i = 0; i < total_p; ++i)
-      x3d_wallportal_render(portals[i], cam, region, list);
+      x3d_wallportal_render(portals[i], cam, region, NULL);
   }
 
   return total_p;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Generates rasteredges for a clipped polygon.
+///
+/// @param clip   - clipping context
+/// @param stack  - stack to allocate rasteredges on
+///
+/// @return Nothing.
+/// @note   This is part of the old clipping implementation and should not be
+///         used in new code!
+///////////////////////////////////////////////////////////////////////////////
 void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stack) {
   uint16 i;
 
   for(i = 0; i < clip->total_e; ++i) {
     uint16 a, b;
 
-    
-    
     a = clip->edge_pairs[i].val[0];
     b = clip->edge_pairs[i].val[1];
     
@@ -140,22 +165,19 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
   }
 }
 
-typedef struct X3D_SegmentRenderContext {
-  X3D_Segment* seg;
-  uint16 seg_id;
-  X3D_SegmentFace* faces;
-  X3D_RenderManager* renderman;
-  X3D_RasterRegion* parent;
-  X3D_CameraObject* cam;
-  X3D_ClipContext* clip;
-  X3D_DisplayLineList* list;
-  uint16 step;
-  uint16 portal_face;
-} X3D_SegmentRenderContext;
-
-
-
-void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint16 face, X3D_RasterRegion** dest, X3D_RasterRegion* r, int16 dist) {
+///////////////////////////////////////////////////////////////////////////////
+/// Constructs a segment face that's clipped to a clipping region.
+///
+/// @param context  - clipping context
+/// @param face     - face id
+/// @param dest     - pointer to pointer to dest clipping region
+/// @param r        - parent clipping region
+/// @param near_z   - distance to near plane
+///
+/// @return Nothing.
+/// @note   *dest will be NULL if the region is totall invisible.
+///////////////////////////////////////////////////////////////////////////////
+void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint16 face, X3D_RasterRegion** dest, X3D_RasterRegion* r, int16 near_z) {
   X3D_Prism3D* prism = &context->seg->prism;            // Segment's prism
   uint16 edge_index[prism->base_v + 1];                 // Edge indexes for the raster region
 
@@ -168,7 +190,7 @@ void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint1
 
   _Bool use_new = x3d_rasterregion_construct_clipped(context->clip, r);
 
-  if(context->faces[face].portal_seg_face != X3D_FACE_NONE && dist <= 10) {
+  if(context->faces[face].portal_seg_face != X3D_FACE_NONE && near_z <= 10) {
     *dest = context->parent;
   }
   else if(use_new) {
@@ -179,41 +201,6 @@ void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint1
   }
 }
 
-void x3d_render_level_polygon(X3D_Polygon3D* p, X3D_Vex3D* normal, X3D_SegmentRenderContext* context, X3D_Portal portal, uint16 i) {
-  X3D_Vex3D dir;
-
-
-  x3d_dynamicobject_forward_vector(context->cam, &dir);
-
-  X3D_Vex3D d = { 0, 0, 32767 };
-
-  fp0x16 dot = abs(x3d_vex3d_fp0x16_dot(&d, &context->faces[i].plane.normal));
-
-  X3D_Vex3D_fp0x16 color = { 255, 255, 255 };
-
-  dot = X3D_MIN((int32)dot + 8192, 32767);
-
-  if(render_mode != 3) { 
-  
-    //color.x = (int32)color.x * dot / 32768;
-    //color.y = (int32)color.y * dot / 32768;
-    //color.z = (int32)color.z * dot / 32768;
-  }
-
-  X3D_Color c = x3d_rgb_to_color(color.x, color.y, color.z);
-  
-  X3D_SegmentRenderFace rface = {
-    .id = x3d_segfaceid_create(context->seg_id, i),
-    .color = c,
-    .region = portal.region
-  };
-  
-  if(x3d_rendermanager_get()->segment_face_render_callback)
-    x3d_rendermanager_get()->segment_face_render_callback(&rface);
-  
-
-  x3d_rasterregion_fill(portal.region, rface.color);
-}
 
 void x3d_set_texture(int16 id);
 
@@ -256,7 +243,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
                 uint16 u[10] = { 0, 128, 128, 0 };
                 uint16 v[10] = { 0, 0, 128, 128 };
                 
-                x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent, context->list);
+                x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent);
                 
                 
                 if(p.total_v == 8) {
@@ -308,7 +295,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             }
 
             if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
-              x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent, context->list);
+              x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent);
               continue;
             }
               //goto render_portals;
@@ -326,7 +313,7 @@ void x3d_segment_render_connecting_segments(X3D_SegmentRenderContext* context) {
             }
             else {
   render_portals:
-              x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent, context->list);
+              x3d_segment_render_wall_portals(x3d_segfaceid_create(context->seg_id, i), context->cam, context->parent);
             }
 
             x3d_stack_restore(&context->renderman->stack, stack_ptr);
@@ -607,106 +594,30 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
 #include <SDL/SDL.h>
 
 void x3d_render(X3D_CameraObject* cam) {
-  X3D_Color color = 31;//x3d_rgb_to_color(0, 0, 255);
-
+  /// @todo Pseduo position isn't needed anymore since the portal implementation was upgraded
   cam->shift = (X3D_Vex3D) { 0, 0, 0 };
   x3d_object_pos(cam, &cam->pseduo_pos);
 
-
-  static int32 tick = 0;
-
-  //if((x3d_enginestate_get_step() % 2) == 0)
-  //  tick = (tick + 1) % 4;        
-  //printf("Tick: %d\n", tick++);
-
-  line_count = 0;
- 
   static uint32 start = 0;
   static uint16 frames = 0;
+  
   x3d_screen_zbuf_clear();
   
   depth = 0;
-  x3d_segment_render(cam->base.base.seg, cam, color, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
-  
-  X3D_Vex3D v[] = {
-    { -100, 100, 0 },
-    { -100, -100, 0 },
-    { 100, -100, 0 },
-    { 100, 100, 0 }
-  };
-  
-  X3D_Polygon3D p = {
-    .v = v,
-    .total_v = 4
-  };
-  
-  
-  //x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, 31);
-  
-  int16 orbit = 100;
-  int16 r = 200;
-  
-  angle256 angle = (x3d_enginestate_get_step() % orbit) * 256 / orbit;
-  
-  X3D_Vex3D pos = {
-    ((int32)x3d_cos(angle) * r) >> 15,
-    0,
-    ((int32)x3d_sin(angle) * r) >> 15
-  };
+  x3d_segment_render(cam->base.base.seg, cam, 0, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
 
-  
-  //x3d_sphere_render((X3D_Vex3D) { 0, 0, 0 }, 75, 10, 31, cam, &x3d_rendermanager_get()->region);
-  
-  //x3d_cube_render((X3D_Vex3D) { 150, 150, 150 }, 150, cam, &x3d_rendermanager_get()->region);
-  
-  
-  //x3d_sphere_render(pos, 30, 10, x3d_rgb_to_color(0, 0, 255), cam, &x3d_rendermanager_get()->region);
-  
-  X3D_Vex3D v2[] = {
-    { -100, 100, 100 },
-    { -100, -100, 100 },
-    { 100, -100, 100 },
-    { 100, 100, 100 }
-  };
-  
-  p.v = v2;
-  
-  //x3d_polygon3d_render(&p, cam, &x3d_rendermanager_get()->region, x3d_rgb_to_color(0, 0, 255));
-  
-#if 0
-  uint16 i;
-  for(i = tick; i < x3d_screenmanager_get()->h; i+= 4) {
-    x3d_screen_draw_line(0, i, x3d_screenmanager_get()->w, i, 0);
-    x3d_screen_draw_line(0, i + 1, x3d_screenmanager_get()->w, i + 1, 0);
-  }
-#endif
-  
-  //printf("Line count: %d\n", line_count);
-
+  // Draw the crosshair
   int16 cx = x3d_screenmanager_get()->w / 2;
   int16 cy = x3d_screenmanager_get()->h / 2;
 
-#if 1
   x3d_screen_draw_pix(cx, cy - 1, 0xFFFF);
   x3d_screen_draw_pix(cx, cy + 1, 0xFFFF);
   x3d_screen_draw_pix(cx - 1, cy, 0xFFFF);
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
-#endif
   
-  //x3d_screen_zbuf_visualize();
-
-  X3D_Vex3D_angle256 ang;
-  X3D_Mat3x3 mat = cam-> base.mat;
-  x3d_mat3x3_transpose(&mat);
-  
-  //x3d_mat3x3_extract_angles(&mat, &ang);
-  //x3d_log(X3D_INFO, "Real angle: %d", (angle256)cam->base.angle.y);
-  
-  X3D_Color red = x3d_rgb_to_color(255, 0, 0);
-  X3D_Color white = x3d_rgb_to_color(255, 255, 255);
-
   static int32 fps = 0;
-  
+
+  // Update FPS counter
   if(++frames == 10) {
     int32 time = (SDL_GetTicks() - start);
     if(time != 0)
@@ -719,7 +630,5 @@ void x3d_render(X3D_CameraObject* cam) {
     start = SDL_GetTicks();
   }
   
-  x3d_screen_draw_uint32(fps, 0, 0, 31);
-  
-  //x3d_screen_draw_line_grad(0, 0, 639, 479, red, white);
+  x3d_screen_draw_uint32(fps, 0, 0, 31);  
 }
