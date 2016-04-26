@@ -6,7 +6,7 @@ To build and run, you will need cmake and libsdl2-dev
 ```
 git clone https://github.com/catastropher/X3D-68k.git
 cd X3D-68k
-export X3D=`pwd`
+export X3D=$(pwd)
 make config
 make test-manual
 ```
