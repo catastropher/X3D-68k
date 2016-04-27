@@ -6,7 +6,7 @@
 #include "X3D_enginestate.h"
 #include "render/X3D_polyvertex.h"
 
-#define x3d_log(...) ;
+//#define x3d_log(...) ;
 
 void x3d_rasterregion_find_point_inside_left(X3D_RasterRegion* r, X3D_Vex2D left_in, X3D_Vex2D left_out, X3D_Vex2D* dest) {
   X3D_Vex2D mid;
@@ -172,8 +172,8 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   //x3d_rasterregion_draw_outline(dest, 31);
   //x3d_rasterregion_draw_outline(parent, 0x7FFF);
   
-  //x3d_polyline_draw(&left, 31);
-  //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
+  x3d_polyline_draw(&left, 31);
+  x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
   
   //x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
   //x3d_polyline_draw(&right, x3d_rgb_to_color(255, 0, 255));

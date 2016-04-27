@@ -41,6 +41,8 @@ void create_test_level(void) {
   x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { 0, 0, 0 }");
   x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, 0, 800 }");
   x3d_level_run_command("connect_close s1=0 s2=1");
+
+
   
   X3D_Polygon2D poly = { .v = alloca(1000) };
   x3d_polygon2d_construct(&poly, 4, 50, 0);
@@ -77,6 +79,14 @@ void create_test_level(void) {
   x3d_polygon3d_translate_normal(&data->poly, &plane.normal, -100);
   x3d_polygon3d_reverse(&data->poly);
   x3d_prism3d_set_face(prism, X3D_BASE_B, &data->poly);
+
+#if 0
+  X3D_Segment* seg1 = x3d_segmentmanager_load(x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(1, 1), 50));
+  
+  x3d_prism3d_get_face(&seg1->prism, 1, &f);
+  x3d_polygon3d_scale(&f, 128);
+  x3d_prism3d_set_face(&seg1->prism, 1, &f);
+#endif
   
   uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
   

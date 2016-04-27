@@ -177,12 +177,18 @@ _Bool x3d_scanlineg_pass_extreme_point(X3D_ScanlineGenerator* gen, X3D_Vex2D* po
 }
 
 void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extreme_y, int16 end_y) {
+  x3d_log(X3D_INFO, "Out same side");
+  
   ////x3d_log(X3D_INFO, "Out same side!");
   // If the extreme left point on the parent region isn't in the y range of the edge,
   // then it can't intersect the parent region
   if(x3d_scanlineg_fail_extreme_range(gen, extreme_y)) {
-    //x3d_log(X3D_INFO, "Fail extreme y range!");
-    x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y);      
+    x3d_log(X3D_INFO, "Fail extreme y range!");
+    
+    X3D_Span* span = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
+    _Bool left = abs(span->left.x - gen->a->v2d.x) < abs(span->right.x - gen->a->v2d.x);
+    
+    x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y, left);      
     return;
   }
   
@@ -196,13 +202,26 @@ void x3d_scanlineg_a_out_b_out_same_side(X3D_ScanlineGenerator* gen, int16 extre
     
     x3d_rasterregion_bin_search(point_inside, gen->a->v2d, &clip_a, gen->parent);      
     x3d_rasterregion_bin_search(point_inside, gen->b->v2d, &clip_b, gen->parent);
+
+    X3D_Span* span_a = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
+    X3D_Span* span_b = x3d_rasterregion_get_span(gen->parent, gen->b->v2d.y);
     
-    x3d_rasterregion_copy_intersection_spans(gen, &clip_a, gen->a->v2d.y, clip_a.y);
+    x3d_screen_draw_circle(clip_a.x, clip_a.y, 5, 0x7FFF);
+    x3d_screen_draw_circle(clip_b.x, clip_b.y, 5, 31) ;
+    
+    _Bool left_a = abs(span_a->left.x - gen->a->v2d.x) < abs(span_a->right.x - gen->a->v2d.x);
+    _Bool left_b = abs(span_b->left.x - gen->b->v2d.x) < abs(span_b->right.x - gen->b->v2d.x);
+
+    
+    x3d_rasterregion_copy_intersection_spans(gen, &clip_a, gen->a->v2d.y, clip_a.y, left_a);
     x3d_rasterregion_generate_new_spans(gen, clip_a.y, clip_b.y);
-    x3d_rasterregion_copy_intersection_spans(gen, &clip_a, clip_b.y, end_y);
+    x3d_rasterregion_copy_intersection_spans(gen, &clip_a, clip_b.y, end_y, left_b);
   }
   else {
-    x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y);
+    X3D_Span* span = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
+    _Bool left = abs(span->left.x - gen->a->v2d.x) < abs(span->right.x - gen->a->v2d.x);
+    
+    x3d_rasterregion_copy_intersection_spans(gen, &gen->a->v2d, gen->a->v2d.y, end_y, left);          
   }
 }
 
@@ -224,9 +243,15 @@ void x3d_scanlineg_a_out_b_out_opposite_side(X3D_ScanlineGenerator* gen, int16 e
     X3D_SWAP(clip_a, clip_b);
   }
   
-  x3d_rasterregion_copy_intersection_spans(gen, &clip_a, gen->a->v2d.y, clip_a.y);
+  X3D_Span* span_a = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
+  X3D_Span* span_b = x3d_rasterregion_get_span(gen->parent, gen->b->v2d.y);
+  
+  _Bool left_a = abs(span_a->left.x - gen->a->v2d.x) < abs(span_a->right.x - gen->a->v2d.x);
+  _Bool left_b = abs(span_b->left.x - gen->b->v2d.x) < abs(span_b->right.x - gen->b->v2d.x);
+  
+  x3d_rasterregion_copy_intersection_spans(gen, &clip_a, gen->a->v2d.y, clip_a.y, left_a);
   x3d_rasterregion_generate_new_spans(gen, clip_a.y, clip_b.y);
-  x3d_rasterregion_copy_intersection_spans(gen, &clip_b, clip_b.y, end_y);    
+  x3d_rasterregion_copy_intersection_spans(gen, &clip_b, clip_b.y, end_y, left_b);    
 }
 
 void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int16 end_y) {
@@ -247,7 +272,7 @@ void x3d_rasterregion_generate_spans_a_out_b_out(X3D_ScanlineGenerator* gen, int
     x3d_scanlineg_a_out_b_out_opposite_side(gen, end_y);
 }
 
-void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, int16 end_y) {
+void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, int16 end_y, _Bool left) {
   uint16 i;
     
   //gen->y_range.min = X3D_MIN(gen->y_range.min, start_y);
@@ -256,28 +281,29 @@ void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Ve
   X3D_Span* parent_span = x3d_rasterregion_get_span(gen->parent, start_y);
   X3D_SpanValue* span_val;
   
+  span_val = left ? &parent_span->left : &parent_span->right;
   
   ////x3d_log(X3D_INFO, "Clip->x: %d, y: %d", clip->x, start_y);
   ////x3d_log(X3D_INFO, "left: %d, right: %d", parent_span->left.x, parent_span->right.x);
   
-  if(abs(parent_span->left.x - clip->x) == abs(parent_span->right.x - clip->x)) {
-    if(gen->b->v2d.x < gen->a->v2d.x) {
-      span_val = &parent_span->left;
-      x3d_log(X3D_INFO, "Copy from left");
-    }
-    else {
-      span_val = &parent_span->right;
-      x3d_log(X3D_INFO, "Copy from right");
-    }
-  }
-  else if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x)) {
-    span_val = &parent_span->left;
-    //x3d_log(X3D_INFO, "Copy from left");
-  }
-  else {
-    span_val = &parent_span->right;
-    //x3d_log(X3D_INFO, "Copy from right");
-  }
+//   if(abs(parent_span->left.x - clip->x) == abs(parent_span->right.x - clip->x)) {
+//     if(gen->b->v2d.x < gen->a->v2d.x) {
+//       span_val = &parent_span->left;
+//       x3d_log(X3D_INFO, "Copy from left (same)");
+//     }
+//     else {
+//       span_val = &parent_span->right;
+//       x3d_log(X3D_INFO, "Copy from right (same)");
+//     }
+//   }
+//   else if(abs(parent_span->left.x - clip->x) < abs(parent_span->right.x - clip->x)) {
+//     span_val = &parent_span->left;
+//     x3d_log(X3D_INFO, "Copy from left");
+//   }
+//   else {
+//     span_val = &parent_span->right;
+//     x3d_log(X3D_INFO, "Copy from right");
+//   }
   
   // Copy over the x values from the parent edge, based on which side the line intersects
   // with. But, only copy it over if there was at least one visible edge before this
@@ -294,23 +320,19 @@ void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int1
   X3D_Vex2D clip;
   x3d_rasterregion_bin_search(gen->a->v2d, gen->b->v2d, &clip, gen->parent);
   
-  X3D_Span* span = x3d_rasterregion_get_span(gen->parent, clip.y);
-  int16 x;
+  X3D_Span* span = x3d_rasterregion_get_span(gen->parent, gen->b->v2d.y);
   _Bool left;
   
-  if(abs(span->left.x - clip.x) < abs(span->right.x - clip.x)) {
-    x = span->left.x;
+  if(abs(span->left.x - gen->b->v2d.x) < abs(span->right.x - gen->b->v2d.x)) {
     left = X3D_TRUE;
   }
   else {
-    x = span->right.x;
     left = X3D_FALSE;
   }
-  
   //x3d_screen_draw_circle(clip.x, clip.y, 5, 0x7FFF) ;
   
   x3d_rasterregion_generate_new_spans(gen, gen->a->v2d.y, clip.y + 1);
-  x3d_rasterregion_copy_intersection_spans(gen, &clip, clip.y, end_y - 1);
+  x3d_rasterregion_copy_intersection_spans(gen, &clip, clip.y, end_y - 1, left);
 }
 
 void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int16 end_y) {
@@ -318,19 +340,19 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
   X3D_Vex2D clip;
   x3d_rasterregion_bin_search(gen->b->v2d, gen->a->v2d, &clip, gen->parent);
   
-  X3D_Span* span = x3d_rasterregion_get_span(gen->parent, clip.y);
-  int16 x;
+  X3D_Span* span = x3d_rasterregion_get_span(gen->parent, gen->a->v2d.y);
   
   _Bool left;
   
-  if(abs(span->left.x - clip.x) < abs(span->right.x - clip.x)) {
-    x = span->left.x;
+  if(abs(span->left.x - gen->a->v2d.x) < abs(span->right.x - gen->a->v2d.x)) {
     left = X3D_TRUE;
   }
   else {
-    x = span->right.x;
     left = X3D_FALSE;
   }
+
+  //x3d_screen_draw_circle(gen->a->v2d.x, gen->a->v2d.y, 5, 31);
+  //x3d_screen_draw_circle(clip.x, clip.y, 5, 0x7FFF);
   
   X3D_PolyVertex end;
   
@@ -340,7 +362,7 @@ void x3d_rasterregion_generate_spans_a_out_b_in(X3D_ScanlineGenerator* gen, int1
 
   gen->slope = slope;
   
-  x3d_rasterregion_copy_intersection_spans(gen, &clip, gen->a->v2d.y, clip.y);
+  x3d_rasterregion_copy_intersection_spans(gen, &clip, gen->a->v2d.y, clip.y, left);
   x3d_rasterregion_generate_new_spans(gen, clip.y, end_y);
 }
 

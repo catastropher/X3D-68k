@@ -373,10 +373,10 @@ void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
   
   X3D_Vex3D normal[10];
   
-  //if(context->seg_id == 3) {
-  //  if(!x3d_key_down(X3D_KEY_15) || face == 5)
+  if(context->seg_id == 3) {
+    if(!x3d_key_down(X3D_KEY_15) || face == 1)
       x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
-  //}
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -665,7 +665,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
-  return; 
+  return;
   X3D_Prism3D* prism = alloca(1000);
   int16 steps = 4;
 
