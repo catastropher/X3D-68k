@@ -373,10 +373,10 @@ void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
   
   X3D_Vex3D normal[10];
   
-  if(context->seg_id == 3) {
-    if(!x3d_key_down(X3D_KEY_15) || face == 1)
+  //if(context->seg_id == 3) {
+  //  if(!x3d_key_down(X3D_KEY_15) || face == 2)
       x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
-  }
+  //}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
