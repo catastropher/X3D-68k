@@ -42,14 +42,36 @@ void create_test_level(void) {
   x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, 0, 800 }");
   x3d_level_run_command("connect_close s1=0 s2=1");
 
+  uint16 v = 4;
 
   
   X3D_Polygon2D poly = { .v = alloca(1000) };
-  x3d_polygon2d_construct(&poly, 4, 50, 0);
+  
+  uint16 w = 50, h = 100;
+  
+  int16 shift = -35;
+  
+  poly.v[0].x = -w;
+  poly.v[0].y = h + shift;
+  
+  poly.v[1].x = w;
+  poly.v[1].y = h + shift;
+  
+  poly.v[2].x = w;
+  poly.v[2].y = -h + shift;
+  
+  poly.v[3].x = -w;
+  poly.v[3].y = -h + shift;
+  
+  poly.total_v = v;
+  
+  uint16 k;
+  for(k = 0; k < 2; ++k)
+    X3D_SWAP(poly.v[k], poly.v[v - k - 1]);
   
   struct {
     X3D_Polygon3D poly;
-    X3D_Vex3D v[6];
+    X3D_Vex3D v[20];
   }* data = malloc(1000);//x3d_slab_alloc(sizeof(X3D_Vex3D) * 10 + sizeof(X3D_Polygon3D));
   
   data->poly.v = data->v;
@@ -73,7 +95,7 @@ void create_test_level(void) {
   
   X3D_Prism3D* prism = alloca(1000);
   
-  prism->base_v = 4;
+  prism->base_v = v;
   
   x3d_prism3d_set_face(prism, X3D_BASE_A, &data->poly);
   x3d_polygon3d_translate_normal(&data->poly, &plane.normal, -100);
@@ -88,15 +110,23 @@ void create_test_level(void) {
   x3d_prism3d_set_face(&seg1->prism, 1, &f);
 #endif
   
-  uint16 id = x3d_segmentbuilder_add_uncompressed_segment(prism)->base.id;
+  X3D_Segment* small_seg = x3d_segmentbuilder_add_uncompressed_segment(prism);
+  uint16 id = small_seg->base.id;
   
   x3d_segment_face_attach(0, face, X3D_ATTACH_WALL_PORTAL, &data->poly, x3d_segfaceid_create(id, X3D_BASE_A));
+  
+  X3D_Segment* new_seg = x3d_segmentmanager_load(x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, X3D_BASE_B), 200));
+  
+  uint16 i;
+  for(i = 0; i < 2; ++i) {
+    x3d_prism3d_get_face(&new_seg->prism, 2 * i + 2, &f);
+    x3d_polygon3d_scale(&f, 1024);
+    x3d_prism3d_set_face(&new_seg->prism, 2 * i + 2, &f);
+  }
   
   
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
-  
-  uint16 i;
   
   // Create a red and green portal
   uint16 portal_base_v = 8;
