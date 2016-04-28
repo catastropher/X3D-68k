@@ -261,6 +261,7 @@ _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
     x3d_screen_draw_circle(x1 + cx, y1 + cy, 10, x3d_rgb_to_color(0, 255, 0));
   }
   
+#if 0
   if(x3d_key_down(X3D_KEY_15)) {
     X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
     X3D_Vex3D pos;
@@ -276,6 +277,7 @@ _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
     cam->base.angle.y = 248;
     cam->base.angle.z = 0;
   }
+#endif
   
 #endif
   

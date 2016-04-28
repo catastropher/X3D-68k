@@ -403,8 +403,8 @@ void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine*
     X3D_Span* span = x3d_rasterregion_get_span(region, i);
     X3D_SpanValue2 new_left, new_right;
     
-    x3d_span_get_spanvalue_at_x(left, right, X3D_MAX(span->left.x, left.v2d.x), &new_left);
-    x3d_span_get_spanvalue_at_x(left, right, X3D_MIN(span->right.x, right.v2d.x), &new_right);
+    x3d_span_get_spanvalue_at_x(left, right, span->left.x, &new_left);
+    x3d_span_get_spanvalue_at_x(left, right, span->right.x, &new_right);
     
     X3D_Span2 s;
     

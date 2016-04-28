@@ -117,6 +117,8 @@ void create_test_level(void) {
   
   X3D_Segment* new_seg = x3d_segmentmanager_load(x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, X3D_BASE_B), 200));
   
+  x3d_log(X3D_INFO, "New seg: %d", new_seg->base.id);
+  
   uint16 i;
   for(i = 0; i < 2; ++i) {
     x3d_prism3d_get_face(&new_seg->prism, 2 * i + 2, &f);

@@ -521,7 +521,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   
   int16 dx = span->right.x - span->left.x;
   
-  const int16 RUN = 16;
+  const int16 RUN = 1;
   
   int32 z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
   
@@ -593,6 +593,10 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
       
     } while(--total > 0);
   } while(i <= span->right.x);
+  
+  if(i != span->right.x + 1) {
+    x3d_log(X3D_INFO, "Off by: %d", span->right.x - i);
+  }
   
   //x3d_log(X3D_INFO, "Same count: %d", same_count);
 }

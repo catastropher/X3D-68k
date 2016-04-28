@@ -26,8 +26,8 @@ void x3d_rasterregion_find_point_inside_left(X3D_RasterRegion* r, X3D_Vex2D left
     
     //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
     
-    if(abs(mid.x - span->left.x) <= 2)
-      break;
+    //if(abs(mid.x - span->left.x) <= 2)
+    //  break;
     
     if(mid.x < span->left.x)
       left_out = mid;
@@ -59,8 +59,8 @@ void x3d_rasterregion_find_point_inside_right(X3D_RasterRegion* r, X3D_Vex2D rig
     
     //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
     
-    if(abs(mid.x - span->right.x) <= 2)
-      break;
+    //if(abs(mid.x - span->right.x) <= 2)
+    //  break;
     
     if(mid.x > span->right.x)
       right_out = mid;
@@ -96,6 +96,14 @@ void x3d_rasterregion_bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3
   X3D_Vex2D mid;
   X3D_Vex2D last = { -1, -1 };
   
+  const int16 SHIFT = 5;
+  
+  in.x <<= SHIFT;
+  in.y <<= SHIFT;
+
+  out.x <<= SHIFT;
+  out.y <<= SHIFT;
+  
   do {
     mid.x = (in.x + out.x) >> 1;
     mid.y = (in.y + out.y) >> 1;
@@ -107,11 +115,13 @@ void x3d_rasterregion_bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3
     
     //x3d_log(X3D_INFO, "%d %d, %d %d - %d, %d\n", in.x, in.y, out.x, out.y, mid.x, mid.y);
     
-    if(abs(in.x - out.x) < 2 && abs(in.y - out.y) < 2)
-      break;
+    //if(abs(in.x - out.x) < 2 && abs(in.y - out.y) < 2)
+    //  break;
     
     
-    if(x3d_rasterregion_point_inside(region, mid)) {
+    X3D_Vex2D mid_small = { mid.x >> SHIFT, mid.y >> SHIFT };
+    
+    if(x3d_rasterregion_point_inside(region, mid_small)) {
       in = mid;
     }
     else {
@@ -119,8 +129,8 @@ void x3d_rasterregion_bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3
     }
   } while(1);
   
-  res->x = mid.x;
-  res->y = mid.y;
+  res->x = mid.x >> SHIFT;
+  res->y = mid.y >> SHIFT;
 }
 
 X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y) {
@@ -162,7 +172,8 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   x3d_rasterregion_generate_polyline_spans(dest, parent, &left, &right, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].left, &y_range_left);
   x3d_log(X3D_INFO, "=================Right=================");
   x3d_rasterregion_generate_polyline_spans(dest, parent, &right, &left, min_y, max_y, &dest->span[min_y - dest->rect.y_range.min].right, &y_range_right);
-
+  x3d_log(X3D_INFO, "");
+  
   if(x3d_polyline_try_render(&left, &right, parent)) {
     return X3D_TRUE;
   }
@@ -170,10 +181,11 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   x3d_rasterregion_cheat_calc_texture(dest, &left, &right);
   
   //x3d_rasterregion_draw_outline(dest, 31);
-  //x3d_rasterregion_draw_outline(parent, 0x7FFF);
   
-  //x3d_polyline_draw(&left, 31);
-  //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
+  x3d_polyline_draw(&left, 31);
+  x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
+  
+  //x3d_rasterregion_draw_outline(parent, 0x7FFF);
   
   //x3d_polyline_draw(&left, x3d_rgb_to_color(0, 255, 0));
   //x3d_polyline_draw(&right, x3d_rgb_to_color(255, 0, 255));
@@ -209,7 +221,6 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
   dest->span += new_min - dest->rect.y_range.min;
   dest->rect.y_range.min = new_min;
   dest->rect.y_range.max = new_max;
-  
   
   x3d_assert(new_max <= parent->rect.y_range.max);
   
