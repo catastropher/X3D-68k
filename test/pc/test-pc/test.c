@@ -114,6 +114,7 @@ void create_test_level(void) {
   uint16 id = small_seg->base.id;
   
   x3d_segment_face_attach(0, face, X3D_ATTACH_WALL_PORTAL, &data->poly, x3d_segfaceid_create(id, X3D_BASE_A));
+  x3d_segment_make_door(id);
   
   X3D_Segment* new_seg = x3d_segmentmanager_load(x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, X3D_BASE_B), 200));
   

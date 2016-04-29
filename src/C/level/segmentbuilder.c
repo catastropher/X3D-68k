@@ -138,7 +138,18 @@ uint16 x3d_segmentbuilder_add_connecting_segment(X3D_SegFaceID a, X3D_SegFaceID 
   return new_seg->base.id;
 }
 
-
+void x3d_segment_make_door(uint16 id) {
+  X3D_Segment* seg = x3d_segmentmanager_load(id);
+  
+  seg->base.flags |= X3D_SEGMENT_DOOR;
+  
+  // Initialize the door
+  seg->door_data = x3d_slab_alloc(sizeof(X3D_SegmentDoorData));
+  seg->door_data->door_open = X3D_DOOR_CLOSED;
+ 
+  
+  
+}
 
 
 

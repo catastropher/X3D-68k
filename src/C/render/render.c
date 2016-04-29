@@ -429,6 +429,13 @@ void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
 
 int16 depth = 0;
 
+void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
+  if(context->seg->door_data->door_open == X3D_DOOR_CLOSED)
+    return;
+  else
+    x3d_segment_render_faces(context);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders a segment.
 ///
@@ -478,7 +485,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
     .list         = NULL,
     .portal_face  = portal_face
   };
-
+  
   X3D_Vex3D cam_pos, cam_dir;
   x3d_object_pos(cam, &cam_pos);
   x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, clip.v3d, clip.v2d);
@@ -487,7 +494,10 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   x3d_prism_get_edge_pairs(prism->base_v, clip.edge_pairs);
   x3d_clipcontext_generate_rasteredges(&clip, &renderman->stack);
   
-  x3d_segment_render_faces(&context);
+  if(x3d_segment_is_door(seg))
+    x3d_segment_render_door(&context);
+  else
+    x3d_segment_render_faces(&context);
 
   if(id == 0) {
     x3d_set_texture(3);

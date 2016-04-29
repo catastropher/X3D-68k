@@ -467,6 +467,11 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
   return poly->total_v > 2;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+/// Clips a 3D polygon to a plane.
+///
+/// @param poly
+///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va) {
   int16 next_v;
   int16 v = poly->total_v - 1;

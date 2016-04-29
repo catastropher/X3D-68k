@@ -34,6 +34,9 @@
 ///< Indicates an invalid location in the segment cache to represnt NULL
 #define X3D_SEGMENT_CACHE_NONE 255
 
+#define X3D_DOOR_CLOSED 0
+#define X3D_DOOR_OPEN   0x7FFF
+
 ///////////////////////////////////////////////////////////////////////////////
 /// The unique ID of a segment face. The lower 4 bits are the face number
 /// and the top 12 bits are the segment ID.
@@ -122,6 +125,10 @@ typedef struct X3D_SegmentObjectList {
   X3D_Handle objects[X3D_MAX_OBJECTS_IN_SEG];
 } X3D_SegmentObjectList;
 
+typedef struct X3D_SegmentDoorData {
+  uint16 door_open;
+} X3D_SegmentDoorData;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// A segment that is fully decompressed, complete with calculated plane
 ///   equations for the walls.
@@ -135,8 +142,12 @@ typedef struct X3D_Segment {
   uint16 last_engine_step;    ///< Last step the segment was rendered
   X3D_SegmentObjectList object_list; ///< List of objects currently in the segment
   X3D_Prism3D prism;          ///< Prism data (MUST BE LAST MEMBER)
+  
+  union {
+    X3D_SegmentDoorData* door_data;
+  };
+  
 } X3D_Segment;
-
 
 ///////////////////////////////////////////////////////////////////////////////
 /// A cache entry for an uncompressed segment.
@@ -213,6 +224,10 @@ static inline uint16 x3d_uncompressedsegment_size(uint16 base_v) {
 ///////////////////////////////////////////////////////////////////////////////
 static inline X3D_SegmentFace* x3d_uncompressedsegment_get_faces(X3D_Segment* seg) {
   return ((void *)seg) + seg->face_offset;
+}
+
+static inline _Bool x3d_segment_is_door(X3D_Segment* seg) {
+  return seg->base.flags & X3D_SEGMENT_DOOR;
 }
 
 X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_size);
