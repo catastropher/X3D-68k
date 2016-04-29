@@ -97,3 +97,7 @@ fp16x16 x3d_val_slope(int16 d_a, int16 d_b);
 fp16x16 x3d_val_slope2(fp16x16 d_a, int16 d_b);
 X3D_Span* x3d_rasterregion_get_span(X3D_RasterRegion* r, int16 y);
 void x3d_rasterregion_fill_texture(X3D_RasterRegion* r, int16 z);
+
+fp16x16 x3d_vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2);
+void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y);
+

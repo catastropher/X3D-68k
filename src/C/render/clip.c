@@ -69,15 +69,14 @@ fp16x16 x3d_vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2) {
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y) {
   //x3d_assert((slope >> 16) < 128);    // To prevent overflow when converting to fp8x8 for the slope
-  
   int16 dy = y - start->y;
-  int16 slope_8x8 = slope >> 8;
 
   /// @todo Optomize to not use 64 bit multiplication (maybe using a binary search?)
 #if !defined(__68k__)
   start->x = start->x + (((int64)dy * slope) >> 16);
   start->y = y;
 #else
+  int16 slope_8x8 = slope >> 8;
   start->x = start->x + (((int32)dy * slope_8x8) >> 8);
   start->y = y;
   
@@ -242,20 +241,13 @@ _Bool x3d_span_clip(X3D_Span* span, X3D_Span parent_span) {
   //span->right = X3D_MIN(parent_span.right, span->right);
   
   
-  
   if(span->old_left_val < parent_span.old_left_val) {
-    int32 left = abs(span->old_left_val - parent_span.old_left_val);
-    int32 right = abs(span->old_right_val - parent_span.old_left_val);
-    
     span->old_left_val = parent_span.old_left_val;
   }
   
   
 #if 1
   if(span->old_right_val > parent_span.old_right_val) {
-    int32 left = abs(span->old_left_val - parent_span.old_right_val);
-    int32 right = abs(span->old_right_val - parent_span.old_right_val);
-    
     span->old_right_val = parent_span.old_right_val;
   }
   
@@ -617,7 +609,7 @@ void x3d_rasterregion_fill(X3D_RasterRegion* region, X3D_Color color) {
   }
   
   for(i = region->rect.y_range.min; i < region->rect.y_range.max; ++i) {
-    uint16 index = i - region->rect.y_range.min;
+    //uint16 index = i - region->rect.y_range.min;
     
     //X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
     //X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
@@ -682,7 +674,7 @@ void x3d_rasterregion_fill_zbuf(X3D_RasterRegion* region, X3D_Color color, int16
   }
   
   for(i = region->rect.y_range.min; i < region->rect.y_range.max; ++i) {
-    uint16 index = i - region->rect.y_range.min;
+    //uint16 index = i - region->rect.y_range.min;
     
     //X3D_Color color_left = x3d_color_scale(color, region->span[index].left_scale);
     //X3D_Color color_right = x3d_color_scale(color, region->span[index].right_scale);
@@ -697,7 +689,7 @@ void x3d_rasterregion_fill_texture(X3D_RasterRegion* r, int16 z) {
   uint16 i;
   
   for(i = r->rect.y_range.min; i <= r->rect.y_range.max; ++i) {
-    x3d_screen_draw_scanline_texture(x3d_rasterregion_get_span(r, i), i);
+    //x3d_screen_draw_scanline_texture(x3d_rasterregion_get_span(r, i), i);
   }
 }
 
@@ -721,7 +713,7 @@ fp0x16 x3d_point_intensity(X3D_Segment* seg, uint16 p, X3D_Vex3D* face_normal, i
     return val;
   }
   
-  return NULL;
+  return 0;
 }
 
 /// Under construction
@@ -752,8 +744,6 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
     X3D_Pair edge = clip->edge_pairs[clip->edge_index[i]];
     uint16 in[2] = { clip->v3d[edge.val[0]].z >= near_z, clip->v3d[edge.val[1]].z >= near_z };
 
-    int16 d;
-    
     flags &= clip->edges[clip->edge_index[i]].flags;
     
     //printf("Flags: %d\n", flags);
@@ -948,9 +938,7 @@ _Bool x3d_rasterregion_construct_clipped(X3D_ClipContext* clip, X3D_RasterRegion
 #endif
       
       if(x3d_rasterregion_intersect(dest, clip->parent)) {
-        X3D_Color gray = x3d_rgb_to_color(64, 64, 64);
         //x3d_rasterregion_fill(dest, gray);
-        X3D_Color color = x3d_rgb_to_color(255, 255, 255);
         //x3d_screen_draw_line(out_v[0].x, out_v[0].y, out_v[1].x, out_v[1].y, color);
         return X3D_TRUE;
       }

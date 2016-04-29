@@ -14,5 +14,6 @@ void x3d_rasterregion_update(X3D_RasterRegion* r);
 uint16 x3d_rasterregion_total_spans(X3D_RasterRegion* r);
 void x3d_rasterregion_downgrade(X3D_RasterRegion* r);
 void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, X3D_PolyLine* other, int16 min_y, int16 max_y, X3D_SpanValue* spans, X3D_Range* y_range);
-
+_Bool x3d_rasterregion_point_inside2(X3D_RasterRegion* region, X3D_Vex2D p);
+void x3d_rasterregion_bin_search(X3D_Vex2D in, X3D_Vex2D out, X3D_Vex2D* res, X3D_RasterRegion* region);
 

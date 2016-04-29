@@ -22,6 +22,7 @@
 #include "X3D_enginestate.h"
 #include "X3D_trig.h"
 #include "render/X3D_scanline.h"
+#include "render/X3D_rasterregion.h"
 
 //#define //x3d_log(...) ;
 
@@ -85,10 +86,6 @@ int16 x3d_line_parametric_t(X3D_Vex2D* a, X3D_Vex2D* b, X3D_Vex2D* v) {
   else {
     return (((int32)v->y - a->y) << 15) / (b->y - a->y);
   }
-}
-
-int16 x3d_rasterregion_edge_x_value(X3D_ScanlineGenerator* gen, int16 y) {
-  return gen->a->v2d.x + ((gen->slope.x) * (y - gen->a->v2d.y) >> 16);
 }
 
 int16 x3d_t_clip(int16 start, int16 end, uint16 scale) {

@@ -361,7 +361,6 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
   X3D_Mat3x3 new_mat;
   
   X3D_Mat3x3 m4;
-  X3D_Vex3D_angle256 ang = { 0, 0, 0 };
   m4 = portal->mat;
   
   {
@@ -448,8 +447,6 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
 
       uint16 seg_id = x3d_segfaceid_seg(other_side->face);
       uint16 seg_face = x3d_segfaceid_face(other_side->face);
-      
-      X3D_Color c = x3d_rgb_to_color(255, 69, 0);
       
       portal->transform = new_mat;
       

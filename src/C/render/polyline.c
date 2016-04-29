@@ -53,12 +53,7 @@ int32 x3d_points_clockwise(X3D_PolyVertex* a, X3D_PolyVertex* b, X3D_PolyVertex*
   X3D_Vex3D v1_small = { v1.x, v1.y, v1.z };
   X3D_Vex3D v2_small = { v2.x, v2.y, v2.z };
   
-  X3D_Vex3D dest;
-  //x3d_vex3d_fp0x16_cross(&dest, &v1_small, &v2_small);
-  
   return ((((int32)v1_small.x * v2_small.y) >> 1) - (((int32)v1_small.y * v2_small.x) >> 1));
-  
-  //return (int32)v1.x * v2.y - (int32)v1.y * v2.x;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -94,7 +89,6 @@ _Bool x3d_polyline_split(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left, 
   }
 
   uint16 next_left = (top_left + 1 < total_v ? top_left + 1 : 0);
-  uint16 prev_left = (top_left != 0 ? top_left - 1 : total_v - 1);
   uint16 next_right = (top_right != 0 ? top_right - 1 : total_v - 1);
   
   left->total_v = 0;

@@ -269,7 +269,6 @@ void x3d_rasterregion_downgrade(X3D_RasterRegion* r) {
 
 void x3d_rasterregion_generate_polyline_spans(X3D_RasterRegion* dest, X3D_RasterRegion* parent, X3D_PolyLine* p, X3D_PolyLine* other, int16 min_y, int16 max_y, X3D_SpanValue* spans, X3D_Range* y_range) {
   uint16 i;
-  uint16 prev = 0;
   
   X3D_ScanlineGenerator gen;
   

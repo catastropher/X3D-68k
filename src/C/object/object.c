@@ -45,8 +45,6 @@ void x3d_objectmanager_activate_object(uint16 id) {
 /// @return A handle to the object.
 ///////////////////////////////////////////////////////////////////////////////
 X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle) {
-  static int16 alloc_id = 0;
-  
   X3D_ObjectType* obj_type = &x3d_objectmanager_get()->types[type];
   X3D_DynamicObjectBase* obj = x3d_slab_alloc(obj_type->size);
   

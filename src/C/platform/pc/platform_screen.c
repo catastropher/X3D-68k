@@ -314,24 +314,6 @@ void x3d_gray_dither(SDL_Surface* s) {
   }
 }
 
-X3D_Color x3d_texture_get_pix(X3D_Texture* tex, int16 u, int16 v) {
-#if 0
-  uint8 r, g, b;
-
-  return rand();
-  
-  SDL_Surface* s = tex->surface;
-  
-  if(u < 0 || u >= s->w || v < 0 || v >= s->h)
-    return 0;
-  
-  //x3d_log(X3D_INFO, "U: %d, v: %d : %d, %d - bpp: %d", u, v, s->w, s->h, s->format->BytesPerPixel);
-  
-  SDL_GetRGB(getpixel(s, u, v), s->format, &r, &g, &b);
-  
-  return x3d_rgb_to_color(r, g, b);
-#endif
-}
 
 X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
   SDL_FreeSurface(window_surface);
@@ -360,16 +342,6 @@ static uint32 map_color_to_uint32(X3D_Color color) {
   return SDL_MapRGB(window_surface->format, red, green, blue);
 #endif
 }
-
-static uint32 scale_color(X3D_Color c, uint16 scale) {
-  uint8 r, g, b;
-  
-  x3d_color_to_rgb(c, &r, &g, &b);
-  
-  return SDL_MapRGB(window_surface->format, ((uint32)r * scale) >> 15, ((uint32)g * scale) >> 15, ((uint32)b * scale) >> 15);
-}
-
-extern X3D_Vex3D color_err;
 
 uint16 scale_down(uint32 value, int16* error) {
   int16 v = (value >> 8) + *error;
@@ -416,7 +388,6 @@ void x3d_screen_zbuf_clear(void) {
 }
 
 void x3d_screen_zbuf_visualize(void) {
-  X3D_Color c;
   uint16 x, y;
   
   for(y = 0; y < screen_h; ++y) {
@@ -463,11 +434,6 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   
   int32 scale_slope = (((int32)scale_right - scale_left) << 8) / (right - left + 1);
   int32 scale = (int32)scale_left << 8;
-  
-  int32 err = 0;
-  
-  int32 mask = (1 << (16 - scale_bits)) - 1;
-  int32 half = mask / 2;
   
   int16 zz = 0;
   
@@ -517,7 +483,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   int32 next_u = ((span->left.u >> 5) * next_z);
   int32 next_v = ((span->left.v >> 5) * next_z);
   
-  int32 prev_u, prev_v, prev_z;
+  int32 prev_u, prev_v;
   
   int16 dx = span->right.x - span->left.x;
   
@@ -645,8 +611,6 @@ void x3d_screen_draw_scanline_texture(X3D_Span2* span, int16 y) {
     //int16 uu = (x3d_fix_slope_val(&u) / zz);   //(((u / zz) >> 1) * 128) >> 15;
     //int16 vv = (x3d_fix_slope_val(&v) / zz);//(((v / zz) >> 1) * 128) >> 15;
     
-    int16 recip = (1.0 / (z >> 15)) * 32767; //fast_recip(z >> 15);
-    
     //x3d_log(X3D_INFO, "recip: %d", recip);
     
     
@@ -712,54 +676,6 @@ uint16 scale_value_down(uint32 value, int16* error) {
     return v;
 }
 
-void dither_pixel(X3D_Vex3D* err, int16 x, int16 w, int16 y, int16 h, uint32 val) {
-  uint8 r, g, b;
-  //SDL_GetRGB(val, &r, &g, &b);
-  
-  X3D_Vex3D error = err[x];
-  
-  X3D_Color color = x3d_rgb_to_color(
-    scale_value_down((uint32)r, &error.x),
-    scale_value_down((uint32)g, &error.y),
-    scale_value_down((uint32)b, &error.z)
-  );
-  
-  err[x].x += 5 * error.x / 16;
-  err[x].y += 5 * error.y / 16;
-  err[x].z += 5 * error.z / 16;
-  
-  if(x + 1 < w) {
-    err[x + 1].x += 7 * error.x / 16;
-    err[x + 1].y += 7 * error.y / 16;
-    err[x + 1].z += 7 * error.z / 16;
-    
-    if(y + 1 < h) {
-    }
-  }
-}
-
-void dither() {
-  int16 w = screen_w;
-  int16 h = screen_h;
-  
-  X3D_Vex3D err[w];
-  
-  int16 i;
-  for(i = 0; i < w; ++i) {
-    err[i].x = 0;
-    err[i].y = 0;
-    err[i].z = 0;
-  }
-  
-  int16 x, y;
-  
-  for(y = 0; y < h; ++y) {
-    for(x = 0; x < w; ++x) {
-      
-    }
-  }
-}
- 
 void x3d_screen_flip() {
   if(record) {
     char str[1100];
@@ -1080,7 +996,7 @@ void x3d_screen_draw_digit(char digit, int16 x, int16 y, X3D_Color color) {
   uint16 i, d;
   for(i = y; i < y + 8; ++i) {
     for(d = x; d < x + 5; ++d) {
-      x3d_screen_draw_pix(d, i, font[digit][i - y] & (1 << (7 - (d - x))) ? color : 0x7FFF);
+      x3d_screen_draw_pix(d, i, font[(uint32)digit][i - y] & (1 << (7 - (d - x))) ? color : 0x7FFF);
     }
   }
 }

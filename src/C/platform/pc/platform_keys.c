@@ -30,7 +30,7 @@ static _Bool sdl_keys[SDL_TOTAL_KEYS];
 
 // The max X3D key that has been set (will be used to determine how many bytes)
 //    of the keystate need to be transferred with multiplayer.
-static int16 max_key;
+//static int16 max_key;
 
 // Holds which X3D keys are currently being pressed
 static uint32 key_state;

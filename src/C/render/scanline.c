@@ -1,9 +1,14 @@
 #include "X3D_common.h"
 #include "render/X3D_polyvertex.h"
 #include "render/X3D_scanline.h"
+#include "render/X3D_rasterregion.h"
 #include "X3D_keys.h"
 
 #define x3d_log(...) ;
+
+int16 x3d_rasterregion_edge_x_value(X3D_ScanlineGenerator* gen, int16 y) {
+  return gen->a->v2d.x + ((gen->slope.x) * (y - gen->a->v2d.y) >> 16);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.

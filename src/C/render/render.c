@@ -348,6 +348,8 @@ void x3d_segment_render_face_attachments(X3D_SegmentRenderContext* context, uint
         //x3d_rasterregion_update(port.region);
         //x3d_rasterregion_fill_texture(port.region, 15);
       }
+      
+      x3d_stack_restore(&renderman->stack, stack_ptr);
     }
     
     a = a->next;

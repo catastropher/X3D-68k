@@ -20,6 +20,8 @@
 #include "X3D_gameloop.h"
 #include "X3D_render.h"
 
+#include <SDL/SDL.h>
+
 void x3d_game_loop_quit(void) {
   x3d_enginestate_get()->exit_gameloop = X3D_TRUE;
 }
@@ -34,8 +36,6 @@ void x3d_game_loop() {
     // Update the key state
     x3d_read_keys();
     x3d_keymanager_get()->key_handler();
-
-    X3D_Color color = x3d_rgb_to_color(0, 32, 0);
 
     // Render from the player's perspective
     x3d_screen_clear(0);

@@ -111,7 +111,6 @@ add_sources(
   C/render/wallportal.c
   C/render/portal.c
   C/render/clip.c
-  C/render/clip3.c
   C/render/rasteredge.c
   C/render/util.c
   C/render/rasterregion.c
