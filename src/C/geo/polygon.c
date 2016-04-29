@@ -282,32 +282,29 @@ extern int16 render_mode;
 void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal, uint16* u, uint16* v) {
   X3D_Vex3D v3d[poly->total_v + 5];
   X3D_Vex2D v2d[poly->total_v + 5];
-  X3D_RasterEdge edges[poly->total_v + 5];
-  X3D_Pair pairs[poly->total_v + 5];
-  int16 depth_scale[poly->total_v + 5];
 
   x3d_camera_transform_points(cam, poly->v, poly->total_v, v3d, NULL);
   
   //x3d_log(X3D_INFO, "Enter %s", __FUNCTION__);
   
   X3D_Polygon3D temp = {
-      .v = alloca(1000)
-    };
-    
-    uint16 temp_u[20];
-    uint16 temp_v[20];
-    
-    poly->v = v3d;
-    
-    //x3d_log(X3D_INFO, "BEGIN CLIP");
-    
+    .v = alloca(1000)
+  };
+  
+  uint16 temp_u[20];
+  uint16 temp_v[20];
+  
+  poly->v = v3d;
+  
+  //x3d_log(X3D_INFO, "BEGIN CLIP");
+  
 #if 1
-    if(!x3d_polygon3d_clip_to_near_plane(poly, &temp, 10, u, v, temp_u, temp_v))
-      return;
-    
-    poly = &temp;
-    u = temp_u;
-    v = temp_v;
+  if(!x3d_polygon3d_clip_to_near_plane(poly, &temp, 10, u, v, temp_u, temp_v))
+    return;
+  
+  poly = &temp;
+  u = temp_u;
+  v = temp_v;
 #endif
     
   //x3d_log(X3D_INFO, "Total v: %d", temp.total_v);
@@ -325,8 +322,6 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   
-  uint16 i;
-  uint16 edge_index[poly->total_v + 5];
 
   void* stack_ptr = x3d_stack_save(&renderman->stack);
   
@@ -334,22 +329,9 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   
   //x3d_segment_point_normal(seg, i, &normal);
   
-  X3D_Vex3D d = { 0, 0, 32767 };
-  
   min_z = X3D_MAX(min_z, 1);
   
-  X3D_RasterRegion r;
-  if(1) {//x3d_rasterregion_construct_clipped(&clip, &r)) {
-    //x3d_rasterregion_fill_zbuf(&r, color, min_z);
-    
-    x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);
-    
-    for(i = 0; i < poly->total_v; ++i) {
-      //x3d_log(X3D_INFO, "uv: %d, %d", u[i], v[i]);
-      //x3d_log(X3D_INFO, "2D point %d: { %d, %d }", i, v2d[i].x, v2d[i].y);
-    }
-    
-  }
+  x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
 }
