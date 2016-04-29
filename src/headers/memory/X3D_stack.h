@@ -21,6 +21,8 @@ typedef struct X3D_Stack {
   uint32 size;
 } X3D_Stack;
 
+#define X3D_STACK_ALLOC_TYPE(_stack, _type, _total) (_type* )x3d_stack_alloc(_stack, sizeof(_type) * (_total))
+
 void x3d_stack_init(X3D_Stack* stack, void* mem, uint32 mem_size);
 void* x3d_stack_alloc(X3D_Stack* stack, uint16 size);
 void* x3d_stack_save(X3D_Stack* stack);

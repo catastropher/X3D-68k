@@ -80,9 +80,7 @@ static inline uint16 x3d_segfaceid_seg(X3D_SegFaceID id) {
 /// Segment flags.
 ///////////////////////////////////////////////////////////////////////////////
 typedef enum {
-  X3D_SEGMENT_IN_CACHE = (1 << 15),     ///< Segment has already been loaded
-                                        ///  into the cache
-  X3D_SEGMENT_UNCOMPRESSED = (1 << 14)  ///< The segment is uncompressed
+  X3D_SEGMENT_DOOR = 1    ///< The segment is a door
 } X3D_SegmentFlags;
 
 typedef struct X3D_SegmentFaceAttachement {

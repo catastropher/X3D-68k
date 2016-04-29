@@ -144,8 +144,8 @@ void x3d_clipcontext_generate_rasteredges(X3D_ClipContext* clip, X3D_Stack* stac
     a = clip->edge_pairs[i].val[0];
     b = clip->edge_pairs[i].val[1];
     
-    int16 scale_a = clip->depth_scale[a];
-    int16 scale_b = clip->depth_scale[b];
+    int16 scale_a = 0x7FFF;//clip->depth_scale[a];
+    int16 scale_b = 0x7FFF;//clip->depth_scale[b];
     
     if(clip->v3d[a].z < 15 || clip->v3d[b].z < 15) {
       scale_a = 0x7FFF;
@@ -405,8 +405,6 @@ void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
         
         if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
           x3d_segment_render_face(context, i);
-            
-          continue;
         }
         else {
           X3D_Portal portal;
@@ -444,94 +442,54 @@ int16 depth = 0;
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_RasterRegion* region, uint16 step, uint16 portal_face) {
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-
-  void* stack_save = x3d_stack_save(&renderman->stack);
-
-  X3D_Segment* seg = x3d_segmentmanager_load(id);
-  
   // Make sure we don't blow the stack from recursing too deep
   if(depth >= 15)
     return;
-
+  
   ++depth;
-
-  seg->last_engine_step = step;
-
-  X3D_Prism3D* prism = &seg->prism;
-  X3D_Vex2D* v2d = x3d_stack_alloc(&renderman->stack, sizeof(X3D_Vex2D) * prism->base_v * 2);
-  X3D_Vex3D* v3d = x3d_stack_alloc(&renderman->stack, sizeof(X3D_Vex3D) * prism->base_v * 2);
-  uint16 i;
-
-  X3D_Vex3D cam_pos;
-  x3d_object_pos(cam, &cam_pos);
-
-  x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, v3d, v2d);
   
-  fp0x16 depth_scale[prism->base_v * 2];
-  X3D_Vex3D cam_dir;
+  X3D_RenderManager* renderman      = x3d_rendermanager_get();
+  void* stack_save                  = x3d_stack_save(&renderman->stack);
+  X3D_Segment* seg                  = x3d_segmentmanager_load(id);
+  X3D_Prism3D* prism                = &seg->prism;
+  uint16 total_e                    = seg->prism.base_v * 3;
   
-  x3d_dynamicobject_forward_vector(&cam->base, &cam_dir);
-  
-  
-  for(i = 0;i < prism->base_v * 2; ++i) {
-    X3D_Vex3D normal;
-    //x3d_segment_point_normal(seg, i, &normal);
-    
-
-    X3D_Vex3D d = { 0, 0, 32767 };
-
-    fp0x16 dot = x3d_vex3d_fp0x16_dot(&d, &normal);
-    
-    
-    dot = X3D_MIN((int32)dot + 8192, 32767);
-    
-    dot = X3D_MAX(dot, 0);
-
-    if(render_mode != 3)
-      depth_scale[i] = x3d_depth_scale(v3d[i].z, 10, 1500);
-  }
-
-
-  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-
-  uint16 total_e = seg->prism.base_v * 3;
-  X3D_RasterEdge edges[total_e + 5];
-  X3D_Pair edge_pair[total_e];
-
-  x3d_prism_get_edge_pairs(prism->base_v, edge_pair);
-
   X3D_ClipContext clip = {
-    .stack = &renderman->stack,
-    .parent = region,
-    .edges = edges,
-    .total_e = total_e,
-    .v3d = v3d,
-    .v2d = v2d,
-    .edge_pairs = edge_pair,
-    .depth_scale = depth_scale,
+    .stack        = &renderman->stack,
+    .parent       = region,
+    .edges        = X3D_STACK_ALLOC_TYPE(&renderman->stack, X3D_RasterEdge, total_e + 5),
+    .total_e      = total_e,
+    .v3d          = X3D_STACK_ALLOC_TYPE(&renderman->stack, X3D_Vex3D, prism->base_v * 2),
+    .v2d          = X3D_STACK_ALLOC_TYPE(&renderman->stack, X3D_Vex2D, prism->base_v * 2),
+    .edge_pairs   = X3D_STACK_ALLOC_TYPE(&renderman->stack, X3D_Pair, total_e + 1),
+    .depth_scale  = NULL,
     .seg = seg
   };
-
-  x3d_clipcontext_generate_rasteredges(&clip, &renderman->stack);
-
+  
   X3D_SegmentRenderContext context = {
-    .seg = seg,
-    .seg_id = id,
-    .faces = face,
-    .renderman = renderman,
-    .parent = region,
-    .cam = cam,
-    .clip = &clip,
-    .step = step,
-    .list = NULL,
-    .portal_face = portal_face
+    .seg          = seg,
+    .seg_id       = id,
+    .faces        = x3d_uncompressedsegment_get_faces(seg),
+    .renderman    = renderman,
+    .parent       = region,
+    .cam          = cam,
+    .clip         = &clip,
+    .step         = step,
+    .list         = NULL,
+    .portal_face  = portal_face
   };
+
+  X3D_Vex3D cam_pos, cam_dir;
+  x3d_object_pos(cam, &cam_pos);
+  x3d_camera_transform_points(cam, prism->v, prism->base_v * 2, clip.v3d, clip.v2d);
+  x3d_dynamicobject_forward_vector(&cam->base, &cam_dir);
+
+  x3d_prism_get_edge_pairs(prism->base_v, clip.edge_pairs);
+  x3d_clipcontext_generate_rasteredges(&clip, &renderman->stack);
   
   x3d_segment_render_faces(&context);
 
   if(id == 0) {
-    //x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
     x3d_set_texture(3);
     x3d_cube_render((X3D_Vex3D) { 150, 75, 150 }, 75, cam, region);
   }

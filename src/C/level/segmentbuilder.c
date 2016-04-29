@@ -36,7 +36,7 @@ X3D_INTERNAL X3D_Segment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3
   x3d_prism3d_copy(&seg->prism, prism);
   
   
-  seg->base.flags = X3D_SEGMENT_UNCOMPRESSED;
+  seg->base.flags = 0;
   seg->base.base_v = prism->base_v;
   
   x3d_segment_reset(seg);
