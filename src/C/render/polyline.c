@@ -236,11 +236,7 @@ _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
   
   if(clockwise == 0)
     return X3D_FALSE;
-
-  if(x3d_key_down(X3D_KEY_15)) {
-    clockwise = !clockwise;
-  }
-
+  
 #if 0
   for(i = 0; i < total_v; ++i) {
     //x3d_log(X3D_INFO, "v %d: %d, %d", i, v[i].v2d.x, v[i].v2d.y);
@@ -259,6 +255,8 @@ _Bool x3d_polyvertex_make_clockwise(X3D_PolyVertex* v, uint16 total_v) {
     x3d_screen_draw_line(x1 + cx, y1 + cy, x2 + cx, y2 + cy, 31);
     
     x3d_screen_draw_circle(x1 + cx, y1 + cy, 10, x3d_rgb_to_color(0, 255, 0));
+    
+    x3d_screen_draw_uint32(v[i].u, x1 + cx + 10, y1 + cy + 10, 31);
   }
   
 #if 0

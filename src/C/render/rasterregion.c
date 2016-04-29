@@ -178,12 +178,12 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
     return X3D_TRUE;
   }
   
-  x3d_rasterregion_cheat_calc_texture(dest, &left, &right);
+  x3d_rasterregion_cheat_calc_texture(dest, &left, &right, parent);
   
   //x3d_rasterregion_draw_outline(dest, 31);
   
-  x3d_polyline_draw(&left, 31);
-  x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
+  //x3d_polyline_draw(&left, 31);
+  //x3d_polyline_draw(&right, x3d_rgb_to_color(0, 255, 0));
   
   //x3d_rasterregion_draw_outline(parent, 0x7FFF);
   

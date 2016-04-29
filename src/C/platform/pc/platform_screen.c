@@ -541,6 +541,9 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   
   int16 same_count = 0;
   
+  if(span->right.x >= 639)
+    span->right.x = 639;
+  
   do {
     prev_u = next_u;
     prev_v = next_v;

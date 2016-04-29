@@ -531,7 +531,7 @@ void x3d_segment_render(uint16 id, X3D_CameraObject* cam, X3D_Color color, X3D_R
   if(id == 0) {
     //x3d_cube_render((X3D_Vex3D) { 300, 0, 300 }, 100, cam, region);
     x3d_set_texture(3);
-    x3d_cube_render((X3D_Vex3D) { 150, 100, 150 }, 75, cam, region);
+    x3d_cube_render((X3D_Vex3D) { 150, 75, 150 }, 75, cam, region);
   }
 
   x3d_stack_restore(&renderman->stack, stack_save);
@@ -665,7 +665,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region) {
-  return;
+//  return;
   X3D_Prism3D* prism = alloca(1000);
   int16 steps = 4;
 
