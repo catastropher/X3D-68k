@@ -455,28 +455,17 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
   int16 total_clip = 0;
   
   for(next_v = 0; next_v < poly->total_v; v = next_v, ++next_v) {
-    //x3d_log(X3D_INFO, "v: %d, next_v: %d", v, next_v);
     _Bool in      = x3d_polygon3d_point_in_near(poly, v, near_z);
     _Bool next_in = x3d_polygon3d_point_in_near(poly, next_v, near_z);
 
-    //x3d_log(X3D_INFO, "point %d: { %d, %d, %d }", v, poly->v[v].x, poly->v[v].y, poly->v[v].z);
-    
-    //near_z = 15;
-    if(in) {
+    if(in)
       x3d_polygon3d_clip_add_point(dest, new_ua, new_va, poly->v[v], ua[v], va[v]);
-    }
     
     if(in != next_in) {
-      //x3d_log(X3D_INFO, "CLIP!!!!!! %d", x3d_enginestate_get_step());
-      //x3d_log(X3D_INFO, "Clip %d to %d", v, next_v);
-      int16 in = abs(poly->v[v].z - near_z);
+      int16 in  = abs(poly->v[v].z - near_z);
       int16 out = abs(poly->v[next_v].z - near_z);
       
       int32 t = ((int32)in << 15) / (in + out);
-      
-      //x3d_log(X3D_INFO, "In: %d, out: %d", in, out);
-      //x3d_log(X3D_INFO, "t is : %d => %f", t, (float)t / 32767.0);
-      //x3d_log(X3D_INFO, "Real t:         %f", (float)in / (in + out));
       
       X3D_Vex3D new_p = {
         x3d_t_clip(poly->v[v].x, poly->v[next_v].x, t),
@@ -484,42 +473,61 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
         near_z
       };
       
-      //x3d_log(X3D_INFO, "Clipped!");
-      
       int16 new_u = x3d_t_clip(ua[v], ua[next_v], t);
       int16 new_v = x3d_t_clip(va[v], va[next_v], t);
      
-      float tt = (float)in / (in + out);
-      
-      int16 real_u = ua[v] + tt * (ua[next_v] - ua[v]);
-      int16 real_v = va[v] + tt * (va[next_v] - va[v]);
-      
-      /*x3d_log(X3D_INFO, "u range: %d - %d", ua[v], ua[next_v]);
-      x3d_log(X3D_INFO, "v range: %d - %d", va[v], va[next_v]);
-      x3d_log(X3D_INFO, "new u: %d, v: %d", new_u, new_v);
-      x3d_log(X3D_INFO, "Real u: %d, v: %d", real_u, real_v);
-      */
-      
-      //x3d_log(X3D_INFO, "%d", v);
-      
       x3d_polygon3d_clip_add_point(dest, new_ua, new_va, new_p, new_u, new_v);
       
       ++total_clip;
     }
   }
   
-  for(v = 0; v < dest->total_v; ++v) {
-    //x3d_log(X3D_INFO, "clipped point %d: { %d, %d, %d } -> %d, %d", v, dest->v[v].x, dest->v[v].y, dest->v[v].z, new_ua[v], new_va[v]);
-  }
-  
-  //x3d_log(X3D_INFO, "============================================");
-  
-  //x3d_log(X3D_INFO, "Total clip: %d\n", total_clip);
-  
   return poly->total_v > 2;
 }
 
+_Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va) {
+  int16 next_v;
+  int16 v = poly->total_v - 1;
 
+  dest->total_v = 0;
+  
+  int16 total_clip = 0;
+  int16 dist;
+  int16 next_dist = x3d_plane_dist(plane, poly->v + v);
+  
+  for(next_v = 0; next_v < poly->total_v; v = next_v, ++next_v) {
+    dist      = next_dist;
+    next_dist = x3d_plane_dist(plane, poly->v + next_v);
+    
+    _Bool in      = dist < 0;
+    _Bool next_in = next_dist < 0;
+
+    if(in)
+      x3d_polygon3d_clip_add_point(dest, new_ua, new_va, poly->v[v], ua[v], va[v]);
+    
+    if(in != next_in) {
+      int16 in  = abs(dist);
+      int16 out = abs(next_dist);
+      
+      int32 t = ((int32)in << 15) / (in + out);
+      
+      X3D_Vex3D new_p = {
+        x3d_t_clip(poly->v[v].x, poly->v[next_v].x, t),
+        x3d_t_clip(poly->v[v].y, poly->v[next_v].y, t),
+        x3d_t_clip(poly->v[v].z, poly->v[next_v].z, t),
+      };
+      
+      int16 new_u = x3d_t_clip(ua[v], ua[next_v], t);
+      int16 new_v = x3d_t_clip(va[v], va[next_v], t);
+     
+      x3d_polygon3d_clip_add_point(dest, new_ua, new_va, new_p, new_u, new_v);
+      
+      ++total_clip;
+    }
+  }
+  
+  return poly->total_v > 2;
+}
 
 
 
