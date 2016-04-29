@@ -36,7 +36,7 @@ int16 render_mode = 3;
 #define LCD_HEIGHT x3d_screenmanager_get()->h
 
 //#undef printf
-//#define printf(...) ;
+#define printf(...) ;
 
 #define x3d_error(args...) x3d_log(X3D_ERROR, args);
 

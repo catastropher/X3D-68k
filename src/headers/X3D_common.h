@@ -15,8 +15,6 @@
 
 #pragma once
 
-#define printf(...) ;
-
 #include <stdio.h>
 #include <stdlib.h>
 

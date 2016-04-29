@@ -18,6 +18,7 @@
 #include "X3D_rasteredge.h"
 #include "X3D_enginestate.h"
 
+#define printf(...) ;
 
 #define EDGE_VALUE(_edge, _y) ((_edge)->x_data[_y - (_edge)->rect.y_range.min])
 #define EDGE(_edge) raster_edge[edge_index[_edge]]

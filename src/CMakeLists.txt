@@ -77,8 +77,6 @@ include_directories(headers)
 include_directories(C/src/platform)
 
 add_sources(
-  C/resource.c
-  
   C/engine/gameloop.c
   C/engine/log.c
   C/engine/init.c
