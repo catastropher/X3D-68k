@@ -567,6 +567,12 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
     x3d_log(X3D_INFO, "Off by: %d", span->right.x - i);
   }
   
+  if(x3d_key_down(X3D_KEY_15)) {
+    x3d_screen_flip();
+    SDL_Delay(1);
+    x3d_screen_flip();
+  }
+  
   //x3d_log(X3D_INFO, "Same count: %d", same_count);
 }
 
@@ -721,7 +727,7 @@ void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
       
       ((uint32 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
       
-      x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
+      //x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
     }
   }
 }

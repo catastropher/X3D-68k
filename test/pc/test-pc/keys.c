@@ -18,7 +18,7 @@
 #include "X3D.h"
 
 enum {
-  KEY_WIREFRAME = X3D_KEY_0,
+  KEY_ENTER = X3D_KEY_0,
   KEY_W = X3D_KEY_1,
   KEY_S = X3D_KEY_2,
   KEY_A = X3D_KEY_3,
@@ -38,7 +38,7 @@ enum {
 
 void setup_key_map(void) {
 #ifdef __linux__
-  x3d_key_map_pc(KEY_WIREFRAME, SDLK_RETURN);
+  x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
   x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, 'w');
   x3d_key_map_pc(KEY_A, 'a');
@@ -74,11 +74,23 @@ void engine_test_handle_keys(void) {
   static _Bool rec = X3D_FALSE;
 
 
-  if(x3d_key_down(KEY_WIREFRAME)) {
-    while(x3d_key_down(KEY_WIREFRAME))
+  if(x3d_key_down(KEY_ENTER)) {
+    while(x3d_key_down(KEY_ENTER))
       x3d_read_keys();
-
-    x3d_rendermanager_get()->wireframe = !x3d_rendermanager_get()->wireframe;
+    
+    X3D_SegmentManager* segmentman = x3d_segmentmanager_get();
+    
+    uint16 i;
+    for(i = 0; i < segmentman->alloc.alloc_offset.size; ++i) {
+      X3D_Segment* seg = x3d_segmentmanager_load(i);
+      
+      if(x3d_segment_is_door(seg)) {
+        if(seg->door_data->mode == X3D_DOOR_CLOSING)
+          seg->door_data->mode = X3D_DOOR_OPENING;
+        else
+          seg->door_data->mode = X3D_DOOR_CLOSING;
+      }
+    }
   }
 
 #if 1

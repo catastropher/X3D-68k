@@ -113,7 +113,7 @@ void x3d_rasterregion_draw_outline(X3D_RasterRegion* region, X3D_Color c) {
 }
 
 enum {
-  KEY_WIREFRAME = X3D_KEY_0,
+  KEY_ENTER = X3D_KEY_0,
   KEY_W = X3D_KEY_1,
   KEY_S = X3D_KEY_2,
   KEY_A = X3D_KEY_3,

@@ -34,13 +34,6 @@ X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_s
   x3d_log(X3D_INFO, "Segment manager init");
   
   x3d_varsizeallocator_init(&seg_manager->alloc, max_segments, seg_pool_size);
-  
-  // Clear the cache
-  uint16 i;
-  
-  for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
-    seg_manager->cache.entry[i].seg.base.id = X3D_SEGMENT_NONE;
-  }
 }
 
 void x3d_segmentmanager_cleanup(void) {

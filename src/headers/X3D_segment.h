@@ -28,12 +28,6 @@
 ///< Indicates that a segment has nothing attached to particular face
 #define X3D_FACE_NONE 0xFFFF
 
-///< Size of the segment cache
-#define X3D_SEGMENT_CACHE_SIZE 32
-
-///< Indicates an invalid location in the segment cache to represnt NULL
-#define X3D_SEGMENT_CACHE_NONE 255
-
 #define X3D_DOOR_CLOSED 0
 #define X3D_DOOR_OPEN   0x7FFF
 
@@ -97,6 +91,12 @@ enum {
   X3D_ATTACH_WALL_PORTAL
 };
 
+enum {
+  X3D_DOOR_STOPPED = 0,
+  X3D_DOOR_OPENING = 1,
+  X3D_DOOR_CLOSING = 2
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Face of an uncompressed segment.
 ///////////////////////////////////////////////////////////////////////////////
@@ -126,7 +126,10 @@ typedef struct X3D_SegmentObjectList {
 } X3D_SegmentObjectList;
 
 typedef struct X3D_SegmentDoorData {
-  uint16 door_open;
+  fp0x16 door_open;
+  int16 max_open;
+  int16 mode;
+  fp0x16 open_speed;
 } X3D_SegmentDoorData;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -141,47 +144,21 @@ typedef struct X3D_Segment {
                               ///  the face data.
   uint16 last_engine_step;    ///< Last step the segment was rendered
   X3D_SegmentObjectList object_list; ///< List of objects currently in the segment
-  X3D_Prism3D prism;          ///< Prism data (MUST BE LAST MEMBER)
   
   union {
     X3D_SegmentDoorData* door_data;
   };
   
+  X3D_Prism3D prism;          ///< Prism data (MUST BE LAST MEMBER)
 } X3D_Segment;
 
-///////////////////////////////////////////////////////////////////////////////
-/// A cache entry for an uncompressed segment.
-///////////////////////////////////////////////////////////////////////////////
-typedef struct X3D_SegmentCacheEntry {
-  uint8 prev;                   ///< The previous most recently used segment
-  uint8 next;                   ///< The next most recently used segment
-  
-  X3D_Segment seg;  ///< The uncompressed segment
-  X3D_Vex3D v[16];
-  X3D_SegmentFace face[10];
-} X3D_SegmentCacheEntry;
 
-
-///////////////////////////////////////////////////////////////////////////////
-/// A cache for storing recently accessed segments to improve performance and
-///   reduce memory usage. Most segments are stored in a compressed format,
-///   and only the ones that are currently being used need to be decompressed.
-///   Whenever a new segment is needed, the least-recently used segment is
-///   removed from the cache and replaced by the new segment.
-///////////////////////////////////////////////////////////////////////////////
-typedef struct X3D_SegmentCache {
-  X3D_SegmentCacheEntry entry[X3D_SEGMENT_CACHE_SIZE];
-  uint16 lru_head;  ///< Index of the least recently used (LRU) cache entry
-  uint16 lru_tail;  ///< Most-recently used cache entry
-} X3D_SegmentCache;
 
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Manages all the segments for the engine.
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_SegmentManager {
-  X3D_SegmentCache cache;       ///< Uncompressed segments currently loaded into
-                                ///  the cache.
   X3D_VarSizeAllocator alloc;   ///< Variable sized allocator for allocating
                                 ///  segments.
 } X3D_SegmentManager;

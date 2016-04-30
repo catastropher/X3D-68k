@@ -376,8 +376,9 @@ void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
   X3D_Vex3D normal[10];
   
   if(1) {
-    if(!x3d_key_down(X3D_KEY_15) || ((face == 5) && (context->seg_id == 4)))
+    if(1) {//!x3d_key_down(X3D_KEY_15) || ((face == 5) && (context->seg_id == 4)))
       x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
+    }
   }
 }
 
@@ -429,11 +430,127 @@ void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
 
 int16 depth = 0;
 
+int16 x3d_t_clip(int16 start, int16 end, uint16 scale);
+
 void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
-  if(context->seg->door_data->door_open == X3D_DOOR_CLOSED)
-    return;
-  else
-    x3d_segment_render_faces(context);
+  if(context->seg->door_data->mode == X3D_DOOR_OPENING) {
+    context->seg->door_data->door_open = X3D_MIN((int32)context->seg->door_data->door_open + context->seg->door_data->open_speed, 0x7FFF);
+  }
+  else if(context->seg->door_data->mode == X3D_DOOR_CLOSING) {
+    context->seg->door_data->door_open = X3D_MAX((int32)context->seg->door_data->door_open - context->seg->door_data->open_speed, 0);
+  }
+  
+  uint16 i;
+  X3D_Prism3D* prism = &context->seg->prism;
+  
+  X3D_Plane plane;
+  X3D_Polygon3D poly = { .v = alloca(1000) };
+  X3D_Polygon3D poly2 = { .v = alloca(1000) };
+  
+  x3d_prism3d_get_face(prism, 3, &poly);
+  x3d_polygon3d_calculate_plane(&poly, &plane);
+  
+  X3D_Vex3D center;
+  x3d_prism3d_get_face(prism, X3D_BASE_A, &poly);
+  x3d_polygon3d_center(&poly, &center);
+  
+  plane.d = x3d_vex3d_fp0x16_dot(&center, &plane.normal);
+  
+  uint16 u[10];
+  uint16 v[10];
+  
+  uint16 new_u[12];
+  uint16 new_v[12];
+
+  X3D_Vex3D move_right = x3d_vex3d_neg(&plane.normal);
+  
+  uint16 d;
+  
+  uint16 clip[10];
+  
+  X3D_Polygon3D side_poly = { .v = alloca(1000) };
+  
+  int16 open = x3d_t_clip(0, context->seg->door_data->max_open, context->seg->door_data->door_open);
+  
+  for(d = 0; d < 2; ++d) {
+    side_poly.total_v = 0;
+    
+    for(i = 0; i < prism->base_v + 2; ++i) {
+      if(i > X3D_BASE_B)
+        continue;
+      
+      if(1) {
+        geo_render_mode = 1;
+        x3d_prism3d_get_face(prism, i, &poly);
+        x3d_segment_render_face_set_texture_uv(context, &poly, i, u, v);
+        _Bool c = x3d_polygon3d_clip_to_plane(&poly, &poly2, &plane, u, v, new_u, new_v, clip);
+        
+        X3D_Plane p_plane;
+        x3d_polygon3d_calculate_plane(&poly, &p_plane);
+        
+        //p_plane.normal = x3d_vex3d_neg(&p_plane.normal);
+        //p_plane.d = -p_plane.d
+
+        x3d_polygon3d_translate_normal(&poly2, &move_right, open);
+        
+        if(1) {
+          side_poly.v[side_poly.total_v++] = poly2.v[clip[0]];
+          side_poly.v[side_poly.total_v++] = poly2.v[clip[1]];
+          
+          //x3d_log(X3D_INFO, "%d %d", clip[0], clip[1]);
+        }
+        else {
+          side_poly.v[side_poly.total_v++] = poly2.v[clip[1]];
+          side_poly.v[side_poly.total_v++] = poly2.v[clip[0]];
+        }
+        
+        x3d_polygon3d_render(&poly2, context->cam, context->parent, 31, &p_plane.normal, u, v);
+      }
+    }
+    
+    
+    X3D_Vex3D norm = plane.normal;
+    
+    geo_render_mode = 1;
+    
+    x3d_prism3d_get_face(prism, i, &poly);
+    x3d_segment_render_face_set_texture_uv(context, &poly, d, u, v);
+    
+    if(1) {
+      x3d_polygon3d_render(&side_poly, context->cam, context->parent, 31, &norm, u, v);
+    }
+    
+    plane.normal = x3d_vex3d_neg(&plane.normal);
+    move_right = x3d_vex3d_neg(&move_right);
+  }
+  
+#if 1
+  for(i = 0; i < prism->base_v + 2; ++i) {
+    if(i == 2 || i == 4 ) {
+      geo_render_mode = 1;
+      x3d_prism3d_get_face(prism, i, &poly);
+      x3d_segment_render_face_set_texture_uv(context, &poly, i, u, v);
+      
+      X3D_Plane p_plane;
+      x3d_polygon3d_calculate_plane(&poly, &p_plane);
+      x3d_polygon3d_render(&poly, context->cam, context->parent, 31, &p_plane.normal, u, v);
+    }
+    else if(context->faces[i].portal_seg_face != X3D_FACE_NONE && context->seg->door_data->door_open != X3D_DOOR_CLOSED) {
+      X3D_Portal portal;
+      X3D_RasterRegion r;
+      
+      x3d_segment_construct_clipped_face(context, i, &portal.region, &r, 15);
+      
+      if(portal.region) {
+        uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
+        uint16 seg_face = x3d_segfaceid_face(context->faces[i].portal_seg_face);
+        
+        x3d_portal_render(&portal);
+        x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
+      }
+    }
+  }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

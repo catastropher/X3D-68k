@@ -146,9 +146,19 @@ void x3d_segment_make_door(uint16 id) {
   // Initialize the door
   seg->door_data = x3d_slab_alloc(sizeof(X3D_SegmentDoorData));
   seg->door_data->door_open = X3D_DOOR_CLOSED;
- 
   
+  static int16 count = 0;
   
+  if(count++ == 0) {
+    seg->door_data->max_open = 50;
+    seg->door_data->open_speed = 2000;
+  }
+  else {
+    seg->door_data->max_open = 137;
+    seg->door_data->open_speed = 1000;
+  }
+  
+  seg->door_data->mode = X3D_DOOR_STOPPED;
 }
 
 

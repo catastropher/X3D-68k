@@ -294,13 +294,19 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   uint16 temp_u[20];
   uint16 temp_v[20];
   
+  X3D_Vex3D* vv = poly->v;
+  
   poly->v = v3d;
   
   //x3d_log(X3D_INFO, "BEGIN CLIP");
   
+  X3D_Polygon3D* old_poly = poly;
+  
 #if 1
-  if(!x3d_polygon3d_clip_to_near_plane(poly, &temp, 10, u, v, temp_u, temp_v))
+  if(!x3d_polygon3d_clip_to_near_plane(poly, &temp, 10, u, v, temp_u, temp_v)) {
+    poly->v = vv;
     return;
+  }
   
   poly = &temp;
   u = temp_u;
@@ -334,6 +340,9 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
+  
+  poly = old_poly;
+  poly->v = vv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -472,7 +481,7 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
 ///
 /// @param poly
 ///////////////////////////////////////////////////////////////////////////////
-_Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va) {
+_Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va, uint16* clip) {
   int16 next_v;
   int16 v = poly->total_v - 1;
 
@@ -507,11 +516,17 @@ _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_
       int16 new_u = x3d_t_clip(ua[v], ua[next_v], t);
       int16 new_v = x3d_t_clip(va[v], va[next_v], t);
      
+      *clip = dest->total_v;
+      
+      ++clip;
+      
       x3d_polygon3d_clip_add_point(dest, new_ua, new_va, new_p, new_u, new_v);
       
       ++total_clip;
     }
   }
+  
+  //*clip = 0xFFFF;
   
   return poly->total_v > 2;
 }

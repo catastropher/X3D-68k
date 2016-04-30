@@ -51,6 +51,9 @@ void create_test_level(void) {
   
   int16 shift = -35;
   
+  //x3d_polygon2d_construct(&poly, v, 50, 0);
+  
+#if 1
   poly.v[0].x = -w;
   poly.v[0].y = h + shift;
   
@@ -64,10 +67,14 @@ void create_test_level(void) {
   poly.v[3].y = -h + shift;
   
   poly.total_v = v;
+#endif
   
+  
+#if 1
   uint16 k;
   for(k = 0; k < 2; ++k)
     X3D_SWAP(poly.v[k], poly.v[v - k - 1]);
+#endif
   
   struct {
     X3D_Polygon3D poly;
@@ -114,7 +121,6 @@ void create_test_level(void) {
   uint16 id = small_seg->base.id;
   
   x3d_segment_face_attach(0, face, X3D_ATTACH_WALL_PORTAL, &data->poly, x3d_segfaceid_create(id, X3D_BASE_A));
-  x3d_segment_make_door(id);
   
   X3D_Segment* new_seg = x3d_segmentmanager_load(x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, X3D_BASE_B), 200));
   
@@ -127,6 +133,8 @@ void create_test_level(void) {
     x3d_prism3d_set_face(&new_seg->prism, 2 * i + 2, &f);
   }
   
+  x3d_segment_make_door(id);
+  x3d_segment_make_door(2);
   
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
