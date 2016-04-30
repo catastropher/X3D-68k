@@ -472,6 +472,34 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
   
   int16 open = x3d_t_clip(0, context->seg->door_data->max_open, context->seg->door_data->door_open);
   
+  #if 1
+  for(i = 0; i < prism->base_v + 2; ++i) {
+    if(i == 2 || i == 4 ) {
+      geo_render_mode = 1;
+      x3d_prism3d_get_face(prism, i, &poly);
+      x3d_segment_render_face_set_texture_uv(context, &poly, i, u, v);
+      
+      X3D_Plane p_plane;
+      x3d_polygon3d_calculate_plane(&poly, &p_plane);
+      x3d_polygon3d_render(&poly, context->cam, context->parent, 31, &p_plane.normal, u, v);
+    }
+    else if(context->faces[i].portal_seg_face != X3D_FACE_NONE && context->seg->door_data->door_open != X3D_DOOR_CLOSED) {
+      X3D_Portal portal;
+      X3D_RasterRegion r;
+      
+      x3d_segment_construct_clipped_face(context, i, &portal.region, &r, 15);
+      
+      if(portal.region) {
+        uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
+        uint16 seg_face = x3d_segfaceid_face(context->faces[i].portal_seg_face);
+        
+        x3d_portal_render(&portal);
+        x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
+      }
+    }
+  }
+#endif
+  
   for(d = 0; d < 2; ++d) {
     side_poly.total_v = 0;
     
@@ -504,7 +532,7 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
           side_poly.v[side_poly.total_v++] = poly2.v[clip[0]];
         }
         
-        x3d_polygon3d_render(&poly2, context->cam, context->parent, 31, &p_plane.normal, u, v);
+        x3d_polygon3d_render(&poly2, context->cam, context->parent, 31, &p_plane.normal, new_u, new_v);
       }
     }
     
@@ -523,34 +551,6 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
     plane.normal = x3d_vex3d_neg(&plane.normal);
     move_right = x3d_vex3d_neg(&move_right);
   }
-  
-#if 1
-  for(i = 0; i < prism->base_v + 2; ++i) {
-    if(i == 2 || i == 4 ) {
-      geo_render_mode = 1;
-      x3d_prism3d_get_face(prism, i, &poly);
-      x3d_segment_render_face_set_texture_uv(context, &poly, i, u, v);
-      
-      X3D_Plane p_plane;
-      x3d_polygon3d_calculate_plane(&poly, &p_plane);
-      x3d_polygon3d_render(&poly, context->cam, context->parent, 31, &p_plane.normal, u, v);
-    }
-    else if(context->faces[i].portal_seg_face != X3D_FACE_NONE && context->seg->door_data->door_open != X3D_DOOR_CLOSED) {
-      X3D_Portal portal;
-      X3D_RasterRegion r;
-      
-      x3d_segment_construct_clipped_face(context, i, &portal.region, &r, 15);
-      
-      if(portal.region) {
-        uint16 seg_id = x3d_segfaceid_seg(context->faces[i].portal_seg_face);
-        uint16 seg_face = x3d_segfaceid_face(context->faces[i].portal_seg_face);
-        
-        x3d_portal_render(&portal);
-        x3d_segment_render(seg_id, context->cam, 0, portal.region, context->step, seg_face);
-      }
-    }
-  }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

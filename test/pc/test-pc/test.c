@@ -147,11 +147,13 @@ void create_test_level(void) {
 
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
 
+  x3d_segment_reset(new_seg);
+  
   uint16 id0 = 0;
   
   uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
-  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
-
+  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(new_seg->base.id, 1), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
+  
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);
   
