@@ -207,6 +207,8 @@ void x3d_segment_construct_clipped_face(X3D_SegmentRenderContext* context, uint1
 void x3d_set_texture(int16 id);
 
 void x3d_segment_render_face_set_texture_uv(X3D_SegmentRenderContext* context, X3D_Polygon3D* p, uint16 face, uint16* u_dest, uint16* v_dest) {
+  x3d_set_texture(1);
+  
   uint16 u[10] = { 0, 128, 128, 0 };
   uint16 v[10] = { 0, 0, 128, 128 };
   
@@ -377,7 +379,15 @@ void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
   
   if(1) {
     if(1) {//!x3d_key_down(X3D_KEY_15) || ((face == 5) && (context->seg_id == 4)))
-      x3d_polygon3d_render(&p, context->cam, context->parent, 31, normal, u, v);
+      X3D_PolygonAttributes att = {
+        .flags   = X3D_POLYGON_TEXTURE,
+        .texture = {
+          .uu = u,
+          .vv = v
+        }
+      };
+      
+      x3d_polygon3d_render(&p, &att, context->cam, context->parent);
     }
   }
 }
@@ -401,8 +411,6 @@ void x3d_segment_render_faces(X3D_SegmentRenderContext* context) {
       
       if(dist > 0) {
         void* stack_ptr = x3d_stack_save(&context->renderman->stack);
-        
-        x3d_set_texture(1);
         
         if(context->faces[i].portal_seg_face == X3D_FACE_NONE) {
           x3d_segment_render_face(context, i);
@@ -481,7 +489,17 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
       
       X3D_Plane p_plane;
       x3d_polygon3d_calculate_plane(&poly, &p_plane);
-      x3d_polygon3d_render(&poly, context->cam, context->parent, 31, &p_plane.normal, u, v);
+      //x3d_polygon3d_render(&poly, context->cam, context->parent, 31, &p_plane.normal, u, v);
+      
+      X3D_PolygonAttributes att = {
+        .flags   = X3D_POLYGON_TEXTURE,
+        .texture = {
+          .uu = u,
+          .vv = v
+        }
+      };
+      
+      x3d_polygon3d_render(&poly, &att, context->cam, context->parent);
     }
     else if(context->faces[i].portal_seg_face != X3D_FACE_NONE && context->seg->door_data->door_open != X3D_DOOR_CLOSED) {
       X3D_Portal portal;
@@ -511,7 +529,7 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
         geo_render_mode = 1;
         x3d_prism3d_get_face(prism, i, &poly);
         x3d_segment_render_face_set_texture_uv(context, &poly, i, u, v);
-        _Bool c = x3d_polygon3d_clip_to_plane(&poly, &poly2, &plane, u, v, new_u, new_v, clip);
+        x3d_polygon3d_clip_to_plane(&poly, &poly2, &plane, u, v, new_u, new_v, clip);
         
         X3D_Plane p_plane;
         x3d_polygon3d_calculate_plane(&poly, &p_plane);
@@ -532,7 +550,16 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
           side_poly.v[side_poly.total_v++] = poly2.v[clip[0]];
         }
         
-        x3d_polygon3d_render(&poly2, context->cam, context->parent, 31, &p_plane.normal, new_u, new_v);
+        //x3d_polygon3d_render(&poly2, context->cam, context->parent, 31, &p_plane.normal, new_u, new_v);
+        X3D_PolygonAttributes att = {
+          .flags   = X3D_POLYGON_TEXTURE,
+          .texture = {
+            .uu = u,
+            .vv = v
+          }
+        };
+        
+        x3d_polygon3d_render(&poly2, &att, context->cam, context->parent);
       }
     }
     
@@ -545,7 +572,16 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
     x3d_segment_render_face_set_texture_uv(context, &poly, d, u, v);
     
     if(1) {
-      x3d_polygon3d_render(&side_poly, context->cam, context->parent, 31, &norm, u, v);
+      X3D_PolygonAttributes att = {
+        .flags   = X3D_POLYGON_TEXTURE,
+        .texture = {
+          .uu = u,
+          .vv = v
+        }
+      };
+      
+      x3d_polygon3d_render(&side_poly, &att, context->cam, context->parent);
+      //x3d_polygon3d_render(&side_poly, context->cam, context->parent, 31, &norm, u, v);
     }
     
     plane.normal = x3d_vex3d_neg(&plane.normal);
@@ -733,7 +769,7 @@ void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_
       uint16 uu[4] = { 0, 63, 63, 0 };
       uint16 vv[4] = { 0, 0, 63, 63 };
       
-      x3d_polygon3d_render(&p, cam, region, c, norm, uu, vv);
+      //x3d_polygon3d_render(&p, cam, region, c, norm, uu, vv);
     }
     
     X3D_SWAP(top, bottom);
@@ -810,7 +846,17 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
     if(x3d_plane_dist(&plane, &cam_pos) > 0)
       continue;
     
-    x3d_polygon3d_render(&p, cam, region, 0, norm, u, v);
+    X3D_PolygonAttributes att = {
+      .flags   = X3D_POLYGON_TEXTURE,
+      .texture = {
+        .uu = u,
+        .vv = v
+      }
+    };
+      
+    x3d_polygon3d_render(&p, &att, cam, region);
+    
+    //x3d_polygon3d_render(&p, cam, region, 0, norm, u, v);
   }
 }
 

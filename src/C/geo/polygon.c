@@ -279,7 +279,7 @@ extern int16 render_mode;
 /// @return Nothing.
 /// @todo   Refactor this mess!
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal, uint16* u, uint16* v) {
+void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, X3D_CameraObject* cam, X3D_RasterRegion* parent) {
   X3D_Vex3D v3d[poly->total_v + 5];
   X3D_Vex2D v2d[poly->total_v + 5];
 
@@ -290,6 +290,9 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   X3D_Polygon3D temp = {
     .v = alloca(1000)
   };
+  
+  uint16* u = att->texture.uu;
+  uint16* v = att->texture.vv;
   
   uint16 temp_u[20];
   uint16 temp_v[20];
@@ -337,7 +340,9 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_Raster
   
   min_z = X3D_MAX(min_z, 1);
   
-  x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, normal, v3d, u, v);
+  X3D_Vex3D normal;
+  
+  x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, &normal, v3d, u, v);
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
   

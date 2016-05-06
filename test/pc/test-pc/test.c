@@ -39,7 +39,7 @@ void setup_key_map(void);
 void create_test_level(void) {
   x3d_level_command_init();
   x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { 0, 0, 0 }");
-  x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, 0, 800 }");
+  x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, -400, 800 }");
   x3d_level_run_command("connect_close s1=0 s2=1");
 
   uint16 v = 4;
@@ -134,7 +134,7 @@ void create_test_level(void) {
   }
   
   x3d_segment_make_door(id);
-  x3d_segment_make_door(2);
+  //x3d_segment_make_door(2);
   
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
@@ -147,12 +147,10 @@ void create_test_level(void) {
 
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
 
-  x3d_segment_reset(new_seg);
+  x3d_segment_update(new_seg);
   
-  uint16 id0 = 0;
-  
-  uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
-  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(new_seg->base.id, 1), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
+  uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(new_seg->base.id, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
+  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
   
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);

@@ -26,6 +26,27 @@
 ///   vertices on the stack.
 #define X3D_POLYGON3D_ALLOCA(_poly, _total_v) { _poly->v = alloca(sizeof(X3D_Vex3D) * total_v); _poly->total_v = _total_v; }
 
+enum {
+  X3D_POLYGON_COLOR     = 0,
+  X3D_POLYGON_TEXTURE   = 1,
+  X3D_POLYGON_GOURAUD   = 16,
+  X3D_POLYGON_DITHER    = 32
+};
+
+typedef struct X3D_PolygonAttributes {
+  uint16 flags;
+  
+  union {
+    struct {
+      uint16* uu;
+      uint16* vv;
+    } texture;
+    
+    uint16 color;
+    uint16 texture_id;
+  };
+} X3D_PolygonAttributes;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// A 3D polygon with a variable number of points.
 ///////////////////////////////////////////////////////////////////////////////
@@ -54,7 +75,7 @@ void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D* dest);
 void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale);
 void x3d_polygon3d_rotate(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex3D center);
 void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest);
-void x3d_polygon3d_render(X3D_Polygon3D* poly, struct X3D_CameraObject* cam, struct X3D_RasterRegion* parent, X3D_Color color, X3D_Vex3D* normal, uint16* u, uint16* v);
+void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, struct X3D_CameraObject* cam, struct X3D_RasterRegion* parent);
 _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, int16 near_z, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va);
 _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va, uint16* clip);
 
