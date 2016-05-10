@@ -26,6 +26,7 @@
 #include "X3D_object.h"
 #include "X3D_fastsqrt.h"
 #include "X3D_polygon.h"
+#include "level/X3D_level.h"
 
 #include <stdio.h>
 
