@@ -15,31 +15,39 @@
 
 #include "X3D_common.h"
 
-typedef struct X3D_LevelArray {
-  uint16 size;
-  uint16 count;
-  void*  data;
-} X3D_LevelArray;
-
-typedef struct X3D_Level {
-  X3D_LevelArray segs;
-  X3D_LevelArray seg_v_list;
-  X3D_LevelArray v;
-  X3D_LevelArray face_atts;
-  X3D_LevelArray line_atts;
-  X3D_LevelArray texture_atts;
-} X3D_Level;
-
 typedef uint16 X3D_LEVEL_VERTEX;
 typedef uint16 X3D_LEVEL_SEG;
+typedef uint16 X3D_LEVEL_VERTEX_RUN;
+
 
 typedef struct X3D_LevelSeg {
-  uint16           flags;
-  uint16           base_v;
-  X3D_LEVEL_VERTEX v_start;
+  uint16               flags;
+  uint16               base_v;
+  X3D_LEVEL_VERTEX_RUN v;
 } X3D_LevelSeg;
 
-X3D_LevelSeg* x3d_level_get_seg(X3D_Level* level, X3D_LEVEL_SEG seg) {
-  return (X3D_LevelSeg *)level->segs.data + seg;
-}
+typedef struct X3D_LevelSegArray {
+  uint16        total;
+  X3D_LevelSeg* segs;
+} X3D_LevelSegArray;
+
+typedef struct X3D_LevelVertexArray {
+  uint16     total;
+  X3D_Vex3D* v;
+} X3D_LevelVertexArray;
+
+typedef struct X3D_LevelVertexRunArray {
+  uint16            total;
+  X3D_LEVEL_VERTEX* v;
+} X3D_LevelVertexRunArray;
+
+typedef struct X3D_Level {
+  X3D_LevelSegArray       segs;
+  X3D_LevelVertexArray    v;
+  X3D_LevelVertexRunArray runs;
+} X3D_Level;
+
+X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v);
+X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX_RUN* run, uint16 total);
+void x3d_level_init(X3D_Level* level);
 

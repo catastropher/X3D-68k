@@ -102,6 +102,7 @@ add_sources(
   C/level/segment.c
   C/level/segmentbuilder.c
   C/level/levelloader.c
+  C/level/level.c
   
   C/render/render.c
   C/render/clip2.c
