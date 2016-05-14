@@ -19,6 +19,7 @@
 #include "X3D_vector.h"
 #include "X3D_plane.h"
 #include "X3D_matrix.h"
+#include "X3D_polygon.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Constructs a plane from 3 points on the plane.
@@ -112,5 +113,36 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D*
   x3d_mat3x3_set_column(dest, 2, &z);
   
   return X3D_TRUE;  
+}
+
+/// @todo document
+void x3d_frustum_construct_from_polygon3d(X3D_Frustum* frustum, X3D_Polygon3D* poly, X3D_Vex3D* p) {
+  uint16 i;
+  for(i = 0; i < poly->total_v; ++i) {
+    uint16 next = (i + 1 < poly->total_v ? i + 1 : 0);
+    x3d_plane_construct(frustum->p + i, poly->v + i, poly->v + next, p);
+  }
+  
+  // Make sure the planes aren't facing the wrong way (if so we need to flip the normals)
+  X3D_Vex3D center;
+  x3d_polygon3d_center(poly, &center);
+  
+  if(x3d_plane_dist(frustum->p, &center) > 0) {
+    for(i = 0; i < poly->total_v; ++i)
+      x3d_plane_flip(frustum->p + i);
+  }
+  
+  frustum->total_p = poly->total_v;
+}
+
+/// @todo document
+_Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Vex3D* p) {
+  uint16 i;
+  for(i = 0; i < frustum->total_p; ++i) {
+    if(x3d_plane_dist(frustum->p + 1, p) > 0)
+      return X3D_FALSE;
+  }
+  
+  return X3D_TRUE;
 }
 
