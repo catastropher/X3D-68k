@@ -863,6 +863,8 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
 
 #include <SDL/SDL.h>
 
+void x3d_line3d_test(X3D_CameraObject* cam);
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders the scene through a camera.
 ///
@@ -890,6 +892,8 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_screen_draw_pix(cx, cy + 1, 0xFFFF);
   x3d_screen_draw_pix(cx - 1, cy, 0xFFFF);
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
+  
+  x3d_line3d_test(cam);
   
   static int32 fps = 0;
 

@@ -119,6 +119,7 @@ add_sources(
   C/render/clip4.c
   
   C/physics/collide.c
+  C/physics/raytrace.c
   
   C/object/object.c
   C/object/camera.c
