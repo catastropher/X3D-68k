@@ -247,12 +247,26 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
   if(!s)
     return X3D_FALSE;
   
-  uint8* data = malloc(s->w * s->h * 3L + 2); 
+  uint8* data = malloc((uint32)s->w * s->h * 3L + 5); 
   
-  data[0] = s->w;
-  data[1] = s->h;
+  int16 start = 0;
   
-  uint16 pos = 0;
+  if(s->w >= 256 || s->h >= 256) {
+    data[0] = 0;
+    data[1] = s->w >> 8;
+    data[2] = s->w & 0xFF;
+    data[3] = s->h >> 8;
+    data[4] = s->h & 0xFF;
+    
+    data += 3;
+    start = 3;
+  }
+  else {
+    data[0] = s->w;
+    data[1] = s->h;
+  }
+  
+  uint32 pos = 0;
   
   uint16 i, d;
   for(i = 0; i < s->h; ++i) {
@@ -272,7 +286,7 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
     }
   }
 
-  x3d_texture_from_array(tex, data);
+  x3d_texture_from_array(tex, data - start);
   
   SDL_FreeSurface(s);
   

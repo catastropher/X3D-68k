@@ -27,6 +27,7 @@
 #include "X3D_fastsqrt.h"
 #include "X3D_polygon.h"
 #include "level/X3D_level.h"
+#include "render/X3D_font.h"
 
 #include <stdio.h>
 
@@ -865,6 +866,8 @@ void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_Raste
 
 void x3d_line3d_test(X3D_CameraObject* cam);
 
+extern X3D_Font font;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders the scene through a camera.
 ///
@@ -894,6 +897,10 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
   
   x3d_line3d_test(cam);
+  
+  x3d_font_draw_str(&font, "Hello world!", 100, 100);
+  
+  //x3d_texture_blit(&font.tex, 0, 0);
   
   static int32 fps = 0;
 

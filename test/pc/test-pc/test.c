@@ -185,6 +185,23 @@ extern uint8 floor_panel_tex_data[];
 extern uint8 cube_tex_data[];
 extern uint8 aperture_tex_data[];
 
+X3D_Font font = {
+  .glyph_width = 15,
+  .glyph_height = 14,
+  
+  .glyph_offset_x = 1,
+  .glyph_offset_y = 0,
+  
+  .font_space_x = 17,
+  .font_space_y = 17,
+  
+  .font_offset_x = 19,
+  .font_offset_y = 19,
+  
+  .font_rows = 16,
+  .font_cols = 16
+};
+
 void init_textures(void) {
   x3d_texture_from_array(&panel_tex, panel_tex_data);
   x3d_texture_from_array(&brick_tex, wood_tex_data);
@@ -213,6 +230,13 @@ int main() {
   x3d_init(&init);
   
   init_textures();
+  
+#if 1
+  if(!x3d_font_load(&font, "font.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load font");
+    exit(0);
+  }
+#endif
   
   // Set up key mapping
   setup_key_map();
