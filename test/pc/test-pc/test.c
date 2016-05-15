@@ -128,9 +128,9 @@ void create_test_level(void) {
   
   uint16 i;
   for(i = 0; i < 2; ++i) {
-    x3d_prism3d_get_face(&new_seg->prism, 2 * i + 2, &f);
-    x3d_polygon3d_scale(&f, 1024);
-    x3d_prism3d_set_face(&new_seg->prism, 2 * i + 2, &f);
+    //x3d_prism3d_get_face(&new_seg->prism, 2 * i + 2, &f);
+    //x3d_polygon3d_scale(&f, 1024);
+    //x3d_prism3d_set_face(&new_seg->prism, 2 * i + 2, &f);
   }
   
   x3d_segment_make_door(id);
@@ -154,6 +154,9 @@ void create_test_level(void) {
   
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);
+  
+  for(i = 0; i < x3d_segmentmanager_get()->alloc.alloc_offset.size; ++i)
+    x3d_segment_update(x3d_segmentmanager_load(i));
   
 }
 
