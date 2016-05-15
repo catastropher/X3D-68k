@@ -57,6 +57,7 @@ typedef struct X3D_RenderManager {
   int16 near_z;
   _Bool wireframe;
   void (*segment_face_render_callback)(X3D_SegmentRenderFace* face);
+  void (*render_hud_callback)(void);
   uint16* zbuf;
 } X3D_RenderManager;
 

@@ -93,6 +93,9 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   // nspire has its zbuffer allocated with the screen
   renderman->zbuf = malloc(sizeof(int16) * screenman->w * screenman->h);
 #endif
+  
+  
+  renderman->render_hud_callback = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -917,6 +920,10 @@ void x3d_render(X3D_CameraObject* cam) {
     start = SDL_GetTicks();
   }
   
-  x3d_screen_draw_uint32(fps, 0, 0, 31);  
+  x3d_screen_draw_uint32(fps, 0, 0, 31);
+  
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  if(renderman->render_hud_callback)
+    renderman->render_hud_callback();
 }
 
