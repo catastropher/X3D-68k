@@ -120,7 +120,7 @@ void x3d_frustum_construct_from_polygon3d(X3D_Frustum* frustum, X3D_Polygon3D* p
   uint16 i;
   for(i = 0; i < poly->total_v; ++i) {
     uint16 next = (i + 1 < poly->total_v ? i + 1 : 0);
-    x3d_plane_construct(frustum->p + i, poly->v + i, poly->v + next, p);
+    x3d_plane_construct(frustum->p + i, p, poly->v + i, poly->v + next);
   }
   
   // Make sure the planes aren't facing the wrong way (if so we need to flip the normals)
@@ -139,7 +139,7 @@ void x3d_frustum_construct_from_polygon3d(X3D_Frustum* frustum, X3D_Polygon3D* p
 _Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Vex3D* p) {
   uint16 i;
   for(i = 0; i < frustum->total_p; ++i) {
-    if(x3d_plane_dist(frustum->p + 1, p) > 0)
+    if(x3d_plane_dist(frustum->p + i, p) > 0)
       return X3D_FALSE;
   }
   
