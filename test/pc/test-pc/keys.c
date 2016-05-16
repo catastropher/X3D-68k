@@ -69,10 +69,14 @@ void setup_key_map(void) {
 
 extern int16 render_mode;
 
+_Bool menu_allow_normal_keys(void);
+
 void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   static _Bool rec = X3D_FALSE;
 
+  if(!menu_allow_normal_keys())
+    return;
 
   if(x3d_key_down(KEY_ENTER)) {
     while(x3d_key_down(KEY_ENTER))

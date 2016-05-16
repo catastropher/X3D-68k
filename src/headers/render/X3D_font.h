@@ -39,4 +39,5 @@ typedef struct X3D_Font {
 _Bool x3d_font_load(X3D_Font* font, const char* file_name);
 void x3d_font_draw_char(X3D_Font* font, unsigned char c, int16 x, int16 y);
 void x3d_font_draw_str(X3D_Font* font, const char* str, int16 x, int16 y);
+int16 x3d_font_str_height(X3D_Font* font, const char* str);
 

@@ -202,6 +202,187 @@ X3D_Font font = {
   .font_cols = 16
 };
 
+_Bool display_menu = 0;
+_Bool display_status_bar = 0;
+
+char hud_status_bar[512];
+
+struct HudMenu;
+
+typedef struct HudMenuItem {
+  char text[64];
+  char letter;
+  _Bool sub_menu;
+  
+  union {
+    void (*handler)(void);
+    struct HudMenu* menu;
+  };
+} HudMenuItem;
+
+typedef struct HudMenu {
+  struct HudMenu* parent;
+  uint16 total_items;
+  HudMenuItem items[];
+} HudMenu;
+
+
+HudMenu* current_menu;
+
+void hud_menu_render(HudMenu* menu) {
+  int16 height;
+  uint16 i;
+  char menu_text[512] = "";
+  
+  if(menu && display_menu) {
+    for(i = 0; i < menu->total_items; ++i) {
+      height += x3d_font_str_height(&font, menu->items[i].text);
+      strcat(menu_text, menu->items[i].text);
+      strcat(menu_text, "\n");
+    }
+  }
+  
+  if(display_status_bar) {
+    strcat(menu_text, hud_status_bar);
+    height += x3d_font_str_height(&font, hud_status_bar);
+  }
+  
+  x3d_font_draw_str(&font, menu_text, 0, 479 - height);
+}
+
+void segment_menu_select(void) {
+  display_menu = X3D_FALSE;
+  display_status_bar = X3D_TRUE;
+  sprintf(hud_status_bar, "Select a segment");
+}
+
+HudMenu segment_menu = {
+  .total_items = 2,
+  .items = {
+    {
+      .text = "[S] Select",
+      .letter = 's',  
+      .sub_menu = X3D_FALSE,
+      .handler = segment_menu_select
+    },
+    {
+      .text = "[N] New segment",
+      .sub_menu = X3D_FALSE
+    }
+  }
+};
+
+HudMenu main_menu = {
+  .total_items = 3,
+  .parent = NULL,
+  .items = {
+    {
+      .text = "[S] Segment",
+      .letter = 's',
+      .menu = &segment_menu,
+      .sub_menu = X3D_TRUE
+    },
+    {
+      .text = "[F] Face",
+      .sub_menu = X3D_FALSE,
+    },
+    {
+      .text = "[V] Vertex",
+      .sub_menu = X3D_FALSE
+    }
+  }
+};
+
+void hud_menu_send_key(HudMenu* menu, char c) {
+  if(c != 0) {
+    if(c == '\b') {
+      if(menu->parent) {
+        current_menu = menu->parent;
+      }
+      
+      return;
+    }
+    
+    uint16 i;
+    for(i = 0; i < menu->total_items; ++i) {
+      if(menu->items[i].letter == c) {
+        if(menu->items[i].sub_menu) {
+          menu->items[i].menu->parent = current_menu;
+          current_menu = menu->items[i].menu;
+          return;
+        }
+        else {
+          if(menu->items[i].handler)
+            menu->items[i].handler();
+          
+          return;
+        }
+      }
+    }
+    
+    sprintf(hud_status_bar, "Unknown option '%c'", c);
+    display_status_bar = 1;
+  }
+}
+
+char menu_letter_key_pressed(void) {
+  x3d_read_keys();
+  
+  for(int16 i = 'a'; i <= 'z'; ++i) {
+    if(x3d_pc_key_down(i)) {
+      return i;
+    }
+  }
+  
+  if(x3d_pc_key_down(SDLK_BACKSPACE))
+    return '\b';
+  
+  return 0;
+}
+
+char menu_read_letter_key(void) {
+  char k = menu_letter_key_pressed();
+  
+  while(menu_letter_key_pressed()) ;
+  
+  return k;
+}
+
+_Bool menu_allow_normal_keys(void) {
+  if(display_menu) {
+    if(x3d_pc_key_down(SDLK_LCTRL)) {
+      while(x3d_pc_key_down(SDLK_LCTRL)) x3d_read_keys();
+      
+      display_menu = 0;
+      current_menu = NULL;
+      display_status_bar = X3D_FALSE;
+      
+      return 1;
+    }
+    
+    hud_menu_send_key(current_menu, menu_read_letter_key());
+    
+    return 0;
+  }
+  
+  if(x3d_pc_key_down(SDLK_LCTRL)) {
+    while(x3d_pc_key_down(SDLK_LCTRL)) x3d_read_keys();
+    
+    display_menu = 1;
+    current_menu = &main_menu;
+    return 0;
+  }
+  
+  return 1;
+}
+
+void hud_render_callback(void) {
+  if(display_menu || display_status_bar) {
+    hud_menu_render(current_menu);
+  }
+}
+
+
 void init_textures(void) {
   x3d_texture_from_array(&panel_tex, panel_tex_data);
   x3d_texture_from_array(&brick_tex, wood_tex_data);
@@ -241,7 +422,8 @@ int main() {
   // Set up key mapping
   setup_key_map();
   x3d_keymanager_set_callback(engine_test_handle_keys);
-
+  x3d_rendermanager_set_hud_callback(hud_render_callback);
+  
   create_test_level();
   
   setup_camera();

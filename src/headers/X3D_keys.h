@@ -79,3 +79,6 @@ X3D_PLATFORM void x3d_read_keys();
 ///////////////////////////////////////////////////////////////////////////////
 _Bool x3d_key_down(X3D_Key key);
 
+/// @todo document
+_Bool x3d_pc_key_down(int32 key);
+

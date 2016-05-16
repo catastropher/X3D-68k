@@ -41,10 +41,30 @@ void x3d_font_draw_str(X3D_Font* font, const char* str, int16 x, int16 y) {
   int16 start_x = x;
   
   while(*str) {
-    x3d_font_draw_char(font, *str, x, y);
-    x += font->glyph_width;
+    if(*str == '\n') {
+      x = start_x;
+      y += font->glyph_height;
+    }
+    else {
+      x3d_font_draw_char(font, *str, x, y);
+      x += font->glyph_width;
+    }
+    
     ++str;
   }
 }
 
+int16 x3d_font_str_height(X3D_Font* font, const char* str) {
+  int16 height = font->glyph_height;
+  
+  while(*str) {
+    if(*str == '\n') {
+      height += font->glyph_height;
+    }
+    
+    ++str;
+  }
+  
+  return height;
+}
 

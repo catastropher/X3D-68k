@@ -80,12 +80,8 @@ void x3d_line3d_from_screen_point(X3D_Line3D* line, X3D_Vex2D* p, X3D_CameraObje
 
 #include "render/X3D_util.h"
 
-void x3d_line3d_test(X3D_CameraObject* cam) {
-  X3D_Vex2D pos;
+void x3d_raytrace_find_segface(X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale) {
   X3D_Line3D line;
-  SDL_GetMouseState(&pos.x, &pos.y);
-  
-  //x3d_screen_draw_circle(pos.x, pos.y, 5, 31);
   
   x3d_line3d_from_screen_point(&line, &pos, cam, 15);
   
@@ -96,13 +92,10 @@ void x3d_line3d_test(X3D_CameraObject* cam) {
   X3D_Vex3D cam_pos;
   x3d_object_pos(cam, &cam_pos);
   
-  //line.dir = dir;
-  //line.start = cam_pos;
-  
   uint16 i;
   
-  int16 hit_face = -1;
-  int16 hit_seg  = -1;
+  *hit_face = -1;
+  *hit_seg  = -1;
   int16 min_scale = 0x7FFF;
   X3D_Vex3D hit_inter;
   X3D_Vex3D inter;
@@ -124,26 +117,30 @@ void x3d_line3d_test(X3D_CameraObject* cam) {
       if(x3d_line3d_intersect_polygon(&line, &poly, &inter, &scale)) {
         if(scale < min_scale) {
           min_scale = scale;
-          hit_seg = s;
-          hit_face = i;
-          hit_inter = inter;
+          *hit_seg = s;
+          *hit_face = i;
+          *hit_pos = inter;
         }
-      }
-      
-      x3d_log(X3D_INFO, "seg: %d, face %d => %d", s, i, scale);
-      
-      if(s == 2 && i == 2) {
-        uint16 k;
-        for(k = 0; k < poly.total_v; ++k)
-          x3d_log(X3D_INFO,"    { %d, %d, %d }", poly.v[k].x, poly.v[k].y, poly.v[k].z);
-      }
+      }      
     }
-    
-    x3d_log(X3D_INFO, "");
   }
-  
-  x3d_log(X3D_INFO, "=================================");
+}
 
+
+void x3d_line3d_test(X3D_CameraObject* cam) {
+  X3D_Vex2D pos;
+  SDL_GetMouseState(&pos.x, &pos.y);
+  
+  int16 hit_face;
+  int16 hit_seg;
+  X3D_Vex3D hit_inter;
+  int16 i;
+  int16 scale;
+  
+  X3D_Polygon3D poly = { .v = alloca(1000) };
+  
+  x3d_raytrace_find_segface(cam, pos, &hit_inter, &hit_seg, &hit_face, &scale);
+  
   if(hit_face != -1 && hit_inter.z != 0) {
     X3D_Vex2D proj;
     X3D_Vex3D rot;
@@ -156,7 +153,7 @@ void x3d_line3d_test(X3D_CameraObject* cam) {
       
       X3D_Segment* seg = x3d_segmentmanager_load(hit_seg);
       X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-      x3d_prism3d_get_face(&seg->prism, i, &poly);
+      x3d_prism3d_get_face(&seg->prism, hit_face, &poly);
       
       X3D_Vex3D center;
       X3D_Mat3x3 mat;
@@ -172,14 +169,13 @@ void x3d_line3d_test(X3D_CameraObject* cam) {
         x3d_draw_3d_line(poly.v[i], poly.v[next], x3d_playermanager_get()->player[0].cam, 31);
       }
       
-      //x3d_screen_draw_circle(proj.x, proj.y, 10 * x3d_screenmanager_get()->scale_x / rot.z, 31);
-      
-      x3d_log(X3D_INFO, "MIN SCALE: %d", min_scale);
+      //x3d_screen_draw_circle(proj.x, proj.y, 10 * x3d_screenmanager_get()->scale_x / rot.z, 31);      
     }
   }
   
+  
   char buf[1024];
-  sprintf(buf, "Dir: { %d, %d, %d } -> { %d, %d, %d } (hit seg %d, face %d)", line.dir.x, line.dir.y, line.dir.z, hit_inter.x, hit_inter.y, hit_inter.z, hit_seg, hit_face);
+  //sprintf(buf, "Dir: { %d, %d, %d } -> { %d, %d, %d } (hit seg %d, face %d)", line.dir.x, line.dir.y, line.dir.z, hit_inter.x, hit_inter.y, hit_inter.z, hit_seg, hit_face);
   
   SDL_WM_SetCaption(buf, NULL);
   

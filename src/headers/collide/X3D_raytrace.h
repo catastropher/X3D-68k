@@ -26,4 +26,5 @@ struct X3D_Polygon3D;
 
 _Bool x3d_line3d_intersect_plane(X3D_Line3D* line, X3D_Plane* plane, X3D_Vex3D* inter, int16* scale);
 _Bool x3d_line3d_intersect_polygon(X3D_Line3D* line, struct X3D_Polygon3D* poly, X3D_Vex3D* inter, int16* scale);
+void x3d_raytrace_find_segface(X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale);
 

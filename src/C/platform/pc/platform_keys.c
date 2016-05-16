@@ -42,6 +42,10 @@ static uint32 key_pressed_state;
 static int32 key_map[X3D_MAX_KEYS];
 
 
+_Bool x3d_pc_key_down(int32 key) {
+  return sdl_keys[key];
+}
+
 X3D_INTERNAL void x3d_platform_keys_init(X3D_InitSettings* settings) {
   x3d_log(X3D_INFO, "Key mapper init\n");
   
