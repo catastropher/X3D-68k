@@ -126,6 +126,8 @@ void x3d_raytrace_find_segface(X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* 
   }
 }
 
+extern char hud_status_bar[512];
+extern _Bool display_status_bar;
 
 void x3d_line3d_test(X3D_CameraObject* cam) {
   X3D_Vex2D pos;
@@ -173,6 +175,8 @@ void x3d_line3d_test(X3D_CameraObject* cam) {
     }
   }
   
+  //display_status_bar = X3D_TRUE;
+  //sprintf(hud_status_bar, "seg %d, face %d", hit_seg, hit_face);
   
   char buf[1024];
   //sprintf(buf, "Dir: { %d, %d, %d } -> { %d, %d, %d } (hit seg %d, face %d)", line.dir.x, line.dir.y, line.dir.z, hit_inter.x, hit_inter.y, hit_inter.z, hit_seg, hit_face);

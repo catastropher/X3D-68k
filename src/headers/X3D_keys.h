@@ -81,4 +81,5 @@ _Bool x3d_key_down(X3D_Key key);
 
 /// @todo document
 _Bool x3d_pc_key_down(int32 key);
+void x3d_pc_mouse_state(_Bool* left, _Bool* right, int16* x, int16* y);
 

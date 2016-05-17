@@ -46,6 +46,18 @@ _Bool x3d_pc_key_down(int32 key) {
   return sdl_keys[key];
 }
 
+void x3d_pc_mouse_state(_Bool* left, _Bool* right, int16* x, int16* y) {
+  int xx, yy;
+  
+  uint8 buttons = SDL_GetMouseState(&xx, &yy);
+  
+  *x = xx;
+  *y = yy;
+  
+  *left = buttons & SDL_BUTTON(SDL_BUTTON_LEFT);
+  *right = buttons & SDL_BUTTON(SDL_BUTTON_RIGHT);
+}
+
 X3D_INTERNAL void x3d_platform_keys_init(X3D_InitSettings* settings) {
   x3d_log(X3D_INFO, "Key mapper init\n");
   

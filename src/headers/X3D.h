@@ -47,6 +47,6 @@
 
 #include "render/X3D_texture.h"
 #include "render/X3D_font.h"
-
+#include "collide/X3D_raytrace.h"
 
 

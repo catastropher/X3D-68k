@@ -13,19 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X3D_common.h"
-#include "X3D_vector.h"
-#include "X3D_plane.h"
+#pragma once
 
-typedef struct X3D_Line3D {
-  X3D_Vex3D start;
-  X3D_Vex3D dir;
-} X3D_Line3D;
+struct HudMenu;
 
-struct X3D_Polygon3D;
-struct X3D_CameraObject;
+typedef struct HudMenuItem {
+  char text[64];
+  char letter;
+  _Bool sub_menu;
+  
+  union {
+    void (*handler)(void);
+    struct HudMenu* menu;
+  };
+} HudMenuItem;
 
-_Bool x3d_line3d_intersect_plane(X3D_Line3D* line, X3D_Plane* plane, X3D_Vex3D* inter, int16* scale);
-_Bool x3d_line3d_intersect_polygon(X3D_Line3D* line, struct X3D_Polygon3D* poly, X3D_Vex3D* inter, int16* scale);
-void x3d_raytrace_find_segface(struct X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale);
+typedef struct HudMenu {
+  struct HudMenu* parent;
+  uint16 total_items;
+  HudMenuItem items[];
+} HudMenu;
 
