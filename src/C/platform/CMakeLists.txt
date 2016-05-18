@@ -21,4 +21,11 @@ elseif(${X3D_TARGET} STREQUAL "nspire")
     nspire/platform_keys.c
     nspire/platform_assert.c
   )
+elseif(${X3D_TARGET} STREQUAL "mac")
+  add_sources(
+    pc/platform_screen.c
+    pc/platform_init.c
+    pc/platform_keys.c
+    pc/platform_assert.c
+  )
 endif()

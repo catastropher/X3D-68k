@@ -4,6 +4,8 @@
 #include "X3D_keys.h"
 
 //#define //x3d_log(...) ;
+void x3d_rasterregion_copy_intersection_spans(X3D_ScanlineGenerator* gen, X3D_Vex2D* clip, int16 start_y, int16 end_y);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the slope of the scanline parameters.

@@ -66,6 +66,7 @@
 #  License text for the above reference.)
 
 SET(SDL2_SEARCH_PATHS
+	/usr/local/Cellar/sdl2/2.0.4/include
 	~/Library/Frameworks
 	/Library/Frameworks
 	/usr/local

@@ -47,9 +47,9 @@ elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_FLAGS "-std=c99")
   set(CMAKE_C_COMPILER nspire-gcc)
   set(CMAKE_C_LINK_EXECUTABLE nspire-ld)
-
-
   add_definitions(-D__nspire__)
+elseif(${X3D_TARGET} STREQUAL "mac")
+  set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -Wno-pointer-sign -I/usr/local/Cellar/sdl2/2.0.4/include -lSDL2")
 endif()
 
 include_directories($ENV{X3D}/src/headers)
@@ -71,4 +71,10 @@ if(${X3D_TARGET} STREQUAL "pc")
 
 elseif(${X3D_TARGET} STREQUAL "nspire")
   target_link_libraries(X3D-test-pc $ENV{X3D}/build/nX3D/libX3D.a)
+  
+elseif(${X3D_TARGET} STREQUAL "mac")
+  find_package(SDL2 REQUIRED)
+  target_link_libraries(X3D-test-pc ${SDL_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+  target_link_libraries(X3D-test-pc $ENV{X3D}/build/X3D/libX3D.a)
+  target_link_libraries(X3D-test-pc m)
 endif()

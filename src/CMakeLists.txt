@@ -53,6 +53,10 @@ elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_COMPILER nspire-gcc)
   add_definitions(-D__nspire__)
   set(CMAKE_C_FLAGS "-Wall -O3")
+
+elseif(${X3D_TARGET} STREQUAL "mac")
+  set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -Wno-pointer-sign -I/usr/local/Cellar/sdl2/2.0.4/include")
+  set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
 endif()
 
 
