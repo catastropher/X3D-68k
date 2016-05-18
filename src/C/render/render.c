@@ -901,8 +901,6 @@ void x3d_render(X3D_CameraObject* cam) {
   
   x3d_line3d_test(cam);
   
-  x3d_font_draw_str(&font, "Hi Nemanja!!", 100, 100);
-  
   //x3d_texture_blit(&font.tex, 0, 0);
   
   static int32 fps = 0;
