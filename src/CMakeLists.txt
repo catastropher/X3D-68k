@@ -45,7 +45,13 @@ if(${X3D_TARGET} STREQUAL "68k")
 elseif(${X3D_TARGET} STREQUAL "pc")
   add_definitions(-D__pc__)
   
-  set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
+  if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0)
+    set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
+  else()
+    set(CMAKE_C_FLAGS "-std=c99 -Wall -g -Wno-pointer-sign")
+  endif()
+  
+  
   #set(CMAKE_C_FLAGS "-std=c99 -Wall -g -O2")
   set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
   
