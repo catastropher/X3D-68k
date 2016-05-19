@@ -212,7 +212,7 @@ void init_textures(void) {
   x3d_texture_from_array(&aperture_tex, aperture_tex_data);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
 #if defined(__pc__) && 1
   int16 w = 640;
   int16 h = 480;
