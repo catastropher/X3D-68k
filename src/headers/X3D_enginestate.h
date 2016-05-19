@@ -46,7 +46,7 @@ static inline X3D_SegmentManager* x3d_segmentmanager_get(void) {
   return &x3d_state->segment_manager;
 }
 
-static inline const X3D_ScreenManager* x3d_screenmanager_get(void) {
+static inline X3D_ScreenManager* x3d_screenmanager_get(void) {
   return &x3d_state->screen_manager;
 }
 
@@ -60,6 +60,10 @@ static inline X3D_EngineState* x3d_enginestate_get(void) {
 
 static inline X3D_RenderManager* x3d_rendermanager_get(void) {
   return &x3d_state->render_manager;
+}
+
+static inline void x3d_rendermanager_set_hud_callback(void (*callback)(void)) {
+  x3d_rendermanager_get()->render_hud_callback = callback;
 }
 
 static inline void x3d_keymanager_set_callback(void (*callback)(void)) {

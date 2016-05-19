@@ -15,17 +15,29 @@
 
 #pragma once
 
-typedef struct X3D_Stack {
-  void* base;
-  void* ptr;
-  uint32 size;
-} X3D_Stack;
+#include "X3D_common.h"
+#include "X3D_texture.h"
 
-#define X3D_STACK_ALLOC_TYPE(_stack, _type, _total) (_type* )x3d_stack_alloc(_stack, sizeof(_type) * (_total))
+typedef struct X3D_Font {
+  int16 glyph_width;
+  int16 glyph_height;
+  
+  int16 glyph_offset_x;
+  int16 glyph_offset_y;
+  
+  int16 font_space_x;
+  int16 font_space_y;
+  
+  int16 font_offset_x;
+  int16 font_offset_y;
+  
+  int16 font_rows;
+  int16 font_cols;
+  X3D_Texture tex;
+} X3D_Font;
 
-void x3d_stack_init(X3D_Stack* stack, void* mem, uint32 mem_size);
-void* x3d_stack_alloc(X3D_Stack* stack, uint16 size);
-void* x3d_stack_save(X3D_Stack* stack);
-void x3d_stack_restore(X3D_Stack* stack, void* ptr);
-void x3d_stack_reset(X3D_Stack* stack);
+_Bool x3d_font_load(X3D_Font* font, const char* file_name);
+void x3d_font_draw_char(X3D_Font* font, unsigned char c, int16 x, int16 y);
+void x3d_font_draw_str(X3D_Font* font, const char* str, int16 x, int16 y);
+int16 x3d_font_str_height(X3D_Font* font, const char* str);
 

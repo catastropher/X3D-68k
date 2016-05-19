@@ -97,6 +97,7 @@ void* x3d_freelist_alloc(X3D_FreeList* list) {
   x3d_assert(!"Out of blocks");
   
   /// @todo throw an error because we're out of blocks!!!
+  return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

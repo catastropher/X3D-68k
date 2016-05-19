@@ -65,7 +65,7 @@ static inline uint32 x3d_texture_index(const X3D_Texture* tex, uint16 u, uint16 
 ///////////////////////////////////////////////////////////////////////////////
 static inline X3D_Color x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, uint16 v) {
   if(tex->flags & X3D_TEXTURE_4BIT) {
-    uint8 byte = tex->texel.small[(v * tex->w + u) >> 1];
+    uint8 byte = tex->texel.small[((uint32)v * tex->w + u) >> 1];
    
     if((u & 1) == 0)
       byte >>= 4;
@@ -73,7 +73,10 @@ static inline X3D_Color x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, 
     return tex->color_tab[byte & 0x0F];
   }
   
-  return tex->color_tab[tex->texel.large[x3d_texture_index(tex, u, v)]];
+  if(tex->flags & X3D_TEXTURE_REPEAT)
+    return tex->color_tab[tex->texel.large[x3d_texture_index(tex, u, v)]];
+  else
+    return tex->color_tab[tex->texel.large[(uint32)v * tex->w + u]];
 }
 
 static inline X3D_Color x3d_texture_get_texel_128(const X3D_Texture* tex, uint16 u, uint16 v) {

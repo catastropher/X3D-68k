@@ -13,39 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-typedef enum {
-  X3D_RESOURCE_MEM,
-  X3D_RESOURCE_FILE,
-} X3D_ResourceType;
+#include "X3D_common.h"
+#include "X3D_vector.h"
+#include "X3D_plane.h"
 
-typedef struct X3D_Resource {
-  X3D_ResourceType type;
-  void* resource;
-} X3D_Resource;
+typedef struct X3D_Line3D {
+  X3D_Vex3D start;
+  X3D_Vex3D dir;
+} X3D_Line3D;
 
-typedef struct X3D_ResourceStack {
-  
-} X3D_ResourceStack;
+struct X3D_Polygon3D;
+struct X3D_CameraObject;
 
-
-
-void x3d_alloc_mem() {
-  
-}
-
-void* x3d_transaction_begin() {
-  
-}
-
-void x3d_transaction_end(void* transaction) {
-  
-}
-
-
-
-
-void x3d_add_persistant_resource() {
-  
-}
-
+_Bool x3d_line3d_intersect_plane(X3D_Line3D* line, X3D_Plane* plane, X3D_Vex3D* inter, int16* scale);
+_Bool x3d_line3d_intersect_polygon(X3D_Line3D* line, struct X3D_Polygon3D* poly, X3D_Vex3D* inter, int16* scale);
+void x3d_raytrace_find_segface(struct X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale);
 

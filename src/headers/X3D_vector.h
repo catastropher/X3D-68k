@@ -102,3 +102,7 @@ static inline X3D_Vex3D x3d_vex3d_neg(X3D_Vex3D* v) {
   return (X3D_Vex3D) { -v->x, -v->y, -v->z };
 }
 
+static inline _Bool x3d_vex3d_equal(X3D_Vex3D* a, X3D_Vex3D* b) {
+  return a->x == b->x && a->y == b->y && a->z == b->z;
+}
+

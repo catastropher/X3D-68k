@@ -43,6 +43,7 @@ if(${X3D_TARGET} STREQUAL "68k")
 elseif(${X3D_TARGET} STREQUAL "pc")
   set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
+  add_definitions(-D__pc__)
 elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_FLAGS "-std=c99")
   set(CMAKE_C_COMPILER nspire-gcc)
@@ -55,10 +56,11 @@ endif()
 include_directories($ENV{X3D}/src/headers)
 
 add_executable(X3D-test-pc
-	test.c
-	fontedit.c
-	keys.c
-	texturepack.c
+  test.c
+  fontedit.c
+  keys.c
+  texturepack.c
+  hud.c
 )
 
 set_target_properties(X3D-test-pc PROPERTIES OUTPUT_NAME test-pc)

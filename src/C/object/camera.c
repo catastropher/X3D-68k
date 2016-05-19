@@ -18,7 +18,7 @@
 #include "X3D_enginestate.h"
 
 static void x3d_camera_event_handler(X3D_ObjectBase* obj, X3D_ObjectEvent ev) {
-  X3D_CameraObject* cam = (X3D_CameraObject *)obj;
+  //X3D_CameraObject* cam = (X3D_CameraObject *)obj;
   
   switch(ev.type) {
     case X3D_OBJECT_EVENT_CREATE:

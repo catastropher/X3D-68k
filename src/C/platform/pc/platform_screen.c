@@ -247,12 +247,26 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
   if(!s)
     return X3D_FALSE;
   
-  uint8* data = malloc(s->w * s->h * 3L + 2); 
+  uint8* data = malloc((uint32)s->w * s->h * 3L + 5); 
   
-  data[0] = s->w;
-  data[1] = s->h;
+  int16 start = 0;
   
-  uint16 pos = 0;
+  if(s->w >= 256 || s->h >= 256) {
+    data[0] = 0;
+    data[1] = s->w >> 8;
+    data[2] = s->w & 0xFF;
+    data[3] = s->h >> 8;
+    data[4] = s->h & 0xFF;
+    
+    data += 3;
+    start = 3;
+  }
+  else {
+    data[0] = s->w;
+    data[1] = s->h;
+  }
+  
+  uint32 pos = 0;
   
   uint16 i, d;
   for(i = 0; i < s->h; ++i) {
@@ -272,7 +286,7 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
     }
   }
 
-  x3d_texture_from_array(tex, data);
+  x3d_texture_from_array(tex, data - start);
   
   SDL_FreeSurface(s);
   
@@ -314,24 +328,6 @@ void x3d_gray_dither(SDL_Surface* s) {
   }
 }
 
-X3D_Color x3d_texture_get_pix(X3D_Texture* tex, int16 u, int16 v) {
-#if 0
-  uint8 r, g, b;
-
-  return rand();
-  
-  SDL_Surface* s = tex->surface;
-  
-  if(u < 0 || u >= s->w || v < 0 || v >= s->h)
-    return 0;
-  
-  //x3d_log(X3D_INFO, "U: %d, v: %d : %d, %d - bpp: %d", u, v, s->w, s->h, s->format->BytesPerPixel);
-  
-  SDL_GetRGB(getpixel(s, u, v), s->format, &r, &g, &b);
-  
-  return x3d_rgb_to_color(r, g, b);
-#endif
-}
 
 X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
   SDL_FreeSurface(window_surface);
@@ -360,16 +356,6 @@ static uint32 map_color_to_uint32(X3D_Color color) {
   return SDL_MapRGB(window_surface->format, red, green, blue);
 #endif
 }
-
-static uint32 scale_color(X3D_Color c, uint16 scale) {
-  uint8 r, g, b;
-  
-  x3d_color_to_rgb(c, &r, &g, &b);
-  
-  return SDL_MapRGB(window_surface->format, ((uint32)r * scale) >> 15, ((uint32)g * scale) >> 15, ((uint32)b * scale) >> 15);
-}
-
-extern X3D_Vex3D color_err;
 
 uint16 scale_down(uint32 value, int16* error) {
   int16 v = (value >> 8) + *error;
@@ -416,7 +402,6 @@ void x3d_screen_zbuf_clear(void) {
 }
 
 void x3d_screen_zbuf_visualize(void) {
-  X3D_Color c;
   uint16 x, y;
   
   for(y = 0; y < screen_h; ++y) {
@@ -463,11 +448,6 @@ void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c
   
   int32 scale_slope = (((int32)scale_right - scale_left) << 8) / (right - left + 1);
   int32 scale = (int32)scale_left << 8;
-  
-  int32 err = 0;
-  
-  int32 mask = (1 << (16 - scale_bits)) - 1;
-  int32 half = mask / 2;
   
   int16 zz = 0;
   
@@ -517,11 +497,11 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   int32 next_u = ((span->left.u >> 5) * next_z);
   int32 next_v = ((span->left.v >> 5) * next_z);
   
-  int32 prev_u, prev_v, prev_z;
+  int32 prev_u, prev_v;
   
   int16 dx = span->right.x - span->left.x;
   
-  const int16 RUN = 2;
+  const int16 RUN = 1;
   
   int32 z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
   
@@ -540,6 +520,9 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   uint32* pixels = window_surface->pixels;
   
   int16 same_count = 0;
+  
+  if(span->right.x >= 639)
+    span->right.x = 639;
   
   do {
     prev_u = next_u;
@@ -580,7 +563,7 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
       
       uint16 zz = z >> 15;
         
-      if(zz >= z_buf[y * 640L + i]) {// && (geo_render_mode != 0 || z_buf[y * 640L + i] == 0)) {
+      if(zz >= z_buf[y * 640L + i] && (geo_render_mode != 0 || z_buf[y * 640L + i] == 0)) {
         pixels[y * 640L + i] = map_color_to_uint32(x3d_texture_get_texel(tex, uu, vv));   //tex->texel[(int32)vv * tex->w + uu]);
         z_buf[y * 640L + i] = zz;
       }
@@ -593,6 +576,16 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
       
     } while(--total > 0);
   } while(i <= span->right.x);
+  
+  if(i != span->right.x + 1) {
+    x3d_log(X3D_INFO, "Off by: %d", span->right.x - i);
+  }
+  
+  if(x3d_key_down(X3D_KEY_15)) {
+    x3d_screen_flip();
+    SDL_Delay(1);
+    x3d_screen_flip();
+  }
   
   //x3d_log(X3D_INFO, "Same count: %d", same_count);
 }
@@ -637,8 +630,6 @@ void x3d_screen_draw_scanline_texture(X3D_Span2* span, int16 y) {
     
     //int16 uu = (x3d_fix_slope_val(&u) / zz);   //(((u / zz) >> 1) * 128) >> 15;
     //int16 vv = (x3d_fix_slope_val(&v) / zz);//(((v / zz) >> 1) * 128) >> 15;
-    
-    int16 recip = (1.0 / (z >> 15)) * 32767; //fast_recip(z >> 15);
     
     //x3d_log(X3D_INFO, "recip: %d", recip);
     
@@ -705,54 +696,6 @@ uint16 scale_value_down(uint32 value, int16* error) {
     return v;
 }
 
-void dither_pixel(X3D_Vex3D* err, int16 x, int16 w, int16 y, int16 h, uint32 val) {
-  uint8 r, g, b;
-  //SDL_GetRGB(val, &r, &g, &b);
-  
-  X3D_Vex3D error = err[x];
-  
-  X3D_Color color = x3d_rgb_to_color(
-    scale_value_down((uint32)r, &error.x),
-    scale_value_down((uint32)g, &error.y),
-    scale_value_down((uint32)b, &error.z)
-  );
-  
-  err[x].x += 5 * error.x / 16;
-  err[x].y += 5 * error.y / 16;
-  err[x].z += 5 * error.z / 16;
-  
-  if(x + 1 < w) {
-    err[x + 1].x += 7 * error.x / 16;
-    err[x + 1].y += 7 * error.y / 16;
-    err[x + 1].z += 7 * error.z / 16;
-    
-    if(y + 1 < h) {
-    }
-  }
-}
-
-void dither() {
-  int16 w = screen_w;
-  int16 h = screen_h;
-  
-  X3D_Vex3D err[w];
-  
-  int16 i;
-  for(i = 0; i < w; ++i) {
-    err[i].x = 0;
-    err[i].y = 0;
-    err[i].z = 0;
-  }
-  
-  int16 x, y;
-  
-  for(y = 0; y < h; ++y) {
-    for(x = 0; x < w; ++x) {
-      
-    }
-  }
-}
- 
 void x3d_screen_flip() {
   if(record) {
     char str[1100];
@@ -798,7 +741,7 @@ void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
       
       ((uint32 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
       
-      x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
+      //x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
     }
   }
 }
@@ -1073,7 +1016,7 @@ void x3d_screen_draw_digit(char digit, int16 x, int16 y, X3D_Color color) {
   uint16 i, d;
   for(i = y; i < y + 8; ++i) {
     for(d = x; d < x + 5; ++d) {
-      x3d_screen_draw_pix(d, i, font[digit][i - y] & (1 << (7 - (d - x))) ? color : 0x7FFF);
+      x3d_screen_draw_pix(d, i, font[(uint32)digit][i - y] & (1 << (7 - (d - x))) ? color : 0x7FFF);
     }
   }
 }

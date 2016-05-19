@@ -36,7 +36,7 @@ X3D_INTERNAL X3D_Segment* x3d_segmentbuilder_add_uncompressed_segment(X3D_Prism3
   x3d_prism3d_copy(&seg->prism, prism);
   
   
-  seg->base.flags = X3D_SEGMENT_UNCOMPRESSED;
+  seg->base.flags = 0;
   seg->base.base_v = prism->base_v;
   
   x3d_segment_reset(seg);
@@ -138,7 +138,28 @@ uint16 x3d_segmentbuilder_add_connecting_segment(X3D_SegFaceID a, X3D_SegFaceID 
   return new_seg->base.id;
 }
 
-
+void x3d_segment_make_door(uint16 id) {
+  X3D_Segment* seg = x3d_segmentmanager_load(id);
+  
+  seg->base.flags |= X3D_SEGMENT_DOOR;
+  
+  // Initialize the door
+  seg->door_data = x3d_slab_alloc(sizeof(X3D_SegmentDoorData));
+  seg->door_data->door_open = X3D_DOOR_CLOSED;
+  
+  static int16 count = 0;
+  
+  if(count++ == 0) {
+    seg->door_data->max_open = 50;
+    seg->door_data->open_speed = 2000;
+  }
+  else {
+    seg->door_data->max_open = 137;
+    seg->door_data->open_speed = 1000;
+  }
+  
+  seg->door_data->mode = X3D_DOOR_STOPPED;
+}
 
 
 

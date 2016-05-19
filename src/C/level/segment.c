@@ -34,13 +34,6 @@ X3D_INTERNAL void x3d_segmentmanager_init(uint16 max_segments, uint16 seg_pool_s
   x3d_log(X3D_INFO, "Segment manager init");
   
   x3d_varsizeallocator_init(&seg_manager->alloc, max_segments, seg_pool_size);
-  
-  // Clear the cache
-  uint16 i;
-  
-  for(i = 0; i < X3D_SEGMENT_CACHE_SIZE; ++i) {
-    seg_manager->cache.entry[i].seg.base.id = X3D_SEGMENT_NONE;
-  }
 }
 
 void x3d_segmentmanager_cleanup(void) {
@@ -159,6 +152,17 @@ void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X
   }
 }
 
+void x3d_segment_update(X3D_Segment* s) {
+  uint16 i;
+  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(s);
+  X3D_Polygon3D poly = { .v = alloca(1000) };
+  
+  for(i = 0; i < x3d_prism3d_total_f(s->prism.base_v); ++i) {  
+    x3d_prism3d_get_face(&s->prism, i, &poly);
+    x3d_plane_construct(&face[i].plane, poly.v, poly.v + 1, poly.v + 2);
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Resets a single segment. This:
 ///   - Removes all objects
@@ -172,16 +176,14 @@ void x3d_segment_point_normal(X3D_Segment* seg, uint16 point, X3D_Vex3D* dest, X
 void x3d_segment_reset(X3D_Segment* s) {
   uint16 i;
   X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(s);
-  X3D_Polygon3D poly = { .v = alloca(1000) };
-  
+
   for(i = 0; i < x3d_prism3d_total_f(s->prism.base_v); ++i) {
     face[i].attach = NULL;
     face[i].portal_seg_face = X3D_FACE_NONE;
     face[i].texture = X3D_INVALID_HANDLE;
-    
-    x3d_prism3d_get_face(&s->prism, i, &poly);
-    x3d_plane_construct(&face[i].plane, poly.v, poly.v + 1, poly.v + 2);
   }
+  
+  x3d_segment_update(s);
   
   for(i = 0; i < X3D_MAX_OBJECTS_IN_SEG; ++i) {
     s->object_list.objects[i] = X3D_INVALID_HANDLE;

@@ -19,7 +19,7 @@
 
 #include "X3D.h"
 
-#if defined(__linux__)
+#if defined(__pc__)
 #include <SDL/SDL.h>
 #include <alloca.h>
 #endif
@@ -35,15 +35,111 @@ void x3d_level_command_init(void);
 void engine_test_handle_keys(void);
 void setup_key_map(void);
 
+void hud_render_callback(void);
+
 // Creates a hard-coded test level
 void create_test_level(void) {
   x3d_level_command_init();
   x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { 0, 0, 0 }");
+  x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, 0, 800 }");
+  x3d_level_run_command("connect_close s1=0 s2=1");
+
+  uint16 v = 4;
+
+  
+  X3D_Polygon2D poly = { .v = alloca(1000) };
+  
+  uint16 w = 50, h = 100;
+  
+  int16 shift = -35;
+  
+  //x3d_polygon2d_construct(&poly, v, 50, 0);
+  
+#if 1
+  poly.v[0].x = -w;
+  poly.v[0].y = h + shift;
+  
+  poly.v[1].x = w;
+  poly.v[1].y = h + shift;
+  
+  poly.v[2].x = w;
+  poly.v[2].y = -h + shift;
+  
+  poly.v[3].x = -w;
+  poly.v[3].y = -h + shift;
+  
+  poly.total_v = v;
+#endif
+  
+  
+#if 1
+  uint16 k;
+  for(k = 0; k < 2; ++k)
+    X3D_SWAP(poly.v[k], poly.v[v - k - 1]);
+#endif
+  
+  struct {
+    X3D_Polygon3D poly;
+    X3D_Vex3D v[20];
+  }* data = malloc(1000);//x3d_slab_alloc(sizeof(X3D_Vex3D) * 10 + sizeof(X3D_Polygon3D));
+  
+  data->poly.v = data->v;
+  
+  
+  X3D_Segment* seg = x3d_segmentmanager_load(0);
+  uint16 face = 5;
+  X3D_Plane plane = x3d_uncompressedsegment_get_faces(seg)[face].plane;
+  X3D_Mat3x3 mat;
+  
+  X3D_Polygon3D f = { .v = alloca(1000) };
+  x3d_prism3d_get_face(&seg->prism, face, &f);
+  
+  X3D_Vex3D p_center;
+  x3d_polygon3d_center(&f, &p_center);
+  
+  x3d_polygon2d_to_polygon3d(&poly, &data->poly, &plane, &p_center, &p_center, &mat);
+  
+  x3d_polygon3d_translate(&data->poly, p_center);
+  
+  
+  X3D_Prism3D* prism = alloca(1000);
+  
+  prism->base_v = v;
+  
+  x3d_prism3d_set_face(prism, X3D_BASE_A, &data->poly);
+  x3d_polygon3d_translate_normal(&data->poly, &plane.normal, -100);
+  x3d_polygon3d_reverse(&data->poly);
+  x3d_prism3d_set_face(prism, X3D_BASE_B, &data->poly);
+
+#if 0
+  X3D_Segment* seg1 = x3d_segmentmanager_load(x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(1, 1), 50));
+  
+  x3d_prism3d_get_face(&seg1->prism, 1, &f);
+  x3d_polygon3d_scale(&f, 128);
+  x3d_prism3d_set_face(&seg1->prism, 1, &f);
+#endif
+  
+  X3D_Segment* small_seg = x3d_segmentbuilder_add_uncompressed_segment(prism);
+  uint16 id = small_seg->base.id;
+  
+  x3d_segment_face_attach(0, face, X3D_ATTACH_WALL_PORTAL, &data->poly, x3d_segfaceid_create(id, X3D_BASE_A));
+  
+  X3D_Segment* new_seg = x3d_segmentmanager_load(x3d_segmentbuilder_add_extruded_segment(x3d_segfaceid_create(id, X3D_BASE_B), 200));
+  
+  x3d_log(X3D_INFO, "New seg: %d", new_seg->base.id);
+  
+  uint16 i;
+  for(i = 0; i < 2; ++i) {
+    //x3d_prism3d_get_face(&new_seg->prism, 2 * i + 2, &f);
+    //x3d_polygon3d_scale(&f, 1024);
+    //x3d_prism3d_set_face(&new_seg->prism, 2 * i + 2, &f);
+  }
+  
+  x3d_segment_make_door(id);
+  //x3d_segment_make_door(2);
   
   x3d_rendermanager_get()->near_z = 10;
   x3d_rendermanager_get()->wireframe = X3D_FALSE;
-  
-  uint16 i;
   
   // Create a red and green portal
   uint16 portal_base_v = 8;
@@ -53,18 +149,16 @@ void create_test_level(void) {
 
   x3d_polygon2d_construct(&portal_poly, portal_base_v, 60, 0);
 
-  /*
-  uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(0, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
-  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(id0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
-
+  x3d_segment_update(new_seg);
+  
+  uint16 portal_green = x3d_wallportal_add(x3d_segfaceid_create(new_seg->base.id, 3), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 5000);
+  uint16 portal_red = x3d_wallportal_add(x3d_segfaceid_create(0, 7), (X3D_Vex3D) { 0, 0, 0 }, 0xFFFF, &portal_poly, 31);
+  
   x3d_wallportal_connect(portal_red, portal_green);
   x3d_wallportal_connect(portal_green, portal_red);
   
-  for(i = 0; i < 10; ++i) {
-    X3D_Segment* seg = x3d_segmentmanager_load(id0);
-    x3d_uncompressedsegment_get_faces(seg)[i].portal_seg_face = X3D_FACE_NONE;
-  }
-  */
+  for(i = 0; i < x3d_segmentmanager_get()->alloc.alloc_offset.size; ++i)
+    x3d_segment_update(x3d_segmentmanager_load(i));
   
 }
 
@@ -93,6 +187,23 @@ extern uint8 floor_panel_tex_data[];
 extern uint8 cube_tex_data[];
 extern uint8 aperture_tex_data[];
 
+X3D_Font font = {
+  .glyph_width = 15,
+  .glyph_height = 14,
+  
+  .glyph_offset_x = 1,
+  .glyph_offset_y = 0,
+  
+  .font_space_x = 17,
+  .font_space_y = 17,
+  
+  .font_offset_x = 19,
+  .font_offset_y = 19,
+  
+  .font_rows = 16,
+  .font_cols = 16
+};
+
 void init_textures(void) {
   x3d_texture_from_array(&panel_tex, panel_tex_data);
   x3d_texture_from_array(&brick_tex, wood_tex_data);
@@ -102,7 +213,7 @@ void init_textures(void) {
 }
 
 int main() {
-#if defined(__linux__) && 1
+#if defined(__pc__) && 1
   int16 w = 640;
   int16 h = 480;
 #else
@@ -122,10 +233,18 @@ int main() {
   
   init_textures();
   
+#if 1
+  if(!x3d_font_load(&font, "font.bmp")) {
+    x3d_log(X3D_ERROR, "Failed to load font");
+    exit(0);
+  }
+#endif
+  
   // Set up key mapping
   setup_key_map();
   x3d_keymanager_set_callback(engine_test_handle_keys);
-
+  x3d_rendermanager_set_hud_callback(hud_render_callback);
+  
   create_test_level();
   
   setup_camera();

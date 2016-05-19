@@ -57,6 +57,7 @@ typedef struct X3D_RenderManager {
   int16 near_z;
   _Bool wireframe;
   void (*segment_face_render_callback)(X3D_SegmentRenderFace* face);
+  void (*render_hud_callback)(void);
   uint16* zbuf;
 } X3D_RenderManager;
 
@@ -66,6 +67,19 @@ typedef struct X3D_DisplayLineList {
   uint16 total_l;
   X3D_DisplayLine lines[X3D_MAX_DISPLAY_LINE];
 } X3D_DisplayLineList;
+
+typedef struct X3D_SegmentRenderContext {
+  X3D_Segment* seg;
+  uint16 seg_id;
+  X3D_SegmentFace* faces;
+  X3D_RenderManager* renderman;
+  X3D_RasterRegion* parent;
+  X3D_CameraObject* cam;
+  X3D_ClipContext* clip;
+  X3D_DisplayLineList* list;
+  uint16 step;
+  uint16 portal_face;
+} X3D_SegmentRenderContext;
 
 struct X3D_InitSettings;
 
@@ -81,5 +95,8 @@ void x3d_displaylinelist_add(X3D_DisplayLineList* list, X3D_Vex2D a, int16 a_dep
 void x3d_displaylinelist_render(X3D_DisplayLineList* list, X3D_RasterRegion* region);
 X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b);
 int16 x3d_depth_scale(int16 depth, int16 min_depth, int16 max_depth);
+
+void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region);
+void x3d_sphere_render(X3D_Vex3D center, int16 r, int16 steps, X3D_Color c, X3D_CameraObject* cam, X3D_RasterRegion* region);
 
 

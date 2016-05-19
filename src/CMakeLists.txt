@@ -43,7 +43,7 @@ if(${X3D_TARGET} STREQUAL "68k")
     set(CMAKE_C_FLAGS "-DUSE_TI89 -O3 -Wall")
   endif()
 elseif(${X3D_TARGET} STREQUAL "pc")
-  
+  add_definitions(-D__pc__)
   
   set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   #set(CMAKE_C_FLAGS "-std=c99 -Wall -g -O2")
@@ -81,8 +81,6 @@ include_directories(headers)
 include_directories(C/src/platform)
 
 add_sources(
-  C/resource.c
-  
   C/engine/gameloop.c
   C/engine/log.c
   C/engine/init.c
@@ -108,6 +106,7 @@ add_sources(
   C/level/segment.c
   C/level/segmentbuilder.c
   C/level/levelloader.c
+  C/level/level.c
   
   C/render/render.c
   C/render/clip2.c
@@ -115,7 +114,6 @@ add_sources(
   C/render/wallportal.c
   C/render/portal.c
   C/render/clip.c
-  C/render/clip3.c
   C/render/rasteredge.c
   C/render/util.c
   C/render/rasterregion.c
@@ -123,8 +121,10 @@ add_sources(
   C/render/polyline.c
   C/render/texture.c
   C/render/clip4.c
+  C/render/font.c
   
   C/physics/collide.c
+  C/physics/raytrace.c
   
   C/object/object.c
   C/object/camera.c

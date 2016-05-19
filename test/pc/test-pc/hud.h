@@ -15,17 +15,22 @@
 
 #pragma once
 
-typedef struct X3D_Stack {
-  void* base;
-  void* ptr;
-  uint32 size;
-} X3D_Stack;
+struct HudMenu;
 
-#define X3D_STACK_ALLOC_TYPE(_stack, _type, _total) (_type* )x3d_stack_alloc(_stack, sizeof(_type) * (_total))
+typedef struct HudMenuItem {
+  char text[64];
+  char letter;
+  _Bool sub_menu;
+  
+  union {
+    void (*handler)(void);
+    struct HudMenu* menu;
+  };
+} HudMenuItem;
 
-void x3d_stack_init(X3D_Stack* stack, void* mem, uint32 mem_size);
-void* x3d_stack_alloc(X3D_Stack* stack, uint16 size);
-void* x3d_stack_save(X3D_Stack* stack);
-void x3d_stack_restore(X3D_Stack* stack, void* ptr);
-void x3d_stack_reset(X3D_Stack* stack);
+typedef struct HudMenu {
+  struct HudMenu* parent;
+  uint16 total_items;
+  HudMenuItem items[];
+} HudMenu;
 

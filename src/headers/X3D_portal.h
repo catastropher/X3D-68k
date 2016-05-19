@@ -69,7 +69,7 @@ static inline _Bool x3d_portal_outline(X3D_Portal* portal) {
   return portal->flags & X3D_PORTAL_OUTLINE;
 }
 
-static inline X3D_Color x3d_portal_set_outline(X3D_Portal* portal, X3D_Color color) {
+static inline void x3d_portal_set_outline(X3D_Portal* portal, X3D_Color color) {
   portal->flags |= X3D_PORTAL_OUTLINE;
   portal->outline_color = color;
 }

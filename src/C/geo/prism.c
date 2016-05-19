@@ -51,8 +51,6 @@ void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_
     s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sin(x3d_uint16_upper(angle)), r);
     s->v[i].y = -h / 2;
     
-    printf("%d %d\n", s->v[i].x, s->v[i].z);
-
     s->v[i + steps].x = s->v[i].x;
     s->v[i + steps].z = s->v[i].z;
     s->v[i + steps].y = h / 2;
