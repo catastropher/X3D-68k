@@ -37,7 +37,7 @@ enum {
 
 
 void setup_key_map(void) {
-#ifdef __linux__
+#ifdef __pc__
   x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
   x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
   x3d_key_map_pc(KEY_W, 'w');

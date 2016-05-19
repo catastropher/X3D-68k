@@ -559,8 +559,8 @@ void x3d_segment_render_door(X3D_SegmentRenderContext* context) {
         X3D_PolygonAttributes att = {
           .flags   = X3D_POLYGON_TEXTURE,
           .texture = {
-            .uu = u,
-            .vv = v
+            .uu = new_u,
+            .vv = new_v
           }
         };
         

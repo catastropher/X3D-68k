@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(__linux__)
+#if defined(__pc__)
 #include <alloca.h>
 #elif defined(__68k__)
 #include <alloc.h>

@@ -19,7 +19,7 @@
 
 #include "X3D.h"
 
-#if defined(__linux__)
+#if defined(__pc__)
 #include <SDL/SDL.h>
 #include <alloca.h>
 #endif
@@ -41,7 +41,7 @@ void hud_render_callback(void);
 void create_test_level(void) {
   x3d_level_command_init();
   x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { 0, 0, 0 }");
-  x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, -400, 800 }");
+  x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, 0, 800 }");
   x3d_level_run_command("connect_close s1=0 s2=1");
 
   uint16 v = 4;
@@ -213,7 +213,7 @@ void init_textures(void) {
 }
 
 int main() {
-#if defined(__linux__) && 1
+#if defined(__pc__) && 1
   int16 w = 640;
   int16 h = 480;
 #else

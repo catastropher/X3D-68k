@@ -43,7 +43,7 @@ if(${X3D_TARGET} STREQUAL "68k")
     set(CMAKE_C_FLAGS "-DUSE_TI89 -O3 -Wall")
   endif()
 elseif(${X3D_TARGET} STREQUAL "pc")
-  
+  add_definitions(-D__pc__)
   
   set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   #set(CMAKE_C_FLAGS "-std=c99 -Wall -g -O2")
