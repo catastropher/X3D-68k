@@ -2,7 +2,11 @@ cmake_minimum_required(VERSION 2.6)
 
 project(UnitTests)
 
-set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
+  if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0)
+    set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
+  else()
+    set(CMAKE_C_FLAGS "-std=c99 -Wall -g -Wno-pointer-sign")
+  endif()
 
 include_directories($ENV{X3D}/src/headers)
 

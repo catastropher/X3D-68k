@@ -50,19 +50,19 @@ elseif(${X3D_TARGET} STREQUAL "pc")
   else()
     set(CMAKE_C_FLAGS "-std=c99 -Wall -g -Wno-pointer-sign")
   endif()
-  
-  
-  #set(CMAKE_C_FLAGS "-std=c99 -Wall -g -O2")
+
+  # Part after -Wno-pointer-sign is gathered by running `sdl-config --cflags --libs` need to 
+  # replace with variable?
+  if(APPLE)
+    set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -Wno-pointer-sign -I/usr/local/include/SDL -D_GNU_SOURCE=1 -D_THREAD_SAFE -L/usr/local/lib -lSDLmain -lSDL -Wl,-framework,Cocoa")
+  endif()
+
   set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
   
 elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_COMPILER nspire-gcc)
   add_definitions(-D__nspire__)
   set(CMAKE_C_FLAGS "-Wall -O3")
-
-elseif(${X3D_TARGET} STREQUAL "mac")
-  set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -Wno-pointer-sign -I/usr/local/Cellar/sdl2/2.0.4/include")
-  set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
 endif()
 
 
