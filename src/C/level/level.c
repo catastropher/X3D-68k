@@ -15,6 +15,7 @@
 
 #include "X3D_common.h"
 #include "level/X3D_level.h"
+#include "X3D_prism.h"
 
 X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v) {
   uint16 i;
@@ -28,7 +29,7 @@ X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v) {
   return level->v.total++;
 }
 
-X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX_RUN* run, uint16 total) {
+X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX* run, uint16 total) {
   uint16 old_total = level->runs.total;
   
   level->runs.v = realloc(level->runs.v, sizeof(X3D_LEVEL_VERTEX_RUN) * (level->runs.total + total));
@@ -42,13 +43,38 @@ X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX
 }
 
 void x3d_level_init(X3D_Level* level) {
-  level->v.total = 0;
-  level->v.v     = NULL;
+  level->v.total    = 0;
+  level->v.v        = NULL;
   
   level->runs.total = 0;
   level->runs.v     = NULL;
   
   level->segs.total = 0;
   level->segs.segs  = NULL;
+}
+
+void x3d_test_level() {
+  X3D_Level level;
+  x3d_level_init(&level);
+}
+
+X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, X3D_Prism3D* prism, uint16 flags) {
+  // Make room for the new segment
+  level->segs.segs = realloc(level->segs.segs, sizeof(X3D_LevelSeg) * (level->segs.total + 1));
+  
+  X3D_LevelSeg* seg = level->segs.segs + level->segs.total;
+  
+  X3D_LEVEL_VERTEX v[prism->base_v * 2];
+  
+  uint16 i;
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    v[i] = x3d_level_vertex_add(level, prism->v + i);
+  }
+  
+  seg->v = x3d_level_vertex_run_add(level, v, prism->base_v * 2);
+  seg->base_v = prism->base_v;
+  seg->flags = flags;
+  
+  ++level->segs.total;
 }
 

@@ -47,7 +47,14 @@ typedef struct X3D_Level {
   X3D_LevelVertexRunArray runs;
 } X3D_Level;
 
+struct X3D_Prism3D;
+
 X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v);
-X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX_RUN* run, uint16 total);
+X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX* run, uint16 total);
+X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, struct X3D_Prism3D* prism, uint16 flags);
+
 void x3d_level_init(X3D_Level* level);
+
+void x3d_test_level();
+
 
