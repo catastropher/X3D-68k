@@ -68,14 +68,6 @@ config-nspire-test:
 	@mkdir -p build/manual-nspire
 	@cd build/manual-nspire && cmake ../../test/pc/test-pc -DX3D_TARGET=nspire
 
-config-mac:
-	@echo Configuring X3D
-	@mkdir -p build/X3D
-	@cd build/X3D && cmake ../../src -DX3D_TARGET=mac
-	@echo Configuring Manual Tests
-	@mkdir -p build/manual
-	@cd build/manual && cmake ../../test/pc/test-pc -DX3D_TARGET=mac
-	
 # Builds X3D
 x3d:
 	@cd build/X3D && make --no-print-directory
@@ -86,9 +78,6 @@ x3d-68k:
 nx3d:
 	@cd build/nX3D && make --no-print-directory
 
-macx3d:
-	@cd build/X3D && make --no-print-directory	
-	
 # Builds X3D and builds/runs the unit tests
 test: x3d
 	@cd build/unit && rm -f ./unit && make --no-print-directory && ./unit
@@ -103,8 +92,6 @@ test-manual-68k: x3d-68k
 test-manual-nspire: nx3d
 	@cd build/manual-nspire && make --no-print-directory
 
-test-manual-mac: x3d
-	@cd build/manual && make --no-print-directory && ./test-pc	
 # Builds the documentation
 docs:
 	@cd docs && doxygen Doxyfile
