@@ -48,7 +48,7 @@ typedef struct X3D_ClipContext {
 typedef struct X3D_SegmentRenderFace {
   X3D_RasterRegion* region;
   X3D_SegFaceID id;
-  X3D_Color color;
+  X3D_PolygonAttributes* att;
 } X3D_SegmentRenderFace;
 
 typedef struct X3D_RenderManager {

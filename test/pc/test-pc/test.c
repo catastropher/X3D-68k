@@ -212,6 +212,8 @@ void init_textures(void) {
   x3d_texture_from_array(&aperture_tex, aperture_tex_data);
 }
 
+void segment_face_render_callback(X3D_SegmentRenderFace* face);
+
 int main(int argc, char* argv[]) {
 #if defined(__pc__) && 1
   int16 w = 640;
@@ -244,6 +246,8 @@ int main(int argc, char* argv[]) {
   setup_key_map();
   x3d_keymanager_set_callback(engine_test_handle_keys);
   x3d_rendermanager_set_hud_callback(hud_render_callback);
+  
+  x3d_rendermanager_get()->segment_face_render_callback = segment_face_render_callback;
   
   create_test_level();
   
