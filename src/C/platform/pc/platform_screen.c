@@ -590,6 +590,24 @@ void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
   //x3d_log(X3D_INFO, "Same count: %d", same_count);
 }
 
+void x3d_screen_draw_scanline_color(X3D_Span2* span, int16 y, X3D_Color color) {
+  fp16x16 z_slope = x3d_val_slope2(span->right.z - span->left.z, span->right.x - span->left.x);
+  fp16x16 z = span->left.z;
+  int16* z_buf = x3d_rendermanager_get()->zbuf;
+  
+  int16 i;
+  for(i = span->left.x; i <= span->right.x; ++i) {
+    int16 zz = z >> 7;
+    
+    if(zz >= z_buf[y * window_surface->w + i]) {
+      ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(color);
+      z_buf[y * window_surface->w + i] = zz;
+    }
+    
+    z += z_slope;
+  }
+}
+
 void x3d_screen_draw_scanline_texture(X3D_Span2* span, int16 y) {
   x3d_screen_draw_scanline_texture_affine(span, y);
   return;

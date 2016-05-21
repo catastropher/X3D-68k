@@ -181,7 +181,7 @@ void x3d_line3d_test(X3D_CameraObject* cam) {
   char buf[1024];
   //sprintf(buf, "Dir: { %d, %d, %d } -> { %d, %d, %d } (hit seg %d, face %d)", line.dir.x, line.dir.y, line.dir.z, hit_inter.x, hit_inter.y, hit_inter.z, hit_seg, hit_face);
   
-  SDL_WM_SetCaption(buf, NULL);
+  //SDL_WM_SetCaption(buf, NULL);
   
 }
 

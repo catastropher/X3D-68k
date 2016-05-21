@@ -128,6 +128,7 @@ add_sources(
   C/render/texture.c
   C/render/clip4.c
   C/render/font.c
+  C/render/final_clip.c
   
   C/physics/collide.c
   C/physics/raytrace.c

@@ -393,6 +393,17 @@ void x3d_segment_render_face(X3D_SegmentRenderContext* context, uint16 face) {
         }
       };
       
+      X3D_RenderManager* renderman = x3d_rendermanager_get();
+      
+      if(renderman->segment_face_render_callback) {
+        X3D_SegmentRenderFace render_face;
+        
+        render_face.att = &att;
+        render_face.id = x3d_segfaceid_create(context->seg_id, face);
+        
+        renderman->segment_face_render_callback(&render_face);
+      }
+      
       x3d_polygon3d_render(&p, &att, context->cam, context->parent);
     }
   }

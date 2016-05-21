@@ -263,3 +263,10 @@ void hud_render_callback(void) {
   }
 }
 
+void segment_face_render_callback(X3D_SegmentRenderFace* face) {
+  if(edit.tool == TOOL_SELECT_FACE && edit.select_face == face->id) {
+    face->att->flags = X3D_POLYGON_COLOR;
+    face->att->color = 31 / 2;
+  }
+}
+

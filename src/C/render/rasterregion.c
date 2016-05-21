@@ -141,7 +141,7 @@ _Bool x3d_polyline_split2(X3D_PolyVertex* v, uint16 total_v, X3D_PolyLine* left,
 
 _Bool x3d_polyline_try_render(X3D_PolyLine* left, X3D_PolyLine* right, X3D_RasterRegion* region);
 
-_Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 total_v, X3D_RasterRegion* parent) {
+_Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 total_v, X3D_RasterRegion* parent, _Bool texture) {
   X3D_PolyLine left, right;
   left.v = alloca(1000);
   right.v = alloca(1000);
@@ -178,7 +178,8 @@ _Bool x3d_rasterregion_make(X3D_RasterRegion* dest, X3D_PolyVertex* v, uint16 to
     return X3D_TRUE;
   }
   
-  x3d_rasterregion_cheat_calc_texture(dest, &left, &right, parent);
+  if(texture)
+    x3d_rasterregion_cheat_draw_texture(dest, &left, &right, parent);
   
   //x3d_rasterregion_draw_outline(dest, 31);
   

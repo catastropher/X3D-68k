@@ -45,7 +45,7 @@ typedef struct X3D_ScanlineGenerator {
 } X3D_ScanlineGenerator;
 
 
-void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine* p_left, X3D_PolyLine* p_right, X3D_RasterRegion* parent);
+void x3d_rasterregion_cheat_draw_texture(X3D_RasterRegion* region, X3D_PolyLine* p_left, X3D_PolyLine* p_right, X3D_RasterRegion* parent);
 _Bool x3d_scanline_generator_set_edge(X3D_ScanlineGenerator* gen, X3D_PolyVertex* a, X3D_PolyVertex* b);
 void x3d_rasterregion_generate_new_spans(X3D_ScanlineGenerator* gen, int16 start_y, int16 end_y);
 void x3d_rasterregion_generate_spans_a_in_b_out(X3D_ScanlineGenerator* gen, int16 end_y);

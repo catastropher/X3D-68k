@@ -271,83 +271,50 @@ extern int16 render_mode;
 /// Renders a 3D polygon.
 ///
 /// @param poly   - polygon to render
+/// @param att    - polygon attributes (how to render the polygon)
 /// @param cam    - camera to render through
 /// @param parent - parent clipping region to draw inside of
-/// @param color  - color of the polygon (will be unused)
-/// @param normal - surface normal of the polygon
 ///
 /// @return Nothing.
-/// @todo   Refactor this mess!
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, X3D_CameraObject* cam, X3D_RasterRegion* parent) {
+  X3D_RenderManager* renderman = x3d_rendermanager_get();
+  void* stack_ptr = x3d_stack_save(&renderman->stack);
+  
   X3D_Vex3D v3d[poly->total_v + 5];
   X3D_Vex2D v2d[poly->total_v + 5];
 
+  // Rotate the points relative to the camera
   x3d_camera_transform_points(cam, poly->v, poly->total_v, v3d, NULL);
-  
-  //x3d_log(X3D_INFO, "Enter %s", __FUNCTION__);
-  
-  X3D_Polygon3D temp = {
-    .v = alloca(1000)
-  };
-  
-  uint16* u = att->texture.uu;
-  uint16* v = att->texture.vv;
   
   uint16 temp_u[20];
   uint16 temp_v[20];
   
-  X3D_Vex3D* vv = poly->v;
-  
-  poly->v = v3d;
-  
-  //x3d_log(X3D_INFO, "BEGIN CLIP");
-  
-  X3D_Polygon3D* old_poly = poly;
-  
-#if 1
-  if(!x3d_polygon3d_clip_to_near_plane(poly, &temp, 10, u, v, temp_u, temp_v)) {
-    poly->v = vv;
-    return;
-  }
-  
-  poly = &temp;
-  u = temp_u;
-  v = temp_v;
-#endif
-    
-  //x3d_log(X3D_INFO, "Total v: %d", temp.total_v);
-    
-  //x3d_camera_transform_points(cam, temp.v, temp.total_v, v3d, v2d);
-  
-  uint16 k;
-  for(k = 0; k < temp.total_v; ++k) {
-    x3d_vex3d_int16_project(v2d + k, temp.v + k);
-    v3d[k] = temp.v[k];
-  }
-  
-  
-  //x3d_log(X3D_INFO, "END TRANSFORM");
-  
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-  
+  uint16* u = (att->flags & X3D_POLYGON_TEXTURE ? att->texture.uu : NULL);
+  uint16* v = (att->flags & X3D_POLYGON_TEXTURE ? att->texture.vv : NULL);
 
-  void* stack_ptr = x3d_stack_save(&renderman->stack);
+  X3D_Polygon3D transformed = { .v = v3d, .total_v = poly->total_v };
+  X3D_Polygon3D clipped = { .v = alloca(1000) };
   
-  int16 min_z = 0x7FFF;
+  // Clip the polygon to the near plane
+  if(!x3d_polygon3d_clip_to_near_plane(&transformed, &clipped, 10, u, v, temp_u, temp_v))
+    return;
   
-  //x3d_segment_point_normal(seg, i, &normal);
+  // Project the points
+  uint16 i;
+  for(i = 0; i < clipped.total_v; ++i)
+    x3d_vex3d_int16_project(v2d + i, clipped.v + i);
   
-  min_z = X3D_MAX(min_z, 1);
+  X3D_PolygonAttributes new_att = *att;
   
-  X3D_Vex3D normal;
+  if(att->flags & X3D_POLYGON_TEXTURE) {
+    new_att.texture.uu = temp_u;
+    new_att.texture.vv = temp_v;
+  }
   
-  x3d_rasterregion_draw(v2d, poly->total_v, rand(), parent, min_z, &normal, v3d, u, v);
+  x3d_rasterregion_draw(v2d, clipped.total_v, parent, clipped.v, &new_att);
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
-  
-  poly = old_poly;
-  poly->v = vv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -442,6 +409,13 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
   int16 v = poly->total_v - 1;
 
   near_z = 25;
+  
+  // Ugh, if we're providing UV coordinates for a texture, just make allocate space and
+  // make something up :P
+  if(ua == NULL) {
+    ua = alloca(poly->total_v * sizeof(uint16));
+    va = alloca(poly->total_v * sizeof(uint16));
+  }
   
   if(x3d_polygon3d_frustum_clipped(poly, near_z))
     return X3D_FALSE;
