@@ -10,3 +10,13 @@ export X3D=$(pwd)
 make config
 make test-manual
 ```
+
+
+
+#### OS X 10.11.5 - Environment Setup
+
+Install homebrew ( http://brew.sh )
+
+```
+brew install cmake sdl
+```

@@ -41,20 +41,18 @@ if(${X3D_TARGET} STREQUAL "68k")
     set(CMAKE_C_FLAGS "-DUSE_TI89 -O3 -Wall")
   endif()
 elseif(${X3D_TARGET} STREQUAL "pc")
-  if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0)
+  if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0 AND NOT APPLE)
     set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   else()
     set(CMAKE_C_FLAGS "-std=c99 -Wall -g -Wno-pointer-sign")
   endif()
-  
+ 
   set(CMAKE_STATIC_LINKER_FLAGS, "-lm")
   add_definitions(-D__pc__)
 elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_FLAGS "-std=c99")
   set(CMAKE_C_COMPILER nspire-gcc)
   set(CMAKE_C_LINK_EXECUTABLE nspire-ld)
-
-
   add_definitions(-D__nspire__)
 endif()
 
@@ -78,4 +76,5 @@ if(${X3D_TARGET} STREQUAL "pc")
 
 elseif(${X3D_TARGET} STREQUAL "nspire")
   target_link_libraries(X3D-test-pc $ENV{X3D}/build/nX3D/libX3D.a)
+
 endif()

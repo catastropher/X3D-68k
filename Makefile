@@ -67,9 +67,7 @@ config-nspire-test:
 	#@tput setaf 7
 	@mkdir -p build/manual-nspire
 	@cd build/manual-nspire && cmake ../../test/pc/test-pc -DX3D_TARGET=nspire
-	
-	
-	
+
 # Builds X3D
 x3d:
 	@cd build/X3D && make --no-print-directory
@@ -79,8 +77,7 @@ x3d-68k:
 
 nx3d:
 	@cd build/nX3D && make --no-print-directory
-	
-	
+
 # Builds X3D and builds/runs the unit tests
 test: x3d
 	@cd build/unit && rm -f ./unit && make --no-print-directory && ./unit
@@ -94,7 +91,7 @@ test-manual-68k: x3d-68k
 
 test-manual-nspire: nx3d
 	@cd build/manual-nspire && make --no-print-directory
-	
+
 # Builds the documentation
 docs:
 	@cd docs && doxygen Doxyfile
