@@ -15,24 +15,10 @@ make test-manual
 
 ## OS X 10.11.5
 
-To build and run X3D on OS X, SDL (Not SDL2) must be installed from source
-	https://www.libsdl.org/download-1.2.php
+#### Environment Setup
 
-CD into the SDL source directory.
-
-You will need to edit the file ${sdl_srcdir}/src/video/quartz/SDL_QuartzVideo.h 
-to remove the line containing CGDirectPaletteRef as this type no longer exists
-on this platform as of OS X 10.9.
-
-Next you will need to use the patch file named sdl_x11sym.patch in the patch directory on 
-the ${sdl_srcdir}/video/x11/SDL_x11sym.h file.
-
-Then you can build and install SDL
+Install homebrew ( http://brew.sh )
 
 ```
-mkdir build; cd build
-make
-make install
+brew install cmake sdl
 ```
-
-Once SDL is installed you can proceed with the normal build of X3D.
