@@ -35,7 +35,6 @@
 extern int16 render_mode;
 extern uint16 geo_render_mode;
 
-void x3d_cube_render(X3D_Vex3D center, int16 w, X3D_CameraObject* cam, X3D_RasterRegion* region);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Initializes the render manager.
