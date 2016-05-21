@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 
 project(UnitTests)
 
-  if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0)
+  if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0 AND NOT APPLE)
     set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   else()
     set(CMAKE_C_FLAGS "-std=c99 -Wall -g -Wno-pointer-sign")
