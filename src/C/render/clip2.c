@@ -130,7 +130,7 @@ enum {
   KEY_RECORD = X3D_KEY_14
 };
 
-void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* parent, X3D_Vex3D* v3d, uint16* uu, uint16* vv) {
+void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* parent, X3D_Vex3D* v3d, X3D_PolygonAttributes* att) {
   X3D_PolyVertex pv[total_v];
   
   X3D_Polygon2D poly = {
@@ -146,12 +146,37 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* paren
     pv[i].intensity = 0;//0x7FFF / (i + 1);
     
     pv[i].z = (1L << 30) / (v3d[i].z != 0 ? v3d[i].z : 1);
-    
-    pv[i].u = ((int32)uu[i] << 22) / v3d[i].z;
-    pv[i].v = ((int32)vv[i] << 22) / v3d[i].z;
+   
+    if(att->flags & X3D_POLYGON_TEXTURE) {
+      pv[i].u = ((int32)att->texture.uu[i] << 22) / v3d[i].z;
+      pv[i].v = ((int32)att->texture.vv[i] << 22) / v3d[i].z;
+    }
   }
   
   X3D_RasterRegion r;
   x3d_rasterregion_update(parent);
-  x3d_rasterregion_make(&r, pv, poly.total_v, parent, X3D_TRUE);
+  x3d_rasterregion_make(&r, pv, poly.total_v, parent, att->flags & X3D_POLYGON_TEXTURE);
+  
+  if(att->flags & X3D_POLYGON_COLOR) {
+    x3d_rasterregion_draw_color(&r, att->color);
+  }
 }
+
+void x3d_rasterregion_draw_color(X3D_RasterRegion* region, X3D_Color color) {
+  uint16 i;
+  
+  for(i = region->rect.y_range.min; i <= region->rect.y_range.max; ++i) {
+    X3D_Span2 new_span;
+    
+    X3D_Span* span = x3d_rasterregion_get_span(region, i);
+    
+    new_span.left.x = span->left.x;
+    new_span.left.z = 0x7FFF << 7;
+    
+    new_span.right.x = span->right.x;
+    new_span.right.z = 0x7FFF << 7;
+    
+    x3d_screen_draw_scanline_color(&new_span, i, color);
+  }
+}
+

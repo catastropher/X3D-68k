@@ -74,6 +74,7 @@ typedef struct X3D_RasterRegion {
 
 
 struct X3D_ClipContext;
+struct X3D_PolygonAttributes;
 
 _Bool x3d_rasterregion_construct_from_points(X3D_Stack* stack, X3D_RasterRegion* dest, X3D_Vex2D* v, uint16 total_v);
 _Bool x3d_rasterregion_clip_line(X3D_RasterRegion* region, X3D_Stack* stack, X3D_Vex2D* start, X3D_Vex2D* end);
@@ -90,7 +91,8 @@ void x3d_rasteredge_set_intensity(X3D_RasterEdge* edge, fp0x16 ia, fp0x16 ib);
 
 void x3d_rasterregion_fill_zbuf(X3D_RasterRegion* region, X3D_Color color, int16 z);
 
-void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* parent, X3D_Vex3D* v3d, uint16* uu, uint16* vv);
+void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* parent, X3D_Vex3D* v3d, struct X3D_PolygonAttributes* att);
+void x3d_rasterregion_draw_color(X3D_RasterRegion* region, X3D_Color color);
 
 
 fp16x16 x3d_val_slope(int16 d_a, int16 d_b);

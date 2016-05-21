@@ -289,12 +289,15 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, X3D_C
   
   uint16 temp_u[20];
   uint16 temp_v[20];
+  
+  uint16* u = (att->flags & X3D_POLYGON_TEXTURE ? att->texture.uu : NULL);
+  uint16* v = (att->flags & X3D_POLYGON_TEXTURE ? att->texture.vv : NULL);
 
   X3D_Polygon3D transformed = { .v = v3d, .total_v = poly->total_v };
   X3D_Polygon3D clipped = { .v = alloca(1000) };
   
   // Clip the polygon to the near plane
-  if(!x3d_polygon3d_clip_to_near_plane(&transformed, &clipped, 10, att->texture.uu, att->texture.vv, temp_u, temp_v))
+  if(!x3d_polygon3d_clip_to_near_plane(&transformed, &clipped, 10, u, v, temp_u, temp_v))
     return;
   
   // Project the points
@@ -302,7 +305,14 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, X3D_C
   for(i = 0; i < clipped.total_v; ++i)
     x3d_vex3d_int16_project(v2d + i, clipped.v + i);
   
-  x3d_rasterregion_draw(v2d, clipped.total_v, parent, clipped.v, temp_u, temp_v);
+  X3D_PolygonAttributes new_att = *att;
+  
+  if(att->flags & X3D_POLYGON_TEXTURE) {
+    new_att.texture.uu = temp_u;
+    new_att.texture.vv = temp_v;
+  }
+  
+  x3d_rasterregion_draw(v2d, clipped.total_v, parent, clipped.v, &new_att);
   
   x3d_stack_restore(&renderman->stack, stack_ptr);
 }
@@ -399,6 +409,13 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
   int16 v = poly->total_v - 1;
 
   near_z = 25;
+  
+  // Ugh, if we're providing UV coordinates for a texture, just make allocate space and
+  // make something up :P
+  if(ua == NULL) {
+    ua = alloca(poly->total_v * sizeof(uint16));
+    va = alloca(poly->total_v * sizeof(uint16));
+  }
   
   if(x3d_polygon3d_frustum_clipped(poly, near_z))
     return X3D_FALSE;

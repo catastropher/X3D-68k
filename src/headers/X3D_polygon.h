@@ -27,8 +27,8 @@
 #define X3D_POLYGON3D_ALLOCA(_poly, _total_v) { _poly->v = alloca(sizeof(X3D_Vex3D) * total_v); _poly->total_v = _total_v; }
 
 enum {
-  X3D_POLYGON_COLOR     = 0,
-  X3D_POLYGON_TEXTURE   = 1,
+  X3D_POLYGON_COLOR     = 1,
+  X3D_POLYGON_TEXTURE   = 2,
   X3D_POLYGON_GOURAUD   = 16,
   X3D_POLYGON_DITHER    = 32
 };
@@ -40,10 +40,10 @@ typedef struct X3D_PolygonAttributes {
     struct {
       uint16* uu;
       uint16* vv;
+      uint16 texture_id;
     } texture;
     
     uint16 color;
-    uint16 texture_id;
   };
 } X3D_PolygonAttributes;
 
