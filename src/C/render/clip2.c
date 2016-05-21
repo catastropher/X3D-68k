@@ -130,7 +130,7 @@ enum {
   KEY_RECORD = X3D_KEY_14
 };
 
-void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_RasterRegion* parent, int16 z, X3D_Vex3D* normal, X3D_Vex3D* v3d, uint16* uu, uint16* vv) {
+void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* parent, X3D_Vex3D* v3d, uint16* uu, uint16* vv) {
   X3D_PolyVertex pv[total_v];
   
   X3D_Polygon2D poly = {
@@ -153,5 +153,5 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_Color c, X3D_Raster
   
   X3D_RasterRegion r;
   x3d_rasterregion_update(parent);
-  x3d_rasterregion_make(&r, pv, poly.total_v, parent);
+  x3d_rasterregion_make(&r, pv, poly.total_v, parent, X3D_TRUE);
 }

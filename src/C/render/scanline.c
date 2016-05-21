@@ -397,7 +397,7 @@ void x3d_span_get_spanvalue_at_x(X3D_PolyVertex left, X3D_PolyVertex right, int1
 }
 
 
-void x3d_rasterregion_cheat_calc_texture(X3D_RasterRegion* region, X3D_PolyLine* p_left, X3D_PolyLine* p_right, X3D_RasterRegion* parent) {
+void x3d_rasterregion_cheat_draw_texture(X3D_RasterRegion* region, X3D_PolyLine* p_left, X3D_PolyLine* p_right, X3D_RasterRegion* parent) {
   uint16 i;
   
   for(i = region->rect.y_range.min; i <= region->rect.y_range.max; ++i) {
