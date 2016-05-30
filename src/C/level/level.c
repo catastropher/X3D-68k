@@ -16,18 +16,7 @@
 #include "X3D_common.h"
 #include "level/X3D_level.h"
 #include "X3D_prism.h"
-
-X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v) {
-  uint16 i;
-  for(i = 0; i < level->v.total; ++i) {
-    if(x3d_vex3d_equal(level->v.v + i, v)) {
-      return i;
-    }
-  }
-  
-  level->v.v = realloc(level->v.v, sizeof(X3D_Vex3D) * (level->v.total + 1));
-  return level->v.total++;
-}
+#include "X3D_segment.h"
 
 X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX* run, uint16 total) {
   uint16 old_total = level->runs.total;
@@ -38,6 +27,26 @@ X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX
   uint16 i;
   for(i = 0; i < total; ++i)
     level->runs.v[i + old_total] = run[i];
+  
+  return old_total;
+}
+
+X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total) {
+  uint16 old_total = level->faces.total;
+  
+  level->faces.faces = realloc(level->faces.faces, sizeof(X3D_LevelSegFace) * (level->faces.total + total));
+  level->faces.total += total;
+  
+  if(run != NULL) {
+    uint16 i;
+    for(i = 0; i < total; ++i)
+      level->faces.faces[i + old_total] = run[i];
+  }
+  else {
+    uint16 i;
+    for(i = 0; i < total; ++i)
+      level->faces.faces[i].connect_face = X3D_FACE_NONE;
+  }
   
   return old_total;
 }
@@ -53,9 +62,10 @@ void x3d_level_init(X3D_Level* level) {
   level->segs.segs  = NULL;
 }
 
-void x3d_test_level() {
-  X3D_Level level;
-  x3d_level_init(&level);
+void x3d_level_cleanup(X3D_Level* level) {
+  free(level->segs.segs);
+  free(level->runs.v);
+  free(level->v.v);
 }
 
 X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, X3D_Prism3D* prism, uint16 flags) {
@@ -77,4 +87,48 @@ X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, X3D_Prism3D* prism, uint16
   
   ++level->segs.total;
 }
+
+X3D_LevelSeg* x3d_level_segment_get(X3D_Level* level, X3D_LEVEL_SEG id) {
+  return level->segs.segs + id;
+}
+
+uint16 x3d_level_segment_load_v(X3D_Level* level, X3D_LEVEL_SEG id, X3D_Vex3D* v) {
+#if 0
+  X3D_LevelSeg* seg = x3d_level_segment_get(id);
+  
+  uint16 i;
+  for(i = 0; i < seg->base_v * 2; ++i) {
+    v[i] = level->v.v[level->runs[seg->v + i]];
+  }
+#endif
+}
+
+X3D_Segment* x3d_level_segment_load(X3D_Level* level, uint16 id) {
+#if 0
+  X3D_Segment* seg = malloc(1000);
+  X3D_LevelSeg* level_seg = x3d_level_segment_get(id);
+  
+  seg->base.base_v = level_seg->base_v;
+  seg->face_offset = x3d_uncompressedsegment_face_offset(level_seg->base_v);
+  
+  x3d_level_segment_load_v(level, id, &seg->prism.v);
+  
+  x3d_segment_reset(seg);
+#endif
+}
+
+void x3d_level_test() {
+  X3D_Level level;
+  x3d_level_init(&level);
+  
+  X3D_Prism3D* prism = alloca(1000);
+  x3d_prism3d_construct(prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  
+  x3d_level_segment_add(&level, prism, 0);
+  
+  x3d_level_cleanup(&level);
+}
+
+
+
 

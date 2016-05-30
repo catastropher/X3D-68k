@@ -85,3 +85,5 @@ void x3d_clip_classify_v(X3D_FinalClipContext* context) {
     x3d_clip_find_vertex_bucket(context, i);
 }
 
+
+

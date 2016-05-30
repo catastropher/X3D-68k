@@ -13,21 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include "X3D_common.h"
-#include "X3D_plane.h"
+#include "X3D_level_types.h"
 
-#include "level/X3D_level_types.h"
-#include "level/X3D_level_vertex.h"
+static inline void x3d_level_vertex_set(X3D_Level* level, X3D_LEVEL_VERTEX index, X3D_Vex3D* v) {
+  level->v.v[index] = *v;
+}
 
+static inline _Bool x3d_level_vertex_is_valid_index(X3D_Level* level, X3D_LEVEL_VERTEX index) {
+  return index < level->v.total;
+}
 
-struct X3D_Prism3D;
+X3D_LEVEL_VERTEX x3d_level_vertex_find(X3D_Level* level, X3D_Vex3D* v);
+X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v);
 
-X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX* run, uint16 total);
-X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, struct X3D_Prism3D* prism, uint16 flags);
-X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total);
-
-void x3d_level_init(X3D_Level* level);
-void x3d_level_cleanup(X3D_Level* level);
-
-void x3d_test_level();
 

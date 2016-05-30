@@ -214,6 +214,8 @@ void init_textures(void) {
 
 void segment_face_render_callback(X3D_SegmentRenderFace* face);
 
+void x3d_level_test();
+
 int main(int argc, char* argv[]) {
 #if defined(__pc__) && 1
   int16 w = 640;
@@ -232,6 +234,8 @@ int main(int argc, char* argv[]) {
   };
 
   x3d_init(&init);
+  
+  x3d_level_test();
   
   init_textures();
   
