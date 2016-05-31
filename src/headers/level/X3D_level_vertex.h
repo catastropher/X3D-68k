@@ -29,4 +29,12 @@ static inline _Bool x3d_level_vertex_is_valid_index(X3D_Level* level, X3D_LEVEL_
 X3D_LEVEL_VERTEX x3d_level_vertex_find(X3D_Level* level, X3D_Vex3D* v);
 X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v);
 
+#ifdef X3D_LEVEL_VERTEX_C
+
+static void x3d_level_vertex_array_expand(X3D_Level* level);
+static void x3d_level_vertex_run_expand(X3D_Level* level, uint16 expand_by);
+static void x3d_level_vertex_run_copy(X3D_Level* level, X3D_LEVEL_VERTEX_RUN run_start, X3D_LEVEL_VERTEX* from, uint16 total);
+
+#endif
+
 

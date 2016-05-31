@@ -13,21 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X3D_common.h"
-#include "X3D_plane.h"
+#pragma once
 
 #include "level/X3D_level_types.h"
-#include "level/X3D_level_vertex.h"
-#include "level/X3D_level_face.h"
 
-struct X3D_Prism3D;
-
-X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX* run, uint16 total);
-X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, struct X3D_Prism3D* prism, uint16 flags);
 X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total);
 
-void x3d_level_init(X3D_Level* level);
-void x3d_level_cleanup(X3D_Level* level);
+#ifdef X3D_LEVEL_FACE_C
 
-void x3d_test_level();
+static void x3d_level_segment_face_run_expand(X3D_Level* level, uint16 expand_by);
+static void x3d_level_segment_face_run_copy(X3D_Level* level, X3D_LEVEL_SEG_FACE_RUN run_start, X3D_LevelSegFace* from, uint16 total);
+static _Bool x3d_level_segment_face_run_should_copy_faces(X3D_LevelSegFace* faces);
+static void x3d_level_segment_face_run_default_init(X3D_Level* level, X3D_LEVEL_SEG_FACE_RUN run_start, uint16 total);
 
+#endif

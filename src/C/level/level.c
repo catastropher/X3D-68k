@@ -18,39 +18,6 @@
 #include "X3D_prism.h"
 #include "X3D_segment.h"
 
-X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX* run, uint16 total) {
-  uint16 old_total = level->runs.total;
-  
-  level->runs.v = realloc(level->runs.v, sizeof(X3D_LEVEL_VERTEX_RUN) * (level->runs.total + total));
-  level->runs.total += total;
-  
-  uint16 i;
-  for(i = 0; i < total; ++i)
-    level->runs.v[i + old_total] = run[i];
-  
-  return old_total;
-}
-
-X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total) {
-  uint16 old_total = level->faces.total;
-  
-  level->faces.faces = realloc(level->faces.faces, sizeof(X3D_LevelSegFace) * (level->faces.total + total));
-  level->faces.total += total;
-  
-  if(run != NULL) {
-    uint16 i;
-    for(i = 0; i < total; ++i)
-      level->faces.faces[i + old_total] = run[i];
-  }
-  else {
-    uint16 i;
-    for(i = 0; i < total; ++i)
-      level->faces.faces[i].connect_face = X3D_FACE_NONE;
-  }
-  
-  return old_total;
-}
-
 void x3d_level_init(X3D_Level* level) {
   level->v.total    = 0;
   level->v.v        = NULL;
