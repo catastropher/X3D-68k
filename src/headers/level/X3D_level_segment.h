@@ -21,6 +21,7 @@
 struct X3D_Prism3D;
 
 X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, struct X3D_Prism3D* prism, uint16 flags);
+X3D_LevelSeg* x3d_level_segment_get(X3D_Level* level, X3D_LEVEL_SEG id);
 
 #ifdef X3D_LEVEL_SEGMENT_C
 

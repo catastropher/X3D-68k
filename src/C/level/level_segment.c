@@ -24,7 +24,7 @@ X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, X3D_Prism3D* prism, uint16
   
   x3d_level_segment_array_expand(level);
   
-  X3D_LevelSeg* seg = level->segs.segs + seg_index;
+  X3D_LevelSeg* seg = x3d_level_segment_get(level, seg_index);
   seg->v      = x3d_level_vertex_run_add_from_vex3d_array(level, prism->v, prism->base_v * 2);
   seg->base_v = prism->base_v;
   seg->flags  = flags;
