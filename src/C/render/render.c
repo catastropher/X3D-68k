@@ -35,16 +35,9 @@
 extern int16 render_mode;
 extern uint16 geo_render_mode;
 
-
-///////////////////////////////////////////////////////////////////////////////
-/// Initializes the render manager.
-///
-/// @param settings - initialization settings
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
 void x3d_rendermanager_init(X3D_InitSettings* settings) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
+  X3D_ScreenManager* screenman = x3d_screenmanager_get();
   
   // Initialize the render stack
   uint32 stack_size = 600000;
@@ -60,12 +53,6 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
 
   int16 offx = 0, offy = 0;
 
-  if(0) {
-    offx = settings->screen_w / 4;
-    offy = settings->screen_h / 4;
-  }
-
-  X3D_ScreenManager* screenman = x3d_screenmanager_get();
 
   screenman->w = settings->screen_w;
   screenman->h = settings->screen_h;
