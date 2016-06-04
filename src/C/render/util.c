@@ -64,6 +64,7 @@ X3D_Color x3d_color_scale_by_depth(X3D_Color color, int16 depth, int16 min_depth
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1, int16 depth2, X3D_Color color, X3D_RasterRegion* region) {
+#if 0
   X3D_RenderManager* renderman = x3d_rendermanager_get();
   X3D_Vex2D v1 = { x1, y1 };
   X3D_Vex2D v2 = { x2, y2 };
@@ -78,9 +79,11 @@ void x3d_draw_clipped_line(int16 x1, int16 y1, int16 x2, int16 y2, int16 depth1,
 
     x3d_screen_draw_line_grad(v1.x, v1.y, v2.x, v2.y, new1, new2);
   }
+#endif
 }
 
 void x3d_draw_3d_line(X3D_Vex3D a, X3D_Vex3D b, X3D_CameraObject* cam, X3D_Color color) {
+#if 0
   X3D_Vex3D v[2] = { a, b };
   X3D_Vex2D v2d[2];
   
@@ -91,5 +94,6 @@ void x3d_draw_3d_line(X3D_Vex3D a, X3D_Vex3D b, X3D_CameraObject* cam, X3D_Color
   if(!(x3d_clip_line_to_near_plane(v, v + 1, v2d, v2d + 1, &aa, &bb, 10) & EDGE_INVISIBLE)) {
     x3d_screen_draw_line(aa.x, aa.y, bb.x, bb.y, color);
   }
+#endif
 }
 

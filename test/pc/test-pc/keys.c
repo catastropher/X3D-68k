@@ -151,6 +151,7 @@ void engine_test_handle_keys(void) {
   }
 #endif
 
+#if 0
   if(x3d_key_down(KEY_1)) {
     X3D_RayCaster caster;
     X3D_Vex3D_fp0x16 dir;
@@ -199,6 +200,7 @@ void engine_test_handle_keys(void) {
     x3d_wallportal_update(0);
     x3d_wallportal_update(1);
   }
+#endif
 
   if(x3d_key_down(KEY_ESCAPE)) {
     x3d_game_loop_quit();

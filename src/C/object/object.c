@@ -126,7 +126,7 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   X3D_Segment* seg = x3d_segmentmanager_load(obj->base.seg);
   
   uint16 portals[32];
-  uint16 total_p = x3d_wall_get_wallportals(caster.hit_face, portals);
+  uint16 total_p = 0;//x3d_wall_get_wallportals(caster.hit_face, portals);
   
   //obj->base.pos = new_pos;  ///debug
   //return;
@@ -145,11 +145,12 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
     
     X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg) + x3d_segfaceid_face(caster.hit_face);
     
-    total_p = x3d_wall_get_wallportals(caster.hit_face, portals);
+    total_p = 0;//x3d_wall_get_wallportals(caster.hit_face, portals);
     
     x3d_log(X3D_INFO, "Here!");
     
     if(total_p != 0) {
+#if 0
       X3D_Vex3D pos = {
         new_pos.x >> 8,
         new_pos.y >> 8,
@@ -158,7 +159,7 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
       
       x3d_log(X3D_INFO, "Move through portal");
       
-      X3D_WallPortal* portal = x3d_wallportal_get(portals[0]);
+      X3D_WallPortal* portal = NULL;//x3d_wallportal_get(portals[0]);
       
       X3D_Vex3D portal_pos;
       x3d_wallportal_transform_point(portal, &pos, &portal_pos);
@@ -184,6 +185,7 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
       obj->base.seg = x3d_segfaceid_seg(face->portal_seg_face);
     
       printf("Segment: %d\n", obj->base.seg);
+    #endif
     }
   }
 }

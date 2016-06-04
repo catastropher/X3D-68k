@@ -23,6 +23,8 @@
 
 #define X3D_MAX_WALL_PORTALS 32
 
+#if 0
+
 // These are part of the temporary wall portal implementation
 static X3D_WallPortal wall_portals[32];     // Table of all wall portals
 
@@ -492,3 +494,6 @@ void x3d_wallportal_render(uint16 wall_portal_id, X3D_CameraObject* cam, X3D_Ras
 }
 
 #endif
+
+#endif
+

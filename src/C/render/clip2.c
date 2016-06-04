@@ -131,6 +131,7 @@ enum {
 };
 
 void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* parent, X3D_Vex3D* v3d, X3D_PolygonAttributes* att) {
+#if 0
   X3D_PolyVertex pv[total_v];
   
   X3D_Polygon2D poly = {
@@ -160,9 +161,11 @@ void x3d_rasterregion_draw(X3D_Vex2D* v, uint16 total_v, X3D_RasterRegion* paren
   if(att->flags & X3D_POLYGON_COLOR) {
     x3d_rasterregion_draw_color(&r, att->color);
   }
+#endif
 }
 
 void x3d_rasterregion_draw_color(X3D_RasterRegion* region, X3D_Color color) {
+#if 0
   uint16 i;
   
   for(i = region->rect.y_range.min; i <= region->rect.y_range.max; ++i) {
@@ -178,5 +181,6 @@ void x3d_rasterregion_draw_color(X3D_RasterRegion* region, X3D_Color color) {
     
     x3d_screen_draw_scanline_color(&new_span, i, color);
   }
+#endif
 }
 

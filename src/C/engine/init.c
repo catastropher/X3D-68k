@@ -25,7 +25,7 @@ void x3d_init(X3D_InitSettings* settings) {
   x3d_enginestate_init(settings);
   
   // Init wall portals
-  x3d_wallportals_init();
+  //x3d_wallportals_init();
 }
 
 void x3d_cleanup(void) {

@@ -39,6 +39,7 @@ void hud_render_callback(void);
 
 // Creates a hard-coded test level
 void create_test_level(void) {
+#if 0
   x3d_level_command_init();
   x3d_level_run_command("addseg id=0 v=8 r=300 h=275 pos = { 0, 0, 0 }");
   x3d_level_run_command("addseg id=1 v=8 r=300 h=275 pos = { 800, 0, 800 }");
@@ -159,7 +160,7 @@ void create_test_level(void) {
   
   for(i = 0; i < x3d_segmentmanager_get()->alloc.alloc_offset.size; ++i)
     x3d_segment_update(x3d_segmentmanager_load(i));
-  
+#endif
 }
 
 // Sets up the camera for player 1

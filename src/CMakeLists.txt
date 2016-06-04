@@ -119,11 +119,9 @@ add_sources(
   C/render/clip.c
   C/render/rasteredge.c
   C/render/util.c
-  C/render/rasterregion.c
   C/render/scanline.c
   C/render/polyline.c
   C/render/texture.c
-  C/render/clip4.c
   C/render/font.c
   C/render/final_clip.c
   C/render/render_hud.c
