@@ -126,6 +126,7 @@ add_sources(
   C/render/clip4.c
   C/render/font.c
   C/render/final_clip.c
+  C/render/render_hud.c
   
   C/physics/collide.c
   C/physics/raytrace.c

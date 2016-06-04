@@ -107,7 +107,6 @@ void x3d_rendermanager_cleanup(void) {
   free(x3d_rendermanager_get()->stack.base);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders the scene through a camera.
 ///
@@ -118,46 +117,11 @@ void x3d_render(X3D_CameraObject* cam) {
   /// @todo Pseduo position isn't needed anymore since the portal implementation was upgraded
   cam->shift = (X3D_Vex3D) { 0, 0, 0 };
   x3d_object_pos(cam, &cam->pseduo_pos);
-
-  static uint32 start = 0;
-  static uint16 frames = 0;
   
   x3d_screen_zbuf_clear();
+  x3d_renderer_draw_hud();
   
-  //x3d_segment_render(cam->base.base.seg, cam, 0, &x3d_rendermanager_get()->region, x3d_enginestate_get_step(), 0xFFFF);
-
-  // Draw the crosshair
-  int16 cx = x3d_screenmanager_get()->w / 2;
-  int16 cy = x3d_screenmanager_get()->h / 2;
-
-  x3d_screen_draw_pix(cx, cy - 1, 0xFFFF);
-  x3d_screen_draw_pix(cx, cy + 1, 0xFFFF);
-  x3d_screen_draw_pix(cx - 1, cy, 0xFFFF);
-  x3d_screen_draw_pix(cx + 1, cy, 0xFFFF);
   
-  x3d_line3d_test(cam);
-  
-  //x3d_texture_blit(&font.tex, 0, 0);
-  
-  static int32 fps = 0;
-
-  // Update FPS counter
-  if(++frames == 10) {
-    int32 time = (SDL_GetTicks() - start);
-    if(time != 0)
-      fps = 1000000 / time;
-    else
-      fps = 100000;
-    
-    frames = 0;
-    
-    start = SDL_GetTicks();
-  }
-  
-  x3d_screen_draw_uint32(fps, 0, 0, 31);
-  
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-  if(renderman->render_hud_callback)
-    renderman->render_hud_callback();
+  x3d_line3d_test(cam);  
 }
 

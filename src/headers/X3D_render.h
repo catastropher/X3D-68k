@@ -16,6 +16,9 @@
 #pragma once
 
 #include "X3D_common.h"
+
+#include "render/X3D_render_hud.h"
+
 #include "X3D_prism.h"
 #include "X3D_object.h"
 #include "X3D_camera.h"
