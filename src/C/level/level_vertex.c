@@ -38,6 +38,7 @@ X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v) {
 
 static inline void x3d_level_vertex_array_expand(X3D_Level* level) {
   level->v.v = realloc(level->v.v, sizeof(X3D_Vex3D) * (level->v.total + 1));
+  ++level->v.total;
 }
 
 X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add(X3D_Level* level, X3D_LEVEL_VERTEX* run, uint16 total) {
@@ -58,5 +59,15 @@ static inline void x3d_level_vertex_run_copy(X3D_Level* level, X3D_LEVEL_VERTEX_
   uint16 i;
   for(i = 0; i < total; ++i)
     level->runs.v[i + run_start] = from[i];
+}
+
+X3D_LEVEL_VERTEX_RUN x3d_level_vertex_run_add_from_vex3d_array(X3D_Level* level, X3D_Vex3D* v, uint16 total_v) {
+  X3D_LEVEL_VERTEX run[total_v];
+  
+  uint16 i;
+  for(i = 0; i < total_v; ++i)
+    run[i] = x3d_level_vertex_add(level, v + i);
+  
+  return x3d_level_vertex_run_add(level, run, total_v);
 }
 
