@@ -26,6 +26,7 @@
 
 #include "render/X3D_util.h"
 
+#if 0
 void x3d_raytrace_find_segface(X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale) {
   X3D_Line3D line;
   
@@ -130,4 +131,6 @@ void x3d_line3d_test(X3D_CameraObject* cam) {
   //SDL_WM_SetCaption(buf, NULL);
   
 }
+
+#endif
 

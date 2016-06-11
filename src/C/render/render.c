@@ -16,7 +16,6 @@
 #include "X3D_common.h"
 #include "X3D_prism.h"
 #include "X3D_camera.h"
-#include "X3D_segment.h"
 #include "X3D_enginestate.h"
 #include "X3D_clip.h"
 #include "X3D_trig.h"

@@ -14,7 +14,6 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X3D_common.h"
-#include "X3D_segment.h"
 #include "X3D_enginestate.h"
 #include "X3D_wallportal.h"
 #include "X3D_trig.h"

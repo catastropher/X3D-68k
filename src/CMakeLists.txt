@@ -104,9 +104,6 @@ add_sources(
   C/geo/polygon.c
   C/geo/line.c
   
-  C/level/segment.c
-  C/level/segmentbuilder.c
-  C/level/levelloader.c
   C/level/level.c
   C/level/level_vertex.c
   C/level/level_face.c
@@ -114,7 +111,6 @@ add_sources(
   
   C/render/render.c
   C/render/clip2.c
-  C/render/clipregion.c
   C/render/wallportal.c
   C/render/portal.c
   C/render/clip.c

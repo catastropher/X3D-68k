@@ -16,7 +16,6 @@
 #define X3D_LEVEL_FACE_C
 
 #include "X3D_common.h"
-#include "X3D_segment.h"
 #include "level/X3D_level.h"
 
 X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total) {

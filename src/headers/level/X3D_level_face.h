@@ -17,6 +17,22 @@
 
 #include "level/X3D_level_types.h"
 
+typedef uint16 X3D_SegFaceID;
+
+#define X3D_FACE_NONE 0xFFFF;
+
+static inline uint16 x3d_segfaceid_create(uint16 seg, uint16 face) {
+  return 0;
+}
+
+static inline uint16 x3d_segfaceid_face(X3D_SegFaceID id) {
+  return 0;
+}
+
+static inline uint16 x3d_segfaceid_seg(X3D_SegFaceID id) {
+  return 0;
+}
+
 X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total);
 
 #ifdef X3D_LEVEL_FACE_C

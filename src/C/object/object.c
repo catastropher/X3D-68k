@@ -19,13 +19,13 @@
 #include "X3D_assert.h"
 #include "memory/X3D_handle.h"
 #include "memory/X3D_alloc.h"
-#include "X3D_segment.h"
 #include "X3D_render.h"
 #include "X3D_wallportal.h"
 
 static uint16 active_objects[X3D_MAX_OBJECTS];
 static uint16 total_active_objects;
 
+#if 0
 
 void x3d_objectmanager_activate_object(uint16 id) {
   active_objects[total_active_objects++] = id;
@@ -189,4 +189,6 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
     }
   }
 }
+
+#endif
 

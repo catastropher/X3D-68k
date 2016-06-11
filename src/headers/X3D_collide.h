@@ -17,7 +17,7 @@
 
 #include "X3D_common.h"
 #include "X3D_vector.h"
-#include "X3D_segment.h"
+#include "level/X3D_level.h"
 
 /// @todo Document.
 typedef struct X3D_BoundSphere {

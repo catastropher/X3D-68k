@@ -169,7 +169,7 @@ void setup_camera(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
 
   X3D_Vex3D center;
-  x3d_prism3d_center(&x3d_segmentmanager_load(0)->prism, &center);
+  //x3d_prism3d_center(&x3d_segmentmanager_load(0)->prism, &center);
   
   cam->base.base.pos = (X3D_Vex3D_fp16x8) { (int32)center.x << 8, (int32)center.y << 8, (int32)center.z << 8 };
   cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };

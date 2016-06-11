@@ -16,7 +16,6 @@
 #include "X3D_common.h"
 #include "level/X3D_level.h"
 #include "X3D_prism.h"
-#include "X3D_segment.h"
 
 void x3d_level_init(X3D_Level* level) {
   level->v.total    = 0;

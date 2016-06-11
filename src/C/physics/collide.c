@@ -14,14 +14,13 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X3D_common.h"
-#include "X3D_segment.h"
 #include "X3D_enginestate.h"
 #include "X3D_collide.h"
 #include "X3D_plane.h"
 #include "X3D_assert.h"
 #include "X3D_vector.h"
 
-
+#if 0
 void x3d_raycaster_init(X3D_RayCaster* caster, uint16 seg_id, X3D_Vex3D_fp16x8 pos, X3D_Vex3D_fp0x16 dir) {
   caster->seg = seg_id;
   caster->pos = pos;
@@ -136,5 +135,5 @@ void x3d_raycaster_cast(X3D_RayCaster* caster) {
   caster->dist = min_dist;
 }
 
-
+#endif
 

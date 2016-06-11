@@ -26,21 +26,10 @@
 #include "memory/X3D_stack.h"
 #include "X3D_clip.h"
 
-typedef struct X3D_ClipContext {
-  X3D_Stack* stack;
-  X3D_RasterRegion* parent;
-  X3D_RasterEdge* edges;
-  uint16* edge_index;
-  uint16 total_e;
-  uint16 total_edge_index;
-  X3D_Vex3D* v3d;
-  X3D_Vex2D* v2d;
-  X3D_Pair* edge_pairs;
-  _Bool really_close;
-  fp0x16* depth_scale;
-  X3D_Vex3D* normal;
-  X3D_Segment* seg;
-} X3D_ClipContext;
+
+typedef struct X3D_SegmentRenderContext {
+  
+} X3D_SegmentRenderContext;
 
 typedef struct X3D_SegmentRenderFace {
   X3D_RasterRegion* region;

@@ -17,7 +17,6 @@
 
 #include "level/X3D_level.h"
 #include "X3D_prism.h"
-#include "X3D_segment.h"
 
 X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, X3D_Prism3D* prism, uint16 flags) {
   X3D_LEVEL_SEG seg_index = level->segs.total;
@@ -52,17 +51,4 @@ uint16 x3d_level_segment_load_v(X3D_Level* level, X3D_LEVEL_SEG id, X3D_Vex3D* v
 #endif
 }
 
-X3D_Segment* x3d_level_segment_load(X3D_Level* level, uint16 id) {
-#if 0
-  X3D_Segment* seg = malloc(1000);
-  X3D_LevelSeg* level_seg = x3d_level_segment_get(id);
-  
-  seg->base.base_v = level_seg->base_v;
-  seg->face_offset = x3d_uncompressedsegment_face_offset(level_seg->base_v);
-  
-  x3d_level_segment_load_v(level, id, &seg->prism.v);
-  
-  x3d_segment_reset(seg);
-#endif
-}
 
