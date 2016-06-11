@@ -166,6 +166,8 @@ void create_test_level(void) {
 // Sets up the camera for player 1
 void setup_camera(void) {
   x3d_camera_init();
+  return;
+  
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
 
   X3D_Vex3D center;
@@ -250,9 +252,9 @@ int main(int argc, char* argv[]) {
   // Set up key mapping
   setup_key_map();
   x3d_keymanager_set_callback(engine_test_handle_keys);
-  x3d_rendermanager_set_hud_callback(hud_render_callback);
+  //x3d_rendermanager_set_hud_callback(hud_render_callback);
   
-  x3d_rendermanager_get()->segment_face_render_callback = segment_face_render_callback;
+  //x3d_rendermanager_get()->segment_face_render_callback = segment_face_render_callback;
   
   create_test_level();
   

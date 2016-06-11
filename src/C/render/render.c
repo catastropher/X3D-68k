@@ -112,6 +112,6 @@ void x3d_render(X3D_CameraObject* cam) {
   x3d_renderer_draw_hud();
   
   
-  x3d_line3d_test(cam);  
+  //x3d_line3d_test(cam);  
 }
 

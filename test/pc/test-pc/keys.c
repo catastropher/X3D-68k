@@ -75,6 +75,8 @@ void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   static _Bool rec = X3D_FALSE;
 
+#if 0
+  
   if(!menu_allow_normal_keys())
     return;
 
@@ -96,6 +98,7 @@ void engine_test_handle_keys(void) {
       }
     }
   }
+#endif
 
 #if 1
   if(x3d_key_down(KEY_9)) {
@@ -206,6 +209,7 @@ void engine_test_handle_keys(void) {
     x3d_game_loop_quit();
   }
 
+#if 0
   if(x3d_key_down(KEY_W)) {
     X3D_Vex3D dir;
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
@@ -279,4 +283,5 @@ void engine_test_handle_keys(void) {
   else if(x3d_key_down(KEY_DOWN)) {
     cam->base.base.pos.y += 4L << 8;
   }
+#endif
 }

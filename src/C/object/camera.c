@@ -36,8 +36,8 @@ void x3d_camera_init(void) {
     .size = sizeof(X3D_CameraObject)
   };
   
-  x3d_object_create_type(0, &type_cam);
-  X3D_Handle cam_handle = x3d_object_create(
+  //x3d_object_create_type(0, &type_cam);
+  /*X3D_Handle cam_handle = x3d_object_create(
     0,
     (X3D_Vex3D) { 0, 0, 0 },
     0,
@@ -50,6 +50,7 @@ void x3d_camera_init(void) {
     .cam = x3d_handle_deref(cam_handle),
     .id = 0
   };
+  */
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -19,7 +19,7 @@
 
 typedef uint16 X3D_SegFaceID;
 
-#define X3D_FACE_NONE 0xFFFF;
+#define X3D_FACE_NONE 0xFFFF
 
 static inline uint16 x3d_segfaceid_create(uint16 seg, uint16 face) {
   return 0;

@@ -18,6 +18,8 @@
 #include "X3D.h"
 #include "hud.h"
 
+#if 0
+
 extern X3D_Font font;
 
 _Bool display_menu = 0;
@@ -270,3 +272,4 @@ void segment_face_render_callback(X3D_SegmentRenderFace* face) {
   }
 }
 
+#endif
