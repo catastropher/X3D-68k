@@ -169,9 +169,14 @@ static inline fp8x8 div_int16_by_int16_as_fp8x8(int16 n, int16 d) {
   return ((int32)n << 8) / d;
 }
 
+static inline fp0x16 div_int16_by_int16_as_fp0x16(int16 n, int16 d) {
+  return ((int32)n << 15) / d;
+}
+
 
 static inline int16 x3d_fp16x6_whole(fp16x16 f) {
   return f >> 16;
 }
 
+int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale);
 

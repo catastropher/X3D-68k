@@ -85,6 +85,10 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   renderman->render_hud_callback = NULL;
 }
 
+void x3d_renderer_draw_segment_wireframe(X3D_LEVEL_SEG seg) {
+  
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Cleans up the render manager.
 ///

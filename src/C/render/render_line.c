@@ -13,14 +13,17 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "geo/X3D_line.h"
+#include "X3D_screen.h"
+#include "X3D_camera.h"
 
-#include "X3D_common.h"
-#include "X3D_vector.h"
-#include "X3D_plane.h"
-
-struct X3D_Polygon3D;
-struct X3D_CameraObject;
-
-void x3d_raytrace_find_segface(struct X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale);
+void x3d_ray3d_render(X3D_Ray3D* ray, X3D_Color color, X3D_CameraObject* cam) {
+  X3D_Ray3D clipped_ray;
+  if(x3d_ray3d_clip_to_near_plane(ray, &clipped_ray) == X3D_RAY3D_INVISIBLE)
+    return;
+  
+  X3D_Ray2D projected_ray;
+  x3d_ray3d_project_to_ray2d(&clipped_ray, cam, &projected_ray);
+  x3d_screen_draw_line(projected_ray.v[0].x, projected_ray.v[0].y, projected_ray.v[1].x, projected_ray.v[1].y, color);
+}
 

@@ -65,7 +65,7 @@ void x3d_rasterregion_generate_new_spans(X3D_ScanlineGenerator* gen, int16 start
   }
 }
 
-int16 x3d_t_clip(int16 start, int16 end, uint16 scale);
+int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale);
 
 
 ///////////////////////////////////////////////////////////////////////////////

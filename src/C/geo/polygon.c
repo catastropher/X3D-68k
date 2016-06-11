@@ -402,7 +402,7 @@ void x3d_polygon3d_clip_add_point(X3D_Polygon3D* poly, uint16* u, uint16* v, X3D
   ++poly->total_v;
 }
 
-int16 x3d_t_clip(int16 start, int16 end, uint16 scale);
+int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale);
 
 _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, int16 near_z, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va) {
   int16 next_v;
@@ -438,13 +438,13 @@ _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest,
       int32 t = ((int32)in << 15) / (in + out);
       
       X3D_Vex3D new_p = {
-        x3d_t_clip(poly->v[v].x, poly->v[next_v].x, t),
-        x3d_t_clip(poly->v[v].y, poly->v[next_v].y, t),
+        x3d_linear_interpolate(poly->v[v].x, poly->v[next_v].x, t),
+        x3d_linear_interpolate(poly->v[v].y, poly->v[next_v].y, t),
         near_z
       };
       
-      int16 new_u = x3d_t_clip(ua[v], ua[next_v], t);
-      int16 new_v = x3d_t_clip(va[v], va[next_v], t);
+      int16 new_u = x3d_linear_interpolate(ua[v], ua[next_v], t);
+      int16 new_v = x3d_linear_interpolate(va[v], va[next_v], t);
      
       x3d_polygon3d_clip_add_point(dest, new_ua, new_va, new_p, new_u, new_v);
       
@@ -487,13 +487,13 @@ _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_
       int32 t = ((int32)in << 15) / (in + out);
       
       X3D_Vex3D new_p = {
-        x3d_t_clip(poly->v[v].x, poly->v[next_v].x, t),
-        x3d_t_clip(poly->v[v].y, poly->v[next_v].y, t),
-        x3d_t_clip(poly->v[v].z, poly->v[next_v].z, t),
+        x3d_linear_interpolate(poly->v[v].x, poly->v[next_v].x, t),
+        x3d_linear_interpolate(poly->v[v].y, poly->v[next_v].y, t),
+        x3d_linear_interpolate(poly->v[v].z, poly->v[next_v].z, t),
       };
       
-      int16 new_u = x3d_t_clip(ua[v], ua[next_v], t);
-      int16 new_v = x3d_t_clip(va[v], va[next_v], t);
+      int16 new_u = x3d_linear_interpolate(ua[v], ua[next_v], t);
+      int16 new_v = x3d_linear_interpolate(va[v], va[next_v], t);
      
       *clip = dest->total_v;
       

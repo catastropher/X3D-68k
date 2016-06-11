@@ -88,7 +88,7 @@ int16 x3d_line_parametric_t(X3D_Vex2D* a, X3D_Vex2D* b, X3D_Vex2D* v) {
   }
 }
 
-int16 x3d_t_clip(int16 start, int16 end, uint16 scale) {
+int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale) {
   return start + ((((int32)end - start) * scale) >> 15);
 }
 

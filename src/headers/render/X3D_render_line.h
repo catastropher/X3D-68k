@@ -15,12 +15,9 @@
 
 #pragma once
 
-#include "X3D_common.h"
-#include "X3D_vector.h"
-#include "X3D_plane.h"
+#include "geo/X3D_line.h"
+#include "X3D_screen.h"
+#include "X3D_camera.h"
 
-struct X3D_Polygon3D;
-struct X3D_CameraObject;
-
-void x3d_raytrace_find_segface(struct X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale);
+void x3d_ray3d_render(X3D_Ray3D* ray, X3D_Color color, X3D_CameraObject* object);
 

@@ -102,6 +102,7 @@ add_sources(
   C/geo/prism.c
   C/geo/plane.c
   C/geo/polygon.c
+  C/geo/line.c
   
   C/level/segment.c
   C/level/segmentbuilder.c
@@ -125,6 +126,7 @@ add_sources(
   C/render/font.c
   C/render/final_clip.c
   C/render/render_hud.c
+  C/render/render_line.c
   
   C/physics/collide.c
   C/physics/raytrace.c

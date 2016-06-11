@@ -106,3 +106,10 @@ static inline _Bool x3d_vex3d_equal(X3D_Vex3D* a, X3D_Vex3D* b) {
   return a->x == b->x && a->y == b->y && a->z == b->z;
 }
 
+static inline _Bool x3d_vex3d_in_front_of_near_plane(X3D_Vex3D* v) {
+  /// @todo Replace with near plane constant
+  return v->z > 10;
+}
+
+
+
