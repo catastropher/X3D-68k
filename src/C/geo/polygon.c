@@ -56,18 +56,9 @@ void x3d_polygon3d_print(X3D_Polygon3D* p) {
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_translate_normal(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist) {
-  X3D_Vex3D shift = {
-    ((int32)dist * dir->x) >> X3D_NORMAL_BITS,
-    ((int32)dist * dir->y) >> X3D_NORMAL_BITS,
-    ((int32)dist * dir->z) >> X3D_NORMAL_BITS
-  };
-
-  uint16 i;
-  for(i = 0; i < poly->total_v; ++i) {
-    poly->v[i].x += shift.x;
-    poly->v[i].y += shift.y;
-    poly->v[i].z += shift.z;
-  }
+  X3D_Vex3D shift;
+  x3d_vex3d_fp0x16_mul_by_int16(dir, dist, &shift);
+  x3d_polygon3d_translate(poly, shift);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -125,9 +116,9 @@ void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale) {
 
   uint16 i;
   for(i = 0; i < poly->total_v; ++i) {
-    poly->v[i].x = (((int32)(poly->v[i].x - center.x) * scale) >> 8) + center.x;
-    poly->v[i].y = (((int32)(poly->v[i].y - center.y) * scale) >> 8) + center.y;
-    poly->v[i].z = (((int32)(poly->v[i].z - center.z) * scale) >> 8) + center.z;
+    poly->v[i].x = x3d_linear_interpolate_fp8x8(center.x, poly->v[i].x, scale);
+    poly->v[i].y = x3d_linear_interpolate_fp8x8(center.y, poly->v[i].y, scale);
+    poly->v[i].z = x3d_linear_interpolate_fp8x8(center.z, poly->v[i].z, scale);
   }
 }
 
@@ -142,9 +133,8 @@ void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale) {
 void x3d_polygon3d_reverse(X3D_Polygon3D* poly) {
   uint16 i;
 
-  for(i = 0; i < poly->total_v / 2; ++i) {
+  for(i = 0; i < poly->total_v / 2; ++i)
     X3D_SWAP(poly->v[i], poly->v[poly->total_v - i - 1]);
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -265,58 +255,6 @@ void x3d_polygon3d_copy(X3D_Polygon3D* src, X3D_Polygon3D* dest) {
     dest->v[i] = src->v[i];
 }
 
-extern int16 render_mode;
-
-///////////////////////////////////////////////////////////////////////////////
-/// Renders a 3D polygon.
-///
-/// @param poly   - polygon to render
-/// @param att    - polygon attributes (how to render the polygon)
-/// @param cam    - camera to render through
-/// @param parent - parent clipping region to draw inside of
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, X3D_CameraObject* cam, X3D_RasterRegion* parent) {
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-  void* stack_ptr = x3d_stack_save(&renderman->stack);
-  
-  X3D_Vex3D v3d[poly->total_v + 5];
-  X3D_Vex2D v2d[poly->total_v + 5];
-
-  // Rotate the points relative to the camera
-  x3d_camera_transform_points(cam, poly->v, poly->total_v, v3d, NULL);
-  
-  uint16 temp_u[20];
-  uint16 temp_v[20];
-  
-  uint16* u = (att->flags & X3D_POLYGON_TEXTURE ? att->texture.uu : NULL);
-  uint16* v = (att->flags & X3D_POLYGON_TEXTURE ? att->texture.vv : NULL);
-
-  X3D_Polygon3D transformed = { .v = v3d, .total_v = poly->total_v };
-  X3D_Polygon3D clipped = { .v = alloca(1000) };
-  
-  // Clip the polygon to the near plane
-  if(!x3d_polygon3d_clip_to_near_plane(&transformed, &clipped, 10, u, v, temp_u, temp_v))
-    return;
-  
-  // Project the points
-  uint16 i;
-  for(i = 0; i < clipped.total_v; ++i)
-    x3d_vex3d_int16_project(v2d + i, clipped.v + i);
-  
-  X3D_PolygonAttributes new_att = *att;
-  
-  if(att->flags & X3D_POLYGON_TEXTURE) {
-    new_att.texture.uu = temp_u;
-    new_att.texture.vv = temp_v;
-  }
-  
-  x3d_rasterregion_draw(v2d, clipped.total_v, parent, clipped.v, &new_att);
-  
-  x3d_stack_restore(&renderman->stack, stack_ptr);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 /// Removes duplicate points from a 2D polygon.
 ///
@@ -324,7 +262,7 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, X3D_C
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_polygon2d_remove_duplicate(X3D_Polygon2D* poly) {
+void x3d_polygon2d_remove_duplicate_points(X3D_Polygon2D* poly) {
   uint16 i;
   uint16 pos = 0;
   uint16 prev = poly->total_v - 1;

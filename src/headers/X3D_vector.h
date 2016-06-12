@@ -112,4 +112,9 @@ static inline _Bool x3d_vex3d_in_front_of_near_plane(X3D_Vex3D* v) {
 }
 
 
+static inline void x3d_vex3d_fp0x16_mul_by_int16(X3D_Vex3D* v, int16 i16, X3D_Vex3D* dest) {
+  dest->x = mul_fp0x16_by_int16_as_int16(v->x, i16);
+  dest->y = mul_fp0x16_by_int16_as_int16(v->y, i16);
+  dest->z = mul_fp0x16_by_int16_as_int16(v->z, i16);
+}
 

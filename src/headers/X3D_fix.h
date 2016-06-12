@@ -61,6 +61,28 @@ static inline int32 fast_recip(const int32* tab, int16 val) {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+/// Calculates the change in d_a with respect to d_b (the slope).
+///
+/// @param d_a  - e.g. change in x
+/// @param d_b  - e.g. change in y
+///
+/// @return Rate of change as an fp16x16
+///////////////////////////////////////////////////////////////////////////////
+static inline fp16x16 x3d_val_slope(int16 d_a, int16 d_b) {
+  if(d_b == 0) return 0;
+  return ((int32)d_a << 16) / d_b;
+}
+
+static inline fp16x16 x3d_val_slope2(fp16x16 d_a, int16 d_b) {
+  if(d_b == 0) return 0;
+  return d_a / d_b;
+}
+
+static inline int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale) {
+  return start + ((((int32)end - start) * scale) >> 15);
+}
+
 static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 end, int32 dx) {
   slope->shift = 0;
   
@@ -173,10 +195,19 @@ static inline fp0x16 div_int16_by_int16_as_fp0x16(int16 n, int16 d) {
   return ((int32)n << 15) / d;
 }
 
+static inline int16 mul_int16_by_fp8x8(int16 a, fp8x8 b) {
+  return ((int32)a * b) >> 8;
+}
+
 
 static inline int16 x3d_fp16x6_whole(fp16x16 f) {
   return f >> 16;
 }
 
 int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale);
+
+static inline int16 x3d_linear_interpolate_fp8x8(int16 start, int16 end, fp8x8 scale) {
+  return start + mul_int16_by_fp8x8(end - start, scale);
+}
+
 

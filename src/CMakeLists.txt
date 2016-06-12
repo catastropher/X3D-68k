@@ -110,13 +110,11 @@ add_sources(
   C/level/level_segment.c
   
   C/render/render.c
-  C/render/clip2.c
   C/render/wallportal.c
   C/render/portal.c
   C/render/clip.c
   C/render/rasteredge.c
   C/render/util.c
-  C/render/scanline.c
   C/render/polyline.c
   C/render/texture.c
   C/render/font.c

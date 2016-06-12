@@ -34,6 +34,10 @@ typedef struct X3D_LevelSegFace {
   X3D_Plane plane;
 } X3D_LevelSegFace;
 
+typedef struct X3D_LevelSegInterface {
+  
+} X3D_LevelSegInterface;
+
 typedef struct X3D_LevelSegFaceArray {
   uint16            total;
   X3D_LevelSegFace* faces;

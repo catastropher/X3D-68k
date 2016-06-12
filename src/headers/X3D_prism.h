@@ -37,7 +37,7 @@ enum {
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Prism3D {
   uint16 base_v;      ///< Number of vertices in one of the bases
-  X3D_Vex3D v[];      ///< The base_v * 2 vertices that compose the prism. The
+  X3D_Vex3D* v;      ///< The base_v * 2 vertices that compose the prism. The
                       ///   first base_v vertices are for X3D_BASE_A and the
                       ///   next base_v vertices are for X3D_BASE_B.
 } X3D_Prism3D;
