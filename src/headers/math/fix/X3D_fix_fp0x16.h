@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "X3D_common.h"
 #include "X3D_fix_types.h"
 
 /*
@@ -34,8 +35,18 @@ typedef int32   fp0x32;
 typedef uint32  ufp0x32;
 */
 
+#define X3D_FP0x16_ONE_HALF     16384
+#define X3D_FP0x16_ONE_FOURTH   8192
+#define X3D_FP0x16 ONE_EIGHTH   4192
+
+#define X3D_FP0x16_MAX 32767
+#define X3D_FP0x16_MIN -32768
+
 static inline fp0x16 x3d_fp0x16_from_float(float f) {
-  return f * 32767;
+  if(f >= 0)
+    return X3D_MIN(f * 32768, X3D_FP0x16_MAX);
+  else
+    return X3D_MAX(f * 32768, X3D_FP0x16_MIN);
 }
 
 static inline fp0x16 x3d_fp0x16_from_fp0x8(fp0x8 fp) {
@@ -51,9 +62,24 @@ static inline fp0x16 x3d_fp0x16_from_fp0x64(fp0x64 fp) {
 }
 
 
-static inline fp0x16 x3d_fp0x16_mul_by_fp0x16_as_fp0x16(fp0x16 a, fp0x16 b) { return 0; }
+static inline fp0x16 x3d_fp0x16_mul_by_fp0x16_as_fp0x16(fp0x16 a, fp0x16 b) {
+  return ((int32)a * b) >> 15;
+}
 
-static inline int16 x3d_fp0x16_mul_by_int16_as_int16(fp0x16 a, int16 b) { return 0; }
-static inline int16 x3d_fp0x16_mul_by_int16_as_fp0x16(fp0x16 a, int16 b) { return 0; }
+static inline int16 x3d_fp0x16_mul_by_int16_as_int16(fp0x16 a, int16 b) {
+  return ((int32)a * b) >> 15;
+}
 
+static inline fp0x16 x3d_fp0x16_mul_by_int16_as_fp0x16(fp0x16 a, int16 b) {
+  return a * b;
+}
+
+
+static inline fp16x16 x3d_fp0x16_div_by_fp0x16_as_fp16x16(fp0x16 a, fp0x16 b) {
+  return 0;
+}
+
+static inline fp0x16 x3d_fp0x16_div_by_int16_as_fp0x16(fp0x16 a, fp0x16 b) {
+  return 0;
+}
 

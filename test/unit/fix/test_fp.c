@@ -13,35 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-/// @brief X3D unit tests.
+void test_fp0x16(void);
 
-#include <SDL2/SDL.h>
-
-#include "X3D.h"
-
-void test_geo(void);
-void test_fp(void);
-
-void run_tests() {
-  x3d_log(X3D_INFO, "Running tests");
-  
-  test_geo();
-  test_fp();
+void test_fp(void) {
+  test_fp0x16();
 }
-
-int main(int argc, char* argv[]) {
-  X3D_InitSettings init = {
-    .screen_w = 240,
-    .screen_h = 128,
-    .screen_scale = 3,
-    .fullscreen = X3D_FALSE,
-    .fov = ANG_60
-  };
-  
-  x3d_init(&init);
-  run_tests();
-  x3d_cleanup();
-  
-  x3d_log(X3D_INFO, "All tests passed.\n");
-}
-

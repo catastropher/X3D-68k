@@ -19,7 +19,7 @@
 #include "X3D_assert.h"
 
 #include "math/fix/X3D_fix_types.h"
-
+#include "math/fix/X3D_fix_fp0x16.h"
 
 typedef uint8 angle256;
 

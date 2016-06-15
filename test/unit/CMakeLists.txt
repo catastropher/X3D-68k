@@ -15,6 +15,9 @@ add_executable(UnitTests
   
   geo/test_geo.c
   geo/test_polygon.c
+  
+  fix/test_fp.c
+  fix/test_fp0x16.c
 )
 
 set_target_properties(UnitTests PROPERTIES OUTPUT_NAME unit)

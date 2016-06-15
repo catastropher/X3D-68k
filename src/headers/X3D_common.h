@@ -32,18 +32,19 @@
 
 #define X3D_WORD_ALIGN 8
 
-#include "X3D_int.h"
-#include "X3D_interface.h"
-#include "X3D_log.h"
-#include "X3D_fix.h"
-#include "X3D_vector.h"
-
 #define X3D_SWAP(_a, _b) { __typeof__(_a) _temp = (_a); (_a) = (_b); (_b) = _temp; }
 
 #define X3D_MIN(_a, _b) ({ __typeof__(_a) _aa = _a; __typeof__(_b) _bb = _b; _aa < _bb ? _aa : _bb; })
 #define X3D_MAX(_a, _b) ({ __typeof__(_a) _aa = _a; __typeof__(_b) _bb = _b; _aa > _bb ? _aa : _bb; })
 
 #define X3D_SIGNOF(_v) ((_v) < 0 ? -1 : ((_v) > 0 ? 1 : 0))
+
+
+#include "X3D_int.h"
+#include "X3D_interface.h"
+#include "X3D_log.h"
+#include "X3D_fix.h"
+#include "X3D_vector.h"
 
 
 static inline int16 x3d_int16_add_wrap(int16 val, int16 add, int16 max) {
