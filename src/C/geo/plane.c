@@ -44,7 +44,7 @@ void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X
 #endif
 
   // D = (AX + BY + CZ)
-  p->d = x3d_vex3d_int16_dot(&p->normal, a) >> X3D_NORMAL_BITS;
+  p->d = x3d_vex3d_dot(&p->normal, a) >> X3D_NORMAL_BITS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

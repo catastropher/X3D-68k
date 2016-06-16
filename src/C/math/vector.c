@@ -32,15 +32,19 @@
 ///   seen in practice (it requires huge vectors). If overflow does happen, the
 ///   function calling this should scale down the vectors before calling this.
 ///////////////////////////////////////////////////////////////////////////////
-int32 x3d_vex3d_int16_dot(X3D_Vex3D* a, X3D_Vex3D* b) {
+int32 x3d_vex3d_dot(X3D_Vex3D* a, X3D_Vex3D* b) {
   int32 p_x = (int32)a->x * b->x;
   int32 p_y = (int32)a->y * b->y;
   int32 p_z = (int32)a->z * b->z;
   
-  // Check for overflow
-  //x3d_assert(!x3d_addi32_check_overflow(3, p_x, p_y, p_z));
+  int64 real_sum = (int64)p_x + p_y + p_z;
+  int32 sum_when_using_i32 = p_x + p_y + p_z;
   
-  return p_x + p_y + p_z; 
+  if(sum_when_using_i32 != real_sum) {
+    return (real_sum < 0 ? INT32_MIN : INT32_MAX);
+  }
+  
+  return sum_when_using_i32; 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -52,7 +56,7 @@ int32 x3d_vex3d_int16_dot(X3D_Vex3D* a, X3D_Vex3D* b) {
 /// @return dot product of a and b as an fp0x16
 ///////////////////////////////////////////////////////////////////////////////
 fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b) {
-  return x3d_vex3d_int16_dot(a, b) >> X3D_NORMAL_BITS;
+  return x3d_vex3d_dot(a, b) >> X3D_NORMAL_BITS;
 }
 
 

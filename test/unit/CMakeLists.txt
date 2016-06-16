@@ -18,6 +18,9 @@ add_executable(UnitTests
   
   fix/test_fp.c
   fix/test_fp0x16.c
+  
+  math/test_math.c
+  math/test_vector.c
 )
 
 set_target_properties(UnitTests PROPERTIES OUTPUT_NAME unit)
