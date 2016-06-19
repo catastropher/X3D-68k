@@ -36,6 +36,11 @@ void x3d_camera_init(void) {
     .size = sizeof(X3D_CameraObject)
   };
   
+  x3d_playermanager_get()->player[0] = (X3D_Player) {
+    .cam = malloc(sizeof(X3D_CameraObject)),
+    .id = 0
+  };
+  
   //x3d_object_create_type(0, &type_cam);
   /*X3D_Handle cam_handle = x3d_object_create(
     0,
@@ -84,10 +89,6 @@ void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
     // Rotate the point around the origin
     X3D_Vex3D temp_rot;
     x3d_vex3d_int16_rotate(&temp_rot, &translate, &cam->base.mat);
-    
-    temp_rot.x += cam->shift.x;
-    temp_rot.y += cam->shift.y;
-    temp_rot.z += cam->shift.z;
     
     // Project it onto the screen
     if(dest2d)

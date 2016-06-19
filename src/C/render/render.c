@@ -28,6 +28,8 @@
 #include "level/X3D_level.h"
 #include "render/X3D_font.h"
 
+#include "geo/X3D_line.h"
+
 #include <stdio.h>
 
 
@@ -84,6 +86,38 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   renderman->render_hud_callback = NULL;
 }
 
+void x3d_ray3d_render(X3D_Ray3D* ray, X3D_CameraObject* cam, X3D_Color color) {
+  X3D_Ray2D ray2d;
+  x3d_ray3d_project_to_ray2d(ray, cam, &ray2d);  
+  x3d_screen_draw_line(ray2d.v[0].x, ray2d.v[0].y, ray2d.v[1].x, ray2d.v[1].y, color);  
+}
+
+void x3d_prism3d_render_wireframe_render_base(X3D_Prism3D* prism, X3D_CameraObject* cam, uint16 base, X3D_Color color) {
+  uint16 prev = prism->base_v - 1;
+  uint16 v_start = (base == 0 ? 0 : prism->base_v);
+  
+  uint16 i;
+  for(i = 0; i < prism->base_v; ++i) {
+    X3D_Ray3D ray = x3d_ray3d_make(prism->v[prev + v_start], prism->v[i + v_start]);
+    x3d_ray3d_render(&ray, cam, color);
+    prev = i;
+  }
+}
+
+void x3d_prism3d_render_wireframe_render_connecting_line(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D_Color color) {
+  uint16 i;
+  for(i = 0; i < prism->base_v; ++i) {
+    X3D_Ray3D ray = x3d_ray3d_make(prism->v[i], prism->v[i + prism->base_v]);
+    x3d_ray3d_render(&ray, cam, color);
+  }
+}
+
+void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D_Color color) {
+  x3d_prism3d_render_wireframe_render_base(prism, cam, 0, color);
+  x3d_prism3d_render_wireframe_render_base(prism, cam, 1, color);
+  x3d_prism3d_render_wireframe_render_connecting_line(prism, cam, color);
+}
+
 void x3d_renderer_draw_segment_wireframe(X3D_LEVEL_SEG seg) {
   
 }
@@ -107,6 +141,18 @@ void x3d_render(X3D_CameraObject* cam) {
   /// @todo Pseduo position isn't needed anymore since the portal implementation was upgraded
   //cam->shift = (X3D_Vex3D) { 0, 0, 0 };
   //x3d_object_pos(cam, &cam->pseduo_pos);
+  
+  X3D_Prism3D prism = { .v = alloca(1000) };
+  
+  x3d_prism3d_construct(&prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  
+  uint16 i;
+  for(i = 0; i < prism.base_v * 2; ++i) {
+    prism.v[i].z += 1000;
+  }
+  
+  x3d_prism3d_render_wireframe(&prism, cam, 31);
+  
   
   //x3d_screen_zbuf_clear();
   //x3d_renderer_draw_hud();

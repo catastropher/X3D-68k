@@ -166,11 +166,10 @@ void create_test_level(void) {
 // Sets up the camera for player 1
 void setup_camera(void) {
   x3d_camera_init();
-  return;
   
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
 
-  X3D_Vex3D center;
+  X3D_Vex3D center = { 0, 0, 0 };
   //x3d_prism3d_center(&x3d_segmentmanager_load(0)->prism, &center);
   
   cam->base.base.pos = (X3D_Vex3D_fp16x8) { (int32)center.x << 8, (int32)center.y << 8, (int32)center.z << 8 };
@@ -238,11 +237,11 @@ int main(int argc, char* argv[]) {
 
   x3d_init(&init);
   
-  x3d_level_test();
+  //x3d_level_test();
   
-  init_textures();
+  //init_textures();
   
-#if 1
+#if 0
   if(!x3d_font_load(&font, "font.bmp")) {
     x3d_log(X3D_ERROR, "Failed to load font");
     exit(0);
@@ -256,7 +255,7 @@ int main(int argc, char* argv[]) {
   
   //x3d_rendermanager_get()->segment_face_render_callback = segment_face_render_callback;
   
-  create_test_level();
+  //create_test_level();
   
   setup_camera();
   
