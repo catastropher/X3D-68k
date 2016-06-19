@@ -22,6 +22,7 @@
 #include "X3D_camera.h"
 #include "X3D_render.h"
 #include "X3D_enginestate.h"
+#include "geo/X3D_line.h"
 
 /**
 * Constructs a 3D prism with regular polygons as the base.
@@ -203,6 +204,12 @@ void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b) 
     *a = edge - base_v * 2;
     *b = edge - base_v;
   }
+}
+
+void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, X3D_Ray3D* dest) {
+  uint16 a, b;
+  x3d_prism_get_edge_index(prism->base_v, edge, &a, &b);
+  *dest = x3d_ray3d_make(prism->v[a], prism->v[b]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

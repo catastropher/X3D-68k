@@ -88,6 +88,7 @@ static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
 struct X3D_DisplayLineList;
 struct X3D_CameraObject;
 struct X3D_RasterRegion;
+struct X3D_Ray3D;
 
 void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
 void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
@@ -97,4 +98,6 @@ void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b);
 void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest);
 void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest);
 void x3d_prism_point_faces(uint16 base_v, uint16 point, uint16* dest);
+
+void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
 

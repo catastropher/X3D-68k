@@ -92,30 +92,13 @@ void x3d_ray3d_render(X3D_Ray3D* ray, X3D_CameraObject* cam, X3D_Color color) {
   x3d_screen_draw_line(ray2d.v[0].x, ray2d.v[0].y, ray2d.v[1].x, ray2d.v[1].y, color);  
 }
 
-void x3d_prism3d_render_wireframe_render_base(X3D_Prism3D* prism, X3D_CameraObject* cam, uint16 base, X3D_Color color) {
-  uint16 prev = prism->base_v - 1;
-  uint16 v_start = (base == 0 ? 0 : prism->base_v);
-  
-  uint16 i;
-  for(i = 0; i < prism->base_v; ++i) {
-    X3D_Ray3D ray = x3d_ray3d_make(prism->v[prev + v_start], prism->v[i + v_start]);
-    x3d_ray3d_render(&ray, cam, color);
-    prev = i;
-  }
-}
-
-void x3d_prism3d_render_wireframe_render_connecting_line(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D_Color color) {
-  uint16 i;
-  for(i = 0; i < prism->base_v; ++i) {
-    X3D_Ray3D ray = x3d_ray3d_make(prism->v[i], prism->v[i + prism->base_v]);
-    x3d_ray3d_render(&ray, cam, color);
-  }
-}
-
 void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D_Color color) {
-  x3d_prism3d_render_wireframe_render_base(prism, cam, 0, color);
-  x3d_prism3d_render_wireframe_render_base(prism, cam, 1, color);
-  x3d_prism3d_render_wireframe_render_connecting_line(prism, cam, color);
+  uint16 i;
+  for(i = 0; i < prism->base_v * 3; ++i) {
+    X3D_Ray3D edge;
+    x3d_prism3d_get_edge(prism, i, &edge);
+    x3d_ray3d_render(&edge, cam, color);
+  }
 }
 
 void x3d_renderer_draw_segment_wireframe(X3D_LEVEL_SEG seg) {
