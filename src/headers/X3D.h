@@ -47,4 +47,6 @@
 #include "render/X3D_font.h"
 #include "collide/X3D_raytrace.h"
 
+#include "geo/X3D_line.h"
+
 

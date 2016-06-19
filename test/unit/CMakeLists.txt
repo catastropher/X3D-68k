@@ -15,6 +15,7 @@ add_executable(UnitTests
   
   geo/test_geo.c
   geo/test_polygon.c
+  geo/test_line.c
   
   fix/test_fp.c
   fix/test_fp0x16.c
@@ -25,7 +26,7 @@ add_executable(UnitTests
 
 set_target_properties(UnitTests PROPERTIES OUTPUT_NAME unit)
 
-target_link_libraries(UnitTests $ENV{X3D}/build/X3D/libX3D.a)
+target_link_libraries(UnitTests $ENV{X3D}/build/X3D/libX3D.a -lm)
 
 
 find_package(SDL REQUIRED)

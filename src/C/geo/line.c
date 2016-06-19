@@ -85,6 +85,11 @@ _Bool x3d_ray3d_totally_in_front_of_near_plane(X3D_Ray3D* ray) {
 }
 
 void x3d_ray3d_interpolate(X3D_Ray3D* ray, fp0x16 t, X3D_Vex3D* dest) {
+  if(t == X3D_FP0x16_MAX) {
+    *dest = ray->v[1];
+    return;
+  }
+  
   dest->x = x3d_linear_interpolate(ray->v[0].x, ray->v[1].x, t);
   dest->y = x3d_linear_interpolate(ray->v[0].y, ray->v[1].y, t);
   dest->z = x3d_linear_interpolate(ray->v[0].z, ray->v[1].z, t);

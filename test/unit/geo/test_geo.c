@@ -14,9 +14,11 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 void test_polygon(void);
+void test_line(void);
 
 void test_geo(void) {
   test_polygon();
+  test_line();
 }
 
 

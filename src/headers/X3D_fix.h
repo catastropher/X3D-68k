@@ -66,7 +66,7 @@ static inline fp16x16 x3d_val_slope2(fp16x16 d_a, int16 d_b) {
   return d_a / d_b;
 }
 
-static inline int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale) {
+static inline int16 x3d_linear_interpolate(int16 start, int16 end, fp0x16 scale) {
   return start + ((((int32)end - start) * scale) >> 15);
 }
 
@@ -190,8 +190,6 @@ static inline int16 mul_int16_by_fp8x8(int16 a, fp8x8 b) {
 static inline int16 x3d_fp16x6_whole(fp16x16 f) {
   return f >> 16;
 }
-
-int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale);
 
 static inline int16 x3d_linear_interpolate_fp8x8(int16 start, int16 end, fp8x8 scale) {
   return start + mul_int16_by_fp8x8(end - start, scale);

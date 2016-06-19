@@ -340,8 +340,6 @@ void x3d_polygon3d_clip_add_point(X3D_Polygon3D* poly, uint16* u, uint16* v, X3D
   ++poly->total_v;
 }
 
-int16 x3d_linear_interpolate(int16 start, int16 end, uint16 scale);
-
 _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, int16 near_z, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va) {
   int16 next_v;
   int16 v = poly->total_v - 1;
