@@ -404,11 +404,11 @@ _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_
   
   int16 total_clip = 0;
   int16 dist;
-  int16 next_dist = x3d_plane_dist(plane, poly->v + v);
+  int16 next_dist = x3d_plane_point_distance(plane, poly->v + v);
   
   for(next_v = 0; next_v < poly->total_v; v = next_v, ++next_v) {
     dist      = next_dist;
-    next_dist = x3d_plane_dist(plane, poly->v + next_v);
+    next_dist = x3d_plane_point_distance(plane, poly->v + next_v);
     
     _Bool in      = dist < 0;
     _Bool next_in = next_dist < 0;

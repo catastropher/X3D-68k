@@ -96,6 +96,6 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
 ///////////////////////////////////////////////////////////////////////////////
 static inline void x3d_polygon3d_calculate_plane(X3D_Polygon3D* poly, X3D_Plane* plane) {
   x3d_assert(poly->total_v >= 3);
-  x3d_plane_construct(plane, poly->v, poly->v + 1, poly->v + 2);
+  x3d_plane_construct_from_three_points(plane, poly->v, poly->v + 1, poly->v + 2);
 }
 

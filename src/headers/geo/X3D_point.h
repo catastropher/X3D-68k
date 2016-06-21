@@ -17,4 +17,4 @@
 
 #include "X3D_common.h"
 
-typedef struct X3D_Vex3D X3D_Point3D;
+typedef X3D_Vex3D X3D_Point3D;

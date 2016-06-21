@@ -45,7 +45,7 @@
 #include "X3D_log.h"
 #include "X3D_fix.h"
 #include "X3D_vector.h"
-
+#include "geo/X3D_point.h"
 
 static inline int16 x3d_int16_add_wrap(int16 val, int16 add, int16 max) {
   return val + add < max ? val + add : val + add - max;

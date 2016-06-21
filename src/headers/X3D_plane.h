@@ -16,7 +16,6 @@
 #pragma once
 
 #include "X3D_common.h"
-#include "X3D_vector.h"
 #include "X3D_matrix.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,14 +31,14 @@ typedef struct X3D_Frustum {
   X3D_Plane* p;
 } X3D_Frustum;
 
-void x3d_plane_construct(X3D_Plane* p, X3D_Vex3D_int16* a, X3D_Vex3D_int16* b, X3D_Vex3D_int16* c);
+void x3d_plane_construct_from_three_points(X3D_Plane* p, X3D_Point3D* p1, X3D_Point3D* p2, X3D_Point3D* p3);
 void x3d_plane_print(X3D_Plane* p);
-_Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Vex3D* p);
+_Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Point3D* p);
 
 struct X3D_Polygon3D;
 
 void x3d_frustum_construct_from_polygon3d(X3D_Frustum* frustum, struct X3D_Polygon3D* poly, X3D_Vex3D* p);
-_Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Vex3D* p);
+_Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Point3D* p);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the distance from a point to a plane.
@@ -49,7 +48,7 @@ _Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Vex3D* p);
 ///
 /// @return The distance from p to v.
 ///////////////////////////////////////////////////////////////////////////////
-static inline int16 x3d_plane_dist(X3D_Plane* p, X3D_Vex3D* v) {
+static inline int16 x3d_plane_point_distance(X3D_Plane* p, X3D_Point3D* v) {
   return ((int16)x3d_vex3d_fp0x16_dot(&p->normal, v) - p->d);
 }
 
