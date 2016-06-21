@@ -182,6 +182,10 @@ static inline fp0x16 div_int16_by_int16_as_fp0x16(int16 n, int16 d) {
   return ((int32)n << 15) / d;
 }
 
+static inline _Bool div_int16_by_int16_as_fp0x16_would_cause_overflow(int16 n, int16 d) {
+  return n == d;
+}
+
 static inline int16 mul_int16_by_fp8x8(int16 a, fp8x8 b) {
   return ((int32)a * b) >> 8;
 }

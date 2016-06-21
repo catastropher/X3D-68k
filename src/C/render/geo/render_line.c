@@ -13,11 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "geo/X3D_line.h"
 #include "X3D_screen.h"
+#include "geo/X3D_line.h"
 #include "X3D_camera.h"
 
-void x3d_ray3d_render(X3D_Ray3D* ray, X3D_Color color, X3D_CameraObject* cam) {
+void x3d_ray3d_render(X3D_Ray3D* ray, X3D_CameraObject* cam, X3D_Color color) {
   X3D_Ray3D clipped_ray;
   if(x3d_ray3d_clip_to_near_plane(ray, &clipped_ray) == X3D_RAY3D_INVISIBLE)
     return;

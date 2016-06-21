@@ -120,7 +120,8 @@ add_sources(
   C/render/font.c
   C/render/final_clip.c
   C/render/render_hud.c
-  C/render/render_line.c
+  
+  C/render/geo/render_line.c
   
   C/physics/collide.c
   C/physics/raytrace.c

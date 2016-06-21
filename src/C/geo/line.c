@@ -96,12 +96,22 @@ void x3d_ray3d_interpolate(X3D_Ray3D* ray, fp0x16 t, X3D_Vex3D* dest) {
 }
 
 fp0x16 x3d_ray3d_calculate_near_plane_clip_t(X3D_Ray3D* ray) {
-  int16 near_z = x3d_rendermanager_get()->near_z;
-  return div_int16_by_int16_as_fp0x16(ray->v[0].z - near_z, near_z - ray->v[1].z);
+  int16 near_z = x3d_rendermanager_get()->near_z;  
+  int16 v0_dist_to_near_plane = abs(ray->v[0].z - near_z);
+  int16 v1_dist_to_near_plane = abs(ray->v[1].z - near_z);
+  
+  int16 n = v0_dist_to_near_plane;
+  int16 d = v0_dist_to_near_plane + v1_dist_to_near_plane;
+  
+  if(div_int16_by_int16_as_fp0x16_would_cause_overflow(n, d)) {
+    return X3D_FP0x16_MAX;
+  }
+  
+  return div_int16_by_int16_as_fp0x16(n, d);
 }
 
 void x3d_ray3d_clip_to_plane_given_t(X3D_Ray3D* ray, fp0x16 t, X3D_Ray3D* dest) {
-  dest->v[0] = dest->v[0];
+  dest->v[0] = ray->v[0];
   x3d_ray3d_interpolate(ray, t, dest->v + 1);
 }
 
@@ -109,14 +119,19 @@ X3D_Ray3DClipStatus x3d_ray3d_clip_to_near_plane(X3D_Ray3D* ray, X3D_Ray3D* dest
   if(!x3d_ray3d_partially_in_front_of_near_plane(ray))
     return X3D_RAY3D_INVISIBLE;
   
-  if(x3d_ray3d_totally_in_front_of_near_plane(ray))
+  if(x3d_ray3d_totally_in_front_of_near_plane(ray)) {
+    *dest = *ray;
     return X3D_RAY3D_NOT_CLIPPED;
+  }
   
   _Bool swap_points_so_v0_in_v1_out = x3d_vex3d_in_front_of_near_plane(ray->v + 1);
   if(swap_points_so_v0_in_v1_out)
     x3d_ray3d_swap_v(ray);
   
-  int16 clip_t = x3d_ray3d_calculate_near_plane_clip_t(ray);
+  fp0x16 clip_t = x3d_ray3d_calculate_near_plane_clip_t(ray);
+  
+  x3d_log(X3D_INFO, "Clip t: %d", clip_t);
+  
   x3d_ray3d_clip_to_plane_given_t(ray, clip_t, dest);
   
   if(swap_points_so_v0_in_v1_out) {

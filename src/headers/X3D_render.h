@@ -19,6 +19,8 @@
 
 #include "render/X3D_render_hud.h"
 
+#include "render/geo/X3D_render_line.h"
+
 #include "X3D_prism.h"
 #include "X3D_object.h"
 #include "X3D_camera.h"

@@ -86,12 +86,6 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   renderman->render_hud_callback = NULL;
 }
 
-void x3d_ray3d_render(X3D_Ray3D* ray, X3D_CameraObject* cam, X3D_Color color) {
-  X3D_Ray2D ray2d;
-  x3d_ray3d_project_to_ray2d(ray, cam, &ray2d);  
-  x3d_screen_draw_line(ray2d.v[0].x, ray2d.v[0].y, ray2d.v[1].x, ray2d.v[1].y, color);  
-}
-
 void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D_Color color) {
   uint16 i;
   for(i = 0; i < prism->base_v * 3; ++i) {
@@ -131,7 +125,7 @@ void x3d_render(X3D_CameraObject* cam) {
   
   uint16 i;
   for(i = 0; i < prism.base_v * 2; ++i) {
-    prism.v[i].z += 1000;
+    prism.v[i].z += (((x3d_enginestate_get_step()) % 1000) + 20);
   }
   
   x3d_prism3d_render_wireframe(&prism, cam, 31);

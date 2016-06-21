@@ -239,6 +239,8 @@ int main(int argc, char* argv[]) {
   
   //x3d_level_test();
   
+  x3d_rendermanager_get()->near_z = 10;
+  
   //init_textures();
   
 #if 0

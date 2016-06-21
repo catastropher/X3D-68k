@@ -17,7 +17,8 @@
 
 #include "geo/X3D_line.h"
 #include "X3D_screen.h"
-#include "X3D_camera.h"
 
-void x3d_ray3d_render(X3D_Ray3D* ray, X3D_Color color, X3D_CameraObject* object);
+struct X3D_CameraObject;
+
+void x3d_ray3d_render(X3D_Ray3D* ray, struct X3D_CameraObject* cam, X3D_Color color);
 
