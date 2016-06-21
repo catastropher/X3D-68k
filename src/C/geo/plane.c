@@ -21,6 +21,8 @@
 #include "X3D_matrix.h"
 #include "X3D_polygon.h"
 
+#include "geo/X3D_point.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Constructs a plane from 3 points on the plane.
 ///
