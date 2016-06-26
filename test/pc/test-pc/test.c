@@ -264,6 +264,12 @@ int main(int argc, char* argv[]) {
   
   x3d_assert(x3d_level_segment_add(&level, &prism, 0) == 0);
   
+  for(i = 0; i < prism.base_v * 2; ++i)
+    prism.v[i].y -= 400;
+  
+  x3d_assert(x3d_level_segment_add(&level, &prism, 0) == 1);
+  
+  
   
   global_level = &level;
   

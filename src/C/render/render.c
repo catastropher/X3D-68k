@@ -130,18 +130,6 @@ X3D_Level* global_level;
 ///
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_render(X3D_CameraObject* cam) {
-  /// @todo Pseduo position isn't needed anymore since the portal implementation was upgraded
-  //cam->shift = (X3D_Vex3D) { 0, 0, 0 };
-  //x3d_object_pos(cam, &cam->pseduo_pos);
-  
-  //x3d_prism3d_render_wireframe(&prism, cam, 31);
-  
   x3d_renderer_draw_all_segments(global_level, cam, 31);
-  
-  //x3d_screen_zbuf_clear();
-  //x3d_renderer_draw_hud();
-  
-  
-  //x3d_line3d_test(cam);  
 }
 
