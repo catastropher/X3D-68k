@@ -216,6 +216,8 @@ void init_textures(void) {
 
 void segment_face_render_callback(X3D_SegmentRenderFace* face);
 
+extern X3D_Level* global_level;;
+
 void x3d_level_test();
 
 int main(int argc, char* argv[]) {
@@ -249,6 +251,22 @@ int main(int argc, char* argv[]) {
     exit(0);
   }
 #endif
+
+  X3D_Level level;
+  x3d_level_init(&level);
+  
+  X3D_Prism3D prism = { .v = alloca(1000) };
+  x3d_prism3d_construct(&prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  
+  uint16 i;
+  for(i = 0; i < prism.base_v * 2; ++i)
+    prism.v[i].z += 1000;
+  
+  x3d_assert(x3d_level_segment_add(&level, &prism, 0) == 0);
+  
+  
+  global_level = &level;
+  
   
   // Set up key mapping
   setup_key_map();

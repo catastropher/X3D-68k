@@ -40,15 +40,13 @@ X3D_LevelSeg* x3d_level_segment_get(X3D_Level* level, X3D_LEVEL_SEG id) {
   return level->segs.segs + id;
 }
 
-uint16 x3d_level_segment_load_v(X3D_Level* level, X3D_LEVEL_SEG id, X3D_Vex3D* v) {
-#if 0
-  X3D_LevelSeg* seg = x3d_level_segment_get(id);
+void x3d_level_segment_load_v(X3D_Level* level, X3D_LEVEL_SEG id, X3D_Vex3D* v) {
+  X3D_LevelSeg* seg = x3d_level_segment_get(level, id);
   
   uint16 i;
   for(i = 0; i < seg->base_v * 2; ++i) {
-    v[i] = level->v.v[level->runs[seg->v + i]];
+    v[i] = level->v.v[level->runs.v[seg->v + i]];
   }
-#endif
 }
 
 

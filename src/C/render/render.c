@@ -95,8 +95,20 @@ void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D
   }
 }
 
-void x3d_renderer_draw_segment_wireframe(X3D_LEVEL_SEG seg) {
+void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id, X3D_CameraObject* cam, X3D_Color color) {
+  X3D_LevelSeg* seg = x3d_level_segment_get(level, seg_id);
+  X3D_Prism3D prism = { .v = alloca(1000) };
   
+  x3d_level_segment_load_v(level, seg_id, prism.v);
+  prism.base_v = seg->base_v;
+  
+  x3d_prism3d_render_wireframe(&prism, cam, color);
+}
+
+void x3d_renderer_draw_all_segments(X3D_Level* level, X3D_CameraObject* cam, X3D_Color color) {
+  uint16 i;
+  for(i = 0; i < level->segs.total; ++i)
+    x3d_renderer_draw_segment_wireframe(level, i, cam, color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -107,6 +119,9 @@ void x3d_renderer_draw_segment_wireframe(X3D_LEVEL_SEG seg) {
 void x3d_rendermanager_cleanup(void) {
   free(x3d_rendermanager_get()->stack.base);
 }
+
+
+X3D_Level* global_level;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders the scene through a camera.
@@ -119,17 +134,9 @@ void x3d_render(X3D_CameraObject* cam) {
   //cam->shift = (X3D_Vex3D) { 0, 0, 0 };
   //x3d_object_pos(cam, &cam->pseduo_pos);
   
-  X3D_Prism3D prism = { .v = alloca(1000) };
+  //x3d_prism3d_render_wireframe(&prism, cam, 31);
   
-  x3d_prism3d_construct(&prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
-  
-  uint16 i;
-  for(i = 0; i < prism.base_v * 2; ++i) {
-    prism.v[i].z += (((x3d_enginestate_get_step()) % 1000) + 20);
-  }
-  
-  x3d_prism3d_render_wireframe(&prism, cam, 31);
-  
+  x3d_renderer_draw_all_segments(global_level, cam, 31);
   
   //x3d_screen_zbuf_clear();
   //x3d_renderer_draw_hud();
