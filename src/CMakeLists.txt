@@ -122,6 +122,7 @@ add_sources(
   C/render/render_hud.c
   
   C/render/geo/render_line.c
+  C/render/geo/render_prism.c
   
   C/physics/collide.c
   C/physics/raytrace.c

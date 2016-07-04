@@ -27,6 +27,7 @@
 #include "X3D_polygon.h"
 #include "level/X3D_level.h"
 #include "render/X3D_font.h"
+#include "render/geo/X3D_render_prism.h"
 
 #include "geo/X3D_line.h"
 
@@ -84,15 +85,6 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   
   
   renderman->render_hud_callback = NULL;
-}
-
-void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D_Color color) {
-  uint16 i;
-  for(i = 0; i < prism->base_v * 3; ++i) {
-    X3D_Ray3D edge;
-    x3d_prism3d_get_edge(prism, i, &edge);
-    x3d_ray3d_render(&edge, cam, color);
-  }
 }
 
 void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id, X3D_CameraObject* cam, X3D_Color color) {
