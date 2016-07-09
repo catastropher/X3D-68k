@@ -22,7 +22,15 @@ struct X3D_Prism3D;
 
 X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, struct X3D_Prism3D* prism, uint16 flags);
 X3D_LevelSeg* x3d_level_segment_get(X3D_Level* level, X3D_LEVEL_SEG id);
-void x3d_level_segment_load_v(X3D_Level* level, X3D_LEVEL_SEG id, X3D_Vex3D* v);
+void x3d_level_segment_get_geometry(X3D_Level* level, X3D_LevelSeg* seg, struct X3D_Prism3D* dest);
+
+void x3d_level_segment_update_plane_normals(X3D_Level* level, X3D_LevelSeg* seg);
+
+static inline uint16 x3d_level_segment_total_faces(X3D_LevelSeg* seg) {
+  return seg->base_v + 2;
+}
+
+#define X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(_segmentptr) { .total_v = _segmentptr->base_v, .v = alloca(_segmentptr->base_v * sizeof(X3D_Point3D)) }
 
 #ifdef X3D_LEVEL_SEGMENT_C
 

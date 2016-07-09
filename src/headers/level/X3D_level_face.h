@@ -26,11 +26,11 @@ static inline uint16 x3d_segfaceid_create(uint16 seg, uint16 face) {
 }
 
 static inline uint16 x3d_segfaceid_face(X3D_SegFaceID id) {
-  return 0;
+  return id & 0x0F;
 }
 
 static inline uint16 x3d_segfaceid_seg(X3D_SegFaceID id) {
-  return 0;
+  return id >> 4;
 }
 
 X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total);

@@ -85,6 +85,8 @@ static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
   return base_v + 2;
 }
 
+#define X3D_ALLOCA_PRISM3D(_base_v) (X3D_Prism3D) { .v = alloca(_base_v * 2 * sizeof(X3D_Point3D)), .base_v = _base_v }
+
 struct X3D_DisplayLineList;
 struct X3D_CameraObject;
 struct X3D_RasterRegion;

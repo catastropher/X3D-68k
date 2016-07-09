@@ -91,9 +91,7 @@ void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id,
   X3D_LevelSeg* seg = x3d_level_segment_get(level, seg_id);
   X3D_Prism3D prism = { .v = alloca(1000) };
   
-  x3d_level_segment_load_v(level, seg_id, prism.v);
-  prism.base_v = seg->base_v;
-  
+  x3d_level_segment_get_geometry(level, seg, &prism);
   x3d_prism3d_render_wireframe(&prism, cam, color);
 }
 

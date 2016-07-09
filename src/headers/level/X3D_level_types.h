@@ -23,6 +23,7 @@ typedef uint16 X3D_LEVEL_VERTEX_RUN;
 typedef uint16 X3D_LEVEL_SEG_FACE_RUN;
 
 typedef struct X3D_LevelSeg {
+  uint16                 id;
   uint16                 flags;
   uint16                 base_v;
   X3D_LEVEL_VERTEX_RUN   v;
