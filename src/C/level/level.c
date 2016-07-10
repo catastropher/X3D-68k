@@ -26,6 +26,9 @@ void x3d_level_init(X3D_Level* level) {
   
   level->segs.total = 0;
   level->segs.segs  = NULL;
+  
+  level->faces.total = 0;
+  level->faces.faces = NULL;
 }
 
 void x3d_level_cleanup(X3D_Level* level) {

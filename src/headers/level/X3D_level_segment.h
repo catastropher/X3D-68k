@@ -22,9 +22,15 @@ struct X3D_Prism3D;
 
 X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, struct X3D_Prism3D* prism, uint16 flags);
 X3D_LevelSeg* x3d_level_segment_get(X3D_Level* level, X3D_LEVEL_SEG id);
+
 void x3d_level_segment_get_geometry(X3D_Level* level, X3D_LevelSeg* seg, struct X3D_Prism3D* dest);
+X3D_LevelSegFace* x3d_level_segment_get_face_attributes(X3D_Level* level, X3D_LevelSeg* seg);
+X3D_LevelSegFace* x3d_level_segment_get_face_attribute(X3D_Level* level, X3D_LevelSeg* seg, uint16 face);
 
 void x3d_level_segment_update_plane_normals(X3D_Level* level, X3D_LevelSeg* seg);
+
+X3D_LEVEL_SEG x3d_level_segment_add_extruded_segment(X3D_Level* level, X3D_SegFaceID seg_to_attach_to, int16 extrude_dist);
+void x3d_level_segment_update_geometry(X3D_Level* level, X3D_LevelSeg* seg, struct X3D_Prism3D* new_geo);
 
 static inline uint16 x3d_level_segment_total_faces(X3D_LevelSeg* seg) {
   return seg->base_v + 2;

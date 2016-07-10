@@ -26,6 +26,11 @@ static inline _Bool x3d_level_vertex_is_valid_index(X3D_Level* level, X3D_LEVEL_
   return index < level->v.total;
 }
 
+static inline void x3d_level_vertex_update(X3D_Level* level, X3D_LEVEL_VERTEX vertex_id, X3D_Point3D* new_vertex) {
+  x3d_log(X3D_INFO, "Vertex ID: %d", vertex_id);
+  level->v.v[vertex_id] = *new_vertex;
+}
+
 X3D_LEVEL_VERTEX x3d_level_vertex_find(X3D_Level* level, X3D_Vex3D* v);
 X3D_LEVEL_VERTEX x3d_level_vertex_add(X3D_Level* level, X3D_Vex3D* v);
 
