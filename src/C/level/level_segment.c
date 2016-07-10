@@ -82,8 +82,7 @@ X3D_LEVEL_SEG x3d_level_segment_add_extruded_segment(X3D_Level* level, X3D_SegFa
     
   X3D_LevelSeg* seg = x3d_level_segment_get(level, seg_id);
   
-  X3D_Polygon3D seg_face = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);
-  
+  X3D_Polygon3D seg_face = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);  
   X3D_Prism3D seg_geo = X3D_ALLOCA_PRISM3D(seg->base_v);
   x3d_level_segment_get_geometry(level, seg, &seg_geo);
   
@@ -91,40 +90,19 @@ X3D_LEVEL_SEG x3d_level_segment_add_extruded_segment(X3D_Level* level, X3D_SegFa
   X3D_Plane plane;
   x3d_prism3d_get_face(&seg_geo, face_id, &seg_face);
   x3d_polygon3d_calculate_plane(&seg_face, &plane);
-  plane.normal = x3d_vex3d_neg(&plane.normal);
+  x3d_plane_flip(&plane);
   
   X3D_Prism3D new_prism = X3D_ALLOCA_PRISM3D(seg_face.total_v);
   
-  // The old faces becomes BASE_A of the new prism. But, if the old face was
-  // BASE_B, it needs to be reversed (BASE_B is always reversed after calling
-  // x3d_prism3d_get_face()).
-  //if(face_id == X3D_BASE_A || face_id == X3D_BASE_B) {
-    x3d_polygon3d_reverse(&seg_face);
-  //}
-  
+  x3d_polygon3d_reverse(&seg_face);
   x3d_prism3d_set_face(&new_prism, X3D_BASE_A, &seg_face);
   
-  // BASE_B of the new prism becomes the translated polygon (but it has to be
-  // because x3d_prism3d_set_face() expects BASE_B to be reversed).
   x3d_polygon3d_reverse(&seg_face);
   x3d_polygon3d_translate_normal(&seg_face, &plane.normal, extrude_dist);
   x3d_prism3d_set_face(&new_prism, X3D_BASE_B, &seg_face);
   
   // Create a new segment with the new prism
   X3D_LEVEL_SEG new_seg = x3d_level_segment_add(level, &new_prism, 0);
-  
-  
-  //X3D_Segment* new_seg = x3d_segmentbuilder_add_uncompressed_segment(
-  //  new_prism);
-  
-  //X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
-  //X3D_SegmentFace* new_face = x3d_uncompressedsegment_get_faces(new_seg);
-  
-  // Add the face portal connecting the two segments
-  //face[face_id].portal_seg_face = x3d_segfaceid_create(new_seg->base.id, X3D_BASE_A);
-  //new_face[X3D_BASE_A].portal_seg_face = id;
-  
-  //x3d_segmentmanager_cache_purge();
   
   return new_seg;
 }
