@@ -209,7 +209,7 @@ void engine_test_handle_keys(void) {
     x3d_game_loop_quit();
   }
 
-#if 0
+#if 1
   if(x3d_key_down(KEY_W)) {
     X3D_Vex3D dir;
     x3d_dynamicobject_forward_vector(&cam->base, &dir);

@@ -25,6 +25,16 @@
 static uint16 active_objects[X3D_MAX_OBJECTS];
 static uint16 total_active_objects;
 
+void x3d_object_move(X3D_DynamicObjectBase* obj) {
+  X3D_Vex3D_fp16x8 new_pos = obj->base.pos;
+  
+  new_pos.x += obj->velocity.x;
+  new_pos.y += obj->velocity.y;
+  new_pos.z += obj->velocity.z;
+  
+  obj->base.pos = new_pos;
+}
+
 #if 0
 
 void x3d_objectmanager_activate_object(uint16 id) {
