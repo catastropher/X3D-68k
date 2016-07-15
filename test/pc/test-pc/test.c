@@ -276,8 +276,22 @@ int main(int argc, char* argv[]) {
   
   x3d_level_segment_update_geometry(&level, seg, &prism);
   
-  x3d_level_segment_add_extruded_segment(&level, x3d_segfaceid_create(1, 1), 400);
+  uint16 s = x3d_level_segment_add_extruded_segment(&level, x3d_segfaceid_create(1, 1), 400);
   
+  for(i = 0; i < 8; ++i) {
+    uint16 new_seg = x3d_level_segment_add_extruded_segment(&level, x3d_segfaceid_create(s, i + 2), 200);
+    
+    x3d_log(X3D_INFO, "New seg: %d", new_seg);
+    
+    X3D_LevelSeg* seg = x3d_level_segment_get(&level, new_seg);
+    x3d_level_segment_get_geometry(&level, seg, &prism);
+  
+    x3d_prism3d_get_face(&prism, 1, &poly);
+    x3d_polygon3d_scale(&poly, 128);
+    x3d_prism3d_set_face(&prism, 1, &poly);
+    
+    x3d_level_segment_update_geometry(&level, seg, &prism);
+  }
   
   global_level = &level;
   

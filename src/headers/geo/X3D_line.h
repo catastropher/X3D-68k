@@ -65,6 +65,6 @@ static inline void x3d_ray3d_midpoint(X3D_Ray3D* ray, X3D_Vex3D* dest) {
   dest->z = ((int32)ray->v[0].z + ray->v[1].z) / 2;
 }
 
-void x3d_ray3d_project_to_ray2d(X3D_Ray3D* ray, struct X3D_CameraObject* cam, X3D_Ray2D* dest);
+void x3d_ray3d_project_to_ray2d(X3D_Ray3D* ray, X3D_Ray2D* dest);
 
 

@@ -139,7 +139,8 @@ X3D_Ray3DClipStatus x3d_ray3d_clip_to_near_plane(X3D_Ray3D* ray, X3D_Ray3D* dest
   return X3D_RAY3D_V1_CLIPPED;
 }
 
-void x3d_ray3d_project_to_ray2d(X3D_Ray3D* ray, X3D_CameraObject* cam, X3D_Ray2D* dest) {
-  x3d_camera_transform_points(cam, ray->v, 2, NULL, dest->v);
+void x3d_ray3d_project_to_ray2d(X3D_Ray3D* ray, X3D_Ray2D* dest) {
+  x3d_vex3d_int16_project(dest->v + 0, ray->v + 0);
+  x3d_vex3d_int16_project(dest->v + 1, ray->v + 1);
 }
 
