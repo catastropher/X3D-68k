@@ -20,27 +20,31 @@
 
 struct X3D_Prism3D;
 
-X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, struct X3D_Prism3D* prism, uint16 flags);
-X3D_LevelSeg* x3d_level_segment_get(X3D_Level* level, X3D_LEVEL_SEG id);
+X3D_LevelSegment* x3d_level_add_new_standalone_segment(X3D_Level* level, struct X3D_Prism3D* seg_geometry, uint16 flags);
 
-void x3d_level_segment_get_geometry(X3D_Level* level, X3D_LevelSeg* seg, struct X3D_Prism3D* dest);
-X3D_LevelSegFace* x3d_level_segment_get_face_attributes(X3D_Level* level, X3D_LevelSeg* seg);
-X3D_LevelSegFace* x3d_level_segment_get_face_attribute(X3D_Level* level, X3D_LevelSeg* seg, uint16 face);
+void x3d_levelsegment_get_geometry(X3D_Level* level, X3D_LevelSegment* seg, struct X3D_Prism3D* dest);
+X3D_LevelSegFace* x3d_levelsegment_get_face_attributes(X3D_Level* level, X3D_LevelSegment* seg);
+X3D_LevelSegFace* x3d_levelsegment_get_face_attribute(X3D_Level* level, X3D_LevelSegment* seg, uint16 face);
 
-void x3d_level_segment_update_plane_normals(X3D_Level* level, X3D_LevelSeg* seg);
+X3D_LevelSegment* x3d_level_add_uninitialized_segment(X3D_Level* level);
+void x3d_levelsegment_initialize_geometry(X3D_Level* level, X3D_LevelSegment* seg, struct X3D_Prism3D* prism);
 
-X3D_LEVEL_SEG x3d_level_segment_add_extruded_segment(X3D_Level* level, X3D_SegFaceID seg_to_attach_to, int16 extrude_dist);
-void x3d_level_segment_update_geometry(X3D_Level* level, X3D_LevelSeg* seg, struct X3D_Prism3D* new_geo);
+void x3d_levelsegment_update_plane_normals(X3D_Level* level, X3D_LevelSegment* seg);
 
-static inline uint16 x3d_level_segment_total_faces(X3D_LevelSeg* seg) {
+X3D_LevelSegment* x3d_level_add_extruded_segment(X3D_Level* level, X3D_SegFaceID seg_to_attach_to, int16 extrude_dist);
+void x3d_levelsegment_update_geometry(X3D_Level* level, X3D_LevelSegment* seg, struct X3D_Prism3D* new_geo);
+
+static inline uint16 x3d_level_segment_total_faces(X3D_LevelSegment* seg) {
   return seg->base_v + 2;
+}
+
+static inline void x3d_levelsegment_set_flags(X3D_LevelSegment* seg, uint16 flags) {
+  seg->flags = flags;
 }
 
 #define X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(_segmentptr) { .total_v = _segmentptr->base_v, .v = alloca(_segmentptr->base_v * sizeof(X3D_Point3D)) }
 
 #ifdef X3D_LEVEL_SEGMENT_C
-
-static void x3d_level_segment_array_expand(X3D_Level* level);
 
 #endif
 

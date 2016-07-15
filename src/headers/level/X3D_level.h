@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include "X3D_common.h"
 #include "X3D_plane.h"
 
@@ -25,4 +27,19 @@ void x3d_level_init(X3D_Level* level);
 void x3d_level_cleanup(X3D_Level* level);
 
 void x3d_test_level();
+
+
+static inline X3D_LevelSegment* x3d_level_expand_segment_array_by_one(X3D_Level* level) {
+  X3D_LEVEL_SEG new_seg_id = level->segs.total++;
+  level->segs.segs = realloc(level->segs.segs, sizeof(X3D_LevelSegment) * level->segs.total);
+  
+  X3D_LevelSegment* new_seg = level->segs.segs + new_seg_id;
+  new_seg->id = new_seg_id;
+  
+  return new_seg;
+}
+
+static inline X3D_LevelSegment* x3d_level_get_segmentptr(X3D_Level* level, X3D_LEVEL_SEG id) {
+  return level->segs.segs + id;
+}
 

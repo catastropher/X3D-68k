@@ -37,6 +37,20 @@ void x3d_level_cleanup(X3D_Level* level) {
   free(level->v.v);
 }
 
+X3D_LevelSegment* x3d_level_add_new_standalone_segment(X3D_Level* level, X3D_Prism3D* seg_geometry, uint16 flags) {  
+  X3D_LevelSegment* new_seg = x3d_level_add_uninitialized_segment(level);
+  
+  x3d_levelsegment_set_flags(new_seg, flags);
+  x3d_levelsegment_initialize_geometry(level, new_seg, seg_geometry);
+  x3d_levelsegment_update_plane_normals(level, new_seg);
+  
+  return new_seg;
+}
+
+X3D_LevelSegment* x3d_level_add_uninitialized_segment(X3D_Level* level) {
+  return x3d_level_expand_segment_array_by_one(level);
+}
+
 void x3d_level_test() {
   X3D_Level level;
   x3d_level_init(&level);
@@ -44,7 +58,7 @@ void x3d_level_test() {
   X3D_Prism3D* prism = alloca(1000);
   x3d_prism3d_construct(prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
-  x3d_level_segment_add(&level, prism, 0);
+  x3d_level_add_new_standalone_segment(&level, prism, 0);
   
   x3d_level_cleanup(&level);
 }

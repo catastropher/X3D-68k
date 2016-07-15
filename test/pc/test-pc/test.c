@@ -262,35 +262,34 @@ int main(int argc, char* argv[]) {
   for(i = 0; i < prism.base_v * 2; ++i)
     prism.v[i].z += 2000;
   
-  x3d_assert(x3d_level_segment_add(&level, &prism, 0) == 0);
+  x3d_level_add_new_standalone_segment(&level, &prism, 0);
+  x3d_level_add_extruded_segment(&level, 0, 400);
   
-  x3d_level_segment_add_extruded_segment(&level, 0, 400);
-  
-  X3D_LevelSeg* seg = x3d_level_segment_get(&level, 0);
+  X3D_LevelSegment* seg = x3d_level_get_segmentptr(&level, 0);
   X3D_Polygon3D poly = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);
-  x3d_level_segment_get_geometry(&level, seg, &prism);
+  x3d_levelsegment_get_geometry(&level, seg, &prism);
   
   x3d_prism3d_get_face(&prism, 0, &poly);
   x3d_polygon3d_scale(&poly, 128);
   x3d_prism3d_set_face(&prism, 0, &poly);
   
-  x3d_level_segment_update_geometry(&level, seg, &prism);
+  x3d_levelsegment_update_geometry(&level, seg, &prism);
   
-  uint16 s = x3d_level_segment_add_extruded_segment(&level, x3d_segfaceid_create(1, 1), 400);
+  uint16 s = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(1, 1), 400)->id;
   
   for(i = 0; i < 8; ++i) {
-    uint16 new_seg = x3d_level_segment_add_extruded_segment(&level, x3d_segfaceid_create(s, i + 2), 200);
+    uint16 new_seg = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(s, i + 2), 200)->id;
     
     x3d_log(X3D_INFO, "New seg: %d", new_seg);
     
-    X3D_LevelSeg* seg = x3d_level_segment_get(&level, new_seg);
-    x3d_level_segment_get_geometry(&level, seg, &prism);
+    X3D_LevelSegment* seg = x3d_level_get_segmentptr(&level, new_seg);
+    x3d_levelsegment_get_geometry(&level, seg, &prism);
   
     x3d_prism3d_get_face(&prism, 1, &poly);
     x3d_polygon3d_scale(&poly, 128);
     x3d_prism3d_set_face(&prism, 1, &poly);
     
-    x3d_level_segment_update_geometry(&level, seg, &prism);
+    x3d_levelsegment_update_geometry(&level, seg, &prism);
   }
   
   global_level = &level;

@@ -72,6 +72,11 @@ typedef X3D_Vex3D_int32 X3D_Vex3D_fp16x8;
 
 struct X3D_Mat3x3_fp0x16;
 
+typedef struct X3D_Point2D_int8 {
+  int8 x;
+  int8 y;
+} X3D_Point2D_int8;
+
 void x3d_vex3d_int16_project(X3D_Vex2D_int16* dest, const X3D_Vex3D_int16* src);
 void x3d_vex3d_int16_rotate(X3D_Vex3D_int16* dest, X3D_Vex3D_int16* src, struct X3D_Mat3x3_fp0x16* mat);
 void x3d_vex3d_fp0x16_cross(X3D_Vex3D_fp0x16* dest, X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b);

@@ -18,33 +18,14 @@
 #include "level/X3D_level.h"
 #include "X3D_prism.h"
 
-X3D_LEVEL_SEG x3d_level_segment_add(X3D_Level* level, X3D_Prism3D* prism, uint16 flags) {
-  X3D_LEVEL_SEG seg_index = level->segs.total;
-  
-  x3d_level_segment_array_expand(level);
-  
-  X3D_LevelSeg* seg = x3d_level_segment_get(level, seg_index);
+void x3d_levelsegment_initialize_geometry(X3D_Level* level, X3D_LevelSegment* seg, X3D_Prism3D* prism) {
   seg->base_v = prism->base_v;
   seg->v      = x3d_level_vertex_run_add_from_vex3d_array(level, prism->v, prism->base_v * 2);
   seg->faces  = x3d_level_segment_face_run_add(level, NULL, x3d_level_segment_total_faces(seg));
-  seg->flags  = flags;
-  seg->id     = seg_index;
-  
-  x3d_level_segment_update_plane_normals(level, seg);
-  
-  return seg->id;
 }
 
-static inline void x3d_level_segment_array_expand(X3D_Level* level) {
-  level->segs.segs = realloc(level->segs.segs, sizeof(X3D_LevelSeg) * (level->segs.total + 1));
-  ++level->segs.total;
-}
 
-X3D_LevelSeg* x3d_level_segment_get(X3D_Level* level, X3D_LEVEL_SEG id) {
-  return level->segs.segs + id;
-}
-
-void x3d_level_segment_get_geometry(X3D_Level* level, X3D_LevelSeg* seg, X3D_Prism3D* dest) {
+void x3d_levelsegment_get_geometry(X3D_Level* level, X3D_LevelSegment* seg, X3D_Prism3D* dest) {
   uint16 i;
   for(i = 0; i < seg->base_v * 2; ++i) {
     dest->v[i] = level->v.v[level->runs.v[seg->v + i]];
@@ -53,20 +34,20 @@ void x3d_level_segment_get_geometry(X3D_Level* level, X3D_LevelSeg* seg, X3D_Pri
   dest->base_v = seg->base_v;
 }
 
-X3D_LevelSegFace* x3d_level_segment_get_face_attributes(X3D_Level* level, X3D_LevelSeg* seg) {
+X3D_LevelSegFace* x3d_levelsegment_get_face_attributes(X3D_Level* level, X3D_LevelSegment* seg) {
   return level->faces.faces + seg->faces;
 }
 
-X3D_LevelSegFace* x3d_level_segment_get_face_attribute(X3D_Level* level, X3D_LevelSeg* seg, uint16 face) {
-  return x3d_level_segment_get_face_attributes(level, seg) + face;
+X3D_LevelSegFace* x3d_levelsegment_get_face_attribute(X3D_Level* level, X3D_LevelSegment* seg, uint16 face) {
+  return x3d_levelsegment_get_face_attributes(level, seg) + face;
 }
 
-void x3d_level_segment_update_plane_normals(X3D_Level* level, X3D_LevelSeg* seg) {
+void x3d_levelsegment_update_plane_normals(X3D_Level* level, X3D_LevelSegment* seg) {
   X3D_Prism3D level_geo = X3D_ALLOCA_PRISM3D(seg->base_v);
-  x3d_level_segment_get_geometry(level, seg, &level_geo);
+  x3d_levelsegment_get_geometry(level, seg, &level_geo);
   
   X3D_Polygon3D seg_face = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);
-  X3D_LevelSegFace* seg_face_attributes = x3d_level_segment_get_face_attributes(level, seg);
+  X3D_LevelSegFace* seg_face_attributes = x3d_levelsegment_get_face_attributes(level, seg);
   
   uint16 i;
   for(i = 0; i < x3d_level_segment_total_faces(seg); ++i) {
@@ -76,15 +57,15 @@ void x3d_level_segment_update_plane_normals(X3D_Level* level, X3D_LevelSeg* seg)
 }
 
 
-X3D_LEVEL_SEG x3d_level_segment_add_extruded_segment(X3D_Level* level, X3D_SegFaceID seg_to_attach_to, int16 extrude_dist) {
+X3D_LevelSegment* x3d_level_add_extruded_segment(X3D_Level* level, X3D_SegFaceID seg_to_attach_to, int16 extrude_dist) {
   X3D_LEVEL_SEG seg_id = x3d_segfaceid_seg(seg_to_attach_to);
   uint16 face_id = x3d_segfaceid_face(seg_to_attach_to);
     
-  X3D_LevelSeg* seg = x3d_level_segment_get(level, seg_id);
+  X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, seg_id);
   
   X3D_Polygon3D seg_face = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);  
   X3D_Prism3D seg_geo = X3D_ALLOCA_PRISM3D(seg->base_v);
-  x3d_level_segment_get_geometry(level, seg, &seg_geo);
+  x3d_levelsegment_get_geometry(level, seg, &seg_geo);
   
   // Extrude the face along its (flipped) normal
   X3D_Plane plane;
@@ -101,13 +82,10 @@ X3D_LEVEL_SEG x3d_level_segment_add_extruded_segment(X3D_Level* level, X3D_SegFa
   x3d_polygon3d_translate_normal(&seg_face, &plane.normal, extrude_dist);
   x3d_prism3d_set_face(&new_prism, X3D_BASE_B, &seg_face);
   
-  // Create a new segment with the new prism
-  X3D_LEVEL_SEG new_seg = x3d_level_segment_add(level, &new_prism, 0);
-  
-  return new_seg;
+  return x3d_level_add_new_standalone_segment(level, &new_prism, 0);
 }
 
-void x3d_level_segment_update_geometry(X3D_Level* level, X3D_LevelSeg* seg, X3D_Prism3D* new_geo) {
+void x3d_levelsegment_update_geometry(X3D_Level* level, X3D_LevelSegment* seg, X3D_Prism3D* new_geo) {
   uint16 i;
   
   x3d_log(X3D_INFO, "base v: %d", seg->base_v);
@@ -119,7 +97,7 @@ void x3d_level_segment_update_geometry(X3D_Level* level, X3D_LevelSeg* seg, X3D_
   
   /// @todo Only update the segments that share that point
   for(i = 0; i < level->segs.total; ++i) {
-    x3d_level_segment_update_plane_normals(level, x3d_level_segment_get(level, i));
+    x3d_levelsegment_update_plane_normals(level, x3d_level_get_segmentptr(level, i));
   }
 }
 
