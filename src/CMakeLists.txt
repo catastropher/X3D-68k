@@ -124,6 +124,7 @@ add_sources(
   
   C/render/geo/render_line.c
   C/render/geo/render_prism.c
+  C/render/geo/render_linetexture.c
   
   C/physics/collide.c
   C/physics/raytrace.c

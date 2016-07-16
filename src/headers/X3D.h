@@ -49,4 +49,8 @@
 
 #include "geo/X3D_line.h"
 
+#include "level/X3D_level_linetexture.h"
+
+#include "render/geo/X3D_render_linetexture.h"
+
 
