@@ -35,9 +35,10 @@ typedef struct X3D_LineTexture2D {
 } X3D_LineTexture2D;
 
 typedef struct X3D_LineTexture3D {
+  X3D_LineTextureBase base;
   uint8 total_v;
   uint8 total_e;
-  X3D_Point3D* v;
+  X3D_Vex3D* v;
   X3D_Pair* edges;
 } X3D_LineTexture3D;
 
@@ -53,9 +54,17 @@ typedef struct X3D_LineTextureComposite {
   X3D_LineTextureReference* sub_textures;
 } X3D_LineTextureComposite;
 
+struct X3D_Plane;
+
 void x3d_linetexture2d_create_dynamically_allocated_texture(X3D_LineTexture2D* tex, uint16 max_verteices, uint16 max_edges);
 uint16 x3d_linetexture2d_add_vertex(X3D_LineTexture2D* tex, X3D_Vex2D v);
 uint16 x3d_linetexture2d_add_edge(X3D_LineTexture2D* tex, X3D_Vex2D a, X3D_Vex2D b);
 void x3d_linetexturecomposite_create_dynamically_allocated_texture(X3D_LineTextureComposite* tex, uint16 max_subtextures);
 void x3d_linetexturecomposite_add_subtexture(X3D_LineTextureComposite* tex, X3D_LineTextureBase* subtex, angle256 angle, X3D_Vex2D pos);
 
+_Bool x3d_linetexture2d_save_to_file(X3D_LineTexture2D* tex, const char* filename);
+_Bool x3d_linetexture2d_load_from_file(X3D_LineTexture2D* dest, const char* filename);
+
+void x3d_linetexture3d_create_dynamically_allocated_texture(X3D_LineTexture3D* tex, uint16 max_verteices, uint16 max_edges);
+
+void x3d_linetexture2d_convert_to_linetexture3d(X3D_LineTexture2D* tex, X3D_LineTexture3D* dest, struct X3D_Plane* wall_plane, X3D_Vex3D* point_on_wall);

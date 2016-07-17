@@ -220,6 +220,10 @@ extern X3D_Level* global_level;;
 
 void x3d_level_test();
 
+
+X3D_LineTexture3D logo;
+X3D_LineTexture3D aperture;
+
 int main(int argc, char* argv[]) {
 #if defined(__pc__) && 1
   int16 w = 640;
@@ -275,6 +279,44 @@ int main(int argc, char* argv[]) {
   
   x3d_levelsegment_update_geometry(&level, seg, &prism);
   
+  {
+    x3d_prism3d_get_face(&prism, 3, &poly);
+    
+    X3D_Vex3D center;
+    x3d_polygon3d_center(&poly, &center);
+    
+    x3d_linetexture3d_create_dynamically_allocated_texture(&logo, 100, 100);
+    
+    X3D_LineTexture2D tex;
+    if(!x3d_linetexture2d_load_from_file(&tex, "logo3.xtex")) {
+      x3d_log(X3D_ERROR, "Failed to load logo!");
+      exit(0);
+    }
+    
+    X3D_Plane plane;
+    x3d_polygon3d_calculate_plane(&poly, &plane);
+    x3d_linetexture2d_convert_to_linetexture3d(&tex, &logo, &plane, &center);
+  }
+  
+  {
+    x3d_prism3d_get_face(&prism, 4, &poly);
+    
+    X3D_Vex3D center;
+    x3d_polygon3d_center(&poly, &center);
+    
+    x3d_linetexture3d_create_dynamically_allocated_texture(&aperture, 100, 100);
+    
+    X3D_LineTexture2D tex;
+    if(!x3d_linetexture2d_load_from_file(&tex, "aperture_final.xtex")) {
+      x3d_log(X3D_ERROR, "Failed to load aperture!");
+      exit(0);
+    }
+    
+    X3D_Plane plane;
+    x3d_polygon3d_calculate_plane(&poly, &plane);
+    x3d_linetexture2d_convert_to_linetexture3d(&tex, &aperture, &plane, &center);
+  }
+  
   uint16 s = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(1, 1), 400)->id;
   
   for(i = 0; i < 8; ++i) {
@@ -291,6 +333,7 @@ int main(int argc, char* argv[]) {
     
     x3d_levelsegment_update_geometry(&level, seg, &prism);
   }
+  
   
   global_level = &level;
   

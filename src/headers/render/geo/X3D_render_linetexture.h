@@ -21,3 +21,7 @@
 
 void x3d_linetexture2d_render_2d(X3D_LineTexture2D* tex, X3D_Vex2D pos, X3D_Color color);
 
+struct X3D_CameraObject;
+
+void x3d_linetexture3d_render(X3D_LineTexture3D* tex, struct X3D_CameraObject* cam, X3D_Vex3D pos, X3D_Color color);
+

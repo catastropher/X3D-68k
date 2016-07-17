@@ -87,6 +87,7 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Point3
     x.y = 0;
 
     x3d_vex3d_fp0x16_cross(&y, &z, &x);    
+    y = x3d_vex3d_neg(&y);
   }
   else {
     // If this is the case, they're likely on the ceiling, so just
