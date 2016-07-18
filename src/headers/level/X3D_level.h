@@ -28,6 +28,8 @@ void x3d_level_cleanup(X3D_Level* level);
 
 void x3d_test_level();
 
+_Bool x3d_level_save(X3D_Level* level, const char* filename);
+
 
 static inline X3D_LevelSegment* x3d_level_expand_segment_array_by_one(X3D_Level* level) {
   X3D_LEVEL_SEG new_seg_id = level->segs.total++;

@@ -334,6 +334,8 @@ int main(int argc, char* argv[]) {
     x3d_levelsegment_update_geometry(&level, seg, &prism);
   }
   
+  x3d_level_save(&level, "test.xlev");
+  
   
   global_level = &level;
   
