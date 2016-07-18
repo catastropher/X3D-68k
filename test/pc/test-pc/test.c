@@ -257,12 +257,17 @@ int main(int argc, char* argv[]) {
 #endif
 
   X3D_Level level;
-  x3d_level_init(&level);
-  
-  X3D_Prism3D prism = { .v = alloca(1000) };
-  x3d_prism3d_construct(&prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
   uint16 i;
+  X3D_Prism3D prism = { .v = alloca(1000) };
+  
+  X3D_Polygon3D poly = { .v = alloca(1000) };
+  
+#if 0
+  x3d_level_init(&level);
+  
+  x3d_prism3d_construct(&prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  
   for(i = 0; i < prism.base_v * 2; ++i)
     prism.v[i].z += 2000;
   
@@ -270,7 +275,7 @@ int main(int argc, char* argv[]) {
   x3d_level_add_extruded_segment(&level, 0, 400);
   
   X3D_LevelSegment* seg = x3d_level_get_segmentptr(&level, 0);
-  X3D_Polygon3D poly = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);
+  //X3D_Polygon3D poly = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);
   x3d_levelsegment_get_geometry(&level, seg, &prism);
   
   x3d_prism3d_get_face(&prism, 0, &poly);
@@ -278,6 +283,15 @@ int main(int argc, char* argv[]) {
   x3d_prism3d_set_face(&prism, 0, &poly);
   
   x3d_levelsegment_update_geometry(&level, seg, &prism);
+  
+  x3d_level_save(&level, "test.xlev");
+#endif
+
+  x3d_level_load(&level, "test.xlev");
+  
+  X3D_LevelSegment* seg = x3d_level_get_segmentptr(&level, 0);
+  //X3D_Polygon3D poly = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);
+  x3d_levelsegment_get_geometry(&level, seg, &prism);
   
   {
     x3d_prism3d_get_face(&prism, 3, &poly);
@@ -333,8 +347,6 @@ int main(int argc, char* argv[]) {
     
     x3d_levelsegment_update_geometry(&level, seg, &prism);
   }
-  
-  x3d_level_save(&level, "test.xlev");
   
   
   global_level = &level;

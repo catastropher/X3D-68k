@@ -144,7 +144,118 @@ _Bool x3d_level_save(X3D_Level* level, const char* filename) {
   return X3D_TRUE;
 }
 
+//===========
+static inline void x3d_level_load_vex3d(X3D_Vex3D* dest, FILE* file) {
+  int x, y, z;
+  fscanf(file, "%d %d %d\n", &x, &y, &z);
+  
+  dest->x = x;
+  dest->y = y;
+  dest->z = z;
+}
 
+static inline void x3d_level_load_uint16(uint16* dest, FILE* file) {
+  unsigned int val;
+  fscanf(file, "%u\n", &val);
+  *dest = val;
+}
+
+static inline void x3d_level_load_int16(int16* dest, FILE* file) {
+  int val;
+  fscanf(file, "%u\n", &val);
+  *dest = val;
+}
+
+static inline void x3d_level_load_plane(X3D_Plane* plane, FILE* file) {
+  x3d_level_load_vex3d(&plane->normal, file);
+  x3d_level_load_int16(&plane->d, file);
+}
+
+static inline void x3d_level_load_vertices(X3D_Level* level, FILE* file) {
+  x3d_level_load_uint16(&level->v.total, file);
+  
+  level->v.v = malloc(sizeof(X3D_Vex3D) * level->v.total);
+  
+  uint16 i;
+  for(i = 0; i < level->v.total; ++i)
+    x3d_level_load_vex3d(level->v.v + i, file);
+}
+
+static inline void x3d_level_load_segment(X3D_LevelSegment* seg, FILE* file) {
+  x3d_level_load_uint16(&seg->id, file);
+  x3d_level_load_uint16(&seg->base_v, file);
+  x3d_level_load_uint16(&seg->v, file);
+  x3d_level_load_uint16(&seg->faces, file);
+  x3d_level_load_uint16(&seg->flags, file);
+}
+
+static inline void x3d_level_load_segments(X3D_Level* level, FILE* file) {
+  x3d_level_load_uint16(&level->segs.total, file);
+  
+  level->segs.segs = malloc(sizeof(X3D_LevelSegment) * level->segs.total);
+  
+  uint16 i;
+  for(i = 0; i < level->segs.total; ++i) {
+    x3d_level_load_segment(level->segs.segs + i, file);
+  }
+}
+
+static inline void x3d_level_load_vertex_runs(X3D_Level* level, FILE* file) {
+  x3d_level_load_uint16(&level->runs.total, file);
+  
+  level->runs.v = malloc(sizeof(uint16) * level->runs.total);
+  
+  uint16 i;
+  for(i = 0; i < level->runs.total; ++i)
+    x3d_level_load_uint16(level->runs.v + i, file);
+}
+
+static inline void x3d_level_load_face_attribute(X3D_LevelSegFace* face, FILE* file) {
+  x3d_level_load_uint16(&face->connect_face, file);
+  x3d_level_load_plane(&face->plane, file);
+}
+
+static inline void x3d_level_load_face_attributes(X3D_Level* level, FILE* file) {
+  x3d_level_load_uint16(&level->faces.total, file);
+  
+  level->faces.faces = malloc(sizeof(X3D_LevelSegFace) * level->faces.total);
+  
+  uint16 i;
+  for(i = 0; i < level->faces.total; ++i) {
+    x3d_level_load_face_attribute(level->faces.faces + i, file);
+  }
+}
+
+_Bool x3d_level_load(X3D_Level* level, const char* filename) {
+  FILE* file = fopen(filename, "rb");
+  
+  if(!file)
+    return X3D_FALSE;
+  
+  char level_magic_number[5] = { '\0' };
+  int version;
+  
+  fscanf(file, "%4s %d", level_magic_number, &version);
+  
+  if(strcmp(level_magic_number, "XLEV") != 0) {
+    x3d_log(X3D_ERROR, "Unrecognized level magic number for file '%s'", filename);
+    return X3D_FALSE;
+  }
+  
+  if(version != 1) {
+    x3d_log(X3D_ERROR, "Unrecognized level format version %d for file '%s'", version, filename);
+    return X3D_FALSE;
+  }
+  
+  x3d_level_load_vertices(level, file);
+  x3d_level_load_segments(level, file);
+  x3d_level_load_vertex_runs(level, file);
+  x3d_level_load_face_attributes(level, file);
+  
+  fclose(file);
+  
+  return X3D_TRUE;
+}
 
 
 
