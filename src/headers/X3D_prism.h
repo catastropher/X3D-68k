@@ -58,7 +58,7 @@ typedef struct X3D_Prism2D {
 /// @return The size of the prism.
 ///////////////////////////////////////////////////////////////////////////////
 static inline uint16 x3d_prism3d_size(uint16 base_v) {
-  return sizeof(X3D_Prism3D) + 2 * base_v * sizeof(X3D_Vex3D);
+  return 2 * base_v * sizeof(X3D_Vex3D);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,7 +70,8 @@ static inline uint16 x3d_prism3d_size(uint16 base_v) {
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 static inline void x3d_prism3d_copy(X3D_Prism3D* dest, X3D_Prism3D* src) {
-  memcpy(dest, src, x3d_prism3d_size(src->base_v));
+  memcpy(dest->v, src->v, x3d_prism3d_size(src->base_v));
+  dest->base_v = src->base_v;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -102,4 +103,5 @@ void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest);
 void x3d_prism_point_faces(uint16 base_v, uint16 point, uint16* dest);
 
 void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
+void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation);
 

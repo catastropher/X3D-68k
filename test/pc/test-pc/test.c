@@ -224,6 +224,66 @@ void x3d_level_test();
 X3D_LineTexture3D logo;
 X3D_LineTexture3D aperture;
 
+X3D_Model test_model;
+
+void test_render_callback(X3D_CameraObject* cam) {
+  static int16 pos = 0;
+  static int16 dir = 1;
+  static fp8x8 angle = 0;
+  
+  x3d_linetexture3d_render(&logo, cam, (X3D_Vex3D) { 0, 0, 0 }, x3d_rgb_to_color(128, 0, 128));
+  x3d_linetexture3d_render(&aperture, cam, (X3D_Vex3D) { 0, 0, 0 }, 0x7FFF);
+  
+  X3D_Vex3D center;
+  X3D_Prism3D prism = { .v = alloca(1000) };
+  x3d_levelsegment_get_geometry(global_level, x3d_level_get_segmentptr(global_level, 0), &prism);
+  x3d_prism3d_center(&prism, &center);
+  
+  center.y += (200 - 50);
+  
+  
+  int16 roll_cycle = 200;
+  fp8x8 dangle = 256;
+  
+  if(dir == 1) {
+    if(pos < roll_cycle) {
+      pos += 2;
+      angle += dangle;
+    }
+    else {
+      dir = -1;
+    }
+  }
+  else if(dir == -1) {
+    if(pos > -roll_cycle) {
+      pos -= 2;
+      angle -= dangle;
+    }
+    else {
+      dir = 1;
+    }
+  }
+  
+  
+  
+  center.x += pos;
+  
+  
+  x3d_model_render(&test_model, cam, x3d_rgb_to_color(0, 0, 255), (X3D_Vex3D_angle256) { ANG_90, angle / 256, 0 }, center);
+}
+
+void build_test_model(void) {
+  X3D_Prism3D prism = { .v = alloca(1000) };
+  x3d_prism3d_construct(&prism, 8, 50, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  
+  x3d_model_create_dynamically_allocated_model(&test_model);
+  x3d_model_add_prism3d(&test_model, &prism, x3d_vex3d_make(0, 50 + 25, 0));
+  x3d_model_add_prism3d(&test_model, &prism, x3d_vex3d_make(0, -50 - 25, 0));
+  
+  x3d_prism3d_construct(&prism, 8, 10, 100, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  x3d_model_add_prism3d(&test_model, &prism, x3d_vex3d_make(0, 0, 0));
+}
+
 int main(int argc, char* argv[]) {
 #if defined(__pc__) && 1
   int16 w = 640;
@@ -245,6 +305,7 @@ int main(int argc, char* argv[]) {
   
   //x3d_level_test();
   
+  build_test_model();
   x3d_rendermanager_get()->near_z = 10;
   
   //init_textures();
@@ -261,9 +322,9 @@ int main(int argc, char* argv[]) {
   uint16 i;
   X3D_Prism3D prism = { .v = alloca(1000) };
   
-  X3D_Polygon3D poly = { .v = alloca(1000) };
+  X3D_Polygon3D poly = { .v = alloca(2000) };
   
-#if 0
+#if 1
   x3d_level_init(&level);
   
   x3d_prism3d_construct(&prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
@@ -272,6 +333,8 @@ int main(int argc, char* argv[]) {
     prism.v[i].z += 2000;
   
   x3d_level_add_new_standalone_segment(&level, &prism, 0);
+  
+#if 0
   x3d_level_add_extruded_segment(&level, 0, 400);
   
   X3D_LevelSegment* seg = x3d_level_get_segmentptr(&level, 0);
@@ -284,10 +347,11 @@ int main(int argc, char* argv[]) {
   
   x3d_levelsegment_update_geometry(&level, seg, &prism);
   
-  x3d_level_save(&level, "test.xlev");
+  //x3d_level_save(&level, "test.xlev");
+#endif
 #endif
 
-  x3d_level_load(&level, "test.xlev");
+  //x3d_level_load(&level, "test.xlev");
   
   X3D_LevelSegment* seg = x3d_level_get_segmentptr(&level, 0);
   //X3D_Polygon3D poly = X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(seg);
@@ -299,10 +363,10 @@ int main(int argc, char* argv[]) {
     X3D_Vex3D center;
     x3d_polygon3d_center(&poly, &center);
     
-    x3d_linetexture3d_create_dynamically_allocated_texture(&logo, 100, 100);
+    x3d_linetexture3d_create_dynamically_allocated_texture(&logo, 255, 255);
     
     X3D_LineTexture2D tex;
-    if(!x3d_linetexture2d_load_from_file(&tex, "logo3.xtex")) {
+    if(!x3d_linetexture2d_load_from_file(&tex, "font.xtex")) {
       x3d_log(X3D_ERROR, "Failed to load logo!");
       exit(0);
     }
@@ -331,6 +395,7 @@ int main(int argc, char* argv[]) {
     x3d_linetexture2d_convert_to_linetexture3d(&tex, &aperture, &plane, &center);
   }
   
+#if 0
   uint16 s = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(1, 1), 400)->id;
   
   for(i = 0; i < 8; ++i) {
@@ -347,7 +412,7 @@ int main(int argc, char* argv[]) {
     
     x3d_levelsegment_update_geometry(&level, seg, &prism);
   }
-  
+#endif
   
   global_level = &level;
   

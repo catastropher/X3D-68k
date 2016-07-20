@@ -185,3 +185,48 @@ void x3d_linetexture3d_create_dynamically_allocated_texture(X3D_LineTexture3D* t
   
   tex->base.texture_type = X3D_LINETEXTURE_NORMAL;
 }
+
+_Bool x3d_linetexture2d_vertex_in_range(X3D_Vex2D v, X3D_Vex2D top_left, X3D_Vex2D bottom_right) {
+  return v.x >= top_left.x && v.x <= bottom_right.x &&
+    v.y <= top_left.y && v.y >= bottom_right.y;
+}
+/*
+_Bool x3d_linetexture2d_edge_in_range(X3D_LineTexture2D* src, X3D_Vex2D top_left, X3D_Vex2D bottom_right, uint16 edge) {
+  return x3d_linetexture2d_vertex_in_range(src->v[src->edges[edge].val[0]]) &&
+    x3d_linetexture2d_vertex_in_range(src->v[src->edges[edge].val[1]]);
+}  
+}                                                         used                                                                   
+  uint16 total = 0;
+  _Bool vertex_used[src->total_v];
+  
+  uint16 i;
+  for(i = 0; i < src->total_v; ++i)
+    vertex_used[i  = X3D_FALSE;
+  
+  *total_v = 0;
+  
+  for(i = 0; i < src->total_e; ++i) {
+    if(x3d_linetexture2d_edge_in_range(src, top_left, bottom_right, i)) {
+      ++total;
+      
+      if(!vertex_used[src->edges[i).val[0 ] {
+        vertex_used[src->edges[i].val[0]] = X3D_TRUE;
+        (*total_v)++;
+      }
+      
+      if(!vertex_used[src->edges[i].val[1]]) {
+        vertex_used[src->edges[i].val[1]] = X3D_TRUE;
+        (*total_v)++;
+      }
+    }
+  }    
+  }
+uint16 x3d_linetexture2d_create_from_edges_in_range_count_edges(X3D_LineTexture2D* src, X3D_Vex2D top_left, X3D_Vex2D bottom_right) {
+  
+}  
+}
+
+void x3d_linetexture2d_create_from_edges_in_range(X3D_LineTexture2D* src, X3D_Vex2D top_left, X3D_Vex2D bottom_right, X3D_LineTexture2D* dest) {
+  
+}  
+}*/

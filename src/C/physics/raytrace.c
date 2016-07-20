@@ -25,19 +25,62 @@
 #include <SDL/SDL.h>
 
 #include "render/X3D_util.h"
+#include "level/X3D_level.h"
 
-#if 0
+void x3d_raytracer_init_from_point_on_screen(X3D_RayTracer* raytracer, X3D_Level* level, X3D_CameraObject* cam, X3D_Vex2D point_on_screen) {
+  x3d_line3d_from_screen_point(&raytracer->ray, &point_on_screen, cam, 15);
+  raytracer->cam = cam;
+  raytracer->level = level;
+}
+
+_Bool x3d_raytracer_find_closest_hit_wall(X3D_RayTracer* raytracer) {
+  X3D_Vex3D cam_pos;
+  x3d_object_pos(raytracer->cam, &cam_pos);
+  
+  X3D_Polygon3D seg_poly = { .v = alloca(1000) };
+  X3D_Prism3D seg_geo = { .v = alloca(1000) };
+  
+  _Bool hit_something = X3D_FALSE;
+  
+  uint16 seg_id;
+  for(seg_id = 0; seg_id < raytracer->level->segs.total; ++seg_id) {
+    X3D_LevelSegment* seg = x3d_level_get_segmentptr(raytracer->level, seg_id);
+    x3d_levelsegment_get_geometry(raytracer->level, seg, &seg_geo);
+    
+    uint16 face;
+    for(face = 0; face < seg->base_v + 2; ++face) {
+      x3d_prism3d_get_face(&seg_geo, face, &seg_poly);
+      
+      int16 scale;
+      X3D_Vex3D hit_pos;
+      
+      if(x3d_line3d_intersect_polygon(&raytracer->ray, &seg_poly, &hit_pos, &scale)) {
+        if(scale < raytracer->min_hit_scale) {
+          raytracer->min_hit_scale = scale;
+          raytracer->hit_seg = seg_id;
+          raytracer->hit_seg_face = face;
+          raytracer->hit_pos = hit_pos;
+          
+          hit_something = X3D_TRUE;
+        }
+      }
+    }
+  }
+  
+  return hit_something;
+}
+
+
+
+/*
 void x3d_raytrace_find_segface(X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* hit_pos, int16* hit_seg, int16* hit_face, int16* scale) {
   X3D_Line3D line;
   
-  x3d_line3d_from_screen_point(&line, &pos, cam, 15);
+  
   
   X3D_Vex3D dir;
   x3d_dynamicobject_forward_vector(&cam->base, &dir);
   
-  
-  X3D_Vex3D cam_pos;
-  x3d_object_pos(cam, &cam_pos);
   
   uint16 i;
   
@@ -71,7 +114,9 @@ void x3d_raytrace_find_segface(X3D_CameraObject* cam, X3D_Vex2D pos, X3D_Vex3D* 
       }      
     }
   }
-}
+}*/
+
+#if 0
 
 extern char hud_status_bar[512];
 extern _Bool display_status_bar;

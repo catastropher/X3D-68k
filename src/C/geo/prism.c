@@ -259,4 +259,10 @@ void x3d_prism_point_faces(uint16 base_v, uint16 point, uint16* dest) {
   
 }
 
+void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation) {
+  uint16 i;
+  for(i = 0; i < prism->base_v * 2; ++i) {
+    prism->v[i] = x3d_vex3d_add(prism->v + i, translation);
+  }
+}
 

@@ -13,26 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X3D_vector.h"
-#include "X3D_screen.h"
+#include "geo/X3D_model.h"
 
-typedef struct X3D_ModelVertex {
-  X3D_Vex3D v;
-} X3D_ModelVertex;
+void x3d_model_create_dynamically_allocated_model(X3D_Model* model) {
+  model->total_prisms = 0;
+  model->prisms = NULL;
+}
 
-typedef struct X3D_ModelEdge {
-  uint16 v[2];
-} X3D_ModelEdge;
-
-typedef struct X3D_ModelFace {
-  uint16 total_e;
-  uint16* e;
-  X3D_Color color;
-} X3D_ModelFace;
-
-typedef struct X3D_Model {
-  uint16 total_v;
-  X3D_ModelVertex* v;
-} X3D_Model;
-
-
+void x3d_model_add_prism3d(X3D_Model* model, X3D_Prism3D* prism, X3D_Vex3D position_relative_to_center) {
+  model->prisms = realloc(model->prisms, (model->total_prisms + 1) * sizeof(X3D_Prism3D));
+  
+  X3D_Prism3D* new_prism = model->prisms + model->total_prisms;
+  new_prism->v = malloc(x3d_prism3d_size(prism->base_v));
+  
+  x3d_prism3d_copy(new_prism, prism);
+  
+  // Move the prism to its relative center, then move it relative to the center of the model
+  X3D_Vex3D move_to_prism_center;
+  x3d_prism3d_center(new_prism, &move_to_prism_center);
+  x3d_vex3d_neg(&move_to_prism_center);
+  
+  X3D_Vex3D translation = x3d_vex3d_add(&move_to_prism_center, &position_relative_to_center);
+  x3d_prism3d_translate(new_prism, &translation);
+  
+  ++model->total_prisms;
+}

@@ -15,27 +15,10 @@
 
 #pragma once
 
-#include "X3D_common.h"
-#include "X3D_vector.h"
-#include "X3D_plane.h"
-#include "geo/X3D_line.h"
-#include "level/X3D_level.h"
+#include "geo/X3D_model.h"
+#include "X3D_screen.h"
+#include "render/geo/X3D_render_prism.h"
+#include "X3D_camera.h"
 
-struct X3D_Polygon3D;
-struct X3D_CameraObject;
-struct X3D_Level;
-
-typedef struct X3D_RayTracer {
-  struct X3D_CameraObject* cam;
-  X3D_Line3D ray;
-  struct X3D_Level* level;
-  
-  X3D_LEVEL_SEG hit_seg;
-  uint16 hit_seg_face;
-  int16 min_hit_scale;
-  X3D_Vex3D hit_pos;
-} X3D_RayTracer;
-
-void x3d_raytracer_init_from_point_on_screen(X3D_RayTracer* raytracer, struct X3D_Level* level, struct X3D_CameraObject* cam, X3D_Vex2D point_on_screen);
-_Bool x3d_raytracer_find_closest_hit_wall(X3D_RayTracer* raytracer);
+void x3d_model_render(X3D_Model* model, X3D_CameraObject* cam, X3D_Color color, X3D_Vex3D_angle256 rot_angle, X3D_Vex3D pos);
 

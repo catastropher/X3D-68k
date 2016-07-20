@@ -116,6 +116,8 @@ X3D_Level* global_level;
 extern X3D_LineTexture3D logo;
 extern X3D_LineTexture3D aperture;
 
+void test_render_callback(X3D_CameraObject* cam);
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders the scene through a camera.
 ///
@@ -125,7 +127,8 @@ extern X3D_LineTexture3D aperture;
 void x3d_render(X3D_CameraObject* cam) {
   x3d_renderer_draw_all_segments(global_level, cam, 31);
   
-  x3d_linetexture3d_render(&logo, cam, (X3D_Vex3D) { 0, 0, 0 }, x3d_rgb_to_color(128, 0, 128));
-  x3d_linetexture3d_render(&aperture, cam, (X3D_Vex3D) { 0, 0, 0 }, 0x7FFF);
+  test_render_callback(cam);
+  
+  x3d_enginestate_next_step();
 }
 

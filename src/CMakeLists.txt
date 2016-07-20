@@ -103,6 +103,7 @@ add_sources(
   C/geo/plane.c
   C/geo/polygon.c
   C/geo/line.c
+  C/geo/model.c
   
   C/level/level.c
   C/level/level_vertex.c
@@ -125,6 +126,7 @@ add_sources(
   C/render/geo/render_line.c
   C/render/geo/render_prism.c
   C/render/geo/render_linetexture.c
+  C/render/geo/render_model.c
   
   C/physics/collide.c
   C/physics/raytrace.c

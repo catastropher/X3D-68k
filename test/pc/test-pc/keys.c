@@ -69,6 +69,8 @@ void setup_key_map(void) {
 
 extern int16 render_mode;
 
+extern X3D_Level* global_level;
+
 _Bool menu_allow_normal_keys(void);
 
 void engine_test_handle_keys(void) {
@@ -283,5 +285,28 @@ void engine_test_handle_keys(void) {
   else if(x3d_key_down(KEY_DOWN)) {
     cam->base.base.pos.y += 4L << 8;
   }
+  
+  _Bool left, right;
+  int16 mouse_x, mouse_y;
+  x3d_pc_mouse_state(&left, &right, &mouse_x, &mouse_y);
+  
+  if(left) {
+    X3D_Vex2D mouse_pos = { mouse_x, mouse_y };
+    X3D_RayTracer raytracer;
+    x3d_raytracer_init_from_point_on_screen(&raytracer, global_level, cam, mouse_pos);
+    
+    if(x3d_raytracer_find_closest_hit_wall(&raytracer)) {
+      //x3d_log(X3D_INFO, "Hit seg %d, face %d", raytracer.hit_seg, raytracer.hit_seg_face);
+      
+      x3d_level_add_extruded_segment(global_level, x3d_segfaceid_create(raytracer.hit_seg, raytracer.hit_seg_face), 400);
+      
+      do {
+        x3d_read_keys();
+        x3d_pc_mouse_state(&left, &right, &mouse_x, &mouse_y);
+      } while(left);
+    }
+  }
+  
+  
 #endif
 }
