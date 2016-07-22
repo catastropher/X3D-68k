@@ -31,31 +31,15 @@ static void x3d_camera_event_handler(X3D_ObjectBase* obj, X3D_ObjectEvent ev) {
 }
 
 void x3d_camera_init(void) {
-  X3D_ObjectType type_cam = {
-    .event_handler = x3d_camera_event_handler,
-    .size = sizeof(X3D_CameraObject)
-  };
+  X3D_ObjectType* cam_type = x3d_objecttype_create(0);
+  x3d_objecttype_set_name(cam_type, "xcamera");
+  x3d_objecttype_set_event_handler(cam_type, x3d_camera_event_handler);
+  x3d_objecttype_set_object_size(cam_type, sizeof(X3D_CameraObject));
   
   x3d_playermanager_get()->player[0] = (X3D_Player) {
     .cam = malloc(sizeof(X3D_CameraObject)),
     .id = 0
-  };
-  
-  //x3d_object_create_type(0, &type_cam);
-  /*X3D_Handle cam_handle = x3d_object_create(
-    0,
-    (X3D_Vex3D) { 0, 0, 0 },
-    0,
-    (X3D_Vex3D) { 0, 0, 0 },
-    0,
-    (X3D_Vex3D_angle256) { 0, 0, 0 }
-  );
-  
-  x3d_playermanager_get()->player[0] = (X3D_Player) {
-    .cam = x3d_handle_deref(cam_handle),
-    .id = 0
-  };
-  */
+  };  
 }
 
 ///////////////////////////////////////////////////////////////////////////////

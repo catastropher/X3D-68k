@@ -216,7 +216,7 @@ void engine_test_handle_keys(void) {
     X3D_Vex3D dir;
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
 
-#if 1
+#if 0
     X3D_Vex3D_fp8x8 d = {
       dir.x >> 3,
       dir.y >> 3,
@@ -227,9 +227,9 @@ void engine_test_handle_keys(void) {
     x3d_object_move(&cam->base);
 #else
 
-    cam->base.base.pos.x += dir.x >> 5;
-    cam->base.base.pos.y += dir.y >> 5;
-    cam->base.base.pos.z += dir.z >> 5;
+    cam->base.base.pos.x += dir.x >> 3;
+    cam->base.base.pos.y += dir.y >> 3;
+    cam->base.base.pos.z += dir.z >> 3;
 
 #endif
 
@@ -239,7 +239,7 @@ void engine_test_handle_keys(void) {
     X3D_Vex3D dir;
     x3d_dynamicobject_forward_vector(&cam->base, &dir);
 
-    #if 1
+    #if 0
     X3D_Vex3D_fp8x8 d = {
       -dir.x >> 3,
       -dir.y >> 3,
@@ -250,9 +250,9 @@ void engine_test_handle_keys(void) {
     x3d_object_move(&cam->base);
 #else
 
-    cam->base.base.pos.x += dir.x >> 5;
-    cam->base.base.pos.y += dir.y >> 5;
-    cam->base.base.pos.z += dir.z >> 5;
+    cam->base.base.pos.x -= dir.x >> 3;
+    cam->base.base.pos.y -= dir.y >> 3;
+    cam->base.base.pos.z -= dir.z >> 3;
 
 #endif
 

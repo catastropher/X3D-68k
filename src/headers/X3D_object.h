@@ -48,11 +48,12 @@ typedef struct X3D_ObjectEvent {
 
 struct X3D_ObjectBase;
 
+#define X3D_OBJECTTYPE_MAX_NAME_LENGTH 20
+
 typedef struct X3D_ObjectType {
+  char name[X3D_OBJECTTYPE_MAX_NAME_LENGTH];
+  void (*event_handler)(struct X3D_ObjectBase* object, const X3D_ObjectEvent event);
   uint16 size;
-  void (*event_handler)(struct X3D_ObjectBase* object, X3D_ObjectEvent event);
-  
-  X3D_BoundVolume volume;
 } X3D_ObjectType;
 
 typedef struct X3D_ObjectBase {
@@ -79,7 +80,8 @@ typedef struct X3D_DynamicObjectBase {
 #define X3D_MAX_OBJECT_TYPES 16
 
 typedef struct X3D_ObjectManager {
-  X3D_ObjectType types[X3D_MAX_OBJECT_TYPES];
+  uint16 total_object_types;
+  X3D_ObjectType* types;
 } X3D_ObjectManager;
 
 typedef void X3D_Object;
@@ -106,8 +108,17 @@ static inline void x3d_dynamicobject_forward_vector(X3D_DynamicObjectBase* objec
   dest->z = object->mat.data[8];
 }
 
-X3D_Handle x3d_object_create(uint16 type, X3D_Vex3D pos, uint16 seg, X3D_Vex3D dir, fp8x8 speed, X3D_Vex3D_angle256 angle);
-void x3d_object_create_type(uint16 type_id, X3D_ObjectType* type);
-void x3d_object_move(X3D_DynamicObjectBase* obj);
-void x3d_objectmanager_render_objects(void);
+void x3d_objectmanager_init();
+X3D_ObjectType* x3d_objecttype_create(uint16 obj_type_id);
 
+static inline void x3d_objecttype_set_event_handler(X3D_ObjectType* type, void (*event_handler)(struct X3D_ObjectBase* object, const X3D_ObjectEvent event)) {
+  type->event_handler = event_handler;
+}
+
+static inline void x3d_objecttype_set_name(X3D_ObjectType* type, const char* name) {
+  strcpy(type->name, name);
+}
+
+static inline void x3d_objecttype_set_object_size(X3D_ObjectType* type, uint16 size) {
+  type->size = size;
+}
