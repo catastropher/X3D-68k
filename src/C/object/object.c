@@ -27,6 +27,12 @@ void x3d_objectmanager_init() {
   
   objectman->total_object_types = 0;
   objectman->types = NULL;
+  
+  objectman->objects = malloc(sizeof(X3D_ObjectBase *) * X3D_MAX_OBJECTS);
+  
+  uint16 i;
+  for(i = 0; i < X3D_MAX_OBJECTS; ++i)
+    objectman->objects[i] = NULL;
 }
 
 X3D_ObjectType* x3d_objecttype_create(uint16 obj_type_id) {
@@ -49,3 +55,29 @@ X3D_ObjectType* x3d_objecttype_get_ptr(uint16 obj_type_id) {
   return x3d_objectmanager_get()->types + obj_type_id;
 }
 
+X3D_ObjectBase* x3d_object_create(uint16 obj_type_id, X3D_Vex3D pos) {
+  X3D_ObjectManager* objectman = x3d_objectmanager_get();
+  X3D_ObjectType* type = x3d_objecttype_get_ptr(obj_type_id);
+  
+  // Find a free object
+  uint16 i;
+  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
+    X3D_ObjectBase* obj = objectman->objects[i];
+    
+    if(obj == NULL) {
+      obj = x3d_slab_alloc(type->size);
+      objectman->objects[i] = obj;
+      
+      if(obj == NULL)
+        return NULL;
+      
+      x3d_object_set_position_from_vex3d(obj, &pos);
+      obj->type = type;
+      x3d_object_send_create_event(obj);
+      
+      return obj;
+    }
+  }
+  
+  return NULL;
+}

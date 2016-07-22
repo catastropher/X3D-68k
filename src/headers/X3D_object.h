@@ -77,11 +77,11 @@ typedef struct X3D_DynamicObjectBase {
 
 
 #define X3D_MAX_OBJECTS 32
-#define X3D_MAX_OBJECT_TYPES 16
 
 typedef struct X3D_ObjectManager {
   uint16 total_object_types;
   X3D_ObjectType* types;
+  X3D_ObjectBase** objects;
 } X3D_ObjectManager;
 
 typedef void X3D_Object;
@@ -110,6 +110,7 @@ static inline void x3d_dynamicobject_forward_vector(X3D_DynamicObjectBase* objec
 
 void x3d_objectmanager_init();
 X3D_ObjectType* x3d_objecttype_create(uint16 obj_type_id);
+X3D_ObjectBase* x3d_object_create(uint16 obj_type_id, X3D_Vex3D pos);
 
 static inline void x3d_objecttype_set_event_handler(X3D_ObjectType* type, void (*event_handler)(struct X3D_ObjectBase* object, const X3D_ObjectEvent event)) {
   type->event_handler = event_handler;
@@ -122,3 +123,19 @@ static inline void x3d_objecttype_set_name(X3D_ObjectType* type, const char* nam
 static inline void x3d_objecttype_set_object_size(X3D_ObjectType* type, uint16 size) {
   type->size = size;
 }
+
+
+static inline void x3d_object_set_position_from_vex3d(X3D_ObjectBase* obj, X3D_Vex3D* pos) {
+  obj->pos.x = (int32)pos->x << 8;
+  obj->pos.y = (int32)pos->y << 8;
+  obj->pos.z = (int32)pos->z << 8;
+}
+
+static inline void x3d_object_send_event(X3D_ObjectBase* obj, const X3D_ObjectEvent ev) {
+  obj->type->event_handler(obj, ev);
+}
+
+static inline void x3d_object_send_create_event(X3D_ObjectBase* obj) {
+  x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_CREATE });
+}
+
