@@ -64,6 +64,7 @@ add_executable(X3D-test-pc
   keys.c
   texturepack.c
   hud.c
+  cube.c
 )
 
 set_target_properties(X3D-test-pc PROPERTIES OUTPUT_NAME test-pc)

@@ -126,6 +126,7 @@ void test_render_callback(X3D_CameraObject* cam);
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_render(X3D_CameraObject* cam) {
   x3d_renderer_draw_all_segments(global_level, cam, 31);
+  x3d_send_render_events_to_objects(cam);
   
   test_render_callback(cam);
   

@@ -55,6 +55,11 @@ X3D_ObjectType* x3d_objecttype_get_ptr(uint16 obj_type_id) {
   return x3d_objectmanager_get()->types + obj_type_id;
 }
 
+void x3d_object_send_event(X3D_ObjectBase* obj, const X3D_ObjectEvent ev) {
+  X3D_ObjectType* type = x3d_objecttype_get_ptr(obj->obj_type);
+  type->event_handler(obj, ev);
+}
+
 X3D_ObjectBase* x3d_object_create(uint16 obj_type_id, X3D_Vex3D pos) {
   X3D_ObjectManager* objectman = x3d_objectmanager_get();
   X3D_ObjectType* type = x3d_objecttype_get_ptr(obj_type_id);
@@ -72,7 +77,7 @@ X3D_ObjectBase* x3d_object_create(uint16 obj_type_id, X3D_Vex3D pos) {
         return NULL;
       
       x3d_object_set_position_from_vex3d(obj, &pos);
-      obj->type = type;
+      obj->obj_type = obj_type_id;
       x3d_object_send_create_event(obj);
       
       return obj;
@@ -81,3 +86,27 @@ X3D_ObjectBase* x3d_object_create(uint16 obj_type_id, X3D_Vex3D pos) {
   
   return NULL;
 }
+
+void x3d_send_frame_events_to_objects(void) {
+  X3D_ObjectManager* objectman = x3d_objectmanager_get();
+  
+  uint16 i;
+  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
+    if(objectman->objects[i]) {
+      x3d_object_send_frame_event(objectman->objects[i]);
+    }
+  }
+}
+
+void x3d_send_render_events_to_objects(X3D_CameraObject* cam) {
+  X3D_ObjectManager* objectman = x3d_objectmanager_get();
+  
+  uint16 i;
+  for(i = 0; i < X3D_MAX_OBJECTS; ++i) {
+    if(objectman->objects[i]) {
+      x3d_object_send_render_event(objectman->objects[i], cam);
+    }
+  }
+}
+
+

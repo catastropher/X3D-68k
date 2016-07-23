@@ -284,6 +284,8 @@ void build_test_model(void) {
   x3d_model_add_prism3d(&test_model, &prism, x3d_vex3d_make(0, 0, 0));
 }
 
+void init_cube(void);
+
 int main(int argc, char* argv[]) {
 #if defined(__pc__) && 1
   int16 w = 640;
@@ -427,6 +429,7 @@ int main(int argc, char* argv[]) {
   //create_test_level();
   
   setup_camera();
+  init_cube();
   
   x3d_game_loop();
 

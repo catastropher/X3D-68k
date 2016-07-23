@@ -58,7 +58,7 @@ typedef struct X3D_ObjectType {
 
 typedef struct X3D_ObjectBase {
   X3D_Vex3D_fp16x8 pos;
-  X3D_ObjectType* type;
+  uint16 obj_type;
   X3D_Handle handle;
   uint16 frame;
   uint16 seg;
@@ -111,6 +111,10 @@ static inline void x3d_dynamicobject_forward_vector(X3D_DynamicObjectBase* objec
 void x3d_objectmanager_init();
 X3D_ObjectType* x3d_objecttype_create(uint16 obj_type_id);
 X3D_ObjectBase* x3d_object_create(uint16 obj_type_id, X3D_Vex3D pos);
+void x3d_object_send_event(X3D_ObjectBase* obj, const X3D_ObjectEvent ev);
+
+void x3d_send_frame_events_to_objects(void);
+void x3d_send_render_events_to_objects(struct X3D_CameraObject* cam);
 
 static inline void x3d_objecttype_set_event_handler(X3D_ObjectType* type, void (*event_handler)(struct X3D_ObjectBase* object, const X3D_ObjectEvent event)) {
   type->event_handler = event_handler;
@@ -131,11 +135,15 @@ static inline void x3d_object_set_position_from_vex3d(X3D_ObjectBase* obj, X3D_V
   obj->pos.z = (int32)pos->z << 8;
 }
 
-static inline void x3d_object_send_event(X3D_ObjectBase* obj, const X3D_ObjectEvent ev) {
-  obj->type->event_handler(obj, ev);
-}
-
 static inline void x3d_object_send_create_event(X3D_ObjectBase* obj) {
   x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_CREATE });
+}
+
+static inline void x3d_object_send_frame_event(X3D_ObjectBase* obj) {
+  x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_FRAME });
+}
+
+static inline void x3d_object_send_render_event(X3D_ObjectBase* obj, struct X3D_CameraObject* cam) {
+  x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_RENDER, .render_event.cam = cam });
 }
 
