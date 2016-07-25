@@ -57,6 +57,6 @@ void init_cube(void) {
   x3d_objecttype_set_name(cube_type, "xcube");
   x3d_objecttype_set_event_handler(cube_type, cube_handler);
   
-  x3d_object_create(CUBE_TYPE_ID, x3d_vex3d_make(0, 0, 0));
+  x3d_object_create(CUBE_TYPE_ID, x3d_vex3d_make(0, 0, 0));  
 }
 

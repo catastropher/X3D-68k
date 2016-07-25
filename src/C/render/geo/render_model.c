@@ -25,7 +25,7 @@ void x3d_model_render(X3D_Model* model, X3D_CameraObject* cam, X3D_Color color, 
   
   uint16 i;
   for(i = 0; i < model->total_prisms; ++i) {
-    x3d_prism3d_copy(&temp_prism, model->prisms + i);
+    x3d_model_get_geo(model, i, &temp_prism);
     
     uint16 d;
     for(d = 0; d < temp_prism.base_v * 2; ++d) {
