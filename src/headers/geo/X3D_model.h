@@ -27,12 +27,12 @@ typedef struct X3D_AABB {
   X3D_Range_int16 z;
 } X3D_AABB;
 
-/*
+
 typedef struct X3D_BoundSphere {
   X3D_Vex3D center;
   int16 radius;
 } X3D_BoundSphere;
-*/
+
 
 typedef struct X3D_ModelPrism {
   uint16 base_v;

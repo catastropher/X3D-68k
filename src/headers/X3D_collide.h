@@ -19,10 +19,6 @@
 #include "X3D_vector.h"
 #include "level/X3D_level.h"
 
-/// @todo Document.
-typedef struct X3D_BoundSphere {
-  int16 r;
-} X3D_BoundSphere;
 
 typedef struct X3D_RayCaster {
   uint16 seg;                 // Segment the raycaster is currently in
@@ -35,19 +31,6 @@ typedef struct X3D_RayCaster {
   _Bool inside;
 } X3D_RayCaster;
 
-typedef struct X3D_BoundCapsule {
-  int16 r;
-  int16 height;
-} X3D_BoundCapsule;
-
-typedef struct X3D_BoundVolume {
-  uint16 type;
-  
-  union {
-    X3D_BoundCapsule cap;
-    X3D_BoundSphere sphere;
-  };
-} X3D_BoundVolume;
 
 void x3d_raycaster_init(X3D_RayCaster* caster, uint16 seg_id, X3D_Vex3D_fp16x8 pos, X3D_Vex3D_fp0x16 dir);
 void x3d_raycaster_cast(X3D_RayCaster* caster);

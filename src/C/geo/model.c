@@ -102,3 +102,18 @@ void x3d_model_get_geo(X3D_Model* model, uint16 prism_id, X3D_Prism3D* dest) {
   dest->base_v = prism->base_v;
 }
 
+void x3d_model_calculate_boundsphere(X3D_Model* model, X3D_BoundSphere* sphere) {
+  X3D_Polygon3D poly = { .v = model->v, .total_v = model->total_v };
+  x3d_polygon3d_center(&poly, &sphere->center);
+  sphere->radius = 0;
+  
+  uint16 i;
+  for(i = 0; i < model->total_v; ++i) {
+    X3D_Vex3D diff = x3d_vex3d_sub(model->v + i, &sphere->center);
+    uint16 dist = x3d_vex3d_int16_mag(&diff);
+    
+    if(dist > sphere->radius)
+      sphere->radius = dist;
+  }
+}
+
