@@ -269,7 +269,7 @@ void test_render_callback(X3D_CameraObject* cam) {
   center.x += pos;
   
   
-  x3d_model_render(&test_model, cam, x3d_rgb_to_color(0, 0, 255), (X3D_Vex3D_angle256) { ANG_90, angle / 256, 0 }, center);
+  //x3d_model_render(&test_model, cam, x3d_rgb_to_color(0, 0, 255), (X3D_Vex3D_angle256) { ANG_90, angle / 256, 0 }, center);
 }
 
 void build_test_model(void) {
@@ -329,10 +329,7 @@ int main(int argc, char* argv[]) {
 #if 1
   x3d_level_init(&level);
   
-  x3d_prism3d_construct(&prism, 8, 400, 400, (X3D_Vex3D_angle256) { 0, 0, 0 });
-  
-  for(i = 0; i < prism.base_v * 2; ++i)
-    prism.v[i].z += 2000;
+  x3d_prism3d_construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 8, 0, 0 });
   
   x3d_level_add_new_standalone_segment(&level, &prism, 0);
   

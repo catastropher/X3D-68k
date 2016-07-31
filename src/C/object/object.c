@@ -109,4 +109,9 @@ void x3d_send_render_events_to_objects(X3D_CameraObject* cam) {
   }
 }
 
+void x3d_object_set_model(X3D_DynamicObjectBase* obj, X3D_Model* model) {
+  obj->model = model;
+  x3d_model_calculate_boundsphere(model, &obj->bound_sphere);
+}
+
 

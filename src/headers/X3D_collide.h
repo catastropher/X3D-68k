@@ -19,20 +19,7 @@
 #include "X3D_vector.h"
 #include "level/X3D_level.h"
 
+struct X3D_DynamicObjectBase;
 
-typedef struct X3D_RayCaster {
-  uint16 seg;                 // Segment the raycaster is currently in
-  X3D_Vex3D_fp16x8 pos;       // Position of the raycaster
-  X3D_Vex3D_fp0x16 dir;
-  X3D_SegFaceID hit_face;
-  
-  X3D_Vex3D hit_pos;
-  int16 dist;
-  _Bool inside;
-} X3D_RayCaster;
-
-
-void x3d_raycaster_init(X3D_RayCaster* caster, uint16 seg_id, X3D_Vex3D_fp16x8 pos, X3D_Vex3D_fp0x16 dir);
-void x3d_raycaster_cast(X3D_RayCaster* caster);
-
+void x3d_object_move(struct X3D_DynamicObjectBase* obj);
 

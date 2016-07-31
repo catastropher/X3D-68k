@@ -16,6 +16,7 @@
 #include "X3D.h"
 
 #include "render/geo/X3D_render_model.h"
+#include "X3D_collide.h"
 
 static X3D_Model cube_model;
 
@@ -37,10 +38,11 @@ static void cube_handler(X3D_ObjectBase* obj, const X3D_ObjectEvent ev) {
       break;
     
     case X3D_OBJECT_EVENT_FRAME:
+      x3d_object_move(&cube->base);
       break;
       
     case X3D_OBJECT_EVENT_RENDER:
-      x3d_model_render(&cube_model, ev.render_event.cam, cube->color, cube->base.angle, pos);
+      x3d_model_render(cube->base.model, ev.render_event.cam, cube->color, cube->base.angle, pos);
       break;
   }
 }
@@ -49,7 +51,7 @@ void init_cube(void) {
   x3d_model_create_dynamically_allocated_model(&cube_model);
   
   X3D_Prism3D cube_prism = { .v = alloca(1000) };
-  x3d_prism3d_construct(&cube_prism, 4, 200, 200, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  x3d_prism3d_construct(&cube_prism, 4, 100, 100, (X3D_Vex3D_angle256) { 0, 0, 0 });
   x3d_model_add_prism3d(&cube_model, &cube_prism, x3d_vex3d_make(0, 0, 0));
   
   X3D_ObjectType* cube_type = x3d_objecttype_create(CUBE_TYPE_ID);
@@ -57,6 +59,10 @@ void init_cube(void) {
   x3d_objecttype_set_name(cube_type, "xcube");
   x3d_objecttype_set_event_handler(cube_type, cube_handler);
   
-  x3d_object_create(CUBE_TYPE_ID, x3d_vex3d_make(0, 0, 0));  
+  X3D_DynamicObjectBase* box_obj = x3d_object_create(CUBE_TYPE_ID, x3d_vex3d_make(0, 0, 0));
+  x3d_object_set_model(box_obj, &cube_model);
+  
+  //box_obj->velocity.z = 256 * 8;
+  //box_obj->velocity.y = 256 * 8;
 }
 

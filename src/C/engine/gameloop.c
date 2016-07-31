@@ -37,7 +37,8 @@ void x3d_game_loop() {
     x3d_read_keys();
     x3d_keymanager_get()->key_handler();
 
-    x3d_send_frame_events_to_objects();
+    if(x3d_key_down(X3D_KEY_0))
+      x3d_send_frame_events_to_objects();
     
     // Render from the player's perspective
     x3d_screen_clear(0);

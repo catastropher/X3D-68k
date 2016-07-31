@@ -133,8 +133,6 @@ X3D_Ray3DClipStatus x3d_ray3d_clip_to_near_plane(X3D_Ray3D* ray, X3D_Ray3D* dest
   
   fp0x16 clip_t = x3d_ray3d_calculate_near_plane_clip_t(ray);  
   
-  x3d_log(X3D_INFO, "Clip t: %d", clip_t);
-  
   x3d_ray3d_clip_to_plane_given_t(ray, clip_t, dest);
   
   if(swap_points_so_v0_in_v1_out) {

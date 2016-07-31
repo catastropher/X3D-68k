@@ -131,5 +131,10 @@ static inline X3D_Vex3D x3d_vex3d_make(int16 x, int16 y, int16 z) {
   return (X3D_Vex3D) { x, y, z };
 }
 
+static inline int16 x3d_vex3d_distance(X3D_Vex3D* a, X3D_Vex3D* b) {
+  X3D_Vex3D diff = x3d_vex3d_sub(a, b);
+  return x3d_vex3d_int16_mag(&diff);
+}
+
 
 

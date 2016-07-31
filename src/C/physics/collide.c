@@ -20,120 +20,191 @@
 #include "X3D_assert.h"
 #include "X3D_vector.h"
 
-#if 0
-void x3d_raycaster_init(X3D_RayCaster* caster, uint16 seg_id, X3D_Vex3D_fp16x8 pos, X3D_Vex3D_fp0x16 dir) {
-  caster->seg = seg_id;
-  caster->pos = pos;
-  caster->dir = dir;
-  caster->inside = X3D_TRUE;
+#include "X3D_common.h"
+#include "X3D_object.h"
+#include "geo/X3D_model.h"
+
+extern X3D_Level* global_level;
+
+_Bool x3d_boundsphere_intersec(X3D_BoundSphere* a, X3D_BoundSphere* b) {
+  return x3d_vex3d_distance(&a->center, &b->center) < a->radius + b->radius;
 }
 
-void x3d_raycaster_cast(X3D_RayCaster* caster) {
-  X3D_Segment* seg = x3d_segmentmanager_load(caster->seg);
+_Bool x3d_boundsphere_inside_levelsegment(X3D_BoundSphere* sphere, X3D_LevelSegment* seg, X3D_LevelSegFace** hit_face, int16* hit_dist) {
+  X3D_LevelSegFace* faces = x3d_levelsegment_get_face_attributes(global_level, seg);
   
-  /// @todo Add bounding sphere to segment cache
-  /// Until then, a max radius of 500 is used
-  X3D_BoundSphere temp_sphere = {
-    .r = 3000,
+  *hit_dist = 10000;
+  
+  uint16 i;
+  for(i = 0; i < seg->base_v + 2; ++i) {
+    int16 dist = x3d_plane_point_distance(&faces[i].plane, &sphere->center);
+    
+    if(dist < *hit_dist) {
+      *hit_dist = dist;
+      *hit_face = faces + i;
+    }
+  }
+  
+  return *hit_dist >= sphere->radius;
+}
+
+void x3d_object_reverse_velocity(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp8x8* velocity, X3D_LevelSegFace* hit_face, int16 hit_dist) {
+  X3D_Vex3D vel = { velocity->x, velocity->y, velocity->z };
+  
+  int16 mag = x3d_vex3d_int16_mag(&vel);
+  x3d_vex3d_fp0x16_normalize(&vel);
+  
+  int32 dot = x3d_vex3d_fp0x16_dot(&vel, &hit_face->plane.normal);
+  
+  X3D_Vex3D proj = {
+    (hit_face->plane.normal.x * dot) >> 15,
+    (hit_face->plane.normal.y * dot) >> 15,
+    (hit_face->plane.normal.z * dot) >> 15,
   };
   
-  X3D_BoundSphere* sphere = &temp_sphere;
+  velocity->x -= 2 * (int32)mag * proj.x / 32768;
+  velocity->y -= 2 * (int32)mag * proj.y / 32768;
+  velocity->z -= 2 * (int32)mag * proj.z / 32768;
   
-  // Move the caster twice the radius of the current segment so that, no matter
-  // what, it's guaranteed to be outside of the segment
-  X3D_Vex3D_fp16x8 shift = {
-    ((int32)sphere->r * 2 * caster->dir.x) >> 8,
-    ((int32)sphere->r * 2 * caster->dir.y) >> 8,
-    ((int32)sphere->r * 2 * caster->dir.z) >> 8
+  //velocity->x = velocity->x - (((((int32)hit_face->plane.normal.x * dot) >> 15) * mag) >> 8);
+  //velocity->y = velocity->y - (((((int32)hit_face->plane.normal.y * dot) >> 15) * mag) >> 8);
+  //velocity->z = velocity->z - (((((int32)hit_face->plane.normal.z * dot) >> 15) * mag) >> 8);
+}
+
+void x3d_velocity_apply_friction(X3D_Vex3D_fp8x8* velocity);
+
+_Bool x3d_object_keep_velocity_of_sliding_object(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp8x8* velocity, X3D_LevelSegFace* hit_face) {
+   X3D_Vex3D vel = { velocity->x, velocity->y, velocity->z };
+  
+  int16 mag = x3d_vex3d_int16_mag(&vel);
+  x3d_vex3d_fp0x16_normalize(&vel);
+  
+  int32 dot = -x3d_vex3d_fp0x16_dot(&vel, &hit_face->plane.normal);
+  
+  X3D_Vex3D proj = {
+    (hit_face->plane.normal.x * dot) >> 15,
+    (hit_face->plane.normal.y * dot) >> 15,
+    (hit_face->plane.normal.z * dot) >> 15,
+  };
+
+  velocity->x += 1 * (int32)mag * proj.x / 32768;
+  velocity->y += 1 * (int32)mag * proj.y / 32768;
+  velocity->z += 1 * (int32)mag * proj.z / 32768;
+  
+  int16 new_mag = x3d_vex3d_int16_mag(velocity);
+  
+  if(new_mag < 256) {
+    return X3D_FALSE;
+  }
+  
+  x3d_velocity_apply_friction(velocity);
+  
+  return X3D_TRUE;
+  
+//   X3D_Vex3D proj = {
+//     (velocity->x * dot) / 32768,
+//     (velocity->y * dot) / 32768,
+//     (velocity->z * dot) / 32768,
+//   };
+//   
+//   velocity->x = (int32)proj.x;
+//   velocity->y = (int32)proj.y;
+//   velocity->z = (int32)proj.z;
+}
+
+fp8x8 x3d_scaler_apply_friction(fp8x8 val, int16 friction) {
+  if(X3D_SIGNOF(val - friction) != X3D_SIGNOF(val))
+    return 0;
+  
+  return val - friction;
+}
+
+void x3d_velocity_apply_friction(X3D_Vex3D_fp8x8* velocity) {
+  int32 friction_speed = 256;
+  
+  X3D_Vex3D vel = *velocity;
+  x3d_vex3d_fp0x16_normalize(&vel);
+  
+  X3D_Vex3D friction = {
+    (friction_speed * vel.x) >> 15,
+    (friction_speed * vel.y) >> 15,
+    (friction_speed * vel.z) >> 15
   };
   
-  X3D_Vex3D in = { caster->pos.x >> 8, caster->pos.y >> 8, caster->pos.z >> 8 };
+  velocity->x = x3d_scaler_apply_friction(velocity->x, friction.x);
+  velocity->y = x3d_scaler_apply_friction(velocity->y, friction.y);
+  velocity->z = x3d_scaler_apply_friction(velocity->z, friction.z);
+}
+
+#include <SDL/SDL.h>
+
+void x3d_object_move(X3D_DynamicObjectBase* obj) {
+  X3D_Vex3D_fp16x8 new_pos;
   
-  //printf("In: %d, %d, %d\n", in.x, in.y, in.z);
+  obj->velocity.y += 512 * 2;
+  //obj->velocity.z += 512 * 2;
   
-  caster->pos.x += shift.x;
-  caster->pos.y += shift.y;
-  caster->pos.z += shift.z;
+  new_pos.x = obj->base.pos.x + obj->velocity.x;
+  new_pos.y = obj->base.pos.y + obj->velocity.y;
+  new_pos.z = obj->base.pos.z + obj->velocity.z;
   
-  X3D_Vex3D out = { caster->pos.x >> 8, caster->pos.y >> 8, caster->pos.z >> 8 };
+  X3D_BoundSphere sphere = { .radius = obj->bound_sphere.radius, .center = x3d_vex3d_make(
+    new_pos.x >> 8,
+    new_pos.y >> 8,
+    new_pos.z >> 8
+  )};
   
-  X3D_SegmentFace* face = x3d_uncompressedsegment_get_faces(seg);
   
-  // Find which of the segment faces the ray collides with, and more importantly,
-  // which face we hit first. A portion of the line will be "inside" the plane
-  // and a portion of the line will be "outside". For each plane, we calculate
-  // this and whichever has the smallest (positive) percentage is the first one
-  // hit.
-  fp0x16 min_scale = 0x7FFF;
-  int16 min_face = -1;
-  int16 min_dist;
+  X3D_LevelSegment* segment = x3d_level_get_segmentptr(global_level, obj->current_seg);
+  int16 hit_dist;
+  X3D_LevelSegFace* hit_face;
   
-  int16 i;
-  for(i = 0; i < x3d_prism3d_total_f(seg->base.base_v); ++i) {
-    /// @todo dist_in can be moved into the below 'if'
-    int16 dist_in = x3d_plane_dist(&face[i].plane, &in);
-    int16 dist_out = x3d_plane_dist(&face[i].plane, &out);
+  char title[1024];
+  sprintf(title, "{ %f, %f, %f } -> on_floor = %d", obj->velocity.x / 256.0, obj->velocity.y / 256.0, obj->velocity.z / 256.0, obj->on_floor);
+  SDL_WM_SetCaption(title, NULL);
+  
+  obj->on_floor = X3D_FALSE;
+  
+  if(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist)) {
+    //x3d_object_reverse_velocity(obj, &obj->velocity, hit_face, hit_dist);
+    obj->on_floor = X3D_TRUE;
     
+    X3D_Vex3D_fp8x8 new_velocity = obj->velocity;
     
-    //printf("dddd %d: in %d out[%d]\n", i, dist_in, dist_out);
-    
-    if(dist_in <= 0) {
-      caster->inside = X3D_FALSE;
+    if(x3d_object_keep_velocity_of_sliding_object(obj, &new_velocity, hit_face)) {
+      obj->velocity = new_velocity;
+    }
+    else {
+      obj->velocity.x = 0;
+      obj->velocity.y = 0;
+      obj->velocity.z = 0;
       return;
     }
     
-    // If the distance for the rayscast start is < 0, the point wasn't actually
-    // inside the segment
-    //x3d_assert(dist_in >= 0);
+    int i = 0;
     
-    // Only include faces that the caster is outside of
-    if(dist_in > 0 && dist_out <= 0) {
-      // Numerator/denominator of fraction for percentage calculation
-      // percent in (aka scale) = dist_in / (dist_in + abs(dist_out))
-      int16 n = dist_in;
-      int16 d = dist_in - dist_out;   // dist_out < 0
-      fp0x16 scale;
+    do {
+      //x3d_log(X3D_INFO, "Add: %d", ((int32)hit_face->plane.normal.y * (obj->bound_sphere.radius - hit_dist)) / 128);
+      //break;
       
-      if(n == d)
-        scale = 0x7FFF;   // Prevents overflow (n == d results in 0x8000, too big for an int16)
-      else
-        scale = (n * 32768L) / d;   /// @todo Should be replaced with constant instead of magic number
-        
-        
-      //x3d_assert(scale > 0);
-        
-      //if(scale < 0)
-      //  printf("Neg scale!\n");
-        
-      if(scale < min_scale) {
-        min_scale = scale;
-        min_face = i;
-        min_dist = dist_in;
-      }
-    }
+      new_pos.x += ((int32)hit_face->plane.normal.x * (obj->bound_sphere.radius - hit_dist)) / 128;
+      new_pos.y += ((int32)hit_face->plane.normal.y * (obj->bound_sphere.radius - hit_dist)) / 128;
+      new_pos.z += ((int32)hit_face->plane.normal.z * (obj->bound_sphere.radius - hit_dist)) / 128;
+    
+      sphere.radius = obj->bound_sphere.radius;
+      sphere.center = x3d_vex3d_make(
+        new_pos.x >> 8,
+        new_pos.y >> 8,
+        new_pos.z >> 8
+      );      
+    } while(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist) && ++i < 5);
+    
+    obj->base.pos = new_pos;
   }
   
-  printf("Min dist: %d\n", min_dist);
+  //if(abs(obj->bound_sphere.radius - hit_dist) < 20)
+  //  x3d_velocity_apply_friction(&obj->velocity);
   
-  
-  // No face was actually hit...
-  //x3d_assert(min_face != -1);
-  if(min_face == -1) {
-    x3d_log(X3D_INFO, "Segment: %d\n", caster->seg);
-    x3d_assert(0);
-  }
-  
-  
-  // Calculate the point of intersection
-  X3D_Vex3D diff = x3d_vex3d_sub(&out, &in);
-  
-  caster->hit_pos.x = in.x + (((int32)diff.x * min_scale) >> X3D_NORMAL_BITS);
-  caster->hit_pos.y = in.y + (((int32)diff.y * min_scale) >> X3D_NORMAL_BITS);
-  caster->hit_pos.z = in.z + (((int32)diff.z * min_scale) >> X3D_NORMAL_BITS);
-  
-  caster->hit_face = x3d_segfaceid_create(caster->seg, min_face);
-  caster->dist = min_dist;
+  obj->base.pos = new_pos;
 }
-
-#endif
 
