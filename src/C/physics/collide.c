@@ -26,7 +26,7 @@
 
 extern X3D_Level* global_level;
 
-_Bool x3d_boundsphere_intersec(X3D_BoundSphere* a, X3D_BoundSphere* b) {
+_Bool x3d_boundsphere_intersect(X3D_BoundSphere* a, X3D_BoundSphere* b) {
   return x3d_vex3d_distance(&a->center, &b->center) < a->radius + b->radius;
 }
 
@@ -48,7 +48,7 @@ _Bool x3d_boundsphere_inside_levelsegment(X3D_BoundSphere* sphere, X3D_LevelSegm
   return *hit_dist >= sphere->radius;
 }
 
-void x3d_object_reverse_velocity(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp8x8* velocity, X3D_LevelSegFace* hit_face, int16 hit_dist) {
+void x3d_object_reflect_velocity_to_simulate_bounce(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp8x8* velocity, X3D_LevelSegFace* hit_face, int16 hit_dist) {
   X3D_Vex3D vel = { velocity->x, velocity->y, velocity->z };
   
   int16 mag = x3d_vex3d_int16_mag(&vel);
@@ -65,13 +65,13 @@ void x3d_object_reverse_velocity(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp8x8* ve
   velocity->x -= 2 * (int32)mag * proj.x / 32768;
   velocity->y -= 2 * (int32)mag * proj.y / 32768;
   velocity->z -= 2 * (int32)mag * proj.z / 32768;
-  
-  //velocity->x = velocity->x - (((((int32)hit_face->plane.normal.x * dot) >> 15) * mag) >> 8);
-  //velocity->y = velocity->y - (((((int32)hit_face->plane.normal.y * dot) >> 15) * mag) >> 8);
-  //velocity->z = velocity->z - (((((int32)hit_face->plane.normal.z * dot) >> 15) * mag) >> 8);
 }
 
-void x3d_velocity_apply_friction(X3D_Vex3D_fp8x8* velocity);
+_Bool x3d_velocity_apply_friction(X3D_Vex3D_fp8x8* velocity);
+
+_Bool x3d_object_velocity_great_enough_to_overcome_static_friction(X3D_Vex3D_fp8x8* velocity) {
+  return x3d_vex3d_int16_mag(velocity) > 256;
+}
 
 _Bool x3d_object_keep_velocity_of_sliding_object(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp8x8* velocity, X3D_LevelSegFace* hit_face) {
    X3D_Vex3D vel = { velocity->x, velocity->y, velocity->z };
@@ -91,25 +91,7 @@ _Bool x3d_object_keep_velocity_of_sliding_object(X3D_DynamicObjectBase* obj, X3D
   velocity->y += 1 * (int32)mag * proj.y / 32768;
   velocity->z += 1 * (int32)mag * proj.z / 32768;
   
-  int16 new_mag = x3d_vex3d_int16_mag(velocity);
-  
-  if(new_mag < 256) {
-    return X3D_FALSE;
-  }
-  
-  x3d_velocity_apply_friction(velocity);
-  
-  return X3D_TRUE;
-  
-//   X3D_Vex3D proj = {
-//     (velocity->x * dot) / 32768,
-//     (velocity->y * dot) / 32768,
-//     (velocity->z * dot) / 32768,
-//   };
-//   
-//   velocity->x = (int32)proj.x;
-//   velocity->y = (int32)proj.y;
-//   velocity->z = (int32)proj.z;
+  return x3d_velocity_apply_friction(velocity);
 }
 
 fp8x8 x3d_scaler_apply_friction(fp8x8 val, int16 friction) {
@@ -119,7 +101,14 @@ fp8x8 x3d_scaler_apply_friction(fp8x8 val, int16 friction) {
   return val - friction;
 }
 
-void x3d_velocity_apply_friction(X3D_Vex3D_fp8x8* velocity) {
+_Bool x3d_velocity_apply_friction(X3D_Vex3D_fp8x8* velocity) {
+  if(!x3d_object_velocity_great_enough_to_overcome_static_friction(velocity)) {
+    velocity->x = 0;
+    velocity->y = 0;
+    velocity->z = 0;
+    return X3D_FALSE;
+  }
+  
   int32 friction_speed = 256;
   
   X3D_Vex3D vel = *velocity;
@@ -134,76 +123,61 @@ void x3d_velocity_apply_friction(X3D_Vex3D_fp8x8* velocity) {
   velocity->x = x3d_scaler_apply_friction(velocity->x, friction.x);
   velocity->y = x3d_scaler_apply_friction(velocity->y, friction.y);
   velocity->z = x3d_scaler_apply_friction(velocity->z, friction.z);
+  
+  return X3D_TRUE;
 }
 
 #include <SDL/SDL.h>
 
+void x3d_velocity_apply_gravity(X3D_Vex3D_fp8x8* velocity) {
+  velocity->y += 512 * 2;
+}
+
+void x3d_object_set_window_title(X3D_DynamicObjectBase* obj) {
+   char title[1024];
+  sprintf(title, "{ %f, %f, %f } -> on_floor = %d", obj->velocity.x / 256.0, obj->velocity.y / 256.0, obj->velocity.z / 256.0, obj->on_floor);
+  SDL_WM_SetCaption(title, NULL);
+}
+
+void x3d_object_adjust_to_not_penetrate_floor(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp16x8* new_pos, X3D_LevelSegFace* hit_face, int16 hit_dist) {
+  int i = 0;
+  
+  X3D_BoundSphere sphere;
+  X3D_LevelSegment* segment = x3d_level_get_segmentptr(global_level, obj->current_seg);
+  
+  do {
+    new_pos->x += ((int32)hit_face->plane.normal.x * (obj->bound_sphere.radius - hit_dist)) / 128;
+    new_pos->y += ((int32)hit_face->plane.normal.y * (obj->bound_sphere.radius - hit_dist)) / 128;
+    new_pos->z += ((int32)hit_face->plane.normal.z * (obj->bound_sphere.radius - hit_dist)) / 128;
+  
+    sphere.radius = obj->bound_sphere.radius;
+    sphere.center = x3d_vex3d_fp16x8_to_vex3d(new_pos);
+  } while(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist) && ++i < 5);
+}
+
 void x3d_object_move(X3D_DynamicObjectBase* obj) {
-  X3D_Vex3D_fp16x8 new_pos;
+  X3D_Vex3D_fp8x8* velocity = &obj->velocity;
+  x3d_velocity_apply_gravity(velocity);
   
-  obj->velocity.y += 512 * 2;
-  //obj->velocity.z += 512 * 2;
+  X3D_Vex3D_fp16x8 new_pos = x3d_vex3d_fp16x8_add_vex3d_fp8x8(&obj->base.pos, velocity);
+
+  x3d_object_set_window_title(obj);
+  x3d_object_set_on_floor_status(obj, X3D_FALSE);
   
-  new_pos.x = obj->base.pos.x + obj->velocity.x;
-  new_pos.y = obj->base.pos.y + obj->velocity.y;
-  new_pos.z = obj->base.pos.z + obj->velocity.z;
-  
-  X3D_BoundSphere sphere = { .radius = obj->bound_sphere.radius, .center = x3d_vex3d_make(
-    new_pos.x >> 8,
-    new_pos.y >> 8,
-    new_pos.z >> 8
-  )};
-  
-  
+  X3D_BoundSphere sphere = { .radius = obj->bound_sphere.radius, .center = x3d_vex3d_fp16x8_to_vex3d(&new_pos) };
   X3D_LevelSegment* segment = x3d_level_get_segmentptr(global_level, obj->current_seg);
   int16 hit_dist;
   X3D_LevelSegFace* hit_face;
   
-  char title[1024];
-  sprintf(title, "{ %f, %f, %f } -> on_floor = %d", obj->velocity.x / 256.0, obj->velocity.y / 256.0, obj->velocity.z / 256.0, obj->on_floor);
-  SDL_WM_SetCaption(title, NULL);
-  
-  obj->on_floor = X3D_FALSE;
-  
   if(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist)) {
-    //x3d_object_reverse_velocity(obj, &obj->velocity, hit_face, hit_dist);
-    obj->on_floor = X3D_TRUE;
+    x3d_object_set_on_floor_status(obj, X3D_TRUE);
     
-    X3D_Vex3D_fp8x8 new_velocity = obj->velocity;
-    
-    if(x3d_object_keep_velocity_of_sliding_object(obj, &new_velocity, hit_face)) {
-      obj->velocity = new_velocity;
-    }
-    else {
-      obj->velocity.x = 0;
-      obj->velocity.y = 0;
-      obj->velocity.z = 0;
+    //x3d_object_reflect_velocity_to_simulate_bounce(obj, velocity, hit_face, hit_dist);
+    if(!x3d_object_keep_velocity_of_sliding_object(obj, &obj->velocity, hit_face))
       return;
-    }
     
-    int i = 0;
-    
-    do {
-      //x3d_log(X3D_INFO, "Add: %d", ((int32)hit_face->plane.normal.y * (obj->bound_sphere.radius - hit_dist)) / 128);
-      //break;
-      
-      new_pos.x += ((int32)hit_face->plane.normal.x * (obj->bound_sphere.radius - hit_dist)) / 128;
-      new_pos.y += ((int32)hit_face->plane.normal.y * (obj->bound_sphere.radius - hit_dist)) / 128;
-      new_pos.z += ((int32)hit_face->plane.normal.z * (obj->bound_sphere.radius - hit_dist)) / 128;
-    
-      sphere.radius = obj->bound_sphere.radius;
-      sphere.center = x3d_vex3d_make(
-        new_pos.x >> 8,
-        new_pos.y >> 8,
-        new_pos.z >> 8
-      );      
-    } while(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist) && ++i < 5);
-    
-    obj->base.pos = new_pos;
+    x3d_object_adjust_to_not_penetrate_floor(obj, &new_pos, hit_face, hit_dist);
   }
-  
-  //if(abs(obj->bound_sphere.radius - hit_dist) < 20)
-  //  x3d_velocity_apply_friction(&obj->velocity);
   
   obj->base.pos = new_pos;
 }

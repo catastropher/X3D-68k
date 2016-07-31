@@ -136,5 +136,16 @@ static inline int16 x3d_vex3d_distance(X3D_Vex3D* a, X3D_Vex3D* b) {
   return x3d_vex3d_int16_mag(&diff);
 }
 
+static inline X3D_Vex3D_fp16x8 x3d_vex3d_fp16x8_add_vex3d_fp8x8(X3D_Vex3D_fp16x8* v16x8, X3D_Vex3D_fp8x8* v8x8) {
+  return (X3D_Vex3D_fp16x8) {
+    v16x8->x + v8x8->x,
+    v16x8->y + v8x8->y,
+    v16x8->z + v8x8->z
+  };
+}
+
+static inline X3D_Vex3D x3d_vex3d_fp16x8_to_vex3d(X3D_Vex3D_fp16x8* v) {
+  return x3d_vex3d_make(v->x >> 8, v->y >> 8, v->z >> 8);
+}
 
 

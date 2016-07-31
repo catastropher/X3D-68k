@@ -199,4 +199,3 @@ static inline int16 x3d_linear_interpolate_fp8x8(int16 start, int16 end, fp8x8 s
   return start + mul_int16_by_fp8x8(end - start, scale);
 }
 
-

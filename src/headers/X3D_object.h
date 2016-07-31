@@ -154,3 +154,7 @@ static inline void x3d_object_send_render_event(X3D_ObjectBase* obj, struct X3D_
   x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_RENDER, .render_event.cam = cam });
 }
 
+static inline void x3d_object_set_on_floor_status(X3D_DynamicObjectBase* obj, _Bool status) {
+  obj->on_floor = status;
+}
+

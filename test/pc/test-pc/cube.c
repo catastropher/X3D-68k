@@ -38,6 +38,10 @@ static void cube_handler(X3D_ObjectBase* obj, const X3D_ObjectEvent ev) {
       break;
     
     case X3D_OBJECT_EVENT_FRAME:
+      if(x3d_key_down(X3D_KEY_8)) {
+        cube->base.velocity.y -= 512 * 32;
+      }
+      
       x3d_object_move(&cube->base);
       break;
       
