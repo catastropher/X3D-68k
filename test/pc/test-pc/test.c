@@ -329,7 +329,7 @@ int main(int argc, char* argv[]) {
 #if 1
   x3d_level_init(&level);
   
-  x3d_prism3d_construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 8, 0, 0 });
+  x3d_prism3d_construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
   x3d_level_add_new_standalone_segment(&level, &prism, 0);
   
@@ -414,7 +414,6 @@ int main(int argc, char* argv[]) {
 #endif
   
   global_level = &level;
-  
   
   // Set up key mapping
   setup_key_map();

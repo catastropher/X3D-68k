@@ -266,3 +266,11 @@ void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation) {
   }
 }
 
+void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center) {
+  X3D_Vex3D center;
+  x3d_prism3d_center(prism, &center);
+  
+  X3D_Vex3D translation = x3d_vex3d_sub(new_center, &center);
+  x3d_prism3d_translate(prism, &translation);
+}
+

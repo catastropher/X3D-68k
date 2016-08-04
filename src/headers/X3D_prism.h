@@ -104,4 +104,5 @@ void x3d_prism_point_faces(uint16 base_v, uint16 point, uint16* dest);
 
 void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
 void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation);
+void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center);
 

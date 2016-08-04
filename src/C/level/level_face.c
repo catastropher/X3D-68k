@@ -49,7 +49,7 @@ static inline _Bool x3d_level_segment_face_run_should_copy_faces(X3D_LevelSegFac
 static inline void x3d_level_segment_face_run_default_init(X3D_Level* level, X3D_LEVEL_SEG_FACE_RUN run_start, uint16 total) {
   uint16 i;
   for(i = 0; i < total; ++i)
-    level->faces.faces[i].connect_face = X3D_FACE_NONE;
+    level->faces.faces[i + run_start].connect_face = X3D_FACE_NONE;
 }
 
 

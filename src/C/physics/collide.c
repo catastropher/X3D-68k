@@ -30,7 +30,7 @@ _Bool x3d_boundsphere_intersect(X3D_BoundSphere* a, X3D_BoundSphere* b) {
   return x3d_vex3d_distance(&a->center, &b->center) < a->radius + b->radius;
 }
 
-_Bool x3d_boundsphere_inside_levelsegment(X3D_BoundSphere* sphere, X3D_LevelSegment* seg, X3D_LevelSegFace** hit_face, int16* hit_dist) {
+_Bool x3d_boundsphere_inside_levelsegment(X3D_BoundSphere* sphere, X3D_LevelSegment* seg, X3D_LevelSegFace** hit_face, int16* hit_dist, int16* face_id) {
   X3D_LevelSegFace* faces = x3d_levelsegment_get_face_attributes(global_level, seg);
   
   *hit_dist = 10000;
@@ -42,6 +42,7 @@ _Bool x3d_boundsphere_inside_levelsegment(X3D_BoundSphere* sphere, X3D_LevelSegm
     if(dist < *hit_dist) {
       *hit_dist = dist;
       *hit_face = faces + i;
+      *face_id = i;
     }
   }
   
@@ -143,7 +144,8 @@ void x3d_object_adjust_to_not_penetrate_floor(X3D_DynamicObjectBase* obj, X3D_Ve
   int i = 0;
   
   X3D_BoundSphere sphere;
-  X3D_LevelSegment* segment = x3d_level_get_segmentptr(global_level, obj->current_seg);
+  X3D_LevelSegment* segment = x3d_level_get_segmentptr(global_level, obj->segs[0]);
+  int16 hit_face_id;
   
   do {
     new_pos->x += ((int32)hit_face->plane.normal.x * (obj->bound_sphere.radius - hit_dist)) / 128;
@@ -152,7 +154,7 @@ void x3d_object_adjust_to_not_penetrate_floor(X3D_DynamicObjectBase* obj, X3D_Ve
   
     sphere.radius = obj->bound_sphere.radius;
     sphere.center = x3d_vex3d_fp16x8_to_vex3d(new_pos);
-  } while(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist) && ++i < 5);
+  } while(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist, &hit_face_id) && ++i < 5);
 }
 
 void x3d_object_move(X3D_DynamicObjectBase* obj) {
@@ -165,11 +167,20 @@ void x3d_object_move(X3D_DynamicObjectBase* obj) {
   x3d_object_set_on_floor_status(obj, X3D_FALSE);
   
   X3D_BoundSphere sphere = { .radius = obj->bound_sphere.radius, .center = x3d_vex3d_fp16x8_to_vex3d(&new_pos) };
-  X3D_LevelSegment* segment = x3d_level_get_segmentptr(global_level, obj->current_seg);
+  X3D_LevelSegment* segment = x3d_level_get_segmentptr(global_level, obj->segs[0]);
   int16 hit_dist;
   X3D_LevelSegFace* hit_face;
+  int16 hit_face_id;
   
-  if(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist)) {
+  if(!x3d_boundsphere_inside_levelsegment(&sphere, segment, &hit_face, &hit_dist, &hit_face_id)) {
+    if(hit_face->connect_face != X3D_FACE_NONE) {
+      obj->segs[0] = x3d_segfaceid_seg(hit_face->connect_face);
+      x3d_log(X3D_INFO, "New seg: %d", obj->segs[0]);
+      x3d_log(X3D_INFO, "Face id: %d", hit_face_id);
+      obj->base.pos = new_pos;
+      return;
+    }
+    
     x3d_object_set_on_floor_status(obj, X3D_TRUE);
     
     //x3d_object_reflect_velocity_to_simulate_bounce(obj, velocity, hit_face, hit_dist);

@@ -77,7 +77,7 @@ typedef struct X3D_DynamicObjectBase {
   X3D_Vex3D_angle256 angle;
   X3D_Model* model;
   X3D_BoundSphere bound_sphere;
-  X3D_LEVEL_SEG current_seg;
+  X3D_LEVEL_SEG segs[4];
   _Bool on_floor;
 } X3D_DynamicObjectBase;
 

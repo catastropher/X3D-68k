@@ -304,6 +304,26 @@ void engine_test_handle_keys(void) {
         x3d_read_keys();
         x3d_pc_mouse_state(&left, &right, &mouse_x, &mouse_y);
       } while(left);
+      
+      uint16 j;
+      X3D_LevelSegment* ss;
+      
+      X3D_Level level = *global_level;
+      
+      for(j = 0; j < level.segs.total; ++j) {
+        ss = x3d_level_get_segmentptr(&level, j);
+        
+        x3d_log(X3D_INFO, "%d", j);
+        uint16 k;
+        for(k = 0; k < ss->base_v + 2; ++k) {
+          uint16 face = x3d_levelsegment_get_face_attribute(&level, ss, k)->connect_face;
+          
+          if(face != X3D_FACE_NONE)
+            x3d_log(X3D_INFO, "\t%d %d", x3d_segfaceid_seg(face), x3d_segfaceid_face(face));
+          else
+            x3d_log(X3D_INFO, "\tNONE");
+        }
+      }
     }
   }
   
