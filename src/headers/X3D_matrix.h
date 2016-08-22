@@ -20,12 +20,13 @@
 //< Macro for giving 1D array index from a 3x3 matrix row and column
 #define MAT3x3(_row, _col) ((_row) * 3 + (_col))
 
-///////////////////////////////////////////////////////////////////////////////
-/// A 3x3 matrix with fp0x16 elements.
-///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Mat3x3_fp0x16 {
   fp0x16 data[9];
 } X3D_Mat3x3_fp0x16;
+
+typedef struct X3D_Mat4x4_fp16x16 {
+  fp16x16 data[16];
+} X3D_Mat4x4_fp16x16;
 
 typedef X3D_Mat3x3_fp0x16 X3D_Mat3x3;
 
@@ -35,12 +36,8 @@ void x3d_mat3x3_mul(X3D_Mat3x3* dest, X3D_Mat3x3* a, X3D_Mat3x3* b);
 void x3d_mat3x3_print(X3D_Mat3x3* mat);
 void x3d_mat3x3_construct(X3D_Mat3x3 *dest, X3D_Vex3D_angle256 *angle);
 void x3d_mat3x3_transpose(X3D_Mat3x3* mat);
-void x3d_mat3x3_set_column(X3D_Mat3x3* mat, int16 col, X3D_Vex3D_fp0x16* v);
-void x3d_mat3x3_get_column(X3D_Mat3x3* mat, int16 col, X3D_Vex3D_fp0x16* dest);
-void x3d_mat3x3_set_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* v);
-void x3d_mat3x3_get_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* dest);
-
 void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest);
-
 void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, struct X3D_CameraObject* cam);
+
+#include "math/X3D_matrix_inline.h"
 

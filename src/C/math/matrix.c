@@ -124,72 +124,12 @@ void x3d_mat3x3_transpose(X3D_Mat3x3* mat) {
   *mat = temp;
 }
 
-void x3d_mat3x3_set_column(X3D_Mat3x3* mat, int16 col, X3D_Vex3D_fp0x16* v) {
-  mat->data[col] = v->x;
-  mat->data[col + 3] = v->y;
-  mat->data[col + 6] = v->z;
-}
-
-void x3d_mat3x3_get_column(X3D_Mat3x3* mat, int16 col, X3D_Vex3D_fp0x16* dest) {
-  dest->x = mat->data[col];
-  dest->y = mat->data[col + 3];
-  dest->z = mat->data[col + 6];
-}
-
-void x3d_mat3x3_set_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* v) {
-  mat->data[row * 3] = v->x;
-  mat->data[row * 3 + 1] = v->y;
-  mat->data[row * 3 + 2] = v->z;
-}
-
-void x3d_mat3x3_get_row(X3D_Mat3x3* mat, int16 row, X3D_Vex3D_fp0x16* dest) {
-  dest->x = mat->data[row * 3];
-  dest->y = mat->data[row * 3 + 1];
-  dest->z = mat->data[row * 3 + 2];
-}
-
-#if 0
-
-fp8x8 x3d_fp8x8_mul(fp8x8 a, fp8x8 b) {
-  
-}
-
-#endif
-
-
-void x3d_mat3x3_from_axis_angle(X3D_Mat3x3* dest, X3D_Vex3D* axis, angle256 angle) {
-#if 0
-  fp8x8 c = x3d_cos(angle) >> 7;
-  fp8x8 s = x3d_sin(angle) >> 7;
-  fp8x8 C = 256 - C;
-  
-  fp8x8 xx = x3d_fp8x8_mul(axis->x, axis->x);
-  fp8x8 xy = x3d_fp8x8_mul(axis->x, axis->y);
-  fp8x8 xz = x3d_fp8x8_mul(axis->x, axis->z);
-  
-  fp8x8 yy = x3d_fp8x8_mul(axis->y, axis->y);
-  fp8x8 yz = x3d_fp8x8_mul(axis->y, axis->z);
-  
-  fp8x8 zz = x3d_fp8x8_mul(axis->z, axis->z);
-  
-  fp8x8 zs = x3d_fp8x8_mul(axis->z, 
-  
-  
-  dest->data[0] = x3d_fp8x8_mul(xx, C) + c;
-  dest->data[1] = x3d_fp8x8_mul(xy, C) + c;
-#endif
-}
-
-#include <math.h>
-
 void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest) {
   int16 len = 2000;
   X3D_Vex3D v_before = { 0, 0, len };
   
   X3D_Vex3D v;
   x3d_vex3d_int16_rotate(&v, &v_before, mat);
-  
-  x3d_log(X3D_INFO, "After transform: %d %d %d", v.x, v.y, v.z);
   
   fp0x16 val = ((int32)v.y * 32767) / len;
   
@@ -199,29 +139,4 @@ void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest) {
     dest->x = (angle256)x3d_acos(val) + ANG_270;
   
   dest->y = (angle256)ANG_90 - x3d_atan2(v.z, v.x);
-  
-  x3d_log(X3D_INFO, "Angle X: %u", (angle256)dest->x);
-  x3d_log(X3D_INFO, "Angle Y: %u", (angle256)dest->y);
-}
-
-void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, X3D_CameraObject* cam) {
-  return;
-  X3D_Color colors[] = {
-    x3d_rgb_to_color(255, 0, 0),
-    x3d_rgb_to_color(0, 255, 0),
-    x3d_rgb_to_color(0, 0, 255)
-  };
-  
-  uint16 i;
-  
-  for(i = 0; i < 3; ++i) {
-    X3D_Vex3D p;
-    x3d_mat3x3_get_column(mat, i, &p);
-    
-    p.x = (p.x >> 9) + pos.x;
-    p.y = (p.y >> 9) + pos.y;
-    p.z = (p.z >> 9) + pos.z;
-    
-    x3d_draw_3d_line(pos, p, cam, colors[i]);
-  }
 }
