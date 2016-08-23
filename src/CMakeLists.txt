@@ -110,6 +110,7 @@ add_sources(
   C/level/level_face.c
   C/level/level_segment.c
   C/level/level_linetexture.c
+  C/level/levelbuilder.c
   
   C/render/render.c
   C/render/wallportal.c
