@@ -106,3 +106,29 @@ void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* des
 void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation);
 void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center);
 
+
+typedef struct X3D_Prism3DInterface {
+    void (*const construct)(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
+    void (*const getFace)(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
+    void (*const setFace)(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
+    void (*const center)(X3D_Prism3D* prism, X3D_Vex3D* dest);
+
+    void (*const getEdge)(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
+    void (*const translate)(X3D_Prism3D* prism, X3D_Vex3D* translation);
+    void (*const setCenter)(X3D_Prism3D* prism, X3D_Vex3D* new_center);
+} X3D_Prism3DInterface;
+
+#ifndef X3D_NO_NAMESPACES
+
+static const X3D_Prism3DInterface Prism3D = {
+    .construct = x3d_prism3d_construct,
+    .getFace = x3d_prism3d_get_face,
+    .setFace = x3d_prism3d_set_face,
+    .center = x3d_prism3d_center,
+    .getEdge = x3d_prism3d_get_edge,
+    .translate = x3d_prism3d_translate,
+    .setCenter = x3d_prism3d_set_center
+};
+
+#endif
+

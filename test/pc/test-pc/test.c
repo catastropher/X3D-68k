@@ -329,7 +329,7 @@ int main(int argc, char* argv[]) {
 #if 1
   x3d_level_init(&level);
   
-  x3d_prism3d_construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 0, 0, 0 });
+  Prism3D.construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 0, 0, 0 });
   
   x3d_level_add_new_standalone_segment(&level, &prism, 0);
   
@@ -357,7 +357,7 @@ int main(int argc, char* argv[]) {
   x3d_levelsegment_get_geometry(&level, seg, &prism);
   
   {
-    x3d_prism3d_get_face(&prism, 3, &poly);
+    Prism3D.getFace(&prism, 3, &poly);
     
     X3D_Vex3D center;
     Polygon3D.center(&poly, &center);
@@ -377,7 +377,7 @@ int main(int argc, char* argv[]) {
   }
   
   {
-    x3d_prism3d_get_face(&prism, 4, &poly);
+    Prism3D.getFace(&prism, 4, &poly);
     
     X3D_Vex3D center;
     Polygon3D.center(&poly, &center);
