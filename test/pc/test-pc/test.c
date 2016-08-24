@@ -360,7 +360,7 @@ int main(int argc, char* argv[]) {
     x3d_prism3d_get_face(&prism, 3, &poly);
     
     X3D_Vex3D center;
-    x3d_polygon3d_center(&poly, &center);
+    Polygon3D.center(&poly, &center);
     
     x3d_linetexture3d_create_dynamically_allocated_texture(&logo, 255, 255);
     
@@ -371,7 +371,8 @@ int main(int argc, char* argv[]) {
     }
     
     X3D_Plane plane;
-    x3d_polygon3d_calculate_plane(&poly, &plane);
+    Polygon3D.calculatePlane(&poly, &plane);
+    
     x3d_linetexture2d_convert_to_linetexture3d(&tex, &logo, &plane, &center);
   }
   
@@ -379,7 +380,7 @@ int main(int argc, char* argv[]) {
     x3d_prism3d_get_face(&prism, 4, &poly);
     
     X3D_Vex3D center;
-    x3d_polygon3d_center(&poly, &center);
+    Polygon3D.center(&poly, &center);
     
     x3d_linetexture3d_create_dynamically_allocated_texture(&aperture, 100, 100);
     
@@ -390,7 +391,7 @@ int main(int argc, char* argv[]) {
     }
     
     X3D_Plane plane;
-    x3d_polygon3d_calculate_plane(&poly, &plane);
+    Polygon3D.calculatePlane(&poly, &plane);
     x3d_linetexture2d_convert_to_linetexture3d(&tex, &aperture, &plane, &center);
   }
   

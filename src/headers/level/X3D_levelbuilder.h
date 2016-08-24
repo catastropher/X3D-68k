@@ -22,10 +22,23 @@
 
 typedef struct X3D_LevelBuilderSelection {
   int16 type;
+  
+  union {
+    struct {
+      X3D_LEVEL_SEG segid;
+    } segment_selection;
+    
+    struct {
+      X3D_LevelSegID faceid;
+    } face_selection;
+  };
+  
 } X3D_LevelBuilderSelection;
 
 typedef struct X3D_LevelBuilder {
   X3D_LevelBuilderSelection selections[X3D_LEVELBUILDER_MAX_SELECTIONS];
+  int16 current_selection;
+  X3D_Level* level;
 } X3D_LevelBuilder;
 
 

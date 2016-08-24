@@ -94,8 +94,44 @@ void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Pl
 /// @return Nothing.
 /// @note   The polygon must have at least 3 points.
 ///////////////////////////////////////////////////////////////////////////////
-static inline void x3d_polygon3d_calculate_plane(X3D_Polygon3D* poly, X3D_Plane* plane) {
+static inline void x3d_polygon3d_calculate_plane(X3D_Polygon3D* poly, X3D_Plane* dest) {
   x3d_assert(poly->total_v >= 3);
   x3d_plane_construct_from_three_points(plane, poly->v, poly->v + 1, poly->v + 2);
 }
+
+/*
+ * void x3d_polygon3d_translate_normal(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist);
+void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Vex3D shift);
+
+void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, struct X3D_CameraObject* cam, struct X3D_RasterRegion* parent);
+_Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, int16 near_z, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va);
+_Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va, uint16* clip);
+*/
+
+
+typedef struct X3D_Polygon3DInterface {
+    void (*const print)(X3D_Polygon3D* p);
+    void (*const translate)(X3D_Polygon3D* poly, X3D_Vex3D shift);
+    void (*const reverse)(X3D_Polygon3D* poly);
+    void (*const center)(X3D_Polygon3D* poly, X3D_Vex3D* dest);
+    void (*const scale)(X3D_Polygon3D* poly, fp8x8 scale);
+    void (*const rotate)(X3D_Polygon3D* poly, X3D_Vex3D_angle256 angle, X3D_Vex3D center);
+    void (*const copy)(X3D_Polygon3D* src, X3D_Polygon3D* dest);
+    void (*const calculatePlane)(X3D_Polygon3D* poly, X3D_Plane* dest);
+} X3D_Polygon3DInterface;
+
+#ifndef X3D_NO_NAMESPACES
+
+static const X3D_Polygon3DInterface Polygon3D = {
+    .print = x3d_polygon3d_print,
+    .translate = x3d_polygon3d_translate,
+    .reverse = x3d_polygon3d_reverse,
+    .center = x3d_polygon3d_reverse,
+    .scale = x3d_polygon3d_scale,
+    .rotate = x3d_polygon3d_rotate,
+    .copy = x3d_polygon3d_copy,
+    .calculatePlane = x3d_polygon3d_calculate_plane
+};
+
+#endif
 
