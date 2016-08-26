@@ -29,7 +29,7 @@ typedef struct X3D_LevelBuilderSelection {
     } segment_selection;
     
     struct {
-      X3D_LevelSegID faceid;
+      X3D_SegFaceID faceid;
     } face_selection;
   };
   
