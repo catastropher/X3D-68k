@@ -101,7 +101,7 @@ typedef void X3D_Object;
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 static inline void x3d_object_pos(X3D_Object* object, X3D_Vex3D* v) {
-  X3D_ObjectBase* obj = object;
+  X3D_ObjectBase* obj = (X3D_ObjectBase* )object;
   
   v->x = obj->pos.x >> 8;
   v->y = obj->pos.y >> 8;
@@ -143,15 +143,18 @@ static inline void x3d_object_set_position_from_vex3d(X3D_ObjectBase* obj, X3D_V
 }
 
 static inline void x3d_object_send_create_event(X3D_ObjectBase* obj) {
-  x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_CREATE });
+    // FIXME
+    x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_CREATE });
 }
 
 static inline void x3d_object_send_frame_event(X3D_ObjectBase* obj) {
-  x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_FRAME });
+    // FIXME
+    x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_FRAME });
 }
 
 static inline void x3d_object_send_render_event(X3D_ObjectBase* obj, struct X3D_CameraObject* cam) {
-  x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_RENDER, .render_event.cam = cam });
+    // FIXME
+    //x3d_object_send_event(obj, (X3D_ObjectEvent) { .type = X3D_OBJECT_EVENT_RENDER, .render_event.cam = cam });
 }
 
 static inline void x3d_object_set_on_floor_status(X3D_DynamicObjectBase* obj, _Bool status) {

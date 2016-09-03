@@ -56,7 +56,9 @@ static inline void x3d_ray3d_swap_v(X3D_Ray3D* ray) {
 }
 
 static inline X3D_Ray3D x3d_ray3d_make(X3D_Vex3D v1, X3D_Vex3D v2) {
-  return (X3D_Ray3D) { .v[0] = v1, .v[1] = v2 };
+  return (X3D_Ray3D) {
+      { v1, v2 }
+  };
 }
 
 static inline void x3d_ray3d_midpoint(X3D_Ray3D* ray, X3D_Vex3D* dest) {

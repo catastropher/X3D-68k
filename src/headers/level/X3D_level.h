@@ -34,7 +34,7 @@ _Bool x3d_level_load(X3D_Level* level, const char* filename);
 
 static inline X3D_LevelSegment* x3d_level_expand_segment_array_by_one(X3D_Level* level) {
   X3D_LEVEL_SEG new_seg_id = level->segs.total++;
-  level->segs.segs = realloc(level->segs.segs, sizeof(X3D_LevelSegment) * level->segs.total);
+  level->segs.segs = (X3D_LevelSegment* )realloc(level->segs.segs, sizeof(X3D_LevelSegment) * level->segs.total);
   
   X3D_LevelSegment* new_seg = level->segs.segs + new_seg_id;
   new_seg->id = new_seg_id;

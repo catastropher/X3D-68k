@@ -72,7 +72,7 @@ X3D_INTERNAL void x3d_platform_keys_init(X3D_InitSettings* settings) {
   key_pressed_state = 0;
 }
 
-void x3d_key_map_pc(X3D_Key x3d_key, int32 sdl_key) {
+void x3d_key_map_pc(uint32 x3d_key, int32 sdl_key) {
   int id = 0;
   
   x3d_assert(x3d_key != 0);
@@ -126,7 +126,7 @@ X3D_PLATFORM void x3d_read_keys() {
   }
 }
 
-_Bool x3d_key_down(X3D_Key key) {
+_Bool x3d_key_down(uint32 key) {
   return key_state & key;
 }
 

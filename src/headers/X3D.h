@@ -15,6 +15,13 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+    
+#define _Bool bool
+    
+#endif
+
 #include "X3D_common.h"
 #include "X3D_gameloop.h"
 #include "X3D_init.h"
@@ -55,3 +62,7 @@
 #include "render/geo/X3D_render_model.h"
 
 
+#ifdef __cplusplus
+}
+#endif
+    

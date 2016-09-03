@@ -274,3 +274,17 @@ void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center) {
   x3d_prism3d_translate(prism, &translation);
 }
 
+X3D_Prism3D* x3d_prism3d_construct_temp(uint16 steps, uint16 r, int16 h) {
+    static struct {
+        X3D_Prism3D prism;
+        X3D_Vex3D v[20];
+    } temp_prism3d;
+    
+    x3d_assert(steps <= 10);
+    
+    temp_prism3d.prism.v = temp_prism3d.v;
+    x3d_prism3d_construct(&temp_prism3d.prism, steps, r, h, (X3D_Vex3D_angle256) { 0, 0, 0 });
+    
+    return &temp_prism3d;
+}
+

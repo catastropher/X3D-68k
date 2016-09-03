@@ -24,7 +24,7 @@
 /// Represents a logical X3D key, which is mapped to a physical
 ///   platform-dependent key.
 ///////////////////////////////////////////////////////////////////////////////
-typedef enum {
+typedef enum X3D_Key {
   X3D_KEY_0 = 1,
   X3D_KEY_1 = 2,
   X3D_KEY_2 = 4,
@@ -58,7 +58,7 @@ typedef struct X3D_KeyManager {
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_PLATFORM void x3d_key_map_pc(X3D_Key x3d_key, int32 sdl_key);
+X3D_PLATFORM void x3d_key_map_pc(uint32 key, int32 sdl_key);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ X3D_PLATFORM void x3d_read_keys();
 /// @return Whether the key is currently being held down.
 /// @note Make sure the keystate has been updated with @ref x3d_read_keys().
 ///////////////////////////////////////////////////////////////////////////////
-_Bool x3d_key_down(X3D_Key key);
+_Bool x3d_key_down(uint32 key);
 
 /// @todo document
 _Bool x3d_pc_key_down(int32 key);

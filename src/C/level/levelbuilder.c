@@ -19,11 +19,11 @@
 #include "level/X3D_levelbuilder.h"
 
 enum X3D_LevelBuilderSelectionType {
-TYPE_NONE,
-TYPE_SEGMENT,
-TYPE_FACE,
-TYPE_VERTEX,
-TYPE_POINT_ON_FACE
+    TYPE_NONE,
+    TYPE_SEGMENT,
+    TYPE_FACE,
+    TYPE_VERTEX,
+    TYPE_POINT_ON_FACE
 } X3D_LevelBuilderSelectionType;
 
 
@@ -56,14 +56,24 @@ void x3d_levelbuilder_select_segmentface(X3D_LevelBuilder* builder, X3D_SegFaceI
 
 void x3d_levelbuilder_extrude(X3D_LevelBuilder* builder, int16 extrude_amount) {
     X3D_LevelBuilderSelection* select = builder->selections + builder->current_selection;
-    X3D_LevelSegment* new_seg;
+    
+    if(select->type != TYPE_FACE)
+        return;
+    
+    X3D_LevelSegment* new_seg = x3d_level_add_extruded_segment(builder->level, select->face_selection.faceid, extrude_amount);
+    
+    X3D_SegFaceID new_selection = x3d_segfaceid_create(new_seg->id, 0);
+    x3d_levelbuilder_select_segmentface(builder->level, new_selection);
+}
 
-//     switch(select->type) {
-//         case TYPE_FACE:
-//             new_seg = x3d_level_add_extruded_segment(builder->level, select->face_selection.faceid, extrude_amount);
-//             x3d_levelbuilder_select_segmentface(builder->level, x3d_segfaceid_create());
-//             
-//     }
+
+void test_levelbuilder() {
+    X3D_LevelBuilder builder;
+    
+    x3d_levelbuilder_init(&builder);
+    //x3d_levelbuilder_add
+    x3d_levelbuilder_select_segmentface(&builder, 0);
+    x3d_levelbuilder_extrude(&builder, 100);
 }
 
 

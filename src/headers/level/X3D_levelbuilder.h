@@ -50,6 +50,7 @@ void x3d_levelbuilder_cleanup(X3D_LevelBuilder* builder);
 
 void x3d_levelbuilder_set_selectionid(X3D_LevelBuilder* builder, uint16 selection);
 
+//void x3d_levelbuilder_add_segment(X3D_LevelBuilder* builder, X3D_Prism3D);
 void x3d_levelbuilder_select_segmentface(X3D_LevelBuilder* builder, X3D_SegFaceID face_id);
 void x3d_levelbuilder_select_segment(X3D_LevelBuilder* builder, X3D_LEVEL_SEG seg);
 void x3d_levelbuilder_select_vertex(X3D_LevelBuilder* builder, X3D_LEVEL_VERTEX vertex);
