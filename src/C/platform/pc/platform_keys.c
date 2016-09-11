@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#ifdef X3D_USE_SDL1
 #include <SDL/SDL.h>
+#else
+#include <SDL2/SDL.h>
+#endif
 
 #include "X3D_common.h"
 #include "X3D_init.h"
@@ -85,10 +89,15 @@ void x3d_key_map_pc(uint32 x3d_key, int32 sdl_key) {
   // Multiple keys aren't supported yet
   x3d_assert(x3d_key == 1);
   
+  
+#ifdef X3D_USE_SDL1
   key_map[id] = sdl_key;
+#else
+  key_map[id] = sdl_key & (~SDLK_SCANCODE_MASK);
+#endif
   
   if(sdl_key != X3D_KEY_NONE)
-    x3d_log(X3D_INFO, "Mapped key '%s' to 'X3D_KEY_%d'", SDL_GetKeyName(sdl_key), id);
+    x3d_log(X3D_INFO, "Mapped key '%s' to 'X3D_KEY_%d'", SDL_GetKeyName(key_map[id]), id);
   else
     x3d_log(X3D_INFO, "Reset key 'X3D_KEY_%d'", id);
 }
@@ -103,11 +112,19 @@ X3D_PLATFORM void x3d_read_keys() {
     switch(event.type) {
       case SDL_KEYDOWN:
         //printf("Key: %d\n", event.key.keysym.sym);
+#ifdef X3D_USE_SDL1
         sdl_keys[event.key.keysym.sym] = X3D_TRUE;
+#else
+        sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_TRUE;
+#endif
         break;
         
       case SDL_KEYUP:
+#ifdef X3D_USE_SDL1
         sdl_keys[event.key.keysym.sym] = X3D_FALSE;
+#else
+        sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_FALSE;
+#endif
         break;
         
       default:

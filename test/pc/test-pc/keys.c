@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <SDL/SDL.h>
+#include <SDL2/SDL.h>
 
 #include "X3D.h"
 
@@ -144,13 +144,13 @@ void engine_test_handle_keys(void) {
 
       if(record) {
         printf("Begin!\n");
-        x3d_screen_begin_record("/home/michael/record/frame");
+        //x3d_screen_begin_record("/home/michael/record/frame");
         rec = X3D_TRUE;
       }
     }
     else {
       printf("Recording complete\n");
-      x3d_screen_record_end();
+      //x3d_screen_record_end();
       rec = X3D_FALSE;
     }
   }

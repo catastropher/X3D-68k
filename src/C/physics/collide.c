@@ -137,7 +137,7 @@ void x3d_velocity_apply_gravity(X3D_Vex3D_fp8x8* velocity) {
 void x3d_object_set_window_title(X3D_DynamicObjectBase* obj) {
    char title[1024];
   sprintf(title, "{ %f, %f, %f } -> on_floor = %d", obj->velocity.x / 256.0, obj->velocity.y / 256.0, obj->velocity.z / 256.0, obj->on_floor);
-  SDL_WM_SetCaption(title, NULL);
+  //SDL_WM_SetCaption(title, NULL);
 }
 
 void x3d_object_adjust_to_not_penetrate_floor(X3D_DynamicObjectBase* obj, X3D_Vex3D_fp16x8* new_pos, X3D_LevelSegFace* hit_face, int16 hit_dist) {

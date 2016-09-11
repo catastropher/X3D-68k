@@ -13,7 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <SDL/SDL.h>
+#ifdef X3D_USE_SDL1
+    #include <SDL/SDL.h>
+#else
+    #include <SDL2/SDL.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -24,14 +29,13 @@
 #include "X3D_trig.h"
 #include "render/X3D_texture.h"
 
-
-int32 recip_tab[32768];
-
-//int32 fast_recip(int32* tab, uint16 val) {
-//  
-//}
-
 static SDL_Surface* window_surface;
+
+#ifndef X3D_USE_SDL1
+static SDL_Window* window;
+#endif
+
+
 static int16 screen_w;
 static int16 screen_h;
 static int16 screen_scale;
@@ -56,77 +60,25 @@ void x3d_set_texture(int16 id) {
   else if(id == 4)  global_texture = &aperture_tex;
 }
 
-X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
-  x3d_log(X3D_INFO, "SDL init");
-  
-  if(SDL_Init(SDL_INIT_VIDEO) != 0) {
-    x3d_log(X3D_ERROR, "Failed to init SDL: %s", SDL_GetError());
-    return X3D_FALSE;
-  }
-  
-#if 0
-  if(!x3d_texture_load_from_file(&aperture_tex, "aperture.bmp")) {
-    x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
-  }
-  
-  //if(!x3d_texture_load_from_file(&cube_tex, "xiao.bmp")) {
-  //  x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
-  //}
-  
-  if(!x3d_texture_load_from_file(&panel_tex, "panel.bmp")) {
-    x3d_log(X3D_ERROR, "Failed to load wood texture: %s", SDL_GetError());
-  }
+void init_screen_manager(X3D_InitSettings* init) {
+    screen_w = init->screen_w;
+    screen_h = init->screen_h;
+    screen_scale = init->screen_scale;
+    virtual_window = init->flags & X3D_INIT_VIRTUAL_SCREEN;
+    
+    x3d_state->screen_manager.w = screen_w;
+    x3d_state->screen_manager.h = screen_h;
+    x3d_state->screen_manager.center.x = screen_w / 2;
+    x3d_state->screen_manager.center.y = screen_h / 2;
+    x3d_state->screen_manager.fov = init->fov;
+    x3d_state->screen_manager.scale_x = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
+    x3d_state->screen_manager.scale_y = x3d_state->screen_manager.scale_x;
+}
 
-  if(!x3d_texture_load_from_file(&brick_tex, "wood2.bmp")) {
-    x3d_log(X3D_ERROR, "Failed to load brick texture: %s", SDL_GetError());
-  }
-  
-  if(!x3d_texture_load_from_file(&floor_panel_tex, "floor_panel2.bmp")) {
-    x3d_log(X3D_ERROR, "Failed to load floor panel texture: %s", SDL_GetError());
-  }
-  
-  if(!x3d_texture_load_from_file(&cube_tex, "cube.bmp")) {
-    x3d_log(X3D_ERROR, "Failed to load cube texture: %s", SDL_GetError());
-  }
-  
-  FILE* f = fopen("/home/michael/code/X3D-68k/test/pc/test-pc/texturepack.c", "wb");
-  
-  fprintf(f, "#include \"X3D_common.h\"\n\n");
-  
-  x3d_texture_to_array(&panel_tex, f, "panel_tex");
-  x3d_texture_to_array(&brick_tex, f, "wood_tex");
-  x3d_texture_to_array(&floor_panel_tex, f, "floor_panel_tex");
-  x3d_texture_to_array(&cube_tex, f, "cube_tex");
-  x3d_texture_to_array(&aperture_tex, f, "aperture_tex");
-  fclose(f);
-  
-  exit(0);
-#endif
-  
-#if 0
-  SDL_Surface* s = SDL_LoadBMP("piano.bmp");
-  x3d_gray_dither(s);
-  SDL_SaveBMP(s, "piano_bw.bmp");
-  exit(0);
-#endif
 
-  screen_w = init->screen_w;
-  screen_h = init->screen_h;
-  screen_scale = init->screen_scale;
-  virtual_window = init->flags & X3D_INIT_VIRTUAL_SCREEN;
-  
-  x3d_state->screen_manager.w = screen_w;
-  x3d_state->screen_manager.h = screen_h;
-  x3d_state->screen_manager.center.x = screen_w / 2;
-  x3d_state->screen_manager.center.y = screen_h / 2;
-  x3d_state->screen_manager.fov = init->fov;
-  x3d_state->screen_manager.scale_x = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
-  x3d_state->screen_manager.scale_y = x3d_state->screen_manager.scale_x;  //screen_w * div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2)) / screen_h;
-  
-  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
-          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
-  
-  if(!(init->flags & X3D_INIT_VIRTUAL_SCREEN)) {
+#ifdef X3D_USE_SDL1
+
+void init_sdl_window(X3D_InitSettings* init) {
     window_surface = SDL_SetVideoMode(
       init->screen_w * init->screen_scale,
       init->screen_h * init->screen_scale,
@@ -140,8 +92,9 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     }
     
     x3d_log(X3D_INFO, "Window created");
-  }
-  else {
+}
+
+void init_sdl_virtual_screen(X3D_InitSettings* init) {
     uint32 rmask, gmask, bmask, amask;
 
     /* SDL interprets each pixel as a 32-bit number, so our masks must depend
@@ -167,6 +120,52 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     }
     
     x3d_log(X3D_INFO, "Created virtual window");
+}
+
+#else
+
+_Bool init_sdl_window(X3D_InitSettings* init) {
+    window = SDL_CreateWindow("X3D", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, init->screen_w, init->screen_h, SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    
+    if(!window) {
+      x3d_log(X3D_ERROR, "Failed to create SDL2 window");
+      return X3D_FALSE;
+    }
+    
+    window_surface = SDL_GetWindowSurface(window);
+    
+    x3d_log(X3D_INFO, "Window created");
+    
+    return X3D_TRUE;
+}
+
+void init_sdl_virtual_screen(X3D_InitSettings* init) {
+    x3d_log(X3D_ERROR, "Virtual screen not supported with SDL2");
+}
+
+#endif
+
+
+
+
+X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
+  x3d_log(X3D_INFO, "SDL init");
+  
+  if(SDL_Init(SDL_INIT_VIDEO) != 0) {
+    x3d_log(X3D_ERROR, "Failed to init SDL: %s", SDL_GetError());
+    return X3D_FALSE;
+  }
+  
+  init_screen_manager(init);
+  
+  x3d_log(X3D_INFO, "Create window (w=%d, h=%d, pix_scale=%d, render_scale=%d)",
+          init->screen_w, init->screen_h, init->screen_scale, x3d_state->screen_manager.scale_x);
+  
+  if(!(init->flags & X3D_INIT_VIRTUAL_SCREEN)) {
+      init_sdl_window(init);
+  }
+  else {
+      init_sdl_virtual_screen(init);
   }
   
   record = X3D_FALSE;
@@ -240,102 +239,13 @@ Uint32 getpixel(SDL_Surface *surface, int x, int y)
     }
 }
 
-_Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
-  x3d_log(X3D_INFO, "File: %s", file);
-  SDL_Surface* s = SDL_LoadBMP(file);
-  
-  if(!s)
-    return X3D_FALSE;
-  
-  uint8* data = malloc((uint32)s->w * s->h * 3L + 5); 
-  
-  int16 start = 0;
-  
-  if(s->w >= 256 || s->h >= 256) {
-    data[0] = 0;
-    data[1] = s->w >> 8;
-    data[2] = s->w & 0xFF;
-    data[3] = s->h >> 8;
-    data[4] = s->h & 0xFF;
-    
-    data += 3;
-    start = 3;
-  }
-  else {
-    data[0] = s->w;
-    data[1] = s->h;
-  }
-  
-  uint32 pos = 0;
-  
-  uint16 i, d;
-  for(i = 0; i < s->h; ++i) {
-    for(d = 0; d < s->w; ++d) {
-      uint32 pix = getpixel(s, d, i);
-      uint8 r, g, b;
-      
-      SDL_GetRGB(pix, s->format, &r, &g, &b);
-      
-      data[2 + pos * 3 + 0] = r;
-      data[2 + pos * 3 + 1] = g;
-      data[2 + pos * 3 + 2] = b;
-      
-      ++pos;
-      
-      //x3d_texture_set_texel(tex, d, i, x3d_rgb_to_color(r, g, b));
-    }
-  }
-
-  x3d_texture_from_array(tex, data - start);
-  
-  SDL_FreeSurface(s);
-  
-  return X3D_TRUE;
-}
-
-
-void x3d_gray_dither(SDL_Surface* s) {
-  int32 x, y;
-  
-  int16 map[8][8] = {
-    { 1, 49, 13, 61, 4, 52, 16, 64 },
-    { 33, 17, 45, 29, 36, 20, 48, 32 },
-    { 9, 57, 5, 53, 12, 60, 8, 56 },
-    { 41, 25, 37, 21, 44, 28, 40, 24 },
-    { 3, 51, 15, 63, 2, 50, 14, 62 },
-    { 25, 19, 47, 31, 34, 18, 46, 30 },
-    { 11, 59, 7, 55, 10, 58, 6, 54 },
-    { 43, 27, 39, 23, 42, 26, 38, 22 }
-  };
-  
-  for(y = 0; y < s->h; ++y) {
-    for(x = 0; x < s->w; ++x) {
-      uint32 pix = getpixel(s, x, y);
-      uint8 r, g, b;
-      SDL_GetRGB(pix, s->format, &r, &g, &b);
-      
-      float in = .299 * r + .587 * g + .114 * b;
-      
-      int16 val = in + in * map[y % 8][x % 8] / 63;
-      
-      if(val >= 192)
-        val = 255;
-      else
-        val = 0;
-      
-      putpixel(s, x, y, SDL_MapRGB(s->format, val, val, val));
-    }
-  }
-}
-
-
 X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
-  SDL_FreeSurface(window_surface);
-  SDL_Quit();
+#ifdef X3D_USE_SDL1
+    SDL_FreeSurface(window_surface);
+#endif
+    SDL_Quit();
 }
 
-
-#define PURPLE (16 | (16 << 10))
 
 #define BPP 15
 
@@ -357,362 +267,7 @@ static uint32 map_color_to_uint32(X3D_Color color) {
 #endif
 }
 
-uint16 scale_down(uint32 value, int16* error) {
-  int16 v = (value >> 8) + *error;
-  
-  int16 new_v;
-  
-#if 0
-  if(v > 255)
-    v = 255;
-  
-  if(v < 0)
-    v = 0;
-#endif
-  
-  if((v & 7) < 4) {
-    new_v = v & ~7;
-  }
-  else {
-    new_v = (v & ~7) + 8;
-  }
-  
-  *error = v - new_v;
-  
-  return new_v;
-}
-
-X3D_Vex3D_int16 color_err;
-
-X3D_Color x3d_color_scale(uint32 r, uint32 g, uint32 b) {
-  return x3d_rgb_to_color(
-    scale_down((uint32)r, &color_err.x),
-    scale_down((uint32)g, &color_err.y),
-    scale_down((uint32)b, &color_err.z)
-  );
-}
-
 extern int16 render_mode;
-
-void x3d_screen_zbuf_clear(void) {
-  uint32 i;
-  
-  for(i = 0; i < (int32)screen_w * screen_h; ++i)
-    x3d_rendermanager_get()->zbuf[i] = 0;
-}
-
-void x3d_screen_zbuf_visualize(void) {
-  uint16 x, y;
-  
-  for(y = 0; y < screen_h; ++y) {
-    for(x = 0; x < screen_w; ++x) {
-      int16 v = x3d_rendermanager_get()->zbuf[y * screen_w + x];
-      
-      if(v != 0) {
-        int16 s = fast_recip(recip_tab, v) >> 8;
-        
-        s = x3d_rendermanager_get()->zbuf[y * screen_w + x];//X3D_MIN(s, 255);
-        
-        s = X3D_MIN(s, 255);
-        
-        x3d_screen_draw_pix(x, y, x3d_rgb_to_color(s, s, s));
-      }
-      else {
-        x3d_screen_draw_pix(x, y, x3d_rgb_to_color(255, 0, 0));
-      }
-    }
-  }
-}
-
-
-void x3d_screen_draw_scanline_grad(int16 y, int16 left, int16 right, X3D_Color c, fp0x16 scale_left, fp0x16 scale_right, X3D_Color* color_tab, int16 z) {
-  uint16 i;
-  
-  int16* z_buf = x3d_rendermanager_get()->zbuf;
-
-  if(render_mode == 0) {
-    scale_left = 0x7FFF;
-    scale_right = 0x7FFF;
-  }
-
-  int16 map[3][3] = {
-    { 1, 8, 4 },
-    { 7, 6, 3 },
-    { 5, 2, 9 }
-  };
-  
-  uint16 total_c = 32;
-  uint16 scale_bits = 5;
-
-  if(right < left) return;
-  
-  int32 scale_slope = (((int32)scale_right - scale_left) << 8) / (right - left + 1);
-  int32 scale = (int32)scale_left << 8;
-  
-  int16 zz = 0;
-  
-  if(z != 0) zz = 0x7FFF / z;
-  
-  for(i = left; i <= right; ++i) {
-    if(scale < 0 && scale_slope < 0 && scale + scale_slope >= 0) x3d_assert(0);
-    
-    
-    int32 val = (scale >> 8) + (render_mode >= 2 ? (int32)(scale >> 8) * map[i % 3][y % 3] / 10 : 0);
-    
-    int16 index = val >> (15 - scale_bits);
-    
-    if(index < 0) index = 0;
-    
-    if(index >= total_c)
-      index = total_c - 1;
-
-#if 1
-    //if(zz > z_buf[y * window_surface->w + i]) {
-      ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(color_tab[index]);
-      
-      if(z > 0)
-        z_buf[y * window_surface->w + i] = zz;
-    //}
-#endif
-      
-    scale += scale_slope;
-  }
-  
-}
-
-uint16 geo_render_mode;
-
-void x3d_screen_draw_scanline_texture_affine(X3D_Span2* span, int16 y) {
-  if(span->right.x < span->left.x) {
-    return;
-  }
-  
-  if(span->left.x < 0)
-    span->left.x = 0;
-  
-  int32* tab = recip_tab;
-  
-  
-  int32 next_z = fast_recip(tab, span->left.z >> 12);
-  int32 next_u = ((span->left.u >> 5) * next_z);
-  int32 next_v = ((span->left.v >> 5) * next_z);
-  
-  int32 prev_u, prev_v;
-  
-  int16 dx = span->right.x - span->left.x;
-  
-  const int16 RUN = 1;
-  
-  int32 z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
-  
-  int32 uz_slope = x3d_val_slope2(span->right.u - span->left.u, dx) * RUN;
-  int32 vz_slope = x3d_val_slope2(span->right.v - span->left.v, dx) * RUN;
-  int32 zz_slope = z_slope * RUN;
-  
-  int32 uz = span->left.u;
-  int32 vz = span->left.v;
-  int32 zz = span->left.z;
-  
-  int32 i = span->left.x;
-  
-  X3D_Texture* tex = global_texture;
-  int16* z_buf = x3d_rendermanager_get()->zbuf;
-  uint32* pixels = window_surface->pixels;
-  
-  int16 same_count = 0;
-  
-  if(span->right.x >= 639)
-    span->right.x = 639;
-  
-  do {
-    prev_u = next_u;
-    prev_v = next_v;
-
-    int32 z = zz;
-    
-    uz += uz_slope;
-    vz += vz_slope;
-    zz += zz_slope;
-    
-    int32 recip_z = fast_recip(tab, zz >> 12);
-    next_u = ((uz >> 5) * recip_z);
-    next_v = ((vz >> 5) * recip_z);
-    
-    int32 u_slope = x3d_val_slope2(next_u - prev_u, RUN);
-    int32 v_slope = x3d_val_slope2(next_v - prev_v, RUN);
-    
-    
-    int16 total = (span->right.x - i + 1 >= RUN ? RUN : span->right.x - i + 1);
-    
-    int32 u = prev_u;
-    int32 v = prev_v;
-    
-    uint16 last_u = 0xFFFF;
-    uint16 last_v = 0xFFFF;
-    
-    do {
-      uint16 uu = (u >> 23) & (tex->w - 1);
-      uint16 vv = (v >> 23) & (tex->w - 1);
-      
-      if(uu == last_u && vv == last_v) {
-        ++same_count;
-      }
-      
-      last_u = uu;
-      last_v = vv;
-      
-      uint16 zz = z >> 15;
-        
-      if(zz >= z_buf[y * 640L + i] && (geo_render_mode != 0 || z_buf[y * 640L + i] == 0)) {
-        pixels[y * 640L + i] = map_color_to_uint32(x3d_texture_get_texel(tex, uu, vv));   //tex->texel[(int32)vv * tex->w + uu]);
-        z_buf[y * 640L + i] = zz;
-      }
-      
-      u += u_slope;
-      v += v_slope;
-      z += z_slope;
-      
-      ++i;
-      
-    } while(--total > 0);
-  } while(i <= span->right.x);
-  
-  if(i != span->right.x + 1) {
-    x3d_log(X3D_INFO, "Off by: %d", span->right.x - i);
-  }
-  
-  if(x3d_key_down(X3D_KEY_15)) {
-    x3d_screen_flip();
-    SDL_Delay(1);
-    x3d_screen_flip();
-  }
-  
-  //x3d_log(X3D_INFO, "Same count: %d", same_count);
-}
-
-void x3d_screen_draw_scanline_color(X3D_Span2* span, int16 y, X3D_Color color) {
-  fp16x16 z_slope = x3d_val_slope2(span->right.z - span->left.z, span->right.x - span->left.x);
-  fp16x16 z = span->left.z;
-  int16* z_buf = x3d_rendermanager_get()->zbuf;
-  
-  int16 i;
-  for(i = span->left.x; i <= span->right.x; ++i) {
-    int16 zz = z >> 7;
-    
-    if(zz >= z_buf[y * window_surface->w + i]) {
-      ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(color);
-      z_buf[y * window_surface->w + i] = zz;
-    }
-    
-    z += z_slope;
-  }
-}
-
-void x3d_screen_draw_scanline_texture(X3D_Span2* span, int16 y) {
-  x3d_screen_draw_scanline_texture_affine(span, y);
-  return;
-  
-  int16 dx = span->right.x - span->left.x;
-  //fp16x16 u_slope = 0;
-  //fp16x16 v_slope = 0;
-  
-  x3d_fix_slope u_slope;
-  x3d_fix_slope v_slope;
-  x3d_fix_slope u;
-  x3d_fix_slope v;
-  
-  fp16x16 z_slope = 0;
-  //fp16x16 u = (int32)span->left.u;
-  //fp16x16 v = (int32)span->left.v;
-  fp16x16 z = (int32)span->left.z;
-  
-  if(dx != 0) {
-    x3d_fix_slope_init(&u_slope, span->left.u, span->right.u, dx);
-    x3d_fix_slope_same_shift(&u, &u_slope, span->left.u);
-    
-    x3d_fix_slope_init(&v_slope, span->left.v, span->right.v, dx);
-    x3d_fix_slope_same_shift(&v, &v_slope, span->left.v);
-    
-    //u_slope = x3d_val_slope2(span->right.u - span->left.u, dx);
-    //v_slope = x3d_val_slope2(span->right.v - span->left.v, dx);
-    z_slope = x3d_val_slope2(span->right.z - span->left.z, dx);
-  }
-  
-  int16* z_buf = x3d_rendermanager_get()->zbuf;
-  
-  uint16 i;
-  for(i = span->left.x; i <= span->right.x; ++i) {
-    int32 zz = z >> 7;
-    
-    if(zz <= 0) zz = 0x7FFF;
-    
-    //int16 uu = (x3d_fix_slope_val(&u) / zz);   //(((u / zz) >> 1) * 128) >> 15;
-    //int16 vv = (x3d_fix_slope_val(&v) / zz);//(((v / zz) >> 1) * 128) >> 15;
-    
-    //x3d_log(X3D_INFO, "recip: %d", recip);
-    
-    
-    int16 uu = (int64)x3d_fix_slope_val(&u) / zz;   //(((u / zz) >> 1) * 128) >> 15;
-    int16 vv = (int64)x3d_fix_slope_val(&v) / zz;//(((v / zz) >> 1) * 128) >> 15;
-    
-    //x3d_log(X3D_INFO, "u: %d, v: %d", uu, vv);
-    
-    //uu /= 16;
-    //vv /= 16;
-    
-    //int16 uu = (((u >> 16) * zz) * 192) >> 15;
-    //int16 vv = (((v >> 16) * zz) * 192) >> 15;
-    
-    
-    zz >>= 4;
-    
-    X3D_Color c = x3d_texture_get_texel(global_texture, uu, vv);
-    
-    if(zz >= z_buf[y * window_surface->w + i]) {
-      ((uint32 *)window_surface->pixels)[y * window_surface->w + i] = map_color_to_uint32(c);
-      z_buf[y * window_surface->w + i] = zz;
-    }
-    
-    //u += u_slope;
-    //v += v_slope;
-    x3d_fix_slope_add(&u, &u_slope);
-    x3d_fix_slope_add(&v, &v_slope);
-    
-    
-    z += z_slope;
-  }
-}
-
-
-
-uint16 scale_value_down(uint32 value, int16* error) {
-  int16 v = (value >> 15) + *error;
-  
-  int16 lo = (v / 8) * 8;
-  int16 hi = (v / 8) * 8 + 8;
-  
-  int16 new_v;
-  
-  if(v > 255)
-    v = 255;
-  
-  if(v < 0)
-    v = 0;
-  
-  if(abs(lo - v) < abs(hi - v)) {
-    new_v = lo;
-  }
-  else {
-    new_v = hi;
-  }
-  
-  *error = v - new_v;
-  
-  if(x3d_key_down(X3D_KEY_15))
-    return new_v;
-  else
-    return v;
-}
 
 void x3d_screen_flip() {
   if(record) {
@@ -734,7 +289,12 @@ void x3d_screen_flip() {
   
   if(!virtual_window) {
     //x3d_gray_dither(window_surface);
-    SDL_Flip(window_surface);
+    
+#ifdef X3D_USE_SDL1
+      SDL_Flip(window_surface);
+#else
+      SDL_UpdateWindowSurface(window);
+#endif
   }
 }
 
@@ -815,77 +375,7 @@ void x3d_screen_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color colo
   }
 }
 
-void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color0, X3D_Color color1) {
-  int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
-  int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
-  int err = (dx>dy ? dx : -dy)/2, e2;
- 
-  uint8 r0, g0, b0;
-  x3d_color_to_rgb(color0, &r0, &g0, &b0);
-  
-  uint8 r1, g1, b1;
-  x3d_color_to_rgb(color1, &r1, &g1, &b1);
-  
-  int16 step;
-  
-  _Bool step_x;
-  
-  if(dx > dy) {
-    step = dx;
-    step_x = X3D_TRUE;
-  }
-  else {
-    step = dy;
-    step_x = X3D_FALSE;
-  }
-  
-  if(step == 0)
-    return;
-  
-  int32 step_r = (((int32)r1 - r0) * 65536L) / step;
-  int32 step_g = (((int32)g1 - g0) * 65536L) / step;
-  int32 step_b = (((int32)b1 - b0) * 65536L) / step;
-  
-  int32 r = ((int32)r0) << 16;
-  int32 g = ((int32)g0) << 16;
-  int32 b = ((int32)b0) << 16;
-  
-  _Bool update = X3D_FALSE;
-  
-  X3D_Color color = color1;
-  
-  for(;;){
-    x3d_screen_draw_pix(x0, y0, color);
-    if (x0==x1 && y0==y1) break;
-    e2 = err;
-    if (e2 >-dx) {
-      err -= dy;
-      x0 += sx;
-      
-      if(step_x) {
-        update = X3D_TRUE;
-      }
-    }
-    
-    if (e2 < dy) {
-      err += dx;
-      y0 += sy;
-      
-      if(!step_x) {
-        update = X3D_TRUE;
-      }
-    }
-    
-    if(update) {
-      r += step_r;
-      g += step_g;
-      b += step_b;
-      
-      color = x3d_rgb_to_color(r >> 16, g >> 16, b >> 16);
-      update = X3D_FALSE;
-    }
-  }
-}
+
 
 X3D_Color x3d_rgb_to_color(uint8 r, uint8 g, uint8 b) {
 #if BPP == 15
@@ -911,140 +401,4 @@ void x3d_color_to_rgb(X3D_Color color, uint8* r, uint8* g, uint8* b) {
   *g = 255 * ((color >> 8) & mask) / 255;
   *b = 255 * ((color >> 16) & mask) / 255;
 #endif
-}
-
-void x3d_screen_begin_record(const char* name) {
-  strcpy(record_name, name);
-  record = X3D_TRUE;
-  record_frame = 0;
-}
-
-void x3d_screen_record_end(void) {
-  record = X3D_FALSE;
-}
-
-void x3d_screen_draw_digit(char digit, int16 x, int16 y, X3D_Color color) {
-  digit -= '0';
-  
-  static const unsigned char font[10][8] = {
-    {
-      0b00100000,
-      0b01010000,
-      0b10001000,
-      0b10001000,
-      0b10001000,
-      0b10001000,
-      0b01010000,
-      0b00100000
-    },
-    {
-      0b01000000,
-      0b01000000,
-      0b01000000,
-      0b01000000,
-      0b01000000,
-      0b01000000,
-      0b01000000,
-      0b01000000
-    },
-    {
-      0b11110000,
-      0b00010000,
-      0b00010000,
-      0b00010000,
-      0b11110000,
-      0b10000000,
-      0b10000000,
-      0b11110000
-    },
-    {
-      0b11110000,
-      0b00010000,
-      0b00010000,
-      0b00010000,
-      0b11110000,
-      0b00010000,
-      0b00010000,
-      0b11110000
-    },
-    {
-      0b10010000,
-      0b10010000,
-      0b10010000,
-      0b11110000,
-      0b00010000,
-      0b00010000,
-      0b00010000,
-      0b00010000
-    },
-    {
-      0b11110000,
-      0b10000000,
-      0b10000000,
-      0b10000000,
-      0b11110000,
-      0b00010000,
-      0b00010000,
-      0b11110000
-    },
-    {
-      0b11110000,
-      0b10000000,
-      0b10000000,
-      0b10000000,
-      0b11110000,
-      0b10010000,
-      0b10010000,
-      0b11110000
-    },
-    {
-      0b11110000,
-      0b00010000,
-      0b00010000,
-      0b00010000,
-      0b00100000,
-      0b01000000,
-      0b01000000,
-      0b10000000
-    },
-    {
-      0b11110000,
-      0b10010000,
-      0b10010000,
-      0b11110000,
-      0b10010000,
-      0b10010000,
-      0b10010000,
-      0b11110000
-    },
-    {
-      0b11110000,
-      0b10010000,
-      0b10010000,
-      0b11110000,
-      0b00010000,
-      0b00010000,
-      0b00010000,
-      0b00010000
-    }
-  };
-  
-  
-  
-  uint16 i, d;
-  for(i = y; i < y + 8; ++i) {
-    for(d = x; d < x + 5; ++d) {
-      x3d_screen_draw_pix(d, i, font[(uint32)digit][i - y] & (1 << (7 - (d - x))) ? color : 0x7FFF);
-    }
-  }
-}
-
-void x3d_screen_draw_uint32(uint32 num, int16 x, int16 y, X3D_Color c) {
-  char buf[32];
-  sprintf(buf, "%u", num);
-  
-  uint16 i;
-  for(i = 0; i < strlen(buf); ++i) {
-    x3d_screen_draw_digit(buf[i], x + i * 5, y, c);
-  }
 }
