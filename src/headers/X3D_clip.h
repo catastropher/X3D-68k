@@ -1,4 +1,4 @@
-
+/*
 #pragma once
 
 #include "X3D_common.h"
@@ -102,4 +102,4 @@ void x3d_rasterregion_fill_texture(X3D_RasterRegion* r, int16 z);
 
 fp16x16 x3d_vertical_slope(X3D_Vex2D v1, X3D_Vex2D v2);
 void x3d_intersect_line_with_horizontal(fp16x16 slope, X3D_Vex2D* start, int16 y);
-
+*/

@@ -34,14 +34,12 @@ typedef struct X3D_SegmentRenderContext {
 } X3D_SegmentRenderContext;
 
 typedef struct X3D_SegmentRenderFace {
-  X3D_RasterRegion* region;
   X3D_SegFaceID id;
   X3D_PolygonAttributes* att;
 } X3D_SegmentRenderFace;
 
 typedef struct X3D_RenderManager {
   X3D_Stack stack;
-  X3D_RasterRegion region;
   int16 near_z;
   _Bool wireframe;
   void (*segment_face_render_callback)(X3D_SegmentRenderFace* face);

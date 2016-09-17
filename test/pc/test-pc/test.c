@@ -70,8 +70,10 @@ void build_test_model(void) {
 
 void init_cube(void);
 
+void test_flat_poly();
+
 void test_render_callback(X3D_CameraObject* cam) {
-    
+    test_flat_poly();
 }
 
 void build_test_level(void) {

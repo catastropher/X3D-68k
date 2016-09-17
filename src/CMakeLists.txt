@@ -116,7 +116,6 @@ add_sources(
   C/render/wallportal.c
   C/render/portal.c
   C/render/clip.c
-  C/render/rasteredge.c
   C/render/util.c
   C/render/polyline.c
   C/render/texture.c
@@ -128,7 +127,7 @@ add_sources(
   C/render/geo/render_prism.c
   C/render/geo/render_linetexture.c
   C/render/geo/render_model.c
-  C/render/geo/render_polygon.c
+  C/render/geo/render_polygon_flat.c
   
   C/physics/collide.c
   C/physics/raytrace.c

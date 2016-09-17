@@ -37,9 +37,6 @@ typedef struct X3D_Portal {
   X3D_Color outline_color;
   X3D_Color fill_color;
   
-  X3D_RasterEdge* edges;
-  X3D_RasterRegion* region;
-  X3D_RasterRegion* parent;
   X3D_Plane* plane;
 } X3D_Portal;
 

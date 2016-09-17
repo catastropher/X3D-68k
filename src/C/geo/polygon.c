@@ -285,35 +285,35 @@ void x3d_polygon2d_remove_duplicate_points(X3D_Polygon2D* poly) {
 uint16 x3d_polygon3d_classify_point(X3D_Vex3D* v, int16 near_z) {
   uint16 flags = 0;
   
-  // Left
-  if(v->x < -v->z) {
-    flags |= EDGE_LEFT_CLIPPED;
-  }
-
-  // Right
-  if(v->x > v->z) {
-    flags |= EDGE_RIGHT_CLIPPED;
-  }
-  
-  if(v->y > v->z / 2) {
-    //printf("INVISIBLE!!!\n");
-    //return EDGE_INVISIBLE;
-    flags |= EDGE_BOTTOM_CLIPPED;
-  }
-  
-  // Top plane
-  if(v->y < -v->z / 2) {
-    //printf("INVISIBLE!!!\n");
-    //return EDGE_INVISIBLE;
-    flags |= EDGE_TOP_CLIPPED;
-  }
-
-  
-  if(v->z < near_z) {
-    flags |= EDGE_NEAR_CLIPPED | EDGE_INVISIBLE;
-  }
-  
-  return flags;
+//   // Left
+//   if(v->x < -v->z) {
+//     flags |= EDGE_LEFT_CLIPPED;
+//   }
+// 
+//   // Right
+//   if(v->x > v->z) {
+//     flags |= EDGE_RIGHT_CLIPPED;
+//   }
+//   
+//   if(v->y > v->z / 2) {
+//     //printf("INVISIBLE!!!\n");
+//     //return EDGE_INVISIBLE;
+//     flags |= EDGE_BOTTOM_CLIPPED;
+//   }
+//   
+//   // Top plane
+//   if(v->y < -v->z / 2) {
+//     //printf("INVISIBLE!!!\n");
+//     //return EDGE_INVISIBLE;
+//     flags |= EDGE_TOP_CLIPPED;
+//   }
+// 
+//   
+//   if(v->z < near_z) {
+//     flags |= EDGE_NEAR_CLIPPED | EDGE_INVISIBLE;
+//   }
+//   
+//   return flags;
 }
 
 _Bool x3d_polygon3d_frustum_clipped(X3D_Polygon3D* p, int16 near_z) {
