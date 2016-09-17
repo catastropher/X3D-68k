@@ -446,7 +446,15 @@ _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_
   return poly->total_v > 2;
 }
 
-
+X3D_Polygon3D* x3d_polygon3d_temp(void) {
+    static X3D_Polygon3D p;
+    static X3D_Vex3D v[20];
+    
+    p.total_v = 0;
+    p.v = v;
+    
+    return &p;
+}
 
 
 

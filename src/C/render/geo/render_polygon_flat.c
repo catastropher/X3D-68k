@@ -43,7 +43,7 @@ static inline void x3d_rasteredge_advance(X3D_RasterEdge* edge) {
     edge->value.x += edge->slope.x;
 }
 
-static inline void x3d_rasteredge_initialize(X3D_RasterEdge* edge, X3D_PolygonRasterVertex* top, X3D_PolygonRasterVertex* bottom) {
+static inline void x3d_rasteredge_initialize(X3D_RasterEdge* edge, X3D_PolygonRasterVertex2D* top, X3D_PolygonRasterVertex2D* bottom) {
     edge->slope.x = ((float)bottom->v.x - top->v.x) / (bottom->v.y - top->v.y);
     edge->value.x = top->v.x;
 }
@@ -61,7 +61,7 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
 }
 
 void test_flat_poly() {
-    X3D_PolygonRasterVertex v[4] = {
+    X3D_PolygonRasterVertex2D v[4] = {
         { .v = { 50, 50 } },
         { .v = { 100, 50 } },
         { .v = { 100, 100 } },
@@ -77,6 +77,8 @@ void test_flat_poly() {
 }
 
 
-#define RASTERIZE_NAME x3d_polygon2d_render_flat
+#define RASTERIZE_NAME2D x3d_polygon2d_render_flat
+#define RASTERIZE_NAME3D x3d_polygon3d_render_flat
+
 
 #include "render_polygon_generic.c"

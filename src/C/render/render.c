@@ -29,6 +29,7 @@
 #include "render/X3D_font.h"
 #include "render/geo/X3D_render_prism.h"
 #include "render/geo/X3D_render_linetexture.h"
+#include "render/geo/X3D_render_polygon.h"
 
 #include "geo/X3D_line.h"
 
@@ -88,12 +89,39 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   renderman->render_hud_callback = NULL;
 }
 
+void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam);
+
+void x3d_render_flat_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_CameraObject* cam) {
+    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i) {
+        rpoly.v[i].v = poly->v[i];
+    }
+    
+    X3D_PolygonRasterAtt at = {
+        .flat = {
+            .color = c
+        }
+    };
+    
+    x3d_polygon3d_render_flat(&rpoly, &at, cam);
+}
+
 void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id, X3D_CameraObject* cam, X3D_Color color) {
   X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, seg_id);
   X3D_Prism3D prism = { .v = alloca(1000) };
   
   x3d_levelsegment_get_geometry(level, seg, &prism);
-  x3d_prism3d_render_wireframe(&prism, cam, color);
+  X3D_Polygon3D* temp = x3d_polygon3d_temp();
+  
+  x3d_prism3d_get_face(&prism, 2, temp);
+  x3d_render_flat_shaded_polygon(temp, 31, cam);
+  
+  x3d_prism3d_get_face(&prism, 3, temp);
+  x3d_render_flat_shaded_polygon(temp, 4728, cam);
+  
+  //x3d_prism3d_render_wireframe(&prism, cam, color);
 }
 
 void x3d_renderer_draw_all_segments(X3D_Level* level, X3D_CameraObject* cam, X3D_Color color) {

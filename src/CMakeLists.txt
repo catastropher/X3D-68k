@@ -122,6 +122,7 @@ add_sources(
   C/render/font.c
   C/render/final_clip.c
   C/render/render_hud.c
+  C/render/geo/clip_polygon.c
   
   C/render/geo/render_line.c
   C/render/geo/render_prism.c

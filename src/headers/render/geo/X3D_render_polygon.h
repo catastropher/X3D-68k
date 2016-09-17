@@ -18,12 +18,29 @@
 #include "X3D_common.h"
 #include "X3D_screen.h"
 
-typedef struct X3D_PolygonRasterVertex {
+typedef struct X3D_PolygonRasterVertex2D {
     X3D_Vex2D v;
     fp0x16 intensity;
     int16 uu, vv;
     int16 zz;
-} X3D_PolygonRasterVertex;
+} X3D_PolygonRasterVertex2D;
+
+typedef struct X3D_PolygonRasterVertex3D {
+    X3D_Vex3D v;
+    fp0x16 intensity;
+    int16 uu, vv;
+    int16 zz;
+} X3D_PolygonRasterVertex3D;
+
+typedef struct X3D_RasterPolygon2D {
+    uint16 total_v;
+    X3D_PolygonRasterVertex2D* v;
+} X3D_RasterPolygon2D;
+
+typedef struct X3D_RasterPolygon3D {
+    uint16 total_v;
+    X3D_PolygonRasterVertex3D* v;
+} X3D_RasterPolygon3D;
 
 typedef struct X3D_PolygonRasterAtt {
     union {
@@ -33,7 +50,7 @@ typedef struct X3D_PolygonRasterAtt {
     };
 } X3D_PolygonRasterAtt;
 
-static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex* v, int16 screen_w, int16 screen_h) {
+static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, int16 screen_w, int16 screen_h) {
     v->v.x = X3D_MAX(0, v->v.x);
     v->v.x = X3D_MIN(screen_w, v->v.x);
     
@@ -41,5 +58,15 @@ static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex* v, int
     v->v.y = X3D_MIN(screen_h, v->v.y);
 }
 
-void x3d_polygon2d_render_flat(X3D_PolygonRasterVertex v[], uint16 total_v, X3D_PolygonRasterAtt* att);
+static inline void x3d_polygonrastervertex3d_copy_attributes(X3D_PolygonRasterVertex3D* src, X3D_PolygonRasterVertex2D* dest) {
+    dest->uu = src->uu;
+    dest->vv = src->vv;
+    dest->zz = src->v.z;
+    dest->intensity = src->intensity;
+}
+
+struct X3D_CameraObject;
+
+void x3d_polygon2d_render_flat(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
+void x3d_polygon3d_render_flat(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
 

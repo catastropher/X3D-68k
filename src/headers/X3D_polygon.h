@@ -85,6 +85,8 @@ void x3d_polygon2d_add_point(X3D_Polygon2D* poly, int16 x, int16 y);
 void x3d_polygon2d_remove_duplicate_points(X3D_Polygon2D* poly);
 void x3d_polygon2d_to_polygon3d(X3D_Polygon2D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, X3D_Vex3D* top_left, X3D_Vex3D* bottom_right, X3D_Mat3x3* mat);
 
+X3D_Polygon3D* x3d_polygon3d_temp(void);
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the plane equation of a 3D polygon.
 ///

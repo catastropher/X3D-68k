@@ -18,6 +18,7 @@
 #include "X3D_polygon.h"
 #include "X3D_enginestate.h"
 #include "render/geo/X3D_render_polygon.h"
+#include "render/geo/X3D_clip_polygon.h"
 
 static inline void add_edge(X3D_RasterEdge* edge, X3D_Scanline* start, X3D_Scanline* end) {
     while(start <= end) {
@@ -37,7 +38,7 @@ static inline void render_scanline(X3D_Scanline* scan, int16 y, X3D_PolygonRaste
     }
 }
 
-void RASTERIZE_NAME(X3D_PolygonRasterVertex v[], uint16 total_v, X3D_PolygonRasterAtt* att) {
+void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_Scanline scans[screenman->h];
     
@@ -53,8 +54,8 @@ void RASTERIZE_NAME(X3D_PolygonRasterVertex v[], uint16 total_v, X3D_PolygonRast
     for(i = 0; i < total_v; ++i) {
         uint16 next = (i + 1) % total_v;
         X3D_RasterEdge edge;
-        X3D_PolygonRasterVertex* top    = v + i;
-        X3D_PolygonRasterVertex* bottom = v + next;
+        X3D_PolygonRasterVertex2D* top    = v + i;
+        X3D_PolygonRasterVertex2D* bottom = v + next;
         
         x3d_polygonrastervertex_clamp(top, screenman->w, screenman->h);
         x3d_polygonrastervertex_clamp(bottom, screenman->w, screenman->h);
@@ -72,5 +73,23 @@ void RASTERIZE_NAME(X3D_PolygonRasterVertex v[], uint16 total_v, X3D_PolygonRast
     for(i = min_y; i <= max_y; ++i) {
         render_scanline(scans + i, i, att);
     }
+}
+
+void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_CameraObject* cam) {
+    X3D_PolygonRasterVertex3D clipped_v[20];
+    X3D_RasterPolygon3D clipped_poly = { .v = clipped_v };
+    X3D_Frustum* frustum = x3d_get_view_frustum(cam);
+    
+    x3d_rasterpolygon3d_clip_to_frustum(poly, frustum, &clipped_poly);
+    
+    X3D_PolygonRasterVertex2D projected_v[20];
+    
+    uint16 i;
+    for(i = 0; i < clipped_poly.total_v; ++i) {
+        x3d_camera_transform_points(cam, &clipped_poly.v[i].v, 1, NULL, &projected_v[i].v);
+        x3d_polygonrastervertex3d_copy_attributes(clipped_poly.v + i, projected_v + i);
+    }
+    
+    RASTERIZE_NAME2D(projected_v, clipped_poly.total_v, att);
 }
 
