@@ -79,11 +79,7 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
 
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, X3D_PolygonRasterAtt* att) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
-    int32 idx = y * screenman->w + x;
-    
-    //if(idx >= screenman->w * screenman->h)
-    
-    int16* zbuf = x3d_rendermanager_get()->zbuf + idx;
+    int16* zbuf = x3d_rendermanager_get()->zbuf + y * screenman->w + x;
     
     if(val->z < *zbuf) {
         x3d_screen_draw_pix(x, y, att->flat.color);

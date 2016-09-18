@@ -156,7 +156,7 @@ void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id,
   uint16 i;
   for(i = 0; i < prism.base_v + 2; ++i) {
     x3d_prism3d_get_face(&prism, i, temp);
-    x3d_render_flat_shaded_polygon(temp, colors[i], cam);
+    x3d_render_gouraud_shaded_polygon(temp, colors[i], cam);
   }
   
   //x3d_prism3d_render_wireframe(&prism, cam, color);
