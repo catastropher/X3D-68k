@@ -13,7 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#ifndef __nspire__
 #include <SDL2/SDL.h>
+#else
+#include <SDL/SDL.h>
+#endif
 
 #include "X3D.h"
 
@@ -286,9 +290,9 @@ void engine_test_handle_keys(void) {
     cam->base.base.pos.y += 4L << 8;
   }
   
-  _Bool left, right;
+  _Bool left = X3D_FALSE, right;
   int16 mouse_x, mouse_y;
-  x3d_pc_mouse_state(&left, &right, &mouse_x, &mouse_y);
+  //x3d_pc_mouse_state(&left, &right, &mouse_x, &mouse_y);
   
   if(left) {
     X3D_Vex2D mouse_pos = { mouse_x, mouse_y };

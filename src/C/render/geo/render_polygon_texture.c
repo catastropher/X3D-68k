@@ -27,7 +27,7 @@ typedef struct X3D_SlopeVar {
 
 typedef struct X3D_ScanlineValue {
     int16 x;
-    fp0x16 intensity;
+    float intensity;
     int16 z;
     float u, v;
 } X3D_ScanlineValue;

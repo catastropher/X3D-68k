@@ -85,10 +85,14 @@ void build_test_level(void) {
     
     X3D_Prism3D prism = { .v = alloca(1000) };
     Prism3D.construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 0, 0, 0 });
-    x3d_level_add_new_standalone_segment(&level, &prism, 0);  
+    x3d_level_add_new_standalone_segment(&level, &prism, 0);
+    
+    x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(0, 3), 400);
     
     global_level = &level;
 }
+
+extern uint8 wood_tex_data[];
 
 void init() {
 #if defined(__pc__) && 1
@@ -113,7 +117,7 @@ void init() {
 int main(int argc, char* argv[]) {
     init();
     
-    x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
+    x3d_texture_from_array(&checkerboard, wood_tex_data);
     
     build_test_model();
     x3d_rendermanager_get()->near_z = 10;
