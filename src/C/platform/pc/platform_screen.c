@@ -52,6 +52,12 @@ X3D_Texture aperture_tex;
 
 X3D_Texture* global_texture = &brick_tex;
 
+void x3d_screen_zbuf_clear(void) {
+  uint32 i;
+  
+  memset(x3d_rendermanager_get()->zbuf, 0x7F, screen_w * screen_h * 2);
+}
+
 void x3d_set_texture(int16 id) {
   if(id == 0)       global_texture = &panel_tex;
   else if(id == 1)  global_texture = &brick_tex;
@@ -247,7 +253,7 @@ X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
 }
 
 
-#define BPP 15
+#define BPP 31
 
 static uint32 map_color_to_uint32(X3D_Color color) {
 #if BPP == 15

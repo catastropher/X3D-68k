@@ -111,9 +111,12 @@ void x3d_render_flat_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_Camera
 void x3d_render_gouraud_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_CameraObject* cam) {
     X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
     
-    float intensity[] = {
-        .5, .5, .75, .75
-    };
+    float intensity[10];
+    
+    uint16 j;
+    for(j = 0; j < rpoly.total_v; ++j) {
+        intensity[j] = ((float)1 / rpoly.total_v) * (j);
+    }
     
     uint16 i;
     for(i = 0; i < poly->total_v; ++i) {
@@ -137,11 +140,24 @@ void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id,
   x3d_levelsegment_get_geometry(level, seg, &prism);
   X3D_Polygon3D* temp = x3d_polygon3d_temp();
   
-  x3d_prism3d_get_face(&prism, 2, temp);
-  x3d_render_gouraud_shaded_polygon(temp, 31, cam);
+  X3D_Color colors[] = {
+    x3d_rgb_to_color(255, 255, 255),
+    x3d_rgb_to_color(255, 0, 255),
+    x3d_rgb_to_color(255, 0, 0),
+    x3d_rgb_to_color(0, 255, 0),
+    x3d_rgb_to_color(0, 0, 255),
+    x3d_rgb_to_color(255, 255, 0),
+    x3d_rgb_to_color(0, 255, 255),
+    x3d_rgb_to_color(128, 128, 128),
+    x3d_rgb_to_color(255, 128, 255),
+    x3d_rgb_to_color(128, 128, 255)
+  };
   
-  x3d_prism3d_get_face(&prism, 3, temp);
-  x3d_render_gouraud_shaded_polygon(temp, 4728, cam);
+  uint16 i;
+  for(i = 0; i < prism.base_v + 2; ++i) {
+    x3d_prism3d_get_face(&prism, i, temp);
+    x3d_render_flat_shaded_polygon(temp, colors[i], cam);
+  }
   
   //x3d_prism3d_render_wireframe(&prism, cam, color);
 }

@@ -52,10 +52,10 @@ typedef struct X3D_PolygonRasterAtt {
 
 static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, int16 screen_w, int16 screen_h) {
     v->v.x = X3D_MAX(0, v->v.x);
-    v->v.x = X3D_MIN(screen_w, v->v.x);
+    v->v.x = X3D_MIN(screen_w - 1, v->v.x);
     
     v->v.y = X3D_MAX(0, v->v.y);
-    v->v.y = X3D_MIN(screen_h, v->v.y);
+    v->v.y = X3D_MIN(screen_h - 1, v->v.y);
 }
 
 static inline void x3d_polygonrastervertex3d_copy_attributes(X3D_PolygonRasterVertex3D* src, X3D_PolygonRasterVertex2D* dest) {
