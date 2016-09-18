@@ -130,6 +130,7 @@ add_sources(
   C/render/geo/render_model.c
   C/render/geo/render_polygon_flat.c
   C/render/geo/render_polygon_gouraud.c
+  C/render/geo/render_polygon_texture.c
   
   C/physics/collide.c
   C/physics/raytrace.c

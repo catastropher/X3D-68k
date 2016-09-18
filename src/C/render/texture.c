@@ -178,7 +178,7 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
   dest->total_c = 0;
   dest->mask = dest->w - 1;
 
-  if(dest->w == 32) {
+  if(dest->w == 32 || dest->w == 64 || dest->w == 128) {
     dest->flags |= X3D_TEXTURE_REPEAT;
   }
   

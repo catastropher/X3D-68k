@@ -72,8 +72,10 @@ void init_cube(void);
 
 void test_flat_poly();
 
+X3D_Texture checkerboard;
+
 void test_render_callback(X3D_CameraObject* cam) {
-    test_flat_poly();
+    //test_flat_poly();
 }
 
 void build_test_level(void) {
@@ -110,6 +112,8 @@ void init() {
 
 int main(int argc, char* argv[]) {
     init();
+    
+    x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
     
     build_test_model();
     x3d_rendermanager_get()->near_z = 10;

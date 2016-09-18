@@ -133,6 +133,45 @@ void x3d_render_gouraud_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_Cam
     x3d_polygon3d_render_gouraud(&rpoly, &at, cam);
 }
 
+extern X3D_Texture checkerboard;
+
+void x3d_render_textured_shaded_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, X3D_CameraObject* cam) {
+    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
+    
+    float intensity[10];
+    
+    uint16 j;
+    for(j = 0; j < rpoly.total_v; ++j) {
+        intensity[j] = ((float)1 / rpoly.total_v) * (j);
+    }
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i) {
+        rpoly.v[i].v = poly->v[i];
+        rpoly.v[i].intensity = intensity[i] * 32767;
+    }
+    
+    rpoly.v[0].uu = 0;
+    rpoly.v[0].vv = 0;
+    
+    rpoly.v[1].uu = 63;
+    rpoly.v[1].vv = 0;
+    
+    rpoly.v[2].uu = 63;
+    rpoly.v[2].vv = 63;
+    
+    rpoly.v[3].uu = 0;
+    rpoly.v[3].vv = 63;
+    
+    X3D_PolygonRasterAtt at = {
+        .texture = {
+            .texture = tex
+        }
+    };
+    
+    x3d_polygon3d_render_texture(&rpoly, &at, cam);
+}
+
 void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id, X3D_CameraObject* cam, X3D_Color color) {
   X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, seg_id);
   X3D_Prism3D prism = { .v = alloca(1000) };
@@ -156,7 +195,11 @@ void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id,
   uint16 i;
   for(i = 0; i < prism.base_v + 2; ++i) {
     x3d_prism3d_get_face(&prism, i, temp);
-    x3d_render_gouraud_shaded_polygon(temp, colors[i], cam);
+    
+    if(i < 2)
+        x3d_render_gouraud_shaded_polygon(temp, colors[i], cam);
+    else
+        x3d_render_textured_shaded_polygon(temp, &checkerboard, cam);
   }
   
   //x3d_prism3d_render_wireframe(&prism, cam, color);
