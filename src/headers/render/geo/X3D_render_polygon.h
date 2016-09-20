@@ -18,6 +18,7 @@
 #include "X3D_common.h"
 #include "X3D_screen.h"
 #include "render/X3D_texture.h"
+#include "render/X3D_lightmap.h"
 
 typedef struct X3D_PolygonRasterVertex2D {
     X3D_Vex2D v;
@@ -52,6 +53,14 @@ typedef struct X3D_PolygonRasterAtt {
         struct {
             X3D_Texture* texture;
         } texture;
+        
+        struct {
+            uint32 id;
+        } id_buffer;
+        
+        struct {
+            X3D_LightMap* map;
+        } light_map;
     };
 } X3D_PolygonRasterAtt;
 
@@ -80,4 +89,10 @@ void x3d_polygon3d_render_gouraud(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAt
 
 void x3d_polygon2d_render_texture(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
 void x3d_polygon3d_render_texture(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
+
+void x3d_polygon2d_render_id_buffer(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
+void x3d_polygon3d_render_id_buffer(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
+
+void x3d_polygon2d_render_lightmap(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
+void x3d_polygon3d_render_lightmap(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
 

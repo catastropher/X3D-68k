@@ -137,3 +137,6 @@ void x3d_screen_draw_uint32(uint32 num, int16 x, int16 y, X3D_Color c);
 
 void x3d_screen_draw_scanline_color(struct X3D_Span2* span, int16 y, X3D_Color color);
 
+void x3d_screen_set_internal_value(int16 x, int16 y, uint32 val);
+uint32 x3d_screen_get_internal_value(int16 x, int16 y);
+

@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <stdio.h>
+
 #include "X3D_common.h"
 #include "level/X3D_level.h"
 #include "X3D_prism.h"
@@ -29,6 +31,9 @@ void x3d_level_init(X3D_Level* level) {
   
   level->faces.total = 0;
   level->faces.faces = NULL;
+  
+  level->wall_segs.total = 0;
+  level->wall_segs.wall_segs = NULL;
 }
 
 void x3d_level_cleanup(X3D_Level* level) {
@@ -46,6 +51,38 @@ X3D_LevelSegment* x3d_level_add_new_standalone_segment(X3D_Level* level, X3D_Pri
   
   return new_seg;
 }
+
+X3D_LevelSegment* x3d_level_add_wall_segment_to_center_of_face(X3D_Level* level, X3D_LevelSegment* seg, uint16 face, uint16 base_v, uint16 r, uint16 h) {
+    X3D_Prism3D prism = { .v = alloca(1000) };
+    X3D_Polygon3D poly3d = { .v = alloca(1000) };
+    
+    x3d_levelsegment_get_geometry(level, seg, &prism);
+    x3d_prism3d_get_face(&prism, face, &poly3d);
+    
+    X3D_Vex3D center;
+    X3D_Plane plane;
+    x3d_polygon3d_center(&poly3d, &center);
+    x3d_polygon3d_calculate_plane(&poly3d, &plane);
+    
+    X3D_Polygon2D poly2d = { .v = alloca(1000) };
+    x3d_polygon2d_construct(&poly2d, base_v, r, 0);
+    X3D_Mat3x3 mat;
+    
+    x3d_polygon2d_to_polygon3d(&poly2d, &poly3d, &plane, &center, NULL, &mat);
+    x3d_polygon3d_reverse(&poly3d);
+    plane.normal = x3d_vex3d_neg(&plane.normal);
+    x3d_polygon3d_translate(&poly3d, center);
+    
+    prism.base_v = base_v;
+    x3d_prism3d_set_face(&prism, X3D_BASE_A, &poly3d);
+    x3d_polygon3d_translate_normal(&poly3d, &plane.normal, h);
+    x3d_polygon3d_reverse(&poly3d);
+    x3d_prism3d_set_face(&prism, X3D_BASE_B, &poly3d);
+    
+    X3D_LevelSegment* new_seg = x3d_level_add_new_standalone_segment(level, &prism, 0);
+    return new_seg;
+}
+
 
 X3D_LevelSegment* x3d_level_add_uninitialized_segment(X3D_Level* level) {
   return x3d_level_expand_segment_array_by_one(level);

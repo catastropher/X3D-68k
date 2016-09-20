@@ -156,19 +156,19 @@ _Bool x3d_rasterpolygon3d_clip_to_plane(X3D_RasterPolygon3D* poly, X3D_Plane* pl
       int16 in  = abs(dist);
       int16 out = abs(next_dist);
       
-      int32 t = ((int32)in << 15) / (in + out);
+      float t = (float)in / (in + out);//((int32)in << 15) / (in + out);
       
       X3D_PolygonRasterVertex3D new_v;
       
       new_v.v = x3d_vex3d_make(
-        x3d_linear_interpolate(poly->v[v].v.x, poly->v[next_v].v.x, t),
-        x3d_linear_interpolate(poly->v[v].v.y, poly->v[next_v].v.y, t),
-        x3d_linear_interpolate(poly->v[v].v.z, poly->v[next_v].v.z, t)
+        x3d_linear_interpolate_float(poly->v[v].v.x, poly->v[next_v].v.x, t),
+        x3d_linear_interpolate_float(poly->v[v].v.y, poly->v[next_v].v.y, t),
+        x3d_linear_interpolate_float(poly->v[v].v.z, poly->v[next_v].v.z, t)
         );
       
-      new_v.uu = x3d_linear_interpolate(poly->v[v].uu, poly->v[next_v].uu, t);
-      new_v.vv = x3d_linear_interpolate(poly->v[v].vv, poly->v[next_v].vv, t);
-      new_v.intensity = x3d_linear_interpolate(poly->v[v].intensity, poly->v[next_v].intensity, t);
+      new_v.uu = x3d_linear_interpolate_float(poly->v[v].uu, poly->v[next_v].uu, t);
+      new_v.vv = x3d_linear_interpolate_float(poly->v[v].vv, poly->v[next_v].vv, t);
+      new_v.intensity = x3d_linear_interpolate_float(poly->v[v].intensity, poly->v[next_v].intensity, t);
       
       x3d_rasterpolygon3d_clip_add_point(dest, &new_v);
     }

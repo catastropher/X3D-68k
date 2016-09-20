@@ -38,6 +38,24 @@ typedef struct X3D_SegmentRenderFace {
   X3D_PolygonAttributes* att;
 } X3D_SegmentRenderFace;
 
+enum {
+    X3D_RENDER_NORMAL,
+    X3D_RENDER_ID_BUFFER,
+    X3D_RENDER_LIGHTMAP
+};
+
+typedef struct X3D_RenderContext {
+    uint16 render_type;
+} X3D_RenderContext;
+
+typedef struct X3D_SegRenderContext {
+    X3D_RenderContext* render_context;
+    X3D_CameraObject* cam;
+    X3D_Level* level;
+    X3D_LevelSegment* seg;
+    uint16 parent_seg_id;
+} X3D_SegRenderContext;
+
 typedef struct X3D_RenderManager {
   X3D_Stack stack;
   int16 near_z;
@@ -51,5 +69,5 @@ struct X3D_InitSettings;
 
 void x3d_rendermanager_init(struct X3D_InitSettings* settings);
 
-void x3d_render(X3D_CameraObject* cam);
+void x3d_render(X3D_CameraObject* cam, X3D_RenderContext* context);
 

@@ -26,12 +26,17 @@ void x3d_game_loop_quit(void) {
   x3d_enginestate_get()->exit_gameloop = X3D_TRUE;
 }
 
+void test_lightmap();
+
 ///////////////////////////////////////////////////////////////////////////////
 /// The main game loop.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_game_loop() {
   X3D_EngineState* state = x3d_enginestate_get();
-
+  X3D_RenderContext render_context = {
+      .render_type = X3D_RENDER_LIGHTMAP
+  };
+  
   do {
     // Update the key state
     x3d_read_keys();
@@ -43,7 +48,14 @@ void x3d_game_loop() {
     // Render from the player's perspective
     x3d_screen_clear(0);
     x3d_screen_zbuf_clear();
-    x3d_render(x3d_playermanager_get()->player[0].cam);
+    x3d_render(x3d_playermanager_get()->player[0].cam, &render_context);
+    
+    
+    //if(x3d_key_down(X3D_KEY_10)) {
+    //    x3d_screen_zbuf_clear();
+    //    test_lightmap();
+    //}
+    
     x3d_screen_flip();
 
     /// @todo Platform-independent solution
@@ -52,7 +64,7 @@ void x3d_game_loop() {
     if(x3d_key_down(X3D_KEY_15))
       SDL_Delay(500);
     else
-      SDL_Delay(1);
+      SDL_Delay(10);
 #endif
 
     x3d_enginestate_next_step();

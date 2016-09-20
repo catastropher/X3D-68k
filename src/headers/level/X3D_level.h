@@ -46,3 +46,5 @@ static inline X3D_LevelSegment* x3d_level_get_segmentptr(X3D_Level* level, X3D_L
   return level->segs.segs + id;
 }
 
+X3D_LevelSegment* x3d_level_add_wall_segment_to_center_of_face(X3D_Level* level, X3D_LevelSegment* seg, uint16 face, uint16 base_v, uint16 r, uint16 h);
+

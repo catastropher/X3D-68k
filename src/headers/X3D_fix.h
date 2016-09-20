@@ -70,6 +70,10 @@ static inline int16 x3d_linear_interpolate(int16 start, int16 end, fp0x16 scale)
   return start + ((((int32)end - start) * scale) >> 15);
 }
 
+static inline float x3d_linear_interpolate_float(int16 start, int16 end, float t) {
+    return start + (end - start) * t;
+}
+
 static inline void x3d_fix_slope_init(x3d_fix_slope* slope, int32 start, int32 end, int32 dx) {
   slope->shift = 0;
   

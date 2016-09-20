@@ -42,6 +42,8 @@ static inline void x3d_levelsegment_set_flags(X3D_LevelSegment* seg, uint16 flag
   seg->flags = flags;
 }
 
+void x3d_levelsegment_set_wall_segs_for_face(X3D_Level* level, X3D_LevelSegment* seg, uint16 face, X3D_SegFaceID* wall_segs, uint16 total_wall_segs);
+
 #define X3D_POLYGON3D_ALLOCA_BIG_ENOUGH_TO_HOLD_SEGMENT_LARGEST_FACE(_segmentptr) { .total_v = _segmentptr->base_v, .v = alloca(_segmentptr->base_v * sizeof(X3D_Point3D)) }
 
 #ifdef X3D_LEVEL_SEGMENT_C

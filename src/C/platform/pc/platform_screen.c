@@ -253,7 +253,20 @@ X3D_INTERNAL void x3d_platform_screen_cleanup(void) {
 }
 
 
-#define BPP 15
+void x3d_screen_zbuf_visualize(void) {
+    uint32 i, j;
+    
+    for(i = 0; i < screen_h; ++i) {
+        for(j = 0; j < screen_w; ++j) {
+            int32 mx = 3000;
+            int32 val = (mx - x3d_rendermanager_get()->zbuf[i * screen_w + j]) * 255 / mx;
+            
+            x3d_screen_draw_pix(j, i, x3d_rgb_to_color(val, val, val));
+        }
+    }
+}
+
+#define BPP 32
 
 static uint32 map_color_to_uint32(X3D_Color color) {
 #if BPP == 15
@@ -328,6 +341,20 @@ void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
       //x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
     }
   }
+}
+
+void x3d_screen_set_internal_value(int16 x, int16 y, uint32 val) {
+    if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
+        return;
+    
+    ((uint32 *)window_surface->pixels)[y * window_surface->w + x] = val;
+}
+
+uint32 x3d_screen_get_internal_value(int16 x, int16 y) {
+    if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
+        return;
+    
+    return ((uint32 *)window_surface->pixels)[y * window_surface->w + x];
 }
 
 #define plot(_x, _y) x3d_screen_draw_pix(_x, _y, c)

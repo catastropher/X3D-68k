@@ -86,8 +86,11 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
     
     uint16 i;
     for(i = 0; i < clipped_poly.total_v; ++i) {
-        x3d_camera_transform_points(cam, &clipped_poly.v[i].v, 1, NULL, &projected_v[i].v);
+        X3D_Vex3D rotated;
+        x3d_camera_transform_points(cam, &clipped_poly.v[i].v, 1, &rotated, &projected_v[i].v);
         x3d_polygonrastervertex3d_copy_attributes(clipped_poly.v + i, projected_v + i);
+        
+        projected_v[i].zz = rotated.z;
     }
     
     RASTERIZE_NAME2D(projected_v, clipped_poly.total_v, att);

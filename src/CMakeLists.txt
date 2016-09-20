@@ -122,7 +122,7 @@ add_sources(
   C/render/font.c
   C/render/final_clip.c
   C/render/render_hud.c
-  C/render/geo/clip_polygon.c
+  C/render/lightmap.c
   
   C/render/geo/render_line.c
   C/render/geo/render_prism.c
@@ -131,6 +131,9 @@ add_sources(
   C/render/geo/render_polygon_flat.c
   C/render/geo/render_polygon_gouraud.c
   C/render/geo/render_polygon_texture.c
+  C/render/geo/render_polygon_id_buffer.c   
+  C/render/geo/render_polygon_lightmap.c
+  C/render/geo/clip_polygon.c
   
   C/physics/collide.c
   C/physics/raytrace.c

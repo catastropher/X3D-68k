@@ -21,6 +21,7 @@ typedef uint16 X3D_LEVEL_VERTEX;
 typedef uint16 X3D_LEVEL_SEG;
 typedef uint16 X3D_LEVEL_VERTEX_RUN;
 typedef uint16 X3D_LEVEL_SEG_FACE_RUN;
+typedef uint16 X3D_LEVEL_WALL_SEG;
 
 typedef struct X3D_LevelSegment {
   uint16                 id;
@@ -32,6 +33,7 @@ typedef struct X3D_LevelSegment {
 
 typedef struct X3D_LevelSegFace {
   uint16 connect_face;
+  X3D_LEVEL_WALL_SEG wall_seg_start;
   X3D_Plane plane;
 } X3D_LevelSegFace;
 
@@ -59,10 +61,16 @@ typedef struct X3D_LevelVertexRunArray {
   X3D_LEVEL_VERTEX* v;
 } X3D_LevelVertexRunArray;
 
+typedef struct X3D_LevelWallSegArray {
+    uint16              total;
+    X3D_LEVEL_WALL_SEG* wall_segs;
+} X3D_LevelWallSegArray;
+
 typedef struct X3D_Level {
   X3D_LevelSegArray       segs;
   X3D_LevelVertexArray    v;
   X3D_LevelVertexRunArray runs;
   X3D_LevelSegFaceArray   faces;
+  X3D_LevelWallSegArray   wall_segs;
 } X3D_Level;
 

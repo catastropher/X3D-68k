@@ -74,9 +74,14 @@ void test_flat_poly();
 
 X3D_Texture checkerboard;
 
+void test_lightmap(void);
+
 void test_render_callback(X3D_CameraObject* cam) {
-    //test_flat_poly();
 }
+
+X3D_LightMapContext lightmap_context;
+
+void add_test_lights(X3D_LightMapContext* context);
 
 void build_test_level(void) {
     static X3D_Level level;
@@ -85,11 +90,28 @@ void build_test_level(void) {
     
     X3D_Prism3D prism = { .v = alloca(1000) };
     Prism3D.construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 0, 0, 0 });
-    x3d_level_add_new_standalone_segment(&level, &prism, 0);
+    uint16 seg0 = x3d_level_add_new_standalone_segment(&level, &prism, 0)->id;
     
-    x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(0, 3), 400);
+    uint16 seg1 = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(0, 3), 800)->id;
+    
+    
+    X3D_LevelSegment* seg1ptr = x3d_level_get_segmentptr(&level, seg1);
+    x3d_levelsegment_get_geometry(&level, seg1ptr, &prism);
+    
+    X3D_Polygon3D* poly = x3d_polygon3d_temp();
+    x3d_prism3d_get_face(&prism, 1, poly);
+    X3D_Vex3D shift = { 0, -200, 0 };
+    x3d_polygon3d_translate(poly, shift);
+    x3d_prism3d_set_face(&prism, 1, poly);
+    
+    x3d_levelsegment_update_geometry(&level, seg1ptr, &prism);
+    
+    x3d_level_add_wall_segment_to_center_of_face(&level, x3d_level_get_segmentptr(&level, seg0), 5, 4, 50, 100);
     
     global_level = &level;
+    
+    x3d_lightmapcontext_init(&lightmap_context, &level);
+    add_test_lights(&lightmap_context);
 }
 
 extern uint8 wood_tex_data[];
@@ -118,6 +140,7 @@ int main(int argc, char* argv[]) {
     init();
     
     x3d_texture_from_array(&checkerboard, wood_tex_data);
+    //x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
     
     build_test_model();
     x3d_rendermanager_get()->near_z = 10;

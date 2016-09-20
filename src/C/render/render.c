@@ -108,6 +108,23 @@ void x3d_render_flat_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_Camera
     x3d_polygon3d_render_flat(&rpoly, &at, cam);
 }
 
+void x3d_render_id_buffer_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObject* cam) {
+    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i) {
+        rpoly.v[i].v = poly->v[i];
+    }
+    
+    X3D_PolygonRasterAtt at = {
+        .id_buffer = {
+            .id = id
+        }
+    };
+    
+    x3d_polygon3d_render_id_buffer(&rpoly, &at, cam);
+}
+
 void x3d_render_gouraud_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_CameraObject* cam) {
     X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
     
@@ -131,6 +148,12 @@ void x3d_render_gouraud_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_Cam
     };
     
     x3d_polygon3d_render_gouraud(&rpoly, &at, cam);
+    
+    if(x3d_key_down(X3D_KEY_15)) {
+        x3d_screen_flip();
+        SDL_Delay(500);
+        x3d_screen_flip();
+    }
 }
 
 extern X3D_Texture checkerboard;
@@ -179,6 +202,35 @@ void x3d_render_textured_shaded_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, X
     x3d_polygon3d_render_texture(&rpoly, &at, cam);
 }
 
+extern X3D_LightMapContext lightmap_context;
+
+void x3d_render_lightmap_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObject* cam) {
+    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
+    
+    float intensity[10];
+    
+    
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i) {
+        rpoly.v[i].v = poly->v[i];
+        
+        X3D_Vex2D v;
+        x3d_planarprojection_project_point(&lightmap_context.proj[id], poly->v + i, &v);
+        
+        rpoly.v[i].uu = v.x;
+        rpoly.v[i].vv = v.y;
+    }
+    
+    X3D_PolygonRasterAtt at = {
+        .light_map = {
+            .map = &lightmap_context.maps[id]
+        }
+    };
+    
+    x3d_polygon3d_render_lightmap(&rpoly, &at, cam);
+}
+
 void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id, X3D_CameraObject* cam, X3D_Color color) {
   X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, seg_id);
   X3D_Prism3D prism = { .v = alloca(1000) };
@@ -206,7 +258,7 @@ void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id,
     x3d_prism3d_get_face(&prism, i, temp);
     
     if(temp->total_v != 4)
-        x3d_render_gouraud_shaded_polygon(temp, x3d_rgb_to_color(32, 32, 32), cam);
+        x3d_render_gouraud_shaded_polygon(temp, colors[i], cam);
     else
         x3d_render_textured_shaded_polygon(temp, &checkerboard, cam);
   }
@@ -236,18 +288,113 @@ extern X3D_LineTexture3D aperture;
 
 void test_render_callback(X3D_CameraObject* cam);
 
+void x3d_render_segment(X3D_SegRenderContext* context);
+
+void render_cube(X3D_Vex3D pos, int16 size, X3D_SegRenderContext* context) {
+    X3D_Prism3D prism = { .v = alloca(1000) };
+    x3d_prism3d_construct(&prism, 4, size, size, (X3D_Vex3D_angle256) { 0, 0, 0 });
+    
+    x3d_prism3d_set_center(&prism, &pos);
+    
+    X3D_Polygon3D poly = { .v = alloca(1000) };
+    
+    uint16 i;
+    for(i = 0; i < 6; ++i) {
+        x3d_prism3d_get_face(&prism, i, &poly);
+        
+        if(context->render_context->render_type == X3D_RENDER_ID_BUFFER) {
+            x3d_render_id_buffer_polygon(&poly, 0x7FFF, context->cam);
+        }
+        else {
+            x3d_render_textured_shaded_polygon(&poly, &checkerboard, context->cam);
+        }
+    }
+}
+
+void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo, uint16 face) {
+    X3D_LevelSegFace* face_att = x3d_levelsegment_get_face_attribute(context->level, context->seg, face);
+    X3D_Vex3D cam_pos;
+    x3d_object_pos(context->cam, &cam_pos);
+        
+    if(x3d_plane_point_distance(&face_att->plane, &cam_pos) < 0) return;
+    
+    if(face_att->connect_face != X3D_FACE_NONE) {
+        if(x3d_segfaceid_seg(face_att->connect_face) != context->parent_seg_id) {
+            X3D_SegRenderContext child_context = {
+                .cam = context->cam,
+                .seg = x3d_level_get_segmentptr(context->level, x3d_segfaceid_seg(face_att->connect_face)),
+                .level = context->level,
+                .parent_seg_id = context->seg->id,
+                .render_context = context->render_context
+            };
+            
+            x3d_render_segment(&child_context);
+        }
+    }
+    else {
+        X3D_Polygon3D temp = { .v = alloca(1000) };
+        
+        x3d_prism3d_get_face(seg_geo, face, &temp);
+        
+        if(context->render_context->render_type == X3D_RENDER_ID_BUFFER) {
+            x3d_render_id_buffer_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
+        }
+        else if(context->render_context->render_type == X3D_RENDER_LIGHTMAP) {
+            x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
+        }
+        else {
+            if(temp.total_v != 4)
+                x3d_render_gouraud_shaded_polygon(&temp, x3d_rgb_to_color(32, 32, 32), context->cam);
+            else
+                x3d_render_textured_shaded_polygon(&temp, &checkerboard, context->cam);
+        }
+    }
+}
+
+void x3d_render_segment(X3D_SegRenderContext* context) {
+    X3D_Prism3D prism = { .v = alloca(1000) };
+    x3d_levelsegment_get_geometry(context->level, context->seg, &prism);
+    
+    uint16 i;
+    for(i = 0; i < context->seg->base_v + 2; ++i) {
+        x3d_render_segment_face(context, &prism, i);
+    }
+    
+    if(context->seg->id == 0) {
+        X3D_Ray3D ray = {{ x3d_vex3d_make(-150, 0, 400), x3d_vex3d_make(100, 0, 400) }};
+        
+        int16 steps = 50;
+        
+        X3D_Vex3D v;
+        x3d_ray3d_interpolate(&ray, 0, &v);//32767 * (x3d_enginestate_get_step() % steps) / steps, &v);
+        
+        render_cube(v, 50, context);
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Renders the scene through a camera.
 ///
 /// @param cam  - camera to render through
 ///
 ///////////////////////////////////////////////////////////////////////////////
-void x3d_render(X3D_CameraObject* cam) {
-  x3d_renderer_draw_all_segments(global_level, cam, 31);
-  x3d_send_render_events_to_objects(cam);
-  
-  test_render_callback(cam);
-  
-  x3d_enginestate_next_step();
+void x3d_render(X3D_CameraObject* cam, X3D_RenderContext* render_context) {
+    //x3d_renderer_draw_all_segments(global_level, cam, 31);
+        
+    X3D_SegRenderContext context = {
+        .cam = cam,
+        .seg = x3d_level_get_segmentptr(global_level, 0),
+        .level = global_level,
+        .parent_seg_id = 0xFFFF,
+        .render_context = render_context
+    };
+    
+    x3d_render_segment(&context);
+    
+    x3d_send_render_events_to_objects(cam);
+    
+    test_render_callback(cam);
+    
+    x3d_enginestate_next_step();
 }
 

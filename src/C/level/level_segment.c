@@ -57,7 +57,7 @@ void x3d_levelsegment_update_plane_normals(X3D_Level* level, X3D_LevelSegment* s
   uint16 i;
   for(i = 0; i < x3d_level_segment_total_faces(seg); ++i) {
     x3d_prism3d_get_face(&level_geo, i, &seg_face);
-    x3d_polygon3d_calculate_plane(&seg_face, &seg_face_attributes[i].plane);
+    x3d_polygon3d_calculate_plane(&seg_face, &seg_face_attributes[i].plane);    
   }
 }
 
@@ -109,4 +109,19 @@ void x3d_levelsegment_update_geometry(X3D_Level* level, X3D_LevelSegment* seg, X
   }
 }
 
+void x3d_levelsegment_set_wall_segs_for_face(X3D_Level* level, X3D_LevelSegment* seg, uint16 face, X3D_SegFaceID* wall_segs, uint16 total_wall_segs) {
+    uint16 wall_seg_start = level->wall_segs.total;
+    
+    level->wall_segs.total += total_wall_segs + 1;
+    level->wall_segs.wall_segs = realloc(level->wall_segs.wall_segs, level->wall_segs.total * sizeof(X3D_SegFaceID));
+    
+    level->wall_segs.wall_segs[wall_seg_start] = total_wall_segs;
+    
+    uint16 i;
+    for(i = 0; i < total_wall_segs; ++i) {
+        level->wall_segs.wall_segs[i + 1] = wall_segs[i];
+    }
+    
+    x3d_levelsegment_get_face_attribute(level, seg, face)->wall_seg_start = wall_seg_start;
+}
 

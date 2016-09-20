@@ -19,8 +19,8 @@
 #include "X3D_camera.h"
 
 int16 x3d_scale_by_depth(int16 value, int16 depth, int16 min_depth, int16 max_depth) {
-  if(x3d_rendermanager_get()->wireframe)
-    return value;
+  //if(x3d_rendermanager_get()->wireframe)
+  //  return value;
 
   if(depth >= max_depth)
     return 0;

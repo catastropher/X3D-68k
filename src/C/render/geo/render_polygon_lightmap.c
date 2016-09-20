@@ -111,28 +111,21 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
 }
 
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, X3D_PolygonRasterAtt* att) {
-    uint8 r, g, b;
-    x3d_color_to_rgb(x3d_texture_get_texel(att->texture.texture, val->u, val->v), &r, &g, &b);
-    
-    float t = val->intensity / 32768.0;
-    
-    r *= t;
-    g *= t;
-    b *= t;
-    
-    X3D_ScreenManager* screenman = x3d_screenmanager_get();
+    uint8 v = x3d_lightmap_get_value(att->light_map.map, val->u, val->v);
+       
+        X3D_ScreenManager* screenman = x3d_screenmanager_get();
     int16* zbuf = x3d_rendermanager_get()->zbuf + y * screenman->w + x;
     
     if(val->z < *zbuf) {
-        x3d_screen_draw_pix(x, y, x3d_rgb_to_color(r, g, b));
+        x3d_screen_draw_pix(x, y, x3d_rgb_to_color(v, v, v));
         *zbuf = val->z;
     }
 }
 
 
 
-#define RASTERIZE_NAME2D x3d_polygon2d_render_texture
-#define RASTERIZE_NAME3D x3d_polygon3d_render_texture
+#define RASTERIZE_NAME2D x3d_polygon2d_render_lightmap
+#define RASTERIZE_NAME3D x3d_polygon3d_render_lightmap
 
 
 #include "render_polygon_generic.c"
