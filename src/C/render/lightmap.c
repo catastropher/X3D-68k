@@ -85,6 +85,7 @@ void x3d_polygon3d_build_planar_projection(X3D_Polygon3D* poly, X3D_PlanarProjec
     
     proj->max_x = max_x;
     proj->max_y = max_y;
+    proj->poly_plane = plane;
 }
 
 void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v, X3D_Vex2D* dest) {
@@ -103,6 +104,34 @@ void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v
     
     dest->x = (dest->x - proj->min_x) / X3D_LIGHTMAP_SCALE;
     dest->y = (dest->y - proj->min_y) / X3D_LIGHTMAP_SCALE;
+}
+
+void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D* src, X3D_Vex3D* dest) {
+    X3D_Vex2D v = { src->x * X3D_LIGHTMAP_SCALE + proj->min_x, src->y * X3D_LIGHTMAP_SCALE + proj->min_y };
+    
+    X3D_Vex3D_float n = {
+        proj->poly_plane.normal.x / 32767.0,
+        proj->poly_plane.normal.y / 32767.0,
+        proj->poly_plane.normal.z / 32767.0
+    };
+    
+    if(proj->plane_type == X3D_PLANE_YZ) {
+        dest->x = -(n.y * v.x + n.z * v.y - proj->poly_plane.d) / n.x;
+        dest->y = v.x;
+        dest->z = v.y;
+    }
+    else if(proj->plane_type == X3D_PLANE_XZ) {
+        dest->x = v.x;
+        dest->y = - ( n.x * v.x + n.z * n.y - proj->poly_plane.d) / n.y;
+        dest->z = v.y;
+    }
+    else {
+        dest->x = v.x;
+        dest->y = v.y;
+        dest->z = - ( n.x * v.x + n.y * v.y - proj->poly_plane.d) / n.z;
+    }
+    
+    //x3d_log(X3D_INFO, "%d %d %d", dest->x, dest->y, dest->z);
 }
 
 void x3d_convert_view_coord_to_world_coord(X3D_Vex3D* view, X3D_CameraObject* cam, X3D_Vex3D* dest) {
@@ -238,32 +267,72 @@ uint8 x3d_lightmap_get_value(X3D_LightMap* map, uint16 x, uint16 y) {
     return map->data[(uint32)y * map->w + x];
 }
 
+extern float* id_zbuf;
+
 void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
-    int16 i, j;
+    int32 i, j, k;
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_CameraObject light_cam;
+    
+    id_zbuf = malloc(sizeof(float) * screenman->w * screenman->h);
+    
+    for(i = 0; i < (uint32)screenman->w * screenman->h; ++i) {
+        id_zbuf[i] = 0x7F7F;
+    }
     
     x3d_lightmapcontext_reset_set_values(context);
     
     x3d_render_from_perspective_of_spotlight(light, &light_cam);
     
-    for(i = 0; i < screenman->h; ++i) {
-        for(j = 0; j < screenman->w; ++j) {
-            uint32 id = x3d_screen_get_internal_value(j, i);
+    for(i = 0; i < context->total_maps; ++i) {
+        if(context->maps[i].data != NULL) {
+            X3D_LightMap* map = context->maps + i;
             
-            if(id == 0x7FFF) continue;
-            
-            X3D_PlanarProjection* proj = context->proj + id;
-            
-            X3D_Vex3D v;
-            x3d_calculate_position_from_z_buffer(j, i, &light_cam, &v);
-                
-            X3D_Vex2D plane_v;
-            x3d_planarprojection_project_point(proj, &v, &plane_v);
-            
-            x3d_lightmapcontext_apply_light(context, id, plane_v, 32);
+            for(j = 0; j < map->h; ++j) {
+                for(k = 0; k < map->w; ++k) {
+                    X3D_Vex2D v2d = { k, j };
+                    X3D_Vex3D v;
+                    
+                    x3d_planarprojection_unproject_point(&context->proj[i], &v2d, &v);
+                    
+                    X3D_Vex3D transformed;
+                    X3D_Vex2D projected;
+                    x3d_camera_transform_points(&light_cam, &v, 1, &transformed, &projected);
+                    
+                    if(projected.x >= 0 && projected.x < screenman->w && projected.y >= 0 && projected.y < screenman->h) {
+                        float z = id_zbuf[(int32)projected.y * screenman->w + projected.x];
+                        
+                        if(transformed.z > 0 && transformed.z < z + 10) {
+                            //printf("Transformed: %d -> %d\n", transformed.z, z);
+                            x3d_lightmapcontext_apply_light(context, i, v2d, 32);
+                        }
+                    }
+                }
+            }
         }
     }
+    
+    free(id_zbuf);
+    id_zbuf = NULL;
+    
+    
+//     for(i = 0; i < screenman->h; ++i) {
+//         for(j = 0; j < screenman->w; ++j) {
+//             uint32 id = x3d_screen_get_internal_value(j, i);
+//             
+//             if(id == 0x7FFF) continue;
+//             
+//             X3D_PlanarProjection* proj = context->proj + id;
+//             
+//             X3D_Vex3D v;
+//             x3d_calculate_position_from_z_buffer(j, i, &light_cam, &v);
+//                 
+//             X3D_Vex2D plane_v;
+//             x3d_planarprojection_project_point(proj, &v, &plane_v);
+//             
+//             x3d_lightmapcontext_apply_light(context, id, plane_v, 32);
+//         }
+//     }
 }
 
 void x3d_lightmapcontext_cleanup(X3D_LightMapContext* context) {
@@ -310,6 +379,56 @@ void add_test_lights(X3D_LightMapContext* context) {
         light.orientation.x = 256 - 64;
         
         x3d_lightmap_build(&light, context);
+    }
+    
+    {
+        X3D_SpotLight light;
+        
+        light.pos = x3d_vex3d_make(-500, 0, -200);
+        light.orientation.y = 32;//x3d_enginestate_get_step();
+        light.orientation.x = 0;
+        
+        x3d_lightmap_build(&light, context);
+    }
+}
+
+void x3d_lightmap_bilinear_filter(X3D_LightMap* map) {
+    uint8 data[map->h][map->w];
+    
+    int16 i, j;
+    for(i = 0; i < map->h; ++i) {
+        for(j = 0; j < map->w; ++j) {
+            int16 count = 1;
+            int16 sum = map->data[i * map->w + j];
+            
+            if(i > 0) {
+                ++count;
+                sum += map->data[map->w * (i - 1) + j];
+            }
+            
+            if(j > 0) {
+                ++count;
+                sum += map->data[map->w * i + j - 1];
+            }
+            
+            if(i + 1 < map->h) {
+                ++count;
+                sum += map->data[map->w * (i + 1) + j];
+            }
+            
+            if(j + 1 < map->w) {
+                ++count;
+                sum += map->data[i * map->w + j + 1];
+            }
+            
+            data[i][j] = sum / count;
+        }
+    }
+    
+    for(i = 0; i < map->h; ++i) {
+        for(j = 0; j < map->w; ++j) {
+            map->data[i * map->w + j] = data[i][j];
+        }
     }
 }
 

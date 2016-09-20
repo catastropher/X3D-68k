@@ -77,9 +77,11 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
     }
 }
 
+float* id_zbuf;
+
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, X3D_PolygonRasterAtt* att) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
-    int16* zbuf = x3d_rendermanager_get()->zbuf + y * screenman->w + x;
+    float* zbuf = id_zbuf + y * screenman->w + x;
     
     float z = 1.0 / val->z;
     
@@ -88,6 +90,7 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
         *zbuf = z;
     }
 }
+
 
 #define RASTERIZE_NAME2D x3d_polygon2d_render_id_buffer
 #define RASTERIZE_NAME3D x3d_polygon3d_render_id_buffer

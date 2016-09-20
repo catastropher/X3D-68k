@@ -19,7 +19,7 @@
 #include "level/X3D_level.h"
 #include "X3D_polygon.h"
 
-#define X3D_LIGHTMAP_SCALE 4
+#define X3D_LIGHTMAP_SCALE 8
 
 enum {
     X3D_PLANE_XY,
@@ -32,6 +32,7 @@ typedef struct X3D_PlanarProjection {
     X3D_Polygon2D poly;
     int16 min_x, min_y;
     int16 max_x, max_y;
+    X3D_Plane poly_plane;
 } X3D_PlanarProjection;
 
 typedef struct X3D_LightMap {
@@ -63,4 +64,5 @@ typedef struct X3D_LightMapContext {
 uint8 x3d_lightmap_get_value(X3D_LightMap* map, uint16 x, uint16 y);
 void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v, X3D_Vex2D* dest);
 void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level);
+void x3d_lightmap_bilinear_filter(X3D_LightMap* map);
 

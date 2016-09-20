@@ -112,6 +112,13 @@ void build_test_level(void) {
     
     x3d_lightmapcontext_init(&lightmap_context, &level);
     add_test_lights(&lightmap_context);
+    
+    uint16 i;
+    for(i = 0; i < lightmap_context.total_maps; ++i) {
+        if(lightmap_context.maps[i].data) {
+            x3d_lightmap_bilinear_filter(lightmap_context.maps + i);
+        }
+    }
 }
 
 extern uint8 wood_tex_data[];
