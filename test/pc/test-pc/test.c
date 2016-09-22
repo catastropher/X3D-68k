@@ -73,6 +73,7 @@ void init_cube(void);
 void test_flat_poly();
 
 X3D_Texture checkerboard;
+X3D_Texture checkerboard2;
 
 void test_lightmap(void);
 
@@ -92,21 +93,29 @@ void build_test_level(void) {
     Prism3D.construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 0, 0, 0 });
     uint16 seg0 = x3d_level_add_new_standalone_segment(&level, &prism, 0)->id;
     
-    uint16 seg1 = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(0, 3), 800)->id;
+    uint16 seg2 = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(seg0, 1), 400)->id;
     
-    
-    X3D_LevelSegment* seg1ptr = x3d_level_get_segmentptr(&level, seg1);
-    x3d_levelsegment_get_geometry(&level, seg1ptr, &prism);
+    x3d_levelsegment_get_geometry(&level, x3d_level_get_segmentptr(&level, seg2), &prism);
     
     X3D_Polygon3D* poly = x3d_polygon3d_temp();
     x3d_prism3d_get_face(&prism, 1, poly);
     X3D_Vex3D shift = { 0, -200, 0 };
-    x3d_polygon3d_translate(poly, shift);
+    x3d_polygon3d_scale(poly, 128);
     x3d_prism3d_set_face(&prism, 1, poly);
     
-    x3d_levelsegment_update_geometry(&level, seg1ptr, &prism);
+    //x3d_levelsegment_update_geometry(&level, x3d_level_get_segmentptr(&level, seg), &prism);
     
-    x3d_level_add_wall_segment_to_center_of_face(&level, x3d_level_get_segmentptr(&level, seg0), 5, 4, 50, 100);
+    uint16 seg3 = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(0, 3), 200)->id;
+    uint16 seg1 = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(seg3, 1), 800)->id;
+    
+    x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(seg1, 2), 800);
+    x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(seg1, 1), 800);
+    x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(seg1, 3), 800);
+    
+    X3D_LevelSegment* seg1ptr = x3d_level_get_segmentptr(&level, seg1);
+    
+    
+    //x3d_level_add_wall_segment_to_center_of_face(&level, x3d_level_get_segmentptr(&level, seg0), 5, 4, 50, 100);
     
     global_level = &level;
     
@@ -147,7 +156,7 @@ int main(int argc, char* argv[]) {
     init();
     
     x3d_texture_from_array(&checkerboard, wood_tex_data);
-    //x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
+    //x3d_texture_load_from_file(&checkerboard2, "checkerboard.bmp");
     
     build_test_model();
     x3d_rendermanager_get()->near_z = 10;

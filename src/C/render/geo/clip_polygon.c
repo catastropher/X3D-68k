@@ -168,6 +168,10 @@ _Bool x3d_rasterpolygon3d_clip_to_plane(X3D_RasterPolygon3D* poly, X3D_Plane* pl
       
       new_v.uu = x3d_linear_interpolate_float(poly->v[v].uu, poly->v[next_v].uu, t);
       new_v.vv = x3d_linear_interpolate_float(poly->v[v].vv, poly->v[next_v].vv, t);
+      
+      new_v.lu = x3d_linear_interpolate_float(poly->v[v].lu, poly->v[next_v].lu, t);
+      new_v.lv = x3d_linear_interpolate_float(poly->v[v].lv, poly->v[next_v].lv, t);
+      
       new_v.intensity = x3d_linear_interpolate_float(poly->v[v].intensity, poly->v[next_v].intensity, t);
       
       x3d_rasterpolygon3d_clip_add_point(dest, &new_v);

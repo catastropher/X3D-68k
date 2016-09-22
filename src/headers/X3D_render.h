@@ -41,7 +41,8 @@ typedef struct X3D_SegmentRenderFace {
 enum {
     X3D_RENDER_NORMAL,
     X3D_RENDER_ID_BUFFER,
-    X3D_RENDER_LIGHTMAP
+    X3D_RENDER_LIGHTMAP,
+    X3D_RENDER_TEXTUER_LIGHTMAP
 };
 
 typedef struct X3D_RenderContext {

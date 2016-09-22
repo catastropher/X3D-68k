@@ -15,6 +15,7 @@
 
 #include "X3D_common.h"
 #include "render/X3D_texture.h"
+#include "render/X3D_palette.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Loads a texture from a file (stored in a bmp file).
@@ -144,7 +145,7 @@ void x3d_texture_pack_8bit(X3D_Texture* tex, X3D_Color* texel) {
   
   uint32 i;
   for(i = 0; i < (uint32)tex->w * tex->h; ++i) {
-    tex->texel.large[i] = x3d_texture_get_color_index(tex, texel[i]);
+    tex->texel.large[i] = x3d_color_to_colorindex(texel[i]); //x3d_texture_get_color_index(tex, texel[i]);
   }
 }
 
@@ -189,7 +190,7 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
   for(i = 0; i < (uint32)dest->w * dest->h; ++i) {
     texel[i] = x3d_rgb_to_color(data[2 + i * 3], data[2 + i * 3 + 1], data[2 + i * 3 + 2]);
     
-    x3d_texture_get_color_index(dest, texel[i]);
+    //x3d_texture_get_color_index(dest, texel[i]);
   }
   
   if(dest->w == 128) {

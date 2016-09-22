@@ -157,6 +157,7 @@ void x3d_render_gouraud_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_Cam
 }
 
 extern X3D_Texture checkerboard;
+extern X3D_Texture checkerboard2;
 
 void x3d_render_textured_shaded_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, X3D_CameraObject* cam) {
     X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
@@ -229,6 +230,53 @@ void x3d_render_lightmap_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObjec
     };
     
     x3d_polygon3d_render_lightmap(&rpoly, &at, cam);
+}
+
+void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, uint32 id, X3D_CameraObject* cam) {
+    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i) {
+        rpoly.v[i].v = poly->v[i];
+        
+        X3D_Vex2D v;
+        x3d_planarprojection_project_point(&lightmap_context.proj[id], poly->v + i, &v);
+        
+        rpoly.v[i].lu = v.x;
+        rpoly.v[i].lv = v.y;
+    }
+    
+    if(rpoly.total_v == 4) {
+        rpoly.v[0].uu = 0;
+        rpoly.v[0].vv = 0;
+        
+        rpoly.v[1].uu = 63;
+        rpoly.v[1].vv = 0;
+        
+        rpoly.v[2].uu = 63;
+        rpoly.v[2].vv = 63;
+        
+        rpoly.v[3].uu = 0;
+        rpoly.v[3].vv = 63;
+    }
+    else {
+        X3D_Polygon2D p = { .v = alloca(1000) };
+        x3d_polygon2d_construct(&p, rpoly.total_v, 128, 0);
+        
+        for(i = 0; i < rpoly.total_v; ++i) {
+            rpoly.v[i].uu = p.v[i].x + 256;
+            rpoly.v[i].vv = p.v[i].y + 256;
+        }
+    }
+    
+    X3D_PolygonRasterAtt at = {
+        .light_map = {
+            .map = &lightmap_context.maps[id],
+            .tex = tex
+        }
+    };
+    
+    x3d_polygon3d_render_texture_lightmap(&rpoly, &at, cam);
 }
 
 void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id, X3D_CameraObject* cam, X3D_Color color) {
@@ -342,6 +390,20 @@ void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo
         else if(context->render_context->render_type == X3D_RENDER_LIGHTMAP) {
             x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
         }
+        else if(context->render_context->render_type == X3D_RENDER_TEXTUER_LIGHTMAP) {          
+            if(temp.total_v != 4) {
+                if(context->seg->id == 1 && 0) {
+                    x3d_render_texture_lightmap_polygon(&temp, &checkerboard2, x3d_segfaceid_create(context->seg->id, face), context->cam);
+                }
+                else {
+                    x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
+                }
+            }
+                //
+                //x3d_render_gouraud_shaded_polygon(&temp, x3d_rgb_to_color(32, 32, 32), context->cam);
+            else
+                x3d_render_texture_lightmap_polygon(&temp, &checkerboard, x3d_segfaceid_create(context->seg->id, face), context->cam);
+        }
         else {
             if(temp.total_v != 4)
                 x3d_render_gouraud_shaded_polygon(&temp, x3d_rgb_to_color(32, 32, 32), context->cam);
@@ -361,7 +423,7 @@ void x3d_render_segment(X3D_SegRenderContext* context) {
     }
     
     if(context->seg->id == 0) {
-        X3D_Ray3D ray = {{ x3d_vex3d_make(-150, 0, 400), x3d_vex3d_make(100, 0, 400) }};
+        X3D_Ray3D ray = {{ x3d_vex3d_make(-150, 50, 400), x3d_vex3d_make(100, 0, 400) }};
         
         int16 steps = 50;
         
@@ -369,6 +431,8 @@ void x3d_render_segment(X3D_SegRenderContext* context) {
         x3d_ray3d_interpolate(&ray, 0, &v);//32767 * (x3d_enginestate_get_step() % steps) / steps, &v);
         
         render_cube(v, 50, context);
+        
+        render_cube(x3d_vex3d_make(-175, 100, 425), 25, context);
     }
 }
 

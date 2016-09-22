@@ -13,27 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X3D_init.h"
-#include "X3D_log.h"
-#include "X3D_assert.h"
-#include "X3D_enginestate.h"
-#include "X3D_wallportal.h"
-#include "render/X3D_palette.h"
+#include "X3D_common.h"
+#include "X3D_screen.h"
 
-void x3d_init(X3D_InitSettings* settings) {
-  x3d_log(X3D_INFO, "X3D init"); 
-  x3d_platform_init(settings);
-  x3d_enginestate_init(settings);
-  
-  x3d_palette_init();
-  
-  // Init wall portals
-  //x3d_wallportals_init();
-}
+X3D_ColorIndex x3d_color_to_colorindex(X3D_Color c);
+X3D_Color x3d_colorindex_to_color(X3D_ColorIndex index);
 
-void x3d_cleanup(void) {
-  x3d_log(X3D_INFO, "X3D cleanup");
-  x3d_platform_cleanup();
-  x3d_enginestate_cleanup();
-}
-
+void x3d_palette_init(void);

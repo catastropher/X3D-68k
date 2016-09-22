@@ -17,6 +17,7 @@
 
 #include "X3D_common.h"
 #include "X3D_screen.h"
+#include "render/X3D_palette.h"
 
 enum {
   X3D_TEXTURE_4BIT = 1,
@@ -74,9 +75,9 @@ static inline X3D_Color x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, 
   }
   
   if(tex->flags & X3D_TEXTURE_REPEAT)
-    return tex->color_tab[tex->texel.large[x3d_texture_index(tex, u, v)]];
+    return x3d_colorindex_to_color(tex->texel.large[x3d_texture_index(tex, u, v)]);
   else
-    return tex->color_tab[tex->texel.large[(uint32)v * tex->w + u]];
+    return x3d_colorindex_to_color(tex->texel.large[(uint32)v * tex->w + u]);
 }
 
 static inline X3D_Color x3d_texture_get_texel_128(const X3D_Texture* tex, uint16 u, uint16 v) {

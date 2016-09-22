@@ -29,6 +29,7 @@ static int16 screen_scale;
 static _Bool record;
 static int16 record_frame;
 static char record_name[1024];
+static X3D_Color color_palette[256];
 
 int32 recip_tab[32768];
 
@@ -36,7 +37,17 @@ static inline uint32 fast_recip_pos(int32* tab, uint16 val) {
   return tab[val];
 }
 
+void x3d_platform_screen_build_color_palette(uint8 color_data[256][3]) {
+    uint16 i;
+    
+    for(i = 0; i < 256; ++i) {
+        color_palette[i] = x3d_rgb_to_color(color_data[i][0], color_data[i][1], color_data[i][2]);
+    }
+}
 
+X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index) {
+    return color_palette[index];
+}
 
 X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   x3d_log(X3D_INFO, "SDL init");
@@ -72,12 +83,14 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
     init->screen_w * init->screen_scale,
     init->screen_h * init->screen_scale,
     16,
-    SDL_SWSURFACE
+    SDL_HWPALETTE
   );
  
-  window_surface->pixels = malloc(sizeof(uint16) * screen_w * screen_h * 2);
+  //window_surface->pixels = //malloc(sizeof(uint16) * screen_w * screen_h * 2);
   
-  x3d_rendermanager_get()->zbuf = ((uint16 *)window_surface->pixels) + 320 * 240;
+  x3d_rendermanager_get()->zbuf = malloc(sizeof(uint16) * 320 * 240);//((uint16 *)window_surface->pixels) + 320 * 240;
+
+    SDL_SetPalette(window_surface, 0, NULL, 0, 0);
   
   if(!window_surface) {
     x3d_log(X3D_ERROR, "Failed to create window");
@@ -239,9 +252,15 @@ void x3d_screen_draw_line_grad(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color
 }
 
 X3D_Color x3d_rgb_to_color(uint8 r, uint8 g, uint8 b) {
-  return (31 * (uint16)r / 255) +
-    ((31 * (uint16)g / 255) << 5) +
-    ((31 * (uint16)b / 255) << 10);
+    uint16 rrr = (31 * 2 * r / 255 + 1) / 2;
+    uint16 ggg = (31 * 2 * g / 255 + 1) / 2;
+    uint16 bbb = (31 * 2 * b / 255 + 1) / 2;
+    
+    return rrr + (ggg << 5) + (bbb << 10);
+    
+//     return (31 * (uint16)rrr / 255) +
+//     ((31 * (uint16)ggg / 255) << 5) +
+//     ((31 * (uint16)bbb / 255) << 10);
 }
 
 void x3d_color_to_rgb(X3D_Color color, uint8* r, uint8* g, uint8* b) {
@@ -544,7 +563,19 @@ void x3d_screen_draw_uint32(uint32 num, int16 x, int16 y, X3D_Color c) {
   }
 }
 
+void x3d_screen_set_internal_value(int16 x, int16 y, uint32 val) {
+    if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
+        return;
+    
+    ((uint32 *)window_surface->pixels)[y * window_surface->w + x] = val;
+}
 
+uint32 x3d_screen_get_internal_value(int16 x, int16 y) {
+    if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
+        return;
+    
+    return ((uint32 *)window_surface->pixels)[y * window_surface->w + x];
+}
 
 
 

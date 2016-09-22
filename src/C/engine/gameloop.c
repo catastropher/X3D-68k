@@ -34,7 +34,7 @@ void test_lightmap();
 void x3d_game_loop() {
   X3D_EngineState* state = x3d_enginestate_get();
   X3D_RenderContext render_context = {
-      .render_type = X3D_RENDER_LIGHTMAP
+      .render_type = X3D_RENDER_TEXTUER_LIGHTMAP
   };
   
   do {

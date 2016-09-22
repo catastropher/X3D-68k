@@ -57,8 +57,6 @@ typedef struct X3D_LightMapContext {
     
     X3D_Level* level;
     X3D_PlanarProjection* proj;
-    
-    _Bool** set;
 } X3D_LightMapContext;
 
 uint8 x3d_lightmap_get_value(X3D_LightMap* map, uint16 x, uint16 y);

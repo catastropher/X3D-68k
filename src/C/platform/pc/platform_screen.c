@@ -28,6 +28,7 @@
 #include "X3D_enginestate.h"
 #include "X3D_trig.h"
 #include "render/X3D_texture.h"
+#include "render/X3D_palette.h"
 
 static SDL_Surface* window_surface;
 
@@ -44,6 +45,8 @@ static int16 record_frame;
 static char record_name[1024];
 static _Bool virtual_window;
 
+static X3D_Color color_palette[256];
+
 X3D_Texture panel_tex;
 X3D_Texture brick_tex;
 X3D_Texture floor_panel_tex;
@@ -56,6 +59,14 @@ void x3d_screen_zbuf_clear(void) {
   uint32 i;
   
   memset(x3d_rendermanager_get()->zbuf, 0x7F, screen_w * screen_h * 2);
+}
+
+void x3d_platform_screen_build_color_palette(uint8 color_data[256][3]) {
+    uint16 i;
+    
+    for(i = 0; i < 256; ++i) {
+        color_palette[i] = x3d_rgb_to_color(color_data[i][0], color_data[i][1], color_data[i][2]);
+    }
 }
 
 void x3d_set_texture(int16 id) {
@@ -81,6 +92,9 @@ void init_screen_manager(X3D_InitSettings* init) {
     x3d_state->screen_manager.scale_y = x3d_state->screen_manager.scale_x;
 }
 
+X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index) {
+    return color_palette[index];
+}
 
 #ifdef X3D_USE_SDL1
 
@@ -488,3 +502,8 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
   
   return X3D_TRUE;
 }
+
+
+
+
+

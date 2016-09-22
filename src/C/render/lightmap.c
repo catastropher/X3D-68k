@@ -19,6 +19,8 @@
 #include "X3D_enginestate.h"
 #include "render/X3D_lightmap.h"
 
+#include <math.h>
+
 static inline void* advance_ptr(void* ptr, size_t dist) {
     return ptr + dist;
 }
@@ -194,12 +196,10 @@ void x3d_lightmap_init(X3D_LightMapContext* context, uint32 id, X3D_Polygon3D* p
     map->h = (proj->max_y - proj->min_y) / X3D_LIGHTMAP_SCALE + 1;
     
     map->data = calloc(sizeof(uint8) * map->w * map->h, 1);
-    context->set[id] = calloc(sizeof(_Bool) * map->w * map->h, 1);
 }
 
 void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
     context->total_maps = x3d_segfaceid_create(level->segs.total, 0);
-    context->set = malloc(sizeof(_Bool *) * context->total_maps);
     context->maps = malloc(sizeof(X3D_LightMap) * context->total_maps);
     context->proj = malloc(sizeof(X3D_PlanarProjection) * context->total_maps);
     context->total_light = 0;
@@ -226,37 +226,12 @@ void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
     }
 }
 
-void x3d_lightmapcontext_reset_set_values(X3D_LightMapContext* context) {
-    uint16 i;
-    
-    for(i = 0; i < context->total_maps; ++i) {
-        if(!context->maps[i].data)
-            continue;
-            
-        uint32 total = context->maps[i].w * context->maps[i].h;
-        
-        uint32 j;
-        for(j = 0; j < total; ++j) {
-            context->set[i][j] = X3D_FALSE;
-        }
-    }
-}
-
-_Bool x3d_lightmapcontext_already_set(X3D_LightMapContext* context, uint32 id, X3D_Vex2D pos) {
-    X3D_LightMap* map = context->maps + id;
-    return context->set[id][(uint32)pos.y * map->w + pos.x];
-}
 
 void x3d_lightmapcontext_apply_light(X3D_LightMapContext* context, uint16 id, X3D_Vex2D pos, uint8 value) {
     X3D_LightMap* map = context->maps + id;
     if(pos.x < 0 || pos.x >= map->w || pos.y < 0 || pos.y >= map->h)
         return;
     
-    if(x3d_lightmapcontext_already_set(context, id, pos))
-        return;
-    
-    
-    context->set[id][(uint32)pos.y * map->w + pos.x] = X3D_TRUE;
     map->data[(uint32)pos.y * map->w + pos.x] = X3D_MIN((uint32)map->data[(uint32)pos.y * map->w + pos.x] + value, 255);
 }
 
@@ -270,6 +245,8 @@ uint8 x3d_lightmap_get_value(X3D_LightMap* map, uint16 x, uint16 y) {
 extern float* id_zbuf;
 
 void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
+    x3d_log(X3D_INFO, "Baking light map...");
+    
     int32 i, j, k;
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_CameraObject light_cam;
@@ -279,8 +256,6 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
     for(i = 0; i < (uint32)screenman->w * screenman->h; ++i) {
         id_zbuf[i] = 0x7F7F;
     }
-    
-    x3d_lightmapcontext_reset_set_values(context);
     
     x3d_render_from_perspective_of_spotlight(light, &light_cam);
     
@@ -303,8 +278,12 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
                         float z = id_zbuf[(int32)projected.y * screenman->w + projected.x];
                         
                         if(transformed.z > 0 && transformed.z < z + 10) {
-                            //printf("Transformed: %d -> %d\n", transformed.z, z);
-                            x3d_lightmapcontext_apply_light(context, i, v2d, 32);
+                            float dist = sqrt(pow(projected.x - screenman->w / 2, 2) + pow(projected.y - screenman->h / 2, 2));
+                            
+                            if(dist < 150) {
+                                //printf("Transformed: %d -> %d\n", transformed.z, z);
+                                x3d_lightmapcontext_apply_light(context, i, v2d, 64);
+                            }
                         }
                     }
                 }
@@ -339,12 +318,10 @@ void x3d_lightmapcontext_cleanup(X3D_LightMapContext* context) {
     uint32 i;
     for(i = 0; i < context->total_light; ++i) {
         free(context->maps[i].data);
-        free(context->set[i]);
     }
     
     free(context->maps);
     free(context->proj);
-    free(context->set);
 }
 
 void x3d_lightmap_blit(X3D_LightMap* map) {
@@ -366,7 +343,7 @@ void add_test_lights(X3D_LightMapContext* context) {
         X3D_SpotLight light;
         
         light.pos = x3d_vex3d_make(0, 0, -200);
-        light.orientation.y = 0;//x3d_enginestate_get_step();
+        light.orientation.y = 256 - 16;//x3d_enginestate_get_step();
         light.orientation.x = 0;
         
         x3d_lightmap_build(&light, context);
@@ -384,18 +361,41 @@ void add_test_lights(X3D_LightMapContext* context) {
     {
         X3D_SpotLight light;
         
-        light.pos = x3d_vex3d_make(-500, 0, -200);
-        light.orientation.y = 32;//x3d_enginestate_get_step();
+        light.pos = x3d_vex3d_make(100, 0, 50);
+        light.orientation.y = 256 - 32;//x3d_enginestate_get_step();
         light.orientation.x = 0;
         
         x3d_lightmap_build(&light, context);
     }
+    
+    {
+        X3D_SpotLight light;
+        
+        light.pos = x3d_vex3d_make(600, -300, 1200);
+        light.orientation.y = 256 - 25;//x3d_enginestate_get_step();
+        light.orientation.x = 256 - 36;
+        
+        x3d_lightmap_build(&light, context);
+    }
+    
+    
+    {
+        X3D_SpotLight light;
+        
+        light.pos = x3d_vex3d_make(-300, 300, 300);
+        light.orientation.y = 32;//x3d_enginestate_get_step();
+        light.orientation.x = 36;
+        
+        x3d_lightmap_build(&light, context);
+    }
+    
+    
 }
 
 void x3d_lightmap_bilinear_filter(X3D_LightMap* map) {
-    uint8 data[map->h][map->w];
+    uint8* data = malloc((uint32)map->w * map->h);
     
-    int16 i, j;
+    int32 i, j;
     for(i = 0; i < map->h; ++i) {
         for(j = 0; j < map->w; ++j) {
             int16 count = 1;
@@ -421,15 +421,17 @@ void x3d_lightmap_bilinear_filter(X3D_LightMap* map) {
                 sum += map->data[i * map->w + j + 1];
             }
             
-            data[i][j] = sum / count;
+            data[i * map->w + j] = sum / count;
         }
     }
     
     for(i = 0; i < map->h; ++i) {
         for(j = 0; j < map->w; ++j) {
-            map->data[i * map->w + j] = data[i][j];
+            map->data[i * map->w + j] = data[i * map->w + j];
         }
     }
+    
+    free(data);
 }
 
 void test_lightmap(void) {
