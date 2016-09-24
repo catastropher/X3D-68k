@@ -275,18 +275,16 @@ uint8 quake_color_palette[256][3] = {
     { 159,  91,  83 }
 };
 
-void x3d_palette_init(void) {
-    x3d_platform_screen_build_color_palette(quake_color_palette);
+X3D_ColorIndex colormap[256][16];
+
+X3D_ColorIndex x3d_colormap_get_index(X3D_ColorIndex color, uint16 shade) {
+    return colormap[color][shade];
 }
 
-// Finds the closest color in the palette to the given color
-X3D_ColorIndex x3d_color_to_colorindex(X3D_Color c) {
+X3D_ColorIndex x3d_colorindex_from_rgb(uint8 r, uint8 g, uint8 b) {
     uint16 i;
     int16 min_dist = 0x7FFF;
     X3D_ColorIndex min_index = 0;
-    
-    uint8 r, g, b;
-    x3d_color_to_rgb(c, &r, &g, &b);
     
     for(i = 0; i < 256; ++i) {
         uint8 ir, ig, ib;
@@ -304,6 +302,31 @@ X3D_ColorIndex x3d_color_to_colorindex(X3D_Color c) {
     return min_index;
 }
 
+// Finds the closest color in the palette to the given color
+X3D_ColorIndex x3d_color_to_colorindex(X3D_Color c) {
+    uint8 r, g, b;
+    x3d_color_to_rgb(c, &r, &g, &b);
+    
+    return x3d_colorindex_from_rgb(r, g, b);
+}
+
 X3D_Color x3d_colorindex_to_color(X3D_ColorIndex index) {
     return x3d_platform_screen_colorindex_to_color(index); 
+}
+
+
+
+void x3d_palette_init(void) {
+    x3d_platform_screen_build_color_palette(quake_color_palette);
+    
+    uint16 i, j;
+    for(i = 0; i < 256; ++i) {
+        for(j = 0; j < 64; j += 4) {
+            colormap[i][j / 4] = x3d_colorindex_from_rgb(
+                ((uint16)quake_color_palette[i][0] * j + 16) / 32,
+                ((uint16)quake_color_palette[i][1] * j + 16) / 32,
+                ((uint16)quake_color_palette[i][2] * j + 16) / 32
+            );
+        }
+    }
 }

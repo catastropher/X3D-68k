@@ -18,5 +18,6 @@
 
 X3D_ColorIndex x3d_color_to_colorindex(X3D_Color c);
 X3D_Color x3d_colorindex_to_color(X3D_ColorIndex index);
+X3D_ColorIndex x3d_colormap_get_index(X3D_ColorIndex color, uint16 shade);
 
 void x3d_palette_init(void);

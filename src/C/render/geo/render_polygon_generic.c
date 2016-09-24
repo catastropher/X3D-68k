@@ -20,6 +20,8 @@
 #include "render/geo/X3D_render_polygon.h"
 #include "render/geo/X3D_clip_polygon.h"
 
+#include <SDL/SDL.h>
+
 static inline void add_edge(X3D_RasterEdge* edge, X3D_Scanline* start, X3D_Scanline* end) {
     while(start <= end) {
         x3d_scanline_add_edgevalue(start, &edge->value);
@@ -92,6 +94,9 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
         
         projected_v[i].zz = rotated.z;
     }
+    
+    att->zbuf = x3d_rendermanager_get()->zbuf;
+    att->screen = ((SDL_Surface* )x3d_screen_get_internal())->pixels;
     
     RASTERIZE_NAME2D(projected_v, clipped_poly.total_v, att);
 }

@@ -65,6 +65,9 @@ typedef struct X3D_PolygonRasterAtt {
             X3D_Texture* tex;
         } light_map;
     };
+    
+    int16* zbuf;
+    void* screen;
 } X3D_PolygonRasterAtt;
 
 static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, int16 screen_w, int16 screen_h) {

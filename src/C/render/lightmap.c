@@ -257,10 +257,30 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
         id_zbuf[i] = 0x7F7F;
     }
     
+    _Bool render_surface[context->total_maps];
+    
+    for(i = 0; i < context->total_maps; ++i)
+        render_surface[i] = X3D_FALSE;
+    
     x3d_render_from_perspective_of_spotlight(light, &light_cam);
     
+    x3d_screen_flip();
+    x3d_screen_flip();
+    
+    for(i = 0; i < screenman->h; ++i) {
+        for(j = 0; j < screenman->w; ++j) {
+            uint32 index = (uint32)x3d_screen_get_internal_value(j, i);
+            
+            if(index < context->total_maps) {
+                render_surface[index] = X3D_TRUE;
+            }
+        }
+    }
+    
     for(i = 0; i < context->total_maps; ++i) {
-        if(context->maps[i].data != NULL) {
+        if(context->maps[i].data != NULL) {// && render_surface[i]) {
+            x3d_log(X3D_INFO, "Surface %d", i);
+            
             X3D_LightMap* map = context->maps + i;
             
             for(j = 0; j < map->h; ++j) {
@@ -280,7 +300,7 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
                         if(transformed.z > 0 && transformed.z < z + 10) {
                             float dist = sqrt(pow(projected.x - screenman->w / 2, 2) + pow(projected.y - screenman->h / 2, 2));
                             
-                            if(dist < 150) {
+                            if(dist < 150 / 2) {
                                 //printf("Transformed: %d -> %d\n", transformed.z, z);
                                 x3d_lightmapcontext_apply_light(context, i, v2d, 64);
                             }
@@ -348,6 +368,8 @@ void add_test_lights(X3D_LightMapContext* context) {
         
         x3d_lightmap_build(&light, context);
     }
+    
+    
     {
         X3D_SpotLight light;
         

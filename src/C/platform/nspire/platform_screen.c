@@ -39,10 +39,15 @@ static inline uint32 fast_recip_pos(int32* tab, uint16 val) {
 
 void x3d_platform_screen_build_color_palette(uint8 color_data[256][3]) {
     uint16 i;
+    SDL_Color sdl_colors[256];
     
     for(i = 0; i < 256; ++i) {
         color_palette[i] = x3d_rgb_to_color(color_data[i][0], color_data[i][1], color_data[i][2]);
+        
+        sdl_colors[i] = (SDL_Color) { .r = color_data[i][0], .g = color_data[i][1], .b = color_data[i][2] };
     }
+    
+    SDL_SetColors(window_surface, sdl_colors, 0, 256);
 }
 
 X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index) {
@@ -82,8 +87,8 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   window_surface = SDL_SetVideoMode(
     init->screen_w * init->screen_scale,
     init->screen_h * init->screen_scale,
-    16,
-    SDL_HWPALETTE
+    8,
+    SDL_SWSURFACE
   );
  
   //window_surface->pixels = //malloc(sizeof(uint16) * screen_w * screen_h * 2);
@@ -133,6 +138,12 @@ void x3d_screen_clear(X3D_Color color) {
 }
 
 inline void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
+    X3D_ColorIndex index = x3d_color_to_colorindex(color);
+    
+    ((uint8 *)window_surface->pixels)[y * window_surface->w + x] = index;
+    return;
+    
+    
   uint32 c = map_color_to_uint32(color);
   
   if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
@@ -143,7 +154,7 @@ inline void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
       int32 xx = x * screen_scale + d;
       int32 yy = y * screen_scale + i;
       
-      ((uint16 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
+      //((uint16 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
     }
   }
 }
@@ -567,14 +578,18 @@ void x3d_screen_set_internal_value(int16 x, int16 y, uint32 val) {
     if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
         return;
     
-    ((uint32 *)window_surface->pixels)[y * window_surface->w + x] = val;
+    ((uint8 *)window_surface->pixels)[y * window_surface->w + x] = val;
 }
 
 uint32 x3d_screen_get_internal_value(int16 x, int16 y) {
     if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
         return;
     
-    return ((uint32 *)window_surface->pixels)[y * window_surface->w + x];
+    return ((uint8 *)window_surface->pixels)[y * window_surface->w + x];
+}
+
+void* x3d_screen_get_internal(void) {
+    return window_surface;
 }
 
 

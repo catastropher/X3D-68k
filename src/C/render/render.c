@@ -206,6 +206,7 @@ void x3d_render_textured_shaded_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, X
 extern X3D_LightMapContext lightmap_context;
 
 void x3d_render_lightmap_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObject* cam) {
+    return;
     X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
     
     float intensity[10];
@@ -354,7 +355,7 @@ void render_cube(X3D_Vex3D pos, int16 size, X3D_SegRenderContext* context) {
             x3d_render_id_buffer_polygon(&poly, 0x7FFF, context->cam);
         }
         else {
-            x3d_render_textured_shaded_polygon(&poly, &checkerboard, context->cam);
+            //x3d_render_textured_shaded_polygon(&poly, &checkerboard, context->cam);
         }
     }
 }
@@ -392,11 +393,11 @@ void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo
         }
         else if(context->render_context->render_type == X3D_RENDER_TEXTUER_LIGHTMAP) {          
             if(temp.total_v != 4) {
-                if(context->seg->id == 1 && 0) {
-                    x3d_render_texture_lightmap_polygon(&temp, &checkerboard2, x3d_segfaceid_create(context->seg->id, face), context->cam);
+                if(context->seg->id == 1 || 1) {
+                    x3d_render_texture_lightmap_polygon(&temp, &checkerboard, x3d_segfaceid_create(context->seg->id, face), context->cam);
                 }
                 else {
-                    x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
+                    //x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
                 }
             }
                 //

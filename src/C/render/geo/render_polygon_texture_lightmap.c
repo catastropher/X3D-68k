@@ -19,17 +19,17 @@
 #include "X3D_enginestate.h"
 
 typedef struct X3D_SlopeVar {
-    float x;
-    float z;
-    float u, v;
-    float lu, lv;
+    fp16x16 x;
+    fp16x16 z;
+    fp16x16 u, v;
+    fp16x16 lu, lv;
 } X3D_SlopeVar;
 
 typedef struct X3D_ScanlineValue {
     int16 x;
-    int16 z;
-    float u, v;
-    float lu, lv;
+    fp16x16 z;
+    fp16x16 u, v;
+    fp16x16 lu, lv;
 } X3D_ScanlineValue;
 
 typedef struct X3D_Scanline {
@@ -38,10 +38,10 @@ typedef struct X3D_Scanline {
 } X3D_Scanline;
 
 typedef struct X3D_RasterEdgeValue {
-    float x;
-    float z;
-    float u, v;
-    float lu, lv;
+    fp16x16 x;
+    fp16x16 z;
+    fp16x16 u, v;
+    fp16x16 lu, lv;
 } X3D_RasterEdgeValue;
 
 typedef struct X3D_RasterEdge {
@@ -60,35 +60,43 @@ static inline void x3d_rasteredge_advance(X3D_RasterEdge* edge) {
 
 #include "render/X3D_util.h"
 
+static inline fp16x16 init_slope_var(int16 diff, int16 dx) {
+    return ((int32)diff << 16) / dx;
+}
+
 static inline void x3d_rasteredge_initialize(X3D_RasterEdge* edge, X3D_PolygonRasterVertex2D* top, X3D_PolygonRasterVertex2D* bottom) {
     int16 dy = X3D_MAX(bottom->v.y - top->v.y, 1);
     
     //top->intensity = x3d_scale_by_depth(0x7FFF, top->zz, 10, 2000);//(1.0 / (top->zz) ;
     //bottom->intensity = x3d_scale_by_depth(0x7FFF, bottom->zz, 10, 2000);
     
-    edge->slope.x = ((float)bottom->v.x - top->v.x) / dy;
-    edge->slope.z = ((float)bottom->zz - top->zz) / dy;
-    edge->slope.u = ((float)bottom->uu - top->uu) / dy;
-    edge->slope.v = ((float)bottom->vv - top->vv) / dy;
-    edge->slope.lu = ((float)bottom->lu - top->lu) / dy;
-    edge->slope.lv = ((float)bottom->lv - top->lv) / dy;
+    edge->slope.x = init_slope_var(bottom->v.x - top->v.x, dy);
+    edge->slope.z = init_slope_var(bottom->zz - top->zz, dy);
     
-    edge->value.x = top->v.x;
-    edge->value.z = top->zz;
-    edge->value.u = top->uu;
-    edge->value.v = top->vv;
-    edge->value.lu = top->lu;
-    edge->value.lv = top->lv;
+    edge->slope.u = init_slope_var(bottom->uu - top->uu, dy);
+    edge->slope.v = init_slope_var(bottom->vv - top->vv, dy);
+    
+    edge->slope.lu = init_slope_var(bottom->lu - top->lu, dy);
+    edge->slope.lv = init_slope_var(bottom->lv - top->lv, dy);
+    
+    edge->value.x = (int32)top->v.x << 16;
+    edge->value.z = (int32)top->zz << 16;
+    edge->value.u = (int32)top->uu << 16;
+    edge->value.v = (int32)top->vv << 16;
+    edge->value.lu = (int32)top->lu << 16;
+    edge->value.lv = (int32)top->lv << 16;
 }
 
 static inline void x3d_rasteredge_initialize_from_scanline(X3D_RasterEdge* edge, X3D_Scanline* scan) {
     int16 dx = X3D_MAX(scan->right.x - scan->left.x, 1);
     
-    edge->slope.z = ((float)scan->right.z - scan->left.z) / dx;
-    edge->slope.u = ((float)scan->right.u - scan->left.u) / dx;
-    edge->slope.v = ((float)scan->right.v - scan->left.v) / dx;
-    edge->slope.lu = ((float)scan->right.lu - scan->left.lu) / dx;
-    edge->slope.lv = ((float)scan->right.lv - scan->left.lv) / dx;
+    edge->slope.z = (scan->right.z - scan->left.z) / dx;
+    
+    edge->slope.u = (scan->right.u - scan->left.u) / dx;
+    edge->slope.v = (scan->right.v - scan->left.v) / dx;
+    
+    edge->slope.lu = (scan->right.lu - scan->left.lu) / dx;
+    edge->slope.lv = (scan->right.lv - scan->left.lv) / dx;
     
     edge->value.z = scan->left.z;
     edge->value.u = scan->left.u;
@@ -98,8 +106,10 @@ static inline void x3d_rasteredge_initialize_from_scanline(X3D_RasterEdge* edge,
 }
 
 static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdgeValue* val) {
-    if(val->x <scan->left.x) {
-        scan->left.x = val->x;
+    int16 xx = val->x >> 16;
+    
+    if(xx < scan->left.x) {
+        scan->left.x = xx;
         scan->left.z = val->z;
         scan->left.u = val->u;
         scan->left.v = val->v;
@@ -107,8 +117,8 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
         scan->left.lv = val->lv;
     }
     
-    if(val->x > scan->right.x) {
-        scan->right.x = val->x;
+    if(xx > scan->right.x) {
+        scan->right.x = xx;
         scan->right.z = val->z;
         scan->right.u = val->u;
         scan->right.v = val->v;
@@ -117,22 +127,49 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
     }    
 }
 
-static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, X3D_PolygonRasterAtt* att) {
-    float t = (uint32)x3d_lightmap_get_value(att->light_map.map, val->lu, val->lv) / 255.0 + .2;
+static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, const X3D_PolygonRasterAtt* att) {
+    //float t = (uint32)x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 255.0 + .2;
     
+    
+#if 0
     uint8 r, g, b;
     x3d_color_to_rgb(x3d_texture_get_texel(att->light_map.tex, val->u, val->v), &r, &g, &b);
     
     r = (r * t + .5);
     g = (g * t + .5);
     b = (b * t + .5);
+#endif
     
-    X3D_ScreenManager* screenman = x3d_screenmanager_get();
-    int16* zbuf = x3d_rendermanager_get()->zbuf + (int32)y * screenman->w + x;
+    //X3D_ScreenManager* screenman = x3d_screenmanager_get();
+#ifdef __nspire__
+    int16* zbuf = att->zbuf + (int32)y * 320 + x;
+#else
+    int16* zbuf = att->zbuf + (int32)y * 640 + x;
+#endif
     
-    if(val->z < *zbuf) {
-        x3d_screen_draw_pix(x, y, x3d_rgb_to_color(r, g, b));
-        *zbuf = val->z;
+    int16 zz = val->z >> 16;
+    
+    if(zz < *zbuf) {
+        int32 u = val->u >> 16;
+        int32 v = val->v >> 16;
+        
+        
+        X3D_Texture* tex = att->light_map.tex;
+        int32 index = v * tex->w + u;
+        
+        if(index < (int32)tex->w * tex->h) {
+            //x3d_screen_set_internal_value(x, y, tex->texel.large[index]);
+            //x3d_screen_draw_pix(x, y, x3d_rgb_to_color(r, g, b));
+           
+#ifdef __nspire__
+            ((uint8 *)att->screen)[y * 320 + x] = x3d_colormap_get_index(tex->texel.large[index],
+                x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2);
+#else
+            x3d_screen_draw_pix(x, y, x3d_colorindex_to_color(x3d_colormap_get_index(tex->texel.large[index],
+                x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2)));
+#endif
+            *zbuf = zz;
+        }
     }
 }
 
