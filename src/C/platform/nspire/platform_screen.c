@@ -31,6 +31,8 @@ static int16 record_frame;
 static char record_name[1024];
 static X3D_Color color_palette[256];
 
+nSDL_Font* font;
+
 int32 recip_tab[32768];
 
 static inline uint32 fast_recip_pos(int32* tab, uint16 val) {
@@ -107,6 +109,8 @@ X3D_INTERNAL _Bool x3d_platform_screen_init(X3D_InitSettings* init) {
   
   x3d_log(X3D_INFO, "Window created");
   
+  font = nSDL_LoadFont(NSDL_FONT_VGA, 255, 255, 255);
+  
   return X3D_TRUE;
   
 }
@@ -130,7 +134,18 @@ static uint32 map_color_to_uint32(X3D_Color color) {
 
 
 void x3d_screen_flip() {
+    static int tick = 0;
+    
+    int new_tick = SDL_GetTicks();
+    int time = new_tick - tick;
+    
+    if(time == 0) time = 1;
+    
+    nSDL_DrawString(window_surface, font, 0, 0, "fps: %d.%d", 1000 / time, (1000000 / time) % 1000);
+    
   SDL_Flip(window_surface);
+  
+  tick = new_tick;
 }
 
 void x3d_screen_clear(X3D_Color color) {

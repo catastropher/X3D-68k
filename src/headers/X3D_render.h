@@ -55,6 +55,7 @@ typedef struct X3D_SegRenderContext {
     X3D_Level* level;
     X3D_LevelSegment* seg;
     uint16 parent_seg_id;
+    X3D_Frustum* frustum;
 } X3D_SegRenderContext;
 
 typedef struct X3D_RenderManager {

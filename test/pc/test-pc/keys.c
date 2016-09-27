@@ -59,6 +59,7 @@ void setup_key_map(void) {
   x3d_key_map_pc(KEY_RECORD, 'm');
   x3d_key_map_pc(X3D_KEY_15, 'p');
 #elif defined(__nspire__)
+  x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
   x3d_key_map_pc(KEY_W, SDLK_7);
   x3d_key_map_pc(KEY_S, SDLK_4);
   x3d_key_map_pc(KEY_A, SDLK_LEFT);
@@ -74,6 +75,7 @@ void setup_key_map(void) {
 extern int16 render_mode;
 
 extern X3D_Level* global_level;
+extern X3D_LightMapContext lightmap_context;
 
 _Bool menu_allow_normal_keys(void);
 
@@ -288,6 +290,20 @@ void engine_test_handle_keys(void) {
   }
   else if(x3d_key_down(KEY_DOWN)) {
     cam->base.base.pos.y += 4L << 8;
+  }
+  
+  if(x3d_key_down(KEY_ENTER)) {
+      X3D_SpotLight light;
+        
+      
+      
+        x3d_object_pos(cam, &light.pos);
+        light.orientation.y = cam->base.angle.y;//x3d_enginestate_get_step();
+        light.orientation.x = cam->base.angle.x;
+        
+        x3d_lightmap_build(&light, &lightmap_context);
+        
+        while(x3d_key_down(KEY_ENTER)) x3d_read_keys();
   }
   
   _Bool left = X3D_FALSE, right;

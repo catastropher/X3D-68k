@@ -29,4 +29,5 @@ void x3d_camera_init(void);
 void x3d_camera_transform_points(X3D_CameraObject* cam, X3D_Vex3D* v,
         uint16 total_v, X3D_Vex3D* dest3d, X3D_Vex2D* dest2d);
 void x3d_camera_calculate_shift(X3D_CameraObject* new_cam, X3D_CameraObject* old_cam, X3D_Vex3D* v_from, X3D_Vex3D* v_to);
+X3D_LEVEL_SEG x3d_camera_get_seg_currently_in(X3D_CameraObject* cam, X3D_Level* level);
 

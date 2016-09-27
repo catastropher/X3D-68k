@@ -109,3 +109,29 @@ void x3d_camera_calculate_shift(X3D_CameraObject* new_cam, X3D_CameraObject* old
   new_cam->shift.z = pcenter.z - center.z + old_cam->shift.z;
 }
 
+
+X3D_LEVEL_SEG x3d_camera_get_seg_currently_in(X3D_CameraObject* cam, X3D_Level* level) {
+    X3D_Vex3D pos;
+    x3d_object_pos(cam, &pos);
+    
+    uint16 i, j;
+    for(i = 0; i < level->segs.total; ++i) {
+        X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, i);
+        X3D_LevelSegFace* face = x3d_levelsegment_get_face_attributes(level, seg);
+        _Bool outside = X3D_FALSE;
+        
+        for(j = 0; j < seg->base_v + 2; ++j) {
+            if(x3d_plane_point_distance(&face[j].plane, &pos) < 0) {
+                outside = X3D_TRUE;
+                break;
+            }
+        }
+        
+        if(!outside) {
+            return i;
+        }
+    }
+    
+    return 0xFFFF;
+}
+

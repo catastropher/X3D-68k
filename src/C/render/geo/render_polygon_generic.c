@@ -80,9 +80,8 @@ void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_Polygon
 void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_CameraObject* cam) {
     X3D_PolygonRasterVertex3D clipped_v[20];
     X3D_RasterPolygon3D clipped_poly = { .v = clipped_v };
-    X3D_Frustum* frustum = x3d_get_view_frustum(cam);
     
-    x3d_rasterpolygon3d_clip_to_frustum(poly, frustum, &clipped_poly);
+    x3d_rasterpolygon3d_clip_to_frustum(poly, att->frustum, &clipped_poly);
     
     X3D_PolygonRasterVertex2D projected_v[20];
     

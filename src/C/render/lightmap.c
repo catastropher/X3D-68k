@@ -18,6 +18,7 @@
 #include "X3D_render.h"
 #include "X3D_enginestate.h"
 #include "render/X3D_lightmap.h"
+#include "render/X3D_texture.h"
 
 #include <math.h>
 
@@ -278,7 +279,7 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
     }
     
     for(i = 0; i < context->total_maps; ++i) {
-        if(context->maps[i].data != NULL) {// && render_surface[i]) {
+        if(context->maps[i].data != NULL && render_surface[i]) {
             x3d_log(X3D_INFO, "Surface %d", i);
             
             X3D_LightMap* map = context->maps + i;
@@ -297,12 +298,12 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
                     if(projected.x >= 0 && projected.x < screenman->w && projected.y >= 0 && projected.y < screenman->h) {
                         float z = id_zbuf[(int32)projected.y * screenman->w + projected.x];
                         
-                        if(transformed.z > 0 && transformed.z < z + 10) {
+                        if((transformed.z > 0 && transformed.z < z + 50) || x3d_screen_get_internal_value(k, j) == i) {
                             float dist = sqrt(pow(projected.x - screenman->w / 2, 2) + pow(projected.y - screenman->h / 2, 2));
                             
-                            if(dist < 150 / 2) {
+                            if(dist < 3 * 150 / 2) {
                                 //printf("Transformed: %d -> %d\n", transformed.z, z);
-                                x3d_lightmapcontext_apply_light(context, i, v2d, 64);
+                                x3d_lightmapcontext_apply_light(context, i, v2d, 64 * (6000 - transformed.z) / 6000);
                             }
                         }
                     }
@@ -357,8 +358,13 @@ void x3d_lightmap_blit(X3D_LightMap* map) {
     }
 }
 
+// void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3D_Polygon X3D_Texture* dest) {
+//     
+// }
 
 void add_test_lights(X3D_LightMapContext* context) {
+    return;
+    
     {
         X3D_SpotLight light;
         

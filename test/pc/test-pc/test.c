@@ -126,7 +126,14 @@ void build_test_level(void) {
     X3D_LevelSegment* seg1ptr = x3d_level_get_segmentptr(&level, seg1);
     
     
-    //x3d_level_add_wall_segment_to_center_of_face(&level, x3d_level_get_segmentptr(&level, seg0), 5, 4, 50, 100);
+    uint16 add_face = 5;
+    uint16 new_seg = x3d_level_add_wall_segment_to_center_of_face(&level, x3d_level_get_segmentptr(&level, seg0), add_face, 4, 100, 100)->id;
+    
+    uint16 id = x3d_segfaceid_create(new_seg, 0);
+    
+    x3d_levelsegment_set_wall_segs_for_face(&level, x3d_level_get_segmentptr(&level, seg0), add_face, 
+        &id, 1
+    );
     
     global_level = &level;
     
@@ -167,7 +174,7 @@ int main(int argc, char* argv[]) {
     init();
     
     x3d_texture_from_array(&checkerboard, wood_tex_data);
-    //x3d_texture_load_from_file(&checkerboard2, "checkerboard.bmp");
+    x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
     
     build_test_model();
     x3d_rendermanager_get()->near_z = 10;

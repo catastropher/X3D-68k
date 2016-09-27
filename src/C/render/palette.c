@@ -278,7 +278,7 @@ uint8 quake_color_palette[256][3] = {
 X3D_ColorIndex colormap[256][16];
 
 X3D_ColorIndex x3d_colormap_get_index(X3D_ColorIndex color, uint16 shade) {
-    return colormap[color][shade];
+    return colormap[color][X3D_MIN(shade, 15)];
 }
 
 X3D_ColorIndex x3d_colorindex_from_rgb(uint8 r, uint8 g, uint8 b) {
@@ -323,9 +323,9 @@ void x3d_palette_init(void) {
     for(i = 0; i < 256; ++i) {
         for(j = 0; j < 64; j += 4) {
             colormap[i][j / 4] = x3d_colorindex_from_rgb(
-                ((uint16)quake_color_palette[i][0] * j + 16) / 32,
-                ((uint16)quake_color_palette[i][1] * j + 16) / 32,
-                ((uint16)quake_color_palette[i][2] * j + 16) / 32
+                X3D_MIN(((uint16)quake_color_palette[i][0] * j + 16) / 32, 255),
+                X3D_MIN(((uint16)quake_color_palette[i][1] * j + 16) / 32, 255),
+                X3D_MIN(((uint16)quake_color_palette[i][2] * j + 16) / 32, 255)
             );
         }
     }

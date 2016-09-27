@@ -64,10 +64,15 @@ typedef struct X3D_PolygonRasterAtt {
             X3D_LightMap* map;
             X3D_Texture* tex;
         } light_map;
+        
+        struct {
+            int16 z;
+        } zfill;
     };
     
     int16* zbuf;
     void* screen;
+    X3D_Frustum* frustum;
 } X3D_PolygonRasterAtt;
 
 static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, int16 screen_w, int16 screen_h) {
@@ -106,4 +111,7 @@ void x3d_polygon3d_render_lightmap(X3D_RasterPolygon3D* poly, X3D_PolygonRasterA
 
 void x3d_polygon2d_render_texture_lightmap(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
 void x3d_polygon3d_render_texture_lightmap(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
+
+void x3d_polygon2d_render_zfill(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
+void x3d_polygon3d_render_zfill(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
 

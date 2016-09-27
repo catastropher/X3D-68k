@@ -63,4 +63,6 @@ uint8 x3d_lightmap_get_value(X3D_LightMap* map, uint16 x, uint16 y);
 void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v, X3D_Vex2D* dest);
 void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level);
 void x3d_lightmap_bilinear_filter(X3D_LightMap* map);
+void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context);
+
 

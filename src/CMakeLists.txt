@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(X3D)
+project(X3D C ASM)
 
 add_definitions(-D__x3d_build__)
 
@@ -57,6 +57,8 @@ elseif(${X3D_TARGET} STREQUAL "nspire")
   set(CMAKE_C_COMPILER nspire-gcc)
   add_definitions(-D__nspire__)
   set(CMAKE_C_FLAGS "-Wall -O3")
+  set(CMAKE_ASM_FLAGS "${CFLAGS} -x assembler-with-cpp")
+  set(CMAKE_ASM_COMPILER nspire-as)
 endif()
 
 
@@ -134,8 +136,11 @@ add_sources(
   C/render/geo/render_polygon_id_buffer.c
   C/render/geo/render_polygon_lightmap.c
   C/render/geo/render_polygon_texture_lightmap.c
+  C/render/geo/render_polygon_zfill.c
   C/render/geo/clip_polygon.c
   C/render/palette.c
+
+  #C/render/scanline.s
   
   C/physics/collide.c
   C/physics/raytrace.c
