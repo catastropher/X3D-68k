@@ -133,9 +133,7 @@ void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D*
         dest->x = v.x;
         dest->y = v.y;
         dest->z = - ( n.x * v.x + n.y * v.y - proj->poly_plane.d) / n.z;
-    }
-    
-    //x3d_log(X3D_INFO, "%d %d %d", dest->x, dest->y, dest->z);
+    }    
 }
 
 void x3d_convert_view_coord_to_world_coord(X3D_Vex3D* view, X3D_CameraObject* cam, X3D_Vex3D* dest) {
@@ -315,25 +313,6 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
     
     free(id_zbuf);
     id_zbuf = NULL;
-    
-    
-//     for(i = 0; i < screenman->h; ++i) {
-//         for(j = 0; j < screenman->w; ++j) {
-//             uint32 id = x3d_screen_get_internal_value(j, i);
-//             
-//             if(id == 0x7FFF) continue;
-//             
-//             X3D_PlanarProjection* proj = context->proj + id;
-//             
-//             X3D_Vex3D v;
-//             x3d_calculate_position_from_z_buffer(j, i, &light_cam, &v);
-//                 
-//             X3D_Vex2D plane_v;
-//             x3d_planarprojection_project_point(proj, &v, &plane_v);
-//             
-//             x3d_lightmapcontext_apply_light(context, id, plane_v, 32);
-//         }
-//     }
 }
 
 void x3d_lightmapcontext_cleanup(X3D_LightMapContext* context) {
@@ -382,61 +361,6 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3
 }
 
 void add_test_lights(X3D_LightMapContext* context) {
-    return;
-    
-    {
-        X3D_SpotLight light;
-        
-        light.pos = x3d_vex3d_make(0, 0, -200);
-        light.orientation.y = 256 - 16;//x3d_enginestate_get_step();
-        light.orientation.x = 0;
-        
-        x3d_lightmap_build(&light, context);
-    }
-    
-    
-    {
-        X3D_SpotLight light;
-        
-        light.pos = x3d_vex3d_make(-150, -200, 400);
-        light.orientation.y = 0;//x3d_enginestate_get_step();
-        light.orientation.x = 256 - 64;
-        
-        x3d_lightmap_build(&light, context);
-    }
-    
-    {
-        X3D_SpotLight light;
-        
-        light.pos = x3d_vex3d_make(100, 0, 50);
-        light.orientation.y = 256 - 32;//x3d_enginestate_get_step();
-        light.orientation.x = 0;
-        
-        x3d_lightmap_build(&light, context);
-    }
-    
-    {
-        X3D_SpotLight light;
-        
-        light.pos = x3d_vex3d_make(600, -300, 1200);
-        light.orientation.y = 256 - 25;//x3d_enginestate_get_step();
-        light.orientation.x = 256 - 36;
-        
-        x3d_lightmap_build(&light, context);
-    }
-    
-    
-    {
-        X3D_SpotLight light;
-        
-        light.pos = x3d_vex3d_make(-300, 300, 300);
-        light.orientation.y = 32;//x3d_enginestate_get_step();
-        light.orientation.x = 36;
-        
-        x3d_lightmap_build(&light, context);
-    }
-    
-    
 }
 
 void x3d_lightmap_bilinear_filter(X3D_LightMap* map) {
@@ -482,17 +406,5 @@ void x3d_lightmap_bilinear_filter(X3D_LightMap* map) {
 }
 
 void test_lightmap(void) {
-//     X3D_SpotLight light;
-//     
-//     X3D_LightMapContext context;
-//     
-//     light.pos = x3d_vex3d_make(0, 0, -200);
-//     light.orientation.y = x3d_enginestate_get_step();
-//     light.orientation.x = 0;
-//     
-//     x3d_lightmapcontext_init(&context, global_level);
-//     x3d_lightmap_build(&light, &context);
-//     x3d_lightmap_blit(context.maps + x3d_segfaceid_create(0, 0));
-//     x3d_lightmapcontext_cleanup(&context);
 }
 

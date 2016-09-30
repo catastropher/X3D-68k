@@ -92,22 +92,6 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
 
 void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam);
 
-void x3d_render_flat_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_CameraObject* cam) {
-    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
-    
-    uint16 i;
-    for(i = 0; i < poly->total_v; ++i) {
-        rpoly.v[i].v = poly->v[i];
-    }
-    
-    X3D_PolygonRasterAtt at = {
-        .flat = {
-            .color = c
-        }
-    };
-    
-    x3d_polygon3d_render_flat(&rpoly, &at, cam);
-}
 
 void x3d_render_id_buffer_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObject* cam) {
     X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
@@ -127,113 +111,10 @@ void x3d_render_id_buffer_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObje
     x3d_polygon3d_render_id_buffer(&rpoly, &at, cam);
 }
 
-void x3d_render_gouraud_shaded_polygon(X3D_Polygon3D* poly, X3D_Color c, X3D_CameraObject* cam) {
-    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
-    
-    float intensity[10];
-    
-    uint16 j;
-    for(j = 0; j < rpoly.total_v; ++j) {
-        intensity[j] = ((float)1 / rpoly.total_v) * (j);
-    }
-    
-    uint16 i;
-    for(i = 0; i < poly->total_v; ++i) {
-        rpoly.v[i].v = poly->v[i];
-        rpoly.v[i].intensity = intensity[i] * 32767;
-    }
-    
-    X3D_PolygonRasterAtt at = {
-        .flat = {
-            .color = c
-        }
-    };
-    
-    x3d_polygon3d_render_gouraud(&rpoly, &at, cam);
-    
-    if(x3d_key_down(X3D_KEY_15)) {
-        x3d_screen_flip();
-        SDL_Delay(500);
-        x3d_screen_flip();
-    }
-}
-
 extern X3D_Texture checkerboard;
 extern X3D_Texture checkerboard2;
 
-void x3d_render_textured_shaded_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, X3D_CameraObject* cam) {
-    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
-    
-    float intensity[10];
-    
-    uint16 j;
-    for(j = 0; j < rpoly.total_v; ++j) {
-        intensity[j] = ((float)1 / rpoly.total_v) * (j);
-    }
-    
-    if(poly->total_v == 4) {
-        intensity[0] = 0;
-        intensity[1] = 0;
-        intensity[2] = 0;
-        intensity[3] = 1;
-    }
-    
-    uint16 i;
-    for(i = 0; i < poly->total_v; ++i) {
-        rpoly.v[i].v = poly->v[i];
-        rpoly.v[i].intensity = intensity[i] * 32767;
-    }
-    
-    rpoly.v[0].uu = 0;
-    rpoly.v[0].vv = 0;
-    
-    rpoly.v[1].uu = 63;
-    rpoly.v[1].vv = 0;
-    
-    rpoly.v[2].uu = 63;
-    rpoly.v[2].vv = 63;
-    
-    rpoly.v[3].uu = 0;
-    rpoly.v[3].vv = 63;
-    
-    X3D_PolygonRasterAtt at = {
-        .texture = {
-            .texture = tex
-        }
-    };
-    
-    x3d_polygon3d_render_texture(&rpoly, &at, cam);
-}
-
 extern X3D_LightMapContext lightmap_context;
-
-void x3d_render_lightmap_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObject* cam) {
-    return;
-    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
-    
-    float intensity[10];
-    
-    
-    
-    uint16 i;
-    for(i = 0; i < poly->total_v; ++i) {
-        rpoly.v[i].v = poly->v[i];
-        
-        X3D_Vex2D v;
-        x3d_planarprojection_project_point(&lightmap_context.proj[id], poly->v + i, &v);
-        
-        rpoly.v[i].uu = v.x;
-        rpoly.v[i].vv = v.y;
-    }
-    
-    X3D_PolygonRasterAtt at = {
-        .light_map = {
-            .map = &lightmap_context.maps[id]
-        }
-    };
-    
-    x3d_polygon3d_render_lightmap(&rpoly, &at, cam);
-}
 
 void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, uint32 id, X3D_CameraObject* cam) {
     X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
@@ -281,47 +162,6 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
     };
     
     x3d_polygon3d_render_texture_lightmap(&rpoly, &at, cam);
-}
-
-void x3d_renderer_draw_segment_wireframe(X3D_Level* level, X3D_LEVEL_SEG seg_id, X3D_CameraObject* cam, X3D_Color color) {
-  X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, seg_id);
-  X3D_Prism3D prism = { .v = alloca(1000) };
-  
-  x3d_levelsegment_get_geometry(level, seg, &prism);
-  X3D_Polygon3D* temp = x3d_polygon3d_temp();
-  
-  X3D_Color colors[] = {
-    x3d_rgb_to_color(255, 255, 255),
-    x3d_rgb_to_color(255, 0, 255),
-    x3d_rgb_to_color(255, 0, 0),
-    x3d_rgb_to_color(0, 255, 0),
-    x3d_rgb_to_color(0, 0, 255),
-    x3d_rgb_to_color(255, 255, 0),
-    x3d_rgb_to_color(0, 255, 255),
-    x3d_rgb_to_color(128, 128, 128),
-    x3d_rgb_to_color(255, 128, 255),
-    x3d_rgb_to_color(128, 128, 255)
-  };
-  
-  uint16 i;
-  for(i = 0; i < prism.base_v + 2; ++i) {
-      if(x3d_levelsegment_get_face_attribute(level, seg, i)->connect_face != X3D_FACE_NONE) continue;
-      
-    x3d_prism3d_get_face(&prism, i, temp);
-    
-    if(temp->total_v != 4)
-        x3d_render_gouraud_shaded_polygon(temp, colors[i], cam);
-    else
-        x3d_render_textured_shaded_polygon(temp, &checkerboard, cam);
-  }
-  
-  //x3d_prism3d_render_wireframe(&prism, cam, color);
-}
-
-void x3d_renderer_draw_all_segments(X3D_Level* level, X3D_CameraObject* cam, X3D_Color color) {
-  uint16 i;
-  for(i = 0; i < level->segs.total; ++i)
-    x3d_renderer_draw_segment_wireframe(level, i, cam, color);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -415,31 +255,10 @@ void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo
             x3d_render_id_buffer_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
         }
         else if(context->render_context->render_type == X3D_RENDER_LIGHTMAP) {
-            x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
+            //x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
         }
         else if(context->render_context->render_type == X3D_RENDER_TEXTUER_LIGHTMAP) {          
-            if(temp.total_v != 4) {
-                //if(context->seg->id == 1 || 1) {
-                    x3d_render_texture_lightmap_polygon(&temp, &checkerboard, x3d_segfaceid_create(context->seg->id, face), context->cam);
-                //}
-                //else {
-                    //x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
-                //}
-            }
-                //
-                //x3d_render_gouraud_shaded_polygon(&temp, x3d_rgb_to_color(32, 32, 32), context->cam);
-            else {
-                if(x3d_segfaceid_create(context->seg->id, face) != 2)
-                    x3d_render_texture_lightmap_polygon(&temp, &checkerboard, x3d_segfaceid_create(context->seg->id, face), context->cam);
-                else
-                    x3d_render_texture_lightmap_polygon(&temp, &checkerboard, x3d_segfaceid_create(context->seg->id, face), context->cam);
-            }
-        }
-        else {
-            if(temp.total_v != 4)
-                x3d_render_gouraud_shaded_polygon(&temp, x3d_rgb_to_color(32, 32, 32), context->cam);
-            else
-                x3d_render_textured_shaded_polygon(&temp, &checkerboard, context->cam);
+            x3d_render_texture_lightmap_polygon(&temp, &checkerboard, x3d_segfaceid_create(context->seg->id, face), context->cam);
         }
                 
         //==============
@@ -494,21 +313,6 @@ void x3d_render_segment(X3D_SegRenderContext* context) {
     for(i = 0; i < context->seg->base_v + 2; ++i) {
         x3d_render_segment_face(context, &prism, i);
     }
-    
-#if 0
-    if(context->seg->id == 0) {
-        X3D_Ray3D ray = {{ x3d_vex3d_make(-150, 50, 400), x3d_vex3d_make(100, 0, 400) }};
-        
-        int16 steps = 50;
-        
-        X3D_Vex3D v;
-        x3d_ray3d_interpolate(&ray, 0, &v);//32767 * (x3d_enginestate_get_step() % steps) / steps, &v);
-        
-        render_cube(v, 50, context);
-        
-        render_cube(x3d_vex3d_make(-175, 100, 425), 25, context);
-    }
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -47,6 +47,11 @@ enum {
 
 typedef struct X3D_RenderContext {
     uint16 render_type;
+    
+    X3D_ColorIndex* screen;
+    int16 screen_w;
+    int16 screen_h;
+    int16 zbuf;
 } X3D_RenderContext;
 
 typedef struct X3D_SegRenderContext {

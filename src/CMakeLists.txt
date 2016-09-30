@@ -130,11 +130,7 @@ add_sources(
   C/render/geo/render_prism.c
   C/render/geo/render_linetexture.c
   C/render/geo/render_model.c
-  C/render/geo/render_polygon_flat.c
-  C/render/geo/render_polygon_gouraud.c
-  C/render/geo/render_polygon_texture.c
   C/render/geo/render_polygon_id_buffer.c
-  C/render/geo/render_polygon_lightmap.c
   C/render/geo/render_polygon_texture_lightmap.c
   C/render/geo/render_polygon_zfill.c
   C/render/geo/clip_polygon.c
