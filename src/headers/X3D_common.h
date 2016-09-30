@@ -40,6 +40,8 @@
 
 #define X3D_SIGNOF(_v) ((_v) < 0 ? -1 : ((_v) > 0 ? 1 : 0))
 
+#define X3D_UNITS_PER_FOOT 32
+#define X3D_TEXELS_PER_FOOT 8
 
 #include "X3D_int.h"
 #include "X3D_interface.h"

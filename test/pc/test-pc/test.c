@@ -101,9 +101,11 @@ void build_test_level(void) {
     x3d_level_init(&level);
     
     X3D_Prism3D prism = { .v = alloca(1000) };
-    Prism3D.construct(&prism, 8, 800, 800, (X3D_Vex3D_angle256) { 0, 0, 0 });
+    Prism3D.construct(&prism, 8, 20 * X3D_UNITS_PER_FOOT, 10 * X3D_UNITS_PER_FOOT, (X3D_Vex3D_angle256) { 0, 0, 0 });
     uint16 seg0 = x3d_level_add_new_standalone_segment(&level, &prism, 0)->id;
     
+    
+#if 0
     uint16 seg2 = x3d_level_add_extruded_segment(&level, x3d_segfaceid_create(seg0, 1), 400)->id;
     
     x3d_levelsegment_get_geometry(&level, x3d_level_get_segmentptr(&level, seg2), &prism);
@@ -134,8 +136,10 @@ void build_test_level(void) {
     x3d_levelsegment_set_wall_segs_for_face(&level, x3d_level_get_segmentptr(&level, seg0), add_face, 
         &id, 1
     );
-    
+#endif
     global_level = &level;
+    
+    
     
     x3d_lightmapcontext_init(&lightmap_context, &level);
     add_test_lights(&lightmap_context);

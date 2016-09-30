@@ -81,8 +81,8 @@ static inline void x3d_rasteredge_initialize(X3D_RasterEdge* edge, X3D_PolygonRa
     
     edge->value.x = ((int32)top->v.x << 16) + 0x8000;
     edge->value.z = (int32)top->zz << 16;
-    edge->value.u = ((int32)top->uu << 16) + 0x8000;
-    edge->value.v = ((int32)top->vv << 16) + 0x8000;
+    edge->value.u = ((int32)top->uu << 16);// + 0x8000;
+    edge->value.v = ((int32)top->vv << 16);
     edge->value.lu = ((int32)top->lu << 16) + 0x8000;
     edge->value.lv = ((int32)top->lv << 16) + 0x8000;
 }
@@ -156,7 +156,7 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
         X3D_Texture* tex = att->light_map.tex;
         
         int32 u = (val->u >> 16) & tex->mask;
-        int32 v = (val->v >> 16) & tex->mask;
+        int32 v = (val->v >> 10) & ((64 - 1) << 6);// & tex->mask;
         
         
 #if 0
@@ -165,7 +165,7 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
         
         int32 index = xx + yy;//v * tex->w + u;
 #else
-        int32 index = v * 64 + u;//tex->w + u;
+        int32 index = v + u;//tex->w + u;
 #endif
         
         //if(index < (int32)tex->w * tex->h) {

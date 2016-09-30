@@ -19,6 +19,7 @@
 #include "X3D_enginestate.h"
 #include "render/X3D_lightmap.h"
 #include "render/X3D_texture.h"
+#include "render/geo/X3D_render_polygon.h"
 
 #include <math.h>
 
@@ -358,9 +359,27 @@ void x3d_lightmap_blit(X3D_LightMap* map) {
     }
 }
 
-// void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3D_Polygon X3D_Texture* dest) {
-//     
-// }
+void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3D_Polygon3D* poly, X3D_Texture* dest) {
+    X3D_PlanarProjection proj;
+    proj.poly.v = alloca(1000);
+    x3d_polygon3d_build_planar_projection(&poly, &proj);
+    
+    fp8x8 scale = (X3D_TEXELS_PER_FOOT << 8) / X3D_UNITS_PER_FOOT;
+    
+    X3D_RasterPolygon2D rpoly = { .v = alloca(1000), .total_v = proj.poly.total_v };
+    
+    uint16 i;
+    for(i = 0; i < proj.poly.total_v; ++i) {
+        rpoly.v[i].v.x = ((int32)proj.poly.v[i].x * scale) >> 8;
+        rpoly.v[i].v.y = ((int32)proj.poly.v[i].y * scale) >> 8;
+        
+        X3D_Vex2D v;
+        x3d_planarprojection_project_point(&proj, poly->v + i, &v);
+        
+        rpoly.v[i].lu = v.x;
+        rpoly.v[i].lv = v.y;
+    }
+}
 
 void add_test_lights(X3D_LightMapContext* context) {
     return;
