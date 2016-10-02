@@ -358,6 +358,14 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3
         rpoly.v[i].lu = v.x;
         rpoly.v[i].lv = v.y;
     }
+    
+    X3D_PolygonRasterAtt att = {
+        .surface = {
+            .tex = tex
+        }
+    };
+    
+    x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
 }
 
 void add_test_lights(X3D_LightMapContext* context) {

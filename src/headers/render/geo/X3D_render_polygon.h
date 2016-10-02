@@ -76,8 +76,21 @@ typedef struct X3D_PolygonRasterAtt {
     
     int16* zbuf;
     void* screen;
+    int16 screen_w;
+    int16 screen_h;
     X3D_Frustum* frustum;
 } X3D_PolygonRasterAtt;
+
+static inline void x3d_polygonrasteratt_init(X3D_PolygonRasterAtt* att) {
+    att->zbuf = NULL;
+}
+
+static inline void x3d_polygonrasteratt_set_screen(X3D_PolygonRasterAtt* att, void* screen, int16* zbuf, int16 w, int16 h) {
+    att->screen = screen;
+    att->zbuf = zbuf;
+    att->screen_w = w;
+    att->screen_h = h;
+}
 
 static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, int16 screen_w, int16 screen_h) {
     v->v.x = X3D_MAX(0, v->v.x);

@@ -90,6 +90,8 @@ void init_screen_manager(X3D_InitSettings* init) {
     x3d_state->screen_manager.fov = init->fov;
     x3d_state->screen_manager.scale_x = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
     x3d_state->screen_manager.scale_y = x3d_state->screen_manager.scale_x;
+    
+    x3d_state->screen_manager.buf = malloc(sizeof(X3D_ColorIndex) * screen_w * screen_h);
 }
 
 X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index) {
@@ -320,12 +322,20 @@ void x3d_screen_flip() {
     ++record_frame;
   }
   
+  X3D_ScreenManager* screenman = x3d_screenmanager_get();
+  
   if(!virtual_window) {
     //x3d_gray_dither(window_surface);
-    
+      
+      int32 i;
+      for(i = 0; i < (int32)screen_w * screen_h; ++i) {
+          ((uint32 *)window_surface->pixels)[i] = map_color_to_uint32(color_palette[screenman->buf[i]]);
+      }
+      
 #ifdef X3D_USE_SDL1
       SDL_Flip(window_surface);
 #else
+      
       SDL_UpdateWindowSurface(window);
 #endif
   }

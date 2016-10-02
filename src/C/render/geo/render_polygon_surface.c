@@ -15,7 +15,7 @@
 
 #include "X3D_common.h"
 #include "render/geo/X3D_render_polygon.h"
-#include "X3D_screen.h"
+#include "X3D_screen.h" 
 #include "X3D_enginestate.h"
 
 typedef struct X3D_SlopeVar {
@@ -55,15 +55,12 @@ static inline void x3d_rasteredge_advance(X3D_RasterEdge* edge) {
 
 #include "render/X3D_util.h"
 
-static inline fp16x16 init_slope_var(int16 diff, int16 dx) {
+static inline fp16x16 in it_slope_var(int16 diff, int16 dx) {
     return ((int32)diff << 16) / dx;
 }
 
 static inline void x3d_rasteredge_initialize(X3D_RasterEdge* edge, X3D_PolygonRasterVertex2D* top, X3D_PolygonRasterVertex2D* bottom) {
     int16 dy = X3D_MAX(bottom->v.y - top->v.y, 1);
-    
-    //top->intensity = x3d_scale_by_depth(0x7FFF, top->zz, 10, 2000);//(1.0 / (top->zz) ;
-    //bottom->intensity = x3d_scale_by_depth(0x7FFF, bottom->zz, 10, 2000);
     
     edge->slope.x = init_slope_var(bottom->v.x - top->v.x, dy);
     edge->slope.z = init_slope_var(bottom->zz - top->zz, dy);
@@ -109,11 +106,8 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
 }
 
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, const X3D_PolygonRasterAtt* att) {
-#ifdef __nspire__
-    int16* zbuf = att->zbuf + (int32)y * 320 + x;
-#else
-    int16* zbuf = att->zbuf + (int32)y * 640 + x;
-#endif
+    int16* zbuf = att->zbuf + (int32)y * att->screen_w + x;
+    uint8* pix = (uint8 *)att->screen + (int32)y * att->screen_w + x;
     
     int16 zz = val->z >> 16;
     
@@ -122,24 +116,9 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
         
         int32 u = (val->u >> 16) % tex->w;
         int32 v = (val->v >> 16) % tex->h;
-                
-        int32 index = v * tex->w + u;
-
         
-
-        
-#ifdef __nspire__
-            //((uint8 *)att->screen)[y * 320 + x] = x3d_colormap_get_index(tex->texel.large[index],
-            //    x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2);
-#else
-            x3d_screen_draw_pix(x, y, x3d_texture_get_texel(att->surface.tex, u, v));
-        
-        
-            //x3d_screen_draw_pix(x, y, x3d_colorindex_to_color(x3d_colormap_get_index(tex->texel.large[index],
-            //    x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2)));
-#endif
-            *zbuf = zz;
-        //}
+        *pix = tex->texel.large[v * tex->w + u];
+        *zbuf = zz;
     }
 }
 

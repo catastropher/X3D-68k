@@ -175,6 +175,10 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
         .frustum = x3d_get_view_frustum(cam)
     };
     
+    X3D_ScreenManager* screenman = x3d_screenmanager_get();
+    X3D_RenderManager* renderman = x3d_rendermanager_get();
+    
+    x3d_polygonrasteratt_set_screen(&at, screenman->buf, renderman->zbuf, screenman->w, screenman->h);
     x3d_polygon3d_render_texture_surface(&rpoly, &at, cam);
 #endif
     
