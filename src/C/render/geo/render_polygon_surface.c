@@ -55,7 +55,7 @@ static inline void x3d_rasteredge_advance(X3D_RasterEdge* edge) {
 
 #include "render/X3D_util.h"
 
-static inline fp16x16 in it_slope_var(int16 diff, int16 dx) {
+static inline fp16x16 init_slope_var(int16 diff, int16 dx) {
     return ((int32)diff << 16) / dx;
 }
 
