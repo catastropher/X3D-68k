@@ -153,6 +153,8 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
         }
     }
     
+    
+#if 0
     X3D_PolygonRasterAtt at = {
         .light_map = {
             .map = &lightmap_context.maps[id],
@@ -162,6 +164,20 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
     };
     
     x3d_polygon3d_render_texture_lightmap(&rpoly, &at, cam);
+    
+#else
+    X3D_PolygonRasterAtt at = {
+        .surface = {
+            .tex = tex
+        },
+        
+        
+        .frustum = x3d_get_view_frustum(cam)
+    };
+    
+    x3d_polygon3d_render_texture_surface(&rpoly, &at, cam);
+#endif
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////

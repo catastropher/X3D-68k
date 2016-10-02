@@ -22,14 +22,12 @@ typedef struct X3D_SlopeVar {
     fp16x16 x;
     fp16x16 z;
     fp16x16 u, v;
-    fp16x16 lu, lv;
 } X3D_SlopeVar;
 
 typedef struct X3D_ScanlineValue {
     int16 x;
     fp16x16 z;
     fp16x16 u, v;
-    fp16x16 lu, lv;
 } X3D_ScanlineValue;
 
 typedef struct X3D_Scanline {
@@ -41,7 +39,6 @@ typedef struct X3D_RasterEdgeValue {
     fp16x16 x;
     fp16x16 z;
     fp16x16 u, v;
-    fp16x16 lu, lv;
 } X3D_RasterEdgeValue;
 
 typedef struct X3D_RasterEdge {
@@ -54,8 +51,6 @@ static inline void x3d_rasteredge_advance(X3D_RasterEdge* edge) {
     edge->value.z += edge->slope.z;
     edge->value.u += edge->slope.u;
     edge->value.v += edge->slope.v;
-    edge->value.lu += edge->slope.lu;
-    edge->value.lv += edge->slope.lv;
 }
 
 #include "render/X3D_util.h"
@@ -76,15 +71,10 @@ static inline void x3d_rasteredge_initialize(X3D_RasterEdge* edge, X3D_PolygonRa
     edge->slope.u = init_slope_var(bottom->uu - top->uu, dy);
     edge->slope.v = init_slope_var(bottom->vv - top->vv, dy);
     
-    edge->slope.lu = init_slope_var(bottom->lu - top->lu, dy);
-    edge->slope.lv = init_slope_var(bottom->lv - top->lv, dy);
-    
     edge->value.x = ((int32)top->v.x << 16) + 0x8000;
     edge->value.z = (int32)top->zz << 16;
     edge->value.u = ((int32)top->uu << 16);// + 0x8000;
     edge->value.v = ((int32)top->vv << 16);
-    edge->value.lu = ((int32)top->lu << 16) + 0x8000;
-    edge->value.lv = ((int32)top->lv << 16) + 0x8000;
 }
 
 static inline void x3d_rasteredge_initialize_from_scanline(X3D_RasterEdge* edge, X3D_Scanline* scan) {
@@ -94,15 +84,10 @@ static inline void x3d_rasteredge_initialize_from_scanline(X3D_RasterEdge* edge,
     
     edge->slope.u = (scan->right.u - scan->left.u) / dx;
     edge->slope.v = (scan->right.v - scan->left.v) / dx;
-    
-    edge->slope.lu = (scan->right.lu - scan->left.lu) / dx;
-    edge->slope.lv = (scan->right.lv - scan->left.lv) / dx;
-    
+        
     edge->value.z = scan->left.z;
     edge->value.u = scan->left.u;
     edge->value.v = scan->left.v;
-    edge->value.lu = scan->left.lu;
-    edge->value.lv = scan->left.lv;
 }
 
 static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdgeValue* val) {
@@ -113,8 +98,6 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
         scan->left.z = val->z;
         scan->left.u = val->u;
         scan->left.v = val->v;
-        scan->left.lu = val->lu;
-        scan->left.lv = val->lv;
     }
     
     if(xx > scan->right.x) {
@@ -122,28 +105,10 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
         scan->right.z = val->z;
         scan->right.u = val->u;
         scan->right.v = val->v;
-        scan->right.lu = val->lu;
-        scan->right.lv = val->lv;
     }    
 }
 
-void test(uint8*);
-
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, const X3D_PolygonRasterAtt* att) {
-    //float t = (uint32)x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 255.0 + .2;
-    
-    //test(((uint8 *)att->screen));
-    
-#if 0
-    uint8 r, g, b;
-    x3d_color_to_rgb(x3d_texture_get_texel(att->light_map.tex, val->u, val->v), &r, &g, &b);
-    
-    r = (r * t + .5);
-    g = (g * t + .5);
-    b = (b * t + .5);
-#endif
-    
-    //X3D_ScreenManager* screenman = x3d_screenmanager_get();
 #ifdef __nspire__
     int16* zbuf = att->zbuf + (int32)y * 320 + x;
 #else
@@ -153,7 +118,7 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
     int16 zz = val->z >> 16;
     
     if(zz < *zbuf) {
-        X3D_Texture* tex = att->light_map.tex;
+        X3D_Texture* tex = att->surface.tex;
         
         int32 u = (val->u >> 16) % tex->w;
         int32 v = (val->v >> 16) % tex->h;
@@ -164,11 +129,14 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
 
         
 #ifdef __nspire__
-            ((uint8 *)att->screen)[y * 320 + x] = x3d_colormap_get_index(tex->texel.large[index],
-                x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2);
+            //((uint8 *)att->screen)[y * 320 + x] = x3d_colormap_get_index(tex->texel.large[index],
+            //    x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2);
 #else
-            x3d_screen_draw_pix(x, y, x3d_colorindex_to_color(x3d_colormap_get_index(tex->texel.large[index],
-                x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2)));
+            x3d_screen_draw_pix(x, y, x3d_texture_get_texel(att->surface.tex, u, v));
+        
+        
+            //x3d_screen_draw_pix(x, y, x3d_colorindex_to_color(x3d_colormap_get_index(tex->texel.large[index],
+            //    x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2)));
 #endif
             *zbuf = zz;
         //}
@@ -177,8 +145,8 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
 
 
 
-#define RASTERIZE_NAME2D x3d_polygon2d_render_texture_lightmap
-#define RASTERIZE_NAME3D x3d_polygon3d_render_texture_lightmap
+#define RASTERIZE_NAME2D x3d_polygon2d_render_texture_surface
+#define RASTERIZE_NAME3D x3d_polygon3d_render_texture_surface
 
 
 #include "render_polygon_generic.c"

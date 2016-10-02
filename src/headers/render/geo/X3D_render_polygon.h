@@ -68,6 +68,10 @@ typedef struct X3D_PolygonRasterAtt {
         struct {
             int16 z;
         } zfill;
+        
+        struct {
+            X3D_Texture* tex;
+        } surface;
     };
     
     int16* zbuf;
@@ -94,24 +98,15 @@ static inline void x3d_polygonrastervertex3d_copy_attributes(X3D_PolygonRasterVe
 
 struct X3D_CameraObject;
 
-void x3d_polygon2d_render_flat(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
-void x3d_polygon3d_render_flat(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
-
-void x3d_polygon2d_render_gouraud(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
-void x3d_polygon3d_render_gouraud(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
-
-void x3d_polygon2d_render_texture(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
-void x3d_polygon3d_render_texture(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
-
 void x3d_polygon2d_render_id_buffer(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
 void x3d_polygon3d_render_id_buffer(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
-
-void x3d_polygon2d_render_lightmap(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
-void x3d_polygon3d_render_lightmap(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
 
 void x3d_polygon2d_render_texture_lightmap(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
 void x3d_polygon3d_render_texture_lightmap(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
 
 void x3d_polygon2d_render_zfill(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
 void x3d_polygon3d_render_zfill(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
+
+void x3d_polygon2d_render_texture_surface(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
+void x3d_polygon3d_render_texture_surface(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
 

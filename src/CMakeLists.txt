@@ -133,6 +133,7 @@ add_sources(
   C/render/geo/render_polygon_id_buffer.c
   C/render/geo/render_polygon_texture_lightmap.c
   C/render/geo/render_polygon_zfill.c
+  C/render/geo/render_polygon_surface.c
   C/render/geo/clip_polygon.c
   C/render/palette.c
 
