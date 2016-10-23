@@ -31,11 +31,28 @@ typedef struct X3D_Frustum {
   X3D_Plane* p;
 } X3D_Frustum;
 
+typedef enum {
+    X3D_PLANE_XY,
+    X3D_PLANE_XZ,
+    X3D_PLANE_YZ
+} X3D_PlaneType;
+
+typedef struct X3D_PlanarProjection {
+    X3D_PlaneType plane_type;
+    int16 min_x, min_y;
+    int16 max_x, max_y;
+    X3D_Plane poly_plane;
+} X3D_PlanarProjection;
+
+struct X3D_Polygon3D;
+
 void x3d_plane_construct_from_three_points(X3D_Plane* p, X3D_Point3D* p1, X3D_Point3D* p2, X3D_Point3D* p3);
 void x3d_plane_print(X3D_Plane* p);
 _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Point3D* p);
 
-struct X3D_Polygon3D;
+void x3d_planarprojection_build_from_polygon3d(X3D_PlanarProjection* proj, struct X3D_Polygon3D* poly);
+void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v, X3D_Vex2D* dest);
+void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D* src, X3D_Vex3D* dest);
 
 void x3d_frustum_construct_from_polygon3d(X3D_Frustum* frustum, struct X3D_Polygon3D* poly, X3D_Vex3D* p);
 _Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Point3D* p);

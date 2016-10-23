@@ -43,12 +43,19 @@
 #define X3D_UNITS_PER_FOOT 32
 #define X3D_TEXELS_PER_FOOT 8
 
+#define X3D_TEXEL_SCALE ((X3D_TEXELS_PER_FOOT * 256) / X3D_UNITS_PER_FOOT)
+
 #include "X3D_int.h"
 #include "X3D_interface.h"
 #include "X3D_log.h"
 #include "X3D_fix.h"
 #include "X3D_vector.h"
 #include "geo/X3D_point.h"
+
+typedef struct X3D_Pair {
+  int16 val[2];
+} X3D_Pair;
+
 
 static inline int16 x3d_int16_add_wrap(int16 val, int16 add, int16 max) {
   return val + add < max ? val + add : val + add - max;
@@ -58,7 +65,11 @@ static inline int16 x3d_int16_sub_wrap(int16 val, int16 sub, int16 max) {
   return val - sub >= 0 ? val - sub : val - sub + max;
 }
 
-typedef struct X3D_Pair {
-  int16 val[2];
-} X3D_Pair;
+static inline int16 x3d_units_to_texels(int16 units) {    
+    return (units * X3D_TEXEL_SCALE) / 256;
+}
+
+static inline int16 x3d_texels_to_units(int16 texels) {
+    return (texels * 256) / X3D_TEXEL_SCALE;
+}
 

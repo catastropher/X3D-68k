@@ -79,6 +79,8 @@ void x3d_polygon3d_render(X3D_Polygon3D* poly, X3D_PolygonAttributes* att, struc
 _Bool x3d_polygon3d_clip_to_near_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, int16 near_z, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va);
 _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_Plane* plane, uint16* ua, uint16* va, uint16* new_ua, uint16* new_va, uint16* clip);
 
+X3D_PlaneType x3d_polygon3d_calculate_planetype(X3D_Polygon3D* poly, X3D_Plane* plane_dest, int16** plane_u_component, int16** plane_v_component);
+
 // 2D polygon functions
 void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle256 ang);
 void x3d_polygon2d_add_point(X3D_Polygon2D* poly, int16 x, int16 y);

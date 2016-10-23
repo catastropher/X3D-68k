@@ -456,7 +456,27 @@ X3D_Polygon3D* x3d_polygon3d_temp(void) {
     return &p;
 }
 
-
+X3D_PlaneType x3d_polygon3d_calculate_planetype(X3D_Polygon3D* poly, X3D_Plane* plane_dest, int16** plane_u_component, int16** plane_v_component) {
+    x3d_polygon3d_calculate_plane(poly, plane_dest);
+    
+    X3D_Vex3D n = x3d_vex3d_abs(&plane_dest->normal);
+    
+    if(n.x > n.y && n.x > n.z) {
+        *plane_u_component = &poly->v[0].y;
+        *plane_v_component = &poly->v[0].z;
+        return X3D_PLANE_YZ;
+    }
+    
+    if(n.y > n.x && n.y > n.z) {
+        *plane_u_component = &poly->v[0].x;
+        *plane_v_component = &poly->v[0].z;
+        return X3D_PLANE_XZ;
+    }
+    
+    *plane_u_component = &poly->v[0].x;
+    *plane_v_component = &poly->v[0].y;
+    return X3D_PLANE_XY;
+}
 
 
 

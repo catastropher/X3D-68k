@@ -155,4 +155,7 @@ static inline X3D_Vex3D x3d_vex3d_fp16x8_to_vex3d(X3D_Vex3D_fp16x8* v) {
   return x3d_vex3d_make(v->x >> 8, v->y >> 8, v->z >> 8);
 }
 
+static inline X3D_Vex3D x3d_vex3d_abs(X3D_Vex3D* v) {
+    return x3d_vex3d_make(abs(v->x), abs(v->y), abs(v->z));
+}
 

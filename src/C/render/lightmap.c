@@ -23,129 +23,6 @@
 
 #include <math.h>
 
-#define X3D_TEXEL_SCALE ((X3D_TEXELS_PER_FOOT * 256) / X3D_UNITS_PER_FOOT)
-
-static inline int16 x3d_units_to_texels(int16 units) {    
-    return (units * X3D_TEXEL_SCALE) / 256;
-}
-
-static inline int16 x3d_texels_to_units(int16 texels) {
-    return (texels * 256) / X3D_TEXEL_SCALE;
-}
-
-static inline void* advance_ptr(void* ptr, size_t dist) {
-    return ptr + dist;
-}
-
-// Builds a planar projection of a polygon (disregards the least significant axis) and
-// normalizes the result
-void x3d_polygon3d_build_planar_projection(X3D_Polygon3D* poly, X3D_PlanarProjection* proj) {
-    X3D_Plane plane;
-    x3d_polygon3d_calculate_plane(poly, &plane);
-    
-    int16 px = abs(plane.normal.x);
-    int16 py = abs(plane.normal.y);
-    int16 pz = abs(plane.normal.z);
-    
-    int16* u_component;
-    int16* v_component;
-    
-    if(px > py && px > pz) {
-        proj->plane_type = X3D_PLANE_YZ;
-        u_component = &poly->v[0].y;
-        v_component = &poly->v[0].z;
-    }
-    else if(py > px && py > pz) {
-        proj->plane_type = X3D_PLANE_XZ;
-        u_component = &poly->v[0].x;
-        v_component = &poly->v[0].z;
-    }
-    else {
-        proj->plane_type = X3D_PLANE_XY;
-        u_component = &poly->v[0].x;
-        v_component = &poly->v[0].y;
-    }
-    
-    int16 min_x = 0x7FFF;
-    int16 max_x = -0x7FFF;
-    
-    int16 min_y = 0x7FFF;
-    int16 max_y = -0x7FFF;
-    
-    uint16 i;
-    for(i = 0; i < poly->total_v; ++i) {
-        proj->poly.v[i].x = *u_component;
-        proj->poly.v[i].y = *v_component;
-        
-        min_x = X3D_MIN(min_x, proj->poly.v[i].x);
-        min_y = X3D_MIN(min_y, proj->poly.v[i].y);
-        
-        max_x = X3D_MAX(max_x, proj->poly.v[i].x);
-        max_y = X3D_MAX(max_y, proj->poly.v[i].y);
-        
-        u_component = advance_ptr(u_component, sizeof(X3D_Vex3D));
-        v_component = advance_ptr(v_component, sizeof(X3D_Vex3D));
-    }
-    
-    proj->poly.total_v = poly->total_v;
-    
-    for(i = 0; i < poly->total_v; ++i) {
-        proj->poly.v[i].x -= min_x;
-        proj->poly.v[i].y -= min_y;
-    }
-    
-    proj->min_x = min_x;
-    proj->min_y = min_y;
-    
-    proj->max_x = max_x;
-    proj->max_y = max_y;
-    proj->poly_plane = plane;
-}
-
-void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v, X3D_Vex2D* dest) {
-    if(proj->plane_type == X3D_PLANE_YZ) {
-        dest->x = v->y;
-        dest->y = v->z;
-    }
-    else if(proj->plane_type == X3D_PLANE_XZ) {
-        dest->x = v->x;
-        dest->y = v->z;
-    }
-    else {
-        dest->x = v->x;
-        dest->y = v->y;
-    }
-    
-    dest->x = x3d_units_to_texels(dest->x - proj->min_x);
-    dest->y = x3d_units_to_texels(dest->y - proj->min_y);
-}
-
-void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D* src, X3D_Vex3D* dest) {
-    X3D_Vex2D v = { x3d_texels_to_units(src->x) + proj->min_x, x3d_texels_to_units(src->y) + proj->min_y };
-    
-    X3D_Vex3D_float n = {
-        proj->poly_plane.normal.x / 32767.0,
-        proj->poly_plane.normal.y / 32767.0,
-        proj->poly_plane.normal.z / 32767.0
-    };
-    
-    if(proj->plane_type == X3D_PLANE_YZ) {
-        dest->x = -(n.y * v.x + n.z * v.y - proj->poly_plane.d) / n.x;
-        dest->y = v.x;
-        dest->z = v.y;
-    }
-    else if(proj->plane_type == X3D_PLANE_XZ) {
-        dest->x = v.x;
-        dest->y = - ( n.x * v.x + n.z * n.y - proj->poly_plane.d) / n.y;
-        dest->z = v.y;
-    }
-    else {
-        dest->x = v.x;
-        dest->y = v.y;
-        dest->z = - ( n.x * v.x + n.y * v.y - proj->poly_plane.d) / n.z;
-    }    
-}
-
 void x3d_convert_view_coord_to_world_coord(X3D_Vex3D* view, X3D_CameraObject* cam, X3D_Vex3D* dest) {
     X3D_Mat3x3 mat = cam->base.mat;
     x3d_mat3x3_transpose(&mat);
@@ -196,9 +73,7 @@ extern X3D_Level* global_level;
 
 void x3d_lightmap_init(X3D_LightMapContext* context, uint32 id, X3D_Polygon3D* poly) {
     X3D_PlanarProjection* proj = context->proj + id;
-    
-    proj->poly.v = alloca(1000);
-    x3d_polygon3d_build_planar_projection(poly, proj);
+    x3d_planarprojection_build_from_polygon3d(proj, poly);
     
     X3D_LightMap* map = context->maps + id;
     
@@ -368,13 +243,12 @@ void x3d_texture_apply_lightmap(X3D_Texture* tex, X3D_LightMap* map) {
 
 void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3D_Polygon3D* poly, X3D_Texture* dest) {
     X3D_PlanarProjection proj;
-    proj.poly.v = alloca(1000);
-    x3d_polygon3d_build_planar_projection(poly, &proj);
+    x3d_planarprojection_build_from_polygon3d(&proj, poly);
     
-    X3D_RasterPolygon2D rpoly = { .v = alloca(1000), .total_v = proj.poly.total_v };
+    X3D_RasterPolygon2D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
     
     uint16 i;
-    for(i = 0; i < proj.poly.total_v; ++i) {
+    for(i = 0; i < poly->total_v; ++i) {
         X3D_Vex2D v;
         x3d_planarprojection_project_point(&proj, poly->v + i, &v);
         rpoly.v[i].v.x = v.x;

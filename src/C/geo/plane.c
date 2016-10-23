@@ -139,3 +139,90 @@ _Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Point3D* p) {
   return X3D_TRUE;
 }
 
+static inline void* advance_ptr(void* ptr, size_t dist) {
+    return ptr + dist;
+}
+
+// Builds a planar projection of a polygon (disregards the least significant axis) and
+// normalizes the result
+void x3d_planarprojection_build_from_polygon3d(X3D_PlanarProjection* proj, X3D_Polygon3D* poly) {
+    X3D_Plane plane;
+    
+    int16* u_component;
+    int16* v_component;
+    
+    proj->plane_type = x3d_polygon3d_calculate_planetype(poly, &plane, &u_component, &v_component);
+    
+    int16 min_x = 0x7FFF;
+    int16 max_x = -0x7FFF;
+    
+    int16 min_y = 0x7FFF;
+    int16 max_y = -0x7FFF;
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i) {
+        int16 u = *u_component;
+        int16 v = *v_component;
+        
+        min_x = X3D_MIN(min_x, u);
+        min_y = X3D_MIN(min_y, v);
+        
+        max_x = X3D_MAX(max_x, u);
+        max_y = X3D_MAX(max_y, v);
+        
+        u_component = advance_ptr(u_component, sizeof(X3D_Vex3D));
+        v_component = advance_ptr(v_component, sizeof(X3D_Vex3D));
+    }
+    
+    proj->min_x = min_x;
+    proj->min_y = min_y;
+    
+    proj->max_x = max_x;
+    proj->max_y = max_y;
+    proj->poly_plane = plane;
+}
+
+void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v, X3D_Vex2D* dest) {
+    if(proj->plane_type == X3D_PLANE_YZ) {
+        dest->x = v->y;
+        dest->y = v->z;
+    }
+    else if(proj->plane_type == X3D_PLANE_XZ) {
+        dest->x = v->x;
+        dest->y = v->z;
+    }
+    else {
+        dest->x = v->x;
+        dest->y = v->y;
+    }
+    
+    dest->x = x3d_units_to_texels(dest->x - proj->min_x);
+    dest->y = x3d_units_to_texels(dest->y - proj->min_y);
+}
+
+void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D* src, X3D_Vex3D* dest) {
+    X3D_Vex2D v = { x3d_texels_to_units(src->x) + proj->min_x, x3d_texels_to_units(src->y) + proj->min_y };
+    
+    X3D_Vex3D_float n = {
+        proj->poly_plane.normal.x / 32767.0,
+        proj->poly_plane.normal.y / 32767.0,
+        proj->poly_plane.normal.z / 32767.0
+    };
+    
+    if(proj->plane_type == X3D_PLANE_YZ) {
+        dest->x = -(n.y * v.x + n.z * v.y - proj->poly_plane.d) / n.x;
+        dest->y = v.x;
+        dest->z = v.y;
+    }
+    else if(proj->plane_type == X3D_PLANE_XZ) {
+        dest->x = v.x;
+        dest->y = - ( n.x * v.x + n.z * n.y - proj->poly_plane.d) / n.y;
+        dest->z = v.y;
+    }
+    else {
+        dest->x = v.x;
+        dest->y = v.y;
+        dest->z = - ( n.x * v.x + n.y * v.y - proj->poly_plane.d) / n.z;
+    }    
+}
+
