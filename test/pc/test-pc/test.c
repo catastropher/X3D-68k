@@ -180,7 +180,8 @@ void init() {
 int main(int argc, char* argv[]) {
     init();
     
-    x3d_texture_from_array(&checkerboard, wood_tex_data);
+    //x3d_texture_from_array(&checkerboard, wood_tex_data);
+    x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
     x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
     
     build_test_model();

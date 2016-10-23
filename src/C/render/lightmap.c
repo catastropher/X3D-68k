@@ -23,6 +23,16 @@
 
 #include <math.h>
 
+#define X3D_TEXEL_SCALE ((X3D_TEXELS_PER_FOOT * 256) / X3D_UNITS_PER_FOOT)
+
+static inline int16 x3d_units_to_texels(int16 units) {    
+    return (units * X3D_TEXEL_SCALE) / 256;
+}
+
+static inline int16 x3d_texels_to_units(int16 texels) {
+    return (texels * 256) / X3D_TEXEL_SCALE;
+}
+
 static inline void* advance_ptr(void* ptr, size_t dist) {
     return ptr + dist;
 }
@@ -106,12 +116,12 @@ void x3d_planarprojection_project_point(X3D_PlanarProjection* proj, X3D_Vex3D* v
         dest->y = v->y;
     }
     
-    dest->x = (dest->x - proj->min_x) / X3D_LIGHTMAP_SCALE;
-    dest->y = (dest->y - proj->min_y) / X3D_LIGHTMAP_SCALE;
+    dest->x = x3d_units_to_texels(dest->x - proj->min_x);
+    dest->y = x3d_units_to_texels(dest->y - proj->min_y);
 }
 
 void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D* src, X3D_Vex3D* dest) {
-    X3D_Vex2D v = { src->x * X3D_LIGHTMAP_SCALE + proj->min_x, src->y * X3D_LIGHTMAP_SCALE + proj->min_y };
+    X3D_Vex2D v = { x3d_texels_to_units(src->x) + proj->min_x, x3d_texels_to_units(src->y) + proj->min_y };
     
     X3D_Vex3D_float n = {
         proj->poly_plane.normal.x / 32767.0,
@@ -192,8 +202,8 @@ void x3d_lightmap_init(X3D_LightMapContext* context, uint32 id, X3D_Polygon3D* p
     
     X3D_LightMap* map = context->maps + id;
     
-    map->w = (proj->max_x - proj->min_x) / X3D_LIGHTMAP_SCALE + 1;
-    map->h = (proj->max_y - proj->min_y) / X3D_LIGHTMAP_SCALE + 1;
+    map->w = x3d_units_to_texels(proj->max_x - proj->min_x) + 1;
+    map->h = x3d_units_to_texels(proj->max_y - proj->min_y) + 1;
     
     map->data = calloc(sizeof(uint8) * map->w * map->h, 1);
 }
@@ -210,8 +220,9 @@ void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
     
     
     uint32 i, j;
-    for(i = 0; i < context->total_maps; ++i)
+    for(i = 0; i < context->total_maps; ++i) {
         context->maps[i].data = NULL;
+    }
     
     
     for(i = 0; i < level->segs.total; ++i) {
@@ -226,6 +237,10 @@ void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
     }
     
     context->surfaces = malloc(sizeof(X3D_Texture) * context->total_maps);
+    
+    for(i = 0; i < context->total_maps; ++i) {
+        context->surfaces[i].texel.large = NULL;
+    }
 }
 
 
@@ -266,14 +281,18 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
     
     x3d_render_from_perspective_of_spotlight(light, &light_cam);
     
-    x3d_screen_flip();
-    x3d_screen_flip();
+    //x3d_screen_flip();
+    //x3d_screen_flip();
     
     for(i = 0; i < screenman->h; ++i) {
         for(j = 0; j < screenman->w; ++j) {
             uint32 index = (uint32)x3d_screen_get_internal_value(j, i);
             
-            if(index < context->total_maps) {
+            if(index < context->total_maps) {                
+                if(!render_surface[index]) {
+                   x3d_log(X3D_INFO, "Should render %d", index); 
+                }
+                
                 render_surface[index] = X3D_TRUE;
             }
         }
@@ -340,28 +359,30 @@ void x3d_lightmap_blit(X3D_LightMap* map) {
     }
 }
 
+void x3d_texture_apply_lightmap(X3D_Texture* tex, X3D_LightMap* map) {
+    int32 i;
+    for(i = 0; i < (int32)tex->w * tex->h; ++i) {
+        tex->texel.large[i] = x3d_colormap_get_index(tex->texel.large[i], map->data[i] / 16);
+    }
+}
+
 void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3D_Polygon3D* poly, X3D_Texture* dest) {
     X3D_PlanarProjection proj;
     proj.poly.v = alloca(1000);
     x3d_polygon3d_build_planar_projection(poly, &proj);
     
-    *dest = *tex;
-    return;
-    
-    fp8x8 scale = (X3D_TEXELS_PER_FOOT << 8) / X3D_UNITS_PER_FOOT;
-    
     X3D_RasterPolygon2D rpoly = { .v = alloca(1000), .total_v = proj.poly.total_v };
     
     uint16 i;
     for(i = 0; i < proj.poly.total_v; ++i) {
-        rpoly.v[i].v.x = ((int32)proj.poly.v[i].x * scale) >> 8;
-        rpoly.v[i].v.y = ((int32)proj.poly.v[i].y * scale) >> 8;
-        
         X3D_Vex2D v;
         x3d_planarprojection_project_point(&proj, poly->v + i, &v);
+        rpoly.v[i].v.x = v.x;
+        rpoly.v[i].v.y = v.y;
         
-        rpoly.v[i].lu = v.x;
-        rpoly.v[i].lv = v.y;
+        rpoly.v[i].uu = v.x;
+        rpoly.v[i].vv = v.y;
+        rpoly.v[i].zz = 100;
     }
     
     X3D_PolygonRasterAtt att = {
@@ -369,8 +390,19 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3
             .tex = tex
         }
     };
+
     
-    //x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
+    int16 w = map->w;
+    int16 h = map->h;
+    
+    int16* zbuf = x3d_zbuf_alloc(w, h);
+    x3d_zbuf_clear(zbuf, w, h);
+    
+    x3d_texture_init(dest, w, h);
+    x3d_polygonrasteratt_set_screen_to_texture(&att, dest, zbuf);
+    x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
+    
+    x3d_texture_apply_lightmap(dest, map);
 }
 
 void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Texture* level_tex) {
@@ -381,7 +413,10 @@ void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Textur
     
     for(i = 0; i < context->total_maps; ++i) {
         if(context->maps[i].data != NULL) {
-        
+            if(context->surfaces[i].texel.large != NULL)
+                free(context->surfaces[i].texel.large);
+            
+            
             uint16 segid = x3d_segfaceid_seg(i);
             uint16 face = x3d_segfaceid_face(i);
             

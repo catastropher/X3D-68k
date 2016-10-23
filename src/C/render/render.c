@@ -108,6 +108,10 @@ void x3d_render_id_buffer_polygon(X3D_Polygon3D* poly, uint32 id, X3D_CameraObje
         .frustum = x3d_get_view_frustum(cam)
     };
     
+    X3D_ScreenManager* screenman = x3d_screenmanager_get();
+    X3D_RenderManager* renderman = x3d_rendermanager_get();
+    
+    x3d_polygonrasteratt_set_screen(&at, screenman->buf, renderman->zbuf, screenman->w, screenman->h);
     x3d_polygon3d_render_id_buffer(&rpoly, &at, cam);
 }
 
@@ -126,10 +130,11 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
         X3D_Vex2D v;
         x3d_planarprojection_project_point(&lightmap_context.proj[id], poly->v + i, &v);
         
-        rpoly.v[i].lu = v.x;
-        rpoly.v[i].lv = v.y;
+        rpoly.v[i].uu = v.x;
+        rpoly.v[i].vv = v.y;
     }
     
+    /*
     if(rpoly.total_v == 4) {
         rpoly.v[0].uu = 0;
         rpoly.v[0].vv = 0;
@@ -152,7 +157,7 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
             rpoly.v[i].vv = p.v[i].y + 256;
         }
     }
-    
+    */
     
 #if 0
     X3D_PolygonRasterAtt at = {

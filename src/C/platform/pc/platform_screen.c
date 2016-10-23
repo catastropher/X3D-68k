@@ -60,7 +60,7 @@ void x3d_screen_zbuf_clear(void) {
 }
 
 void x3d_zbuf_clear(int16* zbuf, int16 w, int16 h) {
-    memset(x3d_rendermanager_get()->zbuf, 0x7F, (int32)w * h * 2);
+    memset(zbuf, 0x7F, (int32)w * h * sizeof(int16));
 }
 
 void x3d_platform_screen_build_color_palette(uint8 color_data[256][3]) {

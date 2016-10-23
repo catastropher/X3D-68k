@@ -20,7 +20,6 @@
 #include "X3D_polygon.h"
 #include "X3D_texture.h"
 
-#define X3D_LIGHTMAP_SCALE 8
 
 enum {
     X3D_PLANE_XY,

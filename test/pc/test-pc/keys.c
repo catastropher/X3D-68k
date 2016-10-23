@@ -79,6 +79,8 @@ extern X3D_LightMapContext lightmap_context;
 
 _Bool menu_allow_normal_keys(void);
 
+extern X3D_Texture checkerboard;
+
 void engine_test_handle_keys(void) {
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
   static _Bool rec = X3D_FALSE;
@@ -302,6 +304,8 @@ void engine_test_handle_keys(void) {
         light.orientation.x = cam->base.angle.x;
         
         x3d_lightmap_build(&light, &lightmap_context);
+        
+        x3d_lightmapcontext_build_surfaces(&lightmap_context, &checkerboard);
         
         while(x3d_key_down(KEY_ENTER)) x3d_read_keys();
   }
