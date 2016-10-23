@@ -56,9 +56,11 @@ X3D_Texture aperture_tex;
 X3D_Texture* global_texture = &brick_tex;
 
 void x3d_screen_zbuf_clear(void) {
-  uint32 i;
-  
-  memset(x3d_rendermanager_get()->zbuf, 0x7F, screen_w * screen_h * 2);
+    memset(x3d_rendermanager_get()->zbuf, 0x7F, screen_w * screen_h * 2);
+}
+
+void x3d_zbuf_clear(int16* zbuf, int16 w, int16 h) {
+    memset(x3d_rendermanager_get()->zbuf, 0x7F, (int32)w * h * 2);
 }
 
 void x3d_platform_screen_build_color_palette(uint8 color_data[256][3]) {

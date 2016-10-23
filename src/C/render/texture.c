@@ -221,4 +221,14 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
 #endif
 }
 
+void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h) {
+    tex->w = w;
+    tex->h = h;
+    tex->texel.large = malloc(sizeof(X3D_ColorIndex) * w * h);
+}
+
+void x3d_texture_cleanup(X3D_Texture* tex) {
+    free(tex->texel.large);
+}
+
 

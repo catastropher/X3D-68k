@@ -224,6 +224,8 @@ void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
             x3d_lightmap_init(context, id, &poly);
         }
     }
+    
+    context->surfaces = malloc(sizeof(X3D_Texture) * context->total_maps);
 }
 
 
@@ -341,7 +343,10 @@ void x3d_lightmap_blit(X3D_LightMap* map) {
 void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3D_Polygon3D* poly, X3D_Texture* dest) {
     X3D_PlanarProjection proj;
     proj.poly.v = alloca(1000);
-    x3d_polygon3d_build_planar_projection(&poly, &proj);
+    x3d_polygon3d_build_planar_projection(poly, &proj);
+    
+    *dest = *tex;
+    return;
     
     fp8x8 scale = (X3D_TEXELS_PER_FOOT << 8) / X3D_UNITS_PER_FOOT;
     
@@ -365,7 +370,28 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3
         }
     };
     
-    x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
+    //x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
+}
+
+void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Texture* level_tex) {
+    uint16 i;
+    X3D_Prism3D prism = { .v = alloca(1000) };
+    X3D_Polygon3D poly = { .v = alloca(1000) };
+    
+    
+    for(i = 0; i < context->total_maps; ++i) {
+        if(context->maps[i].data != NULL) {
+        
+            uint16 segid = x3d_segfaceid_seg(i);
+            uint16 face = x3d_segfaceid_face(i);
+            
+            X3D_LevelSegment* seg = x3d_level_get_segmentptr(context->level, segid);
+            x3d_levelsegment_get_geometry(context->level, seg, &prism);
+            x3d_prism3d_get_face(&prism, face, &poly);
+            
+            x3d_build_combined_lightmap_texture(level_tex, context->maps + i, &poly, context->surfaces + i);
+        }
+    }
 }
 
 void add_test_lights(X3D_LightMapContext* context) {

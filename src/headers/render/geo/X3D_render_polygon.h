@@ -92,6 +92,13 @@ static inline void x3d_polygonrasteratt_set_screen(X3D_PolygonRasterAtt* att, vo
     att->screen_h = h;
 }
 
+static inline void x3d_polygonrasteratt_set_screen_to_texture(X3D_PolygonRasterAtt* att, X3D_Texture* tex, int16* zbuf) {
+    att->screen = tex->texel.large;
+    att->screen_w = tex->w;
+    att->screen_h = tex->h;
+    att->zbuf = zbuf;
+}
+
 static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, int16 screen_w, int16 screen_h) {
     v->v.x = X3D_MAX(0, v->v.x);
     v->v.x = X3D_MIN(screen_w - 1, v->v.x);

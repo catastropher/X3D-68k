@@ -150,6 +150,8 @@ void build_test_level(void) {
         }
     }
     
+    
+    x3d_lightmapcontext_build_surfaces(&lightmap_context, &checkerboard);
     //x3d_build_combined_lightmap_texture();
 }
 

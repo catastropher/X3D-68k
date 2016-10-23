@@ -147,3 +147,9 @@ uint32 x3d_screen_get_internal_value(int16 x, int16 y);
 void x3d_platform_screen_build_color_palette(uint8 color_data[256][3]);
 X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index);
 
+void x3d_zbuf_clear(int16* zbuf, int16 w, int16 h);
+
+static inline int16* x3d_zbuf_alloc(int16 w, int16 h) {
+    return malloc(sizeof(int16) * w * h);
+}
+

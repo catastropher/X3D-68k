@@ -168,7 +168,7 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
 #else
     X3D_PolygonRasterAtt at = {
         .surface = {
-            .tex = tex
+            .tex = x3d_lightmapcontext_get_surface_for_level_face(&lightmap_context, id)
         },
         
         
