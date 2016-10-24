@@ -20,11 +20,6 @@
 #include "X3D_polygon.h"
 #include "X3D_texture.h"
 
-typedef struct X3D_LightMap {
-    int16 w, h;
-    uint8* data;
-} X3D_LightMap;
-
 typedef struct X3D_SpotLight {
     X3D_Vex3D pos;
     X3D_Mat3x3 mat;
@@ -37,7 +32,7 @@ typedef struct X3D_LightMapContext {
     X3D_SpotLight* lights;
     uint16 total_light;
     
-    X3D_LightMap* maps;
+    X3D_Texture* maps;
     uint16 total_maps;
     
     X3D_Level* level;
@@ -46,9 +41,8 @@ typedef struct X3D_LightMapContext {
     X3D_Texture* surfaces;
 } X3D_LightMapContext;
 
-uint8 x3d_lightmap_get_value(X3D_LightMap* map, uint16 x, uint16 y);
 void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level);
-void x3d_lightmap_bilinear_filter(X3D_LightMap* map);
+void x3d_lightmap_bilinear_filter(X3D_Texture* map);
 void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context);
 void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Texture* level_tex);
 

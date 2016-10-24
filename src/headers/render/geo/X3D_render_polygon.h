@@ -61,7 +61,7 @@ typedef struct X3D_PolygonRasterAtt {
         } id_buffer;
         
         struct {
-            X3D_LightMap* map;
+            X3D_Texture* map;
             X3D_Texture* tex;
         } light_map;
         

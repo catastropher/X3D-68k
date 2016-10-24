@@ -163,4 +163,6 @@ void x3d_texture_cleanup(X3D_Texture* tex) {
     free(tex->texels);
 }
 
-
+void x3d_texture_fill(X3D_Texture* tex, X3D_ColorIndex color) {
+    memset(tex->texels, color, (uint32)tex->w * tex->h);
+}

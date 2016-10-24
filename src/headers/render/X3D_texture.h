@@ -87,4 +87,5 @@ void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name);
 void x3d_texture_from_array(X3D_Texture* dest, uint8* data);
 void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags);
 void x3d_texture_cleanup(X3D_Texture* tex);
+void x3d_texture_fill(X3D_Texture* tex, X3D_ColorIndex color);
 
