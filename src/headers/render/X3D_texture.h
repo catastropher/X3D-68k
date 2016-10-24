@@ -48,7 +48,10 @@ typedef struct X3D_Texture {
 /// @return The index in the texel array of the desired texel.
 ///////////////////////////////////////////////////////////////////////////////
 static inline uint32 x3d_texture_index(const X3D_Texture* tex, uint16 u, uint16 v) {
-  return (uint32)(v & tex->mask) * tex->w + (u & tex->mask);
+    if(tex->flags & X3D_TEXTURE_REPEAT)
+        return (uint32)(v & tex->mask) * tex->w + (u & tex->mask);
+    else
+        return (uint32)v * tex->w + u;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -60,16 +63,8 @@ static inline uint32 x3d_texture_index(const X3D_Texture* tex, uint16 u, uint16 
 ///
 /// @return The color of the desired texel.
 ///////////////////////////////////////////////////////////////////////////////
-static inline X3D_Color x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, uint16 v) {  
-  if(tex->flags & X3D_TEXTURE_REPEAT)
-    return x3d_colorindex_to_color(tex->texels[x3d_texture_index(tex, u, v)]);
-  else
-    return x3d_colorindex_to_color(tex->texels[(uint32)v * tex->w + u]);
-}
-
-static inline X3D_Color x3d_texture_get_texel_128(const X3D_Texture* tex, uint16 u, uint16 v) {
-  //return tex->texel[(uint32)(v & tex->mask) * 128 + (u & tex->mask)];
-  return 31;
+static inline X3D_ColorIndex x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, uint16 v) {  
+    return tex->texels[x3d_texture_index(tex, u, v)];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,14 +77,14 @@ static inline X3D_Color x3d_texture_get_texel_128(const X3D_Texture* tex, uint16
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-static inline void x3d_texture_set_texel(X3D_Texture* tex, uint16 u, uint16 v, X3D_Color c) {
-  //tex->texel[x3d_texture_index(tex, u, v)] = c;
+static inline void x3d_texture_set_texel(X3D_Texture* tex, uint16 u, uint16 v, X3D_ColorIndex c) {
+  tex->texels[x3d_texture_index(tex, u, v)] = c;
 }
 
 _Bool x3d_texture_load_from_file(X3D_Texture* tex, const char* file);
 void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y);
 void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name);
 void x3d_texture_from_array(X3D_Texture* dest, uint8* data);
-void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h);
+void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags);
 void x3d_texture_cleanup(X3D_Texture* tex);
 

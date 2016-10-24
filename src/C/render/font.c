@@ -32,7 +32,7 @@ void x3d_font_draw_char(X3D_Font* font, unsigned char c, int16 x, int16 y) {
     for(d = 0; d <= font->glyph_width; ++d) {
       //x3d_log(X3D_INFO, "tex pos: %d, %d", d + font_x, i + font_y);
       
-      x3d_screen_draw_pix(d + x, i + y, x3d_texture_get_texel(&font->tex, d + font_x, i + font_y));
+      x3d_screen_draw_pix(d + x, i + y, x3d_colorindex_to_color(x3d_texture_get_texel(&font->tex, d + font_x, i + font_y)));
     }
   }
 }

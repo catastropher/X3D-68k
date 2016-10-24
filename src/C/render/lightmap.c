@@ -274,7 +274,7 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3
     
     x3d_log(X3D_INFO, "Surface size: %dx%d", w, h);
     
-    x3d_texture_init(dest, w, h);
+    x3d_texture_init(dest, w, h, 0);
     x3d_polygonrasteratt_set_screen_to_texture(&att, dest, zbuf);
     x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
     

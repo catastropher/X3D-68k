@@ -44,7 +44,7 @@ void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y) {
   
   for(i = 0; i < tex->h; ++i) {
     for(d = 0; d < tex->w; ++d) {
-      x3d_screen_draw_pix(d + x, i + y, x3d_texture_get_texel(tex, d, i));
+      x3d_screen_draw_pix(d + x, i + y, x3d_colorindex_to_color(x3d_texture_get_texel(tex, d, i)));
     }
   }
 }
@@ -57,7 +57,7 @@ void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name) {
   
   for(i = 0; i < texture->h; ++i) {
     for(d = 0; d < texture->w; ++d) {
-      X3D_Color c = x3d_texture_get_texel(texture, d, i);
+      X3D_Color c = x3d_colorindex_to_color(x3d_texture_get_texel(texture, d, i));
       uint8 r, g, b;
       x3d_color_to_rgb(c, &r, &g, &b);
       
@@ -147,10 +147,16 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
 #endif
 }
 
-void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h) {
+void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags) {
     tex->w = w;
     tex->h = h;
     tex->texels = malloc(sizeof(X3D_ColorIndex) * w * h);
+    tex->flags = flags;
+    
+    if(flags & X3D_TEXTURE_REPEAT) {
+        /// @todo Check that the texture dimensions are a power of 2, and that they're equal
+        tex->mask = tex->w - 1;
+    }
 }
 
 void x3d_texture_cleanup(X3D_Texture* tex) {
