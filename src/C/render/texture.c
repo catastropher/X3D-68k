@@ -161,8 +161,15 @@ void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags) {
 
 void x3d_texture_cleanup(X3D_Texture* tex) {
     free(tex->texels);
+    x3d_texture_init_empty(tex);
 }
 
 void x3d_texture_fill(X3D_Texture* tex, X3D_ColorIndex color) {
     memset(tex->texels, color, (uint32)tex->w * tex->h);
 }
+
+void x3d_texture_copy_texels(X3D_Texture* dest, const X3D_Texture* src) {
+    x3d_assert(dest->w == src->w && dest->h == src->h);
+    memcpy(dest->texels, src->texels, sizeof(X3D_ColorIndex) * x3d_texture_total_texels(src));
+}
+

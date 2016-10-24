@@ -144,9 +144,9 @@ void build_test_level(void) {
     x3d_lightmapcontext_init(&lightmap_context, &level);
     
     uint16 i;
-    for(i = 0; i < lightmap_context.total_maps; ++i) {
-        if(lightmap_context.maps[i].texels) {
-            x3d_lightmap_bilinear_filter(lightmap_context.maps + i);
+    for(i = 0; i < lightmap_context.total_lightmaps; ++i) {
+        if(lightmap_context.lightmaps[i].texels) {
+            x3d_lightmap_bilinear_filter(lightmap_context.lightmaps + i);
         }
     }
     

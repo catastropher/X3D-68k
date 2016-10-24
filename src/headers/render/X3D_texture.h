@@ -81,6 +81,24 @@ static inline void x3d_texture_set_texel(X3D_Texture* tex, uint16 u, uint16 v, X
   tex->texels[x3d_texture_index(tex, u, v)] = c;
 }
 
+static inline void x3d_texture_init_empty(X3D_Texture* tex) {
+    tex->w = 0;
+    tex->h = 0;
+    tex->texels = NULL;
+}
+
+static inline _Bool x3d_texture_is_empty(const X3D_Texture* tex) {
+    return tex->texels == NULL;
+}
+
+static inline uint32 x3d_texture_total_texels(const X3D_Texture* tex) {
+    return (uint32)tex->w * tex->h;
+}
+
+static inline int16 x3d_texture_texel_is_valid(const X3D_Texture* tex, int16 u, int16 v) {
+    return u >= 0 && v >= 0 && u < tex->w && v < tex->h;
+}
+
 _Bool x3d_texture_load_from_file(X3D_Texture* tex, const char* file);
 void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y);
 void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name);
@@ -88,4 +106,5 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data);
 void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags);
 void x3d_texture_cleanup(X3D_Texture* tex);
 void x3d_texture_fill(X3D_Texture* tex, X3D_ColorIndex color);
+void x3d_texture_copy_texels(X3D_Texture* dest, const X3D_Texture* src);
 

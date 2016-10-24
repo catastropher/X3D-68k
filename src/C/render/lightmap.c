@@ -75,7 +75,7 @@ void x3d_lightmap_init(X3D_LightMapContext* context, uint32 id, X3D_Polygon3D* p
     X3D_PlanarProjection* proj = context->proj + id;
     x3d_planarprojection_build_from_polygon3d(proj, poly);
     
-    X3D_Texture* map = context->maps + id;
+    X3D_Texture* map = context->lightmaps + id;
     uint16 w = x3d_units_to_texels(proj->max_x - proj->min_x) + 1;
     uint16 h = x3d_units_to_texels(proj->max_y - proj->min_y) + 1;
     
@@ -84,9 +84,12 @@ void x3d_lightmap_init(X3D_LightMapContext* context, uint32 id, X3D_Polygon3D* p
 }
 
 void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
-    context->total_maps = x3d_segfaceid_create(level->segs.total, 0);
-    context->maps = malloc(sizeof(X3D_Texture) * context->total_maps);
-    context->proj = malloc(sizeof(X3D_PlanarProjection) * context->total_maps);
+    context->total_lightmaps = x3d_segfaceid_create(level->segs.total, 0);
+    
+    context->lightmaps = malloc(sizeof(X3D_Texture) * context->total_lightmaps);
+    context->surfaces = malloc(sizeof(X3D_Texture) * context->total_lightmaps);
+    context->proj = malloc(sizeof(X3D_PlanarProjection) * context->total_lightmaps);
+    
     context->total_light = 0;
     context->level = level;
     
@@ -95,8 +98,9 @@ void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
     
     
     uint32 i, j;
-    for(i = 0; i < context->total_maps; ++i) {
-        context->maps[i].texels = NULL;
+    for(i = 0; i < context->total_lightmaps; ++i) {
+        x3d_texture_init_empty(context->lightmaps + i);
+        x3d_texture_init_empty(context->surfaces + i);
     }
     
     
@@ -110,17 +114,11 @@ void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
             x3d_lightmap_init(context, id, &poly);
         }
     }
-    
-    context->surfaces = malloc(sizeof(X3D_Texture) * context->total_maps);
-    
-    for(i = 0; i < context->total_maps; ++i) {
-        context->surfaces[i].texels = NULL;
-    }
 }
 
 
 void x3d_lightmapcontext_apply_light(X3D_LightMapContext* context, uint16 id, X3D_Vex2D pos, uint8 value) {
-    X3D_Texture* map = context->maps + id;
+    X3D_Texture* map = context->lightmaps + id;
     uint32 current_value = x3d_texture_get_texel(map, pos.x, pos.y);
 
     x3d_texture_set_texel(map, pos.x, pos.y, X3D_MIN(255, current_value + value));
@@ -141,35 +139,28 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
         id_zbuf[i] = 0x7F7F;
     }
     
-    _Bool render_surface[context->total_maps];
+    _Bool render_surface[context->total_lightmaps];
     
-    for(i = 0; i < context->total_maps; ++i)
+    for(i = 0; i < context->total_lightmaps; ++i)
         render_surface[i] = X3D_FALSE;
     
     x3d_render_from_perspective_of_spotlight(light, &light_cam);
-    
-    //x3d_screen_flip();
-    //x3d_screen_flip();
-    
+        
     for(i = 0; i < screenman->h; ++i) {
         for(j = 0; j < screenman->w; ++j) {
             uint32 index = (uint32)x3d_screen_get_internal_value(j, i);
             
-            if(index < context->total_maps) {                
-                if(!render_surface[index]) {
-                   x3d_log(X3D_INFO, "Should render %d", index); 
-                }
-                
+            if(index < context->total_lightmaps) {                
                 render_surface[index] = X3D_TRUE;
             }
         }
     }
     
-    for(i = 0; i < context->total_maps; ++i) {
-        if(context->maps[i].texels != NULL && render_surface[i]) {
+    for(i = 0; i < context->total_lightmaps; ++i) {
+        if(!x3d_texture_is_empty(context->lightmaps + i) && render_surface[i]) {
             x3d_log(X3D_INFO, "Surface %d", i);
             
-            X3D_Texture* map = context->maps + i;
+            X3D_Texture* map = context->lightmaps + i;
             
             for(j = 0; j < map->h; ++j) {
                 for(k = 0; k < map->w; ++k) {
@@ -205,19 +196,21 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
 
 void x3d_lightmapcontext_cleanup(X3D_LightMapContext* context) {
     uint32 i;
-    for(i = 0; i < context->total_light; ++i) {
-        x3d_texture_cleanup(context->maps);
+    for(i = 0; i < context->total_lightmaps; ++i) {
+        x3d_texture_cleanup(context->lightmaps);
         x3d_texture_cleanup(context->surfaces);
     }
     
-    free(context->maps);
+    free(context->lightmaps);
+    free(context->surfaces);
     free(context->proj);
 }
 
 void x3d_lightmap_blit(X3D_Texture* map) {
     uint32 i, j;
 
-    if(!map->texels) return;
+    if(x3d_texture_is_empty(map))
+        return;
     
     for(i = 0; i < map->h; ++i) {
         for(j = 0; j < map->w; ++j) {
@@ -229,7 +222,7 @@ void x3d_lightmap_blit(X3D_Texture* map) {
 
 void x3d_texture_apply_lightmap(X3D_Texture* tex, X3D_Texture* map) {
     int32 i;
-    for(i = 0; i < (int32)tex->w * tex->h; ++i) {
+    for(i = 0; i < x3d_texture_total_texels(tex); ++i) {
         tex->texels[i] = x3d_colormap_get_index(tex->texels[i], map->texels[i] / 16);
     }
 }
@@ -258,7 +251,6 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_Texture* map, X3D
         }
     };
 
-    
     int16 w = map->w;
     int16 h = map->h;
     
@@ -280,9 +272,9 @@ void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Textur
     X3D_Polygon3D poly = { .v = alloca(1000) };
     
     
-    for(i = 0; i < context->total_maps; ++i) {
-        if(context->maps[i].texels != NULL) {
-            if(context->surfaces[i].texels != NULL)
+    for(i = 0; i < context->total_lightmaps; ++i) {
+        if(!x3d_texture_is_empty(context->lightmaps + i)) {
+            if(!x3d_texture_is_empty(context->surfaces + i))
                 x3d_texture_cleanup(context->surfaces + i);
             
             
@@ -293,7 +285,7 @@ void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Textur
             x3d_levelsegment_get_geometry(context->level, seg, &prism);
             x3d_prism3d_get_face(&prism, face, &poly);
             
-            x3d_build_combined_lightmap_texture(level_tex, context->maps + i, &poly, context->surfaces + i);
+            x3d_build_combined_lightmap_texture(level_tex, context->lightmaps + i, &poly, context->surfaces + i);
         }
     }
 }
@@ -301,46 +293,46 @@ void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Textur
 void add_test_lights(X3D_LightMapContext* context) {
 }
 
+static inline uint8 x3d_lightmap_bilinear_filter_texel(const X3D_Texture* map, int16 x, int16 y) {
+    const int16 offset[5][2] = {
+        { 0, 0 },
+        { 0, 1 },
+        { 0, -1 },
+        { 1, -1 },
+        { 1, 1 }
+    };
+    
+    int16 total = 0;
+    int16 sum = 0;
+    
+    int16 k;
+    for(k = 0; k < 5; ++k) {
+        int16 u = x + offset[k][0];
+        int16 v = y + offset[k][1];
+        
+        if(x3d_texture_texel_is_valid(map, u, v)) {
+            sum += x3d_texture_get_texel(map, u, v);
+            ++total;
+        }
+    }
+    
+    return sum / total;
+}
+
 void x3d_lightmap_bilinear_filter(X3D_Texture* map) {
-    uint8* texels = malloc((uint32)map->w * map->h);
+    X3D_Texture output;
+    x3d_texture_init(&output, map->w, map->h, 0);
     
-    int32 i, j;
+    int16 i, j;
     for(i = 0; i < map->h; ++i) {
         for(j = 0; j < map->w; ++j) {
-            int16 count = 1;
-            int16 sum = map->texels[i * map->w + j];
-            
-            if(i > 0) {
-                ++count;
-                sum += map->texels[map->w * (i - 1) + j];
-            }
-            
-            if(j > 0) {
-                ++count;
-                sum += map->texels[map->w * i + j - 1];
-            }
-            
-            if(i + 1 < map->h) {
-                ++count;
-                sum += map->texels[map->w * (i + 1) + j];
-            }
-            
-            if(j + 1 < map->w) {
-                ++count;
-                sum += map->texels[i * map->w + j + 1];
-            }
-            
-            texels[i * map->w + j] = sum / count;
+            uint8 value = x3d_lightmap_bilinear_filter_texel(map, j, i);
+            x3d_texture_set_texel(&output, j, i, value);
         }
     }
     
-    for(i = 0; i < map->h; ++i) {
-        for(j = 0; j < map->w; ++j) {
-            map->texels[i * map->w + j] = texels[i * map->w + j];
-        }
-    }
-    
-    free(texels);
+    x3d_texture_copy_texels(map, &output);
+    x3d_texture_cleanup(&output);
 }
 
 void test_lightmap(void) {

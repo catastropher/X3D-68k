@@ -32,8 +32,8 @@ typedef struct X3D_LightMapContext {
     X3D_SpotLight* lights;
     uint16 total_light;
     
-    X3D_Texture* maps;
-    uint16 total_maps;
+    X3D_Texture* lightmaps;
+    uint16 total_lightmaps;
     
     X3D_Level* level;
     X3D_PlanarProjection* proj;
