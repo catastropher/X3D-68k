@@ -117,7 +117,7 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
         int32 u = (val->u >> 16) % tex->w;
         int32 v = (val->v >> 16) % tex->h;
         
-        *pix = tex->texel.large[v * tex->w + u];
+        *pix = tex->texels[v * tex->w + u];
         *zbuf = zz;
     }
 }

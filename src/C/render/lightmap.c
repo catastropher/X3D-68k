@@ -114,7 +114,7 @@ void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
     context->surfaces = malloc(sizeof(X3D_Texture) * context->total_maps);
     
     for(i = 0; i < context->total_maps; ++i) {
-        context->surfaces[i].texel.large = NULL;
+        context->surfaces[i].texels = NULL;
     }
 }
 
@@ -237,7 +237,7 @@ void x3d_lightmap_blit(X3D_LightMap* map) {
 void x3d_texture_apply_lightmap(X3D_Texture* tex, X3D_LightMap* map) {
     int32 i;
     for(i = 0; i < (int32)tex->w * tex->h; ++i) {
-        tex->texel.large[i] = x3d_colormap_get_index(tex->texel.large[i], map->data[i] / 16);
+        tex->texels[i] = x3d_colormap_get_index(tex->texels[i], map->data[i] / 16);
     }
 }
 
@@ -272,6 +272,8 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_LightMap* map, X3
     int16* zbuf = x3d_zbuf_alloc(w, h);
     x3d_zbuf_clear(zbuf, w, h);
     
+    x3d_log(X3D_INFO, "Surface size: %dx%d", w, h);
+    
     x3d_texture_init(dest, w, h);
     x3d_polygonrasteratt_set_screen_to_texture(&att, dest, zbuf);
     x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
@@ -287,8 +289,8 @@ void x3d_lightmapcontext_build_surfaces(X3D_LightMapContext* context, X3D_Textur
     
     for(i = 0; i < context->total_maps; ++i) {
         if(context->maps[i].data != NULL) {
-            if(context->surfaces[i].texel.large != NULL)
-                free(context->surfaces[i].texel.large);
+            if(context->surfaces[i].texels != NULL)
+                x3d_texture_cleanup(context->surfaces + i);
             
             
             uint16 segid = x3d_segfaceid_seg(i);

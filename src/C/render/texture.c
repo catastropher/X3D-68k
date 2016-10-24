@@ -83,69 +83,12 @@ uint8 x3d_texture_get_color_index(X3D_Texture* tex, X3D_Color c) {
   return tex->total_c++;
 }
 
-static int16 color_diff(int16 r1, int16 g1, int16 b1, int16 r2, int16 g2, int16 b2) {
-  return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2);
-}
-
-void x3d_texture_replace_most_similar_color(X3D_Texture* tex, X3D_Color* texel) {
-  uint16 i, d;
-  int16 min_diff = 0x7FFF;
-  int16 min_a = -1;
-  int16 min_b = -1;
-  
-  for(i = 0; i < tex->total_c; ++i) {
-    for(d = i + 1; d < tex->total_c; ++d) {
-      uint8 r1, g1, b1;
-      x3d_color_to_rgb(tex->color_tab[i], &r1, &g1, &b1);
-      
-      uint8 r2, g2, b2;
-      x3d_color_to_rgb(tex->color_tab[d], &r2, &g2, &b2);
-      
-      int16 diff = color_diff(r1, g1, b1, r2, g2, b2);
-      
-      if(diff < min_diff) {
-        min_diff = diff;
-        min_a = i;
-        min_b = d;
-      }
-    }
-  }
-  
-  X3D_Color find = tex->color_tab[min_a];
-  X3D_Color replace = tex->color_tab[min_b];
-  
-  for(i = 0; i < tex->w * tex->h; ++i) {
-    if(texel[i] == find) {
-      texel[i] = replace;
-    }
-  }
-  
-  for(i = min_a; i < tex->total_c - 1; ++i) {
-    tex->color_tab[i] = tex->color_tab[i + 1];
-  }
-  
-  --tex->total_c;
-}
-
-void x3d_texture_pack_4bit(X3D_Texture* tex, X3D_Color* texel) {
-  tex->flags |= X3D_TEXTURE_4BIT;
-  tex->texel.small = malloc(tex->w * tex->h / 2);
-
-  x3d_log(X3D_INFO, "Packed into 4 bit texture");
-  
-  uint16 i;
-  for(i = 0; i < tex->w * tex->h; i += 2) {
-    tex->texel.small[i / 2] = (x3d_texture_get_color_index(tex, texel[i]) << 4) |
-      x3d_texture_get_color_index(tex, texel[i + 1]);
-  }
-}
-
 void x3d_texture_pack_8bit(X3D_Texture* tex, X3D_Color* texel) {
-  tex->texel.large = malloc((uint32)tex->w * tex->h);
+  tex->texels = malloc(sizeof(X3D_ColorIndex) * tex->w * tex->h);
   
   uint32 i;
   for(i = 0; i < (uint32)tex->w * tex->h; ++i) {
-    tex->texel.large[i] = x3d_color_to_colorindex(texel[i]); //x3d_texture_get_color_index(tex, texel[i]);
+    tex->texels[i] = x3d_color_to_colorindex(texel[i]);
   }
 }
 
@@ -193,24 +136,7 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
     //x3d_texture_get_color_index(dest, texel[i]);
   }
   
-  if(dest->w == 128) {
-    dest->w = 64;
-    dest->h = 64;
-    dest->mask = dest->w - 1;
-    
-    x3d_texture_resize_to_64(texel);
-  }
-  
-  if(dest->total_c <= 20 && 0) {
-    while(dest->total_c > 16) {
-      x3d_texture_replace_most_similar_color(dest, texel);
-    }
-    
-    x3d_texture_pack_4bit(dest, texel);
-  }
-  else {
     x3d_texture_pack_8bit(dest, texel);
-  }
   
   free(texel);
   
@@ -224,11 +150,11 @@ void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
 void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h) {
     tex->w = w;
     tex->h = h;
-    tex->texel.large = malloc(sizeof(X3D_ColorIndex) * w * h);
+    tex->texels = malloc(sizeof(X3D_ColorIndex) * w * h);
 }
 
 void x3d_texture_cleanup(X3D_Texture* tex) {
-    free(tex->texel.large);
+    free(tex->texels);
 }
 
 

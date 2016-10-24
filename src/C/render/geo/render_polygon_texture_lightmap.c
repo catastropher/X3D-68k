@@ -164,10 +164,10 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
 
         
 #ifdef __nspire__
-            ((uint8 *)att->screen)[y * 320 + x] = x3d_colormap_get_index(tex->texel.large[index],
+            ((uint8 *)att->screen)[y * 320 + x] = x3d_colormap_get_index(tex->texel[index],
                 x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2);
 #else
-            x3d_screen_draw_pix(x, y, x3d_colorindex_to_color(x3d_colormap_get_index(tex->texel.large[index],
+            x3d_screen_draw_pix(x, y, x3d_colorindex_to_color(x3d_colormap_get_index(tex->texels[index],
                 x3d_lightmap_get_value(att->light_map.map, val->lu >> 16, val->lv >> 16) / 16 + 2)));
 #endif
             *zbuf = zz;

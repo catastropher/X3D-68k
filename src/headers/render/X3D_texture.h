@@ -20,8 +20,7 @@
 #include "render/X3D_palette.h"
 
 enum {
-  X3D_TEXTURE_4BIT = 1,
-  X3D_TEXTURE_REPEAT = 2
+  X3D_TEXTURE_REPEAT = 1
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -32,10 +31,7 @@ typedef struct X3D_Texture {
   uint16 mask;          ///< Mask for repeated textures
   uint16 flags;
   
-  union {               ///< Texels (texture elements, like pixels for textures)
-    uint8* small;
-    uint8* large;
-  } texel;
+  X3D_ColorIndex* texels;
   
   X3D_Color* color_tab;
   uint16 total_c;
@@ -64,20 +60,11 @@ static inline uint32 x3d_texture_index(const X3D_Texture* tex, uint16 u, uint16 
 ///
 /// @return The color of the desired texel.
 ///////////////////////////////////////////////////////////////////////////////
-static inline X3D_Color x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, uint16 v) {
-  if(tex->flags & X3D_TEXTURE_4BIT) {
-    uint8 byte = tex->texel.small[((uint32)v * tex->w + u) >> 1];
-   
-    if((u & 1) == 0)
-      byte >>= 4;
-    
-    return tex->color_tab[byte & 0x0F];
-  }
-  
+static inline X3D_Color x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, uint16 v) {  
   if(tex->flags & X3D_TEXTURE_REPEAT)
-    return x3d_colorindex_to_color(tex->texel.large[x3d_texture_index(tex, u, v)]);
+    return x3d_colorindex_to_color(tex->texels[x3d_texture_index(tex, u, v)]);
   else
-    return x3d_colorindex_to_color(tex->texel.large[(uint32)v * tex->w + u]);
+    return x3d_colorindex_to_color(tex->texels[(uint32)v * tex->w + u]);
 }
 
 static inline X3D_Color x3d_texture_get_texel_128(const X3D_Texture* tex, uint16 u, uint16 v) {

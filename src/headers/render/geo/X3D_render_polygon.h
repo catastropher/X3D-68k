@@ -93,7 +93,7 @@ static inline void x3d_polygonrasteratt_set_screen(X3D_PolygonRasterAtt* att, vo
 }
 
 static inline void x3d_polygonrasteratt_set_screen_to_texture(X3D_PolygonRasterAtt* att, X3D_Texture* tex, int16* zbuf) {
-    att->screen = tex->texel.large;
+    att->screen = tex->texels;
     att->screen_w = tex->w;
     att->screen_h = tex->h;
     att->zbuf = zbuf;
