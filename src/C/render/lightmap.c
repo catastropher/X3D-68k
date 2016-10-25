@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <math.h>
+
 #include "X3D_polygon.h"
 #include "X3D_camera.h"
 #include "X3D_render.h"
@@ -20,8 +22,6 @@
 #include "render/X3D_lightmap.h"
 #include "render/X3D_texture.h"
 #include "render/geo/X3D_render_polygon.h"
-
-#include <math.h>
 
 void x3d_convert_view_coord_to_world_coord(X3D_Vex3D* view, X3D_CameraObject* cam, X3D_Vex3D* dest) {
     X3D_Mat3x3 mat = cam->base.mat;

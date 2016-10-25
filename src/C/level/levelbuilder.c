@@ -18,6 +18,8 @@
 #include "X3D_polygon.h"
 #include "level/X3D_levelbuilder.h"
 
+#if 0
+
 enum X3D_LevelBuilderSelectionType {
     TYPE_NONE,
     TYPE_SEGMENT,
@@ -98,3 +100,5 @@ void x3d_levelbuilder_delete_resource(X3D_LevelBuilder* builder);
 void x3d_levelbuilder_set_inside_mode(X3D_LevelBuilder* builder);
 void x3d_levelbuilder_set_outside_mode(X3D_LevelBuilder* builder);
 */
+
+#endif

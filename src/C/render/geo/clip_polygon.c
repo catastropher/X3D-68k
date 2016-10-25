@@ -82,7 +82,7 @@ void calculate_frustum_plane_distances(X3D_Frustum* f, X3D_CameraObject* cam) {
     }
     
     X3D_Vex3D out;
-    x3d_dynamicobject_forward_vector(cam, &out);
+    x3d_dynamicobject_forward_vector(&cam->base, &out);
     
     short dist = 15;//c->dist - DIST_TO_NEAR_PLANE;
     
@@ -99,7 +99,7 @@ void calculate_frustum_plane_distances(X3D_Frustum* f, X3D_CameraObject* cam) {
 
 // Calculates the rotated plane normals of the view frustum
 void calculate_frustum_rotated_normals(X3D_Frustum* src, X3D_Frustum* f, X3D_CameraObject* cam) {
-    int16 i, d;
+    int16 i;
     
     X3D_Mat3x3 transpose = cam->base.mat;
     x3d_mat3x3_transpose(&transpose);
@@ -119,7 +119,7 @@ void calculate_frustum_rotated_normals(X3D_Frustum* src, X3D_Frustum* f, X3D_Cam
     }
     
     // Near plane normal
-    x3d_dynamicobject_forward_vector(cam, &f->p[0].normal);
+    x3d_dynamicobject_forward_vector(&cam->base, &f->p[0].normal);
 
     f->total_p = src->total_p;
 }
@@ -221,59 +221,5 @@ X3D_Frustum* x3d_get_view_frustum(X3D_CameraObject* cam) {
     calculate_frustum_plane_distances(&frustum, cam);
     
     return &frustum;
-}
-
-void test_clip(X3D_Polygon3D* poly, X3D_CameraObject* cam) {
-    return;
-    
-    X3D_Frustum f = {
-        .p = alloca(1000)
-    };
-
-    X3D_Frustum f2 = {
-        .p = alloca(1000)
-    };
-
-    X3D_RasterPolygon3D poly3d = {
-        .v = alloca(1000)
-    };
-    
-    X3D_RasterPolygon3D poly3d_out = {
-        .v = alloca(1000)
-    };
-    
-    uint16 i;
-    for(i = 0; i < poly->total_v; ++i) {
-        poly3d.v[i].v = poly->v[i];
-    }
-    
-    poly3d.total_v = poly->total_v;
-  
-    //x3d_log(X3D_INFO, "Vex: %d %d %d", f2.p[3].normal.x, f2.p[3].normal.y, f2.p[3].normal.z);
-  
-    clip_polygon_to_frustum(&poly3d, &f2, &poly3d_out);
-  
-    X3D_PolygonRasterVertex2D v[poly3d_out.total_v];
-    
-    for(i = 0; i < poly3d_out.total_v; ++i) {
-        X3D_Vex3D temp;
-        x3d_camera_transform_points(cam, &poly3d_out.v[i].v, 1, &temp, NULL);
-        x3d_vex3d_int16_project(&v[i].v, &temp);
-    }
-    
-    static int total = 0;
-  
-    X3D_PolygonRasterAtt at = {
-        .flat = {
-            .color = (total % 2 ? x3d_rgb_to_color(0, 0, 255) : 31)
-        }
-    };
-    
-    ++total;
-  
-  x3d_polygon2d_render_flat(v, poly3d_out.total_v, &at);
-  
-  
-  //x3d_polygon3d_copy(&c, poly);
 }
 

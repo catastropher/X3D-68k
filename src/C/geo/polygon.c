@@ -283,7 +283,7 @@ void x3d_polygon2d_remove_duplicate_points(X3D_Polygon2D* poly) {
 }
 
 uint16 x3d_polygon3d_classify_point(X3D_Vex3D* v, int16 near_z) {
-  uint16 flags = 0;
+  return 0;
   
 //   // Left
 //   if(v->x < -v->z) {

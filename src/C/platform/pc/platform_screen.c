@@ -378,7 +378,7 @@ void x3d_screen_set_internal_value(int16 x, int16 y, uint32 val) {
 
 uint32 x3d_screen_get_internal_value(int16 x, int16 y) {
     if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
-        return;
+        return 0;
     
     return ((uint32 *)window_surface->pixels)[y * window_surface->w + x];
 }

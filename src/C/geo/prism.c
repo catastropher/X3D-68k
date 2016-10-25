@@ -285,6 +285,6 @@ X3D_Prism3D* x3d_prism3d_construct_temp(uint16 steps, uint16 r, int16 h) {
     temp_prism3d.prism.v = temp_prism3d.v;
     x3d_prism3d_construct(&temp_prism3d.prism, steps, r, h, (X3D_Vex3D_angle256) { 0, 0, 0 });
     
-    return &temp_prism3d;
+    return &temp_prism3d.prism;
 }
 

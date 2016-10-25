@@ -54,32 +54,9 @@ void x3d_rendermanager_init(X3D_InitSettings* settings) {
   
   // Reset segment face render callback
   renderman->segment_face_render_callback = NULL;
-  
-
-  int16 offx = 0, offy = 0;
-
 
   screenman->w = settings->screen_w;
   screenman->h = settings->screen_h;
-
-  // Create the raster region for the whole screen
-  X3D_Vex2D screen_v[] = {
-    { offx, offy },
-    { settings->screen_w - offx - 1, offy },
-    { settings->screen_w - offx - 1, settings->screen_h - offy - 1 },
-    { offx, settings->screen_h - offy - 1}
-  };
-
-  /*_Bool region = x3d_rasterregion_construct_from_points(
-    &renderman->stack,
-    &renderman->region,
-    screen_v,
-    4
-  );*/
-
-  //x3d_assert(region);
-
-  //x3d_log(X3D_INFO, "Region (range=%d-%d)\n", renderman->region.rect.y_range.min, renderman->region.rect.y_range.max);
 
 #ifndef __nspire__  
   // nspire has its zbuffer allocated with the screen

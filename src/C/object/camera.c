@@ -36,7 +36,7 @@ void x3d_camera_init(void) {
   x3d_objecttype_set_event_handler(cam_type, x3d_camera_event_handler);
   x3d_objecttype_set_object_size(cam_type, sizeof(X3D_CameraObject));
   
-  x3d_playermanager_get()->player[0].cam = x3d_object_create(0, x3d_vex3d_make(0, 0, 0));
+  x3d_playermanager_get()->player[0].cam = (X3D_CameraObject* )x3d_object_create(0, x3d_vex3d_make(0, 0, 0));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

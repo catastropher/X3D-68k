@@ -286,9 +286,7 @@ X3D_ColorIndex x3d_colorindex_from_rgb(uint8 r, uint8 g, uint8 b) {
     int16 min_dist = 0x7FFF;
     X3D_ColorIndex min_index = 0;
     
-    for(i = 0; i < 256; ++i) {
-        uint8 ir, ig, ib;
-        
+    for(i = 0; i < 256; ++i) {        
         int16 dist = abs((int16)r - quake_color_palette[i][0]) +
             abs((int16)g - quake_color_palette[i][1]) +
             abs((int16)b - quake_color_palette[i][2]);
