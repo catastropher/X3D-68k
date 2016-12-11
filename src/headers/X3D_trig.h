@@ -22,14 +22,14 @@
 #define VERTICAL_LINE_SLOPE INT16_MAX
 
 enum {
-  ANG_0 = 0,
-  ANG_30 = 21,
-  ANG_45 = 32,
-  ANG_60 = 42,
-  ANG_90 = 64,
-  ANG_180 = 128,
-  ANG_270 = 192,
-  ANG_360 = 256
+    ANG_0 = 0,
+    ANG_30 = 21,
+    ANG_45 = 32,
+    ANG_60 = 42,
+    ANG_90 = 64,
+    ANG_180 = 128,
+    ANG_270 = 192,
+    ANG_360 = 256
 };
 
 fp0x16 x3d_sin(angle256 angle);
@@ -38,5 +38,7 @@ angle256 x3d_atan2(short int y, short int x);
 angle256 x3d_asin(fp0x16 val);
 angle256 x3d_acos(fp0x16 val);
 
-#define x3d_cos(_angle) x3d_sin(ANG_90 - (_angle))
+static inline fp0x16 x3d_cos(angle256 angle) {
+    return x3d_sin(ANG_90 - angle);
+}
 

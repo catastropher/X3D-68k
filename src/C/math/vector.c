@@ -20,6 +20,7 @@
 #include "X3D_screen.h"
 #include "X3D_matrix.h"
 #include "X3D_fastsqrt.h"
+#include "X3D_trig.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the dot product of two 16-bit integer 3D vectors.
@@ -218,5 +219,25 @@ uint16 x3d_vex3d_int16_mag(X3D_Vex3D* v) {
     (((int32)v->z * v->z) >> 2);
 
   return (x3d_fastsqrt(distance_squared) << 1) + 1;
+}
+
+void x3d_vex2d_rotate_around_point(X3D_Vex2D* v, X3D_Vex2D* point_to_rotate_around, angle256 angle, X3D_Vex2D* dest) {
+    fp16x16 sin_angle = x3d_sin(angle);
+    fp16x16 cos_angle = x3d_cos(angle);
+    
+    X3D_Vex2D shifted_v = x3d_vex2d_sub(v, point_to_rotate_around);
+    X3D_Vex2D rotated = x3d_vex2d_make(
+        (shifted_v.x * cos_angle - shifted_v.y * sin_angle) >> 15,
+        (shifted_v.x * sin_angle + shifted_v.y * cos_angle) >> 15
+    );
+    
+    *dest = x3d_vex2d_add(&rotated, point_to_rotate_around);
+}
+
+void x3d_vex2d_make_point_on_circle(int16 radius, angle256 angle, X3D_Vex2D* dest) {
+    X3D_Vex2D v = x3d_vex2d_make(radius, 0);
+    X3D_Vex2D origin = x3d_vex2d_origin();
+    
+    x3d_vex2d_rotate_around_point(&v, &origin, angle, dest);
 }
 

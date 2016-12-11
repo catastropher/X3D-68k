@@ -41,6 +41,13 @@ typedef struct X3D_Prism2D {
   X3D_Vex2D v[];
 } X3D_Prism2D;
 
+static inline size_t x3d_prism3d_total_vertices(const X3D_Prism3D* prism) {
+    return prism->base_v * 2;
+}
+
+static inline void x3d_prism3d_set_base_v(X3D_Prism3D* prism, uint16 number_of_vertices_in_base) {
+    prism->base_v = number_of_vertices_in_base;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Returns the size of a 3D prism (in bytes) given the number of vertices in
@@ -86,7 +93,8 @@ struct X3D_CameraObject;
 struct X3D_RasterRegion;
 struct X3D_Ray3D;
 
-void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
+void x3d_prism3d_construct(X3D_Prism3D* prism, uint16 sides_in_base, uint16 radius, int16 height, X3D_Vex3D_angle256 angle);
+void x3d_prism3d_rotate_around_origin(X3D_Prism3D* prism, X3D_Vex3D_angle256 angle);
 void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
 void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
 uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest);

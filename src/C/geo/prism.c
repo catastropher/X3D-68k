@@ -24,51 +24,58 @@
 #include "X3D_enginestate.h"
 #include "geo/X3D_line.h"
 
-/**
-* Constructs a 3D prism with regular polygons as the base.
-*
-* @param s          - pointer to the dest prism
-* @param steps      - number of "steps" i.e. points on the polygon base
-* @param r          - radius of the base
-* @param h          - height of the rism
-* @param rot_angle  - angles of rotation around its origin
-*
-* @return nothing
-* @note @ref X3D_Prism is a variable-sized data structure. Make sure s is
-*     at least sizeof(X3D_Prism) + sizeof(X3D_Vex3D_int16) * steps * 2 bytes big!
-*/
-void x3d_prism3d_construct(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle) {
-  ufp8x8 angle = 0;
-  ufp8x8 angle_step = 65536L / steps;
-  uint16 i;
+static inline void x3d_prism3d_construct_top_base(X3D_Prism3D* prism, int16 radius, int16 height);
+static inline void x3d_prism3d_construct_bottom_base_from_top(X3D_Prism3D* prism, int16 height);
+static inline uint16 x3d_prism3d_calculate_radius_from_side_length(uint16 side_length, uint16 sides_in_base);
 
-  s->base_v = steps;
-
-  r = ((int32)r << 15) / (2 * x3d_sin(ANG_180 / steps));  
-  
-  // Construct the two bases (regular polygons)
-  for(i = 0; i < steps; ++i) {
-    s->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cos(x3d_uint16_upper(angle)), r);
-    s->v[i].z = mul_fp0x16_by_int16_as_int16(x3d_sin(x3d_uint16_upper(angle)), r);
-    s->v[i].y = -h / 2;
+void x3d_prism3d_construct(X3D_Prism3D* prism, uint16 sides_in_base, uint16 side_length, int16 height, X3D_Vex3D_angle256 angle) {
+    uint16 prism_radius = x3d_prism3d_calculate_radius_from_side_length(side_length, sides_in_base);
     
-    s->v[i + steps].x = s->v[i].x;
-    s->v[i + steps].z = s->v[i].z;
-    s->v[i + steps].y = h / 2;
+    x3d_prism3d_set_base_v(prism, sides_in_base);
+    x3d_prism3d_construct_top_base(prism, prism_radius, height);
+    x3d_prism3d_construct_bottom_base_from_top(prism, height);
+    x3d_prism3d_rotate_around_origin(prism, angle);
+}
 
-    angle += angle_step;
-  }
+static inline void x3d_prism3d_construct_top_base(X3D_Prism3D* prism, int16 radius, int16 height) {
+    ufp8x8 base_angle = 0;
+    ufp8x8 angle_step = 65536L / prism->base_v;
+    int16 prism_base_y = -height / 2;
+    
+    for(int i = 0; i < prism->base_v; ++i) {
+        X3D_Vex2D circle_point;
+        x3d_vex2d_make_point_on_circle(radius, x3d_uint16_upper(base_angle), &circle_point);
+        
+        prism->v[i] = x3d_vex3d_make(circle_point.x, prism_base_y, circle_point.y);
+        base_angle += angle_step;
+    }
+}
 
-  // Rotate the prism around its center
-  X3D_Mat3x3_fp0x16 mat;
-  x3d_mat3x3_construct(&mat, &rot_angle);
+static inline void x3d_prism3d_construct_bottom_base_from_top(X3D_Prism3D* prism, int16 height) {
+    for(int i = 0; i < prism->base_v; ++i) {
+        prism->v[i + prism->base_v].x = prism->v[i].x;
+        prism->v[i + prism->base_v].y = height / 2;
+        prism->v[i + prism->base_v].z = prism->v[i].z;
+    }
+}
 
-  for(i = 0; i < steps * 2; ++i) {
-    X3D_Vex3D_int16 rot;
+static inline uint16 x3d_prism3d_calculate_radius_from_side_length(uint16 side_length, uint16 sides_in_base) {
+    return ((int32)side_length << 15) / (2 * x3d_sin(ANG_180 / sides_in_base)); 
+}
 
-    x3d_vex3d_int16_rotate(&rot, &s->v[i], &mat);
-    s->v[i] = rot;
-  }
+
+
+
+
+void x3d_prism3d_rotate_around_origin(X3D_Prism3D* prism, X3D_Vex3D_angle256 angle) {
+    X3D_Mat3x3_fp0x16 mat;
+    x3d_mat3x3_construct(&mat, &angle);
+
+    for(int i = 0; i < x3d_prism3d_total_vertices(prism); ++i) {
+        X3D_Vex3D_int16 rotated;
+        x3d_vex3d_int16_rotate(&rotated, &prism->v[i], &mat);
+        prism->v[i] = rotated;
+    }
 }
 
 /// @todo Document.

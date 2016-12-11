@@ -92,6 +92,18 @@ fp0x16 x3d_vex3d_fp0x16_dot(X3D_Vex3D_fp0x16* a, X3D_Vex3D_fp0x16* b);
 void x3d_vex3d_fp0x16_normalize(X3D_Vex3D_fp0x16* v);
 uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v);
 
+void x3d_vex2d_rotate_around_point(X3D_Vex2D* v, X3D_Vex2D* point_to_rotate_around, angle256 angle, X3D_Vex2D* dest);
+void x3d_vex2d_make_point_on_circle(int16 radius, angle256 angle, X3D_Vex2D* dest);
+
+static inline X3D_Vex2D x3d_vex2d_make(int16 x, int16 y) {
+    return (X3D_Vex2D) { x, y };
+}
+
+static inline X3D_Vex2D x3d_vex2d_origin() {
+    return x3d_vex2d_make(0, 0);
+}
+
+
 typedef X3D_Vex3D_fp0x16 X3D_Normal3D;
 
 static inline X3D_Vex3D x3d_vex3d_sub(X3D_Vex3D* a, X3D_Vex3D* b) {
@@ -120,6 +132,14 @@ static inline _Bool x3d_vex3d_equal(X3D_Vex3D* a, X3D_Vex3D* b) {
 
 static inline _Bool x3d_vex2d_equal(X3D_Vex2D* a, X3D_Vex2D* b) {
   return a->x == b->x && a->y == b->y;
+}
+
+static inline X3D_Vex2D x3d_vex2d_add(X3D_Vex2D* a, X3D_Vex2D* b) {
+    return x3d_vex2d_make(a->x + b->x, a->y + b->y);
+}
+
+static inline X3D_Vex2D x3d_vex2d_sub(X3D_Vex2D* a, X3D_Vex2D* b) {
+    return x3d_vex2d_make(a->x - b->x, a->y - b->y);
 }
 
 static inline _Bool x3d_vex3d_in_front_of_near_plane(X3D_Vex3D* v) {
