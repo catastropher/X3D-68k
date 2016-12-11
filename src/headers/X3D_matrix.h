@@ -21,12 +21,15 @@
 #define MAT3x3(_row, _col) ((_row) * 3 + (_col))
 
 typedef struct X3D_Mat3x3_fp0x16 {
-  fp0x16 data[9];
+    fp0x16 data[9];
 } X3D_Mat3x3_fp0x16;
 
-typedef struct X3D_Mat4x4_fp16x16 {
-  fp16x16 data[16];
-} X3D_Mat4x4_fp16x16;
+typedef struct X3D_Mat4x4 {
+    union {
+        int32 elements[4][4];
+        int32 elements1D[16];
+    };
+} X3D_Mat4x4;
 
 typedef X3D_Mat3x3_fp0x16 X3D_Mat3x3;
 

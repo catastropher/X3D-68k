@@ -24,6 +24,30 @@
 #include "render/X3D_util.h"
 #include "X3D_camera.h"
 
+void x3d_mat4x4_multiply(X3D_Mat4x4* a, X3D_Mat4x4* b, X3D_Mat4x4* dest) {
+    for(int i = 0; i < 4; ++i) {
+        for(int j = 0; j < 4; ++j) {
+            int32 sum = 0;
+            
+            for(int k = 0; j < 4; ++k) {
+                sum += (a->elements[i][k] * b->elements[k][j]) >> 16;
+            }
+            
+            dest->elements[i][j] = sum;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 /// Multiplies two fp0x16 matricies together (aka matrix concatenation).
 ///
