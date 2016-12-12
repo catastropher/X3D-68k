@@ -62,6 +62,10 @@ static inline int16 x3d_int16_add_wrap(int16 val, int16 add, int16 max) {
   return val + add < max ? val + add : val + add - max;
 }
 
+static inline int16 x3d_int16_increment_wrap(int16 val, int16 max) {
+    return x3d_int16_add_wrap(val, 1, max);
+}
+
 static inline int16 x3d_int16_sub_wrap(int16 val, int16 sub, int16 max) {
   return val - sub >= 0 ? val - sub : val - sub + max;
 }

@@ -97,11 +97,7 @@ void x3d_prism3d_construct(X3D_Prism3D* prism, uint16 sides_in_base, uint16 radi
 void x3d_prism3d_rotate_around_origin(X3D_Prism3D* prism, X3D_Vex3D_angle256 angle);
 void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
 void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
-uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest);
-void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b);
-void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest);
 void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest);
-void x3d_prism_point_faces(uint16 base_v, uint16 point, uint16* dest);
 
 void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
 void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation);

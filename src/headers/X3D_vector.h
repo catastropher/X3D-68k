@@ -142,6 +142,26 @@ static inline X3D_Vex2D x3d_vex2d_sub(X3D_Vex2D* a, X3D_Vex2D* b) {
     return x3d_vex2d_make(a->x - b->x, a->y - b->y);
 }
 
+static inline X3D_Vex3D_int32 x3d_vex3d_int32_add_vex3d(X3D_Vex3D_int32* a, X3D_Vex3D* b) {
+    return (X3D_Vex3D_int32) {
+        a->x + b->x,
+        a->y + b->y,
+        a->z + b->z
+    };
+}
+
+static inline X3D_Vex3D x3d_vex3d_int32_div_by_int16_as_vex3d(X3D_Vex3D_int32* v, int16 divisor) {
+    return (X3D_Vex3D) {
+        v->x / divisor,
+        v->y / divisor,
+        v->z / divisor
+    };
+}
+
+static inline X3D_Vex3D_int32 x3d_vex3d_int32_origin() {
+    return (X3D_Vex3D_int32) { 0, 0, 0 };
+}
+
 static inline _Bool x3d_vex3d_in_front_of_near_plane(X3D_Vex3D* v) {
   /// @todo Replace with near plane constant
   return v->z > 10;

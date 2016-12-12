@@ -24,9 +24,7 @@
 #include "X3D_enginestate.h"
 #include "geo/X3D_line.h"
 
-static inline void x3d_prism3d_construct_top_base(X3D_Prism3D* prism, int16 radius, int16 height);
-static inline void x3d_prism3d_construct_bottom_base_from_top(X3D_Prism3D* prism, int16 height);
-static inline uint16 x3d_prism3d_calculate_radius_from_side_length(uint16 side_length, uint16 sides_in_base);
+#include "prism-inline.h"
 
 void x3d_prism3d_construct(X3D_Prism3D* prism, uint16 sides_in_base, uint16 side_length, int16 height, X3D_Vex3D_angle256 angle) {
     uint16 prism_radius = x3d_prism3d_calculate_radius_from_side_length(side_length, sides_in_base);
@@ -36,36 +34,6 @@ void x3d_prism3d_construct(X3D_Prism3D* prism, uint16 sides_in_base, uint16 side
     x3d_prism3d_construct_bottom_base_from_top(prism, height);
     x3d_prism3d_rotate_around_origin(prism, angle);
 }
-
-static inline void x3d_prism3d_construct_top_base(X3D_Prism3D* prism, int16 radius, int16 height) {
-    ufp8x8 base_angle = 0;
-    ufp8x8 angle_step = 65536L / prism->base_v;
-    int16 prism_base_y = -height / 2;
-    
-    for(int i = 0; i < prism->base_v; ++i) {
-        X3D_Vex2D circle_point;
-        x3d_vex2d_make_point_on_circle(radius, x3d_uint16_upper(base_angle), &circle_point);
-        
-        prism->v[i] = x3d_vex3d_make(circle_point.x, prism_base_y, circle_point.y);
-        base_angle += angle_step;
-    }
-}
-
-static inline void x3d_prism3d_construct_bottom_base_from_top(X3D_Prism3D* prism, int16 height) {
-    for(int i = 0; i < prism->base_v; ++i) {
-        prism->v[i + prism->base_v].x = prism->v[i].x;
-        prism->v[i + prism->base_v].y = height / 2;
-        prism->v[i + prism->base_v].z = prism->v[i].z;
-    }
-}
-
-static inline uint16 x3d_prism3d_calculate_radius_from_side_length(uint16 side_length, uint16 sides_in_base) {
-    return ((int32)side_length << 15) / (2 * x3d_sin(ANG_180 / sides_in_base)); 
-}
-
-
-
-
 
 void x3d_prism3d_rotate_around_origin(X3D_Prism3D* prism, X3D_Vex3D_angle256 angle) {
     X3D_Mat3x3_fp0x16 mat;
@@ -78,209 +46,55 @@ void x3d_prism3d_rotate_around_origin(X3D_Prism3D* prism, X3D_Vex3D_angle256 ang
     }
 }
 
-/// @todo Document.
-void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest) {
-  if(face <= X3D_BASE_B) {
-    // One of the prism bases
-    X3D_Vex3D* v;
-    int16 dir;
-    
-    dest->total_v = prism->base_v;
-    
-    if(face == X3D_BASE_A) {
-      v = prism->v;
-      dir = 1;
-    }
-    else {
-      v = prism->v + prism->base_v * 2 - 1;
-      dir = -1;
-    }
-    
-    uint16 i;
-    for(i = 0; i < prism->base_v; ++i) {
-      dest->v[i] = *v;
-      v += dir;
-    }
-  }
-  else {
-    // One of the sides
-    dest->total_v = 4;
-    
-    uint16 f = face - 2;
-    uint16 next = (f + 1 < prism->base_v ? f + 1 : 0);
-    
-    dest->v[0] = prism->v[f];
-    dest->v[3] = prism->v[next];
-    dest->v[2] = prism->v[next + prism->base_v];
-    dest->v[1] = prism->v[f + prism->base_v];
-  }
+void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face_id, X3D_Polygon3D* dest) {
+    if(face_id == X3D_BASE_A)
+        x3d_prism3d_get_face_base_a(prism, dest);
+    else if(face_id == X3D_BASE_B)
+        x3d_prism3d_get_face_base_b_reversed(prism, dest);
+    else
+        x3d_prism3d_get_face_side(prism, face_id, dest);
 }
 
-/// @todo Document.
-void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src) {
-  if(face <= X3D_BASE_B) {
-    // One of the prism bases
-    X3D_Vex3D* v;
-    int16 dir;
-    
-    if(face == X3D_BASE_A) {
-      v = prism->v;
-      dir = 1;
-    }
-    else {
-      v = prism->v + prism->base_v * 2 - 1;
-      dir = -1;
-    }
-    
-    uint16 i;
-    for(i = 0; i < prism->base_v; ++i) {
-      *v = src->v[i];
-      v += dir;
-    }
-  }
-  else {
-    // One of the sides
-    src->total_v = 4;
-    
-    uint16 f = face - 2;
-    uint16 next = (f + 1 < prism->base_v ? f + 1 : 0);
-    
-    prism->v[f] = src->v[0];
-    prism->v[next] = src->v[3];
-    prism->v[next + prism->base_v] = src->v[2];
-    prism->v[f + prism->base_v] = src->v[1];
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Gets a list of edges indexes that compose a prism face. For example,
-///   given an octahedron prism, X3D_BASE_A would be composed of edges 0 - 7.
-///
-/// @param base_v - number of vertices in the prism base
-/// @param face   - face ID
-/// @param dest   - where to write the indexes
-///
-/// @return The number of edges in the face.
-/// @note dest should be big enough to hold the number of edges in the
-///   requested face. If face is X3D_BASE_A or X3D_BASE_B, this will be base_v
-///   vertices. Otherwise, it will be 4.
-///////////////////////////////////////////////////////////////////////////////
-uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest) {
-  if(face <= X3D_BASE_B) {
-    // Prism base
-    uint16 start = (face == X3D_BASE_A ? 0 : base_v);
-    uint16 i;
-    
-    for(i = 0; i < base_v; ++i)
-      dest[i] = start + i;
-    
-    return base_v;
-  }
-  else {
-    // Quad face
-    uint16 f = face - 2;
-    dest[0] = f;
-    dest[1] = x3d_int16_add_wrap(f, 1, base_v) + base_v * 2;
-    dest[2] = f + base_v;
-    dest[3] = f + base_v * 2;
-    
-    return 4;
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Gets the vertex indexes that compose a 2D/3D prism edge.
-///
-/// @param prism  - prism
-/// @param edge   - edge ID (0 to base_v * 3)
-/// @param a      - dest of first vertex
-/// @param b      - dest of second vertex
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_prism_get_edge_index(uint16 base_v, uint16 edge, uint16* a, uint16* b) {
-  if(edge < base_v * 2) {
-    uint16 offset = (edge < base_v ? 0 : base_v);
-    uint16 next = (edge - offset + 1 != base_v ? edge - offset + 1 : 0)
-      + offset;
-    
-    *a = edge;
-    *b = next;
-  }
-  else {
-    *a = edge - base_v * 2;
-    *b = edge - base_v;
-  }
+void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face_id, X3D_Polygon3D* src) {
+    if(face_id == X3D_BASE_A)
+        x3d_prism3d_set_face_base_a(prism, src);
+    else if(face_id == X3D_BASE_B)
+        x3d_prism3d_set_face_base_b_reversed(prism, src);
+    else
+        x3d_prism3d_set_face_side(prism, face_id, src);
 }
 
 void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, X3D_Ray3D* dest) {
-  uint16 a, b;
-  x3d_prism_get_edge_index(prism->base_v, edge, &a, &b);
-  *dest = x3d_ray3d_make(prism->v[a], prism->v[b]);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Gets a list of edge pairs for prism with the given number of vertices in
-///   the base. For a given edge, this gives the index of the two vertices
-///   that compose the edge.
-///
-/// @param base_v - number of vertices in the base
-/// @param dest   - array of X3D_Pair big enough to hold base_v * 3 pairs
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_prism_get_edge_pairs(uint16 base_v, X3D_Pair* dest) {
-  uint16 i;
-  
-  for(i = 0; i < base_v * 3; ++i) {
-    x3d_prism_get_edge_index(base_v, i, dest[i].val, dest[i].val + 1);
-  }
+    uint16 start, end;
+    x3d_prism_get_edge_vertex_ids(prism->base_v, edge, &start, &end);
+    *dest = x3d_ray3d_make(prism->v[start], prism->v[end]);
 }
 
 void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest) {
-  uint16 i;
-  X3D_Vex3D_int32 sum = { 0, 0, 0 };
-  
-  for(i = 0; i < prism->base_v * 2; ++i) {
-    sum.x += prism->v[i].x;
-    sum.y += prism->v[i].y;
-    sum.z += prism->v[i].z;
-  }
-  
-  dest->x = sum.x / (prism->base_v * 2);
-  dest->y = sum.y / (prism->base_v * 2);
-  dest->z = sum.z / (prism->base_v * 2);
-}
-
-void x3d_prism_point_faces(uint16 base_v, uint16 point, uint16* dest) {
-  if(point < base_v) {
-    dest[0] = X3D_BASE_A;
-  }
-  else {
-    dest[0] = X3D_BASE_B;
-    point -= base_v;
-  }
- 
-  dest[1] = point + 2;
-  dest[2] = (point != 0 ? point - 1 : base_v - 1) + 2;
-  
+    X3D_Vex3D_int32 sum = x3d_vex3d_int32_origin();
+    
+    for(int16 i = 0; i < prism->base_v * 2; ++i) {
+        sum = x3d_vex3d_int32_add_vex3d(&sum, prism->v + i);
+    }
+    
+    *dest = x3d_vex3d_int32_div_by_int16_as_vex3d(&sum, prism->base_v * 2);
 }
 
 void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation) {
-  uint16 i;
-  for(i = 0; i < prism->base_v * 2; ++i) {
-    prism->v[i] = x3d_vex3d_add(prism->v + i, translation);
-  }
+    for(int16 i = 0; i < prism->base_v * 2; ++i) {
+        prism->v[i] = x3d_vex3d_add(prism->v + i, translation);
+    }
 }
 
 void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center) {
-  X3D_Vex3D center;
-  x3d_prism3d_center(prism, &center);
-  
-  X3D_Vex3D translation = x3d_vex3d_sub(new_center, &center);
-  x3d_prism3d_translate(prism, &translation);
+    X3D_Vex3D center;
+    x3d_prism3d_center(prism, &center);
+    
+    X3D_Vex3D translation = x3d_vex3d_sub(new_center, &center);
+    x3d_prism3d_translate(prism, &translation);
 }
 
+/// @TODO This should be deleted!
 X3D_Prism3D* x3d_prism3d_construct_temp(uint16 steps, uint16 r, int16 h) {
     static struct {
         X3D_Prism3D prism;
