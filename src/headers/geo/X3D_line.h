@@ -47,9 +47,14 @@ void x3d_line3d_from_screen_point(X3D_Line3D* line, X3D_Vex2D* p, struct X3D_Cam
 
 X3D_Ray3DClipStatus x3d_ray3d_clip_to_near_plane(X3D_Ray3D* ray, X3D_Ray3D* dest);
 void x3d_ray3d_interpolate(X3D_Ray3D* ray, fp0x16 t, X3D_Vex3D* dest);
+void x3d_ray3d_interpolate_fp8x8(X3D_Ray3D* ray, fp8x8 t, X3D_Vex3D* dest);
 _Bool x3d_ray3d_partially_in_front_of_near_plane(X3D_Ray3D* ray);
 _Bool x3d_ray3d_totally_in_front_of_near_plane(X3D_Ray3D* ray);
 void x3d_ray3d_interpolate(X3D_Ray3D* ray, fp0x16 t, X3D_Vex3D* dest);
+
+static inline void x3d_ray3d_set_v(X3D_Ray3D* ray, int16 v_id, X3D_Vex3D* src) {
+    ray->v[v_id] = *src;
+}
 
 static inline void x3d_ray3d_swap_v(X3D_Ray3D* ray) {
   X3D_SWAP(ray->v[0], ray->v[1]);

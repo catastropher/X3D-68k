@@ -114,7 +114,6 @@ _Bool x3d_polygon3d_clip_to_plane(X3D_Polygon3D* poly, X3D_Polygon3D* dest, X3D_
 
 
 typedef struct X3D_Polygon3DInterface {
-    void (*const print)(X3D_Polygon3D* p);
     void (*const translate)(X3D_Polygon3D* poly, X3D_Vex3D shift);
     void (*const reverse)(X3D_Polygon3D* poly);
     void (*const center)(X3D_Polygon3D* poly, X3D_Vex3D* dest);
@@ -127,7 +126,6 @@ typedef struct X3D_Polygon3DInterface {
 #ifndef X3D_NO_NAMESPACES
 
 static const X3D_Polygon3DInterface Polygon3D = {
-    .print = x3d_polygon3d_print,
     .translate = x3d_polygon3d_translate,
     .reverse = x3d_polygon3d_reverse,
     .center = x3d_polygon3d_center,

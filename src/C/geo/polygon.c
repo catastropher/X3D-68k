@@ -22,148 +22,53 @@
 #include "X3D_clip.h"
 #include "X3D_camera.h"
 #include "X3D_enginestate.h"
-
-
 #include "X3D_keys.h"
 
-//#define x3d_log(...) ;
-
-///////////////////////////////////////////////////////////////////////////////
-/// Prints out the points in a polygon (for debugging).
-///
-/// @param p - polygon
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_polygon3d_print(X3D_Polygon3D* p) {
-  x3d_log(X3D_INFO, "X3D_Polygon3D (v = %d)\n", p->total_v);
-
-  uint16 i;
-  for(i = 0; i < p->total_v; ++i) {
-    x3d_log(X3D_INFO, "\t{%d, %d, %d}\n", p->v[i].x, p->v[i].y, p->v[i].z);
-  }
-
-  x3d_log(X3D_INFO, "\n");
-}
-
-///////////////////////////////////////////////////////////////////////////////
-/// Translates a 3D polygon along a normal vector by a certain amount.
-///
-/// @param poly - polygon to translate
-/// @param dir  - direction to translate in
-/// @param dist - distance to move polygon along dir
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_translate_normal(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist) {
-  X3D_Vex3D shift;
-  x3d_vex3d_fp0x16_mul_by_int16(dir, dist, &shift);
-  x3d_polygon3d_translate(poly, shift);
+    X3D_Vex3D shift;
+    x3d_vex3d_fp0x16_mul_by_int16(dir, dist, &shift);
+    x3d_polygon3d_translate(poly, shift);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Translates a polygon by a shift vector.
-///
-/// @param poly   - polygon to shift
-/// @param shift  - vector to shift by
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_translate(X3D_Polygon3D* poly, X3D_Vex3D shift) {
-  uint16 i;
-  for(i = 0; i < poly->total_v; ++i)
-    poly->v[i] = x3d_vex3d_add(poly->v + i, &shift);
+    for(int16 i = 0; i < poly->total_v; ++i)
+        poly->v[i] = x3d_vex3d_add(poly->v + i, &shift);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Calculates the center of a 3D polygon.
-///
-/// @param poly - poly
-/// @param dest - dest for center of the polygon
-///
-/// @return Nothing.
-/// @note This may lead to division by 0 if poly->total_v == 0
-///////////////////////////////////////////////////////////////////////////////
-void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D* dest) {
-  // To prevent division by 0...
-  x3d_assert(poly->total_v != 0);
-  
-  X3D_Vex3D_int32 center = { 0, 0, 0 };
+void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D* dest) {  
+    X3D_Vex3D_int32 center = x3d_vex3d_int32_origin();
 
-  uint16 i;
-  for(i = 0; i < poly->total_v; ++i) {
-    center.x += poly->v[i].x;
-    center.y += poly->v[i].y;
-    center.z += poly->v[i].z;
-  }
+    for(int16 i = 0; i < poly->total_v; ++i)
+        x3d_vex3d_int32_add_vex3d(&center, dest);
 
-  dest->x = center.x / poly->total_v;
-  dest->y = center.y / poly->total_v;
-  dest->z = center.z / poly->total_v;
+    *dest = x3d_vex3d_int32_div_by_int16_as_vex3d(&center, poly->total_v);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Scales a polygon relative to its center
-///
-/// @param poly - poly
-/// @param scale  - scaling factor in fp8x8 format
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale) {
-  X3D_Vex3D center;
-  x3d_polygon3d_center(poly, &center);
+    X3D_Ray3D ray;
+    x3d_polygon3d_center(poly, &ray.v[0]);
 
-  uint16 i;
-  for(i = 0; i < poly->total_v; ++i) {
-    poly->v[i].x = x3d_linear_interpolate_fp8x8(center.x, poly->v[i].x, scale);
-    poly->v[i].y = x3d_linear_interpolate_fp8x8(center.y, poly->v[i].y, scale);
-    poly->v[i].z = x3d_linear_interpolate_fp8x8(center.z, poly->v[i].z, scale);
-  }
+    for(int16 i = 0; i < poly->total_v; ++i) {
+        x3d_ray3d_set_v(&ray, 0, poly->v + i);
+        x3d_ray3d_interpolate_fp8x8(&ray, scale, poly->v + i);
+    }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Reverses the points in a 3D polygon. If it was clockwise, it will now be
-///   counter-clockwise.
-///
-/// @param poly - poly to reverse
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon3d_reverse(X3D_Polygon3D* poly) {
-  uint16 i;
-
-  for(i = 0; i < poly->total_v / 2; ++i)
-    X3D_SWAP(poly->v[i], poly->v[poly->total_v - i - 1]);
+    for(int i = 0; i < poly->total_v / 2; ++i)
+        X3D_SWAP(poly->v[i], poly->v[poly->total_v - i - 1]);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Constructs a regular 2D polygon (all the sides have the same length).
-///
-/// @param poly   - poly
-/// @param steps  - numbers of steps in the polygon i.e. number of sides
-/// @param r      - radius of the polygon
-/// @param ang    - angle of the orientation of the polygon
-///
-/// @todo Apply the fix that was created for x3d_prism3d_construct() because
-///       we wind up creating a polygon with unexpected side lengths.
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
 void x3d_polygon2d_construct(X3D_Polygon2D* poly, uint16 steps, int16 r, angle256 ang) {
-  ufp8x8 angle = (uint16)ang << 8;
-  ufp8x8 angle_step = 65536L / steps;
+    ufp8x8 angle = (uint16)ang << 8;
+    ufp8x8 angle_step = 65536L / steps;
 
-  poly->total_v = steps;
+    poly->total_v = steps;
 
-  uint16 i;
-  // Construct the polygon
-  for(i = 0; i < steps; ++i) {
-    poly->v[i].x = mul_fp0x16_by_int16_as_int16(x3d_cos(x3d_uint16_upper(angle)), r);
-    poly->v[i].y = mul_fp0x16_by_int16_as_int16(x3d_sin(x3d_uint16_upper(angle)), r);
-
-    angle += angle_step;
-  }
+    for(int16 i = 0; i < steps; ++i) {
+        x3d_vex2d_make_point_on_circle(r, x3d_uint16_upper(angle), poly->v + i);
+        angle += angle_step;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

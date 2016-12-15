@@ -96,6 +96,12 @@ void x3d_ray3d_interpolate(X3D_Ray3D* ray, fp0x16 t, X3D_Vex3D* dest) {
   dest->z = x3d_linear_interpolate(ray->v[0].z, ray->v[1].z, t);
 }
 
+void x3d_ray3d_interpolate_fp8x8(X3D_Ray3D* ray, fp8x8 t, X3D_Vex3D* dest) {
+    dest->x = x3d_linear_interpolate_fp8x8(ray->v[0].x, ray->v[1].x, t);
+    dest->y = x3d_linear_interpolate_fp8x8(ray->v[0].y, ray->v[1].y, t);
+    dest->z = x3d_linear_interpolate_fp8x8(ray->v[0].z, ray->v[1].z, t);
+}
+
 fp0x16 x3d_ray3d_calculate_near_plane_clip_t(X3D_Ray3D* ray) {
   int16 near_z = x3d_rendermanager_get()->near_z;  
   int16 v0_dist_to_near_plane = abs(ray->v[0].z - near_z);

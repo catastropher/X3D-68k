@@ -88,46 +88,16 @@ static inline uint16 x3d_prism3d_total_f(uint16 base_v) {
 
 #define X3D_ALLOCA_PRISM3D(_base_v) (X3D_Prism3D) { _base_v, alloca(_base_v * 2 * sizeof(X3D_Point3D)) }
 
-struct X3D_DisplayLineList;
-struct X3D_CameraObject;
-struct X3D_RasterRegion;
 struct X3D_Ray3D;
 
 void x3d_prism3d_construct(X3D_Prism3D* prism, uint16 sides_in_base, uint16 radius, int16 height, X3D_Vex3D_angle256 angle);
 void x3d_prism3d_rotate_around_origin(X3D_Prism3D* prism, X3D_Vex3D_angle256 angle);
-void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
-void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
-void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest);
+void x3d_prism3d_get_face(const X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
+void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face, const X3D_Polygon3D* src);
+void x3d_prism3d_center(const X3D_Prism3D* prism, X3D_Vex3D* dest);
 
-void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
+void x3d_prism3d_get_edge(const X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
 void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation);
 void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center);
 X3D_Prism3D* x3d_prism3d_construct_temp(uint16 steps, uint16 r, int16 h);
-
-typedef struct X3D_Prism3DInterface {
-    void (*const construct)(X3D_Prism3D* s, uint16 steps, uint16 r, int16 h, X3D_Vex3D_angle256 rot_angle);
-    X3D_Prism3D* (*const constructTemp)(uint16 steps, uint16 r, int16 h);
-    void (*const getFace)(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest);
-    void (*const setFace)(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src);
-    void (*const center)(X3D_Prism3D* prism, X3D_Vex3D* dest);
-
-    void (*const getEdge)(X3D_Prism3D* prism, uint16 edge, struct X3D_Ray3D* dest);
-    void (*const translate)(X3D_Prism3D* prism, X3D_Vex3D* translation);
-    void (*const setCenter)(X3D_Prism3D* prism, X3D_Vex3D* new_center);
-} X3D_Prism3DInterface;
-
-#ifndef X3D_NO_NAMESPACES
-
-static const X3D_Prism3DInterface Prism3D = {
-    .construct = x3d_prism3d_construct,
-    .constructTemp = x3d_prism3d_construct_temp,
-    .getFace = x3d_prism3d_get_face,
-    .setFace = x3d_prism3d_set_face,
-    .center = x3d_prism3d_center,
-    .getEdge = x3d_prism3d_get_edge,
-    .translate = x3d_prism3d_translate,
-    .setCenter = x3d_prism3d_set_center
-};
-
-#endif
 

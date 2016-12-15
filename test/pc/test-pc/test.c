@@ -101,7 +101,7 @@ void build_test_level(void) {
     x3d_level_init(&level);
     
     X3D_Prism3D prism = { .v = alloca(1000) };
-    Prism3D.construct(&prism, 8, 20 * X3D_UNITS_PER_FOOT, 10 * X3D_UNITS_PER_FOOT, (X3D_Vex3D_angle256) { 0, 0, 0 });
+    x3d_prism3d_construct(&prism, 8, 20 * X3D_UNITS_PER_FOOT, 10 * X3D_UNITS_PER_FOOT, (X3D_Vex3D_angle256) { 0, 0, 0 });
     uint16 seg0 = x3d_level_add_new_standalone_segment(&level, &prism, 0)->id;
     
     

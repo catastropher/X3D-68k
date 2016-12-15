@@ -53,7 +53,7 @@ static inline uint16 x3d_prism3d_calculate_radius_from_side_length(uint16 side_l
 // x3d_prism3d_get_face()
 //=============================================================================
 
-static inline void x3d_prism3d_side_face_vertex_ids(X3D_Prism3D* prism, uint16 face, uint16* ids_dest) {
+static inline void x3d_prism3d_side_face_vertex_ids(const X3D_Prism3D* prism, uint16 face, uint16* ids_dest) {
     uint16 side_id = face - 2;
     uint16 next_id = x3d_int16_increment_wrap(side_id, prism->base_v);
     
@@ -63,21 +63,21 @@ static inline void x3d_prism3d_side_face_vertex_ids(X3D_Prism3D* prism, uint16 f
     ids_dest[3] = next_id;
 }
 
-static inline void x3d_prism3d_get_face_base_a(X3D_Prism3D* prism, X3D_Polygon3D* dest) {
+static inline void x3d_prism3d_get_face_base_a(const X3D_Prism3D* prism, X3D_Polygon3D* dest) {
     for(int16 i = 0; i < prism->base_v; ++i)
         dest->v[i] = prism->v[i];
     
     dest->total_v = prism->base_v;
 }
 
-static inline void x3d_prism3d_get_face_base_b_reversed(X3D_Prism3D* prism, X3D_Polygon3D* dest) {
+static inline void x3d_prism3d_get_face_base_b_reversed(const X3D_Prism3D* prism, X3D_Polygon3D* dest) {
     for(int16 i = 0; i < prism->base_v; ++i)
         dest->v[i] = prism->v[prism->base_v + (prism->base_v - i - 1)];
     
     dest->total_v = prism->base_v;
 }
 
-static inline void x3d_prism3d_get_face_side(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest) {
+static inline void x3d_prism3d_get_face_side(const X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* dest) {
     uint16 side_vertex_ids[4];
     x3d_prism3d_side_face_vertex_ids(prism, face, side_vertex_ids);
     
@@ -92,17 +92,17 @@ static inline void x3d_prism3d_get_face_side(X3D_Prism3D* prism, uint16 face, X3
 //=============================================================================
 
 
-static inline void x3d_prism3d_set_face_base_a(X3D_Prism3D* prism, X3D_Polygon3D* src) {
+static inline void x3d_prism3d_set_face_base_a(X3D_Prism3D* prism, const X3D_Polygon3D* src) {
     for(int16 i = 0; i < prism->base_v; ++i)
         prism->v[i] = src->v[i];
 }
 
-static inline void x3d_prism3d_set_face_base_b_reversed(X3D_Prism3D* prism, X3D_Polygon3D* src) {
+static inline void x3d_prism3d_set_face_base_b_reversed(X3D_Prism3D* prism, const X3D_Polygon3D* src) {
     for(int16 i = 0; i < prism->base_v; ++i)
         prism->v[prism->base_v + (prism->base_v - i - 1)] = src->v[i];
 }
 
-static inline void x3d_prism3d_set_face_side(X3D_Prism3D* prism, uint16 face, X3D_Polygon3D* src) {
+static inline void x3d_prism3d_set_face_side(X3D_Prism3D* prism, uint16 face, const X3D_Polygon3D* src) {
     uint16 side_vertex_ids[4];
     x3d_prism3d_side_face_vertex_ids(prism, face, side_vertex_ids);
     

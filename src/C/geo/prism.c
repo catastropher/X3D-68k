@@ -46,7 +46,7 @@ void x3d_prism3d_rotate_around_origin(X3D_Prism3D* prism, X3D_Vex3D_angle256 ang
     }
 }
 
-void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face_id, X3D_Polygon3D* dest) {
+void x3d_prism3d_get_face(const X3D_Prism3D* prism, uint16 face_id, X3D_Polygon3D* dest) {
     if(face_id == X3D_BASE_A)
         x3d_prism3d_get_face_base_a(prism, dest);
     else if(face_id == X3D_BASE_B)
@@ -55,7 +55,7 @@ void x3d_prism3d_get_face(X3D_Prism3D* prism, uint16 face_id, X3D_Polygon3D* des
         x3d_prism3d_get_face_side(prism, face_id, dest);
 }
 
-void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face_id, X3D_Polygon3D* src) {
+void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face_id, const X3D_Polygon3D* src) {
     if(face_id == X3D_BASE_A)
         x3d_prism3d_set_face_base_a(prism, src);
     else if(face_id == X3D_BASE_B)
@@ -64,13 +64,13 @@ void x3d_prism3d_set_face(X3D_Prism3D* prism, uint16 face_id, X3D_Polygon3D* src
         x3d_prism3d_set_face_side(prism, face_id, src);
 }
 
-void x3d_prism3d_get_edge(X3D_Prism3D* prism, uint16 edge, X3D_Ray3D* dest) {
+void x3d_prism3d_get_edge(const X3D_Prism3D* prism, uint16 edge, X3D_Ray3D* dest) {
     uint16 start, end;
     x3d_prism_get_edge_vertex_ids(prism->base_v, edge, &start, &end);
     *dest = x3d_ray3d_make(prism->v[start], prism->v[end]);
 }
 
-void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest) {
+void x3d_prism3d_center(const X3D_Prism3D* prism, X3D_Vex3D* dest) {
     X3D_Vex3D_int32 sum = x3d_vex3d_int32_origin();
     
     for(int16 i = 0; i < prism->base_v * 2; ++i) {
@@ -81,9 +81,8 @@ void x3d_prism3d_center(X3D_Prism3D* prism, X3D_Vex3D* dest) {
 }
 
 void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation) {
-    for(int16 i = 0; i < prism->base_v * 2; ++i) {
+    for(int16 i = 0; i < prism->base_v * 2; ++i)
         prism->v[i] = x3d_vex3d_add(prism->v + i, translation);
-    }
 }
 
 void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center) {
