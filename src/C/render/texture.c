@@ -173,3 +173,13 @@ void x3d_texture_copy_texels(X3D_Texture* dest, const X3D_Texture* src) {
     memcpy(dest->texels, src->texels, sizeof(X3D_ColorIndex) * x3d_texture_total_texels(src));
 }
 
+void x3d_texture_create_new(X3D_Texture* tex, int16 w, int16 h, X3D_Color color) {
+    tex->w = w;
+    tex->h = h;
+    
+    X3D_ColorIndex color_index = x3d_color_to_colorindex(color);
+    
+    size_t size = (size_t)w * h * sizeof(X3D_ColorIndex);
+    tex->texels = malloc(size);
+    memset(tex->texels, color_index, size);
+}

@@ -107,4 +107,5 @@ void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags);
 void x3d_texture_cleanup(X3D_Texture* tex);
 void x3d_texture_fill(X3D_Texture* tex, X3D_ColorIndex color);
 void x3d_texture_copy_texels(X3D_Texture* dest, const X3D_Texture* src);
+void x3d_texture_create_new(X3D_Texture* tex, int16 w, int16 h, X3D_Color color);
 

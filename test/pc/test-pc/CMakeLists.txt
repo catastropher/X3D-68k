@@ -62,7 +62,6 @@ add_executable(X3D-test-pc
   test.c
   fontedit.c
   keys.c
-  texturepack.c
   hud.c
   cube.c
 )

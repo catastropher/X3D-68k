@@ -33,3 +33,11 @@ typedef struct X3D_BoundSphere {
   int16 radius;
 } X3D_BoundSphere;
 
+typedef struct X3D_Model {
+    X3D_Vex3D* v;
+    uint16 total_v;
+    
+    uint16* triangle_vertices;
+    uint16 total_triangles;
+} X3D_Model;
+

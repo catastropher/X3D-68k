@@ -140,8 +140,6 @@ void build_test_level(void) {
     //x3d_build_combined_lightmap_texture();
 }
 
-extern uint8 wood_tex_data[];
-
 void init() {
 #if defined(__pc__) && 1
     int16 w = 640;
@@ -170,8 +168,11 @@ int main(int argc, char* argv[]) {
     test_mat4x4();
     
     //x3d_texture_from_array(&checkerboard, wood_tex_data);
-    x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
-    x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
+    //x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
+    //x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
+    
+    x3d_texture_create_new(&checkerboard, 128, 128, x3d_rgb_to_color(255, 0, 0));
+    x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(0, 0, 255));
     
     x3d_rendermanager_get()->near_z = 10;
     
