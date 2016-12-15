@@ -203,3 +203,10 @@ static inline int16 x3d_linear_interpolate_fp8x8(int16 start, int16 end, fp8x8 s
   return start + mul_int16_by_fp8x8(end - start, scale);
 }
 
+static inline fp16x16 x3d_int16_to_fp16x16(int16 i16) {
+    return (int32)i16 << 16;
+}
+
+static inline int16 x3d_fp16x16_to_int16(fp16x16 i) {
+    return i >> 16;
+}

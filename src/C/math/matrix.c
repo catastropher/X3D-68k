@@ -27,10 +27,10 @@
 void x3d_mat4x4_multiply(X3D_Mat4x4* a, X3D_Mat4x4* b, X3D_Mat4x4* dest) {
     for(int i = 0; i < 4; ++i) {
         for(int j = 0; j < 4; ++j) {
-            int32 sum = 0;
+            fp16x16 sum = 0;
             
             for(int k = 0; j < 4; ++k) {
-                sum += (a->elements[i][k] * b->elements[k][j]) >> 16;
+                sum += ((int64)a->elements[i][k] * b->elements[k][j]) >> 32;
             }
             
             dest->elements[i][j] = sum;
@@ -38,13 +38,61 @@ void x3d_mat4x4_multiply(X3D_Mat4x4* a, X3D_Mat4x4* b, X3D_Mat4x4* dest) {
     }
 }
 
+void x3d_mat4x4_load_identity(X3D_Mat4x4* dest) {
+    const fp16x16 ONE = x3d_int16_to_fp16x16(1);
+    const fp16x16 identity_matrix[4][4] = {
+        { ONE,      0,      0,      0   },
+        { 0,        ONE,    0,      0   },
+        { 0,        0,      ONE,    0   },
+        { 0,        0,      0,      ONE }
+    };
+    
+    for(int i = 0; i < 4; ++i)
+        for(int j = 0; j < 4; ++j)
+            dest->elements[i][j] = identity_matrix[i][j];
+}
 
+void x3d_mat4x4_load_translation_fp16x16(X3D_Mat4x4* dest, X3D_Vex3D_fp16x16* v) {
+    x3d_mat4x4_load_identity(dest);
+    x3d_mat4x4_set_translation_column(dest, v);
+}
 
+void x3d_mat4x4_load_translation(X3D_Mat4x4* dest, X3D_Vex3D* v) {
+    X3D_Vex3D_fp16x16 v_as_fp16x16 = x3d_vex3d_to_vex3d_fp16x16(v);
+    x3d_mat4x4_load_translation_fp16x16(dest, &v_as_fp16x16);
+}
 
-
-
-
-
+void x3d_mat4x4_transform_vex3d(X3D_Mat4x4* mat, X3D_Vex3D* v, X3D_Vex3D* dest) {
+    int16 v4[4] = {
+        v->x,
+        v->y,
+        v->z,
+        1
+    };
+    
+    fp16x16 result[4];
+    
+    for(int i = 0; i < 4; ++i) {
+        result[i] = 0;
+        
+        for(int j = 0; j < 4; ++j) {
+            result[i] += v4[j] * mat->elements[i][j];
+        }
+    }
+    
+    fp16x16 w = result[4];
+    
+    if(w == 0 || w == x3d_int16_to_fp16x16(1)) {
+        dest->x = x3d_fp16x16_to_int16(result[0]);
+        dest->y = x3d_fp16x16_to_int16(result[1]);
+        dest->z = x3d_fp16x16_to_int16(result[2]);
+        return;
+    }
+    
+    dest->x = result[0] / w;
+    dest->y = result[1] / w;
+    dest->z = result[2] / w;
+}
 
 
 

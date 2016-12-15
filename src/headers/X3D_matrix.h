@@ -35,12 +35,23 @@ typedef X3D_Mat3x3_fp0x16 X3D_Mat3x3;
 
 struct X3D_CameraObject;
 
+static inline void x3d_mat4x4_set_translation_column(X3D_Mat4x4* mat, X3D_Vex3D_fp16x16* src) {
+    mat->elements[0][3] = src->x;
+    mat->elements[1][3] = src->y;
+    mat->elements[2][3] = src->z;
+}
+
 void x3d_mat3x3_mul(X3D_Mat3x3* dest, X3D_Mat3x3* a, X3D_Mat3x3* b);
 void x3d_mat3x3_print(X3D_Mat3x3* mat);
 void x3d_mat3x3_construct(X3D_Mat3x3 *dest, X3D_Vex3D_angle256 *angle);
 void x3d_mat3x3_transpose(X3D_Mat3x3* mat);
 void x3d_mat3x3_extract_angles(X3D_Mat3x3* mat, X3D_Vex3D_angle256* dest);
 void x3d_mat3x3_visualize(X3D_Mat3x3* mat, X3D_Vex3D pos, struct X3D_CameraObject* cam);
+
+void x3d_mat4x4_multiply(X3D_Mat4x4* a, X3D_Mat4x4* b, X3D_Mat4x4* dest);
+void x3d_mat4x4_load_identity(X3D_Mat4x4* dest);
+void x3d_mat4x4_load_translation_fp16x16(X3D_Mat4x4* dest, X3D_Vex3D_fp16x16* v);
+void x3d_mat4x4_load_translation(X3D_Mat4x4* dest, X3D_Vex3D* v);
 
 #include "math/X3D_matrix_inline.h"
 

@@ -67,6 +67,8 @@ typedef struct X3D_Vex2D_int32 {
   int32 y;
 } X3D_Vex2D_int32;
 
+typedef X3D_Vex3D_int32 X3D_Vex3D_fp16x16;
+
 typedef X3D_Vex3D_int16 X3D_Vex3D;
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp0x16;
 typedef X3D_Vex3D_int16 X3D_Vex3D_fp8x8;
@@ -197,5 +199,21 @@ static inline X3D_Vex3D x3d_vex3d_fp16x8_to_vex3d(X3D_Vex3D_fp16x8* v) {
 
 static inline X3D_Vex3D x3d_vex3d_abs(X3D_Vex3D* v) {
     return x3d_vex3d_make(abs(v->x), abs(v->y), abs(v->z));
+}
+
+static inline X3D_Vex3D_int32 x3d_vex3d_int32_make(int32 x, int32 y, int32 z) {
+    return (X3D_Vex3D_int32) { x, y, z };
+}
+
+static inline X3D_Vex3D_fp16x16 x3d_vex3d_fp16x16_make(fp16x16 x, fp16x16 y, fp16x16 z) {
+    return x3d_vex3d_int32_make(x, y, z);
+}
+
+static inline X3D_Vex3D_fp16x16 x3d_vex3d_to_vex3d_fp16x16(X3D_Vex3D* v) {
+    return x3d_vex3d_fp16x16_make(
+        (fp16x16)v->x << 16,
+        (fp16x16)v->y << 16,
+        (fp16x16)v->z << 16
+    );
 }
 
