@@ -33,26 +33,3 @@ typedef struct X3D_BoundSphere {
   int16 radius;
 } X3D_BoundSphere;
 
-
-typedef struct X3D_ModelPrism {
-  uint16 base_v;
-  uint16 v_run_start;
-} X3D_ModelPrism;
-
-typedef struct X3D_Model {
-  X3D_Vex3D* v;
-  uint16 total_v;
-  
-  uint16* v_runs;
-  uint16 total_v_runs;
-  
-  X3D_ModelPrism* prisms;
-  uint16 total_prisms;
-} X3D_Model;
-
-void x3d_model_create_dynamically_allocated_model(X3D_Model* model);
-void x3d_model_add_prism3d(X3D_Model* model, X3D_Prism3D* prism, X3D_Vex3D position_relative_to_center);
-void x3d_model_clone_using_slab_allocator(X3D_Model* src, X3D_Model* dest);
-void x3d_model_get_geo(X3D_Model* model, uint16 prism_id, X3D_Prism3D* dest);
-void x3d_model_calculate_boundsphere(X3D_Model* model, X3D_BoundSphere* dest);
-

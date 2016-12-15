@@ -20,5 +20,4 @@
 #include "render/geo/X3D_render_prism.h"
 #include "X3D_camera.h"
 
-void x3d_model_render(X3D_Model* model, X3D_CameraObject* cam, X3D_Color color, X3D_Vex3D_angle256 rot_angle, X3D_Vex3D pos);
 

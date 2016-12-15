@@ -18,24 +18,4 @@
 #include "render/geo/X3D_render_prism.h"
 #include "X3D_camera.h"
 
-void x3d_model_render(X3D_Model* model, X3D_CameraObject* cam, X3D_Color color, X3D_Vex3D_angle256 rot_angle, X3D_Vex3D pos) {
-  X3D_Prism3D temp_prism = { .v = alloca(1000) };
-  X3D_Mat3x3 rot_mat;
-  x3d_mat3x3_construct(&rot_mat, &rot_angle);
-  
-  uint16 i;
-  for(i = 0; i < model->total_prisms; ++i) {
-    x3d_model_get_geo(model, i, &temp_prism);
-    
-    uint16 d;
-    for(d = 0; d < temp_prism.base_v * 2; ++d) {
-      X3D_Vex3D temp_v;
-      x3d_vex3d_int16_rotate(&temp_v, temp_prism.v + d, &rot_mat);
-      temp_prism.v[d] = temp_v;
-    }
-    
-    x3d_prism3d_translate(&temp_prism, &pos);
-    x3d_prism3d_render_wireframe(&temp_prism, cam, color);
-  }
-}
 

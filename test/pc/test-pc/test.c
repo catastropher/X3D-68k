@@ -54,21 +54,6 @@ extern X3D_Level* global_level;;
 X3D_LineTexture3D logo;
 X3D_LineTexture3D aperture;
 
-X3D_Model test_model;
-
-void build_test_model(void) {
-  X3D_Prism3D prism = { .v = alloca(1000) };
-  x3d_prism3d_construct(&prism, 8, 50, 50, (X3D_Vex3D_angle256) { 0, 0, 0 });
-  
-  x3d_model_create_dynamically_allocated_model(&test_model);
-  x3d_model_add_prism3d(&test_model, &prism, x3d_vex3d_make(0, 50 + 25, 0));
-  x3d_model_add_prism3d(&test_model, &prism, x3d_vex3d_make(0, -50 - 25, 0));
-  
-  x3d_prism3d_construct(&prism, 8, 10, 100, (X3D_Vex3D_angle256) { 0, 0, 0 });
-  x3d_model_add_prism3d(&test_model, &prism, x3d_vex3d_make(0, 0, 0));
-}
-
-void init_cube(void);
 
 void test_flat_poly();
 
@@ -188,7 +173,6 @@ int main(int argc, char* argv[]) {
     x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
     x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
     
-    build_test_model();
     x3d_rendermanager_get()->near_z = 10;
     
     build_test_level();
@@ -196,7 +180,6 @@ int main(int argc, char* argv[]) {
     setup_key_map();
     x3d_keymanager_set_callback(engine_test_handle_keys);
     setup_camera();
-    init_cube();
     
     x3d_game_loop();
 

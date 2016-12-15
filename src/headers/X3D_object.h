@@ -75,7 +75,7 @@ typedef struct X3D_DynamicObjectBase {
   X3D_Vex3D_fp8x8 velocity;
   X3D_Mat3x3 mat;
   X3D_Vex3D_angle256 angle;
-  X3D_Model* model;
+  //X3D_Model* model;
   X3D_BoundSphere bound_sphere;
   X3D_LEVEL_SEG segs[4];
   _Bool on_floor;
@@ -121,7 +121,7 @@ void x3d_object_send_event(X3D_ObjectBase* obj, const X3D_ObjectEvent ev);
 
 void x3d_send_frame_events_to_objects(void);
 void x3d_send_render_events_to_objects(struct X3D_CameraObject* cam);
-void x3d_object_set_model(X3D_DynamicObjectBase* obj, X3D_Model* model);
+//void x3d_object_set_model(X3D_DynamicObjectBase* obj, X3D_Model* model);
 
 static inline void x3d_objecttype_set_event_handler(X3D_ObjectType* type, void (*event_handler)(struct X3D_ObjectBase* object, const X3D_ObjectEvent event)) {
   type->event_handler = event_handler;
