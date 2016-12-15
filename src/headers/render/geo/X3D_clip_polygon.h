@@ -18,6 +18,7 @@
 #include "X3D_common.h"
 #include "render/geo/X3D_render_polygon.h"
 #include "X3D_plane.h"
+#include "X3D_camera.h"
 
 _Bool x3d_rasterpolygon3d_clip_to_frustum(X3D_RasterPolygon3D* src, X3D_Frustum* f, X3D_RasterPolygon3D* dest);
 X3D_Frustum* x3d_get_view_frustum(X3D_CameraObject* cam);

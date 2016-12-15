@@ -134,6 +134,8 @@ add_sources(
   C/render/geo/render_polygon_zfill.c
   C/render/geo/render_polygon_surface.c
   C/render/geo/clip_polygon.c
+  C/render/geo/render_polygon.c
+  
   C/render/palette.c
 
   #C/render/scanline.s
