@@ -70,8 +70,8 @@ set_target_properties(X3D-test-pc PROPERTIES OUTPUT_NAME test-pc)
 
 if(${X3D_TARGET} STREQUAL "pc")
   find_package(SDL2 REQUIRED)
-  target_link_libraries(X3D-test-pc ${SDL2_LIBRARY})
   target_link_libraries(X3D-test-pc $ENV{X3D}/build/X3D/libX3D.a)
+  target_link_libraries(X3D-test-pc SDL2)
   target_link_libraries(X3D-test-pc m)
 
 elseif(${X3D_TARGET} STREQUAL "nspire")
