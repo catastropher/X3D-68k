@@ -177,8 +177,12 @@ void init() {
     x3d_init(&init);
 }
 
+void test_mat4x4();
+
 int main(int argc, char* argv[]) {
     init();
+    
+    test_mat4x4();
     
     //x3d_texture_from_array(&checkerboard, wood_tex_data);
     x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");

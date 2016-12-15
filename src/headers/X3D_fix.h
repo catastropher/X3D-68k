@@ -210,3 +210,7 @@ static inline fp16x16 x3d_int16_to_fp16x16(int16 i16) {
 static inline int16 x3d_fp16x16_to_int16(fp16x16 i) {
     return i >> 16;
 }
+
+static inline fp16x16 x3d_fp0x16_to_fp16x16(fp0x16 i) {
+    return (fp16x16)i << 1;
+}

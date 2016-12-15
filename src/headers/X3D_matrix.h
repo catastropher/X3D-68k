@@ -52,6 +52,9 @@ void x3d_mat4x4_multiply(X3D_Mat4x4* a, X3D_Mat4x4* b, X3D_Mat4x4* dest);
 void x3d_mat4x4_load_identity(X3D_Mat4x4* dest);
 void x3d_mat4x4_load_translation_fp16x16(X3D_Mat4x4* dest, X3D_Vex3D_fp16x16* v);
 void x3d_mat4x4_load_translation(X3D_Mat4x4* dest, X3D_Vex3D* v);
+void x3d_mat4x4_transform_vex3d(const X3D_Mat4x4* mat, const X3D_Vex3D* v, X3D_Vex3D* dest);
+void x3d_mat4x4_load_rotation_around_y(X3D_Mat4x4* dest, angle256 angle);
+void x3d_mat4x4_load_rotation_around_x(X3D_Mat4x4* dest, angle256 angle);
 
 #include "math/X3D_matrix_inline.h"
 

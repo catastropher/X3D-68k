@@ -24,6 +24,21 @@
 #include "render/X3D_util.h"
 #include "X3D_camera.h"
 
+void test_mat4x4() {
+    X3D_Mat4x4 mat;
+    X3D_Vex3D trans = { 5, 10, 15 };
+    //x3d_mat4x4_load_translation(&mat, &trans);
+    x3d_mat4x4_load_rotation_around_y(&mat, ANG_45);
+    
+    X3D_Vex3D point = x3d_vex3d_make(100, 0, 0);
+    X3D_Vex3D transformed;
+    
+    x3d_mat4x4_transform_vex3d(&mat, &point, &transformed);
+    
+    x3d_log(X3D_ERROR, "%d %d %d", transformed.x, transformed.y, transformed.z);
+}
+
+
 void x3d_mat4x4_multiply(X3D_Mat4x4* a, X3D_Mat4x4* b, X3D_Mat4x4* dest) {
     for(int i = 0; i < 4; ++i) {
         for(int j = 0; j < 4; ++j) {
@@ -62,7 +77,33 @@ void x3d_mat4x4_load_translation(X3D_Mat4x4* dest, X3D_Vex3D* v) {
     x3d_mat4x4_load_translation_fp16x16(dest, &v_as_fp16x16);
 }
 
-void x3d_mat4x4_transform_vex3d(X3D_Mat4x4* mat, X3D_Vex3D* v, X3D_Vex3D* dest) {
+void x3d_mat4x4_load_rotation_around_y(X3D_Mat4x4* dest, angle256 angle) {
+    x3d_mat4x4_load_identity(dest);
+    
+    fp16x16 sin_angle = x3d_fp0x16_to_fp16x16(x3d_sin(angle));
+    fp16x16 cos_angle = x3d_fp0x16_to_fp16x16(x3d_cos(angle));
+    
+    dest->elements[0][0] = cos_angle;
+    dest->elements[0][2] = sin_angle;
+    
+    dest->elements[2][0] = -sin_angle;
+    dest->elements[2][2] = cos_angle;
+}
+
+void x3d_mat4x4_load_rotation_around_x(X3D_Mat4x4* dest, angle256 angle) {
+    x3d_mat4x4_load_identity(dest);
+    
+    fp16x16 sin_angle = x3d_fp0x16_to_fp16x16(x3d_sin(angle));
+    fp16x16 cos_angle = x3d_fp0x16_to_fp16x16(x3d_cos(angle));
+    
+    dest->elements[1][1] = cos_angle;
+    dest->elements[1][2] = -sin_angle;
+    
+    dest->elements[2][1] = sin_angle;
+    dest->elements[2][2] = cos_angle;
+}
+
+void x3d_mat4x4_transform_vex3d(const X3D_Mat4x4* mat, const X3D_Vex3D* v, X3D_Vex3D* dest) {
     int16 v4[4] = {
         v->x,
         v->y,
@@ -80,7 +121,7 @@ void x3d_mat4x4_transform_vex3d(X3D_Mat4x4* mat, X3D_Vex3D* v, X3D_Vex3D* dest) 
         }
     }
     
-    fp16x16 w = result[4];
+    fp16x16 w = result[3];
     
     if(w == 0 || w == x3d_int16_to_fp16x16(1)) {
         dest->x = x3d_fp16x16_to_int16(result[0]);
