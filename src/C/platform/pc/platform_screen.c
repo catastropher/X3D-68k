@@ -351,8 +351,8 @@ void x3d_screen_clear(X3D_Color color) {
   SDL_FillRect(window_surface, NULL, map_color_to_uint32(color));
 }
 
-void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
-  uint32 c = map_color_to_uint32(color);
+void x3d_screen_draw_pix(int16 x, int16 y, X3D_ColorIndex color) {
+  //uint32 c = map_color_to_uint32(color);
   
   if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
     return;
@@ -362,7 +362,9 @@ void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color) {
       int32 xx = x * screen_scale + d;
       int32 yy = y * screen_scale + i;
       
-      ((uint32 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
+      //((uint32 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
+      
+      x3d_screenmanager_get()->buf[yy * window_surface->w + xx] = color;
       
       //x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
     }
@@ -420,7 +422,7 @@ void x3d_screen_draw_circle(int16 x0, int16 y0, int16 radius, X3D_Color c)
     }
 }
 
-void x3d_screen_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_Color color) {
+void x3d_screen_draw_line(int16 x0, int16 y0, int16 x1, int16 y1, X3D_ColorIndex color) {
   int dx = abs(x1-x0), sx = x0<x1 ? 1 : -1;
   int dy = abs(y1-y0), sy = y0<y1 ? 1 : -1; 
   int err = (dx>dy ? dx : -dy)/2, e2;

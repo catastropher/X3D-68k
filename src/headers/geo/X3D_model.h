@@ -41,3 +41,5 @@ typedef struct X3D_Model {
     uint16 total_triangles;
 } X3D_Model;
 
+_Bool x3d_model_load_from_file(X3D_Model* dest, const char* file_name);
+

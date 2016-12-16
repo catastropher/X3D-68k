@@ -71,7 +71,7 @@ X3D_PLATFORM void x3d_screen_clear(X3D_Color color);
 ///   set. For example, if the screen zoom is 3, a 3x3 group of pixels will
 ///   be drawn.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_PLATFORM void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color);
+X3D_PLATFORM void x3d_screen_draw_pix(int16 x, int16 y, X3D_ColorIndex color);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,7 +88,7 @@ X3D_PLATFORM void x3d_screen_draw_pix(int16 x, int16 y, X3D_Color color);
 ///   x3d_screen_draw_pix.
 ///////////////////////////////////////////////////////////////////////////////
 X3D_PLATFORM void x3d_screen_draw_line(int16 x0, int16 y0, int16 x1, int16 y1,
-    X3D_Color color);
+    X3D_ColorIndex color);
 
 
 ///////////////////////////////////////////////////////////////////////////////

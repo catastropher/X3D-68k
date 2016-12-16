@@ -15,10 +15,20 @@
 
 #pragma once
 
-#include "geo/X3D_line.h"
-#include "X3D_screen.h"
+#include <stdio.h>
 
-struct X3D_CameraObject;
+#include "X3D_common.h"
 
-void x3d_ray3d_render(X3D_Ray3D* ray, struct X3D_CameraObject* cam, X3D_ColorIndex color);
+static inline int32 x3d_file_read_int32(FILE* file) {
+    int val;
+    fscanf(file, "%d", &val);
+    return val;
+}
+
+static inline X3D_Vex3D x3d_file_read_vex3d(FILE* file) {
+    int x, y, z;
+    fscanf(file, "%d %d %d", &x, &y, &z);
+    
+    return x3d_vex3d_make(x, y, z);
+}
 

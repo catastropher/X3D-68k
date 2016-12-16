@@ -20,4 +20,5 @@
 #include "render/geo/X3D_render_prism.h"
 #include "X3D_camera.h"
 
+void x3d_model_render_wireframe(X3D_Model* model, X3D_CameraObject* cam, X3D_ColorIndex color);
 

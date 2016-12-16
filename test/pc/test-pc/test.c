@@ -62,18 +62,11 @@ X3D_Texture checkerboard2;
 
 void test_lightmap(void);
 
-void test_render_callback(X3D_CameraObject* cam) {
-//     uint16 i, j;
-//     for(i = 0; i < 16; ++i) {
-//         for(j = 0; j < 16; ++j) {
-//             uint16 k, d;
-//             for(k = 0; k < 8; ++k) {
-//                 for(d = 0; d < 8; ++d) {
-//                     x3d_screen_set_internal_value(j * 8 + d, i * 8 + k, (i * 16) + j);
-//                 }
-//             }
-//         }
-//     }
+X3D_Model teapot;
+
+void test_render_callback(X3D_CameraObject* cam) {    
+    X3D_ColorIndex red = x3d_color_to_colorindex(x3d_rgb_to_color(255, 0, 0));
+    x3d_model_render_wireframe(&teapot, cam, red);
 }
 
 X3D_LightMapContext lightmap_context;
@@ -166,6 +159,8 @@ int main(int argc, char* argv[]) {
     init();
     
     test_mat4x4();
+    
+    x3d_model_load_from_file(&teapot, "/home/michael/code/X3D-68k/tools/build/teapot.xmod");
     
     //x3d_texture_from_array(&checkerboard, wood_tex_data);
     //x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
