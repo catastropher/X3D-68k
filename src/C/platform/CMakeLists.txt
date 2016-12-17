@@ -7,13 +7,6 @@ if(${X3D_TARGET} STREQUAL "pc")
     pc/platform_keys.c
     pc/platform_assert.c
   )
-elseif(${X3D_TARGET} STREQUAL "68k")
-  add_sources(
-    68k/platform_screen.c
-    68k/platform_init.c
-    68k/platform_keys.c
-    68k/platform_assert.c
-  )
 elseif(${X3D_TARGET} STREQUAL "nspire")
   add_sources(
     nspire/platform_screen.c

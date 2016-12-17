@@ -21,7 +21,7 @@
 .PHONY: docs
 
 # Builds X3D and builds/runs the unit tests
-all: test
+all: x3d
 
 # Configures X3D, the unit tests, and the manual tests
 config:
@@ -92,14 +92,6 @@ test-manual-68k: x3d-68k
 test-manual-nspire: nx3d
 	@cd build/manual-nspire && make --no-print-directory
 
-# Builds the documentation
-docs:
-	@cd docs && doxygen Doxyfile
 
-
-concat-build:
-	find "src/C" -type f -name "*.c" -exec cat {} \; >output.txt
-
-fetch-lib:
-	wget https://raw.githubusercontent.com/debrouxl/ExtGraph/master/lib/extgraph.h -P ./lib
-	wget https://github.com/debrouxl/ExtGraph/raw/master/lib/extgraph.a -P ./lib
+install:
+	@cd build/X3D && sudo make install
