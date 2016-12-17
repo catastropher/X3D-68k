@@ -37,6 +37,22 @@ static inline _Bool x3d_level_segment_face_has_attached_segment(X3D_LevelSegFace
     return face->connect_face != X3D_FACE_NONE;
 }
 
+static inline uint16* x3d_levelsegface_attached_segment_header(const X3D_LevelSegFace* face, const X3D_Level* level) {
+    return level->wall_segs.wall_segs + face->wall_seg_start;
+}
+
+static inline uint16 x3d_levelsegface_total_segments_attached(const X3D_LevelSegFace* face, const X3D_Level* level) {
+    return x3d_levelsegface_attached_segment_header(face, level)[0];
+}
+
+static inline uint16* x3d_levelsegface_attached_segments(const X3D_LevelSegFace* face, const X3D_Level* level) {
+    return x3d_levelsegface_attached_segment_header(face, level) + 1;
+}
+
+static inline _Bool x3d_levelsegface_has_segments_attached(const X3D_LevelSegFace* face) {
+    return face->wall_seg_start != X3D_FACE_NONE;
+}
+
 X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total);
 
 #ifdef X3D_LEVEL_FACE_C

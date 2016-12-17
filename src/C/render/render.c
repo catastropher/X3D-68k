@@ -106,73 +106,72 @@ static inline _Bool x3d_camera_is_on_visible_side_of_segment_face(X3D_CameraObje
     return x3d_plane_point_is_on_normal_facing_side(&face->plane, &cam_pos);
 }
 
-void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo, uint16 face) {
-    X3D_LevelSegFace* face_att = x3d_levelsegment_get_face_attribute(context->level, context->seg, face);
+void x3d_render_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo, uint16 face_id) {
+    X3D_Polygon3D face_geo = { .v = alloca(1000) };
+    
+    x3d_prism3d_get_face(seg_geo, face_id, &face_geo);
+    
+    if(context->render_context->render_type == X3D_RENDER_ID_BUFFER) {
+        x3d_render_id_buffer_polygon(&face_geo, x3d_segfaceid_create(context->seg->id, face_id), context->cam);
+    }
+    else if(context->render_context->render_type == X3D_RENDER_TEXTUER_LIGHTMAP) {          
+        x3d_render_texture_lightmap_polygon(&face_geo, &checkerboard, x3d_segfaceid_create(context->seg->id, face_id), context->cam);
+    }
+}
+
+static inline void x3d_render_segments_attached_to_face(X3D_LevelSegFace* face, X3D_SegRenderContext* context) {
+    uint16 total_segments_attached_to_face = x3d_levelsegface_total_segments_attached(face, context->level);
+    uint16* segments_attached_to_face = x3d_levelsegface_attached_segments(face, context->level);
+    
+    for(uint16 i = 0; i < total_segments_attached_to_face; ++i) {
+        X3D_SegRenderContext child_context = {
+            .cam = context->cam,
+            .seg = x3d_level_get_segmentptr(context->level, x3d_segfaceid_seg(segments_attached_to_face[i])),
+            .level = context->level,
+            .parent_seg_id = context->seg->id,
+            .render_context = context->render_context
+        };
         
-    if(!x3d_camera_is_on_visible_side_of_segment_face(context->cam, face_att))
+        X3D_Prism3D p = { .v = alloca(1000) };
+        x3d_levelsegment_get_geometry(context->level, child_context.seg, &p);
+        
+        X3D_Polygon3D poly = { .v = alloca(1000) };
+        x3d_prism3d_get_face(&p, x3d_segfaceid_face(segments_attached_to_face[i]), &poly);
+        
+        X3D_PolygonRasterVertex3D v[poly.total_v];
+        uint16 j;
+        
+        for(j = 0; j < poly.total_v; ++j)
+            v[j].v = poly.v[j];
+        
+        X3D_RasterPolygon3D rpoly = { .v = v, .total_v = poly.total_v };
+        X3D_PolygonRasterAtt att = {
+            .zfill = { 0x7F7F },
+            .frustum = x3d_get_view_frustum(context->cam)
+        };
+        
+        
+        x3d_polygon3d_render_zfill(&rpoly, &att, context->cam);
+        
+        x3d_render_segment(&child_context);
+    }
+}
+
+void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo, uint16 face_id) {
+    X3D_LevelSegFace* face = x3d_levelsegment_get_face_attribute(context->level, context->seg, face_id);
+        
+    if(!x3d_camera_is_on_visible_side_of_segment_face(context->cam, face))
         return;
     
-    if(x3d_level_segment_face_has_attached_segment(face_att)) {
-        if(!x3d_face_connects_to_parent_segment(face_att, context)) {
-            x3d_render_segment_connected_to_face(face_att, context);
-        }
+    if(x3d_level_segment_face_has_attached_segment(face)) {
+        if(!x3d_face_connects_to_parent_segment(face, context))
+            x3d_render_segment_connected_to_face(face, context);
     }
     else {
-        X3D_Polygon3D temp = { .v = alloca(1000) };
-        
-        x3d_prism3d_get_face(seg_geo, face, &temp);
-        
-        if(context->render_context->render_type == X3D_RENDER_ID_BUFFER) {
-            x3d_render_id_buffer_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
-        }
-        else if(context->render_context->render_type == X3D_RENDER_LIGHTMAP) {
-            //x3d_render_lightmap_polygon(&temp, x3d_segfaceid_create(context->seg->id, face), context->cam);
-        }
-        else if(context->render_context->render_type == X3D_RENDER_TEXTUER_LIGHTMAP) {          
-            x3d_render_texture_lightmap_polygon(&temp, &checkerboard, x3d_segfaceid_create(context->seg->id, face), context->cam);
-        }
-                
-        //==============
-        if(face_att->wall_seg_start != X3D_FACE_NONE) {
-            uint16* list = context->level->wall_segs.wall_segs + face_att->wall_seg_start;
-            
-            //x3d_log(X3D_INFO, "Total: %d", x3d_segfaceid_seg(list[1]));
-            
-            uint16 i;
-            for(i = 0; i < list[0]; ++i) {
-                X3D_SegRenderContext child_context = {
-                    .cam = context->cam,
-                    .seg = x3d_level_get_segmentptr(context->level, x3d_segfaceid_seg(list[i + 1])),
-                    .level = context->level,
-                    .parent_seg_id = context->seg->id,
-                    .render_context = context->render_context
-                };
-                
-                X3D_Prism3D p = { .v = alloca(1000) };
-                x3d_levelsegment_get_geometry(context->level, child_context.seg, &p);
-                
-                X3D_Polygon3D poly = { .v = alloca(1000) };
-                x3d_prism3d_get_face(&p, x3d_segfaceid_face(list[i + 1]), &poly);
-                
-                X3D_PolygonRasterVertex3D v[poly.total_v];
-                uint16 j;
-                
-                for(j = 0; j < poly.total_v; ++j)
-                    v[j].v = poly.v[j];
-                
-                X3D_RasterPolygon3D rpoly = { .v = v, .total_v = poly.total_v };
-                X3D_PolygonRasterAtt att = {
-                    .zfill = { 0x7F7F },
-                    .frustum = x3d_get_view_frustum(context->cam)
-                };
-                
-                
-                x3d_polygon3d_render_zfill(&rpoly, &att, context->cam);
-                
-                x3d_render_segment(&child_context);
-            }
-        }
-        
+        x3d_render_face(context, seg_geo, face_id);
+    
+        if(x3d_levelsegface_has_segments_attached(face))
+            x3d_render_segments_attached_to_face(face, context);
     }
 }
 
@@ -180,10 +179,8 @@ void x3d_render_segment(X3D_SegRenderContext* context) {
     X3D_Prism3D prism = { .v = alloca(1000) };
     x3d_levelsegment_get_geometry(context->level, context->seg, &prism);
     
-    uint16 i;
-    for(i = 0; i < context->seg->base_v + 2; ++i) {
+    for(uint16 i = 0; i < context->seg->base_v + 2; ++i)
         x3d_render_segment_face(context, &prism, i);
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
