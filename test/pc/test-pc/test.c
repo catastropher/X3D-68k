@@ -17,7 +17,7 @@
 //
 // test.c -> test for PC
 
-#include "X3D.h"
+#include <X3D/X3D.h>
 
 #if defined(__pc__)
 #include <SDL/SDL.h>

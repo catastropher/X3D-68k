@@ -19,7 +19,7 @@
 #include <SDL/SDL.h>
 #endif
 
-#include "X3D.h"
+#include <X3D/X3D.h>
 
 enum {
   KEY_ENTER = X3D_KEY_0,

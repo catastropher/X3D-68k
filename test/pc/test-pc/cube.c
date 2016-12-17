@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X3D.h"
+#include <X3D/X3D.h>
 
 #include "render/geo/X3D_render_model.h"
 #include "X3D_collide.h"
