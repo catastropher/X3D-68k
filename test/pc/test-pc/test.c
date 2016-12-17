@@ -73,7 +73,7 @@ void build_test_level(void) {
     x3d_level_init(&level);
     
     X3D_Prism3D prism = { .v = alloca(1000) };
-    x3d_prism3d_construct(&prism, 8, 20 * X3D_UNITS_PER_FOOT, 10 * X3D_UNITS_PER_FOOT, (X3D_Vex3D_angle256) { 0, 0, 0 });
+    x3d_prism3d_construct(&prism, 8, 8 * X3D_UNITS_PER_FOOT, 8 * X3D_UNITS_PER_FOOT, (X3D_Vex3D_angle256) { 0, 0, 0 });
     uint16 seg0 = x3d_level_add_new_standalone_segment(&level, &prism, 0)->id;
     
     
@@ -118,7 +118,7 @@ void build_test_level(void) {
     uint16 i;
     for(i = 0; i < lightmap_context.total_lightmaps; ++i) {
         if(lightmap_context.lightmaps[i].texels) {
-            x3d_lightmap_bilinear_filter(lightmap_context.lightmaps + i);
+            //x3d_lightmap_bilinear_filter(lightmap_context.lightmaps + i);
         }
     }
     
@@ -154,14 +154,19 @@ int main(int argc, char* argv[]) {
     
     test_mat4x4();
     
-    x3d_model_load_from_file(&teapot, "/home/michael/code/X3D-68k/tools/build/teapot.xmod");
+    //x3d_model_load_from_file(&teapot, "/home/michael/code/X3D-68k/tools/build/teapot.xmod");
+    
+    
     
     //x3d_texture_from_array(&checkerboard, wood_tex_data);
     //x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
+    x3d_texture_fill_with_checkerboard(&checkerboard, 64, 4);
+    
+    
     //x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
     
-    x3d_texture_create_new(&checkerboard, 128, 128, x3d_rgb_to_color(255, 0, 0));
-    x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(0, 0, 255));
+    x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(255, 0, 0));
+    //x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(0, 0, 255));
     
     x3d_rendermanager_get()->near_z = 10;
     

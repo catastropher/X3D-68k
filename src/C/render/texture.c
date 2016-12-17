@@ -183,3 +183,28 @@ void x3d_texture_create_new(X3D_Texture* tex, int16 w, int16 h, X3D_Color color)
     tex->texels = malloc(size);
     memset(tex->texels, color_index, size);
 }
+
+void x3d_texture_fill_with_checkerboard(X3D_Texture* tex, int16 width, int16 square_size) {
+    X3D_ColorIndex white = x3d_color_to_colorindex(x3d_rgb_to_color(255, 255, 255));
+    X3D_ColorIndex black = x3d_color_to_colorindex(x3d_rgb_to_color(0, 0, 0));
+    
+    x3d_texture_create_new(tex, width, width, black);
+    
+    int16 num_squares = width / square_size;
+    
+    for(int16 i = 0; i < num_squares; ++i) {
+        for(int16 j = 0; j < num_squares; ++j) {
+            if((i % 2) == (j % 2)) {
+                int16 x_start = j * square_size;
+                int16 y_start = i * square_size;
+                
+                for(int16 k = 0; k < square_size; ++k) {
+                    for(int16 d = 0; d < square_size; ++d) {
+                        x3d_texture_set_texel(tex, x_start + d, y_start + k, white);
+                    }
+                }
+            }
+        }
+    }
+}
+

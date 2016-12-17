@@ -80,7 +80,7 @@ void x3d_lightmap_init(X3D_LightMapContext* context, uint32 id, X3D_Polygon3D* p
     uint16 h = x3d_units_to_texels(proj->max_y - proj->min_y) + 1;
     
     x3d_texture_init(map, w, h, 0);
-    x3d_texture_fill(map, 0);
+    x3d_texture_fill(map, 64);
 }
 
 void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {
