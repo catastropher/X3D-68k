@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <stdio.h>
+
 #include "X3D_common.h"
 #include "X3D_prism.h"
 #include "X3D_camera.h"
@@ -31,14 +33,9 @@
 #include "render/geo/X3D_render_linetexture.h"
 #include "render/geo/X3D_render_polygon.h"
 #include "render/geo/X3D_clip_polygon.h"
-
 #include "geo/X3D_line.h"
 
-#include <stdio.h>
 
-
-extern int16 render_mode;
-extern uint16 geo_render_mode;
 
 void x3d_rendermanager_init(X3D_InitSettings* settings) {
   X3D_RenderManager* renderman = x3d_rendermanager_get();
@@ -81,75 +78,43 @@ void x3d_rendermanager_cleanup(void) {
 
 
 X3D_Level* global_level;
-extern X3D_LineTexture3D logo;
-extern X3D_LineTexture3D aperture;
 
 void test_render_callback(X3D_CameraObject* cam);
 
 void x3d_render_segment(X3D_SegRenderContext* context);
 
-void render_cube(X3D_Vex3D pos, int16 size, X3D_SegRenderContext* context) {
-    X3D_Prism3D prism = { .v = alloca(1000) };
-    x3d_prism3d_construct(&prism, 4, size, size, (X3D_Vex3D_angle256) { 0, 0, 0 });
-    
-    x3d_prism3d_set_center(&prism, &pos);
-    
-    X3D_Polygon3D poly = { .v = alloca(1000) };
-    
-    uint16 i;
-    for(i = 0; i < 6; ++i) {
-        x3d_prism3d_get_face(&prism, i, &poly);
-        
-        if(context->render_context->render_type == X3D_RENDER_ID_BUFFER) {
-            x3d_render_id_buffer_polygon(&poly, 0x7FFF, context->cam);
-        }
-        else {
-            //x3d_render_textured_shaded_polygon(&poly, &checkerboard, context->cam);
-        }
-    }
+static inline _Bool x3d_face_connects_to_parent_segment(X3D_LevelSegFace* face, X3D_SegRenderContext* context) {
+    return x3d_segfaceid_seg(face->connect_face) == context->parent_seg_id;
 }
 
-void x3d_clip_polygon3d_to_frustum(X3D_Polygon3D* poly, X3D_Frustum* frustum, X3D_Polygon3D* dest) {
-    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
-    X3D_RasterPolygon3D clipped = { .v = alloca(1000) };
+static inline void x3d_render_segment_connected_to_face(X3D_LevelSegFace* face, X3D_SegRenderContext* context) {
+    X3D_SegRenderContext child_context = {
+        .cam = context->cam,
+        .seg = x3d_level_get_segmentptr(context->level, x3d_segfaceid_seg(face->connect_face)),
+        .level = context->level,
+        .parent_seg_id = context->seg->id,
+        .render_context = context->render_context
+    };
     
-    uint16 i;
-    for(i = 0; i < poly->total_v; ++i)
-        rpoly.v[i].v = poly->v[i];
-    
-    x3d_rasterpolygon3d_clip_to_frustum(&rpoly, frustum, &clipped);
-    
-    for(i = 0; i < clipped.total_v; ++i)
-        dest->v[i] = clipped.v[i].v;
-    
-    dest->total_v = clipped.total_v;
+    x3d_render_segment(&child_context);
 }
 
-void x3d_construct_frustum_from_clipped_polygon3d(X3D_Polygon3D* poly, X3D_Frustum* frustum, X3D_Frustum* dest, X3D_Vex3D* cam_pos) {
-    X3D_Polygon3D clipped = { .v = alloca(1000) };
+static inline _Bool x3d_camera_is_on_visible_side_of_segment_face(X3D_CameraObject* cam, X3D_LevelSegFace* face) {
+    X3D_Vex3D cam_pos;
+    x3d_object_pos(cam, &cam_pos);
     
-    x3d_clip_polygon3d_to_frustum(poly, frustum, &clipped);
-    x3d_frustum_construct_from_polygon3d(dest, &clipped, cam_pos);
+    return x3d_plane_point_is_on_normal_facing_side(&face->plane, &cam_pos);
 }
 
 void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo, uint16 face) {
     X3D_LevelSegFace* face_att = x3d_levelsegment_get_face_attribute(context->level, context->seg, face);
-    X3D_Vex3D cam_pos;
-    x3d_object_pos(context->cam, &cam_pos);
         
-    if(x3d_plane_point_distance(&face_att->plane, &cam_pos) < 0) return;
+    if(!x3d_camera_is_on_visible_side_of_segment_face(context->cam, face_att))
+        return;
     
-    if(face_att->connect_face != X3D_FACE_NONE) {
-        if(x3d_segfaceid_seg(face_att->connect_face) != context->parent_seg_id) {
-            X3D_SegRenderContext child_context = {
-                .cam = context->cam,
-                .seg = x3d_level_get_segmentptr(context->level, x3d_segfaceid_seg(face_att->connect_face)),
-                .level = context->level,
-                .parent_seg_id = context->seg->id,
-                .render_context = context->render_context
-            };
-            
-            x3d_render_segment(&child_context);
+    if(x3d_level_segment_face_has_attached_segment(face_att)) {
+        if(!x3d_face_connects_to_parent_segment(face_att, context)) {
+            x3d_render_segment_connected_to_face(face_att, context);
         }
     }
     else {

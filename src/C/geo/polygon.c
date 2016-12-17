@@ -24,6 +24,8 @@
 #include "X3D_enginestate.h"
 #include "X3D_keys.h"
 
+#include "render/geo/X3D_clip_polygon.h"
+
 void x3d_polygon3d_translate_normal(X3D_Polygon3D* poly, X3D_Normal3D* dir, int16 dist) {
     X3D_Vex3D shift;
     x3d_vex3d_fp0x16_mul_by_int16(dir, dist, &shift);
@@ -383,7 +385,22 @@ X3D_PlaneType x3d_polygon3d_calculate_planetype(X3D_Polygon3D* poly, X3D_Plane* 
     return X3D_PLANE_XY;
 }
 
-
+void x3d_polygon3d_clip_to_frustum(X3D_Polygon3D* poly, X3D_Frustum* frustum, X3D_Polygon3D* dest) {
+    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
+    X3D_RasterPolygon3D clipped = { .v = alloca(1000) };
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i)
+        rpoly.v[i].v = poly->v[i];
+    
+    /// @todo This is probably an inefficient way to do this...
+    x3d_rasterpolygon3d_clip_to_frustum(&rpoly, frustum, &clipped);
+    
+    for(i = 0; i < clipped.total_v; ++i)
+        dest->v[i] = clipped.v[i].v;
+    
+    dest->total_v = clipped.total_v;
+}
 
 
 

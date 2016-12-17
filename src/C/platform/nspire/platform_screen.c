@@ -575,9 +575,6 @@ void x3d_screen_draw_digit(char digit, int16 x, int16 y, X3D_Color color) {
     }
   }
 }
-    
-uint16 geo_render_mode;
-    
 
 void x3d_screen_draw_uint32(uint32 num, int16 x, int16 y, X3D_Color c) {
   char buf[32];

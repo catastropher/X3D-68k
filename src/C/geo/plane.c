@@ -139,6 +139,13 @@ _Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Point3D* p) {
   return X3D_TRUE;
 }
 
+void x3d_frustum_construct_from_clipped_polygon3d(X3D_Polygon3D* poly, X3D_Frustum* frustum, X3D_Frustum* dest, X3D_Vex3D* cam_pos) {
+    X3D_Polygon3D clipped = { .v = alloca(1000) };
+    
+    x3d_polygon3d_clip_to_frustum(poly, frustum, &clipped);
+    x3d_frustum_construct_from_polygon3d(dest, &clipped, cam_pos);
+}
+
 static inline void* advance_ptr(void* ptr, size_t dist) {
     return ptr + dist;
 }

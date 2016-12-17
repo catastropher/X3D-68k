@@ -33,6 +33,10 @@ static inline uint16 x3d_segfaceid_seg(X3D_SegFaceID id) {
   return id >> 4;
 }
 
+static inline _Bool x3d_level_segment_face_has_attached_segment(X3D_LevelSegFace* face) {
+    return face->connect_face != X3D_FACE_NONE;
+}
+
 X3D_LEVEL_SEG_FACE_RUN x3d_level_segment_face_run_add(X3D_Level* level, X3D_LevelSegFace* run, uint16 total);
 
 #ifdef X3D_LEVEL_FACE_C

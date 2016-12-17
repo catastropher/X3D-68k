@@ -42,37 +42,35 @@ enum {
 
 void setup_key_map(void) {
 #ifdef __pc__
-  x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
-  x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
-  x3d_key_map_pc(KEY_W, 'w');
-  x3d_key_map_pc(KEY_A, 'a');
-  x3d_key_map_pc(KEY_S, 's');
-  x3d_key_map_pc(KEY_D, 'd');
-  x3d_key_map_pc(KEY_Q, SDLK_DOWN);
-  x3d_key_map_pc(KEY_E, SDLK_UP);
-  x3d_key_map_pc(KEY_UP, '[');
-  x3d_key_map_pc(KEY_DOWN, ']');
-  x3d_key_map_pc(KEY_1, '1');
-  x3d_key_map_pc(KEY_2, '2');
-  x3d_key_map_pc(KEY_0, '0');
-  x3d_key_map_pc(KEY_9, '9');
-  x3d_key_map_pc(KEY_RECORD, 'm');
-  x3d_key_map_pc(X3D_KEY_15, 'p');
+    x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
+    x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
+    x3d_key_map_pc(KEY_W, 'w');
+    x3d_key_map_pc(KEY_A, 'a');
+    x3d_key_map_pc(KEY_S, 's');
+    x3d_key_map_pc(KEY_D, 'd');
+    x3d_key_map_pc(KEY_Q, SDLK_DOWN);
+    x3d_key_map_pc(KEY_E, SDLK_UP);
+    x3d_key_map_pc(KEY_UP, '[');
+    x3d_key_map_pc(KEY_DOWN, ']');
+    x3d_key_map_pc(KEY_1, '1');
+    x3d_key_map_pc(KEY_2, '2');
+    x3d_key_map_pc(KEY_0, '0');
+    x3d_key_map_pc(KEY_9, '9');
+    x3d_key_map_pc(KEY_RECORD, 'm');
+    x3d_key_map_pc(X3D_KEY_15, 'p');
 #elif defined(__nspire__)
-  x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
-  x3d_key_map_pc(KEY_W, SDLK_7);
-  x3d_key_map_pc(KEY_S, SDLK_4);
-  x3d_key_map_pc(KEY_A, SDLK_LEFT);
-  x3d_key_map_pc(KEY_D, SDLK_RIGHT);
-  x3d_key_map_pc(KEY_E, SDLK_UP);
-  x3d_key_map_pc(KEY_Q, SDLK_DOWN);
-  x3d_key_map_pc(KEY_9, SDLK_3);
-  x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
-  x3d_key_map_pc(X3D_KEY_15, SDLK_9);
+    x3d_key_map_pc(KEY_ENTER, SDLK_RETURN);
+    x3d_key_map_pc(KEY_W, SDLK_7);
+    x3d_key_map_pc(KEY_S, SDLK_4);
+    x3d_key_map_pc(KEY_A, SDLK_LEFT);
+    x3d_key_map_pc(KEY_D, SDLK_RIGHT);
+    x3d_key_map_pc(KEY_E, SDLK_UP);
+    x3d_key_map_pc(KEY_Q, SDLK_DOWN);
+    x3d_key_map_pc(KEY_9, SDLK_3);
+    x3d_key_map_pc(KEY_ESCAPE, SDLK_ESCAPE);
+    x3d_key_map_pc(X3D_KEY_15, SDLK_9);
 #endif
 }
-
-extern int16 render_mode;
 
 extern X3D_Level* global_level;
 extern X3D_LightMapContext lightmap_context;
@@ -107,14 +105,6 @@ void engine_test_handle_keys(void) {
           seg->door_data->mode = X3D_DOOR_CLOSING;
       }
     }
-  }
-#endif
-
-#if 1
-  if(x3d_key_down(KEY_9)) {
-    render_mode = (render_mode + 1) % 4;
-    
-    while(x3d_key_down(KEY_9)) x3d_read_keys();
   }
 #endif
 

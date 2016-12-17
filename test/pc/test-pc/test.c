@@ -20,20 +20,19 @@
 #include <X3D/X3D.h>
 
 #if defined(__pc__)
-#include <SDL/SDL.h>
-#include <alloca.h>
+    #include <SDL2/SDL.h>
+    #include <alloca.h>
 #endif
 
 #if defined(__nspire__)
-#include <SDL/SDL.h>
-#include <alloca.h>
+    #include <SDL/SDL.h>
+    #include <alloca.h>
 #endif
 
 
 void engine_test_handle_keys(void);
 void setup_key_map(void);
 
-// Sets up the camera for player 1
 void setup_camera(void) {
   x3d_camera_init();
   
@@ -51,11 +50,6 @@ void segment_face_render_callback(X3D_SegmentRenderFace* face);
 
 extern X3D_Level* global_level;;
 
-X3D_LineTexture3D logo;
-X3D_LineTexture3D aperture;
-
-
-void test_flat_poly();
 
 X3D_Texture checkerboard;
 X3D_Texture checkerboard2;

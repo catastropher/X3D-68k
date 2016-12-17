@@ -56,6 +56,7 @@ void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D*
 
 void x3d_frustum_construct_from_polygon3d(X3D_Frustum* frustum, struct X3D_Polygon3D* poly, X3D_Vex3D* p);
 _Bool x3d_frustum_point_inside(X3D_Frustum* frustum, X3D_Point3D* p);
+void x3d_frustum_construct_from_clipped_polygon3d(struct X3D_Polygon3D* poly, X3D_Frustum* frustum, X3D_Frustum* dest, X3D_Vex3D* cam_pos);
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Calculates the distance from a point to a plane.
@@ -73,5 +74,9 @@ static inline int16 x3d_plane_point_distance(X3D_Plane* p, X3D_Point3D* v) {
 static inline void x3d_plane_flip(X3D_Plane* p) {
   p->normal = x3d_vex3d_neg(&p->normal);
   p->d = -p->d;
+}
+
+static inline _Bool x3d_plane_point_is_on_normal_facing_side(X3D_Plane* plane, X3D_Vex3D* v) {
+    return x3d_plane_point_distance(plane, v) > 0;
 }
 

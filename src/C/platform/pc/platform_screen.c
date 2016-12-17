@@ -304,8 +304,6 @@ static uint32 map_color_to_uint32(X3D_Color color) {
 #endif
 }
 
-extern int16 render_mode;
-
 void x3d_screen_flip() {
   if(record) {
     char str[1100];
