@@ -27,7 +27,7 @@ _Bool x3d_line3d_intersect_plane(X3D_Line3D* line, X3D_Plane* plane, X3D_Vex3D* 
   if(bottom == 0)
     return X3D_FALSE;
   
-  int32 top = -(x3d_vex3d_dot(&plane->normal, &line->start) - ((int32)plane->d << X3D_NORMAL_BITS));
+  int32 top = -(x3d_vex3d_dot(&plane->normal, &line->start) + ((int32)plane->d << X3D_NORMAL_BITS));
   int32 t = top / bottom;
   
   //x3d_log(X3D_INFO, "Top: %d, %d, %d => %d", plane->normal.x, plane->normal.y, plane->normal.z, plane->d);

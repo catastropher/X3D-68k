@@ -62,7 +62,7 @@ void calculate_frustum_plane_normals(X3D_Frustum* f) {
     f->p[0].normal = (X3D_Vex3D){ 0, 0, 32767 };
     
     // Hack...
-    f->p[0].d = 15;//c->dist - DIST_TO_NEAR_PLANE;
+    f->p[0].d = -15;//c->dist - DIST_TO_NEAR_PLANE;
     
     f->total_p = 5;
 }
@@ -78,7 +78,7 @@ void calculate_frustum_plane_distances(X3D_Frustum* f, X3D_CameraObject* cam) {
     
     uint16 i;
     for(i = 0; i < f->total_p; ++i) {
-        f->p[i].d = x3d_vex3d_fp0x16_dot(&f->p[i].normal, &eye_cam_pos);
+        f->p[i].d = -x3d_vex3d_fp0x16_dot(&f->p[i].normal, &eye_cam_pos);
     }
     
     X3D_Vex3D out;
@@ -94,7 +94,7 @@ void calculate_frustum_plane_distances(X3D_Frustum* f, X3D_CameraObject* cam) {
     out.y += cam_pos.y - PLAYER_HEIGHT;
     out.z += cam_pos.z;
     
-    f->p[0].d = x3d_vex3d_fp0x16_dot(&f->p[0].normal, &out);  
+    f->p[0].d = -x3d_vex3d_fp0x16_dot(&f->p[0].normal, &out);  
 }
 
 // Calculates the rotated plane normals of the view frustum

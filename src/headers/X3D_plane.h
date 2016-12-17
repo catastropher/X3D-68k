@@ -19,7 +19,7 @@
 #include "X3D_matrix.h"
 
 ///////////////////////////////////////////////////////////////////////////////
-/// A plane with the equation AX + BY + CZ - D = 0
+/// A plane with the equation AX + BY + CZ + D = 0
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Plane {
   X3D_Normal3D normal;    ///< Surface normal (A, B, C)
@@ -67,7 +67,7 @@ void x3d_frustum_construct_from_clipped_polygon3d(struct X3D_Polygon3D* poly, X3
 /// @return The distance from p to v.
 ///////////////////////////////////////////////////////////////////////////////
 static inline int16 x3d_plane_point_distance(X3D_Plane* p, X3D_Point3D* v) {
-  return ((int16)x3d_vex3d_fp0x16_dot(&p->normal, v) - p->d);
+  return ((int16)x3d_vex3d_fp0x16_dot(&p->normal, v) + p->d);
 }
 
 /// @todo document

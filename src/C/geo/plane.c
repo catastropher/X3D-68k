@@ -30,13 +30,8 @@ void x3d_plane_construct_from_three_points(X3D_Plane* p, X3D_Point3D* p1, X3D_Po
 
   x3d_vex3d_fp0x16_cross(&p->normal, &v1, &v2);
 
-  // For some reason, the 68k is getting a vector that's pointing the wrong way???
-#ifdef __68k__
-  p->normal = x3d_vex3d_neg(&p->normal);
-#endif
-
   // D = (AX + BY + CZ)
-  p->d = x3d_vex3d_dot(&p->normal, p1) >> X3D_NORMAL_BITS;
+  p->d = -x3d_vex3d_dot(&p->normal, p1) >> X3D_NORMAL_BITS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +63,7 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Point3
     float A = plane->normal.x / 32768.0;
     float B = plane->normal.y / 32768.0;
     float C = plane->normal.z / 32768.0;
-    float D = plane->d;
+    float D = -plane->d;
 
     float u = 10000;
     
@@ -217,19 +212,19 @@ void x3d_planarprojection_unproject_point(X3D_PlanarProjection* proj, X3D_Vex2D*
     };
     
     if(proj->plane_type == X3D_PLANE_YZ) {
-        dest->x = -(n.y * v.x + n.z * v.y - proj->poly_plane.d) / n.x;
+        dest->x = -(n.y * v.x + n.z * v.y + proj->poly_plane.d) / n.x;
         dest->y = v.x;
         dest->z = v.y;
     }
     else if(proj->plane_type == X3D_PLANE_XZ) {
         dest->x = v.x;
-        dest->y = - ( n.x * v.x + n.z * n.y - proj->poly_plane.d) / n.y;
+        dest->y = - ( n.x * v.x + n.z * n.y + proj->poly_plane.d) / n.y;
         dest->z = v.y;
     }
     else {
         dest->x = v.x;
         dest->y = v.y;
-        dest->z = - ( n.x * v.x + n.y * v.y - proj->poly_plane.d) / n.z;
+        dest->z = - ( n.x * v.x + n.y * v.y + proj->poly_plane.d) / n.z;
     }    
 }
 
