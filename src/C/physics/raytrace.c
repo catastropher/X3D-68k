@@ -28,9 +28,10 @@
 #include "level/X3D_level.h"
 
 void x3d_raytracer_init_from_point_on_screen(X3D_RayTracer* raytracer, X3D_Level* level, X3D_CameraObject* cam, X3D_Vex2D point_on_screen) {
-  x3d_line3d_from_screen_point(&raytracer->ray, &point_on_screen, cam, 15);
-  raytracer->cam = cam;
-  raytracer->level = level;
+    x3d_line3d_from_screen_point(&raytracer->ray, &point_on_screen, cam, 15);
+    raytracer->cam = cam;
+    raytracer->level = level;
+    raytracer->min_hit_scale = 0x7FFF;
 }
 
 _Bool x3d_raytracer_find_closest_hit_wall(X3D_RayTracer* raytracer) {

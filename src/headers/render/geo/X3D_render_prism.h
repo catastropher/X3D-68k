@@ -19,4 +19,5 @@ struct X3D_Prism3D;
 struct X3D_CameraObject;
 
 void x3d_prism3d_render_wireframe(struct X3D_Prism3D* prism, struct X3D_CameraObject* cam, X3D_Color color);
+void x3d_prism3d_render_wireframe_with_colored_edges(struct X3D_Prism3D* prism, struct X3D_CameraObject* cam, X3D_ColorIndex* color_for_each_edge);
 

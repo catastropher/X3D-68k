@@ -88,6 +88,9 @@ static inline X3D_HandleManager* x3d_handlemanager_get(void) {
   return &x3d_state->handle_manager;
 }
 
+static inline void x3d_rendermanager_set_render_mode(int16 render_mode) {
+    x3d_rendermanager_get()->render_mode = render_mode;
+}
 
 X3D_INTERNAL void x3d_enginestate_init(X3D_InitSettings* init);
 void x3d_enginestate_cleanup(void);

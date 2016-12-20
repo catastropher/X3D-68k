@@ -34,6 +34,7 @@
 #include "render/geo/X3D_render_polygon.h"
 #include "render/geo/X3D_clip_polygon.h"
 #include "geo/X3D_line.h"
+#include "render/X3D_lightmap.h"
 
 
 
@@ -106,16 +107,18 @@ static inline _Bool x3d_camera_is_on_visible_side_of_segment_face(X3D_CameraObje
     return x3d_plane_point_is_on_normal_facing_side(&face->plane, &cam_pos);
 }
 
+extern X3D_LightMapContext lightmap_context;
+
 void x3d_render_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo, uint16 face_id) {
     X3D_Polygon3D face_geo = { .v = alloca(1000) };
     
     x3d_prism3d_get_face(seg_geo, face_id, &face_geo);
     
-    if(context->render_context->render_type == X3D_RENDER_ID_BUFFER) {
+    if(context->render_context->render_mode == X3D_RENDER_ID_BUFFER) {
         x3d_render_id_buffer_polygon(&face_geo, x3d_segfaceid_create(context->seg->id, face_id), context->cam);
     }
-    else if(context->render_context->render_type == X3D_RENDER_TEXTUER_LIGHTMAP) {          
-        x3d_render_texture_lightmap_polygon(&face_geo, &checkerboard, x3d_segfaceid_create(context->seg->id, face_id), context->cam);
+    else if(context->render_context->render_mode == X3D_RENDER_TEXTUER_LIGHTMAP) {          
+        x3d_render_texture_lightmap_polygon(&face_geo, &checkerboard, x3d_segfaceid_create(context->seg->id, face_id), context->cam, &lightmap_context);
     }
 }
 
@@ -179,8 +182,25 @@ void x3d_render_segment(X3D_SegRenderContext* context) {
     X3D_Prism3D prism = { .v = alloca(1000) };
     x3d_levelsegment_get_geometry(context->level, context->seg, &prism);
     
+    if(context->render_context->render_mode == X3D_RENDER_SOLID_WIREFRAME) {
+        X3D_ColorIndex red = x3d_color_to_colorindex(x3d_rgb_to_color(255, 0, 0));
+        x3d_prism3d_render_wireframe(&prism, context->cam, red);
+    }
+    
     for(uint16 i = 0; i < context->seg->base_v + 2; ++i)
         x3d_render_segment_face(context, &prism, i);
+}
+
+void x3d_render_all_segments_wireframe(X3D_SegRenderContext* context) {
+    X3D_Prism3D prism = { .v = alloca(1000) };
+    X3D_ColorIndex red = x3d_color_to_colorindex(x3d_rgb_to_color(255, 0, 0));
+    
+    for(int16 i = 0; i < x3d_level_total_segs(context->level); ++i) {
+        X3D_LevelSegment* seg = x3d_level_get_segmentptr(context->level, i);
+        
+        x3d_levelsegment_get_geometry(context->level, seg, &prism);
+        x3d_prism3d_render_wireframe(&prism, context->cam, red);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -194,21 +214,26 @@ void x3d_render(X3D_CameraObject* cam, X3D_RenderContext* render_context) {
 
     uint16 seg = x3d_camera_get_seg_currently_in(cam, global_level);
     
-    if(seg == 0xFFFF)
-        return;
+    if(seg != 0xFFFF || render_context->render_mode == X3D_RENDER_WIREFRAME) {
     
-    X3D_SegRenderContext context = {
-        .cam = cam,
-        .seg = x3d_level_get_segmentptr(global_level, seg),
-        .level = global_level,
-        .parent_seg_id = 0xFFFF,
-        .render_context = render_context
-    };
-    
-    x3d_render_segment(&context);
-    
-    if(render_context->render_type == X3D_RENDER_TEXTUER_LIGHTMAP) {
-        //x3d_screen_zbuf_visualize();
+        X3D_SegRenderContext context = {
+            .cam = cam,
+            .seg = x3d_level_get_segmentptr(global_level, seg),
+            .level = global_level,
+            .parent_seg_id = 0xFFFF,
+            .render_context = render_context
+        };
+        
+        if(render_context->render_mode == X3D_RENDER_WIREFRAME) {
+            x3d_render_all_segments_wireframe(&context);
+        }
+        else {
+            x3d_render_segment(&context);
+        }
+        
+        if(render_context->render_mode == X3D_RENDER_TEXTUER_LIGHTMAP) {
+            //x3d_screen_zbuf_visualize();
+        }
     }
     
     x3d_send_render_events_to_objects(cam);

@@ -27,3 +27,11 @@ void x3d_prism3d_render_wireframe(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D
   }
 }
 
+void x3d_prism3d_render_wireframe_with_colored_edges(X3D_Prism3D* prism, X3D_CameraObject* cam, X3D_ColorIndex* color_for_each_edge) {
+    for(uint16 i = 0; i < prism->base_v * 3; ++i) {
+        X3D_Ray3D edge;
+        x3d_prism3d_get_edge(prism, i, &edge);
+        x3d_ray3d_render(&edge, cam, color_for_each_edge[i]);
+    }
+}
+

@@ -59,7 +59,7 @@ void x3d_render_from_perspective_of_spotlight(X3D_SpotLight* light, X3D_CameraOb
     x3d_mat3x3_construct(&light_cam->base.mat, &light->orientation);
     
     X3D_RenderContext render_context = {
-        .render_type = X3D_RENDER_ID_BUFFER
+        .render_mode = X3D_RENDER_ID_BUFFER
     };
     
     x3d_screen_zbuf_clear();
@@ -80,7 +80,7 @@ void x3d_lightmap_init(X3D_LightMapContext* context, uint32 id, X3D_Polygon3D* p
     uint16 h = x3d_units_to_texels(proj->max_y - proj->min_y) + 1;
     
     x3d_texture_init(map, w, h, 0);
-    x3d_texture_fill(map, 64);
+    x3d_texture_fill(map, 0);
 }
 
 void x3d_lightmapcontext_init(X3D_LightMapContext* context, X3D_Level* level) {

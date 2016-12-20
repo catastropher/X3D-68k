@@ -101,3 +101,5 @@ void x3d_prism3d_translate(X3D_Prism3D* prism, X3D_Vex3D* translation);
 void x3d_prism3d_set_center(X3D_Prism3D* prism, X3D_Vex3D* new_center);
 X3D_Prism3D* x3d_prism3d_construct_temp(uint16 steps, uint16 r, int16 h);
 
+uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest);
+

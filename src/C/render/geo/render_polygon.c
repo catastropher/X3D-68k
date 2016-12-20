@@ -6,7 +6,7 @@
 
 extern X3D_LightMapContext lightmap_context;
 
-void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, uint32 segment_poly_id, X3D_CameraObject* cam) {
+void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, uint32 segment_poly_id, X3D_CameraObject* cam, X3D_LightMapContext* lightmap_context) {
     X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
     
     uint16 i;
@@ -14,7 +14,7 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
         rpoly.v[i].v = poly->v[i];
         
         X3D_Vex2D v;
-        x3d_planarprojection_project_point(&lightmap_context.proj[segment_poly_id], poly->v + i, &v);
+        x3d_planarprojection_project_point(&lightmap_context->proj[segment_poly_id], poly->v + i, &v);
         
         rpoly.v[i].uu = v.x;
         rpoly.v[i].vv = v.y;
@@ -23,7 +23,7 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
 
     X3D_PolygonRasterAtt at = {
         .surface = {
-            .tex = x3d_lightmapcontext_get_surface_for_level_face(&lightmap_context, segment_poly_id)
+            .tex = x3d_lightmapcontext_get_surface_for_level_face(lightmap_context, segment_poly_id)
         },
         
         

@@ -108,3 +108,26 @@ X3D_Prism3D* x3d_prism3d_construct_temp(uint16 steps, uint16 r, int16 h) {
     return &temp_prism3d.prism;
 }
 
+uint16 x3d_prism_face_edge_indexes(uint16 base_v, uint16 face, uint16* dest) {
+    if(face <= X3D_BASE_B) {
+        // Prism base
+        uint16 start = (face == X3D_BASE_A ? 0 : base_v);
+        uint16 i;
+        
+        for(i = 0; i < base_v; ++i)
+            dest[i] = start + i;
+        
+        return base_v;
+    }
+    else {
+        // Quad face
+        uint16 f = face - 2;
+        dest[0] = f;
+        dest[1] = x3d_int16_add_wrap(f, 1, base_v) + base_v * 2;
+        dest[2] = f + base_v;
+        dest[3] = f + base_v * 2;
+        
+        return 4;
+    }
+}
+

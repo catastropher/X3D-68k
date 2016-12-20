@@ -39,14 +39,17 @@ typedef struct X3D_SegmentRenderFace {
 } X3D_SegmentRenderFace;
 
 enum {
+    X3D_RENDER_NONE,
     X3D_RENDER_NORMAL,
     X3D_RENDER_ID_BUFFER,
     X3D_RENDER_LIGHTMAP,
-    X3D_RENDER_TEXTUER_LIGHTMAP
+    X3D_RENDER_TEXTUER_LIGHTMAP,
+    X3D_RENDER_SOLID_WIREFRAME,
+    X3D_RENDER_WIREFRAME
 };
 
 typedef struct X3D_RenderContext {
-    uint16 render_type;
+    uint16 render_mode;
     
     X3D_ColorIndex* screen;
     int16 screen_w;
@@ -70,6 +73,7 @@ typedef struct X3D_RenderManager {
   void (*segment_face_render_callback)(X3D_SegmentRenderFace* face);
   void (*render_hud_callback)(void);
   uint16* zbuf;
+  int16 render_mode;
 } X3D_RenderManager;
 
 struct X3D_InitSettings;

@@ -47,7 +47,7 @@ static int32 key_map[X3D_MAX_KEYS];
 
 
 _Bool x3d_pc_key_down(int32 key) {
-  return sdl_keys[key];
+    return sdl_keys[key & (~SDLK_SCANCODE_MASK)];
 }
 
 void x3d_pc_mouse_state(_Bool* left, _Bool* right, int16* x, int16* y) {

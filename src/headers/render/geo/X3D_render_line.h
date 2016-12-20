@@ -21,4 +21,5 @@
 struct X3D_CameraObject;
 
 void x3d_ray3d_render(X3D_Ray3D* ray, struct X3D_CameraObject* cam, X3D_ColorIndex color);
+void x3d_render_3d_grid(struct X3D_CameraObject* cam, X3D_Vex3D center, int16 cell_size, int16 width_in_cells, int16 height_in_cells);
 

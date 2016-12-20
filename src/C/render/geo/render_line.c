@@ -30,5 +30,42 @@ void x3d_ray3d_render(X3D_Ray3D* ray, X3D_CameraObject* cam, X3D_ColorIndex colo
   x3d_ray3d_project_to_ray2d(&clipped_ray, &projected_ray);
   
   x3d_screen_draw_line(projected_ray.v[0].x, projected_ray.v[0].y, projected_ray.v[1].x, projected_ray.v[1].y, color);
+  
+  //x3d_log(X3D_INFO, "BEFORE %d %d %d - %d %d %d", rotated_ray.v[0].x, rotated_ray.v[0].y, rotated_ray.v[0].z, rotated_ray.v[1].x, rotated_ray.v[1].y, rotated_ray.v[1].z);
+  //x3d_log(X3D_INFO, "CLIPPED %d %d %d - %d %d %d", clipped_ray.v[0].x, clipped_ray.v[0].y, clipped_ray.v[0].z, clipped_ray.v[1].x, clipped_ray.v[1].y, clipped_ray.v[1].z);
+  
+  //x3d_log(X3D_INFO, "Ray: (%d %d) - (%d %d", projected_ray.v[0].x, projected_ray.v[0].y, projected_ray.v[1].x, projected_ray.v[1].y);
+}
+
+void x3d_render_3d_grid(X3D_CameraObject* cam, X3D_Vex3D center, int16 cell_size, int16 width_in_cells, int16 height_in_cells) {
+    int16 x, z;
+    
+    int16 max_z = center.z + height_in_cells * cell_size / 2;
+    int16 min_z = center.z - height_in_cells * cell_size / 2;
+    
+    for(x = -width_in_cells / 2; x < width_in_cells / 2 + 1; ++x) {
+        X3D_Ray3D ray = {
+            {
+                x3d_vex3d_make(x * cell_size + center.x, center.y, min_z),
+                x3d_vex3d_make(x * cell_size + center.x, center.y, max_z)
+            }
+        };
+        
+        x3d_ray3d_render(&ray, cam, x3d_rgb_to_color(128, 128, 128));
+    }
+    
+    int16 max_x = center.x + width_in_cells * cell_size / 2;
+    int16 min_x = center.x - width_in_cells * cell_size / 2;
+    
+    for(z = -height_in_cells / 2; z < height_in_cells / 2 + 1; ++z) {
+        X3D_Ray3D ray = {
+            {
+                x3d_vex3d_make(min_x, center.y, z * cell_size + center.z),
+                x3d_vex3d_make(max_x, center.y, z * cell_size + center.z),
+            }
+        };
+        
+        x3d_ray3d_render(&ray, cam, x3d_rgb_to_color(128, 128, 128));
+    }
 }
 

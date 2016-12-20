@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
     
     test_mat4x4();
     
-    //x3d_model_load_from_file(&teapot, "/home/michael/code/X3D-68k/tools/build/teapot.xmod");
+    x3d_model_load_from_file(&teapot, "/home/michael/code/X3D-68k/tools/build/teapot.xmod");
     
     
     

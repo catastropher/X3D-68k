@@ -30,8 +30,6 @@ _Bool x3d_line3d_intersect_plane(X3D_Line3D* line, X3D_Plane* plane, X3D_Vex3D* 
   int32 top = -(x3d_vex3d_dot(&plane->normal, &line->start) + ((int32)plane->d << X3D_NORMAL_BITS));
   int32 t = top / bottom;
   
-  //x3d_log(X3D_INFO, "Top: %d, %d, %d => %d", plane->normal.x, plane->normal.y, plane->normal.z, plane->d);
-  
   if(t > 32767)
     return X3D_FALSE;
   
@@ -103,12 +101,16 @@ void x3d_ray3d_interpolate_fp8x8(X3D_Ray3D* ray, fp8x8 t, X3D_Vex3D* dest) {
 }
 
 fp0x16 x3d_ray3d_calculate_near_plane_clip_t(X3D_Ray3D* ray) {
-  int16 near_z = x3d_rendermanager_get()->near_z;  
+  int16 near_z = 110;//x3d_rendermanager_get()->near_z;  
   int16 v0_dist_to_near_plane = abs(ray->v[0].z - near_z);
   int16 v1_dist_to_near_plane = abs(ray->v[1].z - near_z);
   
   int16 n = v0_dist_to_near_plane;
   int16 d = v0_dist_to_near_plane + v1_dist_to_near_plane;
+  
+  //x3d_log(X3D_INFO, "%d %d", n, d);
+  
+  return ((int32)n << 15) / d;
   
   if(div_int16_by_int16_as_fp0x16_would_cause_overflow(n, d)) {
     return X3D_FP0x16_MAX;
@@ -119,7 +121,10 @@ fp0x16 x3d_ray3d_calculate_near_plane_clip_t(X3D_Ray3D* ray) {
 
 void x3d_ray3d_clip_to_plane_given_t(X3D_Ray3D* ray, fp0x16 t, X3D_Ray3D* dest) {
   dest->v[0] = ray->v[0];
-  x3d_ray3d_interpolate(ray, t, dest->v + 1);
+  
+  X3D_Vex3D v;
+  x3d_ray3d_interpolate(ray, t, &v);
+  dest->v[1] = v;
 }
 
 X3D_Ray3DClipStatus x3d_ray3d_clip_to_near_plane(X3D_Ray3D* ray, X3D_Ray3D* dest) {
@@ -137,7 +142,11 @@ X3D_Ray3DClipStatus x3d_ray3d_clip_to_near_plane(X3D_Ray3D* ray, X3D_Ray3D* dest
 
   x3d_assert(ray->v[0].z >= 10 && ray->v[1].z <= 10);
   
-  fp0x16 clip_t = x3d_ray3d_calculate_near_plane_clip_t(ray);  
+  fp0x16 clip_t = x3d_ray3d_calculate_near_plane_clip_t(ray);
+  
+  x3d_assert(clip_t >= 0);
+  
+  //x3d_log(X3D_INFO, "Clip t %d", clip_t);
   
   x3d_ray3d_clip_to_plane_given_t(ray, clip_t, dest);
   
