@@ -41,7 +41,7 @@ void x3d_polygon3d_center(X3D_Polygon3D* poly, X3D_Vex3D* dest) {
     X3D_Vex3D_int32 center = x3d_vex3d_int32_origin();
 
     for(int16 i = 0; i < poly->total_v; ++i)
-        x3d_vex3d_int32_add_vex3d(&center, dest);
+        center = x3d_vex3d_int32_add_vex3d(&center, poly->v + i);
 
     *dest = x3d_vex3d_int32_div_by_int16_as_vex3d(&center, poly->total_v);
 }
@@ -51,7 +51,7 @@ void x3d_polygon3d_scale(X3D_Polygon3D* poly, fp8x8 scale) {
     x3d_polygon3d_center(poly, &ray.v[0]);
 
     for(int16 i = 0; i < poly->total_v; ++i) {
-        x3d_ray3d_set_v(&ray, 0, poly->v + i);
+        x3d_ray3d_set_v(&ray, 1, poly->v + i);
         x3d_ray3d_interpolate_fp8x8(&ray, scale, poly->v + i);
     }
 }

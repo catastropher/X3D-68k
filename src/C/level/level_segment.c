@@ -125,3 +125,20 @@ void x3d_levelsegment_set_wall_segs_for_face(X3D_Level* level, X3D_LevelSegment*
     x3d_levelsegment_get_face_attribute(level, seg, face)->wall_seg_start = wall_seg_start;
 }
 
+void x3d_levelsegment_get_face_geometry(X3D_Level* level, X3D_SegFaceID face_id, X3D_Polygon3D* dest) {
+    X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, x3d_segfaceid_seg(face_id));
+    X3D_Prism3D prism = { .v = alloca(1000) };
+    
+    x3d_levelsegment_get_geometry(level, seg, &prism);
+    x3d_prism3d_get_face(&prism, x3d_segfaceid_face(face_id), dest);
+}
+
+void x3d_levelsegment_update_face_geometry(X3D_Level* level, X3D_SegFaceID face_id, X3D_Polygon3D* src) {
+    X3D_LevelSegment* seg = x3d_level_get_segmentptr(level, x3d_segfaceid_seg(face_id));
+    X3D_Prism3D prism = { .v = alloca(1000) };
+    
+    x3d_levelsegment_get_geometry(level, seg, &prism);
+    x3d_prism3d_set_face(&prism, x3d_segfaceid_face(face_id), src);
+    x3d_levelsegment_update_geometry(level, seg, &prism);
+}
+

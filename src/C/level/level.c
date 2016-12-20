@@ -52,6 +52,35 @@ X3D_LevelSegment* x3d_level_add_new_standalone_segment(X3D_Level* level, X3D_Pri
   return new_seg;
 }
 
+X3D_LevelSegment* x3d_level_add_segment_connecting_faces(X3D_Level* level, X3D_SegFaceID face_a, X3D_SegFaceID face_b) {
+    X3D_Polygon3D poly_a = { .v = alloca(1000) };
+    X3D_Polygon3D poly_b = { .v = alloca(1000) };
+    
+    x3d_levelsegment_get_face_geometry(level, face_a, &poly_a);
+    x3d_levelsegment_get_face_geometry(level, face_b, &poly_b);
+    
+    if(poly_a.total_v != poly_b.total_v) {
+        x3d_log(X3D_ERROR, "Can't connect segs because faces have different number of vertices");
+        return NULL;
+    }
+    
+    X3D_Prism3D new_prism = { .v = alloca(1000) };
+    
+    new_prism.base_v = poly_a.total_v;
+    x3d_polygon3d_reverse(&poly_a);
+    x3d_prism3d_set_face(&new_prism, X3D_BASE_A, &poly_a);
+    x3d_polygon3d_reverse(&poly_b);
+    x3d_prism3d_set_face(&new_prism, X3D_BASE_B, &poly_b);
+    
+    X3D_LevelSegment* new_seg = x3d_level_add_new_standalone_segment(level, &new_prism, 0);
+    X3D_LevelSegment* seg_a = x3d_level_get_segmentptr(level, x3d_segfaceid_seg(face_a));
+    X3D_LevelSegment* seg_b = x3d_level_get_segmentptr(level, x3d_segfaceid_seg(face_b));
+    
+    x3d_levelsegment_connect(level, new_seg, X3D_BASE_A, seg_a, x3d_segfaceid_face(face_a));
+    x3d_levelsegment_connect(level, new_seg, X3D_BASE_B, seg_b, x3d_segfaceid_face(face_b));
+    
+}
+
 X3D_LevelSegment* x3d_level_add_wall_segment_to_center_of_face(X3D_Level* level, X3D_LevelSegment* seg, uint16 face, uint16 base_v, uint16 r, uint16 h) {
     X3D_Prism3D prism = { .v = alloca(1000) };
     X3D_Polygon3D poly3d = { .v = alloca(1000) };
