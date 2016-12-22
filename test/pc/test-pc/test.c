@@ -33,13 +33,19 @@
 void engine_test_handle_keys(void);
 void setup_key_map(void);
 
+extern X3D_Level* global_level;
+
 void setup_camera(void) {
   x3d_camera_init();
   
   X3D_CameraObject* cam = x3d_playermanager_get()->player[0].cam;
 
+  X3D_Prism3D prism = { .v = alloca(1000) };
+  X3D_LevelSegment* seg = x3d_level_get_segmentptr(global_level, 0);
+  x3d_levelsegment_get_geometry(global_level, seg, &prism);
+  
   X3D_Vex3D center = { 0, 0, 0 };
-  //x3d_prism3d_center(&x3d_segmentmanager_load(0)->prism, &center);
+  x3d_prism3d_center(&prism, &center);
   
   cam->base.base.pos = (X3D_Vex3D_fp16x8) { (int32)center.x << 8, (int32)center.y << 8, (int32)center.z << 8 };
   cam->base.angle = (X3D_Vex3D_angle256) { 0, 0, 0 };
@@ -47,8 +53,6 @@ void setup_camera(void) {
 }
 
 void segment_face_render_callback(X3D_SegmentRenderFace* face);
-
-extern X3D_Level* global_level;;
 
 
 X3D_Texture checkerboard;
@@ -59,8 +63,8 @@ void test_lightmap(void);
 X3D_Model teapot;
 
 void test_render_callback(X3D_CameraObject* cam) {    
-    X3D_ColorIndex red = x3d_color_to_colorindex(x3d_rgb_to_color(255, 0, 0));
-    x3d_model_render_wireframe(&teapot, cam, red);
+    //X3D_ColorIndex red = x3d_color_to_colorindex(x3d_rgb_to_color(255, 0, 0));
+    //x3d_model_render_wireframe(&teapot, cam, red);
 }
 
 X3D_LightMapContext lightmap_context;
@@ -73,7 +77,7 @@ void build_test_level(void) {
     x3d_level_init(&level);
     
     X3D_Prism3D prism = { .v = alloca(1000) };
-    x3d_prism3d_construct(&prism, 8, 8 * X3D_UNITS_PER_FOOT, 8 * X3D_UNITS_PER_FOOT, (X3D_Vex3D_angle256) { 0, 0, 0 });
+    x3d_prism3d_construct(&prism, 8, 16 * X3D_UNITS_PER_FOOT, 8 * X3D_UNITS_PER_FOOT, (X3D_Vex3D_angle256) { 0, ANG_45, 0 });
     uint16 seg0 = x3d_level_add_new_standalone_segment(&level, &prism, 0)->id;
     
     
@@ -110,7 +114,13 @@ void build_test_level(void) {
     );
 #endif
     global_level = &level;
-    
+   
+#if 0
+    if(!x3d_level_load(&level, "/home/michael/code/XBuilder/build/test.xlev")) {
+        x3d_log(X3D_ERROR, "Failed to load level");
+        exit(0);
+    }
+#endif
     
     
     x3d_lightmapcontext_init(&lightmap_context, &level);
@@ -159,9 +169,13 @@ int main(int argc, char* argv[]) {
     
     
     //x3d_texture_from_array(&checkerboard, wood_tex_data);
-    //x3d_texture_load_from_file(&checkerboard, "checkerboard.bmp");
-    x3d_texture_fill_with_checkerboard(&checkerboard, 64, 4);
+    if(!x3d_texture_load_from_file(&checkerboard, "floor.bmp")) {
+        x3d_log(X3D_ERROR, "Failed to load texture");
+        return 0;
+    }
+    //x3d_texture_fill_with_checkerboard(&checkerboard, 64, 4);
     
+    x3d_rendermanager_set_render_mode(X3D_RENDER_WIREFRAME);
     
     //x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
     

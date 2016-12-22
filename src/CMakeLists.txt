@@ -61,6 +61,8 @@ add_sources(
   C/memory/alloc.c
   C/memory/handle.c
   
+  C/file/ramfile.c
+  
   C/math/vector.c
   C/math/trig.c
   C/math/matrix.c

@@ -341,6 +341,11 @@ void engine_test_handle_keys(void) {
     }
   }
   
+  if(x3d_pc_key_down('i')) {
+      x3d_rendermanager_set_render_mode(X3D_RENDER_TEXTUER_LIGHTMAP);
+      x3d_log(X3D_INFO, "Set render mode");
+  }
+  
   
 #endif
 }

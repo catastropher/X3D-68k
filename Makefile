@@ -84,7 +84,7 @@ test: x3d
 
 # Builds X3D and builds/runs the manual tests
 test-manual: x3d
-	@cd build/manual && make --no-print-directory && ./test-pc
+	@cd build/manual && make clean --no-print-directory && make --no-print-directory && ./test-pc
 	
 test-manual-68k: x3d-68k
 	@cd build/manual-68k && make --no-print-directory

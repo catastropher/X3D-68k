@@ -123,6 +123,8 @@ void x3d_render_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo, uint16
 }
 
 static inline void x3d_render_segments_attached_to_face(X3D_LevelSegFace* face, X3D_SegRenderContext* context) {
+    return;
+    
     uint16 total_segments_attached_to_face = x3d_levelsegface_total_segments_attached(face, context->level);
     uint16* segments_attached_to_face = x3d_levelsegface_attached_segments(face, context->level);
     
@@ -179,6 +181,7 @@ void x3d_render_segment_face(X3D_SegRenderContext* context, X3D_Prism3D* seg_geo
 }
 
 void x3d_render_segment(X3D_SegRenderContext* context) {
+    //x3d_log(X3D_INFO, "Render segment %d (%d)", context->seg->id, x3d_level_total_segs(context->level));
     X3D_Prism3D prism = { .v = alloca(1000) };
     x3d_levelsegment_get_geometry(context->level, context->seg, &prism);
     

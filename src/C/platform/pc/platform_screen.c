@@ -467,56 +467,60 @@ void x3d_color_to_rgb(X3D_Color color, uint8* r, uint8* g, uint8* b) {
 }
 
 _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
-  x3d_log(X3D_INFO, "File: %s", file);
-  SDL_Surface* s = SDL_LoadBMP(file);
-  
-  if(!s)
-    return X3D_FALSE;
-  
-  uint8* data = malloc((uint32)s->w * s->h * 3L + 5); 
-  
-  int16 start = 0;
-  
-  if(s->w >= 256 || s->h >= 256) {
-    data[0] = 0;
-    data[1] = s->w >> 8;
-    data[2] = s->w & 0xFF;
-    data[3] = s->h >> 8;
-    data[4] = s->h & 0xFF;
+    x3d_log(X3D_INFO, "File: %s", file);
+    SDL_Surface* s = SDL_LoadBMP(file);
     
-    data += 3;
-    start = 3;
-  }
-  else {
-    data[0] = s->w;
-    data[1] = s->h;
-  }
-  
-  uint32 pos = 0;
-  
-  uint16 i, d;
-  for(i = 0; i < s->h; ++i) {
-    for(d = 0; d < s->w; ++d) {
-      uint32 pix = getpixel(s, d, i);
-      uint8 r, g, b;
-      
-      SDL_GetRGB(pix, s->format, &r, &g, &b);
-      
-      data[2 + pos * 3 + 0] = r;
-      data[2 + pos * 3 + 1] = g;
-      data[2 + pos * 3 + 2] = b;
-      
-      ++pos;
-      
-      //x3d_texture_set_texel(tex, d, i, x3d_rgb_to_color(r, g, b));
+    if(!s) {
+        x3d_log(X3D_ERROR, "Failed to load texture %s: %s", file, SDL_GetError());
+        return X3D_FALSE;
     }
-  }
+    
+    uint8* data = malloc((uint32)s->w * s->h * 3L + 5); 
+    
+    int16 start = 0;
+    
+    if(s->w >= 256 || s->h >= 256) {
+        data[0] = 0;
+        data[1] = s->w >> 8;
+        data[2] = s->w & 0xFF;
+        data[3] = s->h >> 8;
+        data[4] = s->h & 0xFF;
+        
+        data += 3;
+        start = 3;
+    }
+    else {
+        data[0] = s->w;
+        data[1] = s->h;
+    }
+    
+    x3d_log(X3D_INFO, "Tex: %d %d", data[0], data[1]);
+    
+    uint32 pos = 0;
+    
+    uint16 i, d;
+    for(i = 0; i < s->h; ++i) {
+        for(d = 0; d < s->w; ++d) {
+        uint32 pix = getpixel(s, d, i);
+        uint8 r, g, b;
+        
+        SDL_GetRGB(pix, s->format, &r, &g, &b);
+        
+        data[2 + pos * 3 + 0] = r;
+        data[2 + pos * 3 + 1] = g;
+        data[2 + pos * 3 + 2] = b;
+        
+        ++pos;
+        
+        //x3d_texture_set_texel(tex, d, i, x3d_rgb_to_color(r, g, b));
+        }
+    }
 
-  x3d_texture_from_array(tex, data - start);
-  
-  SDL_FreeSurface(s);
-  
-  return X3D_TRUE;
+    x3d_texture_from_array(tex, data - start);
+    
+    SDL_FreeSurface(s);
+    
+    return X3D_TRUE;
 }
 
 

@@ -42,7 +42,7 @@
 #define X3D_SIGNOF(_v) ((_v) < 0 ? -1 : ((_v) > 0 ? 1 : 0))
 
 #define X3D_UNITS_PER_FOOT 32
-#define X3D_TEXELS_PER_FOOT 8
+#define X3D_TEXELS_PER_FOOT 16
 
 #define X3D_TEXEL_SCALE ((X3D_TEXELS_PER_FOOT * 256) / X3D_UNITS_PER_FOOT)
 
@@ -76,5 +76,10 @@ static inline int16 x3d_units_to_texels(int16 units) {
 
 static inline int16 x3d_texels_to_units(int16 texels) {
     return (texels * 256) / X3D_TEXEL_SCALE;
+}
+
+static inline void x3d_strncpy(char* dest, const char* src, size_t buffer_size) {
+    strncpy(dest, src, buffer_size);
+    dest[buffer_size - 1] = '\0';
 }
 
