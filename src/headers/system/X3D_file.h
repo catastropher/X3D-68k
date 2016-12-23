@@ -32,3 +32,32 @@ static inline X3D_Vex3D x3d_file_read_vex3d(FILE* file) {
     return x3d_vex3d_make(x, y, z);
 }
 
+static inline int32 x3d_file_read_little_endian_int32(FILE* file) {
+    int32 val = 0;
+    
+    for(int i = 3; i >= 0; --i)
+        val |= (int32)fgetc(file) << (8 * i);
+    
+    return val;
+}
+
+static inline void x3d_file_write_little_endian_int32(FILE* file, int32 val) {
+    for(int i = 0; i < 4; ++i) {
+        fputc(val & 0xFF, file);
+        val >>= 8;
+    }
+}
+
+static inline void x3d_file_write_buf(FILE* file, void* buf, size_t size) {
+    fwrite(buf, 1, size, file);
+}
+
+static inline void x3d_file_read_string(FILE* file, char* dest, size_t chars_to_read) {
+    fread(dest, 1, chars_to_read, file);
+    dest[chars_to_read] = '\0';
+}
+
+static inline void x3d_file_seek(FILE* file, size_t pos) {
+    fseek(file, pos, SEEK_SET);
+}
+

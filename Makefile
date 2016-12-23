@@ -95,3 +95,11 @@ test-manual-nspire: nx3d
 
 install:
 	@cd build/X3D && sudo make install
+
+analyze:
+	@export CC=ccc-analyzer
+	@export CCC_CC=clang
+	@export LD=clang
+	@export CCC_ANALYZER_VERBOSE=1
+	@cd build/X3D && make clean --no-print-directory && make --no-print-directory
+
