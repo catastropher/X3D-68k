@@ -49,7 +49,7 @@ uint16 x3d_buffer_read_uint16(X3D_Buffer* buf);
 int32 x3d_buffer_read_int32(X3D_Buffer* buf);
 uint32 x3d_buffer_read_uint32(X3D_Buffer* buf);
 
-_Bool x3d_buffer_save_to_buf(X3D_Buffer* buf, const char* buf_name);
+_Bool x3d_buffer_save_to_file(X3D_Buffer* buf, const char* buf_name);
 
 static inline size_t x3d_buffer_size(const X3D_Buffer* buf) {
     return buf->size;

@@ -18,7 +18,7 @@
 #include "file/X3D_buffer.h"
 
 static _Bool x3d_resourcepack_has_valid_pack_header(X3D_ResourcePack* pack) {
-    char pack_string[5];
+    char pack_string[5] = { '\0' };
     x3d_file_read_string(pack->file, pack_string, 4);
     
     return strcmp(pack_string, "PACK") == 0;
@@ -72,9 +72,9 @@ static _Bool x3d_resourcepack_load_packfile_into_buffer(X3D_ResourcePack* pack, 
         
         pack_file->loaded_data = malloc(pack_file->size);
         x3d_file_seek(pack->file, pack_file->data_offset);
-        fread(pack_file->loaded_data, 1, pack_file->size, pack->file);
+        x3d_file_read_buf(pack->file, pack_file->loaded_data, pack_file->size);
     }
-    
+
     x3d_buffer_init_existing(dest, pack_file->loaded_data, pack_file->size, file_id);
     ++pack_file->ref_count;
     
@@ -138,7 +138,7 @@ static inline void x3d_resourcepack_write_pack_header(X3D_ResourcePack* pack) {
 }
 
 static inline void x3d_resourcepack_calculate_file_offsets(X3D_ResourcePack* pack) {
-    pack->pack_files[0].data_offset = X3D_RESOURCEPACK_HEADER_SIZE;
+    pack->pack_files[0].data_offset = X3D_RESOURCEPACK_HEADER_SIZE + pack->total_files * X3D_RESOURCEPACK_FILE_ENTRY_SIZE;
     
     for(int i = 1; i < pack->total_files; ++i)
         pack->pack_files[i].data_offset = pack->pack_files[i - 1].data_offset + pack->pack_files[i - 1].size;
@@ -180,8 +180,16 @@ _Bool x3d_resourcepack_save_packfiles_to_file(X3D_ResourcePackFile* pack_files, 
     x3d_resourcepack_write_file_table(&pack);
     x3d_resourcepack_write_file_data(&pack);
     
+    fclose(pack.file);
+    
     return X3D_TRUE;
 }
 
-//void x3d_resourcepack_save_to_file
+void x3d_resourcepack_print_file_header(X3D_ResourcePack* pack) {
+    x3d_log(X3D_INFO, "Total files in pack: %d", (int)pack->total_files);
+    
+    for(int i = 0; i < pack->total_files; ++i) {
+        x3d_log(X3D_INFO, "\t%56s (size: %d, offset: %d", pack->pack_files[i].name, (int)pack->pack_files[i].size, (int)pack->pack_files[i].data_offset);
+    }
+}
 

@@ -159,7 +159,45 @@ void init() {
 
 void test_mat4x4();
 
+#include <X3D/file/X3D_resourcepack.h>
+
+void test_packfile() {
+    char data[] = "Hello world!";
+    
+    X3D_ResourcePackFile files[2] = {
+        {
+            .name = "tex/floor.xtex",
+            .size = sizeof(data),
+            .data_offset = 0,
+            .loaded_data = data
+        },
+        {
+            .name = "light/maps.tex",
+            .size = sizeof(data),
+            .data_offset = 0,
+            .loaded_data = data
+        }
+    };
+    
+    x3d_resourcepack_save_packfiles_to_file(files, 2, "test.pak");
+    
+    X3D_ResourcePack pack;
+    x3d_resourcepack_load_from_file(&pack, "test.pak");
+    x3d_resourcepack_print_file_header(&pack);
+    
+    X3D_Buffer buf;
+    x3d_resourcepack_open_packfile(&pack, "light/maps.tex", &buf);
+    
+    printf("Data in file: '%s'\n", buf.data);
+    
+    x3d_resourcepack_close_packfile(&pack, &buf);
+}
+
 int main(int argc, char* argv[]) {
+    test_packfile();
+    return 0;
+    
+    
     init();
     
     test_mat4x4();

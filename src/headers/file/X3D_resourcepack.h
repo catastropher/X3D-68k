@@ -42,4 +42,7 @@ _Bool x3d_resourcepack_open_packfile(X3D_ResourcePack* pack, const char* file_na
 void x3d_resourcepack_close_packfile(X3D_ResourcePack* pack, X3D_Buffer* data_src);
 void x3d_resourcepack_close_all_packfiles(X3D_ResourcePack* pack);
 void x3d_resourcepack_cleanup(X3D_ResourcePack* pack);
+_Bool x3d_resourcepack_save_packfiles_to_file(X3D_ResourcePackFile* pack_files, int total_files, const char* file_name);
+
+void x3d_resourcepack_print_file_header(X3D_ResourcePack* pack);
 

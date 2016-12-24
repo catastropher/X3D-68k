@@ -150,7 +150,7 @@ uint32 x3d_buffer_read_uint32(X3D_Buffer* buf) {
     return x3d_buffer_read_generic_int(buf, 4);
 }
 
-_Bool x3d_buffer_save_to_buf(X3D_Buffer* buf, const char* buf_name) {
+_Bool x3d_buffer_save_to_file(X3D_Buffer* buf, const char* buf_name) {
     FILE* f = fopen(buf_name, "wb");
     
     if(!f)

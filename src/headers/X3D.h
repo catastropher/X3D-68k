@@ -62,6 +62,8 @@ extern "C" {
 #include "render/geo/X3D_render_model.h"
 #include "render/X3D_lightmap.h"
 #include "render/geo/X3D_render_line.h"
+
+#include "file/X3D_resourcepack.h"
     
 
 #ifdef __cplusplus
