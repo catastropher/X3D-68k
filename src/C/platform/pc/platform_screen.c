@@ -100,6 +100,34 @@ X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index) {
     return color_palette[index];
 }
 
+void init_sdl_virtual_screen(X3D_InitSettings* init) {
+    uint32 rmask, gmask, bmask, amask;
+    
+    /* SDL interprets each pixel as a 32-bit number, so our masks must depend
+     *      on the endianness (byte order) of the machine */
+    #if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+    #else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+    #endif
+    
+    window_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, init->screen_w * init->screen_scale, init->screen_h * init->screen_scale, 32,
+                                          rmask, gmask, bmask, amask);
+    
+    if(!window_surface) {
+        x3d_log(X3D_ERROR, "Failed to create virtual window");
+        return X3D_FALSE;
+    }
+    
+    x3d_log(X3D_INFO, "Created virtual window");
+}
+
 #ifdef X3D_USE_SDL1
 
 void init_sdl_window(X3D_InitSettings* init) {
@@ -118,34 +146,6 @@ void init_sdl_window(X3D_InitSettings* init) {
     x3d_log(X3D_INFO, "Window created");
 }
 
-void init_sdl_virtual_screen(X3D_InitSettings* init) {
-    uint32 rmask, gmask, bmask, amask;
-
-    /* SDL interprets each pixel as a 32-bit number, so our masks must depend
-       on the endianness (byte order) of the machine */
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-    window_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, init->screen_w * init->screen_scale, init->screen_h * init->screen_scale, 32,
-                                   rmask, gmask, bmask, amask);
-    
-    if(!window_surface) {
-      x3d_log(X3D_ERROR, "Failed to create virtual window");
-      return X3D_FALSE;
-    }
-    
-    x3d_log(X3D_INFO, "Created virtual window");
-}
-
 #else
 
 _Bool init_sdl_window(X3D_InitSettings* init) {
@@ -161,10 +161,6 @@ _Bool init_sdl_window(X3D_InitSettings* init) {
     x3d_log(X3D_INFO, "Window created");
     
     return X3D_TRUE;
-}
-
-void init_sdl_virtual_screen(X3D_InitSettings* init) {
-    x3d_log(X3D_ERROR, "Virtual screen not supported with SDL2");
 }
 
 #endif
@@ -282,6 +278,16 @@ void x3d_screen_zbuf_visualize(void) {
             x3d_screen_draw_pix(j, i, x3d_rgb_to_color(val, val, val));
         }
     }
+}
+
+void x3d_screen_begin_record(const char* name) {
+    strcpy(record_name, name);
+    record = X3D_TRUE;
+    record_frame = 0;
+}
+
+void x3d_screen_record_end(void) {
+    record = X3D_FALSE;
 }
 
 #define BPP 32

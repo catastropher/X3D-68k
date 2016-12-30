@@ -102,6 +102,32 @@ void x3d_key_map_pc(uint32 x3d_key, int32 sdl_key) {
     x3d_log(X3D_INFO, "Reset key 'X3D_KEY_%d'", id);
 }
 
+void x3d_pc_send_event(void* ev) {
+    SDL_Event event = *(SDL_Event*)ev;
+    
+    switch(event.type) {
+        case SDL_KEYDOWN:
+            //printf("Key: %d\n", event.key.keysym.sym);
+            #ifdef X3D_USE_SDL1
+            sdl_keys[event.key.keysym.sym] = X3D_TRUE;
+            #else
+            sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_TRUE;
+            #endif
+            break;
+            
+        case SDL_KEYUP:
+            #ifdef X3D_USE_SDL1
+            sdl_keys[event.key.keysym.sym] = X3D_FALSE;
+            #else
+            sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_FALSE;
+            #endif
+            break;
+            
+        default:
+            break;
+    }
+}
+
 X3D_PLATFORM void x3d_read_keys() {
   int16 i;
   SDL_Event event;
@@ -109,27 +135,7 @@ X3D_PLATFORM void x3d_read_keys() {
   // Process the SDL events
   /// @todo Add SDL_QUIT
   while(SDL_PollEvent(&event)) {
-    switch(event.type) {
-      case SDL_KEYDOWN:
-        //printf("Key: %d\n", event.key.keysym.sym);
-#ifdef X3D_USE_SDL1
-        sdl_keys[event.key.keysym.sym] = X3D_TRUE;
-#else
-        sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_TRUE;
-#endif
-        break;
-        
-      case SDL_KEYUP:
-#ifdef X3D_USE_SDL1
-        sdl_keys[event.key.keysym.sym] = X3D_FALSE;
-#else
-        sdl_keys[event.key.keysym.sym & (~SDLK_SCANCODE_MASK)] = X3D_FALSE;
-#endif
-        break;
-        
-      default:
-        break;
-    }
+      x3d_pc_send_event(&event);
   }
   
   // Update the X3D keystate based on which keys are being pressed

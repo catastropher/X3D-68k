@@ -83,3 +83,5 @@ _Bool x3d_key_down(uint32 key);
 _Bool x3d_pc_key_down(int32 key);
 void x3d_pc_mouse_state(_Bool* left, _Bool* right, int16* x, int16* y);
 
+void x3d_pc_send_event(void *event);
+
