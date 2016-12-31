@@ -283,14 +283,16 @@ X3D_ColorIndex x3d_colormap_get_index(X3D_ColorIndex color, uint16 shade) {
 
 X3D_ColorIndex x3d_colorindex_from_rgb(uint8 r, uint8 g, uint8 b) {
     uint16 i;
-    int16 min_dist = 0x7FFF;
+    int32 min_dist = 0x7FFFFFFF;
     X3D_ColorIndex min_index = 0;
     
     for(i = 0; i < 256; ++i) {        
-        int16 dist = abs((int16)r - (int16)quake_color_palette[i][0]) +
-            abs((int16)g - (int16)quake_color_palette[i][1]) +
-            abs((int16)b - (int16)quake_color_palette[i][2]);
-            
+        int16 dr = (int16)r - (int16)quake_color_palette[i][0];
+        int16 dg = (int16)g - (int16)quake_color_palette[i][1];
+        int16 db = (int16)b - (int16)quake_color_palette[i][2];
+        
+        int32 dist = dr * dr + dg * dg + db * db;
+        
         if(dist < min_dist) {
             min_dist = dist;
             min_index = i;

@@ -23,7 +23,7 @@
 #include <SDL/SDL.h>
 
 static inline void add_edge(X3D_RasterEdge* edge, X3D_Scanline* start, X3D_Scanline* end) {
-    while(start <= end) {
+    while(start < end) {
         x3d_scanline_add_edgevalue(start, &edge->value);
         x3d_rasteredge_advance(edge);
         ++start;
@@ -34,7 +34,7 @@ static inline void render_scanline(X3D_Scanline* scan, int16 y, X3D_PolygonRaste
     X3D_RasterEdge edge;
     x3d_rasteredge_initialize_from_scanline(&edge, scan);
     
-    for(int i = scan->left.x; i <= scan->right.x; ++i) {
+    for(int i = scan->left.x; i < scan->right.x; ++i) {
         x3d_rasteredgevalue_draw_pix(&edge.value, i, y, att);
         x3d_rasteredge_advance(&edge);
     }
@@ -72,7 +72,7 @@ void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_Polygon
         add_edge(&edge, scans + top->v.y, scans + bottom->v.y);
     }
     
-    for(i = min_y; i <= max_y; ++i) {
+    for(i = min_y; i < max_y; ++i) {
         render_scanline(scans + i, i, att);
     }
 }

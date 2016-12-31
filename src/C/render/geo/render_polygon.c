@@ -59,3 +59,27 @@ void x3d_render_id_buffer_polygon(X3D_Polygon3D* poly, uint32 segment_poly_id, X
     x3d_polygon3d_render_id_buffer(&rpoly, &at, cam);
 }
 
+void x3d_render_flat_shaded_polygon(X3D_Polygon3D* poly, X3D_CameraObject* cam, X3D_ColorIndex color) {
+    X3D_RasterPolygon3D rpoly = { .v = alloca(1000), .total_v = poly->total_v };
+    
+    uint16 i;
+    for(i = 0; i < poly->total_v; ++i) {
+        rpoly.v[i].v = poly->v[i];
+    }
+    
+    
+    X3D_PolygonRasterAtt at = {
+        .flat = {
+            .color = color
+        },
+        
+        .frustum = x3d_get_view_frustum(cam)
+    };
+    
+    X3D_ScreenManager* screenman = x3d_screenmanager_get();
+    X3D_RenderManager* renderman = x3d_rendermanager_get();
+    
+    x3d_polygonrasteratt_set_screen(&at, screenman->buf, renderman->zbuf, screenman->w, screenman->h);
+    x3d_polygon3d_render_flat(&rpoly, &at, cam);
+}
+

@@ -49,7 +49,7 @@ typedef struct X3D_RasterPolygon3D {
 typedef struct X3D_PolygonRasterAtt {
     union {
         struct {
-            X3D_Color color;
+            X3D_ColorIndex color;
         } flat;
         
         struct {
@@ -130,6 +130,10 @@ void x3d_polygon3d_render_zfill(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt*
 void x3d_polygon2d_render_texture_surface(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
 void x3d_polygon3d_render_texture_surface(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
 
+void x3d_polygon2d_render_flat(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att);
+void x3d_polygon3d_render_flat(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, struct X3D_CameraObject* cam);
+
 void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, uint32 segment_poly_id, struct X3D_CameraObject* cam, X3D_LightMapContext* lightmap_context);
 void x3d_render_id_buffer_polygon(X3D_Polygon3D* poly, uint32 segment_poly_id, struct X3D_CameraObject* cam);
+void x3d_render_flat_shaded_polygon(X3D_Polygon3D* poly, struct X3D_CameraObject* cam, X3D_ColorIndex color);
 
