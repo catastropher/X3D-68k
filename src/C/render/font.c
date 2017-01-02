@@ -17,7 +17,7 @@
 #include "render/X3D_texture.h"
 
 _Bool x3d_font_load(X3D_Font* font, const char* file_name) {
-  return x3d_texture_load_from_file(&font->tex, file_name);
+  return x3d_texture_load_from_bmp_file(&font->tex, file_name);
 }
 
 void x3d_font_draw_char(X3D_Font* font, unsigned char c, int16 x, int16 y) {

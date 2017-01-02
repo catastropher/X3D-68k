@@ -100,7 +100,7 @@ X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index) {
     return color_palette[index];
 }
 
-void init_sdl_virtual_screen(X3D_InitSettings* init) {
+_Bool init_sdl_virtual_screen(X3D_InitSettings* init) {
     uint32 rmask, gmask, bmask, amask;
     
     /* SDL interprets each pixel as a 32-bit number, so our masks must depend
@@ -126,6 +126,8 @@ void init_sdl_virtual_screen(X3D_InitSettings* init) {
     }
     
     x3d_log(X3D_INFO, "Created virtual window");
+    
+    return X3D_TRUE;
 }
 
 #ifdef X3D_USE_SDL1
@@ -481,48 +483,19 @@ _Bool x3d_platform_screen_load_texture(X3D_Texture* tex, const char* file) {
         return X3D_FALSE;
     }
     
-    uint8* data = malloc((uint32)s->w * s->h * 3L + 5); 
-    
-    int16 start = 0;
-    
-    if(s->w >= 256 || s->h >= 256) {
-        data[0] = 0;
-        data[1] = s->w >> 8;
-        data[2] = s->w & 0xFF;
-        data[3] = s->h >> 8;
-        data[4] = s->h & 0xFF;
-        
-        data += 3;
-        start = 3;
-    }
-    else {
-        data[0] = s->w;
-        data[1] = s->h;
-    }
-    
-    x3d_log(X3D_INFO, "Tex: %d %d", data[0], data[1]);
-    
-    uint32 pos = 0;
+    x3d_texture_init(tex, s->w, s->h, 0);
     
     uint16 i, d;
     for(i = 0; i < s->h; ++i) {
         for(d = 0; d < s->w; ++d) {
-        uint32 pix = getpixel(s, d, i);
-        uint8 r, g, b;
-        
-        SDL_GetRGB(pix, s->format, &r, &g, &b);
-        
-        data[2 + pos * 3 + 0] = r;
-        data[2 + pos * 3 + 1] = g;
-        data[2 + pos * 3 + 2] = b;
-        
-        ++pos;
-        
-        //x3d_texture_set_texel(tex, d, i, x3d_rgb_to_color(r, g, b));
+            uint32 pix = getpixel(s, d, i);
+            uint8 r, g, b;
+            
+            SDL_GetRGB(pix, s->format, &r, &g, &b);
+            
+            x3d_texture_set_texel(tex, d, i, x3d_color_to_colorindex(x3d_rgb_to_color(r, g, b)));
         }
     }
-
-    x3d_texture_from_array(tex, data - start);
     
     SDL_FreeSurface(s);
     

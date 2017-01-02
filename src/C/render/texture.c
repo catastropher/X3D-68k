@@ -17,134 +17,16 @@
 #include "render/X3D_texture.h"
 #include "render/X3D_palette.h"
 
-///////////////////////////////////////////////////////////////////////////////
-/// Loads a texture from a file (stored in a bmp file).
-///
-/// @param tex  - texture struct to load into
-/// @param file - name of file to load texture from
-///
-/// @return Whether the texture was successfully loaded.
-/// @note   Only try to load texture that have size which are powers of 2!
-///////////////////////////////////////////////////////////////////////////////
-_Bool x3d_texture_load_from_file(X3D_Texture* tex, const char* file) {
-  return x3d_platform_screen_load_texture(tex, file);
+_Bool x3d_texture_load_from_bmp_file(X3D_Texture* tex, const char* file) {
+    return x3d_platform_screen_load_texture(tex, file);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-/// Blits a texture onto the screen as a 2D image.
-///
-/// @param tex  - texture
-/// @param x    - x coordinate of top right corner of where the texture goes
-/// @param y    - y coordinate of top right corner of where the texture goes
-///
-/// @return Nothing.
-///////////////////////////////////////////////////////////////////////////////
-void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y) {
-  uint16 i, d;
-  
-  for(i = 0; i < tex->h; ++i) {
-    for(d = 0; d < tex->w; ++d) {
-      x3d_screen_draw_pix(d + x, i + y, x3d_colorindex_to_color(x3d_texture_get_texel(tex, d, i)));
+void x3d_texture_blit(X3D_Texture* tex, uint16 x, uint16 y) {    
+    for(int i = 0; i < tex->h; ++i) {
+        for(int d = 0; d < tex->w; ++d) {
+            x3d_screen_draw_pix(d + x, i + y, x3d_texture_get_texel(tex, d, i));
+        }
     }
-  }
-}
-
-
-void x3d_texture_to_array(X3D_Texture* texture, FILE* file, const char* name) {
-  fprintf(file, "uint8 %s_data[] = {\n  %d,\n  %d", name, texture->w, texture->h);
-  
-  uint32 i, d;
-  
-  for(i = 0; i < texture->h; ++i) {
-    for(d = 0; d < texture->w; ++d) {
-      X3D_Color c = x3d_colorindex_to_color(x3d_texture_get_texel(texture, d, i));
-      uint8 r, g, b;
-      x3d_color_to_rgb(c, &r, &g, &b);
-      
-      fprintf(file, ",\n  %d,\n  %d,  \n  %d", r, g, b);
-    }
-  }
-  
-  fprintf(file, "\n};\n\n");
-}
-
-void x3d_fix_texture(X3D_Texture* tex);
-
-uint8 x3d_texture_get_color_index(X3D_Texture* tex, X3D_Color c) {
-  uint16 i;
-  for(i = 0; i < tex->total_c; ++i) {
-    if(tex->color_tab[i] == c) {
-      return i;
-    }
-  }
-  
-  tex->color_tab[tex->total_c] = c;
-  
-  return tex->total_c++;
-}
-
-void x3d_texture_pack_8bit(X3D_Texture* tex, X3D_Color* texel) {
-  tex->texels = malloc(sizeof(X3D_ColorIndex) * tex->w * tex->h);
-  
-  uint32 i;
-  for(i = 0; i < (uint32)tex->w * tex->h; ++i) {
-    tex->texels[i] = x3d_color_to_colorindex(texel[i]);
-  }
-}
-
-void x3d_texture_resize_to_64(X3D_Color* texel) {
-  uint16 i, d;
-  uint16 pos = 0;
-  
-  for(i = 0; i < 128; i += 2) {
-    for(d = 0; d < 128; d += 2) {
-      texel[pos++] = texel[i * 128 + d];
-    }
-  }
-}
-
-
-void x3d_texture_from_array(X3D_Texture* dest, uint8* data) {
-  if(data[0] == 0) {
-    dest->w = ((uint16)data[1] << 8) + data[2];
-    dest->h = ((uint16)data[3] << 8) + data[4];
-    
-    x3d_log(X3D_INFO, "Width: %d, %d", dest->w, dest->h);
-    data += 3;
-  }
-  else {
-    dest->w = data[0];
-    dest->h = data[1];
-  }
-  
-  X3D_Color* texel = malloc(sizeof(X3D_Color) * dest->w * dest->h);
-  dest->color_tab = malloc(256 * sizeof(X3D_Color));
-  dest->total_c = 0;
-  dest->mask = dest->w - 1;
-
-  if(dest->w == 32 || dest->w == 64 || dest->w == 128) {
-    dest->flags |= X3D_TEXTURE_REPEAT;
-  }
-  
-  //x3d_log(X3D_INFO, "width: %d", dest->w);
-  //x3d_log(X3D_INFO, "height: %d", dest->h);
-  
-  uint32 i;
-  for(i = 0; i < (uint32)dest->w * dest->h; ++i) {
-    texel[i] = x3d_rgb_to_color(data[2 + i * 3], data[2 + i * 3 + 1], data[2 + i * 3 + 2]);
-    
-    //x3d_texture_get_color_index(dest, texel[i]);
-  }
-  
-    x3d_texture_pack_8bit(dest, texel);
-  
-  free(texel);
-  
-  x3d_log(X3D_INFO, "Texture has %d colors", dest->total_c);
-  
-#ifdef __nspire__
-  x3d_fix_texture(dest);
-#endif
 }
 
 void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags) {
@@ -152,11 +34,6 @@ void x3d_texture_init(X3D_Texture* tex, uint16 w, uint16 h, uint16 flags) {
     tex->h = h;
     tex->texels = malloc(sizeof(X3D_ColorIndex) * w * h);
     tex->flags = flags;
-    
-    if(flags & X3D_TEXTURE_REPEAT) {
-        /// @todo Check that the texture dimensions are a power of 2, and that they're equal
-        tex->mask = tex->w - 1;
-    }
 }
 
 void x3d_texture_cleanup(X3D_Texture* tex) {
@@ -171,40 +48,5 @@ void x3d_texture_fill(X3D_Texture* tex, X3D_ColorIndex color) {
 void x3d_texture_copy_texels(X3D_Texture* dest, const X3D_Texture* src) {
     x3d_assert(dest->w == src->w && dest->h == src->h);
     memcpy(dest->texels, src->texels, sizeof(X3D_ColorIndex) * x3d_texture_total_texels(src));
-}
-
-void x3d_texture_create_new(X3D_Texture* tex, int16 w, int16 h, X3D_Color color) {
-    tex->w = w;
-    tex->h = h;
-    
-    X3D_ColorIndex color_index = x3d_color_to_colorindex(color);
-    
-    size_t size = (size_t)w * h * sizeof(X3D_ColorIndex);
-    tex->texels = malloc(size);
-    memset(tex->texels, color_index, size);
-}
-
-void x3d_texture_fill_with_checkerboard(X3D_Texture* tex, int16 width, int16 square_size) {
-    X3D_ColorIndex white = x3d_color_to_colorindex(x3d_rgb_to_color(255, 255, 255));
-    X3D_ColorIndex black = x3d_color_to_colorindex(x3d_rgb_to_color(0, 0, 0));
-    
-    x3d_texture_create_new(tex, width, width, black);
-    
-    int16 num_squares = width / square_size;
-    
-    for(int16 i = 0; i < num_squares; ++i) {
-        for(int16 j = 0; j < num_squares; ++j) {
-            if((i % 2) == (j % 2)) {
-                int16 x_start = j * square_size;
-                int16 y_start = i * square_size;
-                
-                for(int16 k = 0; k < square_size; ++k) {
-                    for(int16 d = 0; d < square_size; ++d) {
-                        x3d_texture_set_texel(tex, x_start + d, y_start + k, white);
-                    }
-                }
-            }
-        }
-    }
 }
 
