@@ -87,8 +87,9 @@ static inline void x3d_scanline_add_edgevalue(X3D_Scanline* scan, X3D_RasterEdge
 }
 
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, const X3D_PolygonRasterAtt* att) {
-    int16* zbuf = att->zbuf + (int32)y * att->screen_w + x;
-    uint8* pix = (uint8 *)att->screen + (int32)y * att->screen_w + x;
+    int index = x3d_texture_pixel_index(&att->screen, x, y);
+    int16* zbuf = att->zbuf + index;
+    X3D_ColorIndex* pix = att->screen.texels + index;
     
     int16 zz = val->z >> 16;
     

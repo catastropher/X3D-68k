@@ -194,20 +194,20 @@ void test_packfile() {
 }
 
 int main(int argc, char* argv[]) {
-    test_packfile();
-    return 0;
+   // test_packfile();
+   // return 0;
     
     
     init();
     
-    test_mat4x4();
+    //test_mat4x4();
     
     x3d_model_load_from_file(&teapot, "/home/michael/code/X3D-68k/tools/build/teapot.xmod");
     
     
     
     //x3d_texture_from_array(&checkerboard, wood_tex_data);
-    if(!x3d_texture_load_from_file(&checkerboard, "floor.bmp")) {
+    if(!x3d_texture_load_from_bmp_file(&checkerboard, "floor.bmp")) {
         x3d_log(X3D_ERROR, "Failed to load texture");
         return 0;
     }
@@ -217,7 +217,7 @@ int main(int argc, char* argv[]) {
     
     //x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
     
-    x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(255, 0, 0));
+    x3d_texture_init(&checkerboard2, 128, 128, 0);
     //x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(0, 0, 255));
     
     x3d_rendermanager_get()->near_z = 10;

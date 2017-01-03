@@ -42,10 +42,13 @@ static inline void render_scanline(X3D_Scanline* scan, int16 y, X3D_PolygonRaste
 
 void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
-    X3D_Scanline scans[screenman->h];
+    
+    int w = x3d_screenmanager_get_w(screenman);
+    int h = x3d_screenmanager_get_h(screenman);
+    X3D_Scanline scans[h];
     
     uint16 i;
-    for(i = 0; i < screenman->h; ++i) {
+    for(i = 0; i < h; ++i) {
         scans[i].left.x = 0x7FFF;
         scans[i].right.x = -0x7FFF;
     }
@@ -59,8 +62,8 @@ void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_Polygon
         X3D_PolygonRasterVertex2D* top    = v + i;
         X3D_PolygonRasterVertex2D* bottom = v + next;
         
-        x3d_polygonrastervertex_clamp(top, screenman->w, screenman->h);
-        x3d_polygonrastervertex_clamp(bottom, screenman->w, screenman->h);
+        x3d_polygonrastervertex_clamp(top, w, h);
+        x3d_polygonrastervertex_clamp(bottom, w, h);
         
         if(v[i].v.y > v[next].v.y)
             X3D_SWAP(top, bottom);
@@ -93,12 +96,6 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
         
         projected_v[i].zz = rotated.z;
     }
-    
-    if(!att->zbuf)
-        att->zbuf = x3d_rendermanager_get()->zbuf;
-    
-    if(!att->screen)
-        att->screen = ((SDL_Surface* )x3d_screen_get_internal())->pixels;
     
     RASTERIZE_NAME2D(projected_v, clipped_poly.total_v, att);
 }

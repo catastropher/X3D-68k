@@ -40,11 +40,13 @@ void x3d_convert_view_coord_to_world_coord(X3D_Vex3D* view, X3D_CameraObject* ca
 void x3d_calculate_position_from_z_buffer(int16 screen_x, int16 screen_y, X3D_CameraObject* cam, X3D_Vex3D* dest) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_RenderManager* renderman = x3d_rendermanager_get();
+    int w = x3d_screenmanager_get_w(screenman);
+    int h = x3d_screenmanager_get_h(screenman);
     
-    float z = renderman->zbuf[(int32)screen_y * screenman->w + screen_x];
+    float z = renderman->zbuf[(int32)screen_y * w + screen_x];
     
-    float x = (screen_x - screenman->w / 2) * z / screenman->scale_x;
-    float y = (screen_y - screenman->h / 2) * z / screenman->scale_x;
+    float x = (screen_x - w / 2) * z / screenman->scale_x;
+    float y = (screen_y - h / 2) * z / screenman->scale_x;
  
     X3D_Vex3D v = { x, y, z };
 
@@ -133,9 +135,12 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_CameraObject light_cam;
     
-    id_zbuf = malloc(sizeof(float) * screenman->w * screenman->h);
+    id_zbuf = malloc(sizeof(float) * x3d_screenmanager_total_pixels(screenman));
     
-    for(i = 0; i < (uint32)screenman->w * screenman->h; ++i) {
+    int w = x3d_screenmanager_get_w(screenman);
+    int h = x3d_screenmanager_get_h(screenman);
+    
+    for(i = 0; i < (uint32)x3d_screenmanager_total_pixels(screenman); ++i) {
         id_zbuf[i] = 0x7F7F;
     }
     
@@ -144,10 +149,10 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
     for(i = 0; i < context->total_lightmaps; ++i)
         render_surface[i] = X3D_FALSE;
     
-    x3d_render_from_perspective_of_spotlight(light, &light_cam);
-        
-    for(i = 0; i < screenman->h; ++i) {
-        for(j = 0; j < screenman->w; ++j) {
+    x3d_render_from_perspective_of_spotlight(light, &light_cam);    
+    
+    for(i = 0; i < h; ++i) {
+        for(j = 0; j < w; ++j) {
             uint32 index = (uint32)x3d_screen_get_internal_value(j, i);
             
             if(index < context->total_lightmaps) {                
@@ -173,11 +178,11 @@ void x3d_lightmap_build(X3D_SpotLight* light, X3D_LightMapContext* context) {
                     X3D_Vex2D projected;
                     x3d_camera_transform_points(&light_cam, &v, 1, &transformed, &projected);
                     
-                    if(projected.x >= 0 && projected.x < screenman->w && projected.y >= 0 && projected.y < screenman->h) {
-                        float z = id_zbuf[(int32)projected.y * screenman->w + projected.x];
+                    if(projected.x >= 0 && projected.x < w && projected.y >= 0 && projected.y < h) {
+                        float z = id_zbuf[(int32)projected.y * w + projected.x];
                         
                         if((transformed.z > 0 && transformed.z < z + 50) || x3d_screen_get_internal_value(k, j) == i) {
-                            float dist = sqrt(pow(projected.x - screenman->w / 2, 2) + pow(projected.y - screenman->h / 2, 2));
+                            float dist = sqrt(pow(projected.x - w / 2, 2) + pow(projected.y - h / 2, 2));
                             
                             if(dist < 3 * 150 / 2) {
                                 //printf("Transformed: %d -> %d\n", transformed.z, z);
@@ -260,7 +265,7 @@ void x3d_build_combined_lightmap_texture(X3D_Texture* tex, X3D_Texture* map, X3D
     x3d_log(X3D_INFO, "Surface size: %dx%d", w, h);
     
     x3d_texture_init(dest, w, h, 0);
-    x3d_polygonrasteratt_set_screen_to_texture(&att, dest, zbuf);
+    x3d_polygonrasteratt_set_screen(&att, dest, zbuf);
     x3d_polygon2d_render_texture_surface(rpoly.v, rpoly.total_v, &att);
     
     x3d_texture_apply_lightmap(dest, map);

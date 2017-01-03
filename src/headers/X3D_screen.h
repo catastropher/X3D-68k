@@ -20,19 +20,6 @@
 
 typedef uint8 X3D_ColorIndex;
 
-typedef struct X3D_ScreenManager {
-  uint16 w;
-  uint16 h;
-  angle256 fov;
-  int16 scale_x;
-  int16 scale_y;
-  
-  X3D_Vex2D center;
-  X3D_Vex2D pos;
-  
-  X3D_ColorIndex* buf;
-} X3D_ScreenManager;
-
 ///////////////////////////////////////////////////////////////////////////////
 /// Represents a color. This is platform-dependent and the meaning of the
 ///   contents may vary with what video mode is selected.
@@ -56,7 +43,7 @@ X3D_PLATFORM void x3d_screen_flip();
 ///
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
-X3D_PLATFORM void x3d_screen_clear(X3D_Color color);
+X3D_PLATFORM void x3d_screen_clear(X3D_ColorIndex color);
 
 
 ///////////////////////////////////////////////////////////////////////////////

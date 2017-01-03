@@ -32,7 +32,7 @@ typedef struct X3D_TextureOrientation {
 /// A texture.
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Texture {
-    uint16 w, h;          ///< Width and height of the texture
+    int w, h;          ///< Width and height of the texture
     uint16 mask;          ///< Mask for repeated textures
     uint16 flags;
     
@@ -40,16 +40,16 @@ typedef struct X3D_Texture {
 } X3D_Texture;
 
 
-static inline uint32 x3d_texture_index(const X3D_Texture* tex, uint16 u, uint16 v) {
+static inline uint32 x3d_texture_pixel_index(const X3D_Texture* tex, uint16 u, uint16 v) {
     return (uint32)v * tex->w + u;
 }
 
 static inline X3D_ColorIndex x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, uint16 v) {  
-    return tex->texels[x3d_texture_index(tex, u, v)];
+    return tex->texels[x3d_texture_pixel_index(tex, u, v)];
 }
 
 static inline void x3d_texture_set_texel(X3D_Texture* tex, uint16 u, uint16 v, X3D_ColorIndex c) {
-  tex->texels[x3d_texture_index(tex, u, v)] = c;
+  tex->texels[x3d_texture_pixel_index(tex, u, v)] = c;
 }
 
 static inline void x3d_texture_init_empty(X3D_Texture* tex) {

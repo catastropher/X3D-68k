@@ -33,7 +33,7 @@ void x3d_render_texture_lightmap_polygon(X3D_Polygon3D* poly, X3D_Texture* tex, 
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_RenderManager* renderman = x3d_rendermanager_get();
     
-    x3d_polygonrasteratt_set_screen(&at, screenman->buf, renderman->zbuf, screenman->w, screenman->h);
+    x3d_polygonrasteratt_set_screen(&at, x3d_screenmanager_get_screen(screenman), renderman->zbuf);
     x3d_polygon3d_render_texture_surface(&rpoly, &at, cam);
 }
 
@@ -55,7 +55,7 @@ void x3d_render_id_buffer_polygon(X3D_Polygon3D* poly, uint32 segment_poly_id, X
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_RenderManager* renderman = x3d_rendermanager_get();
     
-    x3d_polygonrasteratt_set_screen(&at, screenman->buf, renderman->zbuf, screenman->w, screenman->h);
+    x3d_polygonrasteratt_set_screen(&at, x3d_screenmanager_get_screen(screenman), renderman->zbuf);
     x3d_polygon3d_render_id_buffer(&rpoly, &at, cam);
 }
 
@@ -79,7 +79,7 @@ void x3d_render_flat_shaded_polygon(X3D_Polygon3D* poly, X3D_CameraObject* cam, 
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     X3D_RenderManager* renderman = x3d_rendermanager_get();
     
-    x3d_polygonrasteratt_set_screen(&at, screenman->buf, renderman->zbuf, screenman->w, screenman->h);
+    x3d_polygonrasteratt_set_screen(&at, x3d_screenmanager_get_screen(screenman), renderman->zbuf);
     x3d_polygon3d_render_flat(&rpoly, &at, cam);
 }
 
