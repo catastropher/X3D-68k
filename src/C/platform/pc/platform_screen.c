@@ -340,6 +340,10 @@ void x3d_screen_clear(X3D_ColorIndex color) {
 
 void x3d_screen_draw_pix(int16 x, int16 y, X3D_ColorIndex color) {
     X3D_Texture* screen = x3d_screenmanager_get_screen(x3d_screenmanager_get());
+    
+    if(x < 0 || x >= screen->w || y < 0 || y >= screen->h)
+        return;
+    
     x3d_texture_set_texel(screen, x, y, color);
 }
 
