@@ -35,7 +35,7 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
     }
 }
 
-#define RASTERIZE_NAME2D x3d_polygon2d_render_texture_surface
-#define RASTERIZE_NAME3D x3d_polygon3d_render_texture_surface
+#define RASTERIZE_NAME2D x3d_polygon2d_render_texture_repeated
+#define RASTERIZE_NAME3D x3d_polygon3d_render_texture_repeated
 
 #include "render_polygon_generic.h"

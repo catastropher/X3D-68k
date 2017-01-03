@@ -23,18 +23,20 @@ enum {
   X3D_TEXTURE_REPEAT = 1
 };
 
+typedef struct X3D_TextureOrientation {
+    angle256 angle;
+    X3D_Vex2D offset;
+} X3D_TextureOrientation;
+
 ///////////////////////////////////////////////////////////////////////////////
 /// A texture.
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Texture {
-  uint16 w, h;          ///< Width and height of the texture
-  uint16 mask;          ///< Mask for repeated textures
-  uint16 flags;
-  
-  X3D_ColorIndex* texels;
-  
-  X3D_Color* color_tab;
-  uint16 total_c;
+    uint16 w, h;          ///< Width and height of the texture
+    uint16 mask;          ///< Mask for repeated textures
+    uint16 flags;
+    
+    X3D_ColorIndex* texels;
 } X3D_Texture;
 
 

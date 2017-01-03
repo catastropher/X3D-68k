@@ -87,4 +87,4 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
 #define RASTERIZE_NAME3D x3d_polygon3d_render_zfill
 
 
-#include "render_polygon_generic.c"
+#include "render_polygon_generic.h"

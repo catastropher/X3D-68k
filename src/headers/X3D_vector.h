@@ -97,7 +97,8 @@ uint16 x3d_vex3d_int16_mag(X3D_Vex3D_int16* v);
 void x3d_vex2d_rotate_around_point(X3D_Vex2D* v, X3D_Vex2D* point_to_rotate_around, angle256 angle, X3D_Vex2D* dest);
 void x3d_vex2d_make_point_on_circle(int16 radius, angle256 angle, X3D_Vex2D* dest);
 
-static inline X3D_Vex2D x3d_vex2d_make(int16 x, int16 y) {
+
+static inline X3D_Vex2D x3d_vex2d_make(int x, int y) {
     return (X3D_Vex2D) { x, y };
 }
 
