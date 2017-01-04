@@ -20,20 +20,14 @@
 
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, const X3D_PolygonRasterAtt* att) {
     int index = x3d_texture_pixel_index(&att->screen, x, y);
-    int16* zbuf = att->zbuf + index;
     X3D_ColorIndex* pix = att->screen.texels + index;
+
+    X3D_Texture* tex = att->texture.texture;
     
-    int16 zz = val->z >> 16;
+    int32 u = (val->u >> 16) % tex->w;
+    int32 v = (val->v >> 16) % tex->h;
     
-    if(zz < *zbuf) {
-        X3D_Texture* tex = att->surface.tex;
-        
-        int32 u = (val->u >> 16) % tex->w;
-        int32 v = (val->v >> 16) % tex->h;
-        
-        *pix = tex->texels[v * tex->w + u];
-        *zbuf = zz;
-    }
+    *pix = tex->texels[v * tex->w + u];
 }
 
 

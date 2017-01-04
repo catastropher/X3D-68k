@@ -106,6 +106,18 @@ static inline X3D_Vex2D x3d_vex2d_origin() {
     return x3d_vex2d_make(0, 0);
 }
 
+static inline int32 x3d_vex2d_dot(X3D_Vex2D* a, X3D_Vex2D* b) {
+    return (int32)a->x * b->x + (int32)a->y * b->y;
+}
+
+static inline fp0x16 x3d_vex2d_dot_shifted(X3D_Vex2D* a, X3D_Vex2D* b) {
+    return x3d_vex2d_dot(a, b) >> 15;
+}
+
+static inline X3D_Vex2D x3d_vex2d_rotate_clockwise_by_90_degrees(X3D_Vex2D v) {
+    return x3d_vex2d_make(-v.y, v.x);
+}
+
 
 typedef X3D_Vex3D_fp0x16 X3D_Normal3D;
 

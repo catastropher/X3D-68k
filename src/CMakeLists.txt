@@ -105,6 +105,7 @@ add_sources(
   C/render/geo/render_polygon_flat.c
   C/render/geo/clip_polygon.c
   C/render/geo/render_polygon.c
+  C/render/surface.c
   
   C/render/palette.c
 

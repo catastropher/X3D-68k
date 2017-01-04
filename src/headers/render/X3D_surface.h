@@ -15,9 +15,25 @@
 
 #include "X3D_common.h"
 #include "render/X3D_texture.h"
+#include "X3D_polygon.h"
 
 typedef struct X3D_Surface {
-    
+    X3D_Texture surface;
 } X3D_Surface;
 
+static inline int x3d_surface_w(const X3D_Surface* surface) {
+    return surface->surface.w;
+}
+
+static inline int x3d_surface_h(const X3D_Surface* surface) {
+    return surface->surface.h;
+}
+
+static inline X3D_Texture* x3d_surface_texture(X3D_Surface* surface) {
+    return &surface->surface;
+}
+
+void x3d_surface_init(X3D_Surface* surface, X3D_Polygon3D* poly);
+void x3d_surface_cleanup(X3D_Surface* surface);
+void x3d_surface_apply_primary_texture(X3D_Surface* surface, X3D_Texture* tex, X3D_TextureOrientation* orientation);
 

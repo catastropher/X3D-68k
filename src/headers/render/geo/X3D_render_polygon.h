@@ -97,6 +97,15 @@ static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, i
     v->v.y = X3D_MIN(screen_h - 1, v->v.y);
 }
 
+static inline void x3d_polygonrastervertex2d_set_texture_coords(X3D_PolygonRasterVertex2D* v, X3D_Vex2D tex_coord) {
+    v->uu = tex_coord.x;
+    v->vv = tex_coord.y;
+}
+
+static inline void x3d_polygonrastervertex2d_set_vertex(X3D_PolygonRasterVertex2D* v, X3D_Vex2D pos) {
+    v->v = pos;
+}
+
 static inline void x3d_polygonrastervertex3d_copy_attributes(X3D_PolygonRasterVertex3D* src, X3D_PolygonRasterVertex2D* dest) {
     dest->uu = src->uu;
     dest->vv = src->vv;
