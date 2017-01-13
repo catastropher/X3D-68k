@@ -17,9 +17,56 @@
 #include "render/X3D_texture.h"
 #include "X3D_polygon.h"
 
+typedef struct X3D_Orientation2D {
+    X3D_Vex2D s;
+    X3D_Vex2D t;
+    X3D_Vex2D offset;
+    int scale;          // fixed-point in 8.8 format
+} X3D_Orientation2D;
+
+typedef enum X3D_SurfaceTextureFlags {
+    X3D_SURFACETEXTURE_IS_DECAL = 1
+} X3D_SurfaceTextureFlags;
+
+typedef struct X3D_SurfaceTexture {
+    X3D_Vex2D offset;
+    X3D_Texture* tex;
+    fp8x8 scale;
+    angle256 angle;
+    uint8 flags;
+} X3D_SurfaceTexture;
+
+static inline _Bool x3d_surfacetexture_is_decal(X3D_SurfaceTexture* tex) {
+    return tex->flags & X3D_SURFACETEXTURE_IS_DECAL;
+}
+
+
+static inline int x3d_surfacetexture_w(X3D_SurfaceTexture* tex) {
+    return tex->tex->w;
+}
+
+static inline int x3d_surfacetexture_h(X3D_SurfaceTexture* tex) {
+    return tex->tex->h;
+}
+
+typedef enum X3D_SurfaceFlags {
+    X3D_SURFACE_REBUILD_ENTIRE = 1
+} X3D_SurfaceFlags;
+
 typedef struct X3D_Surface {
     X3D_Texture surface;
+    X3D_SurfaceTexture* textures;
+    int total_textures;
+    int flags;
 } X3D_Surface;
+
+static inline _Bool x3d_surface_needs_entirely_rebuilt(const X3D_Surface* surface) {
+    return surface->flags & X3D_SURFACE_REBUILD_ENTIRE;
+}
+
+static inline void x3d_surface_set_flags(X3D_Surface* surface, X3D_SurfaceFlags flags) {
+    surface->flags |= flags;
+}
 
 static inline int x3d_surface_w(const X3D_Surface* surface) {
     return surface->surface.w;
@@ -35,5 +82,5 @@ static inline X3D_Texture* x3d_surface_texture(X3D_Surface* surface) {
 
 void x3d_surface_init(X3D_Surface* surface, X3D_Polygon3D* poly);
 void x3d_surface_cleanup(X3D_Surface* surface);
-void x3d_surface_apply_primary_texture(X3D_Surface* surface, X3D_Texture* tex, X3D_TextureOrientation* orientation);
+void x3d_surface_force_entire_rebuild(X3D_Surface* surface);
 
