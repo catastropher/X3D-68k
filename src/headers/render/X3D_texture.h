@@ -34,6 +34,13 @@ typedef struct X3D_Texture {
     X3D_ColorIndex* texels;
 } X3D_Texture;
 
+static inline int x3d_texture_w(const X3D_Texture* tex) {
+    return tex->w;
+}
+
+static inline int x3d_texture_h(const X3D_Texture* tex) {
+    return tex->h;
+}
 
 static inline uint32 x3d_texture_pixel_index(const X3D_Texture* tex, uint16 u, uint16 v) {
     return (uint32)v * tex->w + u;

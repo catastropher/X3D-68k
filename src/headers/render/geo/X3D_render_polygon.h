@@ -102,6 +102,10 @@ static inline void x3d_polygonrastervertex2d_set_texture_coords(X3D_PolygonRaste
     v->vv = tex_coord.y;
 }
 
+static inline X3D_Vex2D x3d_polygonrastervertex2d_get_texture_coords(const X3D_PolygonRasterVertex2D* v) {
+    return x3d_vex2d_make(v->uu, v->vv);
+}
+
 static inline void x3d_polygonrastervertex2d_set_vertex(X3D_PolygonRasterVertex2D* v, X3D_Vex2D pos) {
     v->v = pos;
 }

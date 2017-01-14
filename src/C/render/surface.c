@@ -52,10 +52,6 @@ static void draw_texture_on_surface(X3D_Surface* surface, X3D_Texture* texture, 
     x3d_polygon2d_render_texture_repeated(v, 4, &att);
 }
 
-static void draw_decal_on_surface(X3D_Surface* surface, X3D_SurfaceTexture* decal, const X3D_BoundRect* update_rect) {
-    
-}
-
 int x3d_orientation2d_calculate_transformed_coordinate(X3D_Vex2D point, X3D_Vex2D axis, int scale, int offset) {
     return (((int)x3d_vex2d_dot_shifted(&point, &axis) << 8) / scale) + offset;
 }
@@ -69,9 +65,19 @@ static X3D_Vex2D x3d_orientation2d_transform_point(const X3D_Orientation2D* orie
 
 static void x3d_orientation2d_make_from_surfacetexture(X3D_Orientation2D* orientation, const X3D_SurfaceTexture* tex) {
     orientation->offset = tex->offset;
-    orientation->scale = tex->scale;
     
-    orientation->s = x3d_vex2d_make(x3d_cos(tex->angle), x3d_sin(tex->angle));
+    angle256 angle;
+    
+    if(x3d_surfacetexture_is_decal(tex)) {
+        orientation->scale = (256 << 8) / tex->scale;
+        angle = 256 - tex->angle;
+    }
+    else {
+        orientation->scale = tex->scale;
+        angle = tex->angle;
+    }
+    
+    orientation->s = x3d_vex2d_make(x3d_cos(angle), x3d_sin(angle));
     orientation->t = x3d_vex2d_rotate_clockwise_by_90_degrees(orientation->s);
 }
 
@@ -105,6 +111,39 @@ static void draw_primary_texture_on_surface(X3D_Surface* surface, X3D_SurfaceTex
     calculate_primary_texture_coordinates_from_vertices(v, surface, &orientation);
     adjust_texture_coordinates_so_all_positive(v, x3d_surfacetexture_w(primary_texture), x3d_surfacetexture_h(primary_texture));
     draw_texture_on_surface(surface, primary_texture->tex, v, update_rect);
+}
+
+static void populate_texture_coordinates_with_extent_of_surfacetexture(X3D_PolygonRasterVertex2D v[4], const X3D_SurfaceTexture* tex) {
+    int w = x3d_surfacetexture_w(tex);
+    int h = x3d_surfacetexture_h(tex);
+    
+    x3d_polygonrastervertex2d_set_texture_coords(v + 0, x3d_vex2d_make(0, 0));
+    x3d_polygonrastervertex2d_set_texture_coords(v + 1, x3d_vex2d_make(w, 0));
+    x3d_polygonrastervertex2d_set_texture_coords(v + 2, x3d_vex2d_make(w, h));
+    x3d_polygonrastervertex2d_set_texture_coords(v + 3, x3d_vex2d_make(0, h));
+}
+
+static void calculate_decal_vertices_from_texture_coordinates(X3D_PolygonRasterVertex2D v[4], const X3D_Texture* tex, const X3D_Orientation2D* orientation) {
+    X3D_Vex2D center = x3d_vex2d_make(x3d_texture_w(tex) / 2, x3d_texture_h(tex) / 2);
+    
+    for(int i = 0; i < 4; ++i) {
+        X3D_Vex2D texture_coord = x3d_polygonrastervertex2d_get_texture_coords(v + i);
+        X3D_Vex2D point_relative_to_center = x3d_vex2d_sub(&texture_coord, &center);
+        X3D_Vex2D transformed_point = x3d_orientation2d_transform_point(orientation, point_relative_to_center);
+        
+        v[i].v = transformed_point; //x3d_vex2d_add(&transformed_point, &center);
+    }
+}
+
+static void draw_decal_on_surface(X3D_Surface* surface, X3D_SurfaceTexture* decal, const X3D_BoundRect* update_rect) {
+    X3D_Orientation2D orientation;
+    x3d_orientation2d_make_from_surfacetexture(&orientation, decal);
+    
+    X3D_PolygonRasterVertex2D v[4];
+    populate_texture_coordinates_with_extent_of_surfacetexture(v, decal);
+    calculate_decal_vertices_from_texture_coordinates(v, decal->tex, &orientation);
+    //adjust_texture_coordinates_so_all_positive(v, x3d_surfacetexture_w(decal), x3d_surfacetexture_h(decal));
+    draw_texture_on_surface(surface, decal->tex, v, update_rect);
 }
 
 static void fill_surface_with_color(X3D_Surface* surface, X3D_ColorIndex color, const X3D_BoundRect* update_rect) {

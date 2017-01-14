@@ -36,16 +36,16 @@ typedef struct X3D_SurfaceTexture {
     uint8 flags;
 } X3D_SurfaceTexture;
 
-static inline _Bool x3d_surfacetexture_is_decal(X3D_SurfaceTexture* tex) {
+static inline _Bool x3d_surfacetexture_is_decal(const X3D_SurfaceTexture* tex) {
     return tex->flags & X3D_SURFACETEXTURE_IS_DECAL;
 }
 
 
-static inline int x3d_surfacetexture_w(X3D_SurfaceTexture* tex) {
+static inline int x3d_surfacetexture_w(const X3D_SurfaceTexture* tex) {
     return tex->tex->w;
 }
 
-static inline int x3d_surfacetexture_h(X3D_SurfaceTexture* tex) {
+static inline int x3d_surfacetexture_h(const X3D_SurfaceTexture* tex) {
     return tex->tex->h;
 }
 
