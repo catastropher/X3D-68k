@@ -17,6 +17,9 @@
 #include "render/geo/X3D_render_polygon.h"
 #include "X3D_trig.h"
 #include "geo/X3D_boundrect.h"
+#include "X3D_camera.h"
+#include "X3D_enginestate.h"
+#include "render/geo/X3D_clip_polygon.h"
 
 static void adjust_texture_coordinates_so_all_positive(X3D_PolygonRasterVertex2D v[4], int tex_w, int tex_h) {
     int min_x = v[0].uu;
@@ -79,6 +82,46 @@ static void x3d_orientation2d_make_from_surfacetexture(X3D_Orientation2D* orient
     
     orientation->s = x3d_vex2d_make(x3d_cos(angle), x3d_sin(angle));
     orientation->t = x3d_vex2d_rotate_clockwise_by_90_degrees(orientation->s);
+}
+
+int x3d_orientation3d_calculate_transformed_coordinate(X3D_Vex3D point, X3D_Vex3D axis, int scale, int offset) {
+    return (((int)x3d_vex3d_fp0x16_dot(&point, &axis) << 8) / scale) + offset;
+}
+
+static X3D_Vex2D x3d_orientation3d_transform_point(const X3D_Orientation3D* orientation, X3D_Vex3D point) {
+    return x3d_vex2d_make(
+        x3d_orientation3d_calculate_transformed_coordinate(point, orientation->s, orientation->scale, orientation->offset.x),
+        x3d_orientation3d_calculate_transformed_coordinate(point, orientation->t, orientation->scale, orientation->offset.y)
+    );
+}
+
+static void x3d_orientation3d_from_polygon3d(X3D_Orientation3D* orientation, const X3D_Polygon3D* poly, fp8x8 scale, X3D_Vex2D* polygon_size_dest) {
+    X3D_Mat3x3 mat;
+    X3D_Plane plane;
+    
+    x3d_polygon3d_calculate_plane(poly, &plane);
+    x3d_plane_guess_orientation(&plane, &mat, poly->v + 0);
+    
+    x3d_mat3x3_get_column(&mat, 0, &orientation->s);
+    x3d_mat3x3_get_column(&mat, 1, &orientation->t);
+    
+    orientation->scale = scale;
+    orientation->offset = x3d_vex2d_make(0, 0);
+    
+    X3D_Vex2D min_v = x3d_orientation3d_transform_point(orientation, poly->v[0]);
+    X3D_Vex2D max_v = min_v;
+    
+    for(int i = 1; i < poly->total_v; ++i) {
+        X3D_Vex2D v = x3d_orientation3d_transform_point(orientation, poly->v[i]);
+        
+        min_v = x3d_vex2d_min_coord(&min_v, &v);
+        max_v = x3d_vex2d_max_coord(&max_v, &v);
+    }
+    
+    orientation->offset = x3d_vex2d_neg(&min_v);
+    
+    if(polygon_size_dest)
+        *polygon_size_dest = x3d_vex2d_sub(&max_v, &min_v);
 }
 
 static void populate_rastervertices_with_extent_of_surface(X3D_PolygonRasterVertex2D v[4], X3D_Surface* surface) {
@@ -173,10 +216,43 @@ void x3d_surface_rebuild_region(X3D_Surface* surface, const X3D_BoundRect* regio
 }
 
 void x3d_surface_init(X3D_Surface* surface, X3D_Polygon3D* poly) {
-    x3d_texture_init(x3d_surface_texture(surface), 200, 200, 0);
+    X3D_Vex2D surface_size;
+    x3d_orientation3d_from_polygon3d(&surface->orientation, poly, 256, &surface_size);
+    
+    x3d_log(X3D_INFO, "Created surface %dx%d", surface_size.x, surface_size.y);
+    
+    x3d_texture_init(x3d_surface_texture(surface), surface_size.x, surface_size.y, 0);
 }
 
 void x3d_surface_cleanup(X3D_Surface* surface) {
     x3d_texture_cleanup(x3d_surface_texture(surface));
+}
+
+void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_CameraObject* cam) {
+    X3D_RasterPolygon3D raster_poly;
+    X3D_PolygonRasterVertex3D v[X3D_MAX_POINTS_IN_POLY];
+    
+    raster_poly.v = v;
+    raster_poly.total_v = poly->total_v;
+    
+    for(int i = 0; i < poly->total_v; ++i) {
+        v[i].v = poly->v[i];
+        x3d_polygonrastervertex3d_set_texture_coords(v + i, x3d_orientation3d_transform_point(&surface->orientation, poly->v[i]));
+    }
+    
+    X3D_PolygonRasterAtt att = {
+        .surface = {
+            .tex = x3d_surface_texture(surface)
+        },
+        
+        .frustum = x3d_get_view_frustum(cam)
+    };
+    
+    X3D_ScreenManager* screenman = x3d_screenmanager_get();
+    X3D_RenderManager* renderman = x3d_rendermanager_get();
+    
+    x3d_polygonrasteratt_set_screen(&att, x3d_screenmanager_get_screen(screenman), renderman->zbuf);
+    
+    x3d_polygon3d_render_texture_surface(&raster_poly, &att, cam);
 }
 

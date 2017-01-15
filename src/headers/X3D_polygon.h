@@ -22,6 +22,8 @@
 
 #pragma once
 
+#define X3D_MAX_POINTS_IN_POLY 32
+
 ///<  Initializes a 3D polygon and allocates space for the given number of
 ///   vertices on the stack.
 #define X3D_POLYGON3D_ALLOCA(_poly, _total_v) { _poly->v = alloca(sizeof(X3D_Vex3D) * total_v); _poly->total_v = _total_v; }
@@ -100,7 +102,7 @@ X3D_Polygon3D* x3d_polygon3d_temp(void);
 /// @return Nothing.
 /// @note   The polygon must have at least 3 points.
 ///////////////////////////////////////////////////////////////////////////////
-static inline void x3d_polygon3d_calculate_plane(X3D_Polygon3D* poly, X3D_Plane* dest) {
+static inline void x3d_polygon3d_calculate_plane(const X3D_Polygon3D* poly, X3D_Plane* dest) {
   x3d_assert(poly->total_v >= 3);
   x3d_plane_construct_from_three_points(dest, poly->v, poly->v + 1, poly->v + 2);
 }

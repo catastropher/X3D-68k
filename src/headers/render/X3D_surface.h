@@ -13,9 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include "X3D_common.h"
 #include "render/X3D_texture.h"
 #include "X3D_polygon.h"
+#include "X3D_camera.h"
 
 typedef struct X3D_Orientation2D {
     X3D_Vex2D s;
@@ -23,6 +26,13 @@ typedef struct X3D_Orientation2D {
     X3D_Vex2D offset;
     int scale;          // fixed-point in 8.8 format
 } X3D_Orientation2D;
+
+typedef struct X3D_Orientation3D {
+    X3D_Vex3D s;
+    X3D_Vex3D t;
+    X3D_Vex2D offset;
+    int scale;
+} X3D_Orientation3D;
 
 typedef enum X3D_SurfaceTextureFlags {
     X3D_SURFACETEXTURE_IS_DECAL = 1
@@ -58,6 +68,7 @@ typedef struct X3D_Surface {
     X3D_SurfaceTexture* textures;
     int total_textures;
     int flags;
+    X3D_Orientation3D orientation;
 } X3D_Surface;
 
 static inline _Bool x3d_surface_needs_entirely_rebuilt(const X3D_Surface* surface) {
@@ -83,4 +94,5 @@ static inline X3D_Texture* x3d_surface_texture(X3D_Surface* surface) {
 void x3d_surface_init(X3D_Surface* surface, X3D_Polygon3D* poly);
 void x3d_surface_cleanup(X3D_Surface* surface);
 void x3d_surface_force_entire_rebuild(X3D_Surface* surface);
+void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_CameraObject* cam);
 

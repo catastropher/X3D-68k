@@ -230,3 +230,21 @@ static inline X3D_Vex3D_fp16x16 x3d_vex3d_to_vex3d_fp16x16(X3D_Vex3D* v) {
     );
 }
 
+static inline X3D_Vex2D x3d_vex2d_max_coord(const X3D_Vex2D* a, const X3D_Vex2D* b) {
+    return x3d_vex2d_make(
+        X3D_MAX(a->x, b->x),
+        X3D_MAX(a->y, b->y)
+    );
+}
+
+static inline X3D_Vex2D x3d_vex2d_min_coord(const X3D_Vex2D* a, const X3D_Vex2D* b) {
+    return x3d_vex2d_make(
+        X3D_MIN(a->x, b->x),
+        X3D_MIN(a->y, b->y)
+    );
+}
+
+static inline X3D_Vex2D x3d_vex2d_neg(const X3D_Vex2D* v) {
+    return x3d_vex2d_make(-v->x, -v->y);
+}
+
