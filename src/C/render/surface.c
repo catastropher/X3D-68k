@@ -85,7 +85,7 @@ static void x3d_orientation2d_make_from_surfacetexture(X3D_Orientation2D* orient
 }
 
 int x3d_orientation3d_calculate_transformed_coordinate(X3D_Vex3D point, X3D_Vex3D axis, int scale, int offset) {
-    return (((int)x3d_vex3d_fp0x16_dot(&point, &axis) << 8) / scale) + offset;
+    return (((int)x3d_vex3d_fp0x16_dot(&point, &axis) * scale) >> 8) + offset;
 }
 
 static X3D_Vex2D x3d_orientation3d_transform_point(const X3D_Orientation3D* orientation, X3D_Vex3D point) {
@@ -141,6 +141,7 @@ static void calculate_primary_texture_coordinates_from_vertices(X3D_PolygonRaste
         X3D_Vex2D point_relative_to_center = x3d_vex2d_sub(&v[i].v, &center);
         X3D_Vex2D transformed_point = x3d_orientation2d_transform_point(orientation, point_relative_to_center);
         
+        transformed_point = x3d_vex2d_add(&transformed_point, &center);
         x3d_polygonrastervertex2d_set_texture_coords(v + i, transformed_point);
     }
 }
@@ -185,7 +186,7 @@ static void draw_decal_on_surface(X3D_Surface* surface, X3D_SurfaceTexture* deca
     X3D_PolygonRasterVertex2D v[4];
     populate_texture_coordinates_with_extent_of_surfacetexture(v, decal);
     calculate_decal_vertices_from_texture_coordinates(v, decal->tex, &orientation);
-    //adjust_texture_coordinates_so_all_positive(v, x3d_surfacetexture_w(decal), x3d_surfacetexture_h(decal));
+    adjust_texture_coordinates_so_all_positive(v, x3d_surfacetexture_w(decal), x3d_surfacetexture_h(decal));
     draw_texture_on_surface(surface, decal->tex, v, update_rect);
 }
 
@@ -215,13 +216,22 @@ void x3d_surface_rebuild_region(X3D_Surface* surface, const X3D_BoundRect* regio
     build_surface(surface, region);
 }
 
-void x3d_surface_init(X3D_Surface* surface, X3D_Polygon3D* poly) {
+static void allocate_surface_memory(X3D_Surface* surface, X3D_Polygon3D* poly) {
     X3D_Vex2D surface_size;
-    x3d_orientation3d_from_polygon3d(&surface->orientation, poly, 256, &surface_size);
+    x3d_orientation3d_from_polygon3d(&surface->orientation, poly, 256 * X3D_TEXELS_PER_FOOT / X3D_UNITS_PER_FOOT, &surface_size);
     
     x3d_log(X3D_INFO, "Created surface %dx%d", surface_size.x, surface_size.y);
     
     x3d_texture_init(x3d_surface_texture(surface), surface_size.x, surface_size.y, 0);
+    x3d_texture_fill(x3d_surface_texture(surface), rand() % 256);
+}
+
+void x3d_surface_init(X3D_Surface* surface, X3D_Polygon3D* poly) {
+    allocate_surface_memory(surface, poly);
+    
+    surface->flags = 0;
+    surface->textures = NULL;
+    surface->total_textures = 0;
 }
 
 void x3d_surface_cleanup(X3D_Surface* surface) {
@@ -254,5 +264,10 @@ void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_C
     x3d_polygonrasteratt_set_screen(&att, x3d_screenmanager_get_screen(screenman), renderman->zbuf);
     
     x3d_polygon3d_render_texture_surface(&raster_poly, &att, cam);
+}
+
+void x3d_surface_update_geometry(X3D_Surface* surface, X3D_Polygon3D* poly) {
+    x3d_surface_cleanup(surface);
+    allocate_surface_memory(surface, poly);
 }
 

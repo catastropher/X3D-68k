@@ -24,12 +24,12 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
 
     X3D_Texture* tex = att->texture.texture;
     
-    if(x3d_texture_texel_is_valid(&att->screen, x, y)) {
+    //if(x3d_texture_texel_is_valid(&att->screen, x, y)) {
         int32 u = (val->u >> 16) % tex->w;
         int32 v = (val->v >> 16) % tex->h;
         
         *pix = tex->texels[v * tex->w + u];
-    }
+    //}
 }
 
 

@@ -95,4 +95,5 @@ void x3d_surface_init(X3D_Surface* surface, X3D_Polygon3D* poly);
 void x3d_surface_cleanup(X3D_Surface* surface);
 void x3d_surface_force_entire_rebuild(X3D_Surface* surface);
 void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_CameraObject* cam);
+void x3d_surface_update_geometry(X3D_Surface* surface, X3D_Polygon3D* poly);
 

@@ -40,43 +40,48 @@ static inline void render_scanline(X3D_Scanline* scan, int16 y, X3D_PolygonRaste
     }
 }
 
-void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att) {
-    X3D_ScreenManager* screenman = x3d_screenmanager_get();
+void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att) {    
+    int min_y = 0x7FFF;
+    int max_y = -0x7FFF;
     
-    int w = x3d_screenmanager_get_w(screenman);
-    int h = x3d_screenmanager_get_h(screenman);
+    int screen_w = x3d_texture_w(&att->screen);
+    int screen_h = x3d_texture_h(&att->screen);
+    
+    for(int i = 0; i < total_v; ++i) {
+        uint16 next = (i + 1) % total_v;
+        X3D_PolygonRasterVertex2D* top    = v + i;
+        X3D_PolygonRasterVertex2D* bottom = v + next;
+        
+        x3d_polygonrastervertex_clamp(top, screen_w, screen_h);
+        x3d_polygonrastervertex_clamp(bottom, screen_w, screen_h);
+        
+        min_y = X3D_MIN(min_y, top->v.y);
+        max_y = X3D_MAX(max_y, bottom->v.y);
+    }
+    
+    int h = max_y - min_y + 1;
     X3D_Scanline scans[h];
     
-    uint16 i;
-    for(i = 0; i < h; ++i) {
+    for(int i = 0; i < h; ++i) {
         scans[i].left.x = 0x7FFF;
         scans[i].right.x = -0x7FFF;
     }
     
-    int16 min_y = 0x7FFF;
-    int16 max_y = -0x7FFF;
-    
-    for(i = 0; i < total_v; ++i) {
+    for(int i = 0; i < total_v; ++i) {
         uint16 next = (i + 1) % total_v;
         X3D_RasterEdge edge;
         X3D_PolygonRasterVertex2D* top    = v + i;
         X3D_PolygonRasterVertex2D* bottom = v + next;
         
-        x3d_polygonrastervertex_clamp(top, w, h);
-        x3d_polygonrastervertex_clamp(bottom, w, h);
-        
         if(v[i].v.y > v[next].v.y)
             X3D_SWAP(top, bottom);
         
-        min_y = X3D_MIN(min_y, top->v.y);
-        max_y = X3D_MAX(max_y, bottom->v.y);
-        
         x3d_rasteredge_initialize(&edge, top, bottom);
-        add_edge(&edge, scans + top->v.y, scans + bottom->v.y);
+        add_edge(&edge, scans + top->v.y - min_y, scans + bottom->v.y - min_y);
     }
     
-    for(i = min_y; i < max_y; ++i) {
-        render_scanline(scans + i, i, att);
+    for(int i = min_y; i < max_y; ++i) {
+        render_scanline(scans + i - min_y, i, att);
     }
 }
 
