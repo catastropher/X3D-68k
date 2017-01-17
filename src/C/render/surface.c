@@ -238,21 +238,47 @@ void x3d_surface_cleanup(X3D_Surface* surface) {
     x3d_texture_cleanup(x3d_surface_texture(surface));
 }
 
+void calculate_texture_coordinate(X3D_Surface* surface, X3D_PolygonRasterVertex3D* v, X3D_Vex2D tex_coord) {
+    const int ONE_FP = (1 << 16);
+    
+    unsigned int uu = tex_coord.x * ONE_FP / x3d_surface_w(surface);
+    unsigned int vv = tex_coord.y * ONE_FP / x3d_surface_h(surface);
+    
+    v->uu = uu;
+    v->vv = vv;
+}
+
+static void surface_calculate_texture_coordinates(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_RasterPolygon3D* rpoly) {
+    for(int i = 0; i < rpoly->total_v; ++i) {
+        //rpoly->v[i].v = poly->v[i];
+        //x3d_polygonrastervertex3d_set_texture_coords(rpoly->v + i, x3d_orientation3d_transform_point(&surface->orientation, poly->v[i]));
+        calculate_texture_coordinate(surface, rpoly->v + i, x3d_orientation3d_transform_point(&surface->orientation, rpoly->v[i].v));
+    }
+}
+
 void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_CameraObject* cam) {
     X3D_RasterPolygon3D raster_poly;
     X3D_PolygonRasterVertex3D v[X3D_MAX_POINTS_IN_POLY];
     
     raster_poly.v = v;
     raster_poly.total_v = poly->total_v;
-    
+
     for(int i = 0; i < poly->total_v; ++i) {
-        v[i].v = poly->v[i];
-        x3d_polygonrastervertex3d_set_texture_coords(v + i, x3d_orientation3d_transform_point(&surface->orientation, poly->v[i]));
+        raster_poly.v[i].v = poly->v[i];
     }
+    
+    X3D_RasterPolygon3D clipped_poly;
+    X3D_PolygonRasterVertex3D clipped_v[X3D_MAX_POINTS_IN_POLY];
+    
+    clipped_poly.v = clipped_v;
+    x3d_rasterpolygon3d_clip_to_frustum(&raster_poly, x3d_get_view_frustum(cam), &clipped_poly);
+    
+    surface_calculate_texture_coordinates(surface, poly, &clipped_poly);
     
     X3D_PolygonRasterAtt att = {
         .surface = {
-            .tex = x3d_surface_texture(surface)
+            .tex = x3d_surface_texture(surface),
+            .surface = surface
         },
         
         .frustum = x3d_get_view_frustum(cam)
@@ -263,7 +289,7 @@ void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_C
     
     x3d_polygonrasteratt_set_screen(&att, x3d_screenmanager_get_screen(screenman), renderman->zbuf);
     
-    x3d_polygon3d_render_texture_surface(&raster_poly, &att, cam);
+    x3d_polygon3d_render_texture_surface(&clipped_poly, &att, cam);
 }
 
 void x3d_surface_update_geometry(X3D_Surface* surface, X3D_Polygon3D* poly) {

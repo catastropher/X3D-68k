@@ -89,7 +89,11 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
     X3D_PolygonRasterVertex3D clipped_v[20];
     X3D_RasterPolygon3D clipped_poly = { .v = clipped_v };
     
+#ifndef NO_CLIP
     x3d_rasterpolygon3d_clip_to_frustum(poly, att->frustum, &clipped_poly);
+#else
+    clipped_poly = *poly;
+#endif
     
     X3D_PolygonRasterVertex2D projected_v[20];
     
@@ -99,7 +103,17 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
         x3d_camera_transform_points(cam, &clipped_poly.v[i].v, 1, &rotated, &projected_v[i].v);
         x3d_polygonrastervertex3d_copy_attributes(clipped_poly.v + i, projected_v + i);
         
+#ifndef PERSPECTIVE_CORRECT
         projected_v[i].zz = rotated.z;
+#else
+        const int ONE_FP = (1 << 20);
+        projected_v[i].zz = ONE_FP / rotated.z;
+        
+        projected_v[i].uu = (projected_v[i].uu * projected_v[i].zz) >> 14;
+        projected_v[i].vv = (projected_v[i].vv * projected_v[i].zz) >> 14;
+        
+        //printf("UV: %d %d\n", projected_v[i].uu, projected_v[i].vv);
+#endif
     }
     
     RASTERIZE_NAME2D(projected_v, clipped_poly.total_v, att);

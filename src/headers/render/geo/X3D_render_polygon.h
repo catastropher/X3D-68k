@@ -23,17 +23,17 @@
 typedef struct X3D_PolygonRasterVertex2D {
     X3D_Vex2D v;
     fp0x16 intensity;
-    int16 uu, vv;
-    int16 zz;
-    int16 lu, lv;
+    int uu, vv;
+    int zz;
+    int lu, lv;
 } X3D_PolygonRasterVertex2D;
 
 typedef struct X3D_PolygonRasterVertex3D {
     X3D_Vex3D v;
     fp0x16 intensity;
-    int16 uu, vv;
-    int16 zz;
-    int16 lu, lv;
+    int uu, vv;
+    int zz;
+    int lu, lv;
 } X3D_PolygonRasterVertex3D;
 
 typedef struct X3D_RasterPolygon2D {
@@ -45,6 +45,8 @@ typedef struct X3D_RasterPolygon3D {
     uint16 total_v;
     X3D_PolygonRasterVertex3D* v;
 } X3D_RasterPolygon3D;
+
+struct X3D_Surface;
 
 typedef struct X3D_PolygonRasterAtt {
     union {
@@ -71,6 +73,7 @@ typedef struct X3D_PolygonRasterAtt {
         
         struct {
             X3D_Texture* tex;
+            const struct X3D_Surface* surface;
         } surface;
     };
     
@@ -118,7 +121,7 @@ static inline void x3d_polygonrastervertex2d_set_vertex(X3D_PolygonRasterVertex2
 static inline void x3d_polygonrastervertex3d_copy_attributes(X3D_PolygonRasterVertex3D* src, X3D_PolygonRasterVertex2D* dest) {
     dest->uu = src->uu;
     dest->vv = src->vv;
-    dest->zz = src->v.z;
+    dest->zz = src->zz;
     dest->intensity = src->intensity;
     dest->lu = src->lu;
     dest->lv = src->lv;

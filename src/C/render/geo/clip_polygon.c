@@ -62,7 +62,7 @@ void calculate_frustum_plane_normals(X3D_Frustum* f) {
     f->p[0].normal = (X3D_Vex3D){ 0, 0, 32767 };
     
     // Hack...
-    f->p[0].d = -15;//c->dist - DIST_TO_NEAR_PLANE;
+    f->p[0].d = -50;//c->dist - DIST_TO_NEAR_PLANE;
     
     f->total_p = 5;
 }
