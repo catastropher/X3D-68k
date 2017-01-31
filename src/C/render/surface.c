@@ -88,7 +88,8 @@ int x3d_orientation3d_calculate_transformed_coordinate(X3D_Vex3D point, X3D_Vex3
     return (((int)x3d_vex3d_fp0x16_dot(&point, &axis) * scale) >> 8) + offset;
 }
 
-static X3D_Vex2D x3d_orientation3d_transform_point(const X3D_Orientation3D* orientation, X3D_Vex3D point) {
+
+X3D_Vex2D x3d_orientation3d_transform_point(const X3D_Orientation3D* orientation, X3D_Vex3D point) {
     return x3d_vex2d_make(
         x3d_orientation3d_calculate_transformed_coordinate(point, orientation->s, orientation->scale, orientation->offset.x),
         x3d_orientation3d_calculate_transformed_coordinate(point, orientation->t, orientation->scale, orientation->offset.y)
@@ -175,7 +176,7 @@ static void calculate_decal_vertices_from_texture_coordinates(X3D_PolygonRasterV
         X3D_Vex2D point_relative_to_center = x3d_vex2d_sub(&texture_coord, &center);
         X3D_Vex2D transformed_point = x3d_orientation2d_transform_point(orientation, point_relative_to_center);
         
-        v[i].v = transformed_point; //x3d_vex2d_add(&transformed_point, &center);
+        v[i].v = x3d_vex2d_add(&transformed_point, &center);
     }
 }
 
@@ -271,7 +272,8 @@ void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_C
     X3D_PolygonRasterVertex3D clipped_v[X3D_MAX_POINTS_IN_POLY];
     
     clipped_poly.v = clipped_v;
-    x3d_rasterpolygon3d_clip_to_frustum(&raster_poly, x3d_get_view_frustum(cam), &clipped_poly);
+    if(!x3d_rasterpolygon3d_clip_to_frustum(&raster_poly, x3d_get_view_frustum(cam), &clipped_poly))
+        return;
     
     surface_calculate_texture_coordinates(surface, poly, &clipped_poly);
     

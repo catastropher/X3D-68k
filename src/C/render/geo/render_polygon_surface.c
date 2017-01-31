@@ -25,7 +25,10 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
     X3D_ColorIndex* pix = att->screen.texels + index;
     
     
-    int zz = (1 << 20) / (val->z >> 16);
+    if(val->z >> 16 == 0)
+        return;
+    
+    int zz = (1 << 19) / (val->z >> 16);
     
     //printf("ZZ: %d\n", zz);
     
@@ -35,8 +38,12 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
     //int u = (x3d_surface_w(att->surface.surface) * uu * zz) >> 22;
     //int v = (x3d_surface_h(att->surface.surface) * vv * zz) >> 22;
     
-    int u = (((x3d_surface_w(att->surface.surface) * uu) >> 2) * zz) >> 20;
-    int v = (((x3d_surface_w(att->surface.surface) * vv) >> 2) * zz) >> 20;
+    int u = (((x3d_surface_w(att->surface.surface) * uu) >> 2) * zz) >> 18;
+    int v = (((x3d_surface_w(att->surface.surface) * vv) >> 2) * zz) >> 18;
+    
+    // Should never happen, this is a bug...
+    if(u < 0 || v < 0)
+        return;
     
     //printf("UV: %d %d\n", uu, vv);
     
@@ -45,12 +52,6 @@ static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 
     
     if(zz < *zbuf) {
         X3D_Texture* tex = att->surface.tex;
-        
-        if(u < 0 || v < 0) {
-            *pix = 8;
-            *zbuf = zz;
-            return;
-        }
         
         u = u % tex->w;
         v = v % tex->h;

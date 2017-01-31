@@ -97,3 +97,5 @@ void x3d_surface_force_entire_rebuild(X3D_Surface* surface);
 void x3d_surface_render_polygon(X3D_Surface* surface, X3D_Polygon3D* poly, X3D_CameraObject* cam);
 void x3d_surface_update_geometry(X3D_Surface* surface, X3D_Polygon3D* poly);
 
+X3D_Vex2D x3d_orientation3d_transform_point(const X3D_Orientation3D* orientation, X3D_Vex3D point);
+

@@ -52,8 +52,10 @@ void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_Polygon
         X3D_PolygonRasterVertex2D* top    = v + i;
         X3D_PolygonRasterVertex2D* bottom = v + next;
         
+#ifndef DISABLE_CLAMPING
         x3d_polygonrastervertex_clamp(top, screen_w, screen_h);
         x3d_polygonrastervertex_clamp(bottom, screen_w, screen_h);
+#endif
         
         min_y = X3D_MIN(min_y, top->v.y);
         max_y = X3D_MAX(max_y, bottom->v.y);
@@ -109,8 +111,8 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
         const int ONE_FP = (1 << 20);
         projected_v[i].zz = ONE_FP / rotated.z;
         
-        projected_v[i].uu = (projected_v[i].uu * projected_v[i].zz) >> 14;
-        projected_v[i].vv = (projected_v[i].vv * projected_v[i].zz) >> 14;
+        projected_v[i].uu = (projected_v[i].uu * projected_v[i].zz) >> 15;
+        projected_v[i].vv = (projected_v[i].vv * projected_v[i].zz) >> 15;
         
         //printf("UV: %d %d\n", projected_v[i].uu, projected_v[i].vv);
 #endif
