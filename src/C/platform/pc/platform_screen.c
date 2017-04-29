@@ -37,6 +37,7 @@ static SDL_Window* window;
 #endif
 
 
+
 static int16 screen_w;
 static int16 screen_h;
 static int16 screen_scale;
@@ -46,14 +47,6 @@ static char record_name[1024];
 static _Bool virtual_window;
 
 static X3D_Color color_palette[256];
-
-X3D_Texture panel_tex;
-X3D_Texture brick_tex;
-X3D_Texture floor_panel_tex;
-X3D_Texture cube_tex;
-X3D_Texture aperture_tex;
-
-X3D_Texture* global_texture = &brick_tex;
 
 void x3d_screen_zbuf_clear(void) {
     memset(x3d_rendermanager_get()->zbuf, 0x7F, screen_w * screen_h * 2);
@@ -71,29 +64,17 @@ void x3d_platform_screen_build_color_palette(uint8 color_data[256][3]) {
     }
 }
 
-void x3d_set_texture(int16 id) {
-  if(id == 0)       global_texture = &panel_tex;
-  else if(id == 1)  global_texture = &brick_tex;
-  else if(id == 2)  global_texture = &floor_panel_tex;
-  else if(id == 3)  global_texture = &cube_tex;
-  else if(id == 4)  global_texture = &aperture_tex;
-}
-
 void init_screen_manager(X3D_InitSettings* init) {
     screen_w = init->screen_w;
     screen_h = init->screen_h;
     screen_scale = init->screen_scale;
     virtual_window = init->flags & X3D_INIT_VIRTUAL_SCREEN;
     
-    x3d_state->screen_manager.w = screen_w;
-    x3d_state->screen_manager.h = screen_h;
     x3d_state->screen_manager.center.x = screen_w / 2;
     x3d_state->screen_manager.center.y = screen_h / 2;
     x3d_state->screen_manager.fov = init->fov;
     x3d_state->screen_manager.scale_x = div_int16_by_fp0x16(screen_w / 2, x3d_tan(init->fov / 2));
     x3d_state->screen_manager.scale_y = x3d_state->screen_manager.scale_x;
-    
-    x3d_state->screen_manager.buf = malloc(sizeof(X3D_ColorIndex) * screen_w * screen_h);
 }
 
 X3D_Color x3d_platform_screen_colorindex_to_color(X3D_ColorIndex index) {
@@ -331,13 +312,11 @@ void x3d_screen_flip() {
   }
   
   X3D_ScreenManager* screenman = x3d_screenmanager_get();
+  X3D_Texture* screen = x3d_screenmanager_get_screen(screenman);
   
   if(!virtual_window) {
-    //x3d_gray_dither(window_surface);
-      
-      int32 i;
-      for(i = 0; i < (int32)screen_w * screen_h; ++i) {
-          ((uint32 *)window_surface->pixels)[i] = map_color_to_uint32(color_palette[screenman->buf[i]]);
+      for(int i = 0; i < x3d_screenmanager_total_pixels(screenman); ++i) {
+          ((uint32 *)window_surface->pixels)[i] = map_color_to_uint32(color_palette[screen->texels[i]]);
       }
       
 #ifdef X3D_USE_SDL1
@@ -353,32 +332,19 @@ void* x3d_screen_get_internal(void) {
   return window_surface;
 }
 
-void x3d_screen_clear(X3D_Color color) {
-  //SDL_FillRect(window_surface, NULL, map_color_to_uint32(color));
-    
+void x3d_screen_clear(X3D_ColorIndex color) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
-    
-    memset(screenman->buf, 0, sizeof(X3D_ColorIndex) * screen_w * screen_h);
+    X3D_Texture* screen = x3d_screenmanager_get_screen(screenman);
+    x3d_texture_fill(screen, color);
 }
 
 void x3d_screen_draw_pix(int16 x, int16 y, X3D_ColorIndex color) {
-  //uint32 c = map_color_to_uint32(color);
-  
-  if(x < 0 || x >= screen_w || y < 0 || y >= screen_h)
-    return;
-  
-  for(int32 i = 0; i < screen_scale; ++i) {
-    for(int32 d = 0; d < screen_scale; ++d) {
-      int32 xx = x * screen_scale + d;
-      int32 yy = y * screen_scale + i;
-      
-      //((uint32 *)window_surface->pixels)[yy * window_surface->w + xx] = c;
-      
-      x3d_screenmanager_get()->buf[yy * window_surface->w + xx] = color;
-      
-      //x3d_rendermanager_get()->zbuf[yy * screen_w + xx] = 0x7FFF;
-    }
-  }
+    X3D_Texture* screen = x3d_screenmanager_get_screen(x3d_screenmanager_get());
+    
+    if(x < 0 || x >= screen->w || y < 0 || y >= screen->h)
+        return;
+    
+    x3d_texture_set_texel(screen, x, y, color);
 }
 
 void x3d_screen_set_internal_value(int16 x, int16 y, uint32 val) {

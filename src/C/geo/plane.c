@@ -87,13 +87,15 @@ _Bool x3d_plane_guess_orientation(X3D_Plane* plane, X3D_Mat3x3* dest, X3D_Point3
   else {
     // If this is the case, they're likely on the ceiling, so just
     // pick any orientation
-    x.x = 32767;
+    x.x = 0;
     x.y = 0;
-    x.z = 0;
+    x.z = 32767;
     
-    y.x = 0;
-    y.y = 0;
-    y.z = 32767;    
+    x3d_vex3d_fp0x16_cross(&y, &x, &z);
+    
+    //y.x = 0;
+    //y.y = 0;
+    //y.z = 32767;    
   }
   
   x3d_mat3x3_set_column(dest, 0, &x);

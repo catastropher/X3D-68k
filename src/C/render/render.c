@@ -39,30 +39,32 @@
 
 
 void x3d_rendermanager_init(X3D_InitSettings* settings) {
-  X3D_RenderManager* renderman = x3d_rendermanager_get();
-  X3D_ScreenManager* screenman = x3d_screenmanager_get();
-  
-  // Initialize the render stack
-  uint32 stack_size = 600000;
-  void* render_stack_mem = malloc(stack_size);
+    X3D_RenderManager* renderman = x3d_rendermanager_get();
+    X3D_ScreenManager* screenman = x3d_screenmanager_get();
 
-  x3d_assert(render_stack_mem);
+    // Initialize the render stack
+    uint32 stack_size = 600000;
+    void* render_stack_mem = malloc(stack_size);
 
-  x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
-  
-  // Reset segment face render callback
-  renderman->segment_face_render_callback = NULL;
+    x3d_assert(render_stack_mem);
 
-  screenman->w = settings->screen_w;
-  screenman->h = settings->screen_h;
+    x3d_stack_init(&renderman->stack, render_stack_mem, stack_size);
+
+    // Reset segment face render callback
+    renderman->segment_face_render_callback = NULL;
+
+    X3D_Texture* screen = x3d_screenmanager_get_screen(screenman);
+    x3d_texture_init(screen, settings->screen_w, settings->screen_h, 0);
+
+
 
 #ifndef __nspire__  
-  // nspire has its zbuffer allocated with the screen
-  renderman->zbuf = malloc(sizeof(int16) * screenman->w * screenman->h);
+    // nspire has its zbuffer allocated with the screen
+    renderman->zbuf = malloc(sizeof(int16) * x3d_texture_total_texels(screen));
 #endif
-  
-  
-  renderman->render_hud_callback = NULL;
+
+
+    renderman->render_hud_callback = NULL;
 }
 
 extern X3D_Texture checkerboard;
@@ -74,7 +76,11 @@ extern X3D_Texture checkerboard2;
 /// @return Nothing.
 ///////////////////////////////////////////////////////////////////////////////
 void x3d_rendermanager_cleanup(void) {
-  free(x3d_rendermanager_get()->stack.base);
+    X3D_RenderManager* renderman = x3d_rendermanager_get();
+    X3D_ScreenManager* screenman = x3d_screenmanager_get();
+    
+    free(renderman->stack.base);
+    x3d_texture_cleanup(x3d_screenmanager_get_screen(screenman));
 }
 
 

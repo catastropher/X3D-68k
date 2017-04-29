@@ -193,21 +193,120 @@ void test_packfile() {
     x3d_resourcepack_close_packfile(&pack, &buf);
 }
 
+int count(int d) {
+    return 31 - __builtin_clz(d);
+//     int c = 0;
+//     while(d >= 2) {
+//         ++c;
+//         d >>= 1;
+//     }
+//     
+//     return c;
+}
+
+int divide(int n, int d) {
+    int c = count(d);
+    
+    int dd = d << (16 - c - 1);
+    
+    int y = (32 << 8) / 17;
+    int x = ((48 << 8) / 17) - ((y * dd) >> 16);
+    
+    int dd2 = dd >> 8;
+    
+    for(int i = 0; i < 3; ++i) {
+        x = x + ((x * (((65536 - dd2 * x) >> 8))) >> 8);
+        if(x >= 512)
+            x3d_log(X3D_INFO, "%d", x);
+        //x3d_assert(x <= 256);
+        //printf("x: %d\n", x);
+    }
+    
+    return ((int64)x * (n << (16 - c - 1))) >> 24;
+}
+
+// float divide2(float n, float d) {
+//     float nn = n;
+//     float dd = d;
+//     
+//     while(dd > 1) {
+//         dd /= 2;
+//         nn /= 2;
+//     }
+//     
+//     float x = 1 - dd;
+//     
+//     float recip = 1;
+//     
+//     int shift = 0;
+//     
+// //     for(int i = 0; i < 3; ++i) {
+// //         recip *= 1 + pow(x, pow(2, i));
+// //     }
+//     
+//     recip *= 1 + x;
+//     x *= x;
+//     recip *= 1 + x;
+//     x *= x;
+//     recip *= 1 + x;
+//     
+//     
+//     return recip * nn;
+// }
+
+int max_recip = 0;
+
+int divide2(int n, int d) {
+    const int BITS = 15;
+    int c = count(d);
+    int dd = d << (BITS - c - 1);
+    int nn = n << (BITS - c - 1);
+    
+    int ONE_FP = (1 << BITS);
+    
+    int x = ONE_FP - dd;
+    
+    int recip = ONE_FP;
+    
+    for(int i = 0; i < 3; ++i) {
+        recip = (recip * (ONE_FP + x)) >> BITS;
+        max_recip = X3D_MAX(max_recip, recip);
+        x = (x * x) >> BITS;
+    }
+    
+    return ((recip * n) >> (c + BITS + 1)) + 1;
+}
+
 int main(int argc, char* argv[]) {
-    test_packfile();
-    return 0;
+   // test_packfile();
+   // return 0;
+    
+    for(int i = 1; i < 32767; ++i) {
+        divide2(1, i);
+    }
+    
+    printf("Max recip: %d\n", max_recip);
+    
+    do {
+        int n, d;
+        scanf("%d %d", &n, &d);
+        
+        if(d == 0) break;
+        
+        printf("%d\n", (int)divide2(n, d));
+    } while(1);
     
     
     init();
     
-    test_mat4x4();
+    //test_mat4x4();
     
     x3d_model_load_from_file(&teapot, "/home/michael/code/X3D-68k/tools/build/teapot.xmod");
     
     
     
     //x3d_texture_from_array(&checkerboard, wood_tex_data);
-    if(!x3d_texture_load_from_file(&checkerboard, "floor.bmp")) {
+    if(!x3d_texture_load_from_bmp_file(&checkerboard, "floor.bmp")) {
         x3d_log(X3D_ERROR, "Failed to load texture");
         return 0;
     }
@@ -217,7 +316,7 @@ int main(int argc, char* argv[]) {
     
     //x3d_texture_load_from_file(&checkerboard2, "walrii.bmp");
     
-    x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(255, 0, 0));
+    x3d_texture_init(&checkerboard2, 128, 128, 0);
     //x3d_texture_create_new(&checkerboard2, 128, 128, x3d_rgb_to_color(0, 0, 255));
     
     x3d_rendermanager_get()->near_z = 10;

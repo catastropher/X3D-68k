@@ -55,12 +55,12 @@ static inline void x3d_rasteredge_advance(X3D_RasterEdge* edge) {
 
 #include "render/X3D_util.h"
 
-static inline fp16x16 init_slope_var(int16 diff, int16 dx) {
-    return ((int32)diff << 16) / dx;
+static inline fp16x16 init_slope_var(int diff, int dx) {
+    return (diff << 16) / dx;
 }
 
 static inline void x3d_rasteredge_initialize(X3D_RasterEdge* edge, X3D_PolygonRasterVertex2D* top, X3D_PolygonRasterVertex2D* bottom) {
-    int16 dy = X3D_MAX(bottom->v.y - top->v.y, 1);
+    int dy = X3D_MAX(bottom->v.y - top->v.y, 1);
     
     edge->slope.x = init_slope_var(bottom->v.x - top->v.x, dy);
     edge->slope.z = init_slope_var(bottom->zz - top->zz, dy);

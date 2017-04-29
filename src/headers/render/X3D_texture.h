@@ -23,33 +23,35 @@ enum {
   X3D_TEXTURE_REPEAT = 1
 };
 
-typedef struct X3D_TextureOrientation {
-    angle256 angle;
-    X3D_Vex2D offset;
-} X3D_TextureOrientation;
-
 ///////////////////////////////////////////////////////////////////////////////
 /// A texture.
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct X3D_Texture {
-    uint16 w, h;          ///< Width and height of the texture
+    int w, h;          ///< Width and height of the texture
     uint16 mask;          ///< Mask for repeated textures
     uint16 flags;
     
     X3D_ColorIndex* texels;
 } X3D_Texture;
 
-
-static inline uint32 x3d_texture_index(const X3D_Texture* tex, uint16 u, uint16 v) {
-    return (uint32)v * tex->w + u;
+static inline int x3d_texture_w(const X3D_Texture* tex) {
+    return tex->w;
 }
 
-static inline X3D_ColorIndex x3d_texture_get_texel(const X3D_Texture* tex, uint16 u, uint16 v) {  
-    return tex->texels[x3d_texture_index(tex, u, v)];
+static inline int x3d_texture_h(const X3D_Texture* tex) {
+    return tex->h;
 }
 
-static inline void x3d_texture_set_texel(X3D_Texture* tex, uint16 u, uint16 v, X3D_ColorIndex c) {
-  tex->texels[x3d_texture_index(tex, u, v)] = c;
+static inline uint32 x3d_texture_pixel_index(const X3D_Texture* tex, int u, int v) {
+    return v * tex->w + u;
+}
+
+static inline X3D_ColorIndex x3d_texture_get_texel(const X3D_Texture* tex, int u, int v) {  
+    return tex->texels[x3d_texture_pixel_index(tex, u, v)];
+}
+
+static inline void x3d_texture_set_texel(X3D_Texture* tex, int u, int v, X3D_ColorIndex c) {
+  tex->texels[x3d_texture_pixel_index(tex, u, v)] = c;
 }
 
 static inline void x3d_texture_init_empty(X3D_Texture* tex) {
@@ -60,13 +62,13 @@ static inline void x3d_texture_init_empty(X3D_Texture* tex) {
 
 static inline _Bool x3d_texture_is_empty(const X3D_Texture* tex) {
     return tex->texels == NULL;
-}
+}   
 
 static inline uint32 x3d_texture_total_texels(const X3D_Texture* tex) {
     return (uint32)tex->w * tex->h;
 }
 
-static inline int16 x3d_texture_texel_is_valid(const X3D_Texture* tex, int16 u, int16 v) {
+static inline int16 x3d_texture_texel_is_valid(const X3D_Texture* tex, int u, int v) {
     return u >= 0 && v >= 0 && u < tex->w && v < tex->h;
 }
 

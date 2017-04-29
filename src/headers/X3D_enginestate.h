@@ -24,6 +24,42 @@
 #include "X3D_object.h"
 #include "memory/X3D_alloc.h"
 #include "memory/X3D_handle.h"
+#include "render/X3D_texture.h"
+
+typedef struct X3D_ScreenManager {
+    angle256 fov;
+    int16 scale_x;
+    int16 scale_y;
+    
+    X3D_Vex2D center;
+    X3D_Vex2D pos;
+    
+    X3D_Texture screen;
+} X3D_ScreenManager;
+
+static inline int x3d_screenmanager_get_w(const X3D_ScreenManager* screenman) {
+    return screenman->screen.w;
+}
+
+static inline int x3d_screenmanager_get_h(const X3D_ScreenManager* screenman) {
+    return screenman->screen.h;
+}
+
+static inline X3D_Texture* x3d_screenmanager_get_screen(X3D_ScreenManager* screenman) {
+    return &screenman->screen;
+}
+
+static inline X3D_Vex2D x3d_screenmanager_get_screen_size(const X3D_ScreenManager* screenman) {
+    return x3d_vex2d_make(x3d_screenmanager_get_w(screenman), x3d_screenmanager_get_h(screenman));
+}
+
+static inline int x3d_screenmanager_total_pixels(const X3D_ScreenManager* screenman) {
+    return x3d_texture_total_texels(&screenman->screen);
+}
+
+static inline int x3d_screenmanager_get_pixel_index(const X3D_ScreenManager* screenman, int x, int y) {
+    return y * x3d_screenmanager_get_w(screenman) + x;
+}
 
 typedef struct X3D_EngineState {
   X3D_ScreenManager screen_manager;

@@ -19,23 +19,23 @@
 #include "render_polygon_texture_generic.h"
 
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, const X3D_PolygonRasterAtt* att) {
-    int16* zbuf = att->zbuf + (int32)y * att->screen_w + x;
-    uint8* pix = (uint8 *)att->screen + (int32)y * att->screen_w + x;
+    int index = x3d_texture_pixel_index(&att->screen, x, y);
+    X3D_ColorIndex* pix = att->screen.texels + index;
+
+    X3D_Texture* tex = att->texture.texture;
     
-    int16 zz = val->z >> 16;
-    
-    if(zz < *zbuf) {
-        X3D_Texture* tex = att->surface.tex;
-        
+    if(x3d_texture_texel_is_valid(&att->screen, x, y)) {
         int32 u = (val->u >> 16) % tex->w;
         int32 v = (val->v >> 16) % tex->h;
         
         *pix = tex->texels[v * tex->w + u];
-        *zbuf = zz;
     }
 }
 
+
 #define RASTERIZE_NAME2D x3d_polygon2d_render_texture_repeated
 #define RASTERIZE_NAME3D x3d_polygon3d_render_texture_repeated
+
+#define DISABLE_CLAMPING
 
 #include "render_polygon_generic.h"

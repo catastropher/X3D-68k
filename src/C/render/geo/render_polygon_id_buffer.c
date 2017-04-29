@@ -81,7 +81,7 @@ float* id_zbuf;
 
 static inline void x3d_rasteredgevalue_draw_pix(X3D_RasterEdgeValue* val, int16 x, int16 y, X3D_PolygonRasterAtt* att) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
-    float* zbuf = id_zbuf + y * screenman->w + x;
+    float* zbuf = id_zbuf + x3d_screenmanager_get_pixel_index(screenman, x, y);
     
     float z = 1.0 / val->z;
     

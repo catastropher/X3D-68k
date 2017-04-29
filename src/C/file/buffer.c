@@ -156,7 +156,7 @@ _Bool x3d_buffer_save_to_file(X3D_Buffer* buf, const char* buf_name) {
     if(!f)
         return X3D_FALSE;
     
-    fwrite(f, 1, buf->size, f);
+    fwrite(buf->data, 1, buf->size, f);
     fclose(f);
     
     return X3D_TRUE;

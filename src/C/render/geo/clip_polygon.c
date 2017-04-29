@@ -32,8 +32,8 @@
 void calculate_frustum_plane_normals(X3D_Frustum* f) {
     X3D_ScreenManager* screenman = x3d_screenmanager_get();
     
-    int16 w = screenman->w + 20;
-    int16 h = screenman->h + 20;
+    int16 w = x3d_screenmanager_get_w(screenman) + 20;
+    int16 h = x3d_screenmanager_get_h(screenman) + 20;
     int16 dist = screenman->scale_x;
     
     X3D_Vex3D top_left = { -w / 2, -h / 2, dist };
@@ -62,7 +62,7 @@ void calculate_frustum_plane_normals(X3D_Frustum* f) {
     f->p[0].normal = (X3D_Vex3D){ 0, 0, 32767 };
     
     // Hack...
-    f->p[0].d = -15;//c->dist - DIST_TO_NEAR_PLANE;
+    f->p[0].d = -50;//c->dist - DIST_TO_NEAR_PLANE;
     
     f->total_p = 5;
 }

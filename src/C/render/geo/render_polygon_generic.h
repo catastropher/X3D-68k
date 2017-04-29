@@ -40,40 +40,50 @@ static inline void render_scanline(X3D_Scanline* scan, int16 y, X3D_PolygonRaste
     }
 }
 
-void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att) {
-    X3D_ScreenManager* screenman = x3d_screenmanager_get();
-    X3D_Scanline scans[screenman->h];
+void RASTERIZE_NAME2D(X3D_PolygonRasterVertex2D v[], uint16 total_v, X3D_PolygonRasterAtt* att) {    
+    int min_y = 0x7FFF;
+    int max_y = -0x7FFF;
     
-    uint16 i;
-    for(i = 0; i < screenman->h; ++i) {
+    int screen_w = x3d_texture_w(&att->screen);
+    int screen_h = x3d_texture_h(&att->screen);
+    
+    for(int i = 0; i < total_v; ++i) {
+        uint16 next = (i + 1) % total_v;
+        X3D_PolygonRasterVertex2D* top    = v + i;
+        X3D_PolygonRasterVertex2D* bottom = v + next;
+        
+#ifndef DISABLE_CLAMPING
+        x3d_polygonrastervertex_clamp(top, screen_w, screen_h);
+        x3d_polygonrastervertex_clamp(bottom, screen_w, screen_h);
+#endif
+        
+        min_y = X3D_MIN(min_y, top->v.y);
+        max_y = X3D_MAX(max_y, bottom->v.y);
+    }
+    
+    int h = max_y - min_y + 1;
+    X3D_Scanline scans[h];
+    
+    for(int i = 0; i < h; ++i) {
         scans[i].left.x = 0x7FFF;
         scans[i].right.x = -0x7FFF;
     }
     
-    int16 min_y = 0x7FFF;
-    int16 max_y = -0x7FFF;
-    
-    for(i = 0; i < total_v; ++i) {
+    for(int i = 0; i < total_v; ++i) {
         uint16 next = (i + 1) % total_v;
         X3D_RasterEdge edge;
         X3D_PolygonRasterVertex2D* top    = v + i;
         X3D_PolygonRasterVertex2D* bottom = v + next;
         
-        x3d_polygonrastervertex_clamp(top, screenman->w, screenman->h);
-        x3d_polygonrastervertex_clamp(bottom, screenman->w, screenman->h);
-        
         if(v[i].v.y > v[next].v.y)
             X3D_SWAP(top, bottom);
         
-        min_y = X3D_MIN(min_y, top->v.y);
-        max_y = X3D_MAX(max_y, bottom->v.y);
-        
         x3d_rasteredge_initialize(&edge, top, bottom);
-        add_edge(&edge, scans + top->v.y, scans + bottom->v.y);
+        add_edge(&edge, scans + top->v.y - min_y, scans + bottom->v.y - min_y);
     }
     
-    for(i = min_y; i < max_y; ++i) {
-        render_scanline(scans + i, i, att);
+    for(int i = min_y; i < max_y; ++i) {
+        render_scanline(scans + i - min_y, i, att);
     }
 }
 
@@ -81,7 +91,11 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
     X3D_PolygonRasterVertex3D clipped_v[20];
     X3D_RasterPolygon3D clipped_poly = { .v = clipped_v };
     
+#ifndef NO_CLIP
     x3d_rasterpolygon3d_clip_to_frustum(poly, att->frustum, &clipped_poly);
+#else
+    clipped_poly = *poly;
+#endif
     
     X3D_PolygonRasterVertex2D projected_v[20];
     
@@ -91,14 +105,18 @@ void RASTERIZE_NAME3D(X3D_RasterPolygon3D* poly, X3D_PolygonRasterAtt* att, X3D_
         x3d_camera_transform_points(cam, &clipped_poly.v[i].v, 1, &rotated, &projected_v[i].v);
         x3d_polygonrastervertex3d_copy_attributes(clipped_poly.v + i, projected_v + i);
         
+#ifndef PERSPECTIVE_CORRECT
         projected_v[i].zz = rotated.z;
+#else
+        const int ONE_FP = (1 << 20);
+        projected_v[i].zz = ONE_FP / rotated.z;
+        
+        projected_v[i].uu = (projected_v[i].uu * projected_v[i].zz) >> 15;
+        projected_v[i].vv = (projected_v[i].vv * projected_v[i].zz) >> 15;
+        
+        //printf("UV: %d %d\n", projected_v[i].uu, projected_v[i].vv);
+#endif
     }
-    
-    if(!att->zbuf)
-        att->zbuf = x3d_rendermanager_get()->zbuf;
-    
-    if(!att->screen)
-        att->screen = ((SDL_Surface* )x3d_screen_get_internal())->pixels;
     
     RASTERIZE_NAME2D(projected_v, clipped_poly.total_v, att);
 }

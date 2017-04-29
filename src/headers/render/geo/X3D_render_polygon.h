@@ -23,17 +23,17 @@
 typedef struct X3D_PolygonRasterVertex2D {
     X3D_Vex2D v;
     fp0x16 intensity;
-    int16 uu, vv;
-    int16 zz;
-    int16 lu, lv;
+    int uu, vv;
+    int zz;
+    int lu, lv;
 } X3D_PolygonRasterVertex2D;
 
 typedef struct X3D_PolygonRasterVertex3D {
     X3D_Vex3D v;
     fp0x16 intensity;
-    int16 uu, vv;
-    int16 zz;
-    int16 lu, lv;
+    int uu, vv;
+    int zz;
+    int lu, lv;
 } X3D_PolygonRasterVertex3D;
 
 typedef struct X3D_RasterPolygon2D {
@@ -45,6 +45,8 @@ typedef struct X3D_RasterPolygon3D {
     uint16 total_v;
     X3D_PolygonRasterVertex3D* v;
 } X3D_RasterPolygon3D;
+
+struct X3D_Surface;
 
 typedef struct X3D_PolygonRasterAtt {
     union {
@@ -71,13 +73,12 @@ typedef struct X3D_PolygonRasterAtt {
         
         struct {
             X3D_Texture* tex;
+            const struct X3D_Surface* surface;
         } surface;
     };
     
     int16* zbuf;
-    void* screen;
-    int16 screen_w;
-    int16 screen_h;
+    X3D_Texture screen;
     X3D_Frustum* frustum;
 } X3D_PolygonRasterAtt;
 
@@ -85,19 +86,11 @@ static inline void x3d_polygonrasteratt_init(X3D_PolygonRasterAtt* att) {
     att->zbuf = NULL;
 }
 
-static inline void x3d_polygonrasteratt_set_screen(X3D_PolygonRasterAtt* att, void* screen, int16* zbuf, int16 w, int16 h) {
-    att->screen = screen;
+static inline void x3d_polygonrasteratt_set_screen(X3D_PolygonRasterAtt* att, X3D_Texture* screen, int16* zbuf) {
+    att->screen = *screen;
     att->zbuf = zbuf;
-    att->screen_w = w;
-    att->screen_h = h;
 }
 
-static inline void x3d_polygonrasteratt_set_screen_to_texture(X3D_PolygonRasterAtt* att, X3D_Texture* tex, int16* zbuf) {
-    att->screen = tex->texels;
-    att->screen_w = tex->w;
-    att->screen_h = tex->h;
-    att->zbuf = zbuf;
-}
 
 static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, int16 screen_w, int16 screen_h) {
     v->v.x = X3D_MAX(0, v->v.x);
@@ -107,10 +100,28 @@ static inline void x3d_polygonrastervertex_clamp(X3D_PolygonRasterVertex2D* v, i
     v->v.y = X3D_MIN(screen_h - 1, v->v.y);
 }
 
+static inline void x3d_polygonrastervertex2d_set_texture_coords(X3D_PolygonRasterVertex2D* v, X3D_Vex2D tex_coord) {
+    v->uu = tex_coord.x;
+    v->vv = tex_coord.y;
+}
+
+static inline void x3d_polygonrastervertex3d_set_texture_coords(X3D_PolygonRasterVertex3D* v, X3D_Vex2D tex_coord) {
+    v->uu = tex_coord.x;
+    v->vv = tex_coord.y;
+}
+
+static inline X3D_Vex2D x3d_polygonrastervertex2d_get_texture_coords(const X3D_PolygonRasterVertex2D* v) {
+    return x3d_vex2d_make(v->uu, v->vv);
+}
+
+static inline void x3d_polygonrastervertex2d_set_vertex(X3D_PolygonRasterVertex2D* v, X3D_Vex2D pos) {
+    v->v = pos;
+}
+
 static inline void x3d_polygonrastervertex3d_copy_attributes(X3D_PolygonRasterVertex3D* src, X3D_PolygonRasterVertex2D* dest) {
     dest->uu = src->uu;
     dest->vv = src->vv;
-    dest->zz = src->v.z;
+    dest->zz = src->zz;
     dest->intensity = src->intensity;
     dest->lu = src->lu;
     dest->lv = src->lv;
