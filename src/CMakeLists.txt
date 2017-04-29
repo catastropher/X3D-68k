@@ -12,7 +12,7 @@ if(${X3D_TARGET} STREQUAL "pc")
   message(STATUS "Building X3D for PC")
   
   if(CMAKE_C_COMPILER_VERSION VERSION_GREATER 5.0 AND NOT APPLE)
-    set(CMAKE_C_FLAGS "-std=c99 -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
+    set(CMAKE_C_FLAGS "-std=gnu99 -O2 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -Wno-pointer-sign")
   else()
     set(CMAKE_C_FLAGS "-std=c99 -Wall -g -Wno-pointer-sign")
   endif()
