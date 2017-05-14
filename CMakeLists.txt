@@ -9,6 +9,7 @@ include_directories(src/)
 add_library(X3D STATIC
     src/geo/vec3.c
     
+    src/render/canvas.c
     src/render/texture.c
 )
 
