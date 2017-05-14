@@ -4,8 +4,12 @@ set(CMAKE_C_FLAGS "-std=gnu99 -O2 -fPIC -Wall -g -fsanitize=address -fsanitize=u
 
 project(X3D C)
 
+include_directories(src/)
+
 add_library(X3D STATIC
     src/geo/vec3.c
+    
+    src/render/texture.c
 )
 
 install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)

@@ -13,7 +13,25 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_Vec3.h"
+#pragma once
 
+#include <stdlib.h>
+#include <stdio.h>
 
+static inline void* x_malloc(size_t size)
+{
+    void* mem = malloc(size);
+    if(!mem)
+    {
+        fprintf(stderr, "Out of memory (request %zu bytes)\n", size);
+        abort();
+    }
+    
+    return mem;
+}
+
+static inline void x_free(void* mem)
+{
+    free(mem);
+}
 
