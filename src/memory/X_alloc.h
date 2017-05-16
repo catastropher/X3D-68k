@@ -30,6 +30,11 @@ static inline void* x_malloc(size_t size)
     return mem;
 }
 
+static inline void* x_realloc(void* ptr, size_t new_size)
+{
+    return realloc(ptr, new_size);
+}
+
 static inline void x_free(void* mem)
 {
     free(mem);

@@ -10,6 +10,9 @@ add_library(X3D STATIC
     # geo
     src/geo/vec3.c
     
+    # memory
+    src/memory/X_Factory.c
+    
     # render
     src/render/canvas.c
     src/render/texture.c
