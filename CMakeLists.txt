@@ -7,11 +7,17 @@ project(X3D C)
 include_directories(src/)
 
 add_library(X3D STATIC
+    # engine
+    src/engine/X_EngineContext.c
+
     # geo
     src/geo/vec3.c
     
     # memory
     src/memory/X_Factory.c
+    
+    # object
+    src/object/X_GameObject.c
     
     # render
     src/render/canvas.c
