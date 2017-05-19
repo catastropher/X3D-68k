@@ -18,15 +18,10 @@
 int main()
 {
     X_EngineContext context;
-    x_enginecontext_init(&context);
+    x_enginecontext_init(&context, 640, 480);
     
-    for(int i = 0; i < 800; ++i) {
-        x_gameobject_new(&context, 128);
-    }
-    
-    X_Canvas canvas;
-    x_canvas_init(&canvas, 640, 480);
-    x_canvas_cleanup(&canvas);
+    X_CameraObject* cam = x_cameraobject_new(&context);
+    x_screen_attach_camera(&context.screen, cam);
     
     x_enginecontext_cleanup(&context);
 }

@@ -30,6 +30,13 @@ void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera);
 static inline void x_screen_init(X_Screen* screen, int w, int h)
 {
     x_canvas_init(&screen->canvas, w, h);
+    screen->cameraListHead = NULL;
+}
+
+static inline void x_screen_cleanup(X_Screen* screen)
+{
+    x_canvas_cleanup(&screen->canvas);
+    /// @todo Should we detach all of the attached cameras?
 }
 
 static inline int x_screen_w(const X_Screen* screen)

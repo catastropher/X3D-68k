@@ -30,6 +30,11 @@ static inline void cleanup_object_factory(X_EngineContext* context)
     x_factory_cleanup(&context->gameObjectFactory);
 }
 
+static inline void cleanup_screen(X_EngineContext* context)
+{
+    x_screen_cleanup(&context->screen);
+}
+
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
     init_object_factory(context);
@@ -39,6 +44,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 void x_enginecontext_cleanup(X_EngineContext* context)
 {
     cleanup_object_factory(context);
+    cleanup_screen(context);
 }
 
 
