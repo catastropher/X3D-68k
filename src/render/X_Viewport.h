@@ -13,17 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D/X3D.h>
+#pragma once
 
-int main()
+#include "geo/X_Vec2.h"
+#include "math/X_angle.h"
+
+typedef struct X_Viewport
 {
-    X_EngineContext context;
-    x_enginecontext_init(&context, 640, 480);
-    
-    X_CameraObject* cam = x_cameraobject_new(&context);
-    x_viewport_init(&cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
-    x_screen_attach_camera(&context.screen, cam);
-    
-    x_enginecontext_cleanup(&context);
-}
+    X_Vec2 screenPos;
+    int w;
+    int h;
+    int distToProjectionPlane;
+    angle256 fieldOfView;
+} X_Viewport;
+
+void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, angle256 fieldOfView);
 

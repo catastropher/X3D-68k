@@ -28,6 +28,9 @@ add_library(X3D STATIC
     # geo
     src/geo/X_Vec3.c
     
+    # math
+    src/math/X_trig.c
+    
     # memory
     src/memory/X_Factory.c
     
@@ -39,6 +42,7 @@ add_library(X3D STATIC
     src/render/X_Canvas.c
     src/render/X_Screen.c
     src/render/X_Texture.c
+    src/render/X_Viewport.c
 )
 
 install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)

@@ -16,12 +16,14 @@
 #pragma once
 
 #include "X_GameObject.h"
+#include "render/X_Viewport.h"
 
 struct X_EngineContext;
 
 typedef struct X_CameraObject
 {
     X_GameObject base;
+    X_Viewport viewport;
     struct X_CameraObject* nextInCameraList;
 } X_CameraObject;
 

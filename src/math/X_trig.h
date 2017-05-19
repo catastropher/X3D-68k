@@ -13,17 +13,39 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D/X3D.h>
+#pragma once
 
-int main()
+#include "X_fix.h"
+#include "X_angle.h"
+
+/// @todo Document this file
+
+enum {
+    X_ANG_0 = 0,
+    X_ANG_30 = 21,
+    X_ANG_45 = 32,
+    X_ANG_60 = 42,
+    X_ANG_90 = 64,
+    X_ANG_180 = 128,
+    X_ANG_270 = 192,
+    X_ANG_360 = 256
+};
+
+#define X_VERTICAL_LINE_SLOPE 0x7FFFFFFF
+
+fp16x16 x_sin(angle256 angle);
+
+static inline fp16x16 x_cos(angle256 angle)
 {
-    X_EngineContext context;
-    x_enginecontext_init(&context, 640, 480);
-    
-    X_CameraObject* cam = x_cameraobject_new(&context);
-    x_viewport_init(&cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
-    x_screen_attach_camera(&context.screen, cam);
-    
-    x_enginecontext_cleanup(&context);
+    return x_sin(X_ANG_90 - angle);
+}
+
+static inline fp16x16 x_tan(angle256 angle)
+{
+  // Prevent division by 0
+  if(angle == X_ANG_90 || angle == X_ANG_270)
+    return X_VERTICAL_LINE_SLOPE;
+
+  return x_fix_div_fp16x16(x_sin(angle), x_cos(angle));
 }
 

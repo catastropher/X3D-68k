@@ -13,17 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D/X3D.h>
+#pragma once
 
-int main()
-{
-    X_EngineContext context;
-    x_enginecontext_init(&context, 640, 480);
-    
-    X_CameraObject* cam = x_cameraobject_new(&context);
-    x_viewport_init(&cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
-    x_screen_attach_camera(&context.screen, cam);
-    
-    x_enginecontext_cleanup(&context);
-}
+typedef unsigned char angle256;
+typedef unsigned short angle8x8;
 

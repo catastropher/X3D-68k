@@ -22,6 +22,11 @@
 // engine
 #include "engine/X_EngineContext.h"
 
+// math
+#include "math/X_angle.h"
+#include "math/X_fix.h"
+#include "math/X_trig.h"
+
 // memory
 #include "memory/X_alloc.h"
 
@@ -33,4 +38,5 @@
 #include "render/X_Canvas.h"
 #include "render/X_Screen.h"
 #include "render/X_Texture.h"
+#include "render/X_Viewport.h"
 

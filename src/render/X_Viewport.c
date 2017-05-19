@@ -13,17 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D/X3D.h>
+#include "X_Viewport.h"
+#include "math/X_trig.h"
 
-int main()
+static inline int calculate_distance_to_projection_plane(int w, angle256 fieldOfView)
 {
-    X_EngineContext context;
-    x_enginecontext_init(&context, 640, 480);
-    
-    X_CameraObject* cam = x_cameraobject_new(&context);
-    x_viewport_init(&cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
-    x_screen_attach_camera(&context.screen, cam);
-    
-    x_enginecontext_cleanup(&context);
+    return x_fp16x16_make(w / 2) / x_tan(fieldOfView / 2);
+}
+
+void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, angle256 fieldOfView)
+{
+    viewport->screenPos = screenPos;
+    viewport->w = w;
+    viewport->h = h;
+    viewport->distToProjectionPlane = calculate_distance_to_projection_plane(w, fieldOfView);
 }
 

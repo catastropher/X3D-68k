@@ -13,7 +13,7 @@ int main() {
         
         for(int j = 0; j < 8; ++j)
         {
-            int angleInBase256 = i * 16 + j;
+            int angleInBase256 = i * 8 + j;
             double angleInDegrees = angleInBase256 * 360.0 / 256.0;
             double angleInRadians = angleInDegrees * 3.1415926535 / 180.0;
             int sineAsFp16x16 = sin(angleInRadians) * (1 << 16);
