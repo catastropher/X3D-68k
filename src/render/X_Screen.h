@@ -15,22 +15,15 @@
 
 #pragma once
 
-// geo
-#include "geo/X_Vec2.h"
-#include "geo/X_Vec3.h"
-
-// engine
-#include "engine/X_EngineContext.h"
-
-// memory
-#include "memory/X_alloc.h"
-
-// object
+#include "X_Canvas.h"
 #include "object/X_CameraObject.h"
-#include "object/X_GameObject.h"
 
-// render
-#include "render/X_Canvas.h"
-#include "render/X_Screen.h"
-#include "render/X_Texture.h"
+typedef struct X_Screen
+{
+    X_Canvas canvas;
+    X_CameraObject* cameraListHead;
+} X_Screen;
+
+void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera);
+void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera);
 

@@ -36,6 +36,7 @@ add_library(X3D STATIC
     
     # render
     src/render/canvas.c
+    src/render/X_Screen.c
     src/render/texture.c
 )
 
