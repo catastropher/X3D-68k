@@ -16,12 +16,14 @@
 #pragma once
 
 #include "memory/X_Factory.h"
+#include "render/X_Screen.h"
 
 typedef struct X_EngineContext
 {
     X_Factory gameObjectFactory;
+    X_Screen screen;
 } X_EngineContext;
 
-void x_enginecontext_init(X_EngineContext* context);
+void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH);
 void x_enginecontext_cleanup(X_EngineContext* context);
 

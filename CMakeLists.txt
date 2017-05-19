@@ -32,6 +32,7 @@ add_library(X3D STATIC
     src/memory/X_Factory.c
     
     # object
+    src/object/X_CameraObject.c
     src/object/X_GameObject.c
     
     # render

@@ -17,9 +17,13 @@
 
 #include "X_GameObject.h"
 
+struct X_EngineContext;
+
 typedef struct X_CameraObject
 {
     X_GameObject base;
     struct X_CameraObject* nextInCameraList;
 } X_CameraObject;
+
+X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
 

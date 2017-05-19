@@ -13,32 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_CameraObject.h"
+#include "engine/X_EngineContext.h"
 
-#include "X_Canvas.h"
-#include "object/X_CameraObject.h"
-
-typedef struct X_Screen
+X_CameraObject* x_cameraobject_new(X_EngineContext* context)
 {
-    X_Canvas canvas;
-    X_CameraObject* cameraListHead;
-} X_Screen;
-
-void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera);
-void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera);
-
-static inline void x_screen_init(X_Screen* screen, int w, int h)
-{
-    x_canvas_init(&screen->canvas, w, h);
+    return (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
 }
 
-static inline int x_screen_w(const X_Screen* screen)
-{
-    return x_canvas_w(&screen->canvas);
-}
-
-static inline int x_screen_h(const X_Screen* screen)
-{
-    return x_canvas_h(&screen->canvas);
-}
 
