@@ -54,6 +54,18 @@ static inline void x_factory_release_object(void** handleSlot)
 ////////////////////////////////////////////////////////////////////////////////
 void x_factory_cleanup(X_Factory* factory)
 {
+    // All of the free slots have a pointer to the next free slot, which we'd
+    // confuse as memory to free. So, follow the list of free slots and change
+    // them to NULL.
+    void** next = factory->handleFreeListHead;
+    
+    do
+    {
+        next = (void **)(*next);
+        *factory->handleFreeListHead = NULL;
+        factory->handleFreeListHead = next;
+    } while(next);
+    
     for(int i = 0; i < factory->allocListSize; ++i)
     {
         x_factory_release_object(factory->allocList + i);
@@ -69,6 +81,9 @@ void x_factory_cleanup(X_Factory* factory)
 ////////////////////////////////////////////////////////////////////////////////
 void x_factory_add_handles(X_Factory* factory, int handlesToAdd)
 {
+    if(handlesToAdd == 0)
+        return;
+    
     // Add new handles
     int first_new_handle = factory->allocListSize;
     factory->allocListSize += handlesToAdd;
@@ -80,8 +95,8 @@ void x_factory_add_handles(X_Factory* factory, int handlesToAdd)
         factory->allocList[i] = &factory->allocList[i + 1];
     }
     
-    factory->allocList[factory->allocListSize - 1] = factory->handleFreeListHead;
-    factory->handleFreeListHead = &factory->allocList[first_new_handle];
+    factory->allocList[factory->allocListSize - 1] = factory->handleFreeListHead;    
+    factory->handleFreeListHead = &factory->allocList[first_new_handle];    
 }
 
 ////////////////////////////////////////////////////////////////////////////////

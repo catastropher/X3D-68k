@@ -17,27 +17,12 @@ cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined")
 
-project(X3D C)
+project(xtest C)
 
-include_directories(src/)
+include_directories(/usr/local/include/X3D)
 
-add_library(X3D STATIC
-    # engine
-    src/engine/X_EngineContext.c
-
-    # geo
-    src/geo/vec3.c
-    
-    # memory
-    src/memory/X_Factory.c
-    
-    # object
-    src/object/X_GameObject.c
-    
-    # render
-    src/render/canvas.c
-    src/render/texture.c
+add_executable(xtest
+    src/main.c
 )
 
-install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)
-install(DIRECTORY src/ DESTINATION /usr/local/include/X3D FILES_MATCHING PATTERN "*.h")
+target_link_libraries(xtest X3D)

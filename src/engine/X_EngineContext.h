@@ -22,4 +22,6 @@ typedef struct X_EngineContext
     X_Factory gameObjectFactory;
 } X_EngineContext;
 
+void x_enginecontext_init(X_EngineContext* context);
+void x_enginecontext_cleanup(X_EngineContext* context);
 

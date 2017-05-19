@@ -90,7 +90,7 @@ static inline void x_texture_init(X_Texture* tex, int w, int h)
 ////////////////////////////////////////////////////////////////////////////////
 static inline void x_texture_cleanup(X_Texture* tex)
 {
-    x_free(tex);
+    x_free(tex->texels);
     tex->texels = NULL;
     tex->w = 0;
     tex->h = 0;

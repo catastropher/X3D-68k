@@ -13,22 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <X3D/X3D.h>
 
-// geo
-#include "geo/X_Vec2.h"
-#include "geo/X_Vec3.h"
-
-// engine
-#include "engine/X_EngineContext.h"
-
-// memory
-#include "memory/X_alloc.h"
-
-// object
-#include "object/X_GameObject.h"
-
-// render
-#include "render/X_Canvas.h"
-#include "render/X_Texture.h"
+int main()
+{
+    X_EngineContext context;
+    x_enginecontext_init(&context);
+    
+    for(int i = 0; i < 800; ++i) {
+        x_gameobject_new(&context, 128);
+    }
+    
+    X_Canvas canvas;
+    x_canvas_init(&canvas, 640, 480);
+    x_canvas_cleanup(&canvas);
+    
+    x_enginecontext_cleanup(&context);
+}
 
