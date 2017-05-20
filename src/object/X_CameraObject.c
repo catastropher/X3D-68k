@@ -16,6 +16,10 @@
 #include "X_CameraObject.h"
 #include "engine/X_EngineContext.h"
 
+////////////////////////////////////////////////////////////////////////////////
+/// Creates a new camera object.
+/// @todo Determine how to best initialize a camera
+////////////////////////////////////////////////////////////////////////////////
 X_CameraObject* x_cameraobject_new(X_EngineContext* context)
 {
     return (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));

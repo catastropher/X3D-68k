@@ -15,10 +15,19 @@
 
 #include "X_trig.h"
 
-/// @todo Document
-fp16x16 x_sin(angle256 angle)
+////////////////////////////////////////////////////////////////////////////////
+/// Calculates the sine of an angle using a lookup table.
+///
+/// @param angle    - angle in base 256
+///
+/// @return sin(angle) as an x_fp16x16
+////////////////////////////////////////////////////////////////////////////////
+x_fp16x16 x_sin(x_angle256 angle)
 {
-    fp16x16 sintab[] = {                                                                                                                                                                                                             
+    /// @todo This large table may cause a lot of cache misses. Need to
+    ///     see whether it's worth it to have a smaller table and additional
+    ///     branching.
+    x_fp16x16 sintab[] = {                                                                                                                                                                                                             
          0    ,  1608 ,  3215 ,  4821 ,  6423 ,  8022 ,  9616 ,  11204,                                                                                                                                                              
          12785,  14359,  15923,  17479,  19024,  20557,  22078,  23586,                                                                                                                                                              
          25079,  26557,  28020,  29465,  30893,  32302,  33692,  35061,                                                                                                                                                              

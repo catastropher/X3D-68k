@@ -24,8 +24,8 @@ typedef struct X_Viewport
     int w;
     int h;
     int distToProjectionPlane;
-    angle256 fieldOfView;
+    x_angle256 fieldOfView;
 } X_Viewport;
 
-void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, angle256 fieldOfView);
+void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_angle256 fieldOfView);
 

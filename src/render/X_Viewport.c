@@ -16,12 +16,12 @@
 #include "X_Viewport.h"
 #include "math/X_trig.h"
 
-static inline int calculate_distance_to_projection_plane(int w, angle256 fieldOfView)
+static inline int calculate_distance_to_projection_plane(int w, x_angle256 fieldOfView)
 {
     return x_fp16x16_make(w / 2) / x_tan(fieldOfView / 2);
 }
 
-void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, angle256 fieldOfView)
+void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_angle256 fieldOfView)
 {
     viewport->screenPos = screenPos;
     viewport->w = w;

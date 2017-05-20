@@ -15,6 +15,11 @@
 
 #pragma once
 
-typedef unsigned char angle256;
-typedef unsigned short angle8x8;
+/// An angle with 256 degrees in a circle instead of 360 (so they natually wrap
+///     back around due to integer overflow/underflow).
+typedef unsigned char x_angle256;
+
+/// A fixed point angle version of @ref x_angle256 that has 8 bits of fractional
+///     accuracy.
+typedef unsigned short x_angle256_8x8;
 

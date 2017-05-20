@@ -35,12 +35,25 @@ static inline void cleanup_screen(X_EngineContext* context)
     x_screen_cleanup(&context->screen);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Initializes an engine context.
+///
+/// @param context  - context to initialize
+/// @param screenW  - width of the screen
+/// @param screenH  - height of the screen
+///
+/// @note Make sure to call @ref x_enginecontext_cleanup() when done to release
+///     the allocated resources!
+////////////////////////////////////////////////////////////////////////////////
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
     init_object_factory(context);
     init_screen(context, screenW, screenH);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Cleans up an engine context.
+////////////////////////////////////////////////////////////////////////////////
 void x_enginecontext_cleanup(X_EngineContext* context)
 {
     cleanup_object_factory(context);

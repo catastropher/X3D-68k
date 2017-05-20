@@ -15,19 +15,33 @@
 
 #pragma once
 
-typedef int fp16x16;
-typedef int fp24x8;
-typedef long long int fp32x32;
+typedef int x_fp16x16;
+typedef int x_fp24x8;
+typedef long long int x_fp32x32;
 
-static inline fp16x16 x_fp16x16_make(int wholePart)
+////////////////////////////////////////////////////////////////////////////////
+/// Creates an @ref x_fp16x16 from a whole number.
+////////////////////////////////////////////////////////////////////////////////
+static inline x_fp16x16 x_fp16x16_make(int wholePart)
 {
     return wholePart << 16;
 }
 
-/// @todo Document
-static inline fp16x16 x_fix_div_fp16x16(fp16x16 n, fp16x16 d)
+////////////////////////////////////////////////////////////////////////////////
+/// Divides two @ref x_fp16x16 numbers.
+///
+/// @param n    - numerator
+/// @param d    - denominator
+///
+/// @return n / d as an x_fp16x16.
+///
+/// @note Be wary of overflow.
+/// @note This will cause division by zero if d == 0.
+/// @note This is a fairly expensive operation as it involves 64-bit division.
+////////////////////////////////////////////////////////////////////////////////
+static inline x_fp16x16 x_fix_div_fp16x16(x_fp16x16 n, x_fp16x16 d)
 {
-    return ((fp32x32)n << 16) / d;
+    return ((x_fp32x32)n << 16) / d;
 }
 
 

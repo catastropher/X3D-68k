@@ -25,6 +25,7 @@ typedef struct X_Vec3
     int z;
 } X_Vec3;
 
+/// A 3D vertex or vector with fp16x16 components.
 typedef X_Vec3 X_Vec3_fp16x16;
 
 ////////////////////////////////////////////////////////////////////////////////

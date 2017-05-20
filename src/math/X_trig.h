@@ -18,8 +18,7 @@
 #include "X_fix.h"
 #include "X_angle.h"
 
-/// @todo Document this file
-
+/// Angle constants for base 256
 enum {
     X_ANG_0 = 0,
     X_ANG_30 = 21,
@@ -31,21 +30,39 @@ enum {
     X_ANG_360 = 256
 };
 
+/// Approximation for the slope of a vertical line (infinity).
 #define X_VERTICAL_LINE_SLOPE 0x7FFFFFFF
 
-fp16x16 x_sin(angle256 angle);
+x_fp16x16 x_sin(x_angle256 angle);
 
-static inline fp16x16 x_cos(angle256 angle)
+////////////////////////////////////////////////////////////////////////////////
+/// Calculates the cosine of an angle using a lookup table.
+///
+/// @param angle    - angle in base 256
+///
+/// @return cos(angle) as an x_fp16x16
+////////////////////////////////////////////////////////////////////////////////
+static inline x_fp16x16 x_cos(x_angle256 angle)
 {
     return x_sin(X_ANG_90 - angle);
 }
 
-static inline fp16x16 x_tan(angle256 angle)
+////////////////////////////////////////////////////////////////////////////////
+/// Calculates the tangent of an angle using a lookup table.
+///
+/// @param angle    - angle in base 256
+///
+/// @return tan(angle) as an x_fp16x16
+///
+/// @note This will return @ref X_VERTICAL_LINE_SLOPE if angle == X_ANG_90 ||
+///     angle == X_ANG_270.
+////////////////////////////////////////////////////////////////////////////////
+static inline x_fp16x16 x_tan(x_angle256 angle)
 {
-  // Prevent division by 0
-  if(angle == X_ANG_90 || angle == X_ANG_270)
-    return X_VERTICAL_LINE_SLOPE;
+    // Prevent division by 0
+    if(angle == X_ANG_90 || angle == X_ANG_270)
+        return X_VERTICAL_LINE_SLOPE;
 
-  return x_fix_div_fp16x16(x_sin(angle), x_cos(angle));
+    return x_fix_div_fp16x16(x_sin(angle), x_cos(angle));
 }
 

@@ -19,36 +19,9 @@
 
 #include "geo/X_Vec3.h"
 
-typedef struct X_GraphicsComponent
-{
-    
-} X_GraphicsComponent;
-
-typedef struct X_PhysicsComponent
-{
-    
-} X_PhysicsComponent;
-
-typedef struct X_InputComponent
-{
-    
-} X_InputComponent;
-
-struct X_GameObject;
-
-typedef struct X_GameObjectEventHandlers
-{
-    void (*create_handler)(struct X_GameObject* obj);
-    void (*destroy_handler)(struct X_GameObject* obj);
-} X_GameObjectEventHandlers;
-
 typedef struct X_GameObject
 {
-    int id;
-    X_GraphicsComponent* graphics_component;
-    X_PhysicsComponent* physics_component;
-    X_InputComponent* input_component;
-    
+    int id;    
     X_Vec3 position;
     X_Vec3 velocity;
 } X_GameObject;
