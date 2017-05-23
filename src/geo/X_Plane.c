@@ -13,30 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_Vec3.h"
-#include "util/X_util.h"
-#include "math/X_fix.h"
+#include "X_Plane.h"
 
-static inline void scale_components_to_less_than_one_half(X_Vec3_fp16x16* v)
+void x_plane_init_from_three_points(X_Plane* plane, const X_Vec3* a, const X_Vec3* b, const X_Vec3* c)
 {
-    x_fp16x16 maxValue = X_MAX(v->x, X_MAX(v->y, v->z));
+    X_Vec3 v1 = x_vec3_sub(a, b);
+    X_Vec3 v2 = x_vec3_sub(c, b);
     
-    while(maxValue >= X_FP16x16_HALF)
-    {
-        v->x >>= 1;
-        v->y >>= 1;
-        v->z >>= 1;
-        maxValue >>= 1;
-    }
-}
-
-void x_vec3_fp16x16_normalize(X_Vec3_fp16x16* v)
-{
-    scale_components_to_less_than_one_half(v);
-    int len = x_vec3_length(v);
+    plane->normal = x_vec3_cross(&v1, &v2);
+    x_vec3_fp16x16_normalize(&plane->normal);
     
-    v->x = (v->x << 16) / len;
-    v->y = (v->y << 16) / len;
-    v->z = (v->z << 16) / len;
+    x_plane_init_from_normal_and_point(plane, &plane->normal, a);
 }
 

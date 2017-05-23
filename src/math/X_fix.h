@@ -20,6 +20,7 @@ typedef int x_fp24x8;
 typedef long long int x_fp32x32;
 
 #define X_FP16x16_ONE 0x10000
+#define X_FP16x16_HALF (X_FP16x16_ONE / 2)
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Creates an @ref x_fp16x16 from a whole number.
