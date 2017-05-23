@@ -15,29 +15,15 @@
 
 #pragma once
 
-// geo
-#include "geo/X_Vec2.h"
-#include "geo/X_Vec3.h"
-
-// engine
-#include "engine/X_EngineContext.h"
-
-// math
-#include "math/X_angle.h"
 #include "math/X_fix.h"
-#include "math/X_Mat4x4.h"
-#include "math/X_trig.h"
 
-// memory
-#include "memory/X_alloc.h"
+typedef struct X_Vec4
+{
+    x_fp16x16 x;
+    x_fp16x16 y;
+    x_fp16x16 z;
+    x_fp16x16 w;
+} X_Vec4;
 
-// object
-#include "object/X_CameraObject.h"
-#include "object/X_GameObject.h"
-
-// render
-#include "render/X_Canvas.h"
-#include "render/X_Screen.h"
-#include "render/X_Texture.h"
-#include "render/X_Viewport.h"
+typedef X_Vec4 X_Vec4_fp16x16;
 

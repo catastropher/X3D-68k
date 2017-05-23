@@ -29,6 +29,7 @@ add_library(X3D STATIC
     src/geo/X_Vec3.c
     
     # math
+    src/math/X_Mat4x4.c
     src/math/X_trig.c
     
     # memory
