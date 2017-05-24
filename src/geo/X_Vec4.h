@@ -27,3 +27,9 @@ typedef struct X_Vec4
 
 typedef X_Vec4 X_Vec4_fp16x16;
 
+static inline X_Vec4 x_vec4_make(int x, int y, int z, int w)
+{
+    return (X_Vec4) { x, y, z, w };
+}
+
+

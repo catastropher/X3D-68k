@@ -13,35 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_Frustum.h"
 
-// geo
-#include "geo/X_Frustum.h"
-#include "geo/X_Plane.h"
-#include "geo/X_Vec2.h"
-#include "geo/X_Vec3.h"
-#include "geo/X_Vec4.h"
 
-// engine
-#include "engine/X_EngineContext.h"
-
-// math
-#include "math/X_angle.h"
-#include "math/X_fix.h"
-#include "math/X_Mat4x4.h"
-#include "math/X_sqrt.h"
-#include "math/X_trig.h"
-
-// memory
-#include "memory/X_alloc.h"
-
-// object
-#include "object/X_CameraObject.h"
-#include "object/X_GameObject.h"
-
-// render
-#include "render/X_Canvas.h"
-#include "render/X_Screen.h"
-#include "render/X_Texture.h"
-#include "render/X_Viewport.h"
 

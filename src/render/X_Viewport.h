@@ -17,6 +17,7 @@
 
 #include "geo/X_Vec2.h"
 #include "math/X_angle.h"
+#include "geo/X_Frustum.h"
 
 typedef struct X_Viewport
 {

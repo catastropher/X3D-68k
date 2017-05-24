@@ -169,3 +169,30 @@ void x_mat4x4_set_row(X_Mat4x4* mat, int row, const X_Vec4* rowSrc)
     mat->elem[row][3] = rowSrc->w;
 }
 
+void x_mat4x4_transform_vec4(X_Mat4x4* mat, X_Vec4* src, X_Vec4_fp16x16* dest)
+{
+    x_fp16x16 res[4] = { 0 };
+    x_fp16x16* srcArray = &src->x;
+    
+    for(int i = 0; i < 4; ++i)
+    {
+        for(int j = 0; j < 4; ++j) {
+            res[i] += mat->elem[i][j] * srcArray[j];
+        }
+    }
+    
+    *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
+}
+
+void x_mat4x4_transform_vec3(X_Mat4x4* mat, X_Vec3* src, X_Vec3* dest)
+{
+    X_Vec4 vec4 = x_vec4_make(src->x, src->y, src->z, 1);
+    X_Vec4_fp16x16 res;
+    x_mat4x4_transform_vec4(mat, &vec4, &res);
+    
+    dest->x = res.x / res.w;
+    dest->y = res.y / res.w;
+    dest->z = res.z / res.w;
+}
+
+

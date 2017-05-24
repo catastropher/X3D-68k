@@ -39,3 +39,6 @@ void x_mat4x4_set_column(X_Mat4x4* mat, int col, const X_Vec4* colSrc);
 void x_mat4x4_get_row(const X_Mat4x4* mat, int row, X_Vec4* rowDest);
 void x_mat4x4_set_row(X_Mat4x4* mat, int row, const X_Vec4* rowSrc);
 
+void x_mat4x4_transform_vec4(X_Mat4x4* mat, X_Vec4* src, X_Vec4_fp16x16* dest);
+void x_mat4x4_transform_vec3(X_Mat4x4* mat, X_Vec3* src, X_Vec3* dest);
+
