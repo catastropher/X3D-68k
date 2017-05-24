@@ -21,3 +21,8 @@ typedef X_Vec4_fp16x16 X_Quaternion;
 
 void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3_fp16x16* axis, x_angle256 angle);
 
+static inline X_Quaternion x_quaternion_identity(void)
+{
+    return x_vec4_make(0, 0, 0, X_FP16x16_ONE);
+}
+
