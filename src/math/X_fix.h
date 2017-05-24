@@ -42,9 +42,14 @@ static inline x_fp16x16 x_fp16x16_make(int wholePart)
 /// @note This will cause division by zero if d == 0.
 /// @note This is a fairly expensive operation as it involves 64-bit division.
 ////////////////////////////////////////////////////////////////////////////////
-static inline x_fp16x16 x_fix_div_fp16x16(x_fp16x16 n, x_fp16x16 d)
+static inline x_fp16x16 x_fp16x16_div(x_fp16x16 n, x_fp16x16 d)
 {
     return ((x_fp32x32)n << 16) / d;
+}
+
+static inline x_fp16x16 x_fp16x16_mul(x_fp16x16 a, x_fp16x16 b)
+{
+    return ((x_fp32x32)a * b) >> 16;
 }
 
 

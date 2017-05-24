@@ -13,23 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include "geo/X_Vec2.h"
+#include "geo/X_Vec3.h"
+#include "geo/X_Vec4.h"
 #include "math/X_angle.h"
-#include "geo/X_Frustum.h"
 
-typedef struct X_Viewport
-{
-    X_Vec2 screenPos;
-    int w;
-    int h;
-    int distToNearPlane;
-    x_angle256 fieldOfView;
-    X_Frustum viewFrustum;
-    X_Plane viewFrustumPlanes[6];
-} X_Viewport;
+typedef X_Vec4_fp16x16 X_Quaternion;
 
-void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_angle256 fieldOfView);
-void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const X_Vec3_fp16x16* forward, const X_Vec3_fp16x16* right, const X_Vec3_fp16x16* up);
+void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3_fp16x16* axis, x_angle256 angle);
 

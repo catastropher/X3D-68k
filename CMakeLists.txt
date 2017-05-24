@@ -32,6 +32,7 @@ add_library(X3D STATIC
     
     # math
     src/math/X_Mat4x4.c
+    src/math/X_Quaternion.c
     src/math/X_sqrt.c
     src/math/X_trig.c
     

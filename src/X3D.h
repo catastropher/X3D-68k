@@ -29,6 +29,7 @@
 #include "math/X_angle.h"
 #include "math/X_fix.h"
 #include "math/X_Mat4x4.h"
+#include "math/X_Quaternion.h"
 #include "math/X_sqrt.h"
 #include "math/X_trig.h"
 

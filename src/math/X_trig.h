@@ -63,6 +63,6 @@ static inline x_fp16x16 x_tan(x_angle256 angle)
     if(angle == X_ANG_90 || angle == X_ANG_270)
         return X_VERTICAL_LINE_SLOPE;
 
-    return x_fix_div_fp16x16(x_sin(angle), x_cos(angle));
+    return x_fp16x16_div(x_sin(angle), x_cos(angle));
 }
 

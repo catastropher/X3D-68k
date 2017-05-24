@@ -68,6 +68,20 @@ static inline X_Vec3 x_vec3_add(const X_Vec3* a, const X_Vec3* b)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Adds three 3D vectors.
+/// @return a + b + c
+////////////////////////////////////////////////////////////////////////////////
+static inline X_Vec3 x_vec3_add_three(const X_Vec3* a, const X_Vec3* b, const X_Vec3* c)
+{
+    return x_vec3_make
+    (
+        a->x + b->x + c->x,
+        a->y + b->y + c->y,
+        a->z + b->z + c->z
+    );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Subtracts two 3D vectors.
 /// @return a - b
 ////////////////////////////////////////////////////////////////////////////////
@@ -194,4 +208,10 @@ static inline int x_vec3_distance(const X_Vec3* a, const X_Vec3* b)
 {
     return x_sqrt(x_vec3_distance_squared(a, b));
 }
+
+static inline X_Vec3 x_vec3_fp16x16_to_vec3(const X_Vec3_fp16x16* src)
+{
+    return x_vec3_make(src->x >> 16, src->y >> 16, src->z >> 16);
+}
+
 
