@@ -19,7 +19,7 @@
 /// Draws a line of the given color into a canvas.
 /// @note This function ignores the z-buffer
 ////////////////////////////////////////////////////////////////////////////////
-void x_canvas_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color)
+void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color)
 {
     int dx = abs(end.x - start.x);
     int sx = start.x < end.x ? 1 : -1;
@@ -30,7 +30,7 @@ void x_canvas_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color)
     
     while(1)
     {
-        x_texture_set_texel(tex, pos.x, pos.y, color);
+        x_texture_set_texel(&canvas->tex, pos.x, pos.y, color);
         
         if(x_vec2_equal(&pos, &end))
             break;

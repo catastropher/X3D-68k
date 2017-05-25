@@ -13,21 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "geo/X_Vec3.h"
-#include "geo/X_Vec4.h"
-#include "math/X_angle.h"
+#include <SDL/SDL.h>
+#include <X3D/X3D.h>
 
-typedef X_Vec4_fp16x16 X_Quaternion;
+#pragma once
 
-void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3_fp16x16* axis, x_angle256 angle);
-
-static inline X_Quaternion x_quaternion_identity(void)
+typedef struct Context
 {
-    return x_vec4_make(0, 0, 0, X_FP16x16_ONE);
-}
-
-static inline X_Quaternion x_quaternion_conjugate(X_Quaternion* quat)
-{
-    return x_vec4_make(-quat->x, -quat->y, -quat->z, quat->w);
-}
-
+    SDL_Surface* screen;
+    X_EngineContext context;
+    X_CameraObject* cam;
+} Context;

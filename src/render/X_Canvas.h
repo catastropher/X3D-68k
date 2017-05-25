@@ -100,20 +100,20 @@ static inline void x_canvas_zbuf_clear(X_Canvas* canvas)
 ///
 /// @note This function ignores the z-buffer.
 ////////////////////////////////////////////////////////////////////////////////
-static inline void x_canvas_fill(X_Canvas* canvas, X_Color clear_color)
+static inline void x_canvas_fill(X_Canvas* canvas, X_Color fillColor)
 {
     if(sizeof(X_Color) == 1)
     {
-        memset(canvas->tex.texels, x_texture_total_texels(&canvas->tex), clear_color);
+        memset(canvas->tex.texels, fillColor, x_texture_total_texels(&canvas->tex));
     }
     else
     {
         for(int i = 0; i < x_texture_total_texels(&canvas->tex); ++i)
-            canvas->tex.texels[i] = clear_color;
+            canvas->tex.texels[i] = fillColor;
     }
 }
 
 
-void x_canvas_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color);
+void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color);
 
 

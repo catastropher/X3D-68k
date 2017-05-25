@@ -23,6 +23,10 @@ include_directories(/usr/local/include/X3D)
 
 add_executable(xtest
     src/main.c
+    src/palette.c
+    src/screen.c
 )
 
-target_link_libraries(xtest X3D)
+find_package(SDL REQUIRED)
+
+target_link_libraries(xtest X3D SDL)
