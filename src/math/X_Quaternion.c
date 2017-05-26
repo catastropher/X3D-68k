@@ -24,7 +24,7 @@ void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3_fp16x16*
     quat->x = x_fp16x16_mul(axis->x, sinAngle);
     quat->y = x_fp16x16_mul(axis->y, sinAngle);
     quat->z = x_fp16x16_mul(axis->z, sinAngle);
-    quat->z = cosAngle;
+    quat->w = cosAngle;
 }
 
 void x_quaternion_mul(const X_Quaternion* a, const X_Quaternion* b, X_Quaternion* dest)
