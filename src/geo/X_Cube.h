@@ -13,15 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_CameraObject.h"
-#include "engine/X_EngineContext.h"
+#pragma once
 
-////////////////////////////////////////////////////////////////////////////////
-/// Creates a new camera object.
-/// @todo Determine how to best initialize a camera
-////////////////////////////////////////////////////////////////////////////////
-X_CameraObject* x_cameraobject_new(X_EngineContext* context)
+#include "geo/X_Vec3.h"
+#include "object/X_CameraObject.h"
+#include "render/X_Canvas.h"
+#include "math/X_Mat4x4.h"
+
+typedef struct X_Cube
 {
-    return (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
-}
+    X_Vec3 vertices[8];
+} X_Cube;
+
+void x_cube_init(X_Cube* cube, int width, int height, int depth);
+void x_cube_translate(X_Cube* cube, X_Vec3 translation);
+void x_cube_render(const X_Cube* cube, const X_CameraObject* cam, X_Canvas* canvas, X_Color color);
+void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat);
 

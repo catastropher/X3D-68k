@@ -72,10 +72,31 @@ int main(int argc, char* argv[])
     X_Vec2 a = { 10, 10 };
     X_Vec2 b = { 200, 100 };
     
-    x_canvas_fill(&context.context.screen.canvas, 0);
-    x_canvas_draw_line(&context.context.screen.canvas, a, b, 5);
+    X_Cube cube;
+    x_cube_init(&cube, 50, 50, 50);
     
-    update_screen(&context);
+    X_Cube rotatedCube;
+    
+    for(int i = 0; i < 256; ++i)
+    {
+        x_canvas_fill(&context.context.screen.canvas, 0);
+        
+        X_Mat4x4 rotationY;
+        x_mat4x4_load_y_rotation(&rotationY, i);
+        
+        X_Mat4x4 rotationX;
+        x_mat4x4_load_z_rotation(&rotationX, i);
+        
+        X_Mat4x4 finalRotation;
+        x_mat4x4_mul(&rotationX, &rotationY, &finalRotation);
+        
+        x_cube_transform(&cube, &rotatedCube, &finalRotation);
+        
+        x_cube_translate(&rotatedCube, x_vec3_make(0, 0, 500));
+        x_cube_render(&rotatedCube, context.cam, &context.context.screen.canvas, 4);
+        
+        update_screen(&context);
+    }
     
     sleep(3);
     cleanup(&context);

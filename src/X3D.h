@@ -16,6 +16,7 @@
 #pragma once
 
 // geo
+#include "geo/X_Cube.h"
 #include "geo/X_Frustum.h"
 #include "geo/X_Plane.h"
 #include "geo/X_Vec2.h"
