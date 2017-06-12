@@ -33,3 +33,11 @@ static inline X_Quaternion x_quaternion_conjugate(X_Quaternion* quat)
     return x_vec4_make(-quat->x, -quat->y, -quat->z, quat->w);
 }
 
+static inline x_fp16x16 x_quaternion_dot(const X_Quaternion* a, const X_Quaternion* b)
+{
+    return x_fp16x16_mul(a->x, b->x) + 
+        x_fp16x16_mul(a->y, b->y) + 
+        x_fp16x16_mul(a->z, b->z) + 
+        x_fp16x16_mul(a->w, b->w);
+}
+
