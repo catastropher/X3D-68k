@@ -16,6 +16,7 @@
 #include <X3D/X3D.h>
 #include <SDL/SDL.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "palette.h"
 #include "Context.h"
@@ -77,20 +78,20 @@ int main(int argc, char* argv[])
     
     X_Cube rotatedCube;
     
+    int invSqrt3 = (1.0 / sqrt(3)) * 65536;
+    
     for(int i = 0; i < 256; ++i)
     {
         x_canvas_fill(&context.context.screen.canvas, 0);
         
-        X_Mat4x4 rotationY;
-        x_mat4x4_load_y_rotation(&rotationY, i);
+        X_Mat4x4 rotation;
+        X_Quaternion quat;
         
-        X_Mat4x4 rotationX;
-        x_mat4x4_load_z_rotation(&rotationX, i);
+        X_Vec3_fp16x16 axis = x_vec3_make(invSqrt3, invSqrt3, invSqrt3);
+        x_quaternion_init_from_axis_angle(&quat, &axis, i);
+        x_quaternion_to_mat4x4(&quat, &rotation);
         
-        X_Mat4x4 finalRotation;
-        x_mat4x4_mul(&rotationX, &rotationY, &finalRotation);
-        
-        x_cube_transform(&cube, &rotatedCube, &finalRotation);
+        x_cube_transform(&cube, &rotatedCube, &rotation);
         
         x_cube_translate(&rotatedCube, x_vec3_make(0, 0, 500));
         x_cube_render(&rotatedCube, context.cam, &context.context.screen.canvas, 4);

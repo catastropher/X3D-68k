@@ -35,3 +35,38 @@ void x_quaternion_mul(const X_Quaternion* a, const X_Quaternion* b, X_Quaternion
     dest->w = -x_fp16x16_mul(a->x, b->x) - x_fp16x16_mul(a->y, b->y) - x_fp16x16_mul(a->z, b->z) + x_fp16x16_mul(a->w, b->w);
 }
 
+void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest)
+{
+    x_fp16x16 xx = x_fp16x16_mul(src->x, src->x);
+    x_fp16x16 xy = x_fp16x16_mul(src->x, src->y);
+    x_fp16x16 xz = x_fp16x16_mul(src->x, src->z);
+    x_fp16x16 xw = x_fp16x16_mul(src->x, src->w);
+    
+    x_fp16x16 yy = x_fp16x16_mul(src->y, src->y);
+    x_fp16x16 yz = x_fp16x16_mul(src->y, src->z);
+    x_fp16x16 yw = x_fp16x16_mul(src->y, src->w);
+    
+    x_fp16x16 zz = x_fp16x16_mul(src->z, src->z);
+    x_fp16x16 zw = x_fp16x16_mul(src->z, src->w);
+    
+    dest->elem[0][0] = X_FP16x16_ONE - 2 * (yy + zz);
+    dest->elem[0][1] =                 2 * (xy - zw);
+    dest->elem[0][2] =                 2 * (xz + yw);
+    dest->elem[0][3] = 0;
+    
+    dest->elem[1][0] =                 2 * (xy + zw);
+    dest->elem[1][1] = X_FP16x16_ONE - 2 * (xx + zz);
+    dest->elem[1][2] =                 2 * (yz - xw);
+    dest->elem[1][3] = 0;
+    
+    dest->elem[2][0] =                 2 * (xz - yw);
+    dest->elem[2][1] =                 2 * (yz + xw);
+    dest->elem[2][2] = X_FP16x16_ONE - 2 * (xx + yy);
+    dest->elem[2][3] = 0;
+    
+    dest->elem[3][0] = 0;
+    dest->elem[3][1] = 0;
+    dest->elem[3][2] = 0;
+    dest->elem[3][3] = X_FP16x16_ONE;
+}
+
