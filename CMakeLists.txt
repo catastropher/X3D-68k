@@ -52,6 +52,9 @@ add_library(X3D STATIC
     src/render/X_Screen.c
     src/render/X_Texture.c
     src/render/X_Viewport.c
+    
+    # system
+    src/system/X_File.c
 )
 
 install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)

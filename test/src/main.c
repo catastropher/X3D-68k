@@ -80,6 +80,10 @@ int main(int argc, char* argv[])
     
     int invSqrt3 = (1.0 / sqrt(3)) * 65536;
     
+    X_File file;
+    x_file_open_reading(&file, "test");
+    x_file_close(&file);
+    
     for(int i = 0; i < 256; ++i)
     {
         x_canvas_fill(&context.context.screen.canvas, 0);
