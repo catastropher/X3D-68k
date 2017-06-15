@@ -24,10 +24,12 @@
 #include "geo/X_Vec4.h"
 
 // engine
+#include "engine/X_config.h"
 #include "engine/X_EngineContext.h"
 
 // error
 #include "error/X_error.h"
+#include "error/X_log.h"
 
 // math
 #include "math/X_angle.h"

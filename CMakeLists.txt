@@ -25,6 +25,9 @@ add_library(X3D STATIC
     # engine
     src/engine/X_EngineContext.c
 
+    # error
+    src/error/X_log.c
+    
     # geo
     src/geo/X_Cube.c
     src/geo/X_Frustum.c
