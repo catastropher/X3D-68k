@@ -15,38 +15,17 @@
 
 #pragma once
 
-// geo
-#include "geo/X_Cube.h"
-#include "geo/X_Frustum.h"
-#include "geo/X_Plane.h"
-#include "geo/X_Vec2.h"
-#include "geo/X_Vec3.h"
-#include "geo/X_Vec4.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-// engine
-#include "engine/X_EngineContext.h"
+static inline void x_assert_function(_Bool condition, const char* file, int line, const char* messageFormat, ...)
+{
+    if(condition)
+        return;
+    
+    fprintf(stderr, "Assertion failed!\nFile: %s\nLine: %d\n\nMessage: %s\n", file, line, messageFormat);
+    exit(-1);
+}
 
-// error
-#include "error/X_error.h"
-
-// math
-#include "math/X_angle.h"
-#include "math/X_fix.h"
-#include "math/X_Mat4x4.h"
-#include "math/X_Quaternion.h"
-#include "math/X_sqrt.h"
-#include "math/X_trig.h"
-
-// memory
-#include "memory/X_alloc.h"
-
-// object
-#include "object/X_CameraObject.h"
-#include "object/X_GameObject.h"
-
-// render
-#include "render/X_Canvas.h"
-#include "render/X_Screen.h"
-#include "render/X_Texture.h"
-#include "render/X_Viewport.h"
+#define x_assert(_cond, message...) x_assert_function(_cond, __FILE__, __LINE__, message)
 
