@@ -16,6 +16,7 @@
 #pragma once
 
 #include "X_Vec3.h"
+#include "math/X_fix.h"
 
 typedef struct X_Ray3
 {
@@ -24,7 +25,16 @@ typedef struct X_Ray3
 
 static inline X_Ray3 x_ray3_make(X_Vec3 start, X_Vec3 end)
 {
-    return (X_Ray3) { start, end };
+    return (X_Ray3)
+    {
+        { start, end }
+    };
 }
 
+static inline void x_ray3d_lerp(const X_Ray3* ray, x_fp16x16 t, X_Vec3* dest)
+{
+    dest->x = x_lerp(ray->v[0].x, ray->v[1].x, t);
+    dest->y = x_lerp(ray->v[0].y, ray->v[1].y, t);
+    dest->z = x_lerp(ray->v[0].z, ray->v[1].z, t);
+}
 
