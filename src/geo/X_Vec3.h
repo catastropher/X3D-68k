@@ -31,6 +31,7 @@ typedef struct X_Vec3
 typedef X_Vec3 X_Vec3_fp16x16;
 
 void x_vec3_fp16x16_normalize(X_Vec3_fp16x16* v);
+void x_vec3_print(const X_Vec3* v, const char* label);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Initializes a 3D vector with the given coordinates.
@@ -178,7 +179,7 @@ static inline _Bool x_vec3_is_orthogonal_to(const X_Vec3* a, const X_Vec3* b)
 /// Calculates the length of a vector squared.
 /// @return length(v)^2
 ////////////////////////////////////////////////////////////////////////////////
-static inline int x_vec3_length_squared(const X_Vec3* v)
+static inline unsigned int x_vec3_length_squared(const X_Vec3* v)
 {
     return v->x * v->x + v->y * v->y + v->z * v->z;
 }
@@ -186,10 +187,10 @@ static inline int x_vec3_length_squared(const X_Vec3* v)
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculates the length (magnitude) of a vector.
 ////////////////////////////////////////////////////////////////////////////////
-static inline int x_vec3_length(const X_Vec3* v)
+static inline unsigned int x_vec3_length(const X_Vec3* v)
 {
     // Makes sure we don't overflow
-    X_Vec3 shortened = x_vec3_make(v->x >> 4, v->y >> 4, v->z >> 4);
+    X_Vec3 shortened = x_vec3_make(v->x >> 2, v->y >> 2, v->z >> 2);
     
     return x_sqrt(x_vec3_length_squared(&shortened)) << 2;
 }

@@ -13,13 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "X_Vec3.h"
 #include "util/X_util.h"
 #include "math/X_fix.h"
 
 static inline void scale_components_to_less_than_one_half(X_Vec3_fp16x16* v)
 {
-    x_fp16x16 maxValue = X_MAX(v->x, X_MAX(v->y, v->z));
+    x_fp16x16 maxValue = X_MAX(abs(v->x), X_MAX(abs(v->y), abs(v->z)));
     
     while(maxValue >= X_FP16x16_HALF)
     {
@@ -38,5 +41,10 @@ void x_vec3_fp16x16_normalize(X_Vec3_fp16x16* v)
     v->x = (v->x << 16) / len;
     v->y = (v->y << 16) / len;
     v->z = (v->z << 16) / len;
+}
+
+void x_vec3_print(const X_Vec3* v, const char* label)
+{
+    printf("%s: { %d, %d, %d }\n", label, v->x, v->y, v->z);
 }
 
