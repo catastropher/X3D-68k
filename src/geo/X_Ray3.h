@@ -17,11 +17,22 @@
 
 #include "X_Vec3.h"
 #include "math/X_fix.h"
+#include "render/X_Texture.h"
+
+struct X_Canvas;
+struct X_CameraObject;
 
 typedef struct X_Ray3
 {
     X_Vec3 v[2];
 } X_Ray3;
+
+struct X_Plane;
+struct X_Frustum;
+
+_Bool x_ray3_clip_to_plane(const X_Ray3* ray, const struct X_Plane* plane, X_Ray3* dest);
+_Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const struct X_Frustum* frustum, X_Ray3* dest);
+void x_ray3d_render(const X_Ray3* ray, const struct X_CameraObject* cam, struct X_Canvas* canvas, X_Color color);
 
 static inline X_Ray3 x_ray3_make(X_Vec3 start, X_Vec3 end)
 {
@@ -31,7 +42,7 @@ static inline X_Ray3 x_ray3_make(X_Vec3 start, X_Vec3 end)
     };
 }
 
-static inline void x_ray3d_lerp(const X_Ray3* ray, x_fp16x16 t, X_Vec3* dest)
+static inline void x_ray3_lerp(const X_Ray3* ray, x_fp16x16 t, X_Vec3* dest)
 {
     dest->x = x_lerp(ray->v[0].x, ray->v[1].x, t);
     dest->y = x_lerp(ray->v[0].y, ray->v[1].y, t);

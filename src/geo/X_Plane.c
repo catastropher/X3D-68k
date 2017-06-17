@@ -29,40 +29,6 @@ void x_plane_init_from_three_points(X_Plane* plane, const X_Vec3* a, const X_Vec
     x_plane_init_from_normal_and_point(plane, &plane->normal, a);
 }
 
-_Bool x_plane_clip_ray3d(const X_Plane* plane, const X_Ray3* src, X_Ray3* dest)
-{
-    int v0DistToPlane = x_plane_point_distance(plane, src->v + 0);
-    _Bool v0In = v0DistToPlane > 0;
-    
-    int v1DistToPlane = x_plane_point_distance(plane, src->v + 1);
-    _Bool v1In = v1DistToPlane > 0;
-    
-    // Trivial case: both points inside
-    if(v0In && v1In)
-    {
-        *dest = *src;
-        return 1;
-    }
-    
-    // Trivial case: both points outside
-    if(!v0In && !v1In)
-        return 0;
-    
-    // One inside and one outside, so need to clip
-    if(v1In)
-    {
-        x_fp16x16 t = (v0DistToPlane << 16) / (v0DistToPlane - v1DistToPlane);
-        dest->v[0] = src->v[0];
-        x_ray3d_lerp(src, t, dest->v + 1);
-        return 1;
-    }
-    
-    x_fp16x16 t = (v1DistToPlane << 16) / (v1DistToPlane - v0DistToPlane);
-    dest->v[1] = src->v[1];
-    x_ray3d_lerp(src, X_FP16x16_ONE - t, dest->v + 0);
-    return 1;
-}
-
 void x_plane_print(const X_Plane* plane)
 {
     float x = x_fp16x16_to_float(plane->normal.x);

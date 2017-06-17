@@ -78,6 +78,31 @@ int main(int argc, char* argv[])
     
     init(&context, 640, 480);
     
+    X_Ray3 ray = x_ray3_make
+    (
+        x_vec3_make(-200, 0, 500),
+        x_vec3_make(200, 0, 500)
+    );
+    
+    X_Plane plane;
+    plane.normal = x_vec3_make(-X_FP16x16_ONE, 0, 0);
+    plane.d = 200 * 65536;
+    
+    for(int i = 0; i < 430; ++i)
+    {
+        x_canvas_fill(&context.context.screen.canvas, 0);
+        
+        X_Ray3 clipped;
+        if(x_ray3_clip_to_plane(&ray, &plane, &clipped))
+            x_ray3d_render(&clipped, context.cam, &context.context.screen.canvas, 4);
+        else
+            x_log("Invisible");
+        
+        plane.d -= X_FP16x16_ONE;
+        
+        update_screen(&context);
+    }
+    
 #if 0
     
     X_Vec2 a = { 10, 10 };
