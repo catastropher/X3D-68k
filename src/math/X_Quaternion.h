@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include "geo/X_Vec3.h"
 #include "geo/X_Vec4.h"
 #include "math/X_angle.h"
@@ -21,6 +23,7 @@
 typedef X_Vec4_fp16x16 X_Quaternion;
 
 void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3_fp16x16* axis, x_angle256 angle);
+void x_quaternion_mul(const X_Quaternion* a, const X_Quaternion* b, X_Quaternion* dest);
 void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest);
 
 static inline X_Quaternion x_quaternion_identity(void)

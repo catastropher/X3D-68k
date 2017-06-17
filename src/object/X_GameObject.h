@@ -18,15 +18,18 @@
 #include <stdio.h>
 
 #include "geo/X_Vec3.h"
+#include "math/X_Quaternion.h"
 
 typedef struct X_GameObject
 {
     int id;    
     X_Vec3 position;
     X_Vec3 velocity;
+    X_Quaternion orientation;
 } X_GameObject;
 
 struct X_EngineContext;
 
 X_GameObject* x_gameobject_new(struct X_EngineContext* context, size_t objectSize);
+void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest);
 

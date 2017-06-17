@@ -25,3 +25,22 @@ X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
     return newObject;
 }
 
+void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
+{
+    X_Mat4x4 mat;
+    x_quaternion_to_mat4x4(&obj->orientation, &mat);
+    
+    X_Vec4 right;
+    x_mat4x4_get_column(&mat, 0, &right);
+    *rightDest = x_vec4_to_vec3(&right);
+    
+    X_Vec4 up;
+    x_mat4x4_get_column(&mat, 1, &up);
+    *upDest = x_vec4_to_vec3(&up);
+    *upDest = x_vec3_neg(upDest);
+    
+    X_Vec4 forward;
+    x_mat4x4_get_column(&mat, 2, &forward);
+    *forwardDest = x_vec4_to_vec3(&forward);
+}
+

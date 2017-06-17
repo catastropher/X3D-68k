@@ -40,9 +40,27 @@ void init_x3d(Context* context, int screenW, int screenH)
     x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
     x_screen_attach_camera(&xContext->screen, context->cam);
     
-    X_Vec3 up = x_vec3_make(0, -X_FP16x16_ONE, 0);
-    X_Vec3 right = x_vec3_make(X_FP16x16_ONE, 0, 0);
-    X_Vec3 forward = x_vec3_make(0, 0, X_FP16x16_ONE);
+    context->cam->base.orientation = x_quaternion_identity();
+    
+    X_Vec3_fp16x16 axis = x_vec3_make(0, X_FP16x16_ONE, 0);
+    X_Quaternion rotation;
+    
+    x_quaternion_init_from_axis_angle(&rotation, &axis, X_ANG_45);
+    
+    X_Quaternion newOrientation;
+    x_quaternion_mul(&context->cam->base.orientation, &rotation, &newOrientation);
+    context->cam->base.orientation = newOrientation;
+    
+    X_Vec3 up, right, forward;
+    x_gameobject_extract_view_vectors(&context->cam->base, &forward, &right, &up);
+    
+    x_vec3_print(&up, "Up");
+    x_vec3_print(&forward, "Foreward");
+    x_vec3_print(&right, "Right");
+    
+//     X_Vec3 up = x_vec3_make(0, -X_FP16x16_ONE, 0);
+//     X_Vec3 right = x_vec3_make(X_FP16x16_ONE, 0, 0);
+//     X_Vec3 forward = x_vec3_make(0, 0, X_FP16x16_ONE);
     X_Vec3 camPos = x_vec3_make(0, 0, 0);
     
     x_viewport_update_frustum(&context->cam->viewport, &camPos, &forward, &right, &up);
@@ -78,30 +96,30 @@ int main(int argc, char* argv[])
     
     init(&context, 640, 480);
     
-    X_Ray3 ray = x_ray3_make
-    (
-        x_vec3_make(-200, 0, 500),
-        x_vec3_make(200, 0, 500)
-    );
-    
-    X_Plane plane;
-    plane.normal = x_vec3_make(-X_FP16x16_ONE, 0, 0);
-    plane.d = 200 * 65536;
-    
-    for(int i = 0; i < 430; ++i)
-    {
-        x_canvas_fill(&context.context.screen.canvas, 0);
-        
-        X_Ray3 clipped;
-        if(x_ray3_clip_to_plane(&ray, &plane, &clipped))
-            x_ray3d_render(&clipped, context.cam, &context.context.screen.canvas, 4);
-        else
-            x_log("Invisible");
-        
-        plane.d -= X_FP16x16_ONE;
-        
-        update_screen(&context);
-    }
+//     X_Ray3 ray = x_ray3_make
+//     (
+//         x_vec3_make(-200, 0, 500),
+//         x_vec3_make(200, 0, 500)
+//     );
+//     
+//     X_Plane plane;
+//     plane.normal = x_vec3_make(-X_FP16x16_ONE, 0, 0);
+//     plane.d = 200 * 65536;
+//     
+//     for(int i = 0; i < 430; ++i)
+//     {
+//         x_canvas_fill(&context.context.screen.canvas, 0);
+//         
+//         X_Ray3 clipped;
+//         if(x_ray3_clip_to_plane(&ray, &plane, &clipped))
+//             x_ray3d_render(&clipped, context.cam, &context.context.screen.canvas, 4);
+//         else
+//             x_log("Invisible");
+//         
+//         plane.d -= X_FP16x16_ONE;
+//         
+//         update_screen(&context);
+//     }
     
 #if 0
     
