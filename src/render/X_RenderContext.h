@@ -15,17 +15,14 @@
 
 #pragma once
 
-#include "geo/X_Vec3.h"
-#include "render/X_RenderContext.h"
-#include "math/X_Mat4x4.h"
+#include "X_Canvas.h"
+#include "X_Viewport.h"
+#include "object/X_CameraObject.h"
 
-typedef struct X_Cube
+typedef struct X_RenderContext
 {
-    X_Vec3 vertices[8];
-} X_Cube;
-
-void x_cube_init(X_Cube* cube, int width, int height, int depth);
-void x_cube_translate(X_Cube* cube, X_Vec3 translation);
-void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color);
-void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat);
+    X_CameraObject* cam;
+    X_Canvas* canvas;
+    X_Frustum* viewFrustum;
+} X_RenderContext;
 

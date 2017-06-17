@@ -49,6 +49,7 @@
 
 // render
 #include "render/X_Canvas.h"
+#include "render/X_RenderContext.h"
 #include "render/X_Screen.h"
 #include "render/X_Texture.h"
 #include "render/X_Viewport.h"

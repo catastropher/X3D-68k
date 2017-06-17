@@ -15,8 +15,7 @@
 
 #include "X_Ray3.h"
 #include "X_Plane.h"
-#include "render/X_Canvas.h"
-#include "object/X_CameraObject.h"
+#include "render/X_RenderContext.h"
 
 _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest)
 {
@@ -71,12 +70,12 @@ _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const X_Frustum* frustum, X_Ray3
     return inside;
 }
 
-void x_ray3d_render(const X_Ray3* ray, const X_CameraObject* cam, X_Canvas* canvas, X_Color color)
+void x_ray3d_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
 {
     X_Vec2 projected[2];
     for(int i = 0; i < 2; ++i)
-        x_viewport_project(&cam->viewport, ray->v + i, projected + i);
+        x_viewport_project(&rcontext->cam->viewport, ray->v + i, projected + i);
     
-    x_canvas_draw_line(canvas, projected[0], projected[1], color);
+    x_canvas_draw_line(rcontext->canvas, projected[0], projected[1], color);
 }
 

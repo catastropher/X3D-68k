@@ -33,20 +33,20 @@ void x_cube_translate(X_Cube* cube, X_Vec3 translation)
         cube->vertices[i] = x_vec3_add(cube->vertices + i, &translation);
 }
 
-void x_cube_render(const X_Cube* cube, const X_CameraObject* cam, X_Canvas* canvas, X_Color color)
+void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
 {
     X_Vec2 projectedV[8];
     
     for(int i = 0; i < 8; ++i)
-        x_viewport_project(&cam->viewport, cube->vertices + i, projectedV + i);
+        x_viewport_project(&rcontext->cam->viewport, cube->vertices + i, projectedV + i);
     
     for(int i = 0; i < 4; ++i)
     {   
         int next = (i != 3 ? i + 1 : 0);
         
-        x_canvas_draw_line(canvas, projectedV[i], projectedV[next], color);
-        x_canvas_draw_line(canvas, projectedV[i + 4], projectedV[next + 4], color);
-        x_canvas_draw_line(canvas, projectedV[i], projectedV[i + 4], color);
+        x_canvas_draw_line(rcontext->canvas, projectedV[i], projectedV[next], color);
+        x_canvas_draw_line(rcontext->canvas, projectedV[i + 4], projectedV[next + 4], color);
+        x_canvas_draw_line(rcontext->canvas, projectedV[i], projectedV[i + 4], color);
     }
 }
 
