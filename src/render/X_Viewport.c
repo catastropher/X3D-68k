@@ -75,11 +75,12 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const
     for(int i = 0; i < 4; ++i)
     {
         int next = (i != 3 ? i + 1 : 0);
-        x_plane_init_from_three_points(viewport->viewFrustumPlanes + i, camPos, nearPlaneVertices + i, nearPlaneVertices + next);
+        x_plane_init_from_three_points(viewport->viewFrustumPlanes + i, nearPlaneVertices + i, camPos, nearPlaneVertices + next);
     }
     
     // Near plane
-    x_plane_init_from_normal_and_point(viewport->viewFrustumPlanes + 4, forward, &nearPlaneCenter);
+    viewport->viewFrustumPlanes[4].normal = forward;
+    viewport->viewFrustumPlanes[4].d = -10;
 }
 
 void x_viewport_project(const X_Viewport* viewport, const X_Vec3* src, X_Vec2* dest)

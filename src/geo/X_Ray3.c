@@ -39,21 +39,19 @@ _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest
     // One inside and one outside, so need to clip
     if(v0In)
     {
-        printf("Case 1\n");
         x_fp16x16 t = (v0DistToPlane << 16) / (v0DistToPlane - v1DistToPlane);
         
         dest->v[0] = ray->v[0];
         x_ray3_lerp(ray, t, dest->v + 1);
+        
         return 1;
     }
     
-    printf("Case 2\n");
     x_fp16x16 t = (v1DistToPlane << 16) / (v1DistToPlane - v0DistToPlane);
-    
-    printf("T: %f\n", x_fp16x16_to_float(t));
     
     dest->v[1] = ray->v[1];
     x_ray3_lerp(ray, X_FP16x16_ONE - t, dest->v + 0);
+    
     return 1;
 }
 
@@ -65,6 +63,7 @@ _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const X_Frustum* frustum, X_Ray3
     for(int i = 0; i < frustum->totalPlanes && inside; ++i)
     {
         inside &= x_ray3_clip_to_plane(dest, frustum->planes + i, dest);
+        //printf("Fail by plane %d\n", i);
     }
     
     return inside;
@@ -72,9 +71,13 @@ _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const X_Frustum* frustum, X_Ray3
 
 void x_ray3d_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
 {
+    X_Ray3 clipped;
+    if(!x_ray3_clip_to_frustum(ray, rcontext->viewFrustum, &clipped))
+        return;
+    
     X_Vec2 projected[2];
     for(int i = 0; i < 2; ++i)
-        x_viewport_project(&rcontext->cam->viewport, ray->v + i, projected + i);
+        x_viewport_project(&rcontext->cam->viewport, clipped.v + i, projected + i);
     
     x_canvas_draw_line(rcontext->canvas, projected[0], projected[1], color);
 }

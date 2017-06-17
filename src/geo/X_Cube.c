@@ -15,6 +15,7 @@
 
 #include "X_Cube.h"
 #include "engine/X_EngineContext.h"
+#include "geo/X_Ray3.h"
 
 void x_cube_init(X_Cube* cube, int width, int height, int depth)
 {
@@ -35,18 +36,17 @@ void x_cube_translate(X_Cube* cube, X_Vec3 translation)
 
 void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
 {
-    X_Vec2 projectedV[8];
-    
-    for(int i = 0; i < 8; ++i)
-        x_viewport_project(&rcontext->cam->viewport, cube->vertices + i, projectedV + i);
-    
     for(int i = 0; i < 4; ++i)
     {   
-        int next = (i != 3 ? i + 1 : 0);
+        int nextVertex = (i != 3 ? i + 1 : 0);
         
-        x_canvas_draw_line(rcontext->canvas, projectedV[i], projectedV[next], color);
-        x_canvas_draw_line(rcontext->canvas, projectedV[i + 4], projectedV[next + 4], color);
-        x_canvas_draw_line(rcontext->canvas, projectedV[i], projectedV[i + 4], color);
+        X_Ray3 topRay = x_ray3_make(cube->vertices[i], cube->vertices[nextVertex]);
+        X_Ray3 bottomRay = x_ray3_make(cube->vertices[i + 4], cube->vertices[nextVertex + 4]);
+        X_Ray3 sideRay = x_ray3_make(cube->vertices[i], cube->vertices[i + 4]);
+        
+        x_ray3d_render(&topRay, rcontext, color);
+        x_ray3d_render(&bottomRay, rcontext, color);
+        x_ray3d_render(&sideRay, rcontext, color);
     }
 }
 

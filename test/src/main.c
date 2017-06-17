@@ -43,9 +43,9 @@ void init_x3d(Context* context, int screenW, int screenH)
     context->cam->base.orientation = x_quaternion_identity();
     
     X_Vec3_fp16x16 axis = x_vec3_make(0, X_FP16x16_ONE, 0);
-    X_Quaternion rotation;
+    X_Quaternion rotation = x_quaternion_identity();
     
-    x_quaternion_init_from_axis_angle(&rotation, &axis, X_ANG_45);
+    //x_quaternion_init_from_axis_angle(&rotation, &axis, X_ANG_45);
     
     X_Quaternion newOrientation;
     x_quaternion_mul(&context->cam->base.orientation, &rotation, &newOrientation);
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     x_file_open_reading(&file, "test");
     x_file_close(&file);
     
-    for(int i = 0; i < 256; ++i)
+    for(int i = 0; i < 1; ++i)
     {
         x_canvas_fill(&context.context.screen.canvas, 0);
         
