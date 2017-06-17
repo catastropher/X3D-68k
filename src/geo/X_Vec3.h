@@ -188,7 +188,10 @@ static inline int x_vec3_length_squared(const X_Vec3* v)
 ////////////////////////////////////////////////////////////////////////////////
 static inline int x_vec3_length(const X_Vec3* v)
 {
-    return x_sqrt(x_vec3_length_squared(v));
+    // Makes sure we don't overflow
+    X_Vec3 shortened = x_vec3_make(v->x >> 4, v->y >> 4, v->z >> 4);
+    
+    return x_sqrt(x_vec3_length_squared(&shortened)) << 2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,8 @@ void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_ang
     viewport->h = h;
     viewport->distToNearPlane = calculate_distance_to_projection_plane(w, fieldOfView);
     
-    viewport->viewFrustum.totalPlanes = 6;
+    /// @todo If we add a far plane, this should be 6
+    viewport->viewFrustum.totalPlanes = 5;
     viewport->viewFrustum.planes = viewport->viewFrustumPlanes;
 }
 

@@ -13,7 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <stdio.h>
+
 #include "X_Frustum.h"
 
-
+void x_frustum_print(const X_Frustum* frustum)
+{
+    printf("Frustum (totalPlanes = %d)\n", frustum->totalPlanes);
+    
+    for(int i = 0; i < frustum->totalPlanes; ++i)
+    {
+        printf("\t%d: ", i);
+        x_plane_print(frustum->planes + i);
+    }
+    
+    printf("\n");
+}
 

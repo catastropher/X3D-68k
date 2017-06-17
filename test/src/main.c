@@ -39,6 +39,14 @@ void init_x3d(Context* context, int screenW, int screenH)
     context->cam = x_cameraobject_new(xContext);
     x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
     x_screen_attach_camera(&xContext->screen, context->cam);
+    
+    X_Vec3 up = x_vec3_make(0, -X_FP16x16_ONE, 0);
+    X_Vec3 right = x_vec3_make(X_FP16x16_ONE, 0, 0);
+    X_Vec3 forward = x_vec3_make(0, 0, X_FP16x16_ONE);
+    X_Vec3 camPos = x_vec3_make(0, 0, 0);
+    
+    x_viewport_update_frustum(&context->cam->viewport, &camPos, &forward, &right, &up);
+    x_frustum_print(&context->cam->viewport.viewFrustum);
 }
 
 void init(Context* context, int screenW, int screenH)
@@ -69,6 +77,8 @@ int main(int argc, char* argv[])
     Context context;
     
     init(&context, 640, 480);
+    
+#if 0
     
     X_Vec2 a = { 10, 10 };
     X_Vec2 b = { 200, 100 };
@@ -104,6 +114,8 @@ int main(int argc, char* argv[])
     }
     
     sleep(3);
+    
+#endif
     cleanup(&context);
 }
 

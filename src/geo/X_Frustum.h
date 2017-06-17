@@ -23,3 +23,5 @@ typedef struct X_Frustum
     int totalPlanes;
 } X_Frustum;
 
+void x_frustum_print(const X_Frustum* frustum);
+
