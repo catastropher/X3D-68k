@@ -16,6 +16,7 @@
 #pragma once
 
 #include "math/X_sqrt.h"
+#include "math/X_fix.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A 3D vector or vertex.
@@ -66,6 +67,16 @@ static inline X_Vec3 x_vec3_origin(void)
 static inline X_Vec3 x_vec3_add(const X_Vec3* a, const X_Vec3* b)
 {
     return x_vec3_make(a->x + b->x, a->y + b->y, a->z + b->z);
+}
+
+static inline X_Vec3 x_vec3_add_scaled(const X_Vec3* a, const X_Vec3* vecToScale, x_fp16x16 scale)
+{
+    return x_vec3_make
+    (
+        a->x + x_fp16x16_mul(vecToScale->x, scale),
+        a->y + x_fp16x16_mul(vecToScale->y, scale),
+        a->z + x_fp16x16_mul(vecToScale->z, scale)
+    );
 }
 
 ////////////////////////////////////////////////////////////////////////////////

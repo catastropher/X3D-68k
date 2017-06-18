@@ -16,13 +16,37 @@
 #pragma once
 
 #include "X_GameObject.h"
+#include "geo/X_Cube.h"
 
 struct X_EngineContext;
 
 typedef struct X_CubeObject
 {
     X_GameObject base;
+    
+    X_Vec3_fp16x16 center;
+    X_Vec3_fp16x16 linearVelocity;
+    X_Vec3_fp16x16 angularVelocity;
+    X_Quaternion orientation;
+    
+    X_Mat4x4 intertia;
+    X_Mat4x4 inverseInertia;
+    
+    x_fp16x16 mass;
+    X_Vec3 forwardVec;
+    X_Vec3 rightVec;
+    X_Vec3 upVec;
+    
+    X_Vec3 force;
+    X_Vec3 torque;
+    
+    X_Cube geometry;
+    X_Vec3 size;
 } X_CubeObject;
 
-X_CubeObject* x_cubeobject_new(struct X_EngineContext* context);
+X_CubeObject* x_cubeobject_new(struct X_EngineContext* context, X_Vec3 pos, int width, int height, int depth);
+
+void x_cubeobject_update_position(X_CubeObject* cube, x_fp16x16 deltaTime);
+void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime);
+void x_cubeobject_render(X_CubeObject* cube, X_RenderContext* rcontext, X_Color color);
 

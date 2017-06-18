@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <math.h>
+
 #include "X_Quaternion.h"
 #include "math/X_trig.h"
 
@@ -86,5 +88,16 @@ void x_quaternion_init_from_euler_angles(X_Quaternion* quat, x_angle256 x, x_ang
     quat->y = x_fp16x16_mul_three(t0, t3, t4) - x_fp16x16_mul_three(t1, t2, t5);
     quat->z = x_fp16x16_mul_three(t0, t2, t5) + x_fp16x16_mul_three(t1, t3, t4);
     quat->w = x_fp16x16_mul_three(t1, t2, t4) - x_fp16x16_mul_three(t0, t3, t5);
+}
+
+void x_quaternion_normalize(X_Quaternion* quat)
+{
+    /// @todo rewrite without floats
+    float len = sqrt((float)quat->x * quat->x + (float)quat->y * quat->y + (float)quat->z * quat->z + (float)quat->w * quat->w);
+    
+    quat->x = (quat->x / len) * 65536.0;
+    quat->y = (quat->y / len) * 65536.0;
+    quat->z = (quat->z / len) * 65536.0;
+    quat->w = (quat->w / len) * 65536.0;
 }
 

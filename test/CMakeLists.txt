@@ -30,4 +30,4 @@ add_executable(xtest
 
 find_package(SDL REQUIRED)
 
-target_link_libraries(xtest X3D SDL)
+target_link_libraries(xtest X3D SDL m)

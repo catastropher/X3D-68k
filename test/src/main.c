@@ -149,15 +149,11 @@ int main(int argc, char* argv[])
     
     x_mat4x4_print(&context.cam->viewMatrix);
     
-    X_Vec2 a = { 10, 10 };
-    X_Vec2 b = { 200, 100 };
+
+    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, 0, 500), 50, 50, 50);
     
-    X_Cube cube;
-    x_cube_init(&cube, 50, 50, 50);
-    
-    X_Cube rotatedCube;
-    
-    int invSqrt3 = (1.0 / sqrt(3)) * 65536;
+    cube->angularVelocity.y = X_FP16x16_ONE / 256;
+    cube->angularVelocity.x = X_FP16x16_ONE / 256;
     
     while(!context.quit)
     {
@@ -165,18 +161,8 @@ int main(int argc, char* argv[])
 
         handle_keys(&context);
         
-        X_Mat4x4 rotation;
-        X_Quaternion quat;
-        
-        X_Vec3_fp16x16 axis = x_vec3_make(invSqrt3, invSqrt3, invSqrt3);
-        x_quaternion_init_from_euler_angles(&quat, 0, 0, 0);
-        //x_quaternion_init_from_axis_angle(&quat, &axis, i);
-        x_quaternion_to_mat4x4(&quat, &rotation);
-        
-        x_cube_transform(&cube, &rotatedCube, &rotation);
-        
-        x_cube_translate(&rotatedCube, x_vec3_make(0, 0, 500));
-        x_cube_render(&rotatedCube, &rcontext, 4);
+        x_cubeobject_update(cube, X_FP16x16_ONE);
+        x_cubeobject_render(cube, &rcontext, 4);
         
         update_screen(&context);
     }
