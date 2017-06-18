@@ -20,12 +20,28 @@
 #include "geo/X_Vec3.h"
 #include "math/X_Quaternion.h"
 
+struct X_GameObject;
+struct X_EngineContext;
+
+typedef struct X_GameObjectEventHandlers
+{
+    void (*onStep)(struct X_EngineContext* context, struct X_GameObject* obj, x_fp16x16 deltaTime);
+} X_GameObjectEventHandlers;
+
+typedef struct X_GameObjectType
+{
+    int typeId;
+    char name[16];
+    X_GameObjectEventHandlers handlers;
+} X_GameObjectType;
+
 typedef struct X_GameObject
 {
     int id;    
     X_Vec3 position;
     X_Vec3 velocity;
     X_Quaternion orientation;
+    X_GameObjectType* type;
 } X_GameObject;
 
 struct X_EngineContext;
