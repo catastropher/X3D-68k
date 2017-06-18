@@ -86,10 +86,6 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const
     X_Vec3 pointOnNearPlane = x_vec3_add(&translation, camPos);
     
     x_plane_init_from_normal_and_point(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);
-    
-    x_vec3_print(forward, "Forward");
-    x_frustum_print(&viewport->viewFrustum);
-    
 }
 
 void x_viewport_project(const X_Viewport* viewport, const X_Vec3* src, X_Vec2* dest)
