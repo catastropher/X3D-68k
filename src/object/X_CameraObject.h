@@ -26,8 +26,12 @@ typedef struct X_CameraObject
 {
     X_GameObject base;
     X_Viewport viewport;
+    X_Mat4x4 viewMatrix;
+    x_angle256 angleX;
+    x_angle256 angleY;
     struct X_CameraObject* nextInCameraList;
 } X_CameraObject;
 
 X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
+void x_cameraobject_update_view(X_CameraObject* cam);
 

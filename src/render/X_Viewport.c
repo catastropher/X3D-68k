@@ -15,6 +15,7 @@
 
 #include "X_Viewport.h"
 #include "math/X_trig.h"
+#include "util/X_util.h"
 
 static inline int calculate_distance_to_projection_plane(int w, x_angle256 fieldOfView)
 {
@@ -85,11 +86,24 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const
     X_Vec3 pointOnNearPlane = x_vec3_add(&translation, camPos);
     
     x_plane_init_from_normal_and_point(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);
+    
+    x_vec3_print(forward, "Forward");
+    x_frustum_print(&viewport->viewFrustum);
+    
 }
 
 void x_viewport_project(const X_Viewport* viewport, const X_Vec3* src, X_Vec2* dest)
 {
     dest->x = src->x * viewport->distToNearPlane / src->z + viewport->w / 2;
     dest->y = src->y * viewport->distToNearPlane / src->z + viewport->h / 2;
+}
+
+void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v)
+{
+    v->x = X_MAX(v->x, viewport->screenPos.x);
+    v->x = X_MIN(v->x, viewport->screenPos.x + viewport->w - 1);
+    
+    v->y = X_MAX(v->y, viewport->screenPos.y);
+    v->y = X_MIN(v->y, viewport->screenPos.y + viewport->h - 1);
 }
 

@@ -13,22 +13,30 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_GameObject.h"
-#include "engine/X_EngineContext.h"
+#include <SDL/SDL.h>
 
-X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
+#define TOTAL_SDL_KEYS 322
+
+_Bool keyState[TOTAL_SDL_KEYS];
+
+void handle_key_events()
 {
-    int objectHandle;
-    X_GameObject* newObject = x_factory_alloc(&context->gameObjectFactory, objectSize, &objectHandle);
-    newObject->id = objectHandle;
-    
-    return newObject;
+    SDL_Event ev;
+    while(SDL_PollEvent(&ev))
+    {
+        if(ev.type == SDL_KEYDOWN)
+        {
+            keyState[ev.key.keysym.sym] = 1;
+        }
+        else if(ev.type == SDL_KEYUP)
+        {
+            keyState[ev.key.keysym.sym] = 0;
+        }
+    }
 }
 
-void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
+_Bool key_is_down(int sdlKey)
 {
-    X_Mat4x4 mat;
-    x_quaternion_to_mat4x4(&obj->orientation, &mat);
-    x_mat4x4_extract_view_vectors(&mat, forwardDest, rightDest, upDest);
+    return keyState[sdlKey];
 }
 

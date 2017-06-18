@@ -35,7 +35,7 @@ void x_cube_translate(X_Cube* cube, X_Vec3 translation)
 }
 
 void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
-{
+{    
     for(int i = 0; i < 4; ++i)
     {   
         int nextVertex = (i != 3 ? i + 1 : 0);

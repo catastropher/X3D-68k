@@ -75,9 +75,16 @@ void x_ray3d_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
     if(!x_ray3_clip_to_frustum(ray, rcontext->viewFrustum, &clipped))
         return;
     
+    X_Ray3 transformed;
+    for(int i = 0; i < 2; ++i)
+        x_mat4x4_transform_vec3(rcontext->viewMatrix, clipped.v + i, transformed.v + i);
+    
     X_Vec2 projected[2];
     for(int i = 0; i < 2; ++i)
-        x_viewport_project(&rcontext->cam->viewport, clipped.v + i, projected + i);
+        x_viewport_project(&rcontext->cam->viewport, transformed.v + i, projected + i);
+    
+    x_viewport_clamp_vec2(&rcontext->cam->viewport, projected + 0);
+    x_viewport_clamp_vec2(&rcontext->cam->viewport, projected + 1);
     
     x_canvas_draw_line(rcontext->canvas, projected[0], projected[1], color);
 }

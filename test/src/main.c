@@ -21,6 +21,7 @@
 #include "palette.h"
 #include "Context.h"
 #include "screen.h"
+#include "keys.h"
 
 _Bool init_sdl(Context* context, int screenW, int screenH)
 {
@@ -58,9 +59,6 @@ void init_x3d(Context* context, int screenW, int screenH)
     x_vec3_print(&forward, "Foreward");
     x_vec3_print(&right, "Right");
     
-//     X_Vec3 up = x_vec3_make(0, -X_FP16x16_ONE, 0);
-//     X_Vec3 right = x_vec3_make(X_FP16x16_ONE, 0, 0);
-//     X_Vec3 forward = x_vec3_make(0, 0, X_FP16x16_ONE);
     X_Vec3 camPos = x_vec3_make(0, 0, 0);
     
     x_viewport_update_frustum(&context->cam->viewport, &camPos, &forward, &right, &up);
@@ -69,6 +67,8 @@ void init_x3d(Context* context, int screenW, int screenH)
 
 void init(Context* context, int screenW, int screenH)
 {
+    context->quit = 0;
+    
     init_sdl(context, screenW, screenH);
     init_x3d(context, screenW, screenH);
     build_color_table(context->screen);
@@ -90,6 +90,43 @@ void cleanup(Context* context)
     cleanup_x3d(context);
 }
 
+void handle_keys(Context* context)
+{
+    handle_key_events();
+    
+    _Bool adjustCam = 0;
+    
+    if(key_is_down(SDLK_UP))
+    {
+        context->cam->angleX--;
+        adjustCam = 1;
+    }
+    else if(key_is_down(SDLK_DOWN))
+    {
+        context->cam->angleX++;
+        adjustCam = 1;
+    }
+    
+    if(key_is_down(SDLK_LEFT))
+    {
+        context->cam->angleY++;
+        adjustCam = 1;
+    }
+    else if(key_is_down(SDLK_RIGHT))
+    {
+        context->cam->angleY--;
+        adjustCam = 1;
+    }
+    
+    if(key_is_down(SDLK_ESCAPE))
+        context->quit = 1;
+    
+    if(adjustCam)
+    {
+        x_cameraobject_update_view(context->cam);
+    }
+}
+
 int main(int argc, char* argv[])
 {
     Context context;
@@ -102,6 +139,15 @@ int main(int argc, char* argv[])
     rcontext.cam = context.cam;
     rcontext.canvas = &context.context.screen.canvas;
     rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
+    rcontext.viewMatrix = &context.cam->viewMatrix;
+    
+    context.cam->angleX = 0;
+    context.cam->angleY = 0;
+    context.cam->base.position = x_vec3_make(0, 0, 0);
+    
+    x_cameraobject_update_view(context.cam);
+    
+    x_mat4x4_print(&context.cam->viewMatrix);
     
     X_Vec2 a = { 10, 10 };
     X_Vec2 b = { 200, 100 };
@@ -113,19 +159,17 @@ int main(int argc, char* argv[])
     
     int invSqrt3 = (1.0 / sqrt(3)) * 65536;
     
-    X_File file;
-    x_file_open_reading(&file, "test");
-    x_file_close(&file);
-    
-    for(int i = 0; i < 512; ++i)
+    while(!context.quit)
     {
         x_canvas_fill(&context.context.screen.canvas, 0);
+
+        handle_keys(&context);
         
         X_Mat4x4 rotation;
         X_Quaternion quat;
         
         X_Vec3_fp16x16 axis = x_vec3_make(invSqrt3, invSqrt3, invSqrt3);
-        x_quaternion_init_from_euler_angles(&quat, i, i, 0);
+        x_quaternion_init_from_euler_angles(&quat, 0, 0, 0);
         //x_quaternion_init_from_axis_angle(&quat, &axis, i);
         x_quaternion_to_mat4x4(&quat, &rotation);
         
@@ -136,8 +180,6 @@ int main(int argc, char* argv[])
         
         update_screen(&context);
     }
-    
-    sleep(3);
     
 #endif
     cleanup(&context);

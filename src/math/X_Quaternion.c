@@ -72,6 +72,9 @@ void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest)
 
 void x_quaternion_init_from_euler_angles(X_Quaternion* quat, x_angle256 x, x_angle256 y, x_angle256 z)
 {
+    y = X_ANG_180 - y;
+    z = X_ANG_180 - z;
+    
     x_fp16x16 t0 = x_cos(x / 2);
     x_fp16x16 t1 = x_sin(x / 2);
     x_fp16x16 t2 = x_cos(z / 2);

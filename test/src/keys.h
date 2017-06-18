@@ -13,22 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_GameObject.h"
-#include "engine/X_EngineContext.h"
+#pragma once
 
-X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
-{
-    int objectHandle;
-    X_GameObject* newObject = x_factory_alloc(&context->gameObjectFactory, objectSize, &objectHandle);
-    newObject->id = objectHandle;
-    
-    return newObject;
-}
-
-void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
-{
-    X_Mat4x4 mat;
-    x_quaternion_to_mat4x4(&obj->orientation, &mat);
-    x_mat4x4_extract_view_vectors(&mat, forwardDest, rightDest, upDest);
-}
+void handle_key_events();
+_Bool key_is_down(int sdlKey);
 

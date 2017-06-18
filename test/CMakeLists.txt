@@ -22,6 +22,7 @@ project(xtest C)
 include_directories(/usr/local/include/X3D)
 
 add_executable(xtest
+    src/keys.c
     src/main.c
     src/palette.c
     src/screen.c

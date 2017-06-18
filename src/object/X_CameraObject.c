@@ -25,3 +25,24 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     return (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
 }
 
+void x_cameraobject_update_view(X_CameraObject* cam)
+{
+    X_Mat4x4 xRotation;
+    x_mat4x4_load_x_rotation(&xRotation, cam->angleX);
+    
+    X_Mat4x4 yRotation;
+    x_mat4x4_load_y_rotation(&yRotation, cam->angleY);
+    
+    x_mat4x4_mul(&xRotation, &yRotation, &cam->viewMatrix);    
+    
+    cam->viewMatrix.elem[0][3] = -cam->base.position.x >> 16;
+    cam->viewMatrix.elem[1][3] = -cam->base.position.y >> 16;
+    cam->viewMatrix.elem[2][3] = -cam->base.position.z >> 16;
+    
+    X_Vec3 camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
+    
+    X_Vec3 forward, up, right;
+    x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
+    x_viewport_update_frustum(&cam->viewport, &camPos, &forward, &right, &up);
+}
+

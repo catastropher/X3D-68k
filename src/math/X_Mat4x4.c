@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <stdio.h>
+
 #include "X_Mat4x4.h"
 #include "util/X_util.h"
 #include "X_trig.h"
@@ -193,6 +195,37 @@ void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const X_Vec3* src, X_Vec3* des
     dest->x = res.x / res.w;
     dest->y = res.y / res.w;
     dest->z = res.z / res.w;
+}
+
+void x_mat4x4_print(const X_Mat4x4* mat)
+{
+    for(int i = 0; i < 4; ++i)
+    {
+        for(int j = 0; j < 4; ++j)
+        {
+            printf("%f\t", x_fp16x16_to_float(mat->elem[i][j]));
+        }
+        
+        printf("\n");
+    }
+    
+    printf("\n");
+}
+
+void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
+{
+    X_Vec4 right;
+    x_mat4x4_get_row(mat, 0, &right);
+    *rightDest = x_vec4_to_vec3(&right);
+    
+    X_Vec4 up;
+    x_mat4x4_get_row(mat, 1, &up);
+    *upDest = x_vec4_to_vec3(&up);
+    *upDest = x_vec3_neg(upDest);
+    
+    X_Vec4 forward;
+    x_mat4x4_get_row(mat, 2, &forward);
+    *forwardDest = x_vec4_to_vec3(&forward);
 }
 
 
