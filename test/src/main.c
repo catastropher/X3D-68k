@@ -150,12 +150,12 @@ int main(int argc, char* argv[])
     x_mat4x4_print(&context.cam->viewMatrix);
     
 
-    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, 0, 500), 50, 50, 50, 100 << 16);
+    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, 0, 500), 50, 50, 50, 100);
     
-    //cube->angularVelocity.y = X_FP16x16_ONE / 256;
-    //cube->angularVelocity.x = X_FP16x16_ONE / 256;
+//     cube->angularVelocity.y = X_FP16x16_ONE / 256;
+//     cube->angularVelocity.x = X_FP16x16_ONE / 256;
     
-    x_cubeobject_apply_force(cube, x_vec3_make(0, 0, X_FP16x16_ONE * 100));
+    x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 30000), x_vec3_make(50, 5, 500 - 50));
     
     while(!context.quit)
     {
@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
 
         handle_keys(&context);
         
-        x_cubeobject_update(cube, X_FP16x16_ONE);
+        x_cubeobject_update(cube, 65536.0 / 60);
         x_cubeobject_render(cube, &rcontext, 4);
         
         update_screen(&context);

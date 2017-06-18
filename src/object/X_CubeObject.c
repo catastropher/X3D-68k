@@ -49,6 +49,46 @@ static void reset_forces(X_CubeObject* cube)
     cube->force = x_vec3_make(0, 0, 0);
 }
 
+static void calculate_inverse_static_inertia(X_CubeObject* cube)
+{
+    int xx = cube->size.x * cube->size.x;
+    int yy = cube->size.y * cube->size.y;
+    int zz = cube->size.z * cube->size.z;
+    int massOverTwelve = cube->mass / 12;
+    
+    int inertiaX = (yy + zz) * massOverTwelve;
+    int inertiaY = (xx + zz) * massOverTwelve;
+    int inertiaZ = (xx + yy) * massOverTwelve;
+    
+    X_Mat4x4 inertia =
+    {
+        {
+            { inertiaX, 0, 0, 0 },
+            { 0, inertiaY, 0, 0 },
+            { 0, 0, inertiaZ, 0 },
+            { 0, 0, 0, X_FP16x16_ONE }
+        }
+    };
+    
+    x_mat4x4_invert_diagonal(&inertia, &cube->inverseStaticInertia);
+    
+    x_mat4x4_print(&inertia);
+    x_mat4x4_print(&cube->inverseStaticInertia);
+}
+
+static void calculate_inverse_inertia(X_CubeObject* cube)
+{
+    X_Mat4x4 transform;
+    x_quaternion_to_mat4x4(&cube->orientation, &transform);
+    
+    X_Mat4x4 temp;
+    x_mat4x4_mul(&cube->inverseStaticInertia, &transform, &temp);
+    
+    x_mat4x4_transpose_3x3(&transform);
+    
+    x_mat4x4_mul(&transform, &temp, &cube->inverseInertia);    
+}
+
 X_CubeObject* x_cubeobject_new(X_EngineContext* context, X_Vec3 pos, int width, int height, int depth, int mass)
 {
     X_CubeObject* cube = (X_CubeObject*)x_gameobject_new(context, sizeof(X_CubeObject));
@@ -61,7 +101,9 @@ X_CubeObject* x_cubeobject_new(X_EngineContext* context, X_Vec3 pos, int width, 
     cube->orientation = x_quaternion_identity();
     
     cube->mass = mass;
-    cube->invMass = x_fp16x16_div(X_FP16x16_ONE, mass);
+    cube->invMass = X_FP16x16_ONE / mass;
+    
+    calculate_inverse_static_inertia(cube);
     
     reset_forces(cube);
     
@@ -80,10 +122,18 @@ void x_cubeobject_update_position(X_CubeObject* cube, x_fp16x16 deltaTime)
 static void update_velocity(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
     cube->linearVelocity = x_vec3_add_scaled(&cube->linearVelocity, &cube->force, x_fp16x16_mul(deltaTime, cube->invMass));
+    
+    //x_vec3_print(&cube->linearVelocity, "Linear velocity");
+    
+    X_Vec3_fp16x16 dAngularVelocity;
+    x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &cube->torque, &dAngularVelocity);
+    
+    cube->angularVelocity = x_vec3_add_scaled(&cube->angularVelocity, &dAngularVelocity, deltaTime);
 }
 
 void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
+    calculate_inverse_inertia(cube);
     update_velocity(cube, deltaTime);
     reset_forces(cube);
     x_cubeobject_update_position(cube, deltaTime);
@@ -95,7 +145,16 @@ void x_cubeobject_render(X_CubeObject* cube, X_RenderContext* rcontext, X_Color 
     x_cube_render(&cube->geometry, rcontext, color);
 }
 
-void x_cubeobject_apply_force(X_CubeObject* cube, X_Vec3_fp16x16 force)
+void x_cubeobject_apply_force(X_CubeObject* cube, X_Vec3_fp16x16 force, X_Vec3 pointOfContact)
 {
     cube->force = x_vec3_add(&cube->force, &force);
+    
+    X_Vec3 center = x_vec3_fp16x16_to_vec3(&cube->center);
+    X_Vec3 pointRelative = x_vec3_sub(&pointOfContact, &center);
+    X_Vec3_fp16x16 torque = x_vec3_cross(&pointRelative, &force);
+    
+    cube->torque = x_vec3_add(&cube->torque, &torque);
+    
+    x_vec3_print(&torque, "Torque");
+    x_vec3_print(&pointRelative, "Relative");
 }
