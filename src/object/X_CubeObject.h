@@ -33,6 +33,8 @@ typedef struct X_CubeObject
     X_Mat4x4 inverseInertia;
     
     x_fp16x16 mass;
+    x_fp16x16 invMass;
+    
     X_Vec3 forwardVec;
     X_Vec3 rightVec;
     X_Vec3 upVec;
@@ -44,9 +46,10 @@ typedef struct X_CubeObject
     X_Vec3 size;
 } X_CubeObject;
 
-X_CubeObject* x_cubeobject_new(struct X_EngineContext* context, X_Vec3 pos, int width, int height, int depth);
+X_CubeObject* x_cubeobject_new(struct X_EngineContext* context, X_Vec3 pos, int width, int height, int depth, int mass);
 
 void x_cubeobject_update_position(X_CubeObject* cube, x_fp16x16 deltaTime);
 void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime);
 void x_cubeobject_render(X_CubeObject* cube, X_RenderContext* rcontext, X_Color color);
+void x_cubeobject_apply_force(X_CubeObject* cube, X_Vec3_fp16x16 force);
 

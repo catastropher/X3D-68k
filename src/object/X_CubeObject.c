@@ -43,7 +43,13 @@ static void update_geometry(X_CubeObject* cube)
     x_cube_transform(&cube->geometry, &cube->geometry, &mat);
 }
 
-X_CubeObject* x_cubeobject_new(X_EngineContext* context, X_Vec3 pos, int width, int height, int depth)
+static void reset_forces(X_CubeObject* cube)
+{
+    cube->torque = x_vec3_make(0, 0, 0);
+    cube->force = x_vec3_make(0, 0, 0);
+}
+
+X_CubeObject* x_cubeobject_new(X_EngineContext* context, X_Vec3 pos, int width, int height, int depth, int mass)
 {
     X_CubeObject* cube = (X_CubeObject*)x_gameobject_new(context, sizeof(X_CubeObject));
     
@@ -53,6 +59,11 @@ X_CubeObject* x_cubeobject_new(X_EngineContext* context, X_Vec3 pos, int width, 
     cube->angularVelocity = x_vec3_make(0, 0, 0);
     cube->linearVelocity = x_vec3_make(0, 0, 0);
     cube->orientation = x_quaternion_identity();
+    
+    cube->mass = mass;
+    cube->invMass = x_fp16x16_div(X_FP16x16_ONE, mass);
+    
+    reset_forces(cube);
     
     update_geometry(cube);
     
@@ -66,8 +77,15 @@ void x_cubeobject_update_position(X_CubeObject* cube, x_fp16x16 deltaTime)
     update_orientation(cube, deltaTime);
 }
 
+static void update_velocity(X_CubeObject* cube, x_fp16x16 deltaTime)
+{
+    cube->linearVelocity = x_vec3_add_scaled(&cube->linearVelocity, &cube->force, x_fp16x16_mul(deltaTime, cube->invMass));
+}
+
 void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
+    update_velocity(cube, deltaTime);
+    reset_forces(cube);
     x_cubeobject_update_position(cube, deltaTime);
     update_geometry(cube);
 }
@@ -75,4 +93,9 @@ void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime)
 void x_cubeobject_render(X_CubeObject* cube, X_RenderContext* rcontext, X_Color color)
 {
     x_cube_render(&cube->geometry, rcontext, color);
+}
+
+void x_cubeobject_apply_force(X_CubeObject* cube, X_Vec3_fp16x16 force)
+{
+    cube->force = x_vec3_add(&cube->force, &force);
 }
