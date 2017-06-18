@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     x_file_open_reading(&file, "test");
     x_file_close(&file);
     
-    for(int i = 0; i < 1; ++i)
+    for(int i = 0; i < 512; ++i)
     {
         x_canvas_fill(&context.context.screen.canvas, 0);
         
@@ -125,7 +125,8 @@ int main(int argc, char* argv[])
         X_Quaternion quat;
         
         X_Vec3_fp16x16 axis = x_vec3_make(invSqrt3, invSqrt3, invSqrt3);
-        x_quaternion_init_from_axis_angle(&quat, &axis, i);
+        x_quaternion_init_from_euler_angles(&quat, i, i, 0);
+        //x_quaternion_init_from_axis_angle(&quat, &axis, i);
         x_quaternion_to_mat4x4(&quat, &rotation);
         
         x_cube_transform(&cube, &rotatedCube, &rotation);

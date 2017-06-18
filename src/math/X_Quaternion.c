@@ -70,3 +70,18 @@ void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest)
     dest->elem[3][3] = X_FP16x16_ONE;
 }
 
+void x_quaternion_init_from_euler_angles(X_Quaternion* quat, x_angle256 x, x_angle256 y, x_angle256 z)
+{
+    x_fp16x16 t0 = x_cos(x / 2);
+    x_fp16x16 t1 = x_sin(x / 2);
+    x_fp16x16 t2 = x_cos(z / 2);
+    x_fp16x16 t3 = x_sin(z / 2);
+    x_fp16x16 t4 = x_cos(y / 2);
+    x_fp16x16 t5 = x_sin(y / 2);
+    
+    quat->x = x_fp16x16_mul_three(t0, t2, t4) + x_fp16x16_mul_three(t1, t3, t5);
+    quat->y = x_fp16x16_mul_three(t0, t3, t4) - x_fp16x16_mul_three(t1, t2, t5);
+    quat->z = x_fp16x16_mul_three(t0, t2, t5) + x_fp16x16_mul_three(t1, t3, t4);
+    quat->w = x_fp16x16_mul_three(t1, t2, t4) - x_fp16x16_mul_three(t0, t3, t5);
+}
+

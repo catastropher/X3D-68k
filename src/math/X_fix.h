@@ -52,6 +52,11 @@ static inline x_fp16x16 x_fp16x16_mul(x_fp16x16 a, x_fp16x16 b)
     return ((x_fp32x32)a * b) >> 16;
 }
 
+static inline x_fp16x16 x_fp16x16_mul_three(x_fp16x16 a, x_fp16x16 b, x_fp16x16 c)
+{
+    return x_fp16x16_mul(a, x_fp16x16_mul(b, c));
+}
+
 static inline int x_lerp(int x0, int x1, x_fp16x16 t)
 {
     return x0 + (((x1 - x0) * t) >> 16);
