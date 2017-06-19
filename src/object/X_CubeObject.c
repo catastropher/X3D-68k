@@ -15,6 +15,7 @@
 
 #include "X_CubeObject.h"
 #include "engine/X_EngineContext.h"
+#include "util/X_util.h"
 
 static void update_orientation(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
@@ -51,9 +52,13 @@ static void reset_forces(X_CubeObject* cube)
 
 static void calculate_inverse_static_inertia(X_CubeObject* cube)
 {
-    int xx = cube->size.x * cube->size.x;
-    int yy = cube->size.y * cube->size.y;
-    int zz = cube->size.z * cube->size.z;
+    int x = cube->size.x;
+    int y = cube->size.y;
+    int z = cube->size.z;
+    
+    int xx = (x * x);
+    int yy = (y * y);
+    int zz = (z * z);
     int massOverTwelve = cube->mass / 12;
     
     int inertiaX = (yy + zz) * massOverTwelve;
@@ -101,7 +106,7 @@ X_CubeObject* x_cubeobject_new(X_EngineContext* context, X_Vec3 pos, int width, 
     cube->orientation = x_quaternion_identity();
     
     cube->mass = mass;
-    cube->invMass = X_FP16x16_ONE / mass;
+    cube->invMass = x_fp16x16_div(X_FP16x16_ONE, mass);
     
     calculate_inverse_static_inertia(cube);
     
@@ -131,8 +136,52 @@ static void update_velocity(X_CubeObject* cube, x_fp16x16 deltaTime)
     cube->angularVelocity = x_vec3_add_scaled(&cube->angularVelocity, &dAngularVelocity, deltaTime);
 }
 
+static void calculate_velocity_of_point(const X_CubeObject* cube, const X_Vec3* point, X_Vec3_fp16x16* velocityDest)
+{
+    X_Vec3 center = x_vec3_fp16x16_to_vec3(&cube->center);
+    X_Vec3 relativeToCenter = x_vec3_sub(point, &center);
+    X_Vec3 rotationalVelocity = x_vec3_cross(&cube->angularVelocity, &relativeToCenter);
+    
+    *velocityDest = x_vec3_add(&cube->linearVelocity, &rotationalVelocity);
+}
+
+static void handle_collision_with_xz_plane(X_CubeObject* cube)
+{
+    int maxPen = 0;
+    
+    int hitV[8];
+    int totalHitV = 0;
+    
+    for(int i = 0; i < 8; ++i)
+    {
+        if(cube->geometry.vertices[i].y > 0)
+        {
+            hitV[totalHitV++] = i;
+            maxPen = X_MAX(maxPen, cube->geometry.vertices[i].y);
+        }
+    }
+
+    x_fp16x16 force;
+    
+    _Bool collide = totalHitV > 0;
+    if(collide)
+    {
+        for(int i = 0; i < totalHitV; ++i)
+        {
+            X_Vec3_fp16x16 force = x_vec3_make(0, -2 * cube->linearVelocity.y / totalHitV, 0);
+            x_cubeobject_apply_force(cube, force, cube->geometry.vertices[hitV[i]]);
+        }
+        
+        //cube->linearVelocity.y = -cube->linearVelocity.y;
+        cube->center.y -= (maxPen) << 16;
+    }
+}
+
 void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
+    cube->linearVelocity.y += 65536 * 1;
+    
+    handle_collision_with_xz_plane(cube);
     calculate_inverse_inertia(cube);
     update_velocity(cube, deltaTime);
     reset_forces(cube);
