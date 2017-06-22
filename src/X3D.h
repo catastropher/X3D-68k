@@ -19,6 +19,7 @@
 #include "geo/X_Cube.h"
 #include "geo/X_Frustum.h"
 #include "geo/X_Plane.h"
+#include "geo/X_Polygon3.h"
 #include "geo/X_Ray3.h"
 #include "geo/X_Vec2.h"
 #include "geo/X_Vec3.h"

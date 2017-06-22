@@ -15,7 +15,8 @@
 
 #include "X_Cube.h"
 #include "engine/X_EngineContext.h"
-#include "geo/X_Ray3.h"
+#include "X_Ray3.h"
+#include "X_Polygon3.h"
 
 void x_cube_init(X_Cube* cube, int width, int height, int depth)
 {
@@ -58,26 +59,28 @@ void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat)
     }
 }
 
-void x_cube_get_face(const X_Cube* cube, int faceId, X_Vec3_fp16x16 dest[4])
+void x_cube_get_face(const X_Cube* cube, int faceId, X_Polygon3* dest)
 {
+    dest->totalVertices = 4;
+    
     if(faceId == 0)
     {
         for(int i = 0; i < 4; ++i)
-            dest[3 - i] = cube->vertices[i];
+            dest->vertices[3 - i] = cube->vertices[i];
     }
     else if(faceId == 1)
     {
          for(int i = 0; i < 4; ++i)
-            dest[i] = cube->vertices[i + 4];
+            dest->vertices[i] = cube->vertices[i + 4];
     }
     else
     {
         int sideId = faceId - 2;
         int next = (sideId != 3 ? sideId + 1 : 0);
-        dest[0] = cube->vertices[sideId];
-        dest[1] = cube->vertices[next];
-        dest[2] = cube->vertices[next + 4];
-        dest[3] = cube->vertices[sideId + 4];
+        dest->vertices[0] = cube->vertices[sideId];
+        dest->vertices[1] = cube->vertices[next];
+        dest->vertices[2] = cube->vertices[next + 4];
+        dest->vertices[3] = cube->vertices[sideId + 4];
     }
 }
 

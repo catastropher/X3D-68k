@@ -32,6 +32,7 @@ add_library(X3D STATIC
     src/geo/X_Cube.c
     src/geo/X_Frustum.c
     src/geo/X_Plane.c
+    src/geo/X_Polygon3.c
     src/geo/X_Ray3.c
     src/geo/X_Vec3.c
     

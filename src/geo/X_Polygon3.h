@@ -16,19 +16,19 @@
 #pragma once
 
 #include "X_Vec3.h"
-#include "render/X_RenderContext.h"
-#include "math/X_Mat4x4.h"
 
-struct X_Polygon3;
+struct X_Plane;
 
-typedef struct X_Cube
+typedef struct X_Polygon3
 {
-    X_Vec3 vertices[8];
-} X_Cube;
+    int totalVertices;
+    X_Vec3* vertices;
+} X_Polygon3;
 
-void x_cube_init(X_Cube* cube, int width, int height, int depth);
-void x_cube_translate(X_Cube* cube, X_Vec3 translation);
-void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color);
-void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat);
-void x_cube_get_face(const X_Cube* cube, int faceId, struct X_Polygon3* dest);
+_Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const struct X_Plane* plane, X_Polygon3* dest);
+
+static inline X_Polygon3 x_polygon3_make(X_Vec3* vertices, int totalVertices)
+{
+    return (X_Polygon3) { totalVertices, vertices };
+}
 

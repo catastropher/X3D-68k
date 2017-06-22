@@ -16,6 +16,7 @@
 #include "X_CubeObject.h"
 #include "engine/X_EngineContext.h"
 #include "util/X_util.h"
+#include "geo/X_Polygon3.h"
 
 static void update_orientation(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
@@ -33,12 +34,14 @@ static void update_orientation(X_CubeObject* cube, x_fp16x16 deltaTime)
 
 static void calculate_normals(X_CubeObject* cube)
 {
-    X_Vec3 face[4];
+    X_Vec3 faceVertices[4];
+    X_Polygon3 face = x_polygon3_make(faceVertices, 4);
+    
     for(int i = 0; i < 6; ++i)
     {
-        x_cube_get_face(&cube->geometry, i, face);
+        x_cube_get_face(&cube->geometry, i, &face);
         X_Plane plane;
-        x_plane_init_from_three_points(&plane, face + 0, face + 1, face + 2);
+        x_plane_init_from_three_points(&plane, faceVertices + 0, faceVertices + 1, faceVertices + 2);
         
         cube->normals[i] = plane.normal;
         
