@@ -150,13 +150,13 @@ int main(int argc, char* argv[])
     x_mat4x4_print(&context.cam->viewMatrix);
     
 
-    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, 0, 500), 50, 50, 50, .25 * 65536);
+    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -200, 500), 50, 50, 50, 1.0 * 65536);
     
-//     cube->angularVelocity.y = X_FP16x16_ONE / 256;
-//     cube->angularVelocity.x = X_FP16x16_ONE / 256;
+    //cube->angularVelocity.y = X_FP16x16_ONE;
+    cube->angularVelocity.x = X_FP16x16_ONE;
     
-    x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60 * 5), x_vec3_make(50, 0, 500 - 50));
-    
+    //x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60 * 5), x_vec3_make(50, 0, 500 - 50));
+     
     while(!context.quit)
     {
         x_canvas_fill(&context.context.screen.canvas, 0);
@@ -167,6 +167,11 @@ int main(int argc, char* argv[])
         x_cubeobject_render(cube, &rcontext, 4);
         
         update_screen(&context);
+        
+        while(!key_is_down(SDLK_RETURN) && !context.quit)
+            handle_keys(&context);
+//         
+        //SDL_Delay(200);
     }
     
 #endif

@@ -33,6 +33,7 @@ typedef X_Vec3 X_Vec3_fp16x16;
 
 void x_vec3_fp16x16_normalize(X_Vec3_fp16x16* v);
 void x_vec3_print(const X_Vec3* v, const char* label);
+void x_vec3_fp16x16_print(const X_Vec3_fp16x16* v, const char* label);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Initializes a 3D vector with the given coordinates.
@@ -158,6 +159,11 @@ static inline int x_vec3_dot(const X_Vec3* a, const X_Vec3* b)
     return a->x * b->x + a->y * b->y + a->z * b->z;
 }
 
+static inline x_fp16x16 x_vec3_fp16x16_dot(const X_Vec3* a, const X_Vec3* b)
+{
+    return x_fp16x16_mul(a->x, b->x) + x_fp16x16_mul(a->y, b->y) + x_fp16x16_mul(a->z, b->z);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculates the cross product of two 3D vectors, which is a vector that is
 ///     orthogonal (perpendicular) to both a and b.
@@ -172,6 +178,15 @@ static inline X_Vec3 x_vec3_cross(const X_Vec3* a, const X_Vec3* b)
         a->y * b->z - b->y * a->z,
         a->z * b->x - b->z * a->x,
         a->x * b->y - b->x * a->y
+    );
+}
+
+static inline X_Vec3 x_vec3_fp16x16_cross(const X_Vec3* a, const X_Vec3* b)
+{
+    return x_vec3_make(
+        x_fp16x16_mul(a->y, b->z) - x_fp16x16_mul(b->y, a->z),
+        x_fp16x16_mul(a->z, b->x) - x_fp16x16_mul(b->z, a->x),
+        x_fp16x16_mul(a->x, b->y) - x_fp16x16_mul(b->x, a->y)
     );
 }
 

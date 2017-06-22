@@ -46,6 +46,7 @@ void x_mat4x4_transform_vec4_fp16x16(const X_Mat4x4* mat, const X_Vec4* src, X_V
 void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* src, X_Vec3* dest);
 
 void x_mat4x4_print(const X_Mat4x4* mat);
+void x_mat4x4_print_machine_readable(const X_Mat4x4* mat);
 
 void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest);
 void x_mat4x4_invert_diagonal(const X_Mat4x4* mat, X_Mat4x4* dest);

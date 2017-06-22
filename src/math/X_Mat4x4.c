@@ -247,6 +247,28 @@ void x_mat4x4_print(const X_Mat4x4* mat)
     printf("\n");
 }
 
+void x_mat4x4_print_machine_readable(const X_Mat4x4* mat)
+{
+    printf("{");
+    for(int i = 0; i < 4; ++i)
+    {
+        printf("{");
+        for(int j = 0; j < 4; ++j)
+        {
+            printf("%f", x_fp16x16_to_float(mat->elem[i][j]));
+            
+            if(j != 3)
+                printf(",");
+        }
+        printf("}");
+        
+        if(i != 3)
+            printf(",");
+    }
+    
+    printf("}\n");
+}
+
 void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
 {
     X_Vec4 right;
