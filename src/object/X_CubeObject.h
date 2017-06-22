@@ -44,6 +44,8 @@ typedef struct X_CubeObject
     
     X_Mat4x4 inverseStaticInertia;
     X_Mat4x4 inverseInertia;
+    
+    X_Vec3_fp16x16 normals[6];
 } X_CubeObject;
 
 X_CubeObject* x_cubeobject_new(struct X_EngineContext* context, X_Vec3 pos, int width, int height, int depth, int mass);

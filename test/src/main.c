@@ -164,7 +164,7 @@ int main(int argc, char* argv[])
         handle_keys(&context);
         
         x_cubeobject_update(cube, 65536.0 / 60);
-        x_cubeobject_render(cube, &rcontext, 4);
+        x_cubeobject_render(cube, &rcontext, 255);
         
         update_screen(&context);
         
