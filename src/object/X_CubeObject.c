@@ -198,32 +198,41 @@ static void calculate_velocity_of_point(const X_CubeObject* cube, const X_Vec3* 
     *velocityDest = x_vec3_add(&cube->linearVelocity, &rotationalVelocity);
 }
 
-static x_fp16x16 calculate_impulse(X_CubeObject* cube, X_Vec3 pointOfContact, X_Vec3* r, x_fp16x16 deltaTime)
+typedef struct Collision
+{
+    X_Vec3 r0;
+    X_Vec3 r1;
+    X_Vec3 normal;
+    X_Vec3 dv;
+    x_fp16x16 elasticity;
+} Collision;
+
+static void init_collision(Collision* c, X_CubeObject* cube, X_Vec3 pointOfContact, X_Vec3_fp16x16* normal, x_fp16x16 elasticity)
 {
     X_Vec3 center = x_vec3_fp16x16_to_vec3(&cube->center);
-    X_Vec3 r1 = x_vec3_sub(&pointOfContact, &center);
-    *r = r1;
+    c->r0 = x_vec3_sub(&pointOfContact, &center);
+    c->r1 = x_vec3_origin();
+    c->normal = *normal;
     
     X_Vec3_fp16x16 v0;
     calculate_velocity_of_point(cube, &pointOfContact, &v0);
     
-    // We're assuming the ground doesn't move!
-    X_Vec3_fp16x16 v1 = x_vec3_origin();
-    
-    X_Vec3_fp16x16 normal = x_vec3_make(0, -X_FP16x16_ONE, 0);
-    X_Vec3_fp16x16 dv = x_vec3_sub(&v0, &v1);
-    
+    c->dv = v0;
+}
+
+static x_fp16x16 calculate_impulse(X_CubeObject* cube, x_fp16x16 deltaTime, Collision* c)
+{
     x_fp16x16 inverseMass0 = cube->invMass;
     x_fp16x16 inverseMass1 = 0;     // Infinite mass
     
-    X_Vec3_fp16x16 temp = x_vec3_cross(&r1, &normal);
+    X_Vec3_fp16x16 temp = x_vec3_cross(&c->r0, &c->normal);
     X_Vec3_fp16x16 temp2;
     x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &temp, &temp2);
     
-    X_Vec3_fp16x16 temp3 = x_vec3_cross(&temp2, &r1);
+    X_Vec3_fp16x16 temp3 = x_vec3_cross(&temp2, &c->r0);
     
-    x_fp16x16 constraintMass = inverseMass0 + inverseMass1 + x_vec3_fp16x16_dot(&normal, &temp3);
-    x_fp16x16 n = x_fp16x16_mul(-1.0 * 65536, x_vec3_fp16x16_dot(&dv, &normal));
+    x_fp16x16 constraintMass = inverseMass0 + inverseMass1 + x_vec3_fp16x16_dot(&c->normal, &temp3);
+    x_fp16x16 n = -x_fp16x16_mul(X_FP16x16_ONE + c->elasticity, x_vec3_fp16x16_dot(&c->dv, &c->normal));
     
     return x_fp16x16_div(n, constraintMass);
 }
@@ -281,10 +290,9 @@ static int calculate_max_penetration_depth(X_CubeObject* cube)
     return maxPen;
 }
 
-static void apply_impulse_to_point(X_CubeObject* cube, X_Vec3* point, X_Vec3_fp16x16* resolutionNormal, x_fp16x16 deltaTime)
+static void apply_impulse_to_point(X_CubeObject* cube, x_fp16x16 deltaTime, Collision* c)
 {
-    X_Vec3 r;
-    x_fp16x16 impulse = calculate_impulse(cube, *point, &r, deltaTime);
+    x_fp16x16 impulse = calculate_impulse(cube, deltaTime, c);
     
     if(impulse < 0)
         impulse = 0;
@@ -292,16 +300,21 @@ static void apply_impulse_to_point(X_CubeObject* cube, X_Vec3* point, X_Vec3_fp1
     x_fp16x16 normalCoefficient = x_fp16x16_mul(impulse, cube->invMass);        
 
     X_Vec3_fp16x16 dAdd = x_vec3_origin();
-    dAdd = x_vec3_add_scaled(&dAdd, resolutionNormal, normalCoefficient);
+    dAdd = x_vec3_add_scaled(&dAdd, &c->normal, normalCoefficient);
     
-    X_Vec3_fp16x16 scaledNormal = x_vec3_make(0, x_fp16x16_mul(resolutionNormal->y, impulse), 0);
-    X_Vec3 temp = x_vec3_cross(&r, &scaledNormal);
+    X_Vec3_fp16x16 scaledNormal = x_vec3_make(0, x_fp16x16_mul(c->normal.y, impulse), 0);
+    X_Vec3 temp = x_vec3_cross(&c->r0, &scaledNormal);
     
     X_Vec3 dAngular;
     x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &temp, &dAngular);
     
     cube->linearVelocity = x_vec3_add(&cube->linearVelocity, &dAdd);
     cube->angularVelocity = x_vec3_add(&cube->angularVelocity, &dAngular);
+}
+
+static void calculate_friction_direction(X_CubeObject* cube, X_Vec3* dir)
+{
+    //*dir = x_vec3_add_scaled(&cube->v)
 }
 
 static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaTime)
@@ -326,7 +339,10 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
     
     for(int i = 0; i < clipped.totalVertices; ++i)
     {
-        apply_impulse_to_point(cube, clipped.vertices + i, &resolutionNormal, deltaTime);
+        Collision c;
+        init_collision(&c, cube, clipped.vertices[i], &resolutionNormal, 0 * 65536);
+        
+        apply_impulse_to_point(cube, deltaTime, &c);
     }
     
     return 1;
