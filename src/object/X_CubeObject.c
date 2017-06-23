@@ -139,9 +139,15 @@ static void update_velocity(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
     cube->linearVelocity = x_vec3_add_scaled(&cube->linearVelocity, &cube->force, x_fp16x16_mul(deltaTime, cube->invMass));
     
+    if(x_vec3_fp16x16_length(&cube->linearVelocity) < (int)(.01 * 65536))
+        cube->linearVelocity = x_vec3_origin();
+    
     X_Vec3_fp16x16 dAngularVelocity;
     x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &cube->torque, &dAngularVelocity);    
     cube->angularVelocity = x_vec3_add_scaled(&cube->angularVelocity, &dAngularVelocity, deltaTime);
+    
+    if(x_vec3_fp16x16_length(&cube->angularVelocity) < (int)(.01 * 65536))
+        cube->angularVelocity = x_vec3_origin();
 }
 
 static int determine_point_furthest_along_normal(X_CubeObject* cube, X_Vec3_fp16x16* normal)
@@ -213,6 +219,7 @@ static void init_collision(Collision* c, X_CubeObject* cube, X_Vec3 pointOfConta
     c->r0 = x_vec3_sub(&pointOfContact, &center);
     c->r1 = x_vec3_origin();
     c->normal = *normal;
+    c->elasticity = elasticity;
     
     X_Vec3_fp16x16 v0;
     calculate_velocity_of_point(cube, &pointOfContact, &v0);
@@ -290,13 +297,8 @@ static int calculate_max_penetration_depth(X_CubeObject* cube)
     return maxPen;
 }
 
-static void apply_impulse_to_point(X_CubeObject* cube, x_fp16x16 deltaTime, Collision* c)
+static void apply_impulse_to_point(X_CubeObject* cube, x_fp16x16 deltaTime, Collision* c, x_fp16x16 impulse)
 {
-    x_fp16x16 impulse = calculate_impulse(cube, deltaTime, c);
-    
-    if(impulse < 0)
-        impulse = 0;
-    
     x_fp16x16 normalCoefficient = x_fp16x16_mul(impulse, cube->invMass);        
 
     X_Vec3_fp16x16 dAdd = x_vec3_origin();
@@ -312,9 +314,18 @@ static void apply_impulse_to_point(X_CubeObject* cube, x_fp16x16 deltaTime, Coll
     cube->angularVelocity = x_vec3_add(&cube->angularVelocity, &dAngular);
 }
 
-static void calculate_friction_direction(X_CubeObject* cube, X_Vec3* dir)
+static _Bool calculate_friction_direction(X_CubeObject* cube, Collision* c, X_Vec3* dir)
 {
-    //*dir = x_vec3_add_scaled(&cube->v)
+    *dir = x_vec3_add_scaled(&c->dv, &c->normal, -x_vec3_fp16x16_dot(&c->dv, &c->normal));
+    
+    if(x_vec3_fp16x16_length(dir) < (int)(.001 * 65536))
+        return 0;
+    
+    x_vec3_fp16x16_normalize(dir);
+    //*dir = x_vec3_neg(dir);
+    x_vec3_fp16x16_print(dir, "Friction dir");
+    
+    return 1;
 }
 
 static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaTime)
@@ -340,9 +351,31 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
     for(int i = 0; i < clipped.totalVertices; ++i)
     {
         Collision c;
-        init_collision(&c, cube, clipped.vertices[i], &resolutionNormal, 0 * 65536);
+        init_collision(&c, cube, clipped.vertices[i], &resolutionNormal, .1 * 65536);
+        x_fp16x16 collisionImpulse = calculate_impulse(cube, deltaTime, &c);
         
-        apply_impulse_to_point(cube, deltaTime, &c);
+        if(collisionImpulse < 0)
+            collisionImpulse = 0;
+        
+        apply_impulse_to_point(cube, deltaTime, &c, collisionImpulse);
+        
+        X_Vec3_fp16x16 frictionDir;
+        
+        if(!calculate_friction_direction(cube, &c, &frictionDir))
+            continue;
+            
+        c.normal = frictionDir;
+        c.elasticity = 0;
+        
+        x_fp16x16 frictionImpulse = calculate_impulse(cube, deltaTime, &c);
+        x_fp16x16 frictionCoefficient = .01 * 65536;
+        x_fp16x16 maxFriction = x_fp16x16_mul(frictionCoefficient, frictionImpulse);
+        
+        frictionImpulse = x_fp16x16_mul(frictionImpulse, frictionCoefficient); //x_fp16x16_clamp(x_fp16x16_mul(frictionImpulse, frictionCoefficient), -maxFriction, maxFriction);
+        
+        printf("Friction impulse: %f\n", x_fp16x16_to_float(frictionImpulse));
+        
+        apply_impulse_to_point(cube, deltaTime, &c, frictionImpulse);
     }
     
     return 1;

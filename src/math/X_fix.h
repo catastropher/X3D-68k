@@ -66,3 +66,14 @@ static inline float x_fp16x16_to_float(x_fp16x16 val)
 {
     return val / 65536.0;
 }
+
+static inline x_fp16x16 x_fp16x16_clamp(x_fp16x16 val, x_fp16x16 minValue, x_fp16x16 maxValue)
+{
+    if(val < minValue)
+        val = minValue;
+    else if(val > maxValue)
+        val = maxValue;
+    
+    return val;
+}
+

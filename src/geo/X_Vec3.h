@@ -221,6 +221,11 @@ static inline unsigned int x_vec3_length(const X_Vec3* v)
     return x_sqrt(x_vec3_length_squared(&shortened)) << 2;
 }
 
+static inline x_fp16x16 x_vec3_fp16x16_length(const X_Vec3* v)
+{
+    return x_sqrt(x_fp16x16_mul(v->x, v->x) + x_fp16x16_mul(v->y, v->y) + x_fp16x16_mul(v->z, v->z)) << 8;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculates the distance squared between two points.
 /// @return (distance between a and b)^2

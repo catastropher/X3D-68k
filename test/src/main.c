@@ -182,16 +182,18 @@ int main(int argc, char* argv[])
     x_mat4x4_print(&context.cam->viewMatrix);
     
 
-    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -200, 500), 50, 50, 50, 8.0 * 65536);
+    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -200, 500), 50, 50, 50, 1.0 * 65536);
     
     X_Vec3_fp16x16 axis = x_vec3_make(0, 0, X_FP16x16_ONE);
     //x_quaternion_init_from_axis_angle(&cube->orientation, &axis, 0);
     
-    //cube->angularVelocity.y = X_FP16x16_ONE;
-    cube->angularVelocity.x = X_FP16x16_ONE / 2;
+    cube->angularVelocity.y = X_FP16x16_ONE;
+    cube->angularVelocity.x = -X_FP16x16_ONE / 2;
     
     //x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60), x_vec3_make(50, -200, 500 - 50));
      
+    cube->linearVelocity = x_vec3_make(0, 0, 65536 * 100);
+    
     while(!context.quit)
     {
         if(g_Pause)
@@ -209,10 +211,15 @@ int main(int argc, char* argv[])
         x_cubeobject_render(cube, &rcontext, 255);
         x_cubeobject_update(cube, 65536.0 / 60);
         
+        char title[1024];
+        sprintf(title, "%f, %f, %f", x_fp16x16_to_float(cube->linearVelocity.x), x_fp16x16_to_float(cube->linearVelocity.y), x_fp16x16_to_float(cube->linearVelocity.z));
+        
+        SDL_WM_SetCaption(title, NULL);
+        
         update_screen(&context);
         
-//         while(!key_is_down(SDLK_RETURN) && !context.quit)
-//             handle_keys(&context);
+        while(!key_is_down(SDLK_RETURN) && !context.quit)
+            handle_keys(&context);
         
         //SDL_Delay(200);
     }
