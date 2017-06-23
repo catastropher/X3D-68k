@@ -95,11 +95,6 @@ static void calculate_inverse_static_inertia(X_CubeObject* cube)
     };
     
     x_mat4x4_invert_diagonal(&inertia, &cube->inverseStaticInertia);
-    
-    x_mat4x4_print(&inertia);
-    
-    x_mat4x4_print(&cube->inverseStaticInertia);
-    
     x_mat4x4_print_machine_readable(&cube->inverseStaticInertia);
 }
 
@@ -112,7 +107,6 @@ static void calculate_inverse_inertia(X_CubeObject* cube)
     x_mat4x4_mul(&cube->inverseStaticInertia, &transform, &temp);
     
     x_mat4x4_transpose_3x3(&transform);
-    
     x_mat4x4_mul(&transform, &temp, &cube->inverseInertia);    
 }
 
@@ -131,9 +125,7 @@ X_CubeObject* x_cubeobject_new(X_EngineContext* context, X_Vec3 pos, int width, 
     cube->invMass = x_fp16x16_div(X_FP16x16_ONE, mass);
     
     calculate_inverse_static_inertia(cube);
-    
     reset_forces(cube);
-    
     update_geometry(cube);
     
     return cube;
@@ -150,11 +142,8 @@ static void update_velocity(X_CubeObject* cube, x_fp16x16 deltaTime)
 {
     cube->linearVelocity = x_vec3_add_scaled(&cube->linearVelocity, &cube->force, x_fp16x16_mul(deltaTime, cube->invMass));
     
-    //x_vec3_print(&cube->linearVelocity, "Linear velocity");
-    
     X_Vec3_fp16x16 dAngularVelocity;
-    x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &cube->torque, &dAngularVelocity);
-    
+    x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &cube->torque, &dAngularVelocity);    
     cube->angularVelocity = x_vec3_add_scaled(&cube->angularVelocity, &dAngularVelocity, deltaTime);
 }
 
@@ -175,21 +164,6 @@ static int determine_point_furthest_along_normal(X_CubeObject* cube, X_Vec3_fp16
     }
     
     return maxVertex;
-}
-
-static void create_reference_face(X_CubeObject* cube, X_Polygon3* dest)
-{
-    int size = X_MAX(cube->size.x, X_MAX(cube->size.y, cube->size.z));
-    
-    dest->totalVertices = 4;
-    dest->vertices[0] = x_vec3_make(size, 0, size);
-    dest->vertices[1] = x_vec3_make(size, 0, -size);
-    dest->vertices[2] = x_vec3_make(-size, 0, -size);
-    dest->vertices[3] = x_vec3_make(-size, 0, size);
-    
-    X_Vec3 center = x_vec3_fp16x16_to_vec3(&cube->center);
-    for(int i = 0; i < 4; ++i)
-        dest->vertices[i] = x_vec3_add(dest->vertices + i, &center);
 }
 
 static int determine_incident_face(X_CubeObject* cube, X_Vec3_fp16x16* normal)
@@ -229,10 +203,11 @@ static void calculate_velocity_of_point(const X_CubeObject* cube, const X_Vec3* 
     *velocityDest = x_vec3_add(&cube->linearVelocity, &rotationalVelocity);
 }
 
-static float calculate_impulse(X_CubeObject* cube, X_Vec3 pointOfContact, X_Vec3* r, x_fp16x16 deltaTime)
+static x_fp16x16 calculate_impulse(X_CubeObject* cube, X_Vec3 pointOfContact, X_Vec3* r, x_fp16x16 deltaTime)
 {
     X_Vec3 center = x_vec3_fp16x16_to_vec3(&cube->center);
     X_Vec3 r1 = x_vec3_sub(&pointOfContact, &center);
+    *r = r1;
     
     X_Vec3_fp16x16 v0;
     calculate_velocity_of_point(cube, &pointOfContact, &v0);
@@ -255,35 +230,16 @@ static float calculate_impulse(X_CubeObject* cube, X_Vec3 pointOfContact, X_Vec3
     
     x_fp16x16 constraintMass = inverseMass0 + inverseMass1 + x_vec3_fp16x16_dot(&normal, &temp3);
     
-//     const float allowedPenetration = ;
-//     const float biasFactor = 0.1f; // 0.1 to 0.3
-// 
-//     float inv_dt = 1.0 / deltaTime * 65536;
-//     
-//     int penetration = pointOfContact.y;
-//     float bias = biasFactor * inv_dt * X_MAX(0.0f, penetration - allowedPenetration);
+    x_fp16x16 n = x_fp16x16_mul(-1.0 * 65536, x_vec3_fp16x16_dot(&dv, &normal));
     
-    float bias = 0;
-    
-    printf("Bias: %f\n", bias);
-    
-    x_fp16x16 n = x_fp16x16_mul(-1.0 * 65536, x_vec3_fp16x16_dot(&dv, &normal)) + bias * 65536;
-    
-    x_fp16x16 j = x_fp16x16_div(n, constraintMass);
-    
-    printf("j: %f\n", x_fp16x16_to_float(j));
-    
-    *r = r1;
-    
-    return j / 65536.0;
+    return x_fp16x16_div(n, constraintMass);
 }
 
 extern X_RenderContext* g_renderContext;
 extern _Bool g_Pause;
 
-static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaTime)
+static _Bool cube_is_colliding_with_xz_plane(X_CubeObject* cube)
 {
-    X_Vec3_fp16x16 normal = x_vec3_make(0, X_FP16x16_ONE, 0);
     _Bool collide = 0;
     
     for(int i = 0; i < 8; ++i)
@@ -292,7 +248,14 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
             collide = 1;
     }
     
-    if(!collide)
+    return collide;
+}
+
+static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaTime)
+{
+    X_Vec3_fp16x16 normal = x_vec3_make(0, X_FP16x16_ONE, 0);
+    
+    if(!cube_is_colliding_with_xz_plane(cube))
         return 0;
     
     int incidentFaceId = determine_incident_face(cube, &normal);
@@ -354,7 +317,7 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
         x_vec3_print(&clipped.vertices[i], "Hit v absolute");
         
         X_Vec3 r;
-        float impulse = calculate_impulse(cube, clipped.vertices[i], &r, deltaTime);
+        x_fp16x16 impulse = calculate_impulse(cube, clipped.vertices[i], &r, deltaTime);
         printf("Impulse: %f\n", impulse);
         
         if(impulse < 0)
@@ -364,7 +327,7 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
         
         x_vec3_print(&r, "Hit v");
         
-        x_fp16x16 coeff = (impulse / cube->mass) * 65536.0 * 65536.0;
+        x_fp16x16 coeff = x_fp16x16_mul(impulse, cube->invMass);
         
         printf("Coeff: %f\n", x_fp16x16_to_float(coeff));
 
@@ -379,7 +342,7 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
         
         add = x_vec3_add(&add, &dAdd);
         
-        X_Vec3_fp16x16 scaledNormal = x_vec3_make(0, x_fp16x16_mul(normal.y, impulse * 65536), 0);
+        X_Vec3_fp16x16 scaledNormal = x_vec3_make(0, x_fp16x16_mul(normal.y, impulse), 0);
         X_Vec3 temp = x_vec3_cross(&r, &scaledNormal);
         
         X_Vec3 dAngular;
