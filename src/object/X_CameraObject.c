@@ -35,9 +35,9 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     
     x_mat4x4_mul(&xRotation, &yRotation, &cam->viewMatrix);    
     
-    cam->viewMatrix.elem[0][3] = -cam->base.position.x >> 16;
-    cam->viewMatrix.elem[1][3] = -cam->base.position.y >> 16;
-    cam->viewMatrix.elem[2][3] = -cam->base.position.z >> 16;
+    cam->viewMatrix.elem[0][3] = -cam->base.position.x;
+    cam->viewMatrix.elem[1][3] = -cam->base.position.y;
+    cam->viewMatrix.elem[2][3] = -cam->base.position.z;
     
     X_Vec3 camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
     

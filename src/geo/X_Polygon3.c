@@ -26,14 +26,18 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
     
     for(int i = 0; i < src->totalVertices; ++i)
     {
+        printf("DotClip: %f\n", x_fp16x16_to_float(dot));
+        
         int next = (i + 1 < src->totalVertices ? i + 1 : 0);
         
         if(in)
             dest->vertices[dest->totalVertices++] = src->vertices[i];
         
-        x_fp16x16 nextDot = x_vec3_dot(&plane->normal, src->vertices + 0);
+        x_fp16x16 nextDot = x_vec3_dot(&plane->normal, src->vertices + next);
         _Bool nextIn = nextDot >= -plane->d;
         int dotDiff = (nextDot - dot) >> 16;
+        
+        printf("Dot diff: %d\n", dotDiff);
         
         if(in != nextIn && dotDiff != 0)
         {
@@ -49,5 +53,16 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
     }
     
     return dest->totalVertices > 2;
+}
+
+void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color)
+{
+    for(int i = 0; i < poly->totalVertices; ++i)
+    {
+        int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
+        X_Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
+        
+        x_ray3d_render(&ray, rcontext, color);
+    }
 }
 

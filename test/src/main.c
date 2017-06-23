@@ -127,6 +127,36 @@ void handle_keys(Context* context)
     }
 }
 
+X_RenderContext* g_renderContext;
+_Bool g_Pause;
+
+void draw_grid(X_Vec3 center, int size, int step, X_RenderContext* rcontext, X_Color color)
+{
+    int totalSteps = size / step;
+    
+    for(int i = 0; i < totalSteps + 1; ++i)
+    {
+        int relStep = i - totalSteps / 2;
+        X_Vec3 top = x_vec3_make(center.x + relStep * step, center.y, center.z - size / 2);
+        X_Vec3 bottom = top;
+        bottom.z += size;
+        
+        X_Ray3 ray = x_ray3_make(top, bottom);
+        x_ray3d_render(&ray, rcontext, color);
+    }
+    
+    for(int i = 0; i < totalSteps + 1; ++i)
+    {
+        int relStep = i - totalSteps / 2;
+        X_Vec3 left = x_vec3_make(center.x - size / 2, center.y, center.z + relStep * step);
+        X_Vec3 right = left;
+        right.x += size;
+        
+        X_Ray3 ray = x_ray3_make(left, right);
+        x_ray3d_render(&ray, rcontext, color);
+    }
+}
+
 int main(int argc, char* argv[])
 {
     Context context;
@@ -141,36 +171,49 @@ int main(int argc, char* argv[])
     rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
     rcontext.viewMatrix = &context.cam->viewMatrix;
     
+    g_renderContext = &rcontext;
+    
     context.cam->angleX = 0;
     context.cam->angleY = 0;
-    context.cam->base.position = x_vec3_make(0, 0, 0);
+    context.cam->base.position = x_vec3_make(0, -200 * 65536, 0);
     
     x_cameraobject_update_view(context.cam);
     
     x_mat4x4_print(&context.cam->viewMatrix);
     
 
-    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -200, 500), 50, 50, 50, 1.0 * 65536);
+    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -200, 500), 50, 50, 50, 8.0 * 65536);
+    
+    X_Vec3_fp16x16 axis = x_vec3_make(0, 0, X_FP16x16_ONE);
+    //x_quaternion_init_from_axis_angle(&cube->orientation, &axis, 0);
     
     //cube->angularVelocity.y = X_FP16x16_ONE;
-    cube->angularVelocity.x = X_FP16x16_ONE;
+    cube->angularVelocity.x = X_FP16x16_ONE / 2;
     
-    //x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60 * 5), x_vec3_make(50, 0, 500 - 50));
+    //x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60), x_vec3_make(50, -200, 500 - 50));
      
     while(!context.quit)
     {
+        if(g_Pause)
+        {
+            while(!context.quit)
+                handle_keys(&context);
+        }
+        
         x_canvas_fill(&context.context.screen.canvas, 0);
 
         handle_keys(&context);
         
-        x_cubeobject_update(cube, 65536.0 / 60);
+        draw_grid(x_vec3_make(0, 0, 500), 32 * 16, 32, &rcontext, 4);
+        
         x_cubeobject_render(cube, &rcontext, 255);
+        x_cubeobject_update(cube, 65536.0 / 60);
         
         update_screen(&context);
         
-        while(!key_is_down(SDLK_RETURN) && !context.quit)
-            handle_keys(&context);
-//         
+//         while(!key_is_down(SDLK_RETURN) && !context.quit)
+//             handle_keys(&context);
+        
         //SDL_Delay(200);
     }
     

@@ -84,3 +84,17 @@ void x_cube_get_face(const X_Cube* cube, int faceId, X_Polygon3* dest)
     }
 }
 
+void x_cube_get_faces_containing_vertex(const X_Cube* cube, int vertexId, int faceDest[3])
+{
+    if(vertexId < 4)
+        faceDest[0] = 0;
+    else
+        faceDest[0] = 1;
+    
+    int side = (vertexId < 4 ? vertexId : vertexId - 4);
+    int prev = (side != 0 ? side - 1 : 3);
+    
+    faceDest[1] = side + 2;
+    faceDest[2] = prev + 2;
+}
+
