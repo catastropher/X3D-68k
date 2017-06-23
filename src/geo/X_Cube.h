@@ -23,7 +23,7 @@ struct X_Polygon3;
 
 typedef struct X_Cube
 {
-    X_Vec3 vertices[8];
+    X_Vec3_fp16x16 vertices[8];
 } X_Cube;
 
 void x_cube_init(X_Cube* cube, int width, int height, int depth);

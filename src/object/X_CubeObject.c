@@ -28,6 +28,10 @@ static void calculate_face_normals(X_CubeObject* cube)
     for(int i = 0; i < 6; ++i)
     {
         x_cube_get_face(&cube->geometry, i, &face);
+        
+        for(int j = 0; j < 4; ++j)
+            faceVertices[j] = x_vec3_fp16x16_to_vec3(faceVertices + j);
+        
         x_plane_init_from_three_points(&plane, faceVertices + 0, faceVertices + 1, faceVertices + 2);
         
         cube->normals[i] = plane.normal;
@@ -157,7 +161,7 @@ static int determine_point_furthest_along_normal(X_CubeObject* cube, X_Vec3_fp16
     
     for(int i = 0; i < 8; ++i)
     {
-        int dot = x_vec3_dot(normal, cube->geometry.vertices + i);
+        int dot = x_vec3_fp16x16_dot(normal, cube->geometry.vertices + i);
         
         if(dot > maxDot)
         {
@@ -268,10 +272,10 @@ static void calculate_clipped_incident_face(X_CubeObject* cube, X_Vec3_fp16x16* 
     X_Polygon3 incident = x_polygon3_make(incidentV, 4);
     x_cube_get_face(&cube->geometry, incidentFaceId, &incident);
     
-    X_Vec3 pointOnPlane = x_vec3_make(0, 0, 0);
-    X_Plane ground;
-    x_plane_init_from_normal_and_point(&ground, normal, &pointOnPlane);
-    
+//     X_Vec3 pointOnPlane = x_vec3_make(0, 0, 0);
+//     X_Plane ground;
+//     x_plane_init_from_normal_and_point(&ground, normal, &pointOnPlane);
+//     
     //x_polygon3_clip_to_plane(&incident, &ground, &clipped);
     
     clipped->totalVertices = 0;
@@ -342,7 +346,7 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
     if(clipped.totalVertices == 0)
         return 0;
     
-    x_polygon3_render_wireframe(&clipped, g_renderContext, 254);
+    //x_polygon3_render_wireframe(&clipped, g_renderContext, 254);
     
     //int maxPen = calculate_max_penetration_depth(cube);
     
@@ -351,7 +355,7 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
     for(int i = 0; i < clipped.totalVertices; ++i)
     {
         Collision c;
-        init_collision(&c, cube, clipped.vertices[i], &resolutionNormal, .1 * 65536);
+        init_collision(&c, cube, x_vec3_fp16x16_to_vec3(&clipped.vertices[i]), &resolutionNormal, .1 * 65536);
         x_fp16x16 collisionImpulse = calculate_impulse(cube, deltaTime, &c);
         
         if(collisionImpulse < 0)

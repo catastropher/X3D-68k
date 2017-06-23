@@ -20,6 +20,10 @@
 
 void x_cube_init(X_Cube* cube, int width, int height, int depth)
 {
+    width <<= 16;
+    height <<= 16;
+    depth <<= 16;
+    
     cube->vertices[0] = x_vec3_make(width, -height, -depth);
     cube->vertices[1] = x_vec3_make(width, -height, depth);
     cube->vertices[2] = x_vec3_make(-width, -height, depth);
@@ -29,10 +33,16 @@ void x_cube_init(X_Cube* cube, int width, int height, int depth)
         cube->vertices[i + 4] = x_vec3_make(cube->vertices[i].x, -cube->vertices[i].y, cube->vertices[i].z);
 }
 
-void x_cube_translate(X_Cube* cube, X_Vec3 translation)
+void x_cube_translate(X_Cube* cube, X_Vec3_fp16x16 translation)
 {
     for(int i = 0; i < 8; ++i)
         cube->vertices[i] = x_vec3_add(cube->vertices + i, &translation);
+}
+
+static void truncate_ray(X_Ray3* ray)
+{
+    ray->v[0] = x_vec3_fp16x16_to_vec3(ray->v + 0);
+    ray->v[1] = x_vec3_fp16x16_to_vec3(ray->v + 1);
 }
 
 void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
@@ -45,6 +55,10 @@ void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
         X_Ray3 bottomRay = x_ray3_make(cube->vertices[i + 4], cube->vertices[nextVertex + 4]);
         X_Ray3 sideRay = x_ray3_make(cube->vertices[i], cube->vertices[i + 4]);
         
+        truncate_ray(&topRay);
+        truncate_ray(&bottomRay);
+        truncate_ray(&sideRay);
+        
         x_ray3d_render(&topRay, rcontext, color);
         x_ray3d_render(&bottomRay, rcontext, color);
         x_ray3d_render(&sideRay, rcontext, color);
@@ -55,7 +69,7 @@ void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat)
 {
     for(int i = 0; i < 8; ++i)
     {
-        x_mat4x4_transform_vec3(mat, src->vertices + i, dest->vertices + i);
+        x_mat4x4_transform_vec3_fp16x16(mat, src->vertices + i, dest->vertices + i);
     }
 }
 

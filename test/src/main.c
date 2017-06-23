@@ -188,7 +188,7 @@ int main(int argc, char* argv[])
     //x_quaternion_init_from_axis_angle(&cube->orientation, &axis, 0);
     
     cube->angularVelocity.y = X_FP16x16_ONE;
-    cube->angularVelocity.x = -X_FP16x16_ONE / 2;
+    //cube->angularVelocity.x = -X_FP16x16_ONE / 2;
     
     //x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60), x_vec3_make(50, -200, 500 - 50));
      
