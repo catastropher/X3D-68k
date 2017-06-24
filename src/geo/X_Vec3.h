@@ -175,9 +175,9 @@ static inline x_fp16x16 x_vec3_fp16x16_dot(const X_Vec3* a, const X_Vec3* b)
 static inline X_Vec3 x_vec3_cross(const X_Vec3* a, const X_Vec3* b)
 {
     return x_vec3_make(
-        a->y * b->z - b->y * a->z,
-        a->z * b->x - b->z * a->x,
-        a->x * b->y - b->x * a->y
+        (long long)a->y * b->z - (long long)b->y * a->z,
+        (long long)a->z * b->x - (long long)b->z * a->x,
+        (long long)a->x * b->y - (long long)b->x * a->y
     );
 }
 

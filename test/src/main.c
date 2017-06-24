@@ -182,17 +182,17 @@ int main(int argc, char* argv[])
     x_mat4x4_print(&context.cam->viewMatrix);
     
 
-    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -200, 500), 50, 50, 50, 1.0 * 65536);
+    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -50, 500), 50, 50, 50, 1.0 * 65536);
     
     X_Vec3_fp16x16 axis = x_vec3_make(0, 0, X_FP16x16_ONE);
-    //x_quaternion_init_from_axis_angle(&cube->orientation, &axis, 0);
+    //x_quaternion_init_from_axis_angle(&cube->orientation, &axis, X_ANG_45);
     
-    cube->angularVelocity.y = X_FP16x16_ONE;
+    //cube->angularVelocity.y = X_FP16x16_ONE;
     //cube->angularVelocity.x = -X_FP16x16_ONE / 2;
     
-    //x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60), x_vec3_make(50, -200, 500 - 50));
+    x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60 * 100), x_vec3_make(50, 0, 500 - 50));
      
-    cube->linearVelocity = x_vec3_make(0, 0, 65536 * 100);
+    //cube->linearVelocity = x_vec3_make(0, 0, 65536 * 100);
     
     while(!context.quit)
     {
@@ -208,8 +208,14 @@ int main(int argc, char* argv[])
         
         draw_grid(x_vec3_make(0, 0, 500), 32 * 16, 32, &rcontext, 4);
         
+        printf("=============================\n");
+        
         x_cubeobject_render(cube, &rcontext, 255);
         x_cubeobject_update(cube, 65536.0 / 60);
+        
+        x_vec3_fp16x16_print(&cube->angularVelocity, "Angular velocity");
+        
+        
         
         char title[1024];
         sprintf(title, "%f, %f, %f", x_fp16x16_to_float(cube->linearVelocity.x), x_fp16x16_to_float(cube->linearVelocity.y), x_fp16x16_to_float(cube->linearVelocity.z));

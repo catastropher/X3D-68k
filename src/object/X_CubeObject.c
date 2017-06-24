@@ -150,8 +150,8 @@ static void update_velocity(X_CubeObject* cube, x_fp16x16 deltaTime)
     x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &cube->torque, &dAngularVelocity);    
     cube->angularVelocity = x_vec3_add_scaled(&cube->angularVelocity, &dAngularVelocity, deltaTime);
     
-    if(x_vec3_fp16x16_length(&cube->angularVelocity) < (int)(.01 * 65536))
-        cube->angularVelocity = x_vec3_origin();
+    //if(x_vec3_fp16x16_length(&cube->angularVelocity) < (int)(.01 * 65536))
+    //    cube->angularVelocity = x_vec3_origin();
 }
 
 static int determine_point_furthest_along_normal(X_CubeObject* cube, X_Vec3_fp16x16* normal)
@@ -215,6 +215,9 @@ typedef struct Collision
     X_Vec3 normal;
     X_Vec3 dv;
     x_fp16x16 elasticity;
+    
+    X_Vec3_fp16x16 dLinear;
+    X_Vec3_fp16x16 dAngular;
 } Collision;
 
 static void init_collision(Collision* c, X_CubeObject* cube, X_Vec3 pointOfContact, X_Vec3_fp16x16* normal, x_fp16x16 elasticity)
@@ -229,6 +232,9 @@ static void init_collision(Collision* c, X_CubeObject* cube, X_Vec3 pointOfConta
     calculate_velocity_of_point(cube, &pointOfContact, &v0);
     
     c->dv = v0;
+    
+    c->dLinear = x_vec3_origin();
+    c->dAngular = x_vec3_origin();
 }
 
 static x_fp16x16 calculate_impulse(X_CubeObject* cube, x_fp16x16 deltaTime, Collision* c)
@@ -242,8 +248,9 @@ static x_fp16x16 calculate_impulse(X_CubeObject* cube, x_fp16x16 deltaTime, Coll
     
     X_Vec3_fp16x16 temp3 = x_vec3_cross(&temp2, &c->r0);
     
+    x_fp16x16 dampBias = 0;//.1 * 65536;
     x_fp16x16 constraintMass = inverseMass0 + inverseMass1 + x_vec3_fp16x16_dot(&c->normal, &temp3);
-    x_fp16x16 n = -x_fp16x16_mul(X_FP16x16_ONE + c->elasticity, x_vec3_fp16x16_dot(&c->dv, &c->normal));
+    x_fp16x16 n = -x_fp16x16_mul(X_FP16x16_ONE + c->elasticity - dampBias, x_vec3_fp16x16_dot(&c->dv, &c->normal));
     
     return x_fp16x16_div(n, constraintMass);
 }
@@ -308,14 +315,19 @@ static void apply_impulse_to_point(X_CubeObject* cube, x_fp16x16 deltaTime, Coll
     X_Vec3_fp16x16 dAdd = x_vec3_origin();
     dAdd = x_vec3_add_scaled(&dAdd, &c->normal, normalCoefficient);
     
-    X_Vec3_fp16x16 scaledNormal = x_vec3_make(0, x_fp16x16_mul(c->normal.y, impulse), 0);
+    X_Vec3_fp16x16 scaledNormal = x_vec3_origin();
+    scaledNormal = x_vec3_add_scaled(&scaledNormal, &c->normal, impulse);
+    
     X_Vec3 temp = x_vec3_cross(&c->r0, &scaledNormal);
     
     X_Vec3 dAngular;
     x_mat4x4_transform_vec3_fp16x16(&cube->inverseInertia, &temp, &dAngular);
     
-    cube->linearVelocity = x_vec3_add(&cube->linearVelocity, &dAdd);
-    cube->angularVelocity = x_vec3_add(&cube->angularVelocity, &dAngular);
+    c->dLinear = x_vec3_add(&c->dLinear, &dAdd);
+    c->dAngular = x_vec3_add(&c->dAngular, &dAngular);
+    
+    //cube->linearVelocity = x_vec3_add(&cube->linearVelocity, &dAdd);
+    //cube->angularVelocity = x_vec3_add(&cube->angularVelocity, &dAngular);
 }
 
 static _Bool calculate_friction_direction(X_CubeObject* cube, Collision* c, X_Vec3* dir)
@@ -326,10 +338,20 @@ static _Bool calculate_friction_direction(X_CubeObject* cube, Collision* c, X_Ve
         return 0;
     
     x_vec3_fp16x16_normalize(dir);
-    //*dir = x_vec3_neg(dir);
-    x_vec3_fp16x16_print(dir, "Friction dir");
     
     return 1;
+}
+
+void apply_positional_correction(X_CubeObject* cube, X_Vec3_fp16x16* point, X_Vec3_fp16x16* collisionNormal)
+{
+    x_fp16x16 penetrationDepth = point->y;
+    x_fp16x16 slop = .01 * 65536;
+    x_fp16x16 adjustedPenetrationDepth = X_MAX(penetrationDepth - slop, 0);
+    
+    x_fp16x16 correctionPercentage = .2 * 65536;
+    x_fp16x16 correctionCoefficient = x_fp16x16_mul(x_fp16x16_mul(adjustedPenetrationDepth, cube->mass), correctionPercentage);
+    
+    cube->center = x_vec3_add_scaled(&cube->center, collisionNormal, correctionCoefficient);
 }
 
 static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaTime)
@@ -346,11 +368,16 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
     if(clipped.totalVertices == 0)
         return 0;
     
+//     if(cube->linearVelocity.y < 0)
+//         return;
+    
     //x_polygon3_render_wireframe(&clipped, g_renderContext, 254);
     
     //int maxPen = calculate_max_penetration_depth(cube);
     
     X_Vec3_fp16x16 resolutionNormal = x_vec3_neg(&normal);
+    X_Vec3_fp16x16 dLinear = x_vec3_origin();
+    X_Vec3_fp16x16 dAngular = x_vec3_origin();
     
     for(int i = 0; i < clipped.totalVertices; ++i)
     {
@@ -363,13 +390,27 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
         
         apply_impulse_to_point(cube, deltaTime, &c, collisionImpulse);
         
+        dLinear = x_vec3_add(&dLinear, &c.dLinear);
+        dAngular = x_vec3_add(&dAngular, &c.dAngular);
+    }
+    
+    cube->linearVelocity = x_vec3_add(&cube->linearVelocity, &dLinear);
+    cube->angularVelocity = x_vec3_add(&cube->angularVelocity, &dAngular);
+    
+    dLinear = x_vec3_origin();
+    dAngular = x_vec3_origin();
+    
+    for(int i = 0; i < clipped.totalVertices; ++i)
+    {
+        Collision c;
+        init_collision(&c, cube, x_vec3_fp16x16_to_vec3(&clipped.vertices[i]), &resolutionNormal, 0);
+        
         X_Vec3_fp16x16 frictionDir;
         
         if(!calculate_friction_direction(cube, &c, &frictionDir))
             continue;
             
         c.normal = frictionDir;
-        c.elasticity = 0;
         
         x_fp16x16 frictionImpulse = calculate_impulse(cube, deltaTime, &c);
         x_fp16x16 frictionCoefficient = .01 * 65536;
@@ -379,8 +420,37 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
         
         printf("Friction impulse: %f\n", x_fp16x16_to_float(frictionImpulse));
         
-        apply_impulse_to_point(cube, deltaTime, &c, frictionImpulse);
+        //apply_impulse_to_point(cube, deltaTime, &c, frictionImpulse);
+        
+        apply_positional_correction(cube, &clipped.vertices[i], &resolutionNormal);
+        
+        dLinear = x_vec3_add(&dLinear, &c.dLinear);
+        dAngular = x_vec3_add(&dAngular, &c.dAngular);
     }
+    
+    cube->linearVelocity = x_vec3_add(&cube->linearVelocity, &dLinear);
+    cube->angularVelocity = x_vec3_add(&cube->angularVelocity, &dAngular);
+    
+    x_fp16x16 min = .01 * 65536;
+    
+//     if(abs(cube->angularVelocity.x) < min)
+//         cube->angularVelocity.x = 0;
+//     
+//     if(abs(cube->angularVelocity.y) < min)
+//         cube->angularVelocity.y = 0;
+//     
+//     if(abs(cube->angularVelocity.z) < min)
+//         cube->angularVelocity.z = 0;
+    
+//     for(int i = 0; i < 8; ++i)
+//     {
+//         if(cube->geometry.vertices[i].y > 0)
+//         {
+//             printf("%f ", x_fp16x16_to_float(cube->geometry.vertices[i].y));
+//         }
+//     }
+//     
+//     printf("\n");
     
     return 1;
 }
@@ -399,7 +469,7 @@ void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime)
         update_orientation(cube, deltaTime);
         update_geometry(cube);
         
-        for(int i = 0; i < 5; ++i)
+        for(int i = 0; i < 1; ++i)
             collide = handle_collision_with_xz_plane(cube, deltaTime);
         
         ++count;
@@ -423,7 +493,7 @@ void x_cubeobject_apply_force(X_CubeObject* cube, X_Vec3_fp16x16 force, X_Vec3 p
     
     cube->torque = x_vec3_add(&cube->torque, &torque);
     
-    x_vec3_print(&torque, "Torque");
+    x_vec3_fp16x16_print(&torque, "Torque");
     x_vec3_print(&pointRelative, "Relative");
 }
 
