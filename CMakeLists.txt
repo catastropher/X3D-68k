@@ -44,6 +44,7 @@ add_library(X3D STATIC
     
     # memory
     src/memory/X_Factory.c
+    src/memory/X_String.c
     
     # object
     src/object/X_CameraObject.c
