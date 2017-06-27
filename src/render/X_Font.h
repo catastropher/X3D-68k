@@ -15,12 +15,9 @@
 
 #pragma once
 
-typedef struct X_String
+typedef struct X_Font
 {
-    char* data;
-} X_String;
+    
+} X_Font;
 
-void x_string_init(X_String* str, const char* initialValue);
-X_String* x_string_assign(X_String* str, const char* value);
-X_String* x_string_concat(X_String* strToAppendTo, const X_String* strToAppend);
 

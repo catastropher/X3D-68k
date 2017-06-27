@@ -163,6 +163,10 @@ int main(int argc, char* argv[])
     
     init(&context, 640, 480);
     
+    X_Texture font;
+    if(!x_texture_load_from_xtex_file(&font, "font.xtex"))
+        x_log_error("Failed to load font");
+    
 #if 1
     
     X_RenderContext rcontext;
@@ -170,6 +174,8 @@ int main(int argc, char* argv[])
     rcontext.canvas = &context.context.screen.canvas;
     rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
     rcontext.viewMatrix = &context.cam->viewMatrix;
+    
+    x_screen_set_palette(&context.context.screen, x_palette_get_quake_palette());
     
     g_renderContext = &rcontext;
     
@@ -221,6 +227,8 @@ int main(int argc, char* argv[])
         sprintf(title, "%f, %f, %f", x_fp16x16_to_float(cube->linearVelocity.x), x_fp16x16_to_float(cube->linearVelocity.y), x_fp16x16_to_float(cube->linearVelocity.z));
         
         SDL_WM_SetCaption(title, NULL);
+        
+        x_canvas_blit_texture(&context.context.screen.canvas, &font, (X_Vec2) { 0, 0 });
         
         update_screen(&context);
         

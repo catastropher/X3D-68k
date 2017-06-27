@@ -34,6 +34,9 @@ typedef struct X_Texture
     X_Color* texels;    ///< Texels
 } X_Texture;
 
+_Bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName);
+_Bool x_texture_load_from_xtex_file(X_Texture* tex, const char* fileName);
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the width of a texture.
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +118,7 @@ static inline void x_texture_set_texel(X_Texture* tex, int u, int v, X_Color col
 ////////////////////////////////////////////////////////////////////////////////
 /// Gets the color of a texel in a texture.
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Color x_texture_get_texel(X_Texture* tex, int u, int v)
+static inline X_Color x_texture_get_texel(const X_Texture* tex, int u, int v)
 {
     return tex->texels[x_texture_texel_index(tex, u, v)];
 }

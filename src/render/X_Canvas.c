@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_Canvas.h"
+#include "util/X_util.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Draws a line of the given color into a canvas.
@@ -46,6 +47,20 @@ void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color colo
         {
             err += dx;
             pos.y += sy;
+        }
+    }
+}
+
+void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos)
+{
+    int endX = X_MIN(pos.x + x_texture_w(tex), x_canvas_w(canvas));
+    int endY = X_MIN(pos.y + x_texture_h(tex), x_canvas_h(canvas));
+    
+    for(int y = pos.y; y < endY; ++y)
+    {
+        for(int x = pos.x; x < endX; ++x)
+        {
+            x_texture_set_texel(&canvas->tex, x, y, x_texture_get_texel(tex, x - pos.x, y - pos.y));
         }
     }
 }

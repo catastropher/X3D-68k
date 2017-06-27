@@ -20,9 +20,10 @@
 #include "error/X_error.h"
 #include "memory/X_alloc.h"
 
-#define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from unopened file")
+#define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
+#define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
 
-static inline void determineFileSize(X_File* file)
+static inline void determine_file_size(X_File* file)
 {
     fseek(file->file, 0, SEEK_END);
     file->size = ftell(file->file);
@@ -43,7 +44,7 @@ _Bool x_file_open_reading(X_File* file, const char* fileName)
     
     x_log("Opened file '%s' for reading", fileName);
     file->flags = X_FILE_OPEN_FOR_READING;
-    determineFileSize(file);
+    determine_file_size(file);
     
     return 1;
 }
@@ -92,7 +93,7 @@ void x_file_read_cstr(X_File* file, char* dest)
     *dest = '\0';
 }
 
-int x_file_read_le_int(X_File* file)
+int x_file_read_le_int32(X_File* file)
 {
     ASSERT_OPEN_FOR_READING(file);
     
@@ -103,12 +104,34 @@ int x_file_read_le_int(X_File* file)
     return val;
 }
 
-int x_file_read_be_int(X_File* file)
+int x_file_read_le_int16(X_File* file)
+{
+    ASSERT_OPEN_FOR_READING(file);
+    
+    unsigned int val = 0;
+    for(int i = 0; i < 2; ++i)
+        val |= fgetc(file->file) << (i * 8);
+    
+    return val;
+}
+
+int x_file_read_be_int32(X_File* file)
 {
     ASSERT_OPEN_FOR_READING(file);
     
     unsigned int val = 0;
     for(int i = 3; i >= 0; --i)
+        val |= fgetc(file->file) << (i * 8);
+    
+    return val;
+}
+
+int x_file_read_be_int16(X_File* file)
+{
+    ASSERT_OPEN_FOR_READING(file);
+    
+    unsigned int val = 0;
+    for(int i = 1; i >= 0; --i)
         val |= fgetc(file->file) << (i * 8);
     
     return val;
@@ -137,8 +160,43 @@ void x_file_read_buf(X_File* file, int bufSize, char* dest)
 void x_file_read_vec3(X_File* file, X_Vec3* dest)
 {
     ASSERT_OPEN_FOR_READING(file);
-    dest->x = x_file_read_le_int(file);
-    dest->y = x_file_read_le_int(file);
-    dest->z = x_file_read_le_int(file);
+    dest->x = x_file_read_le_int32(file);
+    dest->y = x_file_read_le_int32(file);
+    dest->z = x_file_read_le_int32(file);
 }
+
+_Bool x_file_open_writing(X_File* file, const char* fileName)
+{
+    file->file = fopen(fileName, "wb");
+    file->flags = 0;
+    file->size = 0;
+    
+    if(!file->file)
+    {
+        x_log_error("Failed to open file '%s' for reading", fileName);
+        return 0;
+    }
+    
+    x_log("Opened file '%s' for writing", fileName);
+    file->flags = X_FILE_OPEN_FOR_WRITING;
+    
+    return 1;
+}
+
+void x_file_write_le_int16(X_File* file, int val)
+{
+    ASSERT_OPEN_FOR_WRITING(file);
+    
+    for(int i = 0; i < 2; ++i)
+        fputc((val >> (i * 8)) & 0xFF, file->file);
+}
+
+void x_file_write_buf(X_File* file, int bufSize, const char* src)
+{
+    ASSERT_OPEN_FOR_WRITING(file);
+    fwrite(src, 1, bufSize, file->file);
+}
+
+
+
 

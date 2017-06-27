@@ -115,5 +115,5 @@ static inline void x_canvas_fill(X_Canvas* canvas, X_Color fillColor)
 
 
 void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color);
-
+void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos);
 

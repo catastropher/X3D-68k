@@ -23,7 +23,7 @@ typedef struct X_Screen
 {
     X_Canvas canvas;
     X_CameraObject* cameraListHead;
-    X_Palette palette;
+    const X_Palette* palette;
 } X_Screen;
 
 void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera);
@@ -37,7 +37,7 @@ static inline void x_screen_init(X_Screen* screen, int w, int h)
 
 static inline void x_screen_set_palette(X_Screen* screen, const X_Palette* palette)
 {
-    screen->palette = *palette;
+    screen->palette = palette;
 }
 
 static inline void x_screen_cleanup(X_Screen* screen)
