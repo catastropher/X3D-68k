@@ -163,7 +163,6 @@ int main(int argc, char* argv[])
     
     init(&context, 640, 480);
     
-#if 1
     
     X_RenderContext rcontext;
     rcontext.cam = context.cam;
@@ -181,27 +180,21 @@ int main(int argc, char* argv[])
     
     x_cameraobject_update_view(context.cam);
     
-    x_mat4x4_print(&context.cam->viewMatrix);
+    x_console_print(&context.context.console, "I am doing my absolute best to try and test this stupid word wrap feature to make sure text doesn't go off the screen \n");
     
-
-    X_CubeObject* cube = x_cubeobject_new(&context.context, x_vec3_make(0, -50, 500), 50, 50, 50, 1.0 * 65536);
-    
-    X_Vec3_fp16x16 axis = x_vec3_make(0, 0, X_FP16x16_ONE);
-    //x_quaternion_init_from_axis_angle(&cube->orientation, &axis, X_ANG_45);
-    
-    //cube->angularVelocity.y = X_FP16x16_ONE;
-    //cube->angularVelocity.x = -X_FP16x16_ONE / 2;
-    
-    x_cubeobject_apply_force(cube, x_vec3_make(0, 0, 65536 * 60 * 100), x_vec3_make(50, 0, 500 - 50));
-     
-    //cube->linearVelocity = x_vec3_make(0, 0, 65536 * 100);
+    int frame = 0;
     
     while(!context.quit)
     {
-        if(g_Pause)
+        
+        ++frame;
+        
+        if((frame % 5) == 0)
         {
-            while(!context.quit)
-                handle_keys(&context);
+            char str[64];
+            sprintf(str, "%d\n", frame / 5);
+            
+            x_console_print(&context.context.console, str);
         }
         
         x_canvas_fill(&context.context.screen.canvas, 0);
@@ -210,31 +203,11 @@ int main(int argc, char* argv[])
         
         draw_grid(x_vec3_make(0, 0, 500), 32 * 16, 32, &rcontext, 4);
         
-        printf("=============================\n");
-        
-        x_cubeobject_render(cube, &rcontext, 255);
-        x_cubeobject_update(cube, 65536.0 / 60);
-        
-        x_vec3_fp16x16_print(&cube->angularVelocity, "Angular velocity");
-        
-        
-        
-        char title[1024];
-        sprintf(title, "%f, %f, %f", x_fp16x16_to_float(cube->linearVelocity.x), x_fp16x16_to_float(cube->linearVelocity.y), x_fp16x16_to_float(cube->linearVelocity.z));
-        
-        SDL_WM_SetCaption(title, NULL);
-        
-        x_canvas_draw_str(&context.context.screen.canvas, "Hello world!\n", &context.context.mainFont, (X_Vec2) { 50, 0 });
+        x_console_render(&context.context.console);
         
         update_screen(&context);
-        
-        while(!key_is_down(SDLK_RETURN) && !context.quit)
-            handle_keys(&context);
-        
-        //SDL_Delay(200);
     }
     
-#endif
     cleanup(&context);
 }
 

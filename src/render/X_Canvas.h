@@ -33,7 +33,7 @@ typedef struct X_Canvas
 void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color);
 void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos);
 void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X_Vec2 pos);
-void x_canvas_draw_str(X_Canvas* canvas, const char* str, X_Font* font, X_Vec2 pos);
+void x_canvas_draw_str(X_Canvas* canvas, const char* str, const X_Font* font, X_Vec2 pos);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the width of a canvas.

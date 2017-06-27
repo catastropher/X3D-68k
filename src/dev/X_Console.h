@@ -17,6 +17,9 @@
 
 #include "memory/X_String.h"
 #include "math/X_fix.h"
+#include "geo/X_Vec2.h"
+#include "render/X_Font.h"
+#include "render/X_Screen.h"
 
 typedef enum X_ConsoleVarType
 {
@@ -47,14 +50,27 @@ typedef struct X_ConsoleVar
 typedef struct X_Console
 {
     X_ConsoleVar* consoleVarsHead;
+    X_Vec2 cursor;
+    X_Vec2 size;
+    const X_Font* font;
+    X_Screen* screen;
+    _Bool isOpen;
+    char* text;
 } X_Console;
 
 
 void x_consolevar_init(X_ConsoleVar* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
+void x_console_cleanup(X_Console* console);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
-void x_console_init(X_Console* console);
+void x_console_init(X_Console* console, X_Screen* screen, X_Font* font);
+void x_console_clear(X_Console* console);
 _Bool x_console_var_exists(X_Console* console, const char* name);
+void x_console_print(X_Console* console, const char* str);
 void x_console_printf(X_Console* console, const char* format, ...);
+void x_console_render(X_Console* console);
+
 void x_console_register_var(X_Console* console, X_ConsoleVar* var);
+
+
 

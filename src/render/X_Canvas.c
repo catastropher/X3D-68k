@@ -74,7 +74,7 @@ void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X
             x_texture_set_texel(&canvas->tex, pos.x + j, pos.y + i, *charPixels++);
 }
 
-void x_canvas_draw_str(X_Canvas* canvas, const char* str, X_Font* font, X_Vec2 pos)
+void x_canvas_draw_str(X_Canvas* canvas, const char* str, const X_Font* font, X_Vec2 pos)
 {
     X_Vec2 currentPos = pos;
     

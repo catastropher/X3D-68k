@@ -15,6 +15,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #include "X_Console.h"
 
@@ -28,6 +29,11 @@ void x_consolevar_init(X_ConsoleVar* var, const char* name, X_ConsoleVarType typ
     var->next = NULL;
     
     x_consolevar_set_value(var, initialValue);
+}
+
+static int x_console_bytes_in_line(const X_Console* console)
+{
+    return console->size.x + 1;
 }
 
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
@@ -58,9 +64,31 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
     }
 }
 
-void x_console_init(X_Console* console)
+
+
+void x_console_init(X_Console* console, X_Screen* screen, X_Font* font)
 {
     console->consoleVarsHead = NULL;
+    console->isOpen = 0;
+    console->cursor = x_vec2_make(0, 0);
+    console->size.x = x_screen_w(screen) / font->charW;
+    console->size.y = x_screen_h(screen) / font->charH;
+    console->font = font;
+    console->screen = screen;
+    
+    console->text = x_malloc(x_console_bytes_in_line(console) * console->size.y);
+    x_console_clear(console);
+}
+
+void x_console_clear(X_Console* console)
+{
+    for(int i = 0; i < console->size.y; ++i)
+        console->text[i * x_console_bytes_in_line(console)] = '\0';
+}
+
+void x_console_cleanup(X_Console* console)
+{
+    x_free(console->text);
 }
 
 X_ConsoleVar* x_console_get_var(X_Console* console, const char* varName)
@@ -82,9 +110,91 @@ _Bool x_console_var_exists(X_Console* console, const char* name)
     return x_console_get_var(console, name) != NULL;
 }
 
+static void x_console_print_char(X_Console* console, char c)
+{
+    console->text[console->cursor.y * x_console_bytes_in_line(console) + console->cursor.x] = c;
+    ++console->cursor.x;
+}
+
+static void x_console_print_char_no_advance(X_Console* console, char c)
+{
+    console->text[console->cursor.y * x_console_bytes_in_line(console) + console->cursor.x] = c;
+}
+
+static void x_console_newline(X_Console* console)
+{
+    x_console_print_char(console, '\0');
+    
+    console->cursor.x = 0;
+    ++console->cursor.y;
+    
+    _Bool needsToScroll = console->cursor.y == console->size.y;
+    if(needsToScroll)
+    {
+        memmove(console->text, console->text + x_console_bytes_in_line(console), x_console_bytes_in_line(console) * (console->size.y - 1));
+        --console->cursor.y;
+        x_console_print_char_no_advance(console, '\0');
+    }
+}
+
+static _Bool is_word_char(char c)
+{
+    return c > ' ';
+}
+
+static const char* find_end_of_word(const char* str)
+{
+    const char* endOfWord = str;
+    
+    if(!is_word_char(*str))
+        return str + 1;
+    
+    do
+    {
+        ++endOfWord;
+    } while(is_word_char(*endOfWord));
+    
+    return endOfWord;
+}
+
+void x_console_print(X_Console* console, const char* str)
+{
+    while(*str)
+    {
+        if(*str == '\n')
+        {
+            x_console_newline(console);
+            ++str;
+            continue;
+        }
+        
+        const char* endOfWord = find_end_of_word(str);
+        int charsLeftOnCurrentLine = console->size.x - console->cursor.x - 1;
+        int wordLength = endOfWord - str;
+        
+        _Bool wrapToNextLine = charsLeftOnCurrentLine < wordLength;
+        if(wrapToNextLine)
+            x_console_newline(console);
+        
+        if(*str == ' ' && wrapToNextLine)
+            ++str;
+        
+        while(str < endOfWord)
+            x_console_print_char(console, *str++);
+    }
+    
+    x_console_print_char_no_advance(console, '\0');
+}
+
 void x_console_printf(X_Console* console, const char* format, ...)
 {
     
+}
+
+void x_console_render(X_Console* console)
+{
+    for(int i = 0; i < console->size.y; ++i)
+        x_canvas_draw_str(&console->screen->canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH));
 }
 
 void x_console_register_var(X_Console* console, X_ConsoleVar* var)

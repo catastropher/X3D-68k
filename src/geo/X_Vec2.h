@@ -32,3 +32,8 @@ static inline _Bool x_vec2_equal(const X_Vec2* a, const X_Vec2* b)
     return a->x == b->x && a->y == b->y;
 }
 
+static inline X_Vec2 x_vec2_make(int x, int y)
+{
+    return (X_Vec2) { x, y };
+}
+

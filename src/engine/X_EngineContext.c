@@ -32,6 +32,12 @@ static inline void init_main_font(X_EngineContext* context, const char* fontFile
     x_assert(fontLoaded, "Failed to load main font");
 }
 
+static inline void init_console(X_EngineContext* context)
+{
+    x_console_init(&context->console, &context->screen, &context->mainFont);
+    x_console_print(&context->console, "Console initialized.\n");
+}
+
 static inline void cleanup_object_factory(X_EngineContext* context)
 {
     x_factory_cleanup(&context->gameObjectFactory);
@@ -45,6 +51,11 @@ static inline void cleanup_screen(X_EngineContext* context)
 static inline void cleanup_main_font(X_EngineContext* context)
 {
     x_font_cleanup(&context->mainFont);
+}
+
+static inline void cleanup_console(X_EngineContext* context)
+{
+    x_console_cleanup(&context->console);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +73,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
     init_object_factory(context);
     init_screen(context, screenW, screenH);
     init_main_font(context, "font.xtex", 8, 8);
+    init_console(context);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -72,6 +84,7 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_object_factory(context);
     cleanup_screen(context);
     cleanup_main_font(context);
+    cleanup_console(context);
 }
 
 
