@@ -22,6 +22,8 @@ typedef struct X_Palette
     unsigned char colorRGB[256][3];
 } X_Palette;
 
+X_Color x_palette_get_closest_color_from_rgb(const X_Palette* palette, unsigned char r, unsigned char g, unsigned char b);
+
 static inline void x_palette_get_rgb(const X_Palette* palette, X_Color color, unsigned char* r, unsigned char* g, unsigned char* b)
 {
     int colorAsInt = color;
