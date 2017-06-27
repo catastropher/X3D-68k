@@ -17,6 +17,8 @@
 
 #include "memory/X_Factory.h"
 #include "render/X_Screen.h"
+#include "dev/X_Console.h"
+#include "render/X_Font.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
@@ -25,6 +27,8 @@ typedef struct X_EngineContext
 {
     X_Factory gameObjectFactory;        ///< Factory for creating new game objects
     X_Screen screen;                    ///< Virtual screen
+    X_Console console;
+    X_Font mainFont;
 } X_EngineContext;
 
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH);

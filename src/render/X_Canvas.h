@@ -17,6 +17,7 @@
 
 #include "X_Texture.h"
 #include "memory/X_alloc.h"
+#include "X_Font.h"
 
 #define X_ZBUF_FURTHEST_VALUE 0
 
@@ -28,6 +29,11 @@ typedef struct X_Canvas
     X_Texture tex;      ///< Internal texture everything gets drawn to
     short* zbuf;        ///< Z-buffer
 } X_Canvas;
+
+void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color);
+void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos);
+void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X_Vec2 pos);
+void x_canvas_draw_str(X_Canvas* canvas, const char* str, X_Font* font, X_Vec2 pos);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the width of a canvas.
@@ -112,8 +118,4 @@ static inline void x_canvas_fill(X_Canvas* canvas, X_Color fillColor)
             canvas->tex.texels[i] = fillColor;
     }
 }
-
-
-void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color);
-void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos);
 

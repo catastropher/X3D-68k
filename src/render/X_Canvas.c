@@ -65,3 +65,32 @@ void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos)
     }
 }
 
+void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X_Vec2 pos)
+{
+    const X_Color* charPixels = x_font_get_character_pixels(font, c);
+    
+    for(int i = 0; i < font->charH; ++i)
+        for(int j = 0; j < font->charW; ++j)
+            x_texture_set_texel(&canvas->tex, pos.x + j, pos.y + i, *charPixels++);
+}
+
+void x_canvas_draw_str(X_Canvas* canvas, const char* str, X_Font* font, X_Vec2 pos)
+{
+    X_Vec2 currentPos = pos;
+    
+    while(*str)
+    {
+        if(*str == '\n')
+        {
+            currentPos.x = pos.x;
+            currentPos.y += font->charH;
+        }
+        else {
+            x_canvas_draw_char(canvas, *str, font, currentPos);
+            currentPos.x += font->charW;
+        }
+        
+        ++str;
+    }
+}
+

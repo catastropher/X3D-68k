@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_EngineContext.h"
+#include "error/X_error.h"
 
 static inline void init_object_factory(X_EngineContext* context)
 {
@@ -25,6 +26,12 @@ static inline void init_screen(X_EngineContext* context, int screenW, int screen
     x_screen_init(&context->screen, screenW, screenH);
 }
 
+static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
+{
+    _Bool fontLoaded = x_font_load_from_xtex_file(&context->mainFont, fontFileName, fontW, fontH);
+    x_assert(fontLoaded, "Failed to load main font");
+}
+
 static inline void cleanup_object_factory(X_EngineContext* context)
 {
     x_factory_cleanup(&context->gameObjectFactory);
@@ -33,6 +40,11 @@ static inline void cleanup_object_factory(X_EngineContext* context)
 static inline void cleanup_screen(X_EngineContext* context)
 {
     x_screen_cleanup(&context->screen);
+}
+
+static inline void cleanup_main_font(X_EngineContext* context)
+{
+    x_font_cleanup(&context->mainFont);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,6 +61,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
     init_object_factory(context);
     init_screen(context, screenW, screenH);
+    init_main_font(context, "font.xtex", 8, 8);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +71,7 @@ void x_enginecontext_cleanup(X_EngineContext* context)
 {
     cleanup_object_factory(context);
     cleanup_screen(context);
+    cleanup_main_font(context);
 }
 
 

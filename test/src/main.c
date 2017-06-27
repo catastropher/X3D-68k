@@ -163,10 +163,6 @@ int main(int argc, char* argv[])
     
     init(&context, 640, 480);
     
-    X_Texture font;
-    if(!x_texture_load_from_xtex_file(&font, "font.xtex"))
-        x_log_error("Failed to load font");
-    
 #if 1
     
     X_RenderContext rcontext;
@@ -228,7 +224,7 @@ int main(int argc, char* argv[])
         
         SDL_WM_SetCaption(title, NULL);
         
-        x_canvas_blit_texture(&context.context.screen.canvas, &font, (X_Vec2) { 0, 0 });
+        x_canvas_draw_str(&context.context.screen.canvas, "Hello world!\n", &context.context.mainFont, (X_Vec2) { 50, 0 });
         
         update_screen(&context);
         

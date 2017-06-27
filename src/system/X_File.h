@@ -38,7 +38,7 @@ void x_file_close(X_File* file);
 unsigned char* x_file_read_contents(const char* fileName);
 int x_file_read_char(X_File* file);
 void x_file_read_cstr(X_File* file, char* dest);
-void x_file_read_buf(X_File* file, int bufSize, char* dest);
+void x_file_read_buf(X_File* file, int bufSize, void* dest);
 int x_file_read_le_int32(X_File* file);
 int x_file_read_be_int32(X_File* file);
 
@@ -51,7 +51,7 @@ void x_file_read_vec3(X_File* file, X_Vec3* dest);
 
 _Bool x_file_open_writing(X_File* file, const char* fileName);
 void x_file_write_le_int16(X_File* file, int val);
-void x_file_write_buf(X_File* file, int bufSize, const char* src);
+void x_file_write_buf(X_File* file, int bufSize, void* src);
 
 static inline _Bool x_file_is_open_for_reading(const X_File* file)
 {

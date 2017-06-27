@@ -151,7 +151,7 @@ void x_file_read_fixed_length_str(X_File* file, int strLength, char* dest)
     *dest = '\0';
 }
 
-void x_file_read_buf(X_File* file, int bufSize, char* dest)
+void x_file_read_buf(X_File* file, int bufSize, void* dest)
 {
     ASSERT_OPEN_FOR_READING(file);
     fread(dest, 1, bufSize, file->file);
@@ -191,7 +191,7 @@ void x_file_write_le_int16(X_File* file, int val)
         fputc((val >> (i * 8)) & 0xFF, file->file);
 }
 
-void x_file_write_buf(X_File* file, int bufSize, const char* src)
+void x_file_write_buf(X_File* file, int bufSize, void* src)
 {
     ASSERT_OPEN_FOR_WRITING(file);
     fwrite(src, 1, bufSize, file->file);

@@ -9,6 +9,9 @@ project(singen)
 add_executable(singen singen.cpp)
 
 project(convert-tex)
+
+set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -lasan")
+
 add_executable(convert-tex convert-tex.c)
 include_directories(/usr/local/include/X3D)
 find_package(SDL REQUIRED)

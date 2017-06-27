@@ -56,6 +56,7 @@
 
 // render
 #include "render/X_Canvas.h"
+#include "render/X_Font.h"
 #include "render/X_Palette.h"
 #include "render/X_RenderContext.h"
 #include "render/X_Screen.h"
