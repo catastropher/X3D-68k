@@ -17,11 +17,13 @@
 
 #include "X_Canvas.h"
 #include "object/X_CameraObject.h"
+#include "X_Palette.h"
 
 typedef struct X_Screen
 {
     X_Canvas canvas;
     X_CameraObject* cameraListHead;
+    X_Palette palette;
 } X_Screen;
 
 void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera);
@@ -31,6 +33,11 @@ static inline void x_screen_init(X_Screen* screen, int w, int h)
 {
     x_canvas_init(&screen->canvas, w, h);
     screen->cameraListHead = NULL;
+}
+
+static inline void x_screen_set_palette(X_Screen* screen, const X_Palette* palette)
+{
+    screen->palette = *palette;
 }
 
 static inline void x_screen_cleanup(X_Screen* screen)
