@@ -23,7 +23,8 @@ typedef enum X_ConsoleVarType
     X_CONSOLEVAR_INT,
     X_CONSOLEVAR_FLOAT,
     X_CONSOLEVAR_FP16X16,
-    X_CONSOLEVAR_STRING
+    X_CONSOLEVAR_STRING,
+    X_CONSOLEVAR_BOOL
 } X_ConsoleVarType;
 
 typedef struct X_ConsoleVar
@@ -37,6 +38,7 @@ typedef struct X_ConsoleVar
         int intValue;
         float floatValue;
         x_fp16x16 fp16x16Value;
+        _Bool boolValue;
     };
     
     struct X_ConsoleVar* next;

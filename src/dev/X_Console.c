@@ -52,6 +52,9 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
         case X_CONSOLEVAR_FP16X16:
             var->fp16x16Value = x_fp16x16_from_float(atof(varValue));
             break;
+        case X_CONSOLEVAR_BOOL:
+            var->boolValue = (strcmp(varValue, "true") == 0 || atoi(varValue) != 0);
+            break;
     }
 }
 
