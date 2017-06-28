@@ -36,15 +36,17 @@ typedef enum X_ConsoleVarType
 typedef struct X_ConsoleVar
 {
     const char* name;
-    X_String stringValue;
+    X_String assignedValueString;
     X_ConsoleVarType type;
     _Bool saveToConfig;
     
     union {
-        int intValue;
-        float floatValue;
-        x_fp16x16 fp16x16Value;
-        _Bool boolValue;
+        int* intPtr;
+        float* floatPtr;
+        x_fp16x16* fp16x16Ptr;
+        _Bool* boolPtr;
+        X_String* stringPtr;
+        void* voidPtr;
     };
     
     struct X_ConsoleVar* next;
@@ -65,20 +67,21 @@ typedef struct X_Console
 } X_Console;
 
 
-void x_consolevar_init(X_ConsoleVar* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
-void x_console_cleanup(X_Console* console);
+void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
 void x_console_init(X_Console* console, X_Screen* screen, X_Font* font);
+void x_console_cleanup(X_Console* console);
+
 void x_console_clear(X_Console* console);
 _Bool x_console_var_exists(X_Console* console, const char* name);
 void x_console_print(X_Console* console, const char* str);
 void x_console_printf(X_Console* console, const char* format, ...);
 void x_console_render(X_Console* console);
 
-void x_console_register_var(X_Console* console, X_ConsoleVar* var);
-
 void x_console_send_key(X_Console* console, X_Key key);
+
+void x_console_execute_cmd(X_Console* console, const char* str);
 
 static inline void x_console_open(X_Console* console)
 {

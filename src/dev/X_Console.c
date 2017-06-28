@@ -16,19 +16,35 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdarg.h>
 
 #include "X_Console.h"
 
-void x_consolevar_init(X_ConsoleVar* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
+static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
 {
-    x_string_init(&var->stringValue, "");
+    x_string_init(&consoleVar->assignedValueString, "");
     
-    var->name = name;
-    var->type = type;
-    var->saveToConfig = saveToConfig;
-    var->next = NULL;
+    consoleVar->name = name;
+    consoleVar->type = type;
+    consoleVar->saveToConfig = saveToConfig;
+    consoleVar->next = NULL;
+    consoleVar->voidPtr = var;
     
-    x_consolevar_set_value(var, initialValue);
+    x_consolevar_set_value(consoleVar, initialValue);
+}
+
+void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
+{
+    x_consolevar_init(consoleVar, var, name, type, initialValue, saveToConfig);
+    
+    if(x_console_var_exists(console, consoleVar->name))
+    {
+        x_console_printf(console, "Can't register variable %s, already defined\n", consoleVar->name);
+        return;
+    }
+    
+    consoleVar->next = console->consoleVarsHead;
+    console->consoleVarsHead = consoleVar;
 }
 
 static int x_console_bytes_in_line(const X_Console* console)
@@ -38,28 +54,28 @@ static int x_console_bytes_in_line(const X_Console* console)
 
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
 {
-    x_string_assign(&var->stringValue, varValue);
+    x_string_assign(&var->assignedValueString, varValue);
     /// @TODO maybe add type checking?
     
     switch(var->type)
     {
         case X_CONSOLEVAR_INT:
-            var->intValue = atoi(varValue);
+            *var->intPtr = atoi(varValue);
             break;
             
         case X_CONSOLEVAR_FLOAT:
-            var->floatValue = atoi(varValue);
+            *var->floatPtr = atoi(varValue);
             break;
             
         case X_CONSOLEVAR_STRING:
-            // string value was already assigned
+            x_string_assign(var->stringPtr, varValue);
             break;
             
         case X_CONSOLEVAR_FP16X16:
-            var->fp16x16Value = x_fp16x16_from_float(atof(varValue));
+            *var->fp16x16Ptr = x_fp16x16_from_float(atof(varValue));
             break;
         case X_CONSOLEVAR_BOOL:
-            var->boolValue = (strcmp(varValue, "true") == 0 || atoi(varValue) != 0);
+            *var->boolPtr = (strcmp(varValue, "true") == 0 || atoi(varValue) != 0);
             break;
     }
 }
@@ -192,7 +208,13 @@ void x_console_print(X_Console* console, const char* str)
 
 void x_console_printf(X_Console* console, const char* format, ...)
 {
+    va_list list;
     
+    va_start(list, format);
+    char buf[1024];
+    vsnprintf(buf, sizeof(buf), format, list);
+    
+    x_console_print(console, buf);
 }
 
 static void x_console_render_input(X_Console* console)
@@ -230,18 +252,6 @@ void x_console_render(X_Console* console)
     x_console_render_input(console);
 }
 
-void x_console_register_var(X_Console* console, X_ConsoleVar* var)
-{
-    if(x_console_var_exists(console, var->name))
-    {
-        x_console_printf(console, "Can't register variable %s, already defined\n", var->name);
-        return;
-    }
-    
-    var->next = console->consoleVarsHead;
-    console->consoleVarsHead = var;
-}
-
 void x_console_set_var(X_Console* console, const char* varName, const char* varValue)
 {
     X_ConsoleVar* var = x_console_get_var(console, varName);
@@ -268,8 +278,8 @@ void x_console_send_key(X_Console* console, X_Key key)
     
     if(key == '\n')
     {
-        x_console_print(console, console->input);
-        x_console_print(console, "\n");
+        x_console_printf(console, "%s\n", console->input);
+        x_console_execute_cmd(console, console->input);
         
         console->inputPos = 0;
         console->input[0] = '\0';
@@ -285,5 +295,119 @@ void x_console_send_key(X_Console* console, X_Key key)
         console->input[console->inputPos] = '\0';        
         return;
     }
+}
+
+typedef struct TokenContext
+{
+    X_Console* console;
+    const char* str;
+    char* tokenBuf;
+    char* tokenBufEnd;
+    char** tokens;
+    char** tokensEnd;
+    _Bool errorOccured;
+    int totalTokens;
+} TokenContext;
+
+static void skip_whitespace(TokenContext* c)
+{
+    while(*c->str == ' ')
+        ++c->str;
+}
+
+static _Bool grab_next_token(TokenContext* c)
+{
+    if(c->tokens == c->tokensEnd)
+    {
+        x_console_print(c->console, "Can't execute command (too many tokens)\n");
+        c->errorOccured = 1;
+        return 0;
+    }
+    
+    skip_whitespace(c);
+    
+    if(*c->str == '\0')
+        return 0;
+    
+    *c->tokens++ = c->tokenBuf;
+    
+    while(*c->str != '\0' && *c->str != ' ')
+    {
+        if(c->tokenBuf == c->tokenBufEnd)
+        {
+            x_console_print(c->console, "Can't execute command (command too long)\n");
+            c->errorOccured = 1;
+            return 0;
+        }
+        
+        *c->tokenBuf++ = *c->str++;
+    }
+    
+    *c->tokenBuf++ = '\0';
+    
+    return 1;
+}
+
+static void tokenize(TokenContext* c)
+{
+    c->totalTokens = 0;
+    
+    while(grab_next_token(c))
+        ++c->totalTokens;
+}
+
+static void print_value_of_variable(X_Console* console, const char* varName)
+{
+    X_ConsoleVar* var = x_console_get_var(console, varName);
+    if(!var)
+    {
+        x_console_printf(console, "Unknown variable %s\n", varName);
+        return;
+    }
+    
+    x_console_printf(console, "Variable %s is currently %s\n", varName, var->assignedValueString);
+}
+
+static void set_variable_value(X_Console* console, const char* varName, const char* varValue)
+{
+    X_ConsoleVar* var = x_console_get_var(console, varName);
+    if(!var)
+    {
+        x_console_printf(console, "Unknown variable %s\n", varName);
+        return;
+    }
+    
+    x_consolevar_set_value(var, varValue);
+}
+
+#define MAX_TOKENS 512
+#define TOKEN_BUF_SIZE 1024
+
+
+void x_console_execute_cmd(X_Console* console, const char* str)
+{
+    char tokenBuf[TOKEN_BUF_SIZE];
+    char* tokens[MAX_TOKENS];
+    
+    TokenContext context;
+    context.errorOccured = 0;
+    context.str = str;
+    context.tokenBuf = tokenBuf;
+    context.tokenBufEnd = tokenBuf + TOKEN_BUF_SIZE;
+    context.tokens = tokens;
+    context.tokensEnd = tokens + MAX_TOKENS;
+    
+    tokenize(&context);
+    
+    if(context.errorOccured)
+        return;
+    
+    if(context.totalTokens == 0)
+        return;
+    else if(context.totalTokens == 1)
+        print_value_of_variable(console, tokens[0]);
+    else if(context.totalTokens == 2)
+        set_variable_value(console, tokens[0], tokens[1]);
+    
 }
 
