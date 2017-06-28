@@ -70,12 +70,15 @@ void x_console_init(X_Console* console, X_Screen* screen, X_Font* font)
     console->isOpen = 0;
     console->cursor = x_vec2_make(0, 0);
     console->size.x = x_screen_w(screen) / font->charW;
-    console->size.y = x_screen_h(screen) / font->charH - 1;
+    console->size.y = x_screen_h(screen) / font->charH / 2;
     console->font = font;
     console->screen = screen;
     
     console->text = x_malloc(x_console_bytes_in_line(console) * console->size.y);
     x_console_clear(console);
+    
+    // FIXME: the palette hasn't been initialized by the time this is called
+    // console->backgroundColor = x_palette_get_closest_color_from_rgb(screen->palette, 0, 0, 0);
 }
 
 void x_console_clear(X_Console* console)
@@ -211,8 +214,16 @@ static void x_console_render_input(X_Console* console)
     console->input[console->inputPos] = '\0';
 }
 
+void x_console_render_background(X_Console* console)
+{
+    console->backgroundColor = x_palette_get_closest_color_from_rgb(console->screen->palette, 0, 0, 0);
+    x_canvas_fill_rect(&console->screen->canvas, x_vec2_make(0, 0), x_vec2_make(x_screen_w(console->screen) - 1, (console->size.y + 1) * console->font->charH - 1), console->backgroundColor);
+}
+
 void x_console_render(X_Console* console)
 {
+    x_console_render_background(console);
+    
     for(int i = 0; i < console->size.y; ++i)
         x_canvas_draw_str(&console->screen->canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH));
     

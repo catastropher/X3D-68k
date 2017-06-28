@@ -61,6 +61,7 @@ typedef struct X_Console
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;
+    X_Color backgroundColor;
 } X_Console;
 
 

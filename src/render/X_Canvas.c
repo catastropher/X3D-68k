@@ -94,3 +94,14 @@ void x_canvas_draw_str(X_Canvas* canvas, const char* str, const X_Font* font, X_
     }
 }
 
+void x_canvas_fill_rect(X_Canvas* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color)
+{
+    for(int y = topLeft.y; y <= bottomRight.y; ++y)
+    {
+        for(int x = topLeft.x; x <= bottomRight.x; ++x)
+        {
+            x_texture_set_texel(&canvas->tex, x, y, color);
+        }
+    }
+}
+
