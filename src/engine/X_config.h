@@ -21,3 +21,7 @@
 // Cursor blink time for the console (in ms)
 #define X_CONSOLE_CURSOR_BLINK_TIME 250
 
+// Total time for the console to open or close (in ms)
+#define X_CONSOLE_TOGGLE_TIME 250
+
+

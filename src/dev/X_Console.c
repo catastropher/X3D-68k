@@ -23,6 +23,18 @@
 #include "engine/X_config.h"
 #include "util/X_util.h"
 
+void x_console_open(X_Console* console)
+{
+    console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
+    console->openState = X_CONSOLE_STATE_OPENING;
+}
+
+void x_console_close(X_Console* console)
+{
+    console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
+    console->openState = X_CONSOLE_STATE_CLOSING;
+}
+
 static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
 {
     x_string_init(&consoleVar->assignedValueString, "");
@@ -85,8 +97,8 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
 
 void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* font)
 {
+    console->openState = X_CONSOLE_STATE_CLOSED;
     console->consoleVarsHead = NULL;
-    console->isOpen = 0;
     console->cursor = x_vec2_make(0, 0);
     console->size.x = x_screen_w(&engineContext->screen) / font->charW;
     console->size.y = x_screen_h(&engineContext->screen) / font->charH / 2;
@@ -98,9 +110,6 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
     
     console->text = x_malloc(x_console_bytes_in_line(console) * console->size.y);
     x_console_clear(console);
-    
-    // FIXME: the palette hasn't been initialized by the time this is called
-    // console->backgroundColor = x_palette_get_closest_color_from_rgb(screen->palette, 0, 0, 0);
 }
 
 void x_console_clear(X_Console* console)
@@ -258,8 +267,8 @@ static void x_console_render_input(X_Console* console)
     int y = nextEmptyLine * console->font->charH;
     
     X_Canvas* canvas = &console->engineContext->screen.canvas;
-    x_canvas_draw_char(canvas, ']', console->font, x_vec2_make(0, y));
-    x_canvas_draw_str(canvas, input, console->font, x_vec2_make(console->font->charW * 2, y));
+    x_canvas_draw_char(canvas, ']', console->font, x_vec2_make(0, y + console->renderYOffset));
+    x_canvas_draw_str(canvas, input, console->font, x_vec2_make(console->font->charW * 2, y + console->renderYOffset));
     
     console->input[console->inputPos] = '\0';
 }
@@ -269,17 +278,56 @@ void x_console_render_background(X_Console* console)
     X_Screen* screen = &console->engineContext->screen;
     X_Canvas* canvas = &screen->canvas;
     
-    console->backgroundColor = x_palette_get_closest_color_from_rgb(screen->palette, 0, 0, 0);
-    x_canvas_fill_rect(canvas, x_vec2_make(0, 0), x_vec2_make(x_screen_w(screen) - 1, (console->size.y + 1) * console->font->charH - 1), console->backgroundColor);
+    X_Palette* palette = console->engineContext->screen.palette;
+    X_Color backgroundColor = palette->black;
+    X_Color lineColor = palette->darkRed;
+    
+    int consoleHeight = console->size.y * console->font->charH;
+    int consoleBottomY = consoleHeight + console->renderYOffset;
+    
+    x_canvas_fill_rect(canvas, x_vec2_make(0, console->renderYOffset), x_vec2_make(x_screen_w(screen) - 1, (console->size.y + 1) * console->font->charH - 1  + console->renderYOffset), backgroundColor);
+    x_canvas_draw_line(canvas, x_vec2_make(0, consoleBottomY), x_vec2_make(x_canvas_w(canvas) - 1, consoleBottomY), lineColor);
+}
+
+void handle_console_opening_mode(X_Console* console)
+{
+    int consoleHeight = console->size.y * console->font->charH;
+    
+    if(console->openState == X_CONSOLE_STATE_OPENING)
+    {
+        X_Time time = x_enginecontext_get_time(console->engineContext);
+        console->renderYOffset = -consoleHeight * (X_CONSOLE_TOGGLE_TIME - ((int)(time - console->consoleToggleTime))) / X_CONSOLE_TOGGLE_TIME;
+        
+        if(console->renderYOffset >= 0)
+        {
+            console->renderYOffset = 0;
+            console->openState = X_CONSOLE_STATE_OPEN;
+        }
+    }
+    else if(console->openState == X_CONSOLE_STATE_CLOSING)
+    {
+        X_Time time = x_enginecontext_get_time(console->engineContext);
+        console->renderYOffset = -consoleHeight * ((int)(time - console->consoleToggleTime)) / X_CONSOLE_TOGGLE_TIME;
+        
+        if(console->renderYOffset <= -consoleHeight)
+        {
+            console->openState = X_CONSOLE_STATE_CLOSED;
+        }
+    }
 }
 
 void x_console_render(X_Console* console)
 {
+    handle_console_opening_mode(console);
+    
+    if(!x_console_is_open(console))
+        return;
+    
     x_console_render_background(console);
     
     X_Canvas* canvas = &console->engineContext->screen.canvas;
     for(int i = 0; i < console->size.y; ++i)
-        x_canvas_draw_str(canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH));
+        x_canvas_draw_str(canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH + console->renderYOffset));
     
     x_console_render_input(console);
 }

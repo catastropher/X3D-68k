@@ -15,6 +15,24 @@
 
 #include "X_Palette.h"
 
+static void x_palette_set_palette_color_constants(X_Palette* palette)
+{
+    palette->black = x_palette_get_closest_color_from_rgb(palette, 0, 0, 0);
+    palette->white = x_palette_get_closest_color_from_rgb(palette, 255, 255, 255);
+    
+    palette->lightGray = x_palette_get_closest_color_from_rgb(palette, 128, 128, 128);
+    palette->darkGray = x_palette_get_closest_color_from_rgb(palette, 64, 64, 64);
+    
+    palette->lightGreen = x_palette_get_closest_color_from_rgb(palette, 0, 255, 0);
+    palette->darkGreen = x_palette_get_closest_color_from_rgb(palette, 0, 128, 0);
+    
+    palette->lightBlue = x_palette_get_closest_color_from_rgb(palette, 0, 0, 255);
+    palette->darkBlue = x_palette_get_closest_color_from_rgb(palette, 0, 0, 128);
+    
+    palette->brightRed = x_palette_get_closest_color_from_rgb(palette, 255, 0, 0);
+    palette->darkRed =  x_palette_get_closest_color_from_rgb(palette, 128, 0, 0);
+}
+
 static int x_palette_calculate_color_distance(const X_Palette* palette, X_Color color, unsigned char r, unsigned char g, unsigned char b)
 {
     unsigned char colorR, colorG, colorB;
@@ -46,7 +64,7 @@ X_Color x_palette_get_closest_color_from_rgb(const X_Palette* palette, unsigned 
     return closestColor;
 }
 
-static const X_Palette quakeColorPalette =
+static X_Palette quakeColorPalette =
 {
     {
         {   0,   0,   0 },
@@ -310,6 +328,7 @@ static const X_Palette quakeColorPalette =
 
 const X_Palette* x_palette_get_quake_palette(void)
 {
+    x_palette_set_palette_color_constants(&quakeColorPalette);
     return &quakeColorPalette;
 }
 

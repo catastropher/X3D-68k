@@ -68,9 +68,21 @@ void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos)
 void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X_Vec2 pos)
 {
     const X_Color* charPixels = x_font_get_character_pixels(font, c);
+
+    X_Vec2 clippedTopLeft = x_vec2_make
+    (
+        X_MAX(0, pos.x) - pos.x,
+        X_MAX(0, pos.y) - pos.y
+    );
     
-    for(int i = 0; i < font->charH; ++i)
-        for(int j = 0; j < font->charW; ++j)
+    X_Vec2 clippedBottomRight = x_vec2_make
+    (
+        X_MIN(x_canvas_w(canvas), pos.x + font->charW) - pos.x,
+        X_MIN(x_canvas_h(canvas), pos.y + font->charH) - pos.y
+    );
+    
+    for(int i = clippedTopLeft.y; i < clippedBottomRight.y; ++i)
+        for(int j = clippedTopLeft.x; j < clippedBottomRight.x; ++j)
             x_texture_set_texel(&canvas->tex, pos.x + j, pos.y + i, *charPixels++);
 }
 
@@ -94,8 +106,20 @@ void x_canvas_draw_str(X_Canvas* canvas, const char* str, const X_Font* font, X_
     }
 }
 
+void x_canvas_clamp_vec2(const X_Canvas* canvas, X_Vec2* v)
+{
+    v->x = X_MAX(v->x, 0);
+    v->x = X_MIN(v->x, x_canvas_w(canvas) - 1);
+    
+    v->y = X_MAX(v->y, 0);
+    v->y = X_MIN(v->y,x_canvas_h(canvas) - 1);
+}
+
 void x_canvas_fill_rect(X_Canvas* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color)
 {
+    x_canvas_clamp_vec2(canvas, &topLeft);
+    x_canvas_clamp_vec2(canvas, &bottomRight);
+    
     for(int y = topLeft.y; y <= bottomRight.y; ++y)
     {
         for(int x = topLeft.x; x <= bottomRight.x; ++x)

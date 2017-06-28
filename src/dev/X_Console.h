@@ -55,6 +55,14 @@ typedef struct X_ConsoleVar
     struct X_ConsoleVar* next;
 } X_ConsoleVar;
 
+typedef enum X_ConsoleOpenState
+{
+    X_CONSOLE_STATE_OPEN,
+    X_CONSOLE_STATE_CLOSED,
+    X_CONSOLE_STATE_OPENING,
+    X_CONSOLE_STATE_CLOSING
+} X_ConsoleOpenState;
+
 typedef struct X_Console
 {
     X_ConsoleVar* consoleVarsHead;
@@ -62,17 +70,21 @@ typedef struct X_Console
     X_Vec2 size;
     const X_Font* font;
     struct X_EngineContext* engineContext;
-    _Bool isOpen;
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;
-    X_Color backgroundColor;
     
     _Bool showCursor;
     X_Time lastCursorBlink;
     X_Key lastKeyPressed;
+    
+    X_ConsoleOpenState openState;
+    int renderYOffset;
+    X_Time consoleToggleTime;
 } X_Console;
 
+void x_console_open(X_Console* console);
+void x_console_close(X_Console* console);
 
 void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
@@ -90,18 +102,9 @@ void x_console_send_key(X_Console* console, X_Key key);
 
 void x_console_execute_cmd(X_Console* console, const char* str);
 
-static inline void x_console_open(X_Console* console)
-{
-    console->isOpen = 1;
-}
-
-static inline void x_console_close(X_Console* console)
-{
-    console->isOpen = 0;
-}
-
 static inline _Bool x_console_is_open(const X_Console* console)
 {
-    return console->isOpen;
+    return console->openState != X_CONSOLE_STATE_CLOSED;
 }
+
 

@@ -30,6 +30,7 @@ typedef struct X_Canvas
     short* zbuf;        ///< Z-buffer
 } X_Canvas;
 
+void x_canvas_clamp_vec2(const X_Canvas* canvas, X_Vec2* v);
 void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color);
 void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos);
 void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X_Vec2 pos);
