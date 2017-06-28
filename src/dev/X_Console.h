@@ -70,6 +70,7 @@ typedef struct X_Console
     
     _Bool showCursor;
     X_Time lastCursorBlink;
+    X_Key lastKeyPressed;
 } X_Console;
 
 

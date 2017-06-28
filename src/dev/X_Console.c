@@ -21,6 +21,7 @@
 #include "X_Console.h"
 #include "engine/X_EngineContext.h"
 #include "engine/X_config.h"
+#include "util/X_util.h"
 
 static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
 {
@@ -295,8 +296,91 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
+static _Bool x_console_autocomplete(X_Console* console)
+{
+    int inputLength = console->inputPos;
+    int minMatchLength = 0x7FFFFFFF;
+    const char* minMatchStr = console->input;
+    
+    for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
+    {
+        int matchLength = x_count_prefix_match_length(minMatchStr, var->name);
+        
+        if(matchLength >= inputLength)
+        {
+            if(minMatchStr == console->input)
+            {
+                minMatchStr = var->name;
+                minMatchLength = strlen(var->name);
+            }
+            else if(matchLength < minMatchLength) {
+                minMatchLength = matchLength;
+                minMatchStr = var->name;
+            }
+        }
+    }
+    
+    if(minMatchStr != console->input)
+    {
+        x_strncpy(console->input, minMatchStr, minMatchLength);
+        console->inputPos = strlen(console->input);
+    }
+    
+    return minMatchLength == strlen(minMatchStr);
+}
+
+#define  MATCHES_PER_ROW 4
+#define MATCH_SPACING 4
+
+static void x_console_print_autocomplete_matches(X_Console* console)
+{
+    const int MAX_AUTOCOMPLETE_MATCHES = 128;
+    const char* autocompleteMatches[MAX_AUTOCOMPLETE_MATCHES];
+    int totalAutocompleteMatches = 0;
+    
+    int inputLength = console->inputPos;
+    
+    for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
+    {
+        if(x_count_prefix_match_length(console->input, var->name) == inputLength)
+        {
+            autocompleteMatches[totalAutocompleteMatches++] = var->name;
+        }
+    }
+    int colWidth[MATCHES_PER_ROW] = { 0 };
+    
+    for(int col = 0; col < MATCHES_PER_ROW; ++col)
+    {
+        for(int match = col; match < totalAutocompleteMatches; match += MATCHES_PER_ROW)
+        {
+            colWidth[col] = X_MAX(colWidth[col], strlen(autocompleteMatches[match]));
+        }
+    }
+    
+    x_console_printf(console, "] %s\n\n", console->input);
+    
+    for(int match = 0; match < totalAutocompleteMatches; ++match)
+    {
+        int row = match / MATCHES_PER_ROW;
+        int col = match % MATCHES_PER_ROW;
+        
+        if(col == 0 && row != 0)
+            x_console_print(console, "\n");
+        
+        x_console_print(console, autocompleteMatches[match]);
+        
+        for(int i = 0; i < colWidth[col] - strlen(autocompleteMatches[match]) + MATCH_SPACING; ++i)
+            x_console_print(console, " ");
+    }
+    
+    x_console_print(console, "\n\n");
+}
+
 void x_console_send_key(X_Console* console, X_Key key)
 {
+    X_Key lastKey = console->lastKeyPressed;
+    console->lastKeyPressed = key;
+    
     if(key == '\b')
     {
         if(console->inputPos > 0) {
@@ -314,6 +398,17 @@ void x_console_send_key(X_Console* console, X_Key key)
         
         console->inputPos = 0;
         console->input[0] = '\0';
+        
+        return;
+    }
+    
+    if(key == '\t')
+    {
+        if(!x_console_autocomplete(console) && lastKey == '\t')
+        {
+            x_console_print_autocomplete_matches(console);
+            console->lastKeyPressed = 0;
+        }
         
         return;
     }

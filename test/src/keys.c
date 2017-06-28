@@ -30,6 +30,9 @@ int convert_sdl_key_to_x3d_key(int sdlKey)
     if(sdlKey == SDLK_BACKSPACE)
         return '\b';
     
+    if(sdlKey == SDLK_TAB)
+        return '\t';
+    
     if(sdlKey == SDLK_BACKQUOTE)
         return X_KEY_OPEN_CONSOLE;
     

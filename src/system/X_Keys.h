@@ -20,6 +20,7 @@
 typedef enum X_Key
 {
     X_KEY_ENTER = '\n',
+    X_KEY_TAB = 't',
     X_KEY_OPEN_CONSOLE = 128,
     X_KEY_SHIFT,
     X_KEY_UP,
