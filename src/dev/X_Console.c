@@ -231,7 +231,11 @@ static void x_console_render_input(X_Console* console)
         input += charsToScrollHorizontallyBy;
     }
     
-    x_canvas_draw_str(&console->screen->canvas, input, console->font, x_vec2_make(0, console->size.y * console->font->charH));
+    int nextEmptyLine = console->cursor.y + (console->cursor.x == 0 ? 0 : 1);
+    int y = nextEmptyLine * console->font->charH;
+    
+    x_canvas_draw_char(&console->screen->canvas, ']', console->font, x_vec2_make(0, y));
+    x_canvas_draw_str(&console->screen->canvas, input, console->font, x_vec2_make(console->font->charW * 2, y));
     
     console->input[console->inputPos] = '\0';
 }
@@ -278,7 +282,7 @@ void x_console_send_key(X_Console* console, X_Key key)
     
     if(key == '\n')
     {
-        x_console_printf(console, "%s\n", console->input);
+        x_console_printf(console, "] %s\n", console->input);
         x_console_execute_cmd(console, console->input);
         
         console->inputPos = 0;
@@ -356,7 +360,7 @@ static void tokenize(TokenContext* c)
         ++c->totalTokens;
 }
 
-static void print_value_of_variable(X_Console* console, const char* varName)
+static void print_variable_value(X_Console* console, const char* varName)
 {
     X_ConsoleVar* var = x_console_get_var(console, varName);
     if(!var)
@@ -405,7 +409,7 @@ void x_console_execute_cmd(X_Console* console, const char* str)
     if(context.totalTokens == 0)
         return;
     else if(context.totalTokens == 1)
-        print_value_of_variable(console, tokens[0]);
+        print_variable_value(console, tokens[0]);
     else if(context.totalTokens == 2)
         set_variable_value(console, tokens[0], tokens[1]);
     
