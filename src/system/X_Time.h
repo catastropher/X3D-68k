@@ -13,11 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
-// Enables colord output for different types of logging
-#define X_ENABLE_COLOR_LOG 1
-
-// Cursor blink time for the console (in ms)
-#define X_CONSOLE_CURSOR_BLINK_TIME 250
+/// Time measured in milliseconds since the engine started running
+typedef unsigned int X_Time;
 

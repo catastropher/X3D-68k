@@ -19,6 +19,8 @@
 #include <stdarg.h>
 
 #include "X_Console.h"
+#include "engine/X_EngineContext.h"
+#include "engine/X_config.h"
 
 static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
 {
@@ -80,15 +82,18 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
     }
 }
 
-void x_console_init(X_Console* console, X_Screen* screen, X_Font* font)
+void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* font)
 {
     console->consoleVarsHead = NULL;
     console->isOpen = 0;
     console->cursor = x_vec2_make(0, 0);
-    console->size.x = x_screen_w(screen) / font->charW;
-    console->size.y = x_screen_h(screen) / font->charH / 2;
+    console->size.x = x_screen_w(&engineContext->screen) / font->charW;
+    console->size.y = x_screen_h(&engineContext->screen) / font->charH / 2;
     console->font = font;
-    console->screen = screen;
+    console->engineContext = engineContext;
+    
+    console->lastCursorBlink = x_enginecontext_get_time(engineContext);
+    console->showCursor = 1;
     
     console->text = x_malloc(x_console_bytes_in_line(console) * console->size.y);
     x_console_clear(console);
@@ -219,9 +224,20 @@ void x_console_printf(X_Console* console, const char* format, ...)
 
 static void x_console_render_input(X_Console* console)
 {
-    unsigned char cursorChar = 11;
-    console->input[console->inputPos] = cursorChar;
-    console->input[console->inputPos + 1] = '\0';
+    X_Time currentTime = x_enginecontext_get_time(console->engineContext);
+    
+    if(currentTime - console->lastCursorBlink >= X_CONSOLE_CURSOR_BLINK_TIME)
+    {
+        console->showCursor = !console->showCursor;
+        console->lastCursorBlink = currentTime;
+    }
+    
+    if(console->showCursor)
+    {
+        const unsigned char CURSOR_CHAR = 11;
+        console->input[console->inputPos] = CURSOR_CHAR;
+        console->input[console->inputPos + 1] = '\0';
+    }
     
     char* input = console->input;
     
@@ -234,24 +250,29 @@ static void x_console_render_input(X_Console* console)
     int nextEmptyLine = console->cursor.y + (console->cursor.x == 0 ? 0 : 1);
     int y = nextEmptyLine * console->font->charH;
     
-    x_canvas_draw_char(&console->screen->canvas, ']', console->font, x_vec2_make(0, y));
-    x_canvas_draw_str(&console->screen->canvas, input, console->font, x_vec2_make(console->font->charW * 2, y));
+    X_Canvas* canvas = &console->engineContext->screen.canvas;
+    x_canvas_draw_char(canvas, ']', console->font, x_vec2_make(0, y));
+    x_canvas_draw_str(canvas, input, console->font, x_vec2_make(console->font->charW * 2, y));
     
     console->input[console->inputPos] = '\0';
 }
 
 void x_console_render_background(X_Console* console)
 {
-    console->backgroundColor = x_palette_get_closest_color_from_rgb(console->screen->palette, 0, 0, 0);
-    x_canvas_fill_rect(&console->screen->canvas, x_vec2_make(0, 0), x_vec2_make(x_screen_w(console->screen) - 1, (console->size.y + 1) * console->font->charH - 1), console->backgroundColor);
+    X_Screen* screen = &console->engineContext->screen;
+    X_Canvas* canvas = &screen->canvas;
+    
+    console->backgroundColor = x_palette_get_closest_color_from_rgb(screen->palette, 0, 0, 0);
+    x_canvas_fill_rect(canvas, x_vec2_make(0, 0), x_vec2_make(x_screen_w(screen) - 1, (console->size.y + 1) * console->font->charH - 1), console->backgroundColor);
 }
 
 void x_console_render(X_Console* console)
 {
     x_console_render_background(console);
     
+    X_Canvas* canvas = &console->engineContext->screen.canvas;
     for(int i = 0; i < console->size.y; ++i)
-        x_canvas_draw_str(&console->screen->canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH));
+        x_canvas_draw_str(canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH));
     
     x_console_render_input(console);
 }

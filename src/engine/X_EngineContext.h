@@ -19,6 +19,7 @@
 #include "render/X_Screen.h"
 #include "dev/X_Console.h"
 #include "render/X_Font.h"
+#include "system/X_Time.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
@@ -34,4 +35,5 @@ typedef struct X_EngineContext
 
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH);
 void x_enginecontext_cleanup(X_EngineContext* context);
+X_Time x_enginecontext_get_time(const X_EngineContext* context);
 

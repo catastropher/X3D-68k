@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <time.h>
+
 #include "X_EngineContext.h"
 #include "error/X_error.h"
 
@@ -34,7 +36,7 @@ static inline void init_main_font(X_EngineContext* context, const char* fontFile
 
 static inline void init_console(X_EngineContext* context)
 {
-    x_console_init(&context->console, &context->screen, &context->mainFont);
+    x_console_init(&context->console, context, &context->mainFont);
     x_console_print(&context->console, "Console initialized.\n");
     
     static int i;
@@ -99,4 +101,8 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_console(context);
 }
 
+X_Time x_enginecontext_get_time(const X_EngineContext* context)
+{
+    return clock() * 1000 / CLOCKS_PER_SEC;
+}
 

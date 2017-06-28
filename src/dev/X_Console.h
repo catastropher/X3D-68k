@@ -21,6 +21,7 @@
 #include "render/X_Font.h"
 #include "render/X_Screen.h"
 #include "system/X_Keys.h"
+#include "system/X_Time.h"
 
 typedef enum X_ConsoleVarType
 {
@@ -32,6 +33,8 @@ typedef enum X_ConsoleVarType
 } X_ConsoleVarType;
 
 #define X_CONSOLE_INPUT_BUF_SIZE 512
+
+struct X_EngineContext;
 
 typedef struct X_ConsoleVar
 {
@@ -58,19 +61,22 @@ typedef struct X_Console
     X_Vec2 cursor;
     X_Vec2 size;
     const X_Font* font;
-    X_Screen* screen;
+    struct X_EngineContext* engineContext;
     _Bool isOpen;
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;
     X_Color backgroundColor;
+    
+    _Bool showCursor;
+    X_Time lastCursorBlink;
 } X_Console;
 
 
 void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
-void x_console_init(X_Console* console, X_Screen* screen, X_Font* font);
+void x_console_init(X_Console* console, struct X_EngineContext* engineContext, X_Font* font);
 void x_console_cleanup(X_Console* console);
 
 void x_console_clear(X_Console* console);
