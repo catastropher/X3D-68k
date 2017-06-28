@@ -71,7 +71,7 @@ void init(Context* context, int screenW, int screenH)
     
     init_sdl(context, screenW, screenH);
     init_x3d(context, screenW, screenH);
-    build_color_table(context->screen);
+    build_color_table(context->screen);    
 }
 
 void cleanup_sdl(Context* context)

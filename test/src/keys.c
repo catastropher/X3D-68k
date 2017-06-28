@@ -24,9 +24,6 @@ _Bool keyState[TOTAL_SDL_KEYS];
 
 int convert_sdl_key_to_x3d_key(int sdlKey)
 {
-    if(isalnum(sdlKey))
-        return sdlKey;
-    
     if(sdlKey == SDLK_RETURN)
         return '\n';
     
@@ -41,6 +38,21 @@ int convert_sdl_key_to_x3d_key(int sdlKey)
     
     if(sdlKey == SDLK_LSHIFT || sdlKey == SDLK_RSHIFT)
         return X_KEY_SHIFT;
+    
+    if(sdlKey == SDLK_UP)
+        return X_KEY_UP;
+    
+    if(sdlKey == SDLK_DOWN)
+        return X_KEY_DOWN;
+    
+    if(sdlKey == SDLK_LEFT)
+        return X_KEY_LEFT;
+    
+    if(sdlKey == SDLK_RIGHT)
+        return X_KEY_RIGHT;
+    
+    if(isalnum(sdlKey))
+        return sdlKey;
     
     return INVALID_KEY;
 }

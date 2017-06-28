@@ -21,7 +21,11 @@ typedef enum X_Key
 {
     X_KEY_ENTER = '\n',
     X_KEY_OPEN_CONSOLE = 128,
-    X_KEY_SHIFT = 129
+    X_KEY_SHIFT,
+    X_KEY_UP,
+    X_KEY_DOWN,
+    X_KEY_LEFT,
+    X_KEY_RIGHT
 } X_Key;
 
 #define X_KEY_QUEUE_SIZE 32
