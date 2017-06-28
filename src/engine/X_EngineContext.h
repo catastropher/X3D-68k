@@ -29,6 +29,7 @@ typedef struct X_EngineContext
     X_Screen screen;                    ///< Virtual screen
     X_Console console;
     X_Font mainFont;
+    X_KeyState keystate;
 } X_EngineContext;
 
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH);

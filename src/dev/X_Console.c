@@ -64,15 +64,13 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
     }
 }
 
-
-
 void x_console_init(X_Console* console, X_Screen* screen, X_Font* font)
 {
     console->consoleVarsHead = NULL;
     console->isOpen = 0;
     console->cursor = x_vec2_make(0, 0);
     console->size.x = x_screen_w(screen) / font->charW;
-    console->size.y = x_screen_h(screen) / font->charH;
+    console->size.y = x_screen_h(screen) / font->charH - 1;
     console->font = font;
     console->screen = screen;
     
@@ -84,6 +82,9 @@ void x_console_clear(X_Console* console)
 {
     for(int i = 0; i < console->size.y; ++i)
         console->text[i * x_console_bytes_in_line(console)] = '\0';
+    
+    console->inputPos = 0;
+    console->input[0] = '\0';
 }
 
 void x_console_cleanup(X_Console* console)
@@ -191,10 +192,31 @@ void x_console_printf(X_Console* console, const char* format, ...)
     
 }
 
+static void x_console_render_input(X_Console* console)
+{
+    unsigned char cursorChar = 11;
+    console->input[console->inputPos] = cursorChar;
+    console->input[console->inputPos + 1] = '\0';
+    
+    char* input = console->input;
+    
+    if(console->inputPos + 1 >= console->size.x)
+    {
+        int charsToScrollHorizontallyBy = console->inputPos + 1 - console->size.x;
+        input += charsToScrollHorizontallyBy;
+    }
+    
+    x_canvas_draw_str(&console->screen->canvas, input, console->font, x_vec2_make(0, console->size.y * console->font->charH));
+    
+    console->input[console->inputPos] = '\0';
+}
+
 void x_console_render(X_Console* console)
 {
     for(int i = 0; i < console->size.y; ++i)
         x_canvas_draw_str(&console->screen->canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH));
+    
+    x_console_render_input(console);
 }
 
 void x_console_register_var(X_Console* console, X_ConsoleVar* var)
@@ -221,4 +243,36 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
+void x_console_send_key(X_Console* console, X_Key key)
+{
+    if(key == '\b')
+    {
+        if(console->inputPos > 0) {
+            --console->inputPos;
+            console->input[console->inputPos] = '\0';
+        }
+        
+        return;
+    }
+    
+    if(key == '\n')
+    {
+        x_console_print(console, console->input);
+        x_console_print(console, "\n");
+        
+        console->inputPos = 0;
+        console->input[0] = '\0';
+        
+        return;
+    }
+    
+    if(key < 128 && isprint(key))
+    {
+        if(console->inputPos + 1 < X_CONSOLE_INPUT_BUF_SIZE)
+            console->input[console->inputPos++] = key;
+        
+        console->input[console->inputPos] = '\0';        
+        return;
+    }
+}
 

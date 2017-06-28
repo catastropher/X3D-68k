@@ -38,6 +38,11 @@ static inline void init_console(X_EngineContext* context)
     x_console_print(&context->console, "Console initialized.\n");
 }
 
+static inline void init_keystate(X_EngineContext* context)
+{
+    x_keystate_init(&context->keystate);
+}
+
 static inline void cleanup_object_factory(X_EngineContext* context)
 {
     x_factory_cleanup(&context->gameObjectFactory);
@@ -74,6 +79,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
     init_screen(context, screenW, screenH);
     init_main_font(context, "font.xtex", 8, 8);
     init_console(context);
+    init_keystate(context);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

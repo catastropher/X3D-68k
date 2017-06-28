@@ -90,12 +90,43 @@ void cleanup(Context* context)
     cleanup_x3d(context);
 }
 
+void handle_console_keys(X_EngineContext* context)
+{
+    X_Key key;
+    while(x_keystate_dequeue(&context->keystate, &key))
+    {
+        if(key == X_KEY_OPEN_CONSOLE)
+        {
+            x_console_close(&context->console);
+            x_keystate_reset_keys(&context->keystate);
+            x_keystate_disable_text_input(&context->keystate);
+            return;
+        }
+        
+        x_console_send_key(&context->console, key);
+    }
+}
+
 void handle_keys(Context* context)
 {
-    handle_key_events();
+    handle_key_events(&context->context);
     
     _Bool adjustCam = 0;
     
+    if(x_console_is_open(&context->context.console))
+    {
+        handle_console_keys(&context->context);
+        return;
+    }
+    
+    if(x_keystate_key_down(&context->context.keystate, X_KEY_OPEN_CONSOLE))
+    {
+        x_console_open(&context->context.console);
+        x_keystate_reset_keys(&context->context.keystate);
+        x_keystate_enable_text_input(&context->context.keystate);
+        return;
+    }
+
     if(key_is_down(SDLK_UP))
     {
         context->cam->angleX--;
@@ -186,26 +217,16 @@ int main(int argc, char* argv[])
     
     while(!context.quit)
     {
-        
-        ++frame;
-        
-        if((frame % 5) == 0)
-        {
-            char str[64];
-            sprintf(str, "%d\n", frame / 5);
-            
-            x_console_print(&context.context.console, str);
-        }
-        
         x_canvas_fill(&context.context.screen.canvas, 0);
 
         handle_keys(&context);
         
         draw_grid(x_vec3_make(0, 0, 500), 32 * 16, 32, &rcontext, 4);
         
-        x_console_render(&context.context.console);
+        if(x_console_is_open(&context.context.console))
+            x_console_render(&context.context.console);
         
-        update_screen(&context);
+        update_screen(&context);        
     }
     
     cleanup(&context);

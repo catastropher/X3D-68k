@@ -64,6 +64,7 @@ add_library(X3D STATIC
     
     # system
     src/system/X_File.c
+    src/system/X_Keys.c
 )
 
 install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)

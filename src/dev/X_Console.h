@@ -20,6 +20,7 @@
 #include "geo/X_Vec2.h"
 #include "render/X_Font.h"
 #include "render/X_Screen.h"
+#include "system/X_Keys.h"
 
 typedef enum X_ConsoleVarType
 {
@@ -29,6 +30,8 @@ typedef enum X_ConsoleVarType
     X_CONSOLEVAR_STRING,
     X_CONSOLEVAR_BOOL
 } X_ConsoleVarType;
+
+#define X_CONSOLE_INPUT_BUF_SIZE 512
 
 typedef struct X_ConsoleVar
 {
@@ -56,6 +59,8 @@ typedef struct X_Console
     X_Screen* screen;
     _Bool isOpen;
     char* text;
+    char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
+    int inputPos;
 } X_Console;
 
 
@@ -72,5 +77,20 @@ void x_console_render(X_Console* console);
 
 void x_console_register_var(X_Console* console, X_ConsoleVar* var);
 
+void x_console_send_key(X_Console* console, X_Key key);
 
+static inline void x_console_open(X_Console* console)
+{
+    console->isOpen = 1;
+}
+
+static inline void x_console_close(X_Console* console)
+{
+    console->isOpen = 0;
+}
+
+static inline _Bool x_console_is_open(const X_Console* console)
+{
+    return console->isOpen;
+}
 
