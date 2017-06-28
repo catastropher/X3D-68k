@@ -225,9 +225,9 @@ static void x_console_render_input(X_Console* console)
     
     char* input = console->input;
     
-    if(console->inputPos + 1 >= console->size.x)
+    if(console->inputPos + 3 >= console->size.x)
     {
-        int charsToScrollHorizontallyBy = console->inputPos + 1 - console->size.x;
+        int charsToScrollHorizontallyBy = console->inputPos + 1 + 2 - console->size.x;
         input += charsToScrollHorizontallyBy;
     }
     
@@ -412,6 +412,5 @@ void x_console_execute_cmd(X_Console* console, const char* str)
         print_variable_value(console, tokens[0]);
     else if(context.totalTokens == 2)
         set_variable_value(console, tokens[0], tokens[1]);
-    
 }
 
