@@ -222,7 +222,7 @@ void x_console_printf(X_Console* console, const char* format, ...)
     x_console_print(console, buf);
 }
 
-static void x_console_render_input(X_Console* console)
+static void handle_cursor_blinking(X_Console* console)
 {
     X_Time currentTime = x_enginecontext_get_time(console->engineContext);
     
@@ -231,6 +231,11 @@ static void x_console_render_input(X_Console* console)
         console->showCursor = !console->showCursor;
         console->lastCursorBlink = currentTime;
     }
+}
+
+static void x_console_render_input(X_Console* console)
+{
+    handle_cursor_blinking(console);
     
     if(console->showCursor)
     {
@@ -240,10 +245,11 @@ static void x_console_render_input(X_Console* console)
     }
     
     char* input = console->input;
+    int inputLenghtIncludingCursor = console->inputPos + 3; 
     
-    if(console->inputPos + 3 >= console->size.x)
+    if(inputLenghtIncludingCursor >= console->size.x)
     {
-        int charsToScrollHorizontallyBy = console->inputPos + 1 + 2 - console->size.x;
+        int charsToScrollHorizontallyBy = inputLenghtIncludingCursor - console->size.x;
         input += charsToScrollHorizontallyBy;
     }
     

@@ -38,12 +38,6 @@ static inline void init_console(X_EngineContext* context)
 {
     x_console_init(&context->console, context, &context->mainFont);
     x_console_print(&context->console, "Console initialized.\n");
-    
-    static int i;
-    static X_ConsoleVar var;
-    
-    x_console_register_var(&context->console, &var, &i, "i", X_CONSOLEVAR_INT, "50", 1);
-    x_console_register_var(&context->console, &var, &i, "i", X_CONSOLEVAR_INT, "50", 1);
 }
 
 static inline void init_keystate(X_EngineContext* context)
