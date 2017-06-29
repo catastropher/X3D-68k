@@ -165,7 +165,7 @@ static char* x_console_start_of_line(X_Console* console, int line)
 
 static void x_console_scroll_one_line(X_Console* console)
 {
-    memmove(console->text, x_console_start_of_line(console), x_console_bytes_in_line(console) * (console->size.y - 1));
+    memmove(console->text, x_console_start_of_line(console, 1), x_console_bytes_in_line(console) * (console->size.y - 1));
     --console->cursor.y;
     x_console_print_char_no_advance(console, '\0');
 }
