@@ -145,17 +145,20 @@ _Bool x_console_var_exists(X_Console* console, const char* name)
     return x_console_get_var(console, name) != NULL;
 }
 
+// Prints a character to the current line (without wrapping) and advances the cursor
 static void x_console_print_char(X_Console* console, char c)
 {
     console->text[console->cursor.y * x_console_bytes_in_line(console) + console->cursor.x] = c;
     ++console->cursor.x;
 }
 
+// Prints a characeter to the currentline (without wrapping) without advancing the cursor
 static void x_console_print_char_no_advance(X_Console* console, char c)
 {
     console->text[console->cursor.y * x_console_bytes_in_line(console) + console->cursor.x] = c;
 }
 
+// Moves to the next line, scrolling the console if necessary
 static void x_console_newline(X_Console* console)
 {
     x_console_print_char(console, '\0');
@@ -172,6 +175,7 @@ static void x_console_newline(X_Console* console)
     }
 }
 
+// Determine whether counts as a character that's considered part of a word (for wrapping purposes)
 static _Bool is_word_char(char c)
 {
     return c > ' ';
@@ -226,7 +230,7 @@ void x_console_printf(X_Console* console, const char* format, ...)
     va_list list;
     
     va_start(list, format);
-    char buf[1024];
+    char buf[2048];
     vsnprintf(buf, sizeof(buf), format, list);
     
     x_console_print(console, buf);
@@ -243,17 +247,20 @@ static void handle_cursor_blinking(X_Console* console)
     }
 }
 
-static void x_console_render_input(X_Console* console)
+static int x_console_line_y(X_Console* console, int lineNumber)
 {
-    handle_cursor_blinking(console);
-    
-    if(console->showCursor)
-    {
-        const unsigned char CURSOR_CHAR = 11;
-        console->input[console->inputPos] = CURSOR_CHAR;
-        console->input[console->inputPos + 1] = '\0';
-    }
-    
+    return lineNumber * console->font->charH + console->renderYOffset;
+}
+
+static void add_cursor_to_input_buf(X_Console* console)
+{
+    const unsigned char CURSOR_CHAR = 11;
+    console->input[console->inputPos] = CURSOR_CHAR;
+    console->input[console->inputPos + 1] = '\0';
+}
+
+static char* get_start_of_scrolled_input(X_Console* console)
+{
     char* input = console->input;
     int inputLenghtIncludingCursor = console->inputPos + 3; 
     
@@ -263,72 +270,126 @@ static void x_console_render_input(X_Console* console)
         input += charsToScrollHorizontallyBy;
     }
     
-    int nextEmptyLine = console->cursor.y + (console->cursor.x == 0 ? 0 : 1);
-    int y = nextEmptyLine * console->font->charH;
-    
-    X_Canvas* canvas = &console->engineContext->screen.canvas;
-    x_canvas_draw_char(canvas, ']', console->font, x_vec2_make(0, y + console->renderYOffset));
-    x_canvas_draw_str(canvas, input, console->font, x_vec2_make(console->font->charW * 2, y + console->renderYOffset));
-    
+    return input;
+}
+
+static void remove_cursor_from_input_buf(X_Console* console)
+{
     console->input[console->inputPos] = '\0';
+}
+
+static int get_next_empty_line(X_Console* console)
+{
+    return console->cursor.y + (console->cursor.x == 0 ? 0 : 1);
+}
+
+static int x_console_h(const X_Console* console)
+{
+    return console->size.y * console->font->charH;
+}
+
+static X_Screen* x_console_get_screen(X_Console* console)
+{
+    return &console->engineContext->screen;
+}
+
+static X_Canvas* x_console_get_canvas(X_Console* console)
+{
+    return &x_console_get_screen(console)->canvas;
+}
+
+static const X_Palette* x_console_get_palette(X_Console* console)
+{
+    return x_console_get_screen(console)->palette;
+}
+
+static void x_console_render_input(X_Console* console)
+{
+    handle_cursor_blinking(console);
+    
+    if(console->showCursor)
+        add_cursor_to_input_buf(console);
+        
+    char* scrolledInput = get_start_of_scrolled_input(console);
+    int inputLineY = x_console_line_y(console, get_next_empty_line(console));
+    const int CHARS_IN_CURSOR = 2;
+    
+    X_Canvas* canvas = x_console_get_canvas(console);
+    x_canvas_draw_char(canvas, ']', console->font, x_vec2_make(0, inputLineY));
+    x_canvas_draw_str(canvas, scrolledInput, console->font, x_vec2_make(console->font->charW * CHARS_IN_CURSOR, inputLineY));
+    
+    remove_cursor_from_input_buf(console);
 }
 
 void x_console_render_background(X_Console* console)
 {
-    X_Screen* screen = &console->engineContext->screen;
-    X_Canvas* canvas = &screen->canvas;
-    
-    X_Palette* palette = console->engineContext->screen.palette;
+    X_Screen* screen = x_console_get_screen(console);
+    X_Canvas* canvas = x_console_get_canvas(console);
+    const X_Palette* palette = x_console_get_palette(console);
     X_Color backgroundColor = palette->black;
     X_Color lineColor = palette->darkRed;
     
-    int consoleHeight = console->size.y * console->font->charH;
-    int consoleBottomY = consoleHeight + console->renderYOffset;
+    X_Vec2 topLeft = x_vec2_make(0, x_console_line_y(console, 0));
+    X_Vec2 bottomRight = x_vec2_make(x_screen_w(screen) - 1, x_console_line_y(console, console->size.y));
     
-    x_canvas_fill_rect(canvas, x_vec2_make(0, console->renderYOffset), x_vec2_make(x_screen_w(screen) - 1, (console->size.y + 1) * console->font->charH - 1  + console->renderYOffset), backgroundColor);
-    x_canvas_draw_line(canvas, x_vec2_make(0, consoleBottomY), x_vec2_make(x_canvas_w(canvas) - 1, consoleBottomY), lineColor);
+    x_canvas_fill_rect(canvas, topLeft, bottomRight, backgroundColor);
+    
+    X_Vec2 bottomLeft = x_vec2_make(0, bottomRight.y);
+    x_canvas_draw_line(canvas, bottomLeft, bottomRight, lineColor);
 }
 
-void handle_console_opening_mode(X_Console* console)
+static void x_console_handle_opening_animation(X_Console* console)
 {
-    int consoleHeight = console->size.y * console->font->charH;
+    int timePassed = x_enginecontext_get_time(console->engineContext) - console->consoleToggleTime;
+    int consoleHeight = x_console_h(console);
     
-    if(console->openState == X_CONSOLE_STATE_OPENING)
+    console->renderYOffset = -consoleHeight * (X_CONSOLE_TOGGLE_TIME - timePassed) / X_CONSOLE_TOGGLE_TIME;
+    
+    if(console->renderYOffset >= 0)
     {
-        X_Time time = x_enginecontext_get_time(console->engineContext);
-        console->renderYOffset = -consoleHeight * (X_CONSOLE_TOGGLE_TIME - ((int)(time - console->consoleToggleTime))) / X_CONSOLE_TOGGLE_TIME;
-        
-        if(console->renderYOffset >= 0)
-        {
-            console->renderYOffset = 0;
-            console->openState = X_CONSOLE_STATE_OPEN;
-        }
+        console->renderYOffset = 0;
+        console->openState = X_CONSOLE_STATE_OPEN;
     }
+}
+
+static void x_console_handle_closing_animation(X_Console* console)
+{
+    int timePassed = x_enginecontext_get_time(console->engineContext) - console->consoleToggleTime;
+    int consoleHeight = x_console_h(console);
+    
+    console->renderYOffset = -consoleHeight * timePassed / X_CONSOLE_TOGGLE_TIME;
+    
+    if(console->renderYOffset <= -consoleHeight)
+        console->openState = X_CONSOLE_STATE_CLOSED;
+}
+
+static void x_console_handle_open_state_animation(X_Console* console)
+{
+    if(console->openState == X_CONSOLE_STATE_OPENING)
+        x_console_handle_opening_animation(console);
     else if(console->openState == X_CONSOLE_STATE_CLOSING)
+        x_console_handle_closing_animation(console);
+}
+
+static void x_console_render_text(X_Console* console)
+{
+    X_Canvas* canvas = x_console_get_canvas(console);
+    for(int i = 0; i < console->size.y; ++i)
     {
-        X_Time time = x_enginecontext_get_time(console->engineContext);
-        console->renderYOffset = -consoleHeight * ((int)(time - console->consoleToggleTime)) / X_CONSOLE_TOGGLE_TIME;
-        
-        if(console->renderYOffset <= -consoleHeight)
-        {
-            console->openState = X_CONSOLE_STATE_CLOSED;
-        }
+        const char* startOfLine = console->text + i * x_console_bytes_in_line(console);
+        x_canvas_draw_str(canvas, startOfLine, console->font, x_vec2_make(0, x_console_line_y(console, i)));
     }
 }
 
 void x_console_render(X_Console* console)
 {
-    handle_console_opening_mode(console);
+    x_console_handle_open_state_animation(console);
     
     if(!x_console_is_open(console))
         return;
     
     x_console_render_background(console);
-    
-    X_Canvas* canvas = &console->engineContext->screen.canvas;
-    for(int i = 0; i < console->size.y; ++i)
-        x_canvas_draw_str(canvas, console->text + i * x_console_bytes_in_line(console), console->font, x_vec2_make(0, i * console->font->charH + console->renderYOffset));
-    
+    x_console_render_text(console);
     x_console_render_input(console);
 }
 
