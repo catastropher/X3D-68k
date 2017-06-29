@@ -158,6 +158,18 @@ static void x_console_print_char_no_advance(X_Console* console, char c)
     console->text[console->cursor.y * x_console_bytes_in_line(console) + console->cursor.x] = c;
 }
 
+static char* x_console_start_of_line(X_Console* console, int line)
+{
+    return console->text + line * x_console_bytes_in_line(console);
+}
+
+static void x_console_scroll_one_line(X_Console* console)
+{
+    memmove(console->text, x_console_start_of_line(console), x_console_bytes_in_line(console) * (console->size.y - 1));
+    --console->cursor.y;
+    x_console_print_char_no_advance(console, '\0');
+}
+
 // Moves to the next line, scrolling the console if necessary
 static void x_console_newline(X_Console* console)
 {
@@ -168,11 +180,7 @@ static void x_console_newline(X_Console* console)
     
     _Bool needsToScroll = console->cursor.y == console->size.y;
     if(needsToScroll)
-    {
-        memmove(console->text, console->text + x_console_bytes_in_line(console), x_console_bytes_in_line(console) * (console->size.y - 1));
-        --console->cursor.y;
-        x_console_print_char_no_advance(console, '\0');
-    }
+        x_console_scroll_one_line(console);
 }
 
 // Determine whether counts as a character that's considered part of a word (for wrapping purposes)
@@ -236,7 +244,7 @@ void x_console_printf(X_Console* console, const char* format, ...)
     x_console_print(console, buf);
 }
 
-static void handle_cursor_blinking(X_Console* console)
+static void x_console_handle_cursor_blinking(X_Console* console)
 {
     X_Time currentTime = x_enginecontext_get_time(console->engineContext);
     
@@ -252,14 +260,14 @@ static int x_console_line_y(X_Console* console, int lineNumber)
     return lineNumber * console->font->charH + console->renderYOffset;
 }
 
-static void add_cursor_to_input_buf(X_Console* console)
+static void x_console_add_cursor_to_input_buf(X_Console* console)
 {
     const unsigned char CURSOR_CHAR = 11;
     console->input[console->inputPos] = CURSOR_CHAR;
     console->input[console->inputPos + 1] = '\0';
 }
 
-static char* get_start_of_scrolled_input(X_Console* console)
+static char* x_console_get_start_of_scrolled_input(X_Console* console)
 {
     char* input = console->input;
     int inputLenghtIncludingCursor = console->inputPos + 3; 
@@ -273,12 +281,12 @@ static char* get_start_of_scrolled_input(X_Console* console)
     return input;
 }
 
-static void remove_cursor_from_input_buf(X_Console* console)
+static void x_console_remove_cursor_from_input_buf(X_Console* console)
 {
     console->input[console->inputPos] = '\0';
 }
 
-static int get_next_empty_line(X_Console* console)
+static int x_console_get_next_empty_line(X_Console* console)
 {
     return console->cursor.y + (console->cursor.x == 0 ? 0 : 1);
 }
@@ -305,20 +313,20 @@ static const X_Palette* x_console_get_palette(X_Console* console)
 
 static void x_console_render_input(X_Console* console)
 {
-    handle_cursor_blinking(console);
+    x_console_handle_cursor_blinking(console);
     
     if(console->showCursor)
-        add_cursor_to_input_buf(console);
+        x_console_add_cursor_to_input_buf(console);
         
-    char* scrolledInput = get_start_of_scrolled_input(console);
-    int inputLineY = x_console_line_y(console, get_next_empty_line(console));
+    char* scrolledInput = x_console_get_start_of_scrolled_input(console);
+    int inputLineY = x_console_line_y(console, x_console_get_next_empty_line(console));
     const int CHARS_IN_CURSOR = 2;
     
     X_Canvas* canvas = x_console_get_canvas(console);
     x_canvas_draw_char(canvas, ']', console->font, x_vec2_make(0, inputLineY));
     x_canvas_draw_str(canvas, scrolledInput, console->font, x_vec2_make(console->font->charW * CHARS_IN_CURSOR, inputLineY));
     
-    remove_cursor_from_input_buf(console);
+    x_console_remove_cursor_from_input_buf(console);
 }
 
 void x_console_render_background(X_Console* console)
@@ -438,7 +446,7 @@ static _Bool x_console_autocomplete(X_Console* console)
     return minMatchLength == strlen(minMatchStr);
 }
 
-#define  MATCHES_PER_ROW 4
+#define MATCHES_PER_ROW 4
 #define MATCH_SPACING 4
 
 static void x_console_print_autocomplete_matches(X_Console* console)
