@@ -5,17 +5,28 @@
 using namespace std;
 
 int main() {
-	printf("int16 sintab[] = {\n");
-	
-	for(int i = 0; i < 256; ++i) {
-		int val = sin(i * (360.0 / 256.0) * (3.1415926535 / 180.0)) * 32768.0;
-
-		if(val == 32768)
-			val = 32767;
-		else if(val == -32769)
-			val = -32768;
-
-		printf("\t%d\n", val);
-	}
-	printf("}\n");
+    printf("fp16x16 sintab[] = {\n");
+    
+    for(int i = 0; i < 32; ++i)
+    {
+        printf("    ");
+        
+        for(int j = 0; j < 8; ++j)
+        {
+            int angleInBase256 = i * 8 + j;
+            double angleInDegrees = angleInBase256 * 360.0 / 256.0;
+            double angleInRadians = angleInDegrees * 3.1415926535 / 180.0;
+            int sineAsFp16x16 = sin(angleInRadians) * (1 << 16);
+            
+            printf("% -6d", sineAsFp16x16);
+            
+            if(angleInBase256 != 255)
+                printf(", ");
+        }
+        
+        printf("\n");
+    }
+    
+    printf("};\n");
 }
+
