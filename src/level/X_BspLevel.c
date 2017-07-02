@@ -269,30 +269,20 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
     }
 }
 
-void x_bsplevel_find_node_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point)
+int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point)
 {
-    printf("=============\n");
-    printf("Visit node %d\n", nodeId);
-    
     if(nodeId < 0)
     {
-        printf("Point is in leaf node: %d\n", -(nodeId + 1));
-        return;
+        return ~nodeId;
     }
     
-    X_BspNode* node = level->nodes + nodeId;
-    
-    printf("Plane num: %d\n", node->planeNum);
-    
+    X_BspNode* node = level->nodes + nodeId;    
     X_BspPlane* plane = level->planes + node->planeNum;
-    x_plane_print(&plane->plane);
     
-    printf("Dist: %d\n", x_plane_point_distance(&plane->plane, point) >> 16);
-    
-    short childNode = x_plane_point_is_on_normal_facing_side(&plane->plane, point)
+    int childNode = x_plane_point_is_on_normal_facing_side(&plane->plane, point)
         ? node->children[0] : node->children[1];
         
-    x_bsplevel_find_node_point_is_in(level, childNode, point);
+    return x_bsplevel_find_leaf_point_is_in(level, childNode, point);
 }
 
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)

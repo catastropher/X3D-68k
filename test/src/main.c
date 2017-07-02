@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
         
         X_Vec3 camPos = x_vec3_fp16x16_to_vec3(&context.cam->base.position);
         
-        x_bsplevel_find_node_point_is_in(&level, 0, &camPos);
+        x_bsplevel_find_leaf_point_is_in(&level, 0, &camPos);
         
         if(x_console_is_open(&context.context.console))
             x_console_render(&context.context.console);
