@@ -75,10 +75,12 @@ static void x_bspface_read_from_file(X_BspFace* face, X_File* file)
     face->lightmapOffset = x_file_read_le_int32(file);
 }
 
-static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file)
+static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file, unsigned char* compressedPvsData)
 {
     leaf->contents = x_file_read_be_int32(file);
-    leaf->pvsOffset = x_file_read_be_int32(file);
+    
+    int pvsOffset = x_file_read_be_int32(file);
+    leaf->compressedPvsData = compressedPvsData + pvsOffset;
     
     for(int i = 0; i < 3; ++i)
         leaf->mins[i] = x_file_read_le_int16(file);
@@ -181,7 +183,7 @@ static void x_bsplevel_load_leaves(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalLeaves; ++i)
     {
-        x_bspleaf_read_from_file(level->leaves + i, file);
+        x_bspleaf_read_from_file(level->leaves + i, file, level->compressedPvsData);
     }
 }
 
@@ -221,10 +223,17 @@ static void x_bsplevel_load_edges(X_BspLevel* level, X_File* file)
     }
 }
 
+static void x_bsplevel_load_compressed_pvs(X_BspLevel* level)
+{
+    X_BspLump* pvsLump = level->header.lumps + X_LUMP_VISIBILITY;
+    
+    level->compressedPvsData = x_malloc(pvsLump->length);
+    x_file_read_buf(&level->file, pvsLump->length, level->compressedPvsData);
+}
+
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
 {
-    X_File file;
-    if(!x_file_open_reading(&file, fileName))
+    if(!x_file_open_reading(&level->file, fileName))
     {
         x_log_error("Failed to open BSP file %s\n", fileName);
         return 0;
@@ -232,15 +241,15 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
     
     x_log("BSP version: %d", level->header.bspVersion);
     
-    x_bspheader_read_from_file(&level->header, &file);
-    x_bsplevel_load_planes(level, &file);
-    x_bsplevel_load_vertices(level, &file);
-    x_bsplevel_load_edges(level, &file);
-    x_bsplevel_load_faces(level, &file);
-    x_bsplevel_load_leaves(level, &file);
-    x_bsplevel_load_nodes(level, &file);
+    x_bspheader_read_from_file(&level->header, &level->file);
+    x_bsplevel_load_compressed_pvs(level);
+    x_bsplevel_load_planes(level, &level->file);
+    x_bsplevel_load_vertices(level, &level->file);
+    x_bsplevel_load_edges(level, &level->file);
+    x_bsplevel_load_faces(level, &level->file);
+    x_bsplevel_load_leaves(level, &level->file);
+    x_bsplevel_load_nodes(level, &level->file);
     
-    x_file_close(&file);
     return 1;
 }
 
@@ -284,5 +293,29 @@ void x_bsplevel_find_node_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* poi
         ? node->children[0] : node->children[1];
         
     x_bsplevel_find_node_point_is_in(level, childNode, point);
+}
+
+void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+{
+    // The PVS is compressed using zero run-length encoding
+    int pos = 0;
+    int pvsSize = x_bspfile_node_pvs_size(level);
+    unsigned char* pvsData = leaf->compressedPvsData;
+    
+    while(pos < pvsSize)
+    {
+        if(*pvsData == 0)
+        {
+            ++pvsData;
+            int count = *pvsData++;
+            
+            for(int i = 0; i < count; ++i)
+                decompressedPvsDest[pos++] = 0;
+        }
+        else
+        {
+            decompressedPvsDest[pos++] = *pvsData++;
+        }
+    }
 }
 

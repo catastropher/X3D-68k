@@ -18,6 +18,7 @@
 #include "geo/X_Vec3.h"
 #include "geo/X_Plane.h"
 #include "render/X_Texture.h"
+#include "system/X_File.h"
 
 #define X_LUMP_ENTITIES     0
 #define X_LUMP_PLANES       1
@@ -100,7 +101,7 @@ typedef struct X_BspFace
 typedef struct X_BspLeaf
 {
     int contents;
-    int pvsOffset;
+    unsigned char* compressedPvsData;
     
     short mins[3];
     short maxs[3];
@@ -123,6 +124,7 @@ typedef struct X_BspNode
 
 typedef struct X_BspLevel
 {
+    X_File file;
     X_BspHeader header;
     
     X_BspVertex* vertices;
@@ -142,9 +144,17 @@ typedef struct X_BspLevel
     
     X_BspNode* nodes;
     int totalNodes;
+    
+    unsigned char* compressedPvsData;       // Potential visibility set
 } X_BspLevel;
 
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
 void x_bsplevel_find_node_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point);
+void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
+
+static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
+{
+    return (level->totalLeaves + 8 / 2) / 8;
+}
 
