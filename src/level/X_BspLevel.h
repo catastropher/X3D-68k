@@ -146,4 +146,5 @@ typedef struct X_BspLevel
 
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
+void x_bsplevel_find_node_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point);
 

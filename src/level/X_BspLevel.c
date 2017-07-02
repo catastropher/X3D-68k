@@ -48,7 +48,7 @@ static void x_bspplane_read_from_file(X_BspPlane* plane, X_File* file)
     plane->plane.normal = x_vec3_float_to_vec3_fp16x16(&normal);
     
     float dist = x_file_read_le_float32(file);
-    plane->plane.d = x_fp16x16_from_float(dist);
+    plane->plane.d = -x_fp16x16_from_float(dist);
     
     plane->type = x_file_read_le_int32(file);
 }
@@ -199,7 +199,7 @@ static void x_bsplevel_load_nodes(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalNodes; ++i)
     {
-        x_bspnode_read_from_file(level->nodes, file);
+        x_bspnode_read_from_file(level->nodes + i, file);
     }
 }
 
@@ -258,5 +258,31 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
         
         x_ray3d_render(&ray, rcontext, color);
     }
+}
+
+void x_bsplevel_find_node_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point)
+{
+    printf("=============\n");
+    printf("Visit node %d\n", nodeId);
+    
+    if(nodeId < 0)
+    {
+        printf("Point is in leaf node: %d\n", -(nodeId + 1));
+        return;
+    }
+    
+    X_BspNode* node = level->nodes + nodeId;
+    
+    printf("Plane num: %d\n", node->planeNum);
+    
+    X_BspPlane* plane = level->planes + node->planeNum;
+    x_plane_print(&plane->plane);
+    
+    printf("Dist: %d\n", x_plane_point_distance(&plane->plane, point) >> 16);
+    
+    short childNode = x_plane_point_is_on_normal_facing_side(&plane->plane, point)
+        ? node->children[0] : node->children[1];
+        
+    x_bsplevel_find_node_point_is_in(level, childNode, point);
 }
 
