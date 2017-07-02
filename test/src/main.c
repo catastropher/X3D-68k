@@ -111,7 +111,7 @@ void handle_keys(Context* context)
 {
     handle_key_events(&context->context);
     
-    _Bool adjustCam = 1;
+    _Bool adjustCam = 0;
     
     if(x_console_is_open(&context->context.console))
     {
@@ -165,10 +165,21 @@ void handle_keys(Context* context)
         adjustCam = 1;
     }
     
+    if(key_is_down('d'))
+    {
+        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &right, moveSpeed);
+        adjustCam = 1;
+    }
+    else if(key_is_down('a'))
+    {
+        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &right, -moveSpeed);
+        adjustCam = 1;
+    }
+    
     if(key_is_down(SDLK_ESCAPE))
         context->quit = 1;
     
-    if(adjustCam || 1)
+    if(adjustCam)
     {
         x_cameraobject_update_view(context->cam);
     }
