@@ -111,7 +111,7 @@ void handle_keys(Context* context)
 {
     handle_key_events(&context->context);
     
-    _Bool adjustCam = 0;
+    _Bool adjustCam = 1;
     
     if(x_console_is_open(&context->context.console))
     {
@@ -152,7 +152,7 @@ void handle_keys(Context* context)
     x_fp16x16 moveSpeed = 10 * 65536;
     X_Vec3 up, right, forward;
     
-    x_gameobject_extract_view_vectors(&context->cam->base, &forward, &right, &up);
+    x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
     
     if(key_is_down('w'))
     {
@@ -168,7 +168,7 @@ void handle_keys(Context* context)
     if(key_is_down(SDLK_ESCAPE))
         context->quit = 1;
     
-    if(adjustCam)
+    if(adjustCam || 1)
     {
         x_cameraobject_update_view(context->cam);
     }

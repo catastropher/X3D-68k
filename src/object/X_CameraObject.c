@@ -33,11 +33,14 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     X_Mat4x4 yRotation;
     x_mat4x4_load_y_rotation(&yRotation, cam->angleY);
     
-    x_mat4x4_mul(&xRotation, &yRotation, &cam->viewMatrix);    
+    X_Mat4x4 rotation;
+    x_mat4x4_mul(&xRotation, &yRotation, &rotation);    
     
-    cam->viewMatrix.elem[0][3] = -cam->base.position.x;
-    cam->viewMatrix.elem[1][3] = -cam->base.position.y;
-    cam->viewMatrix.elem[2][3] = -cam->base.position.z;
+    X_Mat4x4 translation;
+    X_Vec3 negatedPosition = x_vec3_neg(&cam->base.position);
+    x_mat4x4_load_translation(&translation, &negatedPosition);
+    
+    x_mat4x4_mul(&rotation, &translation, &cam->viewMatrix);
     
     X_Vec3 camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
     
