@@ -38,6 +38,9 @@ add_library(X3D STATIC
     src/geo/X_Polygon3.c
     src/geo/X_Ray3.c
     src/geo/X_Vec3.c
+
+    # level
+    src/level/X_BspLevel.c
     
     # math
     src/math/X_Mat4x4.c

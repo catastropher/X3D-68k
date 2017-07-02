@@ -99,7 +99,7 @@ int x_file_read_le_int32(X_File* file)
     
     unsigned int val = 0;
     for(int i = 0; i < 4; ++i)
-        val |= fgetc(file->file) << (i * 8);
+        val |= (unsigned int)fgetc(file->file) << (i * 8);
     
     return val;
 }
@@ -113,6 +113,22 @@ int x_file_read_le_int16(X_File* file)
         val |= fgetc(file->file) << (i * 8);
     
     return val;
+}
+
+float x_file_read_le_float32(X_File* file)
+{
+    ASSERT_OPEN_FOR_READING(file);
+    
+    x_assert(sizeof(float) == 4, "Float size is not 4");
+    x_assert(sizeof(int) == 4, "Int size is not 4");
+    
+    union {
+        int i;
+        float f;
+    } converter;
+    
+    converter.i = x_file_read_le_int32(file);
+    return converter.f;
 }
 
 int x_file_read_be_int32(X_File* file)

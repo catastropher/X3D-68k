@@ -227,7 +227,9 @@ int main(int argc, char* argv[])
     
     X_ConsoleVar varHelpingHand;
     int helpingHand;
-    
+
+    X_BspLevel level;
+    x_bsplevel_load_from_bsp_file(&level, "e1m1.bsp");
     
     x_console_register_var(&context.context.console, &varHello, &hello, "hello", X_CONSOLEVAR_INT, "50", 0);
     x_console_register_var(&context.context.console, &varHeyThere, &heyThere, "heyThere", X_CONSOLEVAR_INT, "50", 0);
@@ -242,7 +244,9 @@ int main(int argc, char* argv[])
 
         handle_keys(&context);
         
-        draw_grid(x_vec3_make(0, 0, 500), 32 * 16, 32, &rcontext, 4);
+        //draw_grid(x_vec3_make(0, 0, 500), 32 * 16, 32, &rcontext, 4);
+        
+        x_bsplevel_render_wireframe(&level, &rcontext, context.context.screen.palette->brightRed);
         
         if(x_console_is_open(&context.context.console))
             x_console_render(&context.context.console);

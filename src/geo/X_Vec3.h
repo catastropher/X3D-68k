@@ -31,6 +31,13 @@ typedef struct X_Vec3
 /// A 3D vertex or vector with fp16x16 components.
 typedef X_Vec3 X_Vec3_fp16x16;
 
+typedef struct X_Vec3_float
+{
+    float x;
+    float y;
+    float z;
+} X_Vec3_float;
+
 void x_vec3_fp16x16_normalize(X_Vec3_fp16x16* v);
 void x_vec3_print(const X_Vec3* v, const char* label);
 void x_vec3_fp16x16_print(const X_Vec3_fp16x16* v, const char* label);
@@ -249,4 +256,8 @@ static inline X_Vec3 x_vec3_fp16x16_to_vec3(const X_Vec3_fp16x16* src)
     return x_vec3_make(src->x >> 16, src->y >> 16, src->z >> 16);
 }
 
+static inline X_Vec3 x_vec3_float_to_vec3(X_Vec3_float* v)
+{
+    return x_vec3_make(v->x, v->y, v->z);
+}
 

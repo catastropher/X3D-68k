@@ -36,6 +36,9 @@
 #include "error/X_error.h"
 #include "error/X_log.h"
 
+// level
+#include "level/X_BspLevel.h"
+
 // math
 #include "math/X_angle.h"
 #include "math/X_fix.h"
