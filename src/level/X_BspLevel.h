@@ -110,6 +110,17 @@ typedef struct X_BspLeaf
     
     unsigned char ambientLevel[X_BSPLEAF_TOTAL_AMBIENTS];
 } X_BspLeaf;
+
+typedef struct X_BspNode
+{
+    int planeNum;
+    short children[2];
+    short mins[3];
+    short maxs[3];
+    unsigned short firstFace;
+    unsigned short totalFaces;
+} X_BspNode;
+
 typedef struct X_BspLevel
 {
     X_BspHeader header;
@@ -128,6 +139,9 @@ typedef struct X_BspLevel
     
     X_BspLeaf* leaves;
     int totalLeaves;
+    
+    X_BspNode* nodes;
+    int totalNodes;
 } X_BspLevel;
 
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);

@@ -90,6 +90,23 @@ static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file)
         leaf->ambientLevel[i] = x_file_read_char(file);
 }
 
+static void x_bspnode_read_from_file(X_BspNode* node, X_File* file)
+{
+    node->planeNum = x_file_read_le_int32(file);
+    
+    for(int i = 0; i < 2; ++i)
+        node->children[i] = x_file_read_le_int16(file);
+    
+    for(int i = 0; i < 3; ++i)
+        node->mins[i] = x_file_read_le_int16(file);
+    
+    for(int i = 0; i < 3; ++i)
+        node->maxs[i] = x_file_read_le_int16(file);
+    
+    node->firstFace = x_file_read_le_int16(file);
+    node->totalFaces = x_file_read_le_int16(file);
+}
+
 static void x_bspedge_read_from_file(X_BspEdge* edge, X_File* file)
 {
     edge->v[0] = x_file_read_le_int16(file);
@@ -168,6 +185,24 @@ static void x_bsplevel_load_leaves(X_BspLevel* level, X_File* file)
     }
 }
 
+static void x_bsplevel_load_nodes(X_BspLevel* level, X_File* file)
+{
+    const int NODE_SIZE_IN_FILE = 24;
+    X_BspLump* nodeLump = level->header.lumps + X_LUMP_NODES;
+    
+    level->totalNodes = nodeLump->length / NODE_SIZE_IN_FILE;
+    level->nodes = x_malloc(level->totalNodes * sizeof(X_BspNode));
+    
+    x_log("Total nodes: %d\n", level->totalNodes);
+    
+    x_file_seek(file, nodeLump->fileOffset);
+    
+    for(int i = 0; i < level->totalNodes; ++i)
+    {
+        x_bspnode_read_from_file(level->nodes, file);
+    }
+}
+
 static void x_bsplevel_load_edges(X_BspLevel* level, X_File* file)
 {
     const int EDGE_SIZE_IN_FILE = 4;
@@ -203,6 +238,7 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
     x_bsplevel_load_edges(level, &file);
     x_bsplevel_load_faces(level, &file);
     x_bsplevel_load_leaves(level, &file);
+    x_bsplevel_load_nodes(level, &file);
     
     x_file_close(&file);
     return 1;
