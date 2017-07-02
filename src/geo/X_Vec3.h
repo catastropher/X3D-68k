@@ -251,13 +251,23 @@ static inline int x_vec3_distance(const X_Vec3* a, const X_Vec3* b)
     return x_sqrt(x_vec3_distance_squared(a, b));
 }
 
+static inline X_Vec3_float x_vec3_float_make(float x, float y, float z)
+{
+    return (X_Vec3_float) { x, y, z };
+}
+
 static inline X_Vec3 x_vec3_fp16x16_to_vec3(const X_Vec3_fp16x16* src)
 {
     return x_vec3_make(src->x >> 16, src->y >> 16, src->z >> 16);
 }
 
-static inline X_Vec3 x_vec3_float_to_vec3(X_Vec3_float* v)
+static inline X_Vec3 x_vec3_float_to_vec3(const X_Vec3_float* v)
 {
     return x_vec3_make(v->x, v->y, v->z);
+}
+
+static inline X_Vec3_fp16x16 x_vec3_float_to_vec3_fp16x16(const X_Vec3_float* v)
+{
+    return x_vec3_make(v->x * 65536, v->y * 65536, v->z * 65536);
 }
 

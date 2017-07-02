@@ -20,6 +20,11 @@
 #include "render/X_RenderContext.h"
 #include "geo/X_Ray3.h"
 
+static X_Vec3_float x_bspfile_convert_coordinate(const X_Vec3_float* v)
+{
+    return x_vec3_float_make(v->y, -v->z, -v->x);
+}
+
 static void x_bsplump_read_from_file(X_BspLump* lump, X_File* file)
 {
     lump->fileOffset = x_file_read_le_int32(file);
@@ -36,24 +41,25 @@ static void x_bspheader_read_from_file(X_BspHeader* header, X_File* file)
 
 static void x_bspplane_read_from_file(X_BspPlane* plane, X_File* file)
 {
-    plane->normal.x = x_file_read_le_float32(file);
-    plane->normal.y = x_file_read_le_float32(file);
-    plane->normal.z = x_file_read_le_float32(file);
-    plane->dist = x_file_read_le_float32(file);
+    X_Vec3_float normal;
+    x_file_read_vec3_float(file, &normal);
+    normal = x_bspfile_convert_coordinate(&normal);
+    
+    plane->plane.normal = x_vec3_float_to_vec3_fp16x16(&normal);
+    
+    float dist = x_file_read_le_float32(file);
+    plane->plane.d = x_fp16x16_from_float(dist);
     
     plane->type = x_file_read_le_int32(file);
 }
 
 static void x_bspvertex_read_from_file(X_BspVertex* vertex, X_File* file)
 {
-    float x = -x_file_read_le_float32(file);
-    float y = x_file_read_le_float32(file);
-    float z = x_file_read_le_float32(file);
+    X_Vec3_float v;
+    x_file_read_vec3_float(file, &v);
     
-    // Convert to X3D's coordinate system
-    vertex->v.x = y;
-    vertex->v.y = -z;
-    vertex->v.z = -x + 500;
+    v = x_bspfile_convert_coordinate(&v);
+    vertex->v = x_vec3_float_to_vec3(&v);
 }
 
 static void x_bspedge_read_from_file(X_BspEdge* edge, X_File* file)
@@ -143,8 +149,8 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
         
         X_Ray3 ray = x_ray3_make
         (
-            x_vec3_float_to_vec3(&level->vertices[edge->v[0]].v),
-            x_vec3_float_to_vec3(&level->vertices[edge->v[1]].v)
+            level->vertices[edge->v[0]].v,
+            level->vertices[edge->v[1]].v
         );
         
         x_ray3d_render(&ray, rcontext, color);

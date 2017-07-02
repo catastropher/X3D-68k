@@ -16,6 +16,7 @@
 #pragma once
 
 #include "geo/X_Vec3.h"
+#include "geo/X_Plane.h"
 #include "render/X_Texture.h"
 
 #define X_LUMP_ENTITIES     0
@@ -66,14 +67,13 @@ typedef enum X_BspPlaneType
 
 typedef struct X_BspPlane
 {
-    X_Vec3_float normal;
-    float dist;
+    X_Plane plane;
     X_BspPlaneType type;
 } X_BspPlane;
 
 typedef struct X_BspVertex
 {
-    X_Vec3_float v;
+    X_Vec3 v;
 } X_BspVertex;
 
 typedef struct X_BspEdge

@@ -50,6 +50,7 @@ float x_file_read_le_float32(X_File* file);
 void x_file_seek(X_File* file, size_t pos);
 void x_file_read_fixed_length_str(X_File* file, int strLength, char* dest);
 void x_file_read_vec3(X_File* file, X_Vec3* dest);
+void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest);
 
 _Bool x_file_open_writing(X_File* file, const char* fileName);
 void x_file_write_le_int16(X_File* file, int val);
