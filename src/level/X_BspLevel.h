@@ -95,6 +95,21 @@ typedef struct X_BspFace
     int lightmapOffset;
 } X_BspFace;
 
+#define X_BSPLEAF_TOTAL_AMBIENTS 4
+
+typedef struct X_BspLeaf
+{
+    int contents;
+    int pvsOffset;
+    
+    short mins[3];
+    short maxs[3];
+    
+    unsigned short firstMarkSurface;
+    unsigned short numMarkSurface;
+    
+    unsigned char ambientLevel[X_BSPLEAF_TOTAL_AMBIENTS];
+} X_BspLeaf;
 typedef struct X_BspLevel
 {
     X_BspHeader header;
@@ -104,6 +119,15 @@ typedef struct X_BspLevel
     
     X_BspEdge* edges;
     int totalEdges;
+    
+    X_BspPlane* planes;
+    int totalPlanes;
+    
+    X_BspFace* faces;
+    int totalFaces;
+    
+    X_BspLeaf* leaves;
+    int totalLeaves;
 } X_BspLevel;
 
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
