@@ -149,6 +149,22 @@ void handle_keys(Context* context)
         adjustCam = 1;
     }
     
+    x_fp16x16 moveSpeed = 10 * 65536;
+    X_Vec3 up, right, forward;
+    
+    x_gameobject_extract_view_vectors(&context->cam->base, &forward, &right, &up);
+    
+    if(key_is_down('w'))
+    {
+        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, moveSpeed);
+        adjustCam = 1;
+    }
+    else if(key_is_down('s'))
+    {
+        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, -moveSpeed);
+        adjustCam = 1;
+    }
+    
     if(key_is_down(SDLK_ESCAPE))
         context->quit = 1;
     
