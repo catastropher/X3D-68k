@@ -227,6 +227,7 @@ int main(int argc, char* argv[])
     rcontext.canvas = &context.context.screen.canvas;
     rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
     rcontext.viewMatrix = &context.cam->viewMatrix;
+    rcontext.screen = &context.context.screen;
     
     x_screen_set_palette(&context.context.screen, x_palette_get_quake_palette());
     
@@ -256,7 +257,7 @@ int main(int argc, char* argv[])
     int helpingHand;
 
     X_BspLevel level;
-    x_bsplevel_load_from_bsp_file(&level, "e1m1.bsp");
+    x_bsplevel_load_from_bsp_file(&level, "test2.bsp");
     
     x_console_register_var(&context.context.console, &varHello, &hello, "hello", X_CONSOLEVAR_INT, "50", 0);
     x_console_register_var(&context.context.console, &varHeyThere, &heyThere, "heyThere", X_CONSOLEVAR_INT, "50", 0);
@@ -277,7 +278,9 @@ int main(int argc, char* argv[])
         
         X_Vec3 camPos = x_vec3_fp16x16_to_vec3(&context.cam->base.position);
         
-        x_bsplevel_find_leaf_point_is_in(&level, 0, &camPos);
+        int leaf = x_bsplevel_find_leaf_point_is_in(&level, 0, &camPos);
+        
+        printf("Leaf: %d\n", leaf);
         
         if(x_console_is_open(&context.context.console))
             x_console_render(&context.context.console);

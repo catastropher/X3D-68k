@@ -31,9 +31,18 @@ typedef struct X_EngineContext
     X_Console console;
     X_Font mainFont;
     X_KeyState keystate;
+    
+    
+    int frameCount;     // TODO Where should this go?
 } X_EngineContext;
 
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH);
 void x_enginecontext_cleanup(X_EngineContext* context);
 X_Time x_enginecontext_get_time(const X_EngineContext* context);
+void x_enginecontext_begin_frame(X_EngineContext* context);
+
+static inline int x_enginecontext_get_frame(const X_EngineContext* context)
+{
+    return context->frameCount;
+}
 

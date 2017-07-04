@@ -19,11 +19,13 @@
 #include "X_Viewport.h"
 #include "object/X_CameraObject.h"
 #include "math/X_Mat4x4.h"
+#include "X_Screen.h"
 
 typedef struct X_RenderContext
 {
     X_CameraObject* cam;
     X_Canvas* canvas;
+    X_Screen* screen;
     X_Frustum* viewFrustum;
     X_Mat4x4* viewMatrix;
 } X_RenderContext;

@@ -77,6 +77,8 @@ static inline void cleanup_console(X_EngineContext* context)
 ////////////////////////////////////////////////////////////////////////////////
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
+    context->frameCount = 1;
+    
     init_object_factory(context);
     init_screen(context, screenW, screenH);
     init_main_font(context, "font.xtex", 8, 8);
@@ -98,5 +100,10 @@ void x_enginecontext_cleanup(X_EngineContext* context)
 X_Time x_enginecontext_get_time(const X_EngineContext* context)
 {
     return clock() * 1000 / CLOCKS_PER_SEC;
+}
+
+void x_enginecontext_begin_frame(X_EngineContext* context)
+{
+    ++context->frameCount;
 }
 
