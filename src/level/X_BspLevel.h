@@ -41,6 +41,8 @@
 #define X_BSPFILE_MAX_LEAFS 8192
 #define X_BSPFILE_PVS_SIZE ((X_BSPFILE_MAX_LEAFS + 8 / 2) / 8)
 
+#define X_BSPLEAF_OUTSIDE_LEVEL 0
+
 typedef int X_BspVertexId;
 typedef int X_BspEdgeId;
 typedef int X_BspLeafId;
@@ -167,7 +169,7 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
 
 static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
 {
-    return (level->totalLeaves + 8 / 2) / 8;
+    return (level->totalLeaves + 8 - 1) / 8;
 }
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)

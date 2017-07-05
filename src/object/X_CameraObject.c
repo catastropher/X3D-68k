@@ -63,7 +63,7 @@ static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_Rend
 
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
-    if(cam->currentLeaf == cam->lastLeaf)
+    if(cam->currentLeaf == cam->lastLeaf || cam->currentLeaf == 0)
         return;
     
     cam->lastLeaf = cam->currentLeaf;
@@ -81,6 +81,9 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
         return;
     
     x_cameraobject_determine_current_bspleaf(cam, renderContext);
+    
+    //printf("Current leaf: %d\n", cam->currentLeaf);
+    
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
     
     x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);

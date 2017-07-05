@@ -77,16 +77,25 @@ static void x_bspface_read_from_file(X_BspFace* face, X_File* file)
 
 static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file, unsigned char* compressedPvsData)
 {
-    leaf->contents = x_file_read_be_int32(file);
+    leaf->contents = x_file_read_le_int32(file);
     
-    int pvsOffset = x_file_read_be_int32(file);
-    leaf->compressedPvsData = compressedPvsData + pvsOffset;
+    int pvsOffset = x_file_read_le_int32(file);
+    
+    if(pvsOffset == -1)
+        leaf->compressedPvsData = NULL;
+    else
+        leaf->compressedPvsData = compressedPvsData + pvsOffset;
+    
+    printf("Offset: %d\n", pvsOffset);
     
     for(int i = 0; i < 3; ++i)
         leaf->mins[i] = x_file_read_le_int16(file);
     
     for(int i = 0; i < 3; ++i)
         leaf->maxs[i] = x_file_read_le_int16(file);
+    
+    leaf->firstMarkSurface = x_file_read_le_int16(file);
+    leaf->numMarkSurface = x_file_read_le_int16(file);
     
     for(int i = 0; i < X_BSPLEAF_TOTAL_AMBIENTS; ++i)
         leaf->ambientLevel[i] = x_file_read_char(file);
@@ -227,6 +236,8 @@ static void x_bsplevel_load_compressed_pvs(X_BspLevel* level)
 {
     X_BspLump* pvsLump = level->header.lumps + X_LUMP_VISIBILITY;
     
+    x_file_seek(&level->file, pvsLump->fileOffset);
+    
     level->compressedPvsData = x_malloc(pvsLump->length);
     x_file_read_buf(&level->file, pvsLump->length, level->compressedPvsData);
 }
@@ -321,14 +332,34 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
     int pvsSize = x_bspfile_node_pvs_size(level);
     unsigned char* pvsData = leaf->compressedPvsData;
     
+    // No visibility info (whoever compiled the map didn't run the vis tool)
+    if(pvsData == NULL)
+    {
+        // Mark all leaves as visible
+        for(int i = 0; i < pvsSize; ++i)
+            decompressedPvsDest[i] = 0xFF;
+            
+        return;
+    }
+
+    printf("Offset: %d\n", (int)(pvsData - level->compressedPvsData));
+    
+    for(int i = 0; i < 20; ++i)
+    {
+        printf("byte: %d\n", pvsData[i]);
+    }
+    
     while(pos < pvsSize)
     {
+        printf("Pos: %d\n", pos);
         if(*pvsData == 0)
         {
             ++pvsData;
             int count = *pvsData++;
             
-            for(int i = 0; i < count; ++i)
+            printf("Count: %d\n", count);
+            
+            for(int i = 0; i < count && pos < pvsSize; ++i)
                 decompressedPvsDest[pos++] = 0;
         }
         else
