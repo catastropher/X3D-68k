@@ -52,6 +52,12 @@ void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* 
 {
     x_consolevar_init(consoleVar, var, name, type, initialValue, saveToConfig);
     
+    if(x_console_cmd_exists(console, consoleVar->name))
+    {
+        x_console_printf(console, "Can't register variable %s, name is already used for command\n", consoleVar->name);
+        return;
+    }
+    
     if(x_console_var_exists(console, consoleVar->name))
     {
         x_console_printf(console, "Can't register variable %s, already defined\n", consoleVar->name);
@@ -60,6 +66,43 @@ void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* 
     
     consoleVar->next = console->consoleVarsHead;
     console->consoleVarsHead = consoleVar;
+}
+
+X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName)
+{
+    X_ConsoleCmd* cmd = console->consoleCmdHead;
+    while(cmd)
+    {
+        if(strcmp(cmd->name, cmdName) == 0)
+            return cmd;
+        
+        cmd = cmd->next;
+    }
+    
+    return NULL;
+}
+
+_Bool x_console_cmd_exists(X_Console* console, const char* cmdName)
+{
+    return x_console_get_cmd(console, cmdName) != NULL;
+}
+
+void x_console_register_cmd(X_Console* console, X_ConsoleCmd* cmd)
+{
+    if(x_console_var_exists(console, cmd->name))
+    {
+        x_console_printf(console, "Can't register command %s, name is already used for variable\n", cmd->name);
+        return;
+    }
+    
+    if(x_console_cmd_exists(console, cmd->name))
+    {
+        x_console_printf(console, "Can't register command %s, already defined\n", cmd->name);
+        return;
+    }
+    
+    cmd->next = console->consoleCmdHead;
+    console->consoleCmdHead = cmd;
 }
 
 static int x_console_bytes_in_line(const X_Console* console)
@@ -99,6 +142,7 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
 {
     console->openState = X_CONSOLE_STATE_CLOSED;
     console->consoleVarsHead = NULL;
+    console->consoleCmdHead = NULL;
     console->cursor = x_vec2_make(0, 0);
     console->size.x = x_screen_w(&engineContext->screen) / font->charW;
     console->size.y = x_screen_h(&engineContext->screen) / font->charH / 2;
@@ -647,9 +691,20 @@ void x_console_execute_cmd(X_Console* console, const char* str)
     
     if(context.totalTokens == 0)
         return;
-    else if(context.totalTokens == 1)
+    
+    X_ConsoleCmd* cmd = x_console_get_cmd(console, tokens[0]);
+    
+    if(cmd != NULL)
+    {
+        cmd->handler(console->engineContext, context.totalTokens, tokens);
+        return;
+    }
+    
+    if(context.totalTokens == 1)
         print_variable_value(console, tokens[0]);
     else if(context.totalTokens == 2)
         set_variable_value(console, tokens[0], tokens[1]);
+    else
+        x_console_print(console, "Bad command\n");          // Need better message
 }
 

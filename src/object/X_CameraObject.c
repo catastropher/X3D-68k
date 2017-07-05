@@ -24,7 +24,11 @@
 ////////////////////////////////////////////////////////////////////////////////
 X_CameraObject* x_cameraobject_new(X_EngineContext* context)
 {
-    return (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
+    X_CameraObject* cam = (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
+    
+    cam->lastLeaf = X_BSPFILE_MAX_LEAFS;
+    
+    return cam;
 }
 
 void x_cameraobject_update_view(X_CameraObject* cam)
@@ -61,6 +65,8 @@ static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_Rend
 {
     if(cam->currentLeaf == cam->lastLeaf)
         return;
+    
+    cam->lastLeaf = cam->currentLeaf;
     
     X_BspLeaf* currentLeaf = x_bsplevel_get_leaf(renderContext->level, cam->currentLeaf);
     x_bsplevel_decompress_pvs_for_leaf(renderContext->level, currentLeaf, cam->pvsForCurrentLeaf);

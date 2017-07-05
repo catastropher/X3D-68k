@@ -27,3 +27,8 @@ static inline X_BspLevel* x_engine_get_current_level(X_EngineContext* context)
     return &context->currentLevel;
 }
 
+static inline void x_enginecontext_begin_frame(X_EngineContext* context)
+{
+    ++context->frameCount;
+}
+

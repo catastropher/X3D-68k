@@ -110,8 +110,3 @@ X_Time x_enginecontext_get_time(const X_EngineContext* context)
     return clock() * 1000 / CLOCKS_PER_SEC;
 }
 
-void x_enginecontext_begin_frame(X_EngineContext* context)
-{
-    ++context->frameCount;
-}
-

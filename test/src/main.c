@@ -275,6 +275,9 @@ int main(int argc, char* argv[])
         handle_keys(&context);
         
         x_cameraobject_render(context.cam, &rcontext);
+
+        if(x_console_is_open(&context.context.console))
+            x_console_render(&context.context.console);
         
         update_screen(&context);        
     }
