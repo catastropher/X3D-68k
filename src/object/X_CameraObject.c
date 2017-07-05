@@ -82,6 +82,8 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     
     x_cameraobject_determine_current_bspleaf(cam, renderContext);
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
+    
+    x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
 }
 
 

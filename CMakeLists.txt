@@ -23,6 +23,7 @@ include_directories(src/)
 
 add_library(X3D STATIC
     # dev
+    src/dev/X_conCommands.c
     src/dev/X_Console.c
 
     # engine

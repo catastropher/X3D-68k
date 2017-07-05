@@ -138,6 +138,8 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
     }
 }
 
+void x_console_register_builtin_commands(X_Console* console);
+
 void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* font)
 {
     console->openState = X_CONSOLE_STATE_CLOSED;
@@ -154,6 +156,8 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
     
     console->text = x_malloc(x_console_bytes_in_line(console) * console->size.y);
     x_console_clear(console);
+    
+    x_console_register_builtin_commands(console);
 }
 
 void x_console_clear(X_Console* console)
