@@ -17,7 +17,7 @@
 
 #include "X_GameObject.h"
 #include "render/X_Viewport.h"
-#include "level/X_BspLevel.h"
+#include "level/X_BspLevelLoader.h"
 
 struct X_EngineContext;
 struct X_RenderContext;

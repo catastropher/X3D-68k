@@ -20,30 +20,30 @@
 #include "render/X_RenderContext.h"
 #include "geo/X_Ray3.h"
 
-static X_Vec3_float x_bspfile_convert_coordinate(const X_Vec3_float* v)
+static X_Vec3_float x_bsplevelloader_convert_coordinate(const X_Vec3_float* v)
 {
     return x_vec3_float_make(v->y, -v->z, -v->x);
 }
 
-static void x_bsplump_read_from_file(X_BspLump* lump, X_File* file)
+static void x_bsploaderlump_read_from_file(X_BspLoaderLump* lump, X_File* file)
 {
     lump->fileOffset = x_file_read_le_int32(file);
     lump->length = x_file_read_le_int32(file);
 }
 
-static void x_bspheader_read_from_file(X_BspHeader* header, X_File* file)
+static void x_bsploaderheader_read_from_file(X_BspLoaderHeader* header, X_File* file)
 {
     header->bspVersion = x_file_read_le_int32(file);
     
     for(int i = 0; i < X_BSP_TOTAL_LUMPS; ++i)
-        x_bsplump_read_from_file(header->lumps + i, file);
+        x_bsploaderlump_read_from_file(header->lumps + i, file);
 }
 
-static void x_bspplane_read_from_file(X_BspPlane* plane, X_File* file)
+static void x_bsploaderplane_read_from_file(X_BspLoaderPlane* plane, X_File* file)
 {
     X_Vec3_float normal;
     x_file_read_vec3_float(file, &normal);
-    normal = x_bspfile_convert_coordinate(&normal);
+    normal = x_bsplevelloader_convert_coordinate(&normal);
     
     plane->plane.normal = x_vec3_float_to_vec3_fp16x16(&normal);
     
@@ -53,16 +53,16 @@ static void x_bspplane_read_from_file(X_BspPlane* plane, X_File* file)
     plane->type = x_file_read_le_int32(file);
 }
 
-static void x_bspvertex_read_from_file(X_BspVertex* vertex, X_File* file)
+static void x_bsploadervertex_read_from_file(X_BspLoaderVertex* vertex, X_File* file)
 {
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);
     
-    v = x_bspfile_convert_coordinate(&v);
+    v = x_bsplevelloader_convert_coordinate(&v);
     vertex->v = x_vec3_float_to_vec3(&v);
 }
 
-static void x_bspface_read_from_file(X_BspFace* face, X_File* file)
+static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)
 {
     face->planeNum = x_file_read_le_int16(file);
     face->side = x_file_read_le_int16(file);
@@ -75,7 +75,7 @@ static void x_bspface_read_from_file(X_BspFace* face, X_File* file)
     face->lightmapOffset = x_file_read_le_int32(file);
 }
 
-static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file, unsigned char* compressedPvsData)
+static void x_bsploaderleaf_read_from_file(X_BspLoaderLeaf* leaf, X_File* file, unsigned char* compressedPvsData)
 {
     leaf->contents = x_file_read_le_int32(file);
     
@@ -101,7 +101,7 @@ static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file, unsigned cha
         leaf->ambientLevel[i] = x_file_read_char(file);
 }
 
-static void x_bspnode_read_from_file(X_BspNode* node, X_File* file)
+static void x_bsploadernode_read_from_file(X_BspLoaderNode* node, X_File* file)
 {
     node->planeNum = x_file_read_le_int32(file);
     
@@ -118,13 +118,13 @@ static void x_bspnode_read_from_file(X_BspNode* node, X_File* file)
     node->totalFaces = x_file_read_le_int16(file);
 }
 
-static void x_bspedge_read_from_file(X_BspEdge* edge, X_File* file)
+static void x_bsploaderedge_read_from_file(X_BspLoaderEdge* edge, X_File* file)
 {
     edge->v[0] = x_file_read_le_int16(file);
     edge->v[1] = x_file_read_le_int16(file);
 }
 
-static void x_bspmodel_read_from_file(X_BspModel* model, X_File* file)
+static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* file)
 {
     for(int i = 0; i < 3; ++i)
         model->mins[i] = x_file_read_le_float32(file);
@@ -147,13 +147,13 @@ static void x_bspmodel_read_from_file(X_BspModel* model, X_File* file)
     model->totalFaces = x_file_read_le_int32(file);
 }
 
-static void x_bsplevel_load_planes(X_BspLevel* level, X_File* file)
+static void x_bsploaderlevel_load_planes(X_BspLevelLoader* level, X_File* file)
 {
     const int PLANE_SIZE_IN_FILE = 20;
-    X_BspLump* planeLump = level->header.lumps + X_LUMP_PLANES;
+    X_BspLoaderLump* planeLump = level->header.lumps + X_LUMP_PLANES;
     
     level->totalPlanes = planeLump->length / PLANE_SIZE_IN_FILE;
-    level->planes = malloc(level->totalPlanes * sizeof(X_BspPlane));
+    level->planes = malloc(level->totalPlanes * sizeof(X_BspLoaderPlane));
     
     x_log("Total planes: %d", level->totalPlanes);
     
@@ -161,17 +161,17 @@ static void x_bsplevel_load_planes(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalPlanes; ++i)
     {
-        x_bspplane_read_from_file(level->planes + i, file);
+        x_bsploaderplane_read_from_file(level->planes + i, file);
     }
 }
 
-static void x_bsplevel_load_vertices(X_BspLevel* level, X_File* file)
+static void x_bsploaderlevel_load_vertices(X_BspLevelLoader* level, X_File* file)
 {
     const int VERTEX_SIZE_IN_FILE = 12;
-    X_BspLump* vertexLump = level->header.lumps + X_LUMP_VERTEXES;
+    X_BspLoaderLump* vertexLump = level->header.lumps + X_LUMP_VERTEXES;
     
     level->totalVertices = vertexLump->length / VERTEX_SIZE_IN_FILE;
-    level->vertices = x_malloc(level->totalVertices * sizeof(X_BspVertex));
+    level->vertices = x_malloc(level->totalVertices * sizeof(X_BspLoaderVertex));
     
     x_log("Total vertices: %d", level->totalVertices);
     
@@ -179,17 +179,17 @@ static void x_bsplevel_load_vertices(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalVertices; ++i)
     {
-        x_bspvertex_read_from_file(level->vertices + i, file);
+        x_bsploadervertex_read_from_file(level->vertices + i, file);
     }
 }
 
-static void x_bsplevel_load_faces(X_BspLevel* level, X_File* file)
+static void x_bsploaderlevel_load_faces(X_BspLevelLoader* level, X_File* file)
 {
     const int FACE_SIZE_IN_FILE = 20;
-    X_BspLump* faceLump = level->header.lumps + X_LUMP_FACES;
+    X_BspLoaderLump* faceLump = level->header.lumps + X_LUMP_FACES;
     
     level->totalFaces = faceLump->length / FACE_SIZE_IN_FILE;
-    level->faces = x_malloc(level->totalFaces * sizeof(X_BspFace));
+    level->faces = x_malloc(level->totalFaces * sizeof(X_BspLoaderFace));
     
     x_log("Total faces: %d", level->totalFaces);
     
@@ -197,17 +197,17 @@ static void x_bsplevel_load_faces(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalFaces; ++i)
     {
-        x_bspface_read_from_file(level->faces + i, file);
+        x_bsploaderface_read_from_file(level->faces + i, file);
     }
 }
 
-static void x_bsplevel_load_leaves(X_BspLevel* level, X_File* file)
+static void x_bsploaderlevel_load_leaves(X_BspLevelLoader* level, X_File* file)
 {
     const int LEAF_SIZE_IN_FILE = 28;
-    X_BspLump* leafLump = level->header.lumps + X_LUMP_LEAFS;
+    X_BspLoaderLump* leafLump = level->header.lumps + X_LUMP_LEAFS;
     
     level->totalLeaves = leafLump->length / LEAF_SIZE_IN_FILE;
-    level->leaves = x_malloc(level->totalLeaves * sizeof(X_BspLeaf));
+    level->leaves = x_malloc(level->totalLeaves * sizeof(X_BspLoaderLeaf));
     
     x_log("Total leaves: %d", level->totalLeaves);
     
@@ -215,17 +215,17 @@ static void x_bsplevel_load_leaves(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalLeaves; ++i)
     {
-        x_bspleaf_read_from_file(level->leaves + i, file, level->compressedPvsData);
+        x_bsploaderleaf_read_from_file(level->leaves + i, file, level->compressedPvsData);
     }
 }
 
-static void x_bsplevel_load_nodes(X_BspLevel* level, X_File* file)
+static void x_bsploaderlevel_load_nodes(X_BspLevelLoader* level, X_File* file)
 {
     const int NODE_SIZE_IN_FILE = 24;
-    X_BspLump* nodeLump = level->header.lumps + X_LUMP_NODES;
+    X_BspLoaderLump* nodeLump = level->header.lumps + X_LUMP_NODES;
     
     level->totalNodes = nodeLump->length / NODE_SIZE_IN_FILE;
-    level->nodes = x_malloc(level->totalNodes * sizeof(X_BspNode));
+    level->nodes = x_malloc(level->totalNodes * sizeof(X_BspLoaderNode));
     
     x_log("Total nodes: %d\n", level->totalNodes);
     
@@ -233,17 +233,17 @@ static void x_bsplevel_load_nodes(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalNodes; ++i)
     {
-        x_bspnode_read_from_file(level->nodes + i, file);
+        x_bsploadernode_read_from_file(level->nodes + i, file);
     }
 }
 
-static void x_bsplevel_load_edges(X_BspLevel* level, X_File* file)
+static void x_bsploaderlevel_load_edges(X_BspLevelLoader* level, X_File* file)
 {
     const int EDGE_SIZE_IN_FILE = 4;
-    X_BspLump* edgeLump = level->header.lumps + X_LUMP_EDGES;
+    X_BspLoaderLump* edgeLump = level->header.lumps + X_LUMP_EDGES;
     
     level->totalEdges = edgeLump->length / EDGE_SIZE_IN_FILE;
-    level->edges = x_malloc(level->totalEdges * sizeof(X_BspVertex));
+    level->edges = x_malloc(level->totalEdges * sizeof(X_BspLoaderVertex));
     
     x_log("Total edges: %d", level->totalEdges);
     
@@ -251,17 +251,17 @@ static void x_bsplevel_load_edges(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalEdges; ++i)
     {
-        x_bspedge_read_from_file(level->edges + i, file);
+        x_bsploaderedge_read_from_file(level->edges + i, file);
     }
 }
 
-static void x_bsplevel_load_models(X_BspLevel* level, X_File* file)
+static void x_bsploaderlevel_load_models(X_BspLevelLoader* level, X_File* file)
 {
     const int MODEL_SIZE_IN_FILE = 64;
-    X_BspLump* modelLump = level->header.lumps + X_LUMP_MODELS;
+    X_BspLoaderLump* modelLump = level->header.lumps + X_LUMP_MODELS;
     
     level->totalModels = modelLump->length / MODEL_SIZE_IN_FILE;
-    level->models = x_malloc(level->totalEdges * sizeof(X_BspModel));
+    level->models = x_malloc(level->totalEdges * sizeof(X_BspLoaderModel));
     
     x_log("Total models: %d", level->totalModels);
     
@@ -269,20 +269,20 @@ static void x_bsplevel_load_models(X_BspLevel* level, X_File* file)
     
     for(int i = 0; i < level->totalModels; ++i)
     {
-        x_bspmodel_read_from_file(level->models + i, file);
+        x_bsploadermodel_read_from_file(level->models + i, file);
     }
 }
 
-static void x_bsplevel_load_compressed_pvs(X_BspLevel* level)
+static void x_bsploaderlevel_load_compressed_pvs(X_BspLevelLoader* level)
 {
-    X_BspLump* pvsLump = level->header.lumps + X_LUMP_VISIBILITY;
+    X_BspLoaderLump* pvsLump = level->header.lumps + X_LUMP_VISIBILITY;
     
     level->compressedPvsData = x_malloc(pvsLump->length);
     x_file_seek(&level->file, pvsLump->fileOffset);
     x_file_read_buf(&level->file, pvsLump->length, level->compressedPvsData);
 }
 
-_Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
+_Bool x_bsplevel_load_from_bsp_file(X_BspLevelLoader* level, const char* fileName)
 {
     if(!x_file_open_reading(&level->file, fileName))
     {
@@ -290,27 +290,27 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
         return 0;
     }
     
-    x_bspheader_read_from_file(&level->header, &level->file);
+    x_bsploaderheader_read_from_file(&level->header, &level->file);
     x_log("BSP version: %d", level->header.bspVersion);
     
     if(level->header.bspVersion != 29)
         return 0;
     
-    x_bsplevel_load_compressed_pvs(level);
-    x_bsplevel_load_planes(level, &level->file);
-    x_bsplevel_load_vertices(level, &level->file);
-    x_bsplevel_load_edges(level, &level->file);
-    x_bsplevel_load_faces(level, &level->file);
-    x_bsplevel_load_leaves(level, &level->file);
-    x_bsplevel_load_nodes(level, &level->file);
-    x_bsplevel_load_models(level, &level->file);
+    x_bsploaderlevel_load_compressed_pvs(level);
+    x_bsploaderlevel_load_planes(level, &level->file);
+    x_bsploaderlevel_load_vertices(level, &level->file);
+    x_bsploaderlevel_load_edges(level, &level->file);
+    x_bsploaderlevel_load_faces(level, &level->file);
+    x_bsploaderlevel_load_leaves(level, &level->file);
+    x_bsploaderlevel_load_nodes(level, &level->file);
+    x_bsploaderlevel_load_models(level, &level->file);
     
     level->flags = X_BSPLEVEL_LOADED;
     
     return 1;
 }
 
-void x_bsplevel_init_empty(X_BspLevel* level)
+void x_bsplevel_init_empty(X_BspLevelLoader* level)
 {
     level->compressedPvsData = NULL;
     
@@ -337,11 +337,11 @@ void x_bsplevel_init_empty(X_BspLevel* level)
     level->flags = 0;
 }
 
-void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
+void x_bsplevel_render_wireframe(X_BspLevelLoader* level, X_RenderContext* rcontext, X_Color color)
 {
     for(int i = 0; i < level->totalEdges; ++i)
     {
-        X_BspEdge* edge = level->edges + i;
+        X_BspLoaderEdge* edge = level->edges + i;
         
         X_Ray3 ray = x_ray3_make
         (
@@ -353,15 +353,15 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
     }
 }
 
-static int x_bsplevel_find_leaf_point_is_in_recursive(X_BspLevel* level, int nodeId, X_Vec3* point)
+static int x_bsplevel_find_leaf_point_is_in_recursive(X_BspLevelLoader* level, int nodeId, X_Vec3* point)
 {
     if(nodeId < 0)
     {
         return ~nodeId;
     }
     
-    X_BspNode* node = level->nodes + nodeId;    
-    X_BspPlane* plane = level->planes + node->planeNum;
+    X_BspLoaderNode* node = level->nodes + nodeId;    
+    X_BspLoaderPlane* plane = level->planes + node->planeNum;
     
     int childNode = x_plane_point_is_on_normal_facing_side(&plane->plane, point)
         ? node->children[0] : node->children[1];
@@ -369,12 +369,12 @@ static int x_bsplevel_find_leaf_point_is_in_recursive(X_BspLevel* level, int nod
     return x_bsplevel_find_leaf_point_is_in_recursive(level, childNode, point);
 }
 
-int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
+int x_bsplevel_find_leaf_point_is_in(X_BspLevelLoader* level, X_Vec3* point)
 {
     return x_bsplevel_find_leaf_point_is_in_recursive(level, x_bsplevel_get_root_node(level), point);
 }
 
-void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+void x_bspllevel_decompress_pvs_for_leaf(X_BspLevelLoader* level, X_BspLoaderLeaf* leaf, unsigned char* decompressedPvsDest)
 {
     // The PVS is compressed using zero run-length encoding
     int pos = 0;
@@ -406,5 +406,15 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
             decompressedPvsDest[pos++] = *pvsData++;
         }
     }
+}
+
+void x_bsplevel_mark_leaves_from_pvs(X_BspLevelLoader* level, unsigned char* pvs, int currentFrame)
+{
+//     X_BspLoaderModel* levelModel = x_bsploaderlevel_get_level_model(level);
+//     
+//     for(int i = 0; i < levelModel->totalBspLeaves; ++i)
+//     {
+//         _Bool potentiallVisible = pvs[i / 8] & (1 << ())
+//     }
 }
 

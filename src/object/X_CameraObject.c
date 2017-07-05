@@ -68,8 +68,8 @@ static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_Rend
     
     cam->lastLeaf = cam->currentLeaf;
     
-    X_BspLeaf* currentLeaf = x_bsplevel_get_leaf(renderContext->level, cam->currentLeaf);
-    x_bsplevel_decompress_pvs_for_leaf(renderContext->level, currentLeaf, cam->pvsForCurrentLeaf);
+    //X_BspLeaf* currentLeaf = x_bsplevel_get_leaf(renderContext->level, cam->currentLeaf);
+    //x_bsplevel_decompress_pvs_for_leaf(renderContext->level, currentLeaf, cam->pvsForCurrentLeaf);
 }
 
 void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -77,14 +77,15 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_assert(renderContext != NULL, "No render context");
     x_assert(renderContext->engineContext != NULL, "No engine context in render context");
     
-    if(!x_engine_level_is_loaded(renderContext->engineContext))
-        return;
     
-    x_cameraobject_determine_current_bspleaf(cam, renderContext);
+//     if(!x_engine_level_is_loaded(renderContext->engineContext))
+//         return;
+    
+//    x_cameraobject_determine_current_bspleaf(cam, renderContext);
     
     //printf("Current leaf: %d\n", cam->currentLeaf);
     
-    x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
+  //  x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
     
     x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
 }

@@ -20,7 +20,7 @@
 #include "dev/X_Console.h"
 #include "render/X_Font.h"
 #include "system/X_Time.h"
-#include "level/X_BspLevel.h"
+#include "level/X_BspLevelLoader.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
@@ -32,7 +32,7 @@ typedef struct X_EngineContext
     X_Console console;
     X_Font mainFont;
     X_KeyState keystate;
-    X_BspLevel currentLevel;
+    X_BspLevelLoader currentLevel;
     
     int frameCount;     // TODO Where should this go?
 } X_EngineContext;

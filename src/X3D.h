@@ -38,7 +38,7 @@
 #include "error/X_log.h"
 
 // level
-#include "level/X_BspLevel.h"
+#include "level/X_BspLevelLoader.h"
 
 // math
 #include "math/X_angle.h"
