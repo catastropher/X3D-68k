@@ -16,6 +16,7 @@
 #include "X_Console.h"
 #include "engine/X_Engine.h"
 #include "util/X_util.h"
+#include "system/X_PackFile.h"
 
 static void cmd_echo(X_EngineContext* context, int argc, char* argv[])
 {
@@ -52,6 +53,53 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     x_console_printf(&context->console, "Loaded map %s\n", fileName);
 }
 
+static void cmd_packlist(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage: packlist [pack file name] -> prints the filenames of the files in a pack file\n");
+        return;
+    }
+    
+    X_PackFile file;
+    if(!x_packfile_read_from_file(&file, argv[1]))
+    {
+        x_console_printf(&context->console, "Failed to read packfile %s\n", argv[1]);
+        return;
+    }
+    
+    for(int i = 0; i < file.totalEntries; ++i)
+        printf("%3d. %s\n", i + 1, file.entries[i].name);
+    
+    x_packfile_cleanup(&file);
+    
+    printf("\n");
+}
+
+static void cmd_packextract(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 3)
+    {
+        x_console_print(&context->console, "Usage: packextract [pack file name] [dir] -> extracts the files in the pack file to [dir]\n");
+        return;
+    }
+    
+    X_PackFile file;
+    if(!x_packfile_read_from_file(&file, argv[1]))
+    {
+        x_console_printf(&context->console, "Failed to read packfile %s\n", argv[1]);
+        return;
+    }
+    
+    if(!x_packfile_extract(&file, argv[2]))
+    {
+        x_console_printf(&context->console, "Failed to extract packfile %s\n", argv[1]);
+        return;
+    }
+    
+    x_packfile_cleanup(&file);
+}
+
 void x_console_register_builtin_commands(X_Console* console)
 {
     static X_ConsoleCmd cmdEcho = { "echo", cmd_echo };
@@ -59,4 +107,10 @@ void x_console_register_builtin_commands(X_Console* console)
     
     static X_ConsoleCmd cmdMap = { "map", cmd_map };
     x_console_register_cmd(console, &cmdMap);
+    
+    static X_ConsoleCmd cmdPacklist = { "packlist", cmd_packlist };
+    x_console_register_cmd(console, &cmdPacklist);
+    
+    static X_ConsoleCmd cmdPackextract = { "packextract", cmd_packextract};
+    x_console_register_cmd(console, &cmdPackextract);
 }

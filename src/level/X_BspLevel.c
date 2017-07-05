@@ -86,7 +86,7 @@ static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file, unsigned cha
     else
         leaf->compressedPvsData = compressedPvsData + pvsOffset;
     
-    printf("Offset: %d\n", pvsOffset);
+    //  xprintf("Offset: %d\n", pvsOffset);
     
     for(int i = 0; i < 3; ++i)
         leaf->mins[i] = x_file_read_le_int16(file);
@@ -250,9 +250,12 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
         return 0;
     }
     
+    x_bspheader_read_from_file(&level->header, &level->file);
     x_log("BSP version: %d", level->header.bspVersion);
     
-    x_bspheader_read_from_file(&level->header, &level->file);
+    if(level->header.bspVersion != 29)
+        return 0;
+    
     x_bsplevel_load_compressed_pvs(level);
     x_bsplevel_load_planes(level, &level->file);
     x_bsplevel_load_vertices(level, &level->file);
@@ -342,8 +345,6 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
         return;
     }
 
-    printf("Offset: %d\n", (int)(pvsData - level->compressedPvsData));
-    
     for(int i = 0; i < 20; ++i)
     {
         printf("byte: %d\n", pvsData[i]);

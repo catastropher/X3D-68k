@@ -14,6 +14,9 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <string.h>
 
 #include "X_File.h"
 #include "error/X_log.h"
@@ -205,6 +208,42 @@ _Bool x_file_open_writing(X_File* file, const char* fileName)
     file->flags = X_FILE_OPEN_FOR_WRITING;
     
     return 1;
+}
+
+static _Bool create_path_for_file(const char* filePath) {
+    char fileName[512];
+    const int MODE = 0755;
+
+    strncpy(fileName, filePath, sizeof(fileName));
+
+    for(char* dirStart = strchr(fileName + 1, '/'); dirStart != NULL; dirStart = strchr(dirStart + 1, '/'))
+    {
+        *dirStart = '\0';
+
+        if(mkdir(fileName, MODE) == -1)
+        {
+            if(errno != EEXIST)
+            {
+                *dirStart = '/';
+                return 0;
+            }
+        }
+        
+        *dirStart = '/';
+    }
+    
+    return 1;
+}
+
+_Bool x_file_open_writing_create_path(X_File* file, const char* fileName)
+{
+    if(!create_path_for_file(fileName))
+    {
+        x_log_error("Failed to create path for %s", fileName);
+        return 0;
+    }
+    
+    return x_file_open_writing(file, fileName);
 }
 
 void x_file_write_le_int16(X_File* file, int val)

@@ -57,6 +57,9 @@ int convert_sdl_key_to_x3d_key(int sdlKey)
     if(isalnum(sdlKey))
         return sdlKey;
     
+    if(sdlKey == '.' || sdlKey == '/')
+        return sdlKey;
+    
     return INVALID_KEY;
 }
 
