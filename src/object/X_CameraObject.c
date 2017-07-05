@@ -14,7 +14,9 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_CameraObject.h"
-#include "engine/X_EngineContext.h"
+#include "engine/X_Engine.h"
+#include "render/X_RenderContext.h"
+#include "error/X_error.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Creates a new camera object.
@@ -48,4 +50,32 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
     x_viewport_update_frustum(&cam->viewport, &camPos, &forward, &right, &up);
 }
+
+static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
+{
+    X_Vec3 position = x_vec3_fp16x16_to_vec3(&cam->base.position);
+    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, 0, &position);
+}
+
+static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
+{
+    if(cam->currentLeaf == cam->lastLeaf)
+        return;
+    
+    X_BspLeaf* currentLeaf = x_bsplevel_get_leaf(renderContext->level, cam->currentLeaf);
+    x_bsplevel_decompress_pvs_for_leaf(renderContext->level, currentLeaf, cam->pvsForCurrentLeaf);
+}
+
+void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
+{
+    x_assert(renderContext != NULL, "No render context");
+    x_assert(renderContext->engineContext != NULL, "No engine context in render context");
+    
+    if(!x_engine_level_is_loaded(renderContext->engineContext))
+        return;
+    
+    x_cameraobject_determine_current_bspleaf(cam, renderContext);
+    x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
+}
+
 

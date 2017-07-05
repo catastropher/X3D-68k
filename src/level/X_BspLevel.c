@@ -250,7 +250,36 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
     x_bsplevel_load_leaves(level, &level->file);
     x_bsplevel_load_nodes(level, &level->file);
     
+    level->flags = X_BSPLEVEL_LOADED;
+    
     return 1;
+}
+
+void x_bsplevel_init_empty(X_BspLevel* level)
+{
+    level->compressedPvsData = NULL;
+    
+    level->edges = NULL;
+    level->totalEdges = 0;
+    
+    level->faces = NULL;
+    level->totalFaces = 0;
+    
+    level->file.file = NULL;
+    
+    level->leaves = NULL;
+    level->totalLeaves = 0;
+    
+    level->nodes = NULL;
+    level->totalNodes = 0;
+    
+    level->planes = NULL;
+    level->totalPlanes = 0;
+    
+    level->vertices = NULL;
+    level->totalVertices = 0;
+    
+    level->flags = 0;
 }
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)

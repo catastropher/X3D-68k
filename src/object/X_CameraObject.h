@@ -17,8 +17,10 @@
 
 #include "X_GameObject.h"
 #include "render/X_Viewport.h"
+#include "level/X_BspLevel.h"
 
 struct X_EngineContext;
+struct X_RenderContext;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// 
@@ -30,8 +32,12 @@ typedef struct X_CameraObject
     x_angle256 angleX;
     x_angle256 angleY;
     struct X_CameraObject* nextInCameraList;
+    X_BspLeafId currentLeaf;
+    X_BspLeafId lastLeaf;
+    unsigned char pvsForCurrentLeaf[X_BSPFILE_PVS_SIZE];
 } X_CameraObject;
 
 X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
 void x_cameraobject_update_view(X_CameraObject* cam);
+void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderContext);
 

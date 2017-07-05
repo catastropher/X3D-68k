@@ -228,6 +228,8 @@ int main(int argc, char* argv[])
     rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
     rcontext.viewMatrix = &context.cam->viewMatrix;
     rcontext.screen = &context.context.screen;
+    rcontext.engineContext = &context.context;
+    rcontext.level = x_engine_get_current_level(&context.context);
     
     x_screen_set_palette(&context.context.screen, x_palette_get_quake_palette());
     
@@ -272,18 +274,7 @@ int main(int argc, char* argv[])
 
         handle_keys(&context);
         
-        //draw_grid(x_vec3_make(0, 0, 500), 32 * 16, 32, &rcontext, 4);
-        
-        x_bsplevel_render_wireframe(&level, &rcontext, context.context.screen.palette->brightRed);
-        
-        X_Vec3 camPos = x_vec3_fp16x16_to_vec3(&context.cam->base.position);
-        
-        int leaf = x_bsplevel_find_leaf_point_is_in(&level, 0, &camPos);
-        
-        printf("Leaf: %d\n", leaf);
-        
-        if(x_console_is_open(&context.context.console))
-            x_console_render(&context.context.console);
+        x_cameraobject_render(context.cam, &rcontext);
         
         update_screen(&context);        
     }

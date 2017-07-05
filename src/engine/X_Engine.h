@@ -15,23 +15,15 @@
 
 #pragma once
 
-#include "X_Canvas.h"
-#include "X_Viewport.h"
-#include "object/X_CameraObject.h"
-#include "math/X_Mat4x4.h"
-#include "X_Screen.h"
-#include "level/X_BspLevel.h"
+#include "X_EngineContext.h"
 
-struct X_EngineContext;
-
-typedef struct X_RenderContext
+static inline _Bool x_engine_level_is_loaded(const X_EngineContext* context)
 {
-    X_CameraObject* cam;
-    X_Canvas* canvas;
-    X_Screen* screen;
-    X_Frustum* viewFrustum;
-    X_Mat4x4* viewMatrix;
-    struct X_EngineContext* engineContext;
-    X_BspLevel* level;
-} X_RenderContext;
+    return x_bsplevel_file_is_loaded(&context->currentLevel);
+}
+
+static inline X_BspLevel* x_engine_get_current_level(X_EngineContext* context)
+{
+    return &context->currentLevel;
+}
 

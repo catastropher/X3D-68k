@@ -30,6 +30,7 @@
 
 // engine
 #include "engine/X_config.h"
+#include "engine/X_Engine.h"
 #include "engine/X_EngineContext.h"
 
 // error

@@ -38,8 +38,12 @@
 
 #define X_BSP_TOTAL_LUMPS 15
 
+#define X_BSPFILE_MAX_LEAFS 8192
+#define X_BSPFILE_PVS_SIZE ((X_BSPFILE_MAX_LEAFS + 8 / 2) / 8)
+
 typedef int X_BspVertexId;
 typedef int X_BspEdgeId;
+typedef int X_BspLeafId;
 
 struct X_RenderContext;
 
@@ -122,8 +126,14 @@ typedef struct X_BspNode
     unsigned short totalFaces;
 } X_BspNode;
 
+typedef enum X_BspLevelFlags
+{
+    X_BSPLEVEL_LOADED = 1
+} X_BspLevelFlags;
+
 typedef struct X_BspLevel
 {
+    unsigned int flags;
     X_File file;
     X_BspHeader header;
     
@@ -149,6 +159,8 @@ typedef struct X_BspLevel
 } X_BspLevel;
 
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
+void x_bsplevel_init_empty(X_BspLevel* level);
+
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
 int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point);
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
@@ -156,5 +168,15 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
 static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
 {
     return (level->totalLeaves + 8 / 2) / 8;
+}
+
+static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
+{
+    return (level->flags & X_BSPLEVEL_LOADED) != 0;
+}
+
+static inline X_BspLeaf* x_bsplevel_get_leaf(X_BspLevel* level, X_BspLeafId leafId)
+{
+    return level->leaves + leafId;
 }
 
