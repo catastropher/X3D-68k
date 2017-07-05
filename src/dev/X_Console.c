@@ -503,6 +503,14 @@ static _Bool x_console_autocomplete(X_Console* console)
 #define MATCHES_PER_ROW 4
 #define MATCH_SPACING 4
 
+static int compare_matches(const void* a, const void* b)
+{
+    const char* strA = *((const char **)a);
+    const char* strB = *((const char **)b);
+    
+    return strcmp(strA, strB);
+}
+
 static void x_console_print_autocomplete_matches(X_Console* console)
 {
     const int MAX_AUTOCOMPLETE_MATCHES = 128;
@@ -522,6 +530,8 @@ static void x_console_print_autocomplete_matches(X_Console* console)
         if(x_count_prefix_match_length(console->input, cmd->name) == inputLength)
             autocompleteMatches[totalAutocompleteMatches++] = cmd->name;
     }
+    
+    qsort(autocompleteMatches, totalAutocompleteMatches, sizeof(char**), compare_matches);
     
     int colWidth[MATCHES_PER_ROW] = { 0 };
     
