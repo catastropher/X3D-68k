@@ -241,33 +241,6 @@ int main(int argc, char* argv[])
     
     x_cameraobject_update_view(context.cam);
     
-    int frame = 0;
-
-    X_ConsoleVar varHello;
-    int hello;
-    
-    X_ConsoleVar varHeyThere;
-    int heyThere;
-   
-    X_ConsoleVar varHeyza;
-    int heyza;
-    
-    X_ConsoleVar varHen;
-    int hen;
-    
-    X_ConsoleVar varHelpingHand;
-    int helpingHand;
-
-    X_BspLevel level;
-    x_bsplevel_load_from_bsp_file(&level, "test2.bsp");
-    
-    x_console_register_var(&context.context.console, &varHello, &hello, "hello", X_CONSOLEVAR_INT, "50", 0);
-    x_console_register_var(&context.context.console, &varHeyThere, &heyThere, "heyThere", X_CONSOLEVAR_INT, "50", 0);
-    x_console_register_var(&context.context.console, &varHeyza, &heyza, "heyza", X_CONSOLEVAR_INT, "50", 0);
-    x_console_register_var(&context.context.console, &varHen, &hen, "hen", X_CONSOLEVAR_INT, "50", 0);
-    
-    x_console_register_var(&context.context.console, &varHelpingHand, &helpingHand, "helpingHand", X_CONSOLEVAR_INT, "50", 0);
-    
     while(!context.quit)
     {
         x_canvas_fill(&context.context.screen.canvas, 0);

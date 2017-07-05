@@ -461,6 +461,24 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
+static void x_console_autocomplete_add_option(X_Console* console, const char* option, int inputLength, int* minMatchLength, const char** minMatchStr)
+{
+    int matchLength = x_count_prefix_match_length(*minMatchStr, option);
+        
+    if(matchLength >= inputLength)
+    {
+        if(*minMatchStr == console->input)
+        {
+            *minMatchStr = option;
+            *minMatchLength = strlen(option);
+        }
+        else if(matchLength < *minMatchLength) {
+            *minMatchLength = matchLength;
+            *minMatchStr = option;
+        }
+    }
+}
+
 static _Bool x_console_autocomplete(X_Console* console)
 {
     int inputLength = console->inputPos;
@@ -468,22 +486,10 @@ static _Bool x_console_autocomplete(X_Console* console)
     const char* minMatchStr = console->input;
     
     for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
-    {
-        int matchLength = x_count_prefix_match_length(minMatchStr, var->name);
-        
-        if(matchLength >= inputLength)
-        {
-            if(minMatchStr == console->input)
-            {
-                minMatchStr = var->name;
-                minMatchLength = strlen(var->name);
-            }
-            else if(matchLength < minMatchLength) {
-                minMatchLength = matchLength;
-                minMatchStr = var->name;
-            }
-        }
-    }
+        x_console_autocomplete_add_option(console, var->name, inputLength, &minMatchLength, &minMatchStr);
+    
+    for(X_ConsoleCmd* cmd = console->consoleCmdHead; cmd != NULL; cmd = cmd->next)
+        x_console_autocomplete_add_option(console, cmd->name, inputLength, &minMatchLength, &minMatchStr);
     
     if(minMatchStr != console->input)
     {
@@ -508,10 +514,15 @@ static void x_console_print_autocomplete_matches(X_Console* console)
     for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
     {
         if(x_count_prefix_match_length(console->input, var->name) == inputLength)
-        {
             autocompleteMatches[totalAutocompleteMatches++] = var->name;
-        }
     }
+    
+    for(X_ConsoleCmd* cmd = console->consoleCmdHead; cmd != NULL; cmd = cmd->next)
+    {
+        if(x_count_prefix_match_length(console->input, cmd->name) == inputLength)
+            autocompleteMatches[totalAutocompleteMatches++] = cmd->name;
+    }
+    
     int colWidth[MATCHES_PER_ROW] = { 0 };
     
     for(int col = 0; col < MATCHES_PER_ROW; ++col)
