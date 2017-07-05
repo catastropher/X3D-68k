@@ -133,6 +133,21 @@ typedef enum X_BspLevelFlags
     X_BSPLEVEL_LOADED = 1
 } X_BspLevelFlags;
 
+#define X_BSPMODEL_MAX_MAP_HULLS 4
+
+typedef struct X_BspModel
+{
+    float mins[3];
+    float maxs[3];
+    float origin[3];
+    int rootBspNode;
+    int rootClipNode;
+    int secondRootClipNode;     // TODO: What is this used for?
+    int totalBspLeaves;
+    int firstFaceId;
+    int totalFaces;
+} X_BspModel;
+
 typedef struct X_BspLevel
 {
     unsigned int flags;
@@ -157,6 +172,9 @@ typedef struct X_BspLevel
     X_BspNode* nodes;
     int totalNodes;
     
+    X_BspModel* models;
+    int totalModels;
+    
     unsigned char* compressedPvsData;       // Potential visibility set
 } X_BspLevel;
 
@@ -164,21 +182,31 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
 void x_bsplevel_init_empty(X_BspLevel* level);
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
-int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point);
+int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point);
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
-
-static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
-{
-    return (level->totalLeaves + 8 - 1) / 8;
-}
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
 {
     return (level->flags & X_BSPLEVEL_LOADED) != 0;
 }
 
-static inline X_BspLeaf* x_bsplevel_get_leaf(X_BspLevel* level, X_BspLeafId leafId)
+static inline X_BspLeaf* x_bsplevel_get_leaf(const X_BspLevel* level, X_BspLeafId leafId)
 {
     return level->leaves + leafId;
+}
+
+static inline X_BspModel* x_bsplevel_get_level_model(const X_BspLevel* level)
+{
+    return level->models + 0;
+}
+
+static inline int x_bsplevel_get_root_node(const X_BspLevel* level)
+{
+    return x_bsplevel_get_level_model(level)->rootBspNode;
+}
+
+static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
+{
+    return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
 }
 

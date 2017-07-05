@@ -58,7 +58,7 @@ void x_cameraobject_update_view(X_CameraObject* cam)
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
     X_Vec3 position = x_vec3_fp16x16_to_vec3(&cam->base.position);
-    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, 0, &position);
+    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &position);
 }
 
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)

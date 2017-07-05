@@ -86,7 +86,7 @@ static void x_bspleaf_read_from_file(X_BspLeaf* leaf, X_File* file, unsigned cha
     else
         leaf->compressedPvsData = compressedPvsData + pvsOffset;
     
-    //  xprintf("Offset: %d\n", pvsOffset);
+    //printf("Offset: %d\n", pvsOffset);
     
     for(int i = 0; i < 3; ++i)
         leaf->mins[i] = x_file_read_le_int16(file);
@@ -122,6 +122,29 @@ static void x_bspedge_read_from_file(X_BspEdge* edge, X_File* file)
 {
     edge->v[0] = x_file_read_le_int16(file);
     edge->v[1] = x_file_read_le_int16(file);
+}
+
+static void x_bspmodel_read_from_file(X_BspModel* model, X_File* file)
+{
+    for(int i = 0; i < 3; ++i)
+        model->mins[i] = x_file_read_le_float32(file);
+    
+    for(int i = 0; i < 3; ++i)
+        model->maxs[i] = x_file_read_le_float32(file);
+    
+    for(int i = 0; i < 3; ++i)
+        model->origin[i] = x_file_read_le_float32(file);
+    
+    model->rootBspNode = x_file_read_le_int32(file);
+    model->rootClipNode = x_file_read_le_int32(file);
+    model->secondRootClipNode = x_file_read_le_int32(file);
+    
+    // Skip the unused field
+    x_file_read_le_int32(file);
+    
+    model->totalBspLeaves = x_file_read_le_int32(file);
+    model->firstFaceId = x_file_read_le_int32(file);
+    model->totalFaces = x_file_read_le_int32(file);
 }
 
 static void x_bsplevel_load_planes(X_BspLevel* level, X_File* file)
@@ -232,13 +255,30 @@ static void x_bsplevel_load_edges(X_BspLevel* level, X_File* file)
     }
 }
 
+static void x_bsplevel_load_models(X_BspLevel* level, X_File* file)
+{
+    const int MODEL_SIZE_IN_FILE = 64;
+    X_BspLump* modelLump = level->header.lumps + X_LUMP_MODELS;
+    
+    level->totalModels = modelLump->length / MODEL_SIZE_IN_FILE;
+    level->models = x_malloc(level->totalEdges * sizeof(X_BspModel));
+    
+    x_log("Total models: %d", level->totalModels);
+    
+    x_file_seek(file, modelLump->fileOffset);
+    
+    for(int i = 0; i < level->totalModels; ++i)
+    {
+        x_bspmodel_read_from_file(level->models + i, file);
+    }
+}
+
 static void x_bsplevel_load_compressed_pvs(X_BspLevel* level)
 {
     X_BspLump* pvsLump = level->header.lumps + X_LUMP_VISIBILITY;
     
-    x_file_seek(&level->file, pvsLump->fileOffset);
-    
     level->compressedPvsData = x_malloc(pvsLump->length);
+    x_file_seek(&level->file, pvsLump->fileOffset);
     x_file_read_buf(&level->file, pvsLump->length, level->compressedPvsData);
 }
 
@@ -263,6 +303,7 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
     x_bsplevel_load_faces(level, &level->file);
     x_bsplevel_load_leaves(level, &level->file);
     x_bsplevel_load_nodes(level, &level->file);
+    x_bsplevel_load_models(level, &level->file);
     
     level->flags = X_BSPLEVEL_LOADED;
     
@@ -312,7 +353,7 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
     }
 }
 
-int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* point)
+static int x_bsplevel_find_leaf_point_is_in_recursive(X_BspLevel* level, int nodeId, X_Vec3* point)
 {
     if(nodeId < 0)
     {
@@ -325,7 +366,12 @@ int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, int nodeId, X_Vec3* poin
     int childNode = x_plane_point_is_on_normal_facing_side(&plane->plane, point)
         ? node->children[0] : node->children[1];
         
-    return x_bsplevel_find_leaf_point_is_in(level, childNode, point);
+    return x_bsplevel_find_leaf_point_is_in_recursive(level, childNode, point);
+}
+
+int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
+{
+    return x_bsplevel_find_leaf_point_is_in_recursive(level, x_bsplevel_get_root_node(level), point);
 }
 
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
@@ -344,21 +390,13 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
             
         return;
     }
-
-    for(int i = 0; i < 20; ++i)
-    {
-        printf("byte: %d\n", pvsData[i]);
-    }
     
     while(pos < pvsSize)
     {
-        printf("Pos: %d\n", pos);
         if(*pvsData == 0)
         {
             ++pvsData;
             int count = *pvsData++;
-            
-            printf("Count: %d\n", count);
             
             for(int i = 0; i < count && pos < pvsSize; ++i)
                 decompressedPvsDest[pos++] = 0;
