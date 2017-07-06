@@ -15,7 +15,7 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -lasan")
+set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan")
 
 project(xtest C)
 
