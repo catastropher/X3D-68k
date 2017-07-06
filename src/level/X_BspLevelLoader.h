@@ -19,6 +19,7 @@
 #include "geo/X_Plane.h"
 #include "render/X_Texture.h"
 #include "system/X_File.h"
+#include "X_BspLevel.h"
 
 #define X_LUMP_ENTITIES     0
 #define X_LUMP_PLANES       1
@@ -42,10 +43,6 @@
 #define X_BSPFILE_PVS_SIZE ((X_BSPFILE_MAX_LEAFS + 8 / 2) / 8)
 
 #define X_BSPLEAF_OUTSIDE_LEVEL 0
-
-typedef int X_BspVertexId;
-typedef int X_BspEdgeId;
-typedef int X_BspLeafId;
 
 struct X_RenderContext;
 
@@ -128,11 +125,6 @@ typedef struct X_BspLoaderNode
     unsigned short totalFaces;
 } X_BspLoaderNode;
 
-typedef enum X_BspLevelFlags
-{
-    X_BSPLEVEL_LOADED = 1
-} X_BspLevelFlags;
-
 #define X_BSPMODEL_MAX_MAP_HULLS 4
 
 typedef struct X_BspLoaderModel
@@ -150,7 +142,6 @@ typedef struct X_BspLoaderModel
 
 typedef struct X_BspLevelLoader
 {
-    unsigned int flags;
     X_File file;
     X_BspLoaderHeader header;
     
@@ -178,35 +169,5 @@ typedef struct X_BspLevelLoader
     unsigned char* compressedPvsData;       // Potential visibility set
 } X_BspLevelLoader;
 
-_Bool x_bsplevel_load_from_bsp_file(X_BspLevelLoader* level, const char* fileName);
-void x_bsplevel_init_empty(X_BspLevelLoader* level);
-
-void x_bsplevel_render_wireframe(X_BspLevelLoader* level, struct X_RenderContext* rcontext, X_Color color);
-int x_bsplevel_find_leaf_point_is_in(X_BspLevelLoader* level, X_Vec3* point);
-void x_bsplevel_decompress_pvs_for_leaf(X_BspLevelLoader* level, X_BspLoaderLeaf* leaf, unsigned char* decompressedPvsDest);
-
-static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevelLoader* level)
-{
-    return (level->flags & X_BSPLEVEL_LOADED) != 0;
-}
-
-static inline X_BspLoaderLeaf* x_bsplevel_get_leaf(const X_BspLevelLoader* level, X_BspLeafId leafId)
-{
-    return level->leaves + leafId;
-}
-
-static inline X_BspLoaderModel* x_bsplevel_get_level_model(const X_BspLevelLoader* level)
-{
-    return level->models + 0;
-}
-
-static inline int x_bsplevel_get_root_node(const X_BspLevelLoader* level)
-{
-    return x_bsplevel_get_level_model(level)->rootBspNode;
-}
-
-static inline int x_bspfile_node_pvs_size(const X_BspLevelLoader* level)
-{
-    return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
-}
+_Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
 

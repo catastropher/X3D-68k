@@ -17,7 +17,7 @@
 
 #include "X_GameObject.h"
 #include "render/X_Viewport.h"
-#include "level/X_BspLevelLoader.h"
+#include "level/X_BspLevel.h"
 
 struct X_EngineContext;
 struct X_RenderContext;
@@ -34,7 +34,7 @@ typedef struct X_CameraObject
     struct X_CameraObject* nextInCameraList;
     X_BspLeafId currentLeaf;
     X_BspLeafId lastLeaf;
-    unsigned char pvsForCurrentLeaf[X_BSPFILE_PVS_SIZE];
+    unsigned char pvsForCurrentLeaf[256];//X_BSPFILE_PVS_SIZE];
 } X_CameraObject;
 
 X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);

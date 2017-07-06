@@ -41,6 +41,7 @@ add_library(X3D STATIC
     src/geo/X_Vec3.c
 
     # level
+    src/level/X_BspLevel.c
     src/level/X_BspLevelLoader.c
     
     # math

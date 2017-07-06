@@ -17,6 +17,7 @@
 #include "engine/X_Engine.h"
 #include "util/X_util.h"
 #include "system/X_PackFile.h"
+#include "level/X_BspLevelLoader.h"
 
 static void cmd_echo(X_EngineContext* context, int argc, char* argv[])
 {

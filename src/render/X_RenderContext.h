@@ -20,7 +20,7 @@
 #include "object/X_CameraObject.h"
 #include "math/X_Mat4x4.h"
 #include "X_Screen.h"
-#include "level/X_BspLevelLoader.h"
+#include "level/X_BspLevel.h"
 
 struct X_EngineContext;
 
@@ -32,6 +32,6 @@ typedef struct X_RenderContext
     X_Frustum* viewFrustum;
     X_Mat4x4* viewMatrix;
     struct X_EngineContext* engineContext;
-    X_BspLevelLoader* level;
+    X_BspLevel* level;
 } X_RenderContext;
 
