@@ -75,18 +75,10 @@ static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)
     face->lightmapOffset = x_file_read_le_int32(file);
 }
 
-static void x_bsploaderleaf_read_from_file(X_BspLoaderLeaf* leaf, X_File* file, unsigned char* compressedPvsData)
+static void x_bsploaderleaf_read_from_file(X_BspLoaderLeaf* leaf, X_File* file)
 {
-    leaf->contents = x_file_read_le_int32(file);
-    
-    int pvsOffset = x_file_read_le_int32(file);
-    
-    if(pvsOffset == -1)
-        leaf->compressedPvsData = NULL;
-    else
-        leaf->compressedPvsData = compressedPvsData + pvsOffset;
-    
-    //printf("Offset: %d\n", pvsOffset);
+    leaf->contents = x_file_read_le_int32(file);    
+    leaf->pvsOffset = x_file_read_le_int32(file);
     
     for(int i = 0; i < 3; ++i)
         leaf->mins[i] = x_file_read_le_int16(file);
@@ -215,7 +207,7 @@ static void x_bsploaderlevel_load_leaves(X_BspLevelLoader* level, X_File* file)
     
     for(int i = 0; i < level->totalLeaves; ++i)
     {
-        x_bsploaderleaf_read_from_file(level->leaves + i, file, level->compressedPvsData);
+        x_bsploaderleaf_read_from_file(level->leaves + i, file);
     }
 }
 
@@ -379,7 +371,7 @@ void x_bspllevel_decompress_pvs_for_leaf(X_BspLevelLoader* level, X_BspLoaderLea
     // The PVS is compressed using zero run-length encoding
     int pos = 0;
     int pvsSize = x_bspfile_node_pvs_size(level);
-    unsigned char* pvsData = leaf->compressedPvsData;
+    unsigned char* pvsData = NULL;//leaf->compressedPvsData;
     
     // No visibility info (whoever compiled the map didn't run the vis tool)
     if(pvsData == NULL)

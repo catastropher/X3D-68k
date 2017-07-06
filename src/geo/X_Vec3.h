@@ -38,6 +38,13 @@ typedef struct X_Vec3_float
     float z;
 } X_Vec3_float;
 
+typedef struct X_Vec3_short
+{
+    short x;
+    short y;
+    short z;
+} X_Vec3_short;
+
 void x_vec3_fp16x16_normalize(X_Vec3_fp16x16* v);
 void x_vec3_print(const X_Vec3* v, const char* label);
 void x_vec3_fp16x16_print(const X_Vec3_fp16x16* v, const char* label);

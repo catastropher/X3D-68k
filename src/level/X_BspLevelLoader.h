@@ -107,7 +107,7 @@ typedef struct X_BspLoaderFace
 typedef struct X_BspLoaderLeaf
 {
     int contents;
-    unsigned char* compressedPvsData;
+    int pvsOffset;
     
     short mins[3];
     short maxs[3];
