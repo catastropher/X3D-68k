@@ -88,6 +88,8 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
     context->frameCount = 1;
     
     x_filesystem_init();
+    x_filesystem_add_search_path("../assets");
+    
     init_object_factory(context);
     init_screen(context, screenW, screenH);
     init_main_font(context, "font.xtex", 8, 8);

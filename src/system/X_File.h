@@ -41,6 +41,7 @@ _Bool x_file_open_reading(X_File* file, const char* fileName);
 void x_file_close(X_File* file);
 unsigned char* x_file_read_contents(const char* fileName);
 int x_file_read_char(X_File* file);
+_Bool x_file_read_line(X_File* file, int maxLineLength, char* line);
 void x_file_read_cstr(X_File* file, char* dest);
 void x_file_read_buf(X_File* file, int bufSize, void* dest);
 int x_file_read_le_int32(X_File* file);

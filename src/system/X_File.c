@@ -134,6 +134,28 @@ int x_file_read_char(X_File* file)
     return fgetc(file->file);
 }
 
+_Bool x_file_read_line(X_File* file, int maxLineLength, char* line)
+{
+    if(feof(file->file))
+        return 0;
+    
+    char* lineEnd = line + maxLineLength - 1;   // Save room for null terminator
+    int c;
+    
+    while((c = fgetc(file->file)) != EOF)
+    {
+        if(c == '\n')
+            break;
+        
+        x_assert(line < lineEnd, "Trying to read line that's too long from file");
+        
+        *line++ = c;
+    }
+    
+    *line = '\0';
+    return 1;
+}
+
 void x_file_read_cstr(X_File* file, char* dest)
 {
     ASSERT_OPEN_FOR_READING(file);

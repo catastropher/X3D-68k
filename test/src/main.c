@@ -74,6 +74,7 @@ void init(Context* context, int screenW, int screenH)
     build_color_table(context->screen);
     
     x_console_execute_cmd(&context->context.console, "searchpath ..");
+    x_console_execute_cmd(&context->context.console, "exec engine.cfg");
 }
 
 void cleanup_sdl(Context* context)

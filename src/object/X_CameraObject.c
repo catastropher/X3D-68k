@@ -82,10 +82,9 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     
     x_cameraobject_determine_current_bspleaf(cam, renderContext);
     
-    printf("Current leaf: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves));
-    
-    char str[64];
-    sprintf(str, "Visible leaves: %d\n", x_bsplevel_count_visible_leaves(renderContext->level, cam->pvsForCurrentLeaf));
+    char str[128];
+    sprintf(str, "Current Leaf: %d\nVisible leaves: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves),
+            x_bsplevel_count_visible_leaves(renderContext->level, cam->pvsForCurrentLeaf));
     
     x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
     

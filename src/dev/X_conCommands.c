@@ -109,8 +109,33 @@ static void cmd_searchpath(X_EngineContext* context, int argc, char* argv[])
         return;
     }
     
+    // TODO: check that path exists?
     x_filesystem_add_search_path(argv[1]);
     x_console_printf(&context->console, "Added search path %s\n", argv[1]);
+}
+
+static void cmd_exec(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage: exec [file] -> executes a console script file\n");
+        return;
+    }
+    
+    char line[512];
+    X_File file;
+    
+    if(!x_file_open_reading(&file, argv[1]))
+    {
+        x_console_printf(&context->console, "Failed to open file %s for execution\n", argv[1]);
+        return;
+    }
+    
+    while(x_file_read_line(&file, sizeof(line), line))
+    {
+        if(*line)
+            x_console_execute_cmd(&context->console, line);
+    }
 }
 
 void x_console_register_builtin_commands(X_Console* console)
@@ -129,5 +154,8 @@ void x_console_register_builtin_commands(X_Console* console)
     
     static X_ConsoleCmd cmdSearchpath = { "searchpath", cmd_searchpath };
     x_console_register_cmd(console, &cmdSearchpath);
+    
+    static X_ConsoleCmd cmdExec = { "exec", cmd_exec };
+    x_console_register_cmd(console, &cmdExec);
 }
 

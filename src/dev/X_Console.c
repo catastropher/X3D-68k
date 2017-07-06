@@ -717,6 +717,10 @@ void x_console_execute_cmd(X_Console* console, const char* str)
     if(context.totalTokens == 0)
         return;
     
+    // Comment line
+    if(tokens[0][0] == '/' && tokens[0][1] == '/')
+        return;
+    
     X_ConsoleCmd* cmd = x_console_get_cmd(console, tokens[0]);
     
     if(cmd != NULL)
