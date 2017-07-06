@@ -17,6 +17,7 @@
 
 #include "geo/X_Vec3.h"
 #include "render/X_Texture.h"
+#include "geo/X_Plane.h"
 
 struct X_RenderContext;
 
@@ -29,11 +30,6 @@ typedef struct X_BspBoundBox
     X_Vec3_short min;
     X_Vec3_short max;
 } X_BspBoundBox;
-
-typedef struct X_BspModel
-{
-    
-} X_BspModel;
 
 typedef struct X_BspVertex
 {
@@ -52,7 +48,7 @@ typedef struct X_BspEdge
 
 typedef struct X_BspPlane
 {
-    
+    X_Plane plane;
 } X_BspPlane;
 
 typedef enum X_BspLeafContents
@@ -100,6 +96,17 @@ typedef enum X_BspLevelFlags
     X_BSPLEVEL_LOADED = 1
 } X_BspLevelFlags;
 
+typedef struct X_BspModel
+{
+    X_BspBoundBox boundBox;
+    X_BspNode* rootBspNode;
+    int totalBspLeaves;
+    
+    // TODO: add clip node
+    X_BspFace* faces;
+    int totalFaces;
+} X_BspModel;
+
 typedef struct X_BspLevel
 {
     X_BspLevelFlags flags;
@@ -121,6 +128,11 @@ typedef struct X_BspLevel
     
     X_BspModel* models;
     int totalModels;
+    
+    X_BspPlane* planes;
+    int totalPlanes;
+    
+    unsigned char* compressedPvsData;
 } X_BspLevel;
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
@@ -141,6 +153,11 @@ static inline X_BspLeaf* x_bsplevel_get_leaf(const X_BspLevel* level, X_BspLeafI
 static inline X_BspModel* x_bsplevel_get_level_model(const X_BspLevel* level)
 {
     return level->models + 0;
+}
+
+static inline _Bool x_bspnode_is_leaf(const X_BspNode* node)
+{
+    return node->contents < 0;
 }
 
 

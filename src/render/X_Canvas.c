@@ -22,6 +22,9 @@
 ////////////////////////////////////////////////////////////////////////////////
 void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color)
 {
+    x_canvas_clamp_vec2(canvas, &start);
+    x_canvas_clamp_vec2(canvas, &end);
+    
     int dx = abs(end.x - start.x);
     int sx = start.x < end.x ? 1 : -1;
     int dy = abs(end.y - start.y);
