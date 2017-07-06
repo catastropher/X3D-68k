@@ -70,13 +70,10 @@ void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* 
 
 X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName)
 {
-    X_ConsoleCmd* cmd = console->consoleCmdHead;
-    while(cmd)
+    for(X_ConsoleCmd* cmd = console->consoleCmdHead; cmd != NULL; cmd = cmd->next)
     {
         if(strcmp(cmd->name, cmdName) == 0)
             return cmd;
-        
-        cmd = cmd->next;
     }
     
     return NULL;
@@ -176,13 +173,10 @@ void x_console_cleanup(X_Console* console)
 
 X_ConsoleVar* x_console_get_var(X_Console* console, const char* varName)
 {
-    X_ConsoleVar* var = console->consoleVarsHead;
-    while(var)
+    for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
     {
         if(strcmp(var->name, varName) == 0)
             return var;
-        
-        var = var->next;
     }
     
     return NULL;
@@ -232,7 +226,7 @@ static void x_console_newline(X_Console* console)
 }
 
 // Determine whether counts as a character that's considered part of a word (for wrapping purposes)
-static _Bool is_word_char(char c)
+static _Bool x_console_is_word_char(char c)
 {
     return c > ' ';
 }
@@ -241,15 +235,45 @@ static const char* find_end_of_word(const char* str)
 {
     const char* endOfWord = str;
     
-    if(!is_word_char(*str))
+    if(!x_console_is_word_char(*str))
         return str + 1;
     
     do
     {
         ++endOfWord;
-    } while(is_word_char(*endOfWord));
+    } while(x_console_is_word_char(*endOfWord));
     
     return endOfWord;
+}
+
+static _Bool x_console_word_should_wrap_to_next_line(X_Console* console, const char* wordStart, const char* wordEnd)
+{
+    int charsLeftOnCurrentLine = console->size.x - console->cursor.x - 1;
+    int wordLength = wordEnd - wordStart;
+    
+    return charsLeftOnCurrentLine < wordLength;
+}
+
+static void x_console_print_handle_word_wrap(X_Console* console, const char** wordStart, const char* wordEnd)
+{
+    _Bool wrapToNextLine = x_console_word_should_wrap_to_next_line(console, *wordStart, wordEnd);
+    if(wrapToNextLine)
+        x_console_newline(console);
+    
+    if(**wordStart == ' ' && wrapToNextLine)
+        ++(*wordStart);
+}
+
+static void x_console_print_word(X_Console* console, const char** wordStart)
+{
+    const char* wordEnd = find_end_of_word(*wordStart);
+    x_console_print_handle_word_wrap(console, wordStart, wordEnd);
+    
+    while(*wordStart < wordEnd)
+    {
+        x_console_print_char(console, **wordStart);
+        ++(*wordStart);
+    }
 }
 
 void x_console_print(X_Console* console, const char* str)
@@ -263,19 +287,7 @@ void x_console_print(X_Console* console, const char* str)
             continue;
         }
         
-        const char* endOfWord = find_end_of_word(str);
-        int charsLeftOnCurrentLine = console->size.x - console->cursor.x - 1;
-        int wordLength = endOfWord - str;
-        
-        _Bool wrapToNextLine = charsLeftOnCurrentLine < wordLength;
-        if(wrapToNextLine)
-            x_console_newline(console);
-        
-        if(*str == ' ' && wrapToNextLine)
-            ++str;
-        
-        while(str < endOfWord)
-            x_console_print_char(console, *str++);
+        x_console_print_word(console, &str);
     }
     
     x_console_print_char_no_advance(console, '\0');
@@ -461,43 +473,45 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
-static void x_console_autocomplete_add_option(X_Console* console, const char* option, int inputLength, int* minMatchLength, const char** minMatchStr)
+static void x_console_autocomplete_add_option(X_Console* console, const char* option, int* minMatchLength, const char** minMatchStr)
 {
+    int inputLength = console->inputPos;
     int matchLength = x_count_prefix_match_length(*minMatchStr, option);
-        
-    if(matchLength >= inputLength)
+    
+    if(matchLength < inputLength)
+        return;
+    
+    if(*minMatchStr == console->input)
     {
-        if(*minMatchStr == console->input)
-        {
-            *minMatchStr = option;
-            *minMatchLength = strlen(option);
-        }
-        else if(matchLength < *minMatchLength) {
-            *minMatchLength = matchLength;
-            *minMatchStr = option;
-        }
+        *minMatchStr = option;
+        *minMatchLength = strlen(option);
+    }
+    else if(matchLength < *minMatchLength) {
+        *minMatchLength = matchLength;
+        *minMatchStr = option;
     }
 }
 
 static _Bool x_console_autocomplete(X_Console* console)
 {
-    int inputLength = console->inputPos;
     int minMatchLength = 0x7FFFFFFF;
     const char* minMatchStr = console->input;
     
     for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
-        x_console_autocomplete_add_option(console, var->name, inputLength, &minMatchLength, &minMatchStr);
+        x_console_autocomplete_add_option(console, var->name, &minMatchLength, &minMatchStr);
     
     for(X_ConsoleCmd* cmd = console->consoleCmdHead; cmd != NULL; cmd = cmd->next)
-        x_console_autocomplete_add_option(console, cmd->name, inputLength, &minMatchLength, &minMatchStr);
+        x_console_autocomplete_add_option(console, cmd->name, &minMatchLength, &minMatchStr);
     
-    if(minMatchStr != console->input)
+    _Bool foundStringToAutocompleteFrom = minMatchStr != console->input;
+    if(foundStringToAutocompleteFrom)
     {
         x_strncpy(console->input, minMatchStr, minMatchLength);
         console->inputPos = strlen(console->input);
     }
     
-    return minMatchLength == strlen(minMatchStr);
+    _Bool autoCompletePerfectMatch = (minMatchLength == strlen(minMatchStr));
+    return autoCompletePerfectMatch;
 }
 
 #define MATCHES_PER_ROW 4
