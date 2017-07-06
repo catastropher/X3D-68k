@@ -293,20 +293,20 @@ static void calculate_clipped_incident_face(X_CubeObject* cube, X_Vec3_fp16x16* 
     }
 }
 
-static int calculate_max_penetration_depth(X_CubeObject* cube)
-{
-    int maxPen = 0;
-    
-    for(int i = 0; i < 8; ++i)
-    {
-        if(cube->geometry.vertices[i].y > 0)
-        {
-            maxPen = X_MAX(maxPen, cube->geometry.vertices[i].y);
-        }
-    }
-    
-    return maxPen;
-}
+// static int calculate_max_penetration_depth(X_CubeObject* cube)
+// {
+//     int maxPen = 0;
+//     
+//     for(int i = 0; i < 8; ++i)
+//     {
+//         if(cube->geometry.vertices[i].y > 0)
+//         {
+//             maxPen = X_MAX(maxPen, cube->geometry.vertices[i].y);
+//         }
+//     }
+//     
+//     return maxPen;
+// }
 
 static void apply_impulse_to_point(X_CubeObject* cube, x_fp16x16 deltaTime, Collision* c, x_fp16x16 impulse)
 {
@@ -414,7 +414,7 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
         
         x_fp16x16 frictionImpulse = calculate_impulse(cube, deltaTime, &c);
         x_fp16x16 frictionCoefficient = .01 * 65536;
-        x_fp16x16 maxFriction = x_fp16x16_mul(frictionCoefficient, frictionImpulse);
+        //x_fp16x16 maxFriction = x_fp16x16_mul(frictionCoefficient, frictionImpulse);
         
         frictionImpulse = x_fp16x16_mul(frictionImpulse, frictionCoefficient); //x_fp16x16_clamp(x_fp16x16_mul(frictionImpulse, frictionCoefficient), -maxFriction, maxFriction);
         
@@ -431,7 +431,7 @@ static _Bool handle_collision_with_xz_plane(X_CubeObject* cube, x_fp16x16 deltaT
     cube->linearVelocity = x_vec3_add(&cube->linearVelocity, &dLinear);
     cube->angularVelocity = x_vec3_add(&cube->angularVelocity, &dAngular);
     
-    x_fp16x16 min = .01 * 65536;
+//    x_fp16x16 min = .01 * 65536;
     
 //     if(abs(cube->angularVelocity.x) < min)
 //         cube->angularVelocity.x = 0;
@@ -475,7 +475,7 @@ void x_cubeobject_update(X_CubeObject* cube, x_fp16x16 deltaTime)
         ++count;
     } while(collide && count < 1);
     
-    float speed = (float)cube->linearVelocity.x * cube->linearVelocity.x + (float)cube->linearVelocity.y * cube->linearVelocity.y + (float)cube->linearVelocity.z * cube->linearVelocity.z;
+    //float speed = (float)cube->linearVelocity.x * cube->linearVelocity.x + (float)cube->linearVelocity.y * cube->linearVelocity.y + (float)cube->linearVelocity.z * cube->linearVelocity.z;
 }
 
 void x_cubeobject_render(X_CubeObject* cube, X_RenderContext* rcontext, X_Color color)
