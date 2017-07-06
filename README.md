@@ -1,22 +1,37 @@
-# X3D-68k
-A 3D portal-rendering game engine for graphing calculators! Originally written just for the TI-68k line of graphing calculators, it is now being developed as a cross-platform library. Checkout the documentation on [the wiki](https://github.com/catastropher/X3D-68k/wiki) for information about the project!
+# X3D
+A cross-platform 3D software rendering game engine!
 
-To build, you will need cmake, libsdl1.2-dev, and libsdl2-dev.
+## Dependencies for Building X3D
+You will need:
+  1. GNU Make
+  2. CMake
+  3. gcc or clang (a version with gnu99 support)
+  4. libasan for debugging runtime errors
 
+## Library Build Instructions
 ```
 git clone https://github.com/catastropher/X3D-68k.git
 cd X3D-68k
-make config
-make x3d
+mkdir build
+cd build
+cmake ..
+make
 sudo make install
 ```
+## Dependencies for Test Project
+You will need:
+  1. X3D (see build instructions above)
+  2. libsdl1.2-dev
+  3. libasan
 
-
-
-#### OS X 10.11.5 - Environment Setup
-
-Install homebrew ( http://brew.sh )
-
+## Test Project Build Instructions
 ```
-brew install cmake sdl
+cd test
+mkdir build
+cd build
+cmake ..
+make
+./xtest
 ```
+
+Note: If you make a change in X3D, make sure to run `sudo make install` afterwards AND do a clean build of xtest to relink the library
