@@ -21,6 +21,8 @@ typedef struct X_String
 } X_String;
 
 void x_string_init(X_String* str, const char* initialValue);
+void x_string_cleanup(X_String* str);
 X_String* x_string_assign(X_String* str, const char* value);
 X_String* x_string_concat(X_String* strToAppendTo, const X_String* strToAppend);
+X_String* x_string_concat_cstr(X_String* strToAppendTo, const char* strToAppend);
 

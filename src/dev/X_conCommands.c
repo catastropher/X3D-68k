@@ -101,6 +101,18 @@ static void cmd_packextract(X_EngineContext* context, int argc, char* argv[])
     x_packfile_cleanup(&file);
 }
 
+static void cmd_searchpath(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage: searchpath [path] -> adds a new search path to look in when opening a file\n");
+        return;
+    }
+    
+    x_filesystem_add_search_path(argv[1]);
+    x_console_printf(&context->console, "Added search path %s\n", argv[1]);
+}
+
 void x_console_register_builtin_commands(X_Console* console)
 {
     static X_ConsoleCmd cmdEcho = { "echo", cmd_echo };
@@ -114,4 +126,8 @@ void x_console_register_builtin_commands(X_Console* console)
     
     static X_ConsoleCmd cmdPackextract = { "packextract", cmd_packextract};
     x_console_register_cmd(console, &cmdPackextract);
+    
+    static X_ConsoleCmd cmdSearchpath = { "searchpath", cmd_searchpath };
+    x_console_register_cmd(console, &cmdSearchpath);
 }
+

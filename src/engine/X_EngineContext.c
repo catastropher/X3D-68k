@@ -17,6 +17,7 @@
 
 #include "X_EngineContext.h"
 #include "error/X_error.h"
+#include "system/X_File.h"
 
 static inline void init_object_factory(X_EngineContext* context)
 {
@@ -86,6 +87,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
     context->frameCount = 1;
     
+    x_filesystem_init();
     init_object_factory(context);
     init_screen(context, screenW, screenH);
     init_main_font(context, "font.xtex", 8, 8);
@@ -99,6 +101,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 ////////////////////////////////////////////////////////////////////////////////
 void x_enginecontext_cleanup(X_EngineContext* context)
 {
+    x_filesystem_cleanup();
     cleanup_object_factory(context);
     cleanup_screen(context);
     cleanup_main_font(context);

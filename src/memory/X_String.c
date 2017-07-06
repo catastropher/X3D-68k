@@ -39,6 +39,13 @@ X_String* x_string_assign(X_String* str, const char* value)
     return str;
 }
 
+X_String* x_string_concat_cstr(X_String* strToAppendTo, const char* strToAppend)
+{
+    strToAppendTo->data = x_realloc(strToAppendTo->data, strlen(strToAppendTo->data) + strlen(strToAppend) + 1);
+    strcat(strToAppendTo->data, strToAppend);
+    return strToAppendTo;
+}
+
 X_String* x_string_concat(X_String* strToAppendTo, const X_String* strToAppend)
 {
     strToAppendTo->data = x_realloc(strToAppendTo->data, strlen(strToAppendTo->data) + strlen(strToAppend->data) + 1);

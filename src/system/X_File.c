@@ -22,9 +22,12 @@
 #include "error/X_log.h"
 #include "error/X_error.h"
 #include "memory/X_alloc.h"
+#include "memory/X_String.h"
 
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
+
+static X_String g_searchPaths;
 
 static inline void determine_file_size(X_File* file)
 {
@@ -33,11 +36,57 @@ static inline void determine_file_size(X_File* file)
     rewind(file->file);
 }
 
+static _Bool get_next_search_path(char** start, char* dest)
+{
+    char* path = *start;
+    
+    if(*path == '\0')
+        return 0;
+    
+    while(*path && *path != ';')
+        *dest++ = *path++;
+    
+    *dest = '\0';
+    
+    if(*path == ';')
+        ++path;
+    
+    *start = path;
+    
+    return 1;
+}
+
+void x_filesystem_init(void)
+{
+    x_string_init(&g_searchPaths, ".;");
+}
+
+void x_filesystem_cleanup(void)
+{
+    x_string_cleanup(&g_searchPaths);
+}
+
+void x_filesystem_add_search_path(const char* searchPath)
+{
+    x_string_concat_cstr(&g_searchPaths, ";");
+    x_string_concat_cstr(&g_searchPaths, searchPath);
+}
+
 _Bool x_file_open_reading(X_File* file, const char* fileName)
 {
-    file->file = fopen(fileName, "rb");
     file->flags = 0;
     file->size = 0;
+    file->file = NULL;
+    
+    char nextFileToSearch[512];
+    char* nextSearchPath = g_searchPaths.data;
+    
+    while(!file->file && get_next_search_path(&nextSearchPath, nextFileToSearch))
+    {
+        strcat(nextFileToSearch, "/");
+        strcat(nextFileToSearch, fileName);
+        file->file = fopen(nextFileToSearch, "rb");
+    }
     
     if(!file->file)
     {

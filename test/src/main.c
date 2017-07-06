@@ -71,7 +71,9 @@ void init(Context* context, int screenW, int screenH)
     
     init_sdl(context, screenW, screenH);
     init_x3d(context, screenW, screenH);
-    build_color_table(context->screen);    
+    build_color_table(context->screen);
+    
+    x_console_execute_cmd(&context->context.console, "searchpath ..");
 }
 
 void cleanup_sdl(Context* context)
