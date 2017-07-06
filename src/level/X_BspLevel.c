@@ -34,59 +34,56 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
     }
 }
 
-static int x_bsplevel_find_leaf_point_is_in_recursive(X_BspLevelLoader* level, int nodeId, X_Vec3* point)
+static X_BspLeaf* x_bsplevel_find_leaf_point_is_in_recursive(X_BspLevel* level, X_BspNode* node, X_Vec3* point)
 {
-    if(nodeId < 0)
+    if(x_bspnode_is_leaf(node))
+        return (X_BspLeaf *)node;
+    
+    X_BspNode* childToSearch = x_plane_point_is_on_normal_facing_side(&node->plane->plane, point) ? node->frontChild : node->backChild;
+        
+    return x_bsplevel_find_leaf_point_is_in_recursive(level, childToSearch, point);
+}
+
+// TODO: there's no reason for this to be recursive
+X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
+{
+    return x_bsplevel_find_leaf_point_is_in_recursive(level, x_bsplevel_get_root_node(level), point);
+}
+
+void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+{
+    // The PVS is compressed using zero run-length encoding
+    int pos = 0;
+    int pvsSize = x_bspfile_node_pvs_size(level);
+    unsigned char* pvsData = leaf->compressedPvsData;
+    
+    _Bool outsideLevel = leaf == level->leaves + 0;
+    
+    // No visibility info (whoever compiled the map didn't run the vis tool)
+    if(pvsData == NULL || outsideLevel)
     {
-        return ~nodeId;
+        // Mark all leaves as visible
+        for(int i = 0; i < pvsSize; ++i)
+            decompressedPvsDest[i] = 0xFF;
+            
+        return;
     }
     
-    X_BspLoaderNode* node = level->nodes + nodeId;    
-    X_BspLoaderPlane* plane = level->planes + node->planeNum;
-    
-    int childNode = x_plane_point_is_on_normal_facing_side(&plane->plane, point)
-        ? node->children[0] : node->children[1];
-        
-    return x_bsplevel_find_leaf_point_is_in_recursive(level, childNode, point);
-}
-
-int x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
-{
-    return 0;//return x_bsplevel_find_leaf_point_is_in_recursive(level, x_bsplevel_get_root_node(level), point);
-}
-
-void x_bspllevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLoaderLeaf* leaf, unsigned char* decompressedPvsDest)
-{
-//     // The PVS is compressed using zero run-length encoding
-//     int pos = 0;
-//     int pvsSize = x_bspfile_node_pvs_size(level);
-//     unsigned char* pvsData = NULL;//leaf->compressedPvsData;
-//     
-//     // No visibility info (whoever compiled the map didn't run the vis tool)
-//     if(pvsData == NULL)
-//     {
-//         // Mark all leaves as visible
-//         for(int i = 0; i < pvsSize; ++i)
-//             decompressedPvsDest[i] = 0xFF;
-//             
-//         return;
-//     }
-//     
-//     while(pos < pvsSize)
-//     {
-//         if(*pvsData == 0)
-//         {
-//             ++pvsData;
-//             int count = *pvsData++;
-//             
-//             for(int i = 0; i < count && pos < pvsSize; ++i)
-//                 decompressedPvsDest[pos++] = 0;
-//         }
-//         else
-//         {
-//             decompressedPvsDest[pos++] = *pvsData++;
-//         }
-//     }
+    while(pos < pvsSize)
+    {
+        if(*pvsData == 0)
+        {
+            ++pvsData;
+            int count = *pvsData++;
+            
+            for(int i = 0; i < count && pos < pvsSize; ++i)
+                decompressedPvsDest[pos++] = 0;
+        }
+        else
+        {
+            decompressedPvsDest[pos++] = *pvsData++;
+        }
+    }
 }
 
 void x_bsplevel_init_empty(X_BspLevel* level)
@@ -124,5 +121,18 @@ void x_bsplevel_mark_leaves_from_pvs(X_BspLevelLoader* level, unsigned char* pvs
 //     {
 //         _Bool potentiallVisible = pvs[i / 8] & (1 << ())
 //     }
+}
+
+int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
+{
+    int count = 0;
+    
+    for(int i = 0; i < x_bsplevel_get_level_model(level)->totalBspLeaves; ++i)
+    {
+        if(pvs[i / 8] & (1 << (i % 8)))
+            ++count;
+    }
+    
+    return count;
 }
 

@@ -32,8 +32,8 @@ typedef struct X_CameraObject
     x_angle256 angleX;
     x_angle256 angleY;
     struct X_CameraObject* nextInCameraList;
-    X_BspLeafId currentLeaf;
-    X_BspLeafId lastLeaf;
+    X_BspLeaf* currentLeaf;
+    X_BspLeaf* lastLeaf;
     unsigned char pvsForCurrentLeaf[256];//X_BSPFILE_PVS_SIZE];
 } X_CameraObject;
 

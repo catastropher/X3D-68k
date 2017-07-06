@@ -26,7 +26,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
 {
     X_CameraObject* cam = (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
     
-    //cam->lastLeaf = X_BSPFILE_MAX_LEAFS;
+    cam->lastLeaf = NULL;
     
     return cam;
 }
@@ -58,18 +58,17 @@ void x_cameraobject_update_view(X_CameraObject* cam)
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
     X_Vec3 position = x_vec3_fp16x16_to_vec3(&cam->base.position);
-    //cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &position);
+    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &position);
 }
 
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
-    if(cam->currentLeaf == cam->lastLeaf || cam->currentLeaf == 0)
+    if(cam->currentLeaf == cam->lastLeaf)
         return;
     
     cam->lastLeaf = cam->currentLeaf;
     
-    //X_BspLeaf* currentLeaf = x_bsplevel_get_leaf(renderContext->level, cam->currentLeaf);
-    //x_bsplevel_decompress_pvs_for_leaf(renderContext->level, currentLeaf, cam->pvsForCurrentLeaf);
+    x_bsplevel_decompress_pvs_for_leaf(renderContext->level, cam->currentLeaf, cam->pvsForCurrentLeaf);
 }
 
 void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -78,14 +77,19 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_assert(renderContext->engineContext != NULL, "No engine context in render context");
     
     
-//     if(!x_engine_level_is_loaded(renderContext->engineContext))
-//         return;
+     if(!x_engine_level_is_loaded(renderContext->engineContext))
+         return;
     
-//    x_cameraobject_determine_current_bspleaf(cam, renderContext);
+    x_cameraobject_determine_current_bspleaf(cam, renderContext);
     
-    //printf("Current leaf: %d\n", cam->currentLeaf);
+    printf("Current leaf: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves));
     
-  //  x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
+    char str[64];
+    sprintf(str, "Visible leaves: %d\n", x_bsplevel_count_visible_leaves(renderContext->level, cam->pvsForCurrentLeaf));
+    
+    x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
+    
+    x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
     
     x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
 }

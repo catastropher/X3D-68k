@@ -280,6 +280,9 @@ static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader
     
     level->totalVertices = loader->totalVertices;
     level->vertices = x_malloc(level->totalVertices * sizeof(X_BspVertex));
+    
+    level->totalPlanes = loader->totalPlanes;
+    level->planes = x_malloc(level->totalPlanes * sizeof(X_BspPlane));
 }
 
 static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* loader)
@@ -293,6 +296,12 @@ static void x_bsplevel_init_faces(X_BspLevel* level, const X_BspLevelLoader* loa
     
 }
 
+static void x_bsplevel_init_planes(X_BspLevel* level, const X_BspLevelLoader* loader)
+{
+    for(int i = 0; i < level->totalPlanes; ++i)
+        level->planes[i].plane = loader->planes[i].plane;
+}
+
 static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalLeaves; ++i)
@@ -301,7 +310,7 @@ static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* lo
         X_BspLoaderLeaf* loadLeaf = loader->leaves + i;
         
         // TODO load boundbox
-        leaf->compressedPvsData = loader->compressedPvsData + loadLeaf->pvsOffset;
+        leaf->compressedPvsData = level->compressedPvsData + loadLeaf->pvsOffset;
         leaf->contents = loadLeaf->contents;
         leaf->lastVisibleFrame = 0;
     }
@@ -337,6 +346,7 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         model->totalFaces = loadModel->totalFaces;
         
         model->rootBspNode = x_bsplevel_get_node_from_id(level, loadModel->rootBspNode);
+        model->totalBspLeaves = loadModel->totalBspLeaves;
         
         x_bspnode_assign_parent(model->rootBspNode, NULL);
     }
@@ -380,6 +390,7 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_pvs(level, loader);
     x_bsplevel_init_vertices(level, loader);
     x_bsplevel_init_edges(level, loader);
+    x_bsplevel_init_planes(level, loader);
     x_bsplevel_init_faces(level, loader);
     x_bsplevel_init_leaves(level, loader);
     x_bsplevel_init_nodes(level, loader);
