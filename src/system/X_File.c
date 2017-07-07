@@ -58,7 +58,7 @@ static _Bool get_next_search_path(char** start, char* dest)
 
 void x_filesystem_init(void)
 {
-    x_string_init(&g_searchPaths, ".;");
+    x_string_init(&g_searchPaths, ".");
 }
 
 void x_filesystem_cleanup(void)
@@ -85,6 +85,7 @@ _Bool x_file_open_reading(X_File* file, const char* fileName)
     {
         strcat(nextFileToSearch, "/");
         strcat(nextFileToSearch, fileName);
+        printf("DEBUG: Try opening '%s'\n", nextFileToSearch);
         file->file = fopen(nextFileToSearch, "rb");
     }
     
