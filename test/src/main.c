@@ -69,6 +69,7 @@ void init(Context* context, int screenW, int screenH)
     init_sdl(context, screenW, screenH);
     init_x3d(context, screenW, screenH);
     build_color_table(context->screen);
+    init_keys();
     
     x_console_execute_cmd(&context->context.console, "searchpath ..");
     x_console_execute_cmd(&context->context.console, "exec engine.cfg");

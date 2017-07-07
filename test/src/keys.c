@@ -22,6 +22,24 @@
 
 _Bool keyState[TOTAL_SDL_KEYS];
 
+void init_keys()
+{
+    SDL_EnableUNICODE(SDL_ENABLE);
+}
+
+static _Bool is_symbol_key(int c)
+{
+    const char symbols[] = "!@#$%^&*()[]{}\\|:;'\",.<>/?-_=+";
+    
+    for(int i = 0; i < sizeof(symbols); ++i)
+    {
+        if(c == symbols[i])
+            return 1;
+    }
+    
+    return 0;
+}
+
 int convert_sdl_key_to_x3d_key(int sdlKey)
 {
     if(sdlKey == SDLK_RETURN)
@@ -33,7 +51,7 @@ int convert_sdl_key_to_x3d_key(int sdlKey)
     if(sdlKey == SDLK_TAB)
         return '\t';
     
-    if(sdlKey == SDLK_BACKQUOTE)
+    if(sdlKey == SDLK_BACKQUOTE || sdlKey == '~' || sdlKey == 178)
         return X_KEY_OPEN_CONSOLE;
     
     if(sdlKey == SDLK_SPACE)
@@ -54,6 +72,9 @@ int convert_sdl_key_to_x3d_key(int sdlKey)
     if(sdlKey == SDLK_RIGHT)
         return X_KEY_RIGHT;
     
+    if(is_symbol_key(sdlKey))
+        return sdlKey;
+    
     if(isalnum(sdlKey))
         return sdlKey;
     
@@ -72,7 +93,9 @@ void handle_key_events(X_EngineContext* context)
         {
             keyState[ev.key.keysym.sym] = 1;
             
-            int x3dKey = convert_sdl_key_to_x3d_key(ev.key.keysym.sym);
+            int sdlKey = (context->keystate.textInputMode ? ev.key.keysym.unicode : ev.key.keysym.sym);
+            int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
+            
             if(x3dKey != INVALID_KEY)
                 x_keystate_send_key_press(&context->keystate, x3dKey);
         }
@@ -80,7 +103,9 @@ void handle_key_events(X_EngineContext* context)
         {
             keyState[ev.key.keysym.sym] = 0;
             
-            int x3dKey = convert_sdl_key_to_x3d_key(ev.key.keysym.sym);
+            int sdlKey = (context->keystate.textInputMode ? ev.key.keysym.unicode : ev.key.keysym.sym);
+            int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
+            
             if(x3dKey != INVALID_KEY)
                 x_keystate_send_key_release(&context->keystate, x3dKey);
         }

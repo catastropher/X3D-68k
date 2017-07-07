@@ -19,31 +19,6 @@ static void build_shift_keys(X_KeyState* state)
 {
     for(int i = 0; i < X_TOTAL_KEYS; ++i)
         state->keyshift[i] = i;
-    
-    for(int i = 'a'; i <= 'z' ; i++)
-        state->keyshift[i] = i - 'a' + 'A';
-    
-    state->keyshift['1'] = '!';
-    state->keyshift['2'] = '@';
-    state->keyshift['3'] = '#';
-    state->keyshift['4'] = '$';
-    state->keyshift['5'] = '%';
-    state->keyshift['6'] = '^';
-    state->keyshift['7'] = '&';
-    state->keyshift['8'] = '*';
-    state->keyshift['9'] = '(';
-    state->keyshift['0'] = ')';
-    state->keyshift['-'] = '_';
-    state->keyshift['='] = '+';
-    state->keyshift[','] = '<';
-    state->keyshift['.'] = '>';
-    state->keyshift['/'] = '?';
-    state->keyshift[';'] = ':';
-    state->keyshift['\''] = '"';
-    state->keyshift['['] = '{';
-    state->keyshift[']'] = '}';
-    state->keyshift['`'] = '~';
-    state->keyshift['\\'] = '|';
 }
 
 void x_keystate_init(X_KeyState* state)
@@ -96,13 +71,9 @@ _Bool x_keystate_queue_empty(const X_KeyState* state)
 
 void x_keystate_send_key_press(X_KeyState* state, X_Key key)
 {
-    if(state->textInputMode && !x_keystate_key_down(state, key))
+    if(state->textInputMode)
     {
         X_Key modifiedKey = key;
-        
-        if(x_keystate_key_down(state, X_KEY_SHIFT))
-            modifiedKey = state->keyshift[key];
-        
         x_keystate_enqueue(state, modifiedKey);
     }
     
