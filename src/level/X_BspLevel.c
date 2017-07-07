@@ -149,3 +149,28 @@ void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* p
     }
 }
 
+void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, X_RenderContext* renderContext, X_Color color)
+{
+    X_BspSurface** nextSurface = leaf->firstMarkSurface;
+    
+    for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
+    {
+        X_BspSurface* surface = *nextSurface++;
+        
+        for(int j = 0; j < surface->totalEdges; ++j)
+        {
+            int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
+            
+            X_BspEdge* edge = level->edges + abs(edgeId);
+            
+            X_Ray3 ray = x_ray3_make
+            (
+                level->vertices[edge->v[0]].v,
+                level->vertices[edge->v[1]].v
+            );
+            
+            x_ray3d_render(&ray, renderContext, color);
+        }
+    }
+}
+

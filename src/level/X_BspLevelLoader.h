@@ -110,7 +110,7 @@ typedef struct X_BspLoaderLeaf
     short maxs[3];
     
     unsigned short firstMarkSurface;
-    unsigned short numMarkSurface;
+    unsigned short totalMarkSurfaces;
     
     unsigned char ambientLevel[X_BSPLEAF_TOTAL_AMBIENTS];
 } X_BspLoaderLeaf;

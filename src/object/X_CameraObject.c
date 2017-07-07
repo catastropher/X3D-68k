@@ -95,7 +95,22 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_bsplevel_mark_visible_leaves_from_pvs(renderContext->level, cam->pvsForCurrentLeaf, currentFrame);
     draw_current_leaf_info(cam, renderContext);
     
-    x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
+    if(cam->currentLeaf != renderContext->level->leaves + 0)
+    {
+    
+        for(int i = 0; i < renderContext->level->totalLeaves; ++i)
+        {
+            X_BspLeaf* leaf = renderContext->level->leaves + i;
+            
+            if(leaf->lastVisibleFrame == currentFrame)
+            {
+                x_bsplevel_draw_edges_in_leaf(renderContext->level, leaf, renderContext, renderContext->screen->palette->brightRed);
+            }
+        }
+    }
+    else {
+        x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
+    }
 }
 
 

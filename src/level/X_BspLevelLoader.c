@@ -68,6 +68,7 @@ static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)
     face->planeNum = x_file_read_le_int16(file);
     face->side = x_file_read_le_int16(file);
     face->firstEdge = x_file_read_le_int32(file);
+    face->totalEdges = x_file_read_le_int16(file);
     face->texInfo = x_file_read_le_int16(file);
     
     for(int i = 0; i < X_BSPFACE_MAX_LIGHTMAPS; ++i)
@@ -88,7 +89,7 @@ static void x_bsploaderleaf_read_from_file(X_BspLoaderLeaf* leaf, X_File* file)
         leaf->maxs[i] = x_file_read_le_int16(file);
     
     leaf->firstMarkSurface = x_file_read_le_int16(file);
-    leaf->numMarkSurface = x_file_read_le_int16(file);
+    leaf->totalMarkSurfaces = x_file_read_le_int16(file);
     
     for(int i = 0; i < X_BSPLEAF_TOTAL_AMBIENTS; ++i)
         leaf->ambientLevel[i] = x_file_read_char(file);
@@ -269,6 +270,8 @@ static void x_bsplevelloader_load_marksurfaces(X_BspLevelLoader* loader)
     loader->totalMarkSurfaces = markSurfaceLump->length / MARKSURFACE_SIZE_IN_FILE;
     loader->markSurfaces = x_malloc(sizeof(unsigned short) * loader->totalMarkSurfaces);
     
+    x_log("Total mark surfaces: %d", loader->totalMarkSurfaces);
+    
     x_file_seek(&loader->file, markSurfaceLump->fileOffset);
     
     for(int i = 0; i < loader->totalMarkSurfaces; ++i)
@@ -283,6 +286,10 @@ static void x_bsplevelloader_load_surfaceedgeids(X_BspLevelLoader* loader)
     loader->totalSurfaceEdgeIds = surfaceEdgeIdsLump->length / SURFACEEDGEID_SIZE_IN_FILE;
     loader->surfaceEdgeIds = x_malloc(loader->totalSurfaceEdgeIds * sizeof(int));
     
+    x_file_seek(&loader->file, surfaceEdgeIdsLump->fileOffset);
+    
+    x_log("Total surface edge ids: %d", loader->totalSurfaceEdgeIds);
+    
     for(int i = 0; i < loader->totalSurfaceEdgeIds; ++i)
         loader->surfaceEdgeIds[i] = x_file_read_le_int32(&loader->file);
 }
@@ -293,7 +300,7 @@ static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader
     level->edges = x_malloc(level->totalEdges * sizeof(X_BspEdge));
     
     level->totalSurfaces = loader->totalFaces;
-    level->surfaces = x_malloc(level->totalEdges * sizeof(X_BspSurface));
+    level->surfaces = x_malloc(level->totalSurfaces * sizeof(X_BspSurface));
     
     level->totalLeaves = loader->totalLeaves;
     level->leaves = x_malloc(level->totalLeaves * sizeof(X_BspLeaf));
@@ -322,7 +329,15 @@ static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* 
 
 static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
-    
+    for(int i = 0; i < loader->totalFaces; ++i)
+    {
+        X_BspSurface* surface = level->surfaces + i;
+        X_BspLoaderFace* face = loader->faces + i;
+        
+        surface->plane = level->planes + face->planeNum;
+        surface->firstEdgeId = face->firstEdge;
+        surface->totalEdges = face->totalEdges;
+    }
 }
 
 static void x_bsplevel_init_marksurfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
@@ -348,6 +363,8 @@ static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* lo
         leaf->compressedPvsData = level->compressedPvsData + loadLeaf->pvsOffset;
         leaf->contents = loadLeaf->contents;
         leaf->lastVisibleFrame = 0;
+        leaf->firstMarkSurface = level->markSurfaces + loadLeaf->firstMarkSurface;
+        leaf->totalMarkSurfaces = loadLeaf->totalMarkSurfaces;
     }
 }
 

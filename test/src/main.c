@@ -244,6 +244,8 @@ int main(int argc, char* argv[])
     
     while(!context.quit)
     {
+        x_enginecontext_begin_frame(&context.context);
+        
         x_canvas_fill(&context.context.screen.canvas, 0);
 
         handle_keys(&context);
