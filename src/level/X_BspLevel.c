@@ -34,20 +34,16 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
     }
 }
 
-static X_BspLeaf* x_bsplevel_find_leaf_point_is_in_recursive(X_BspLevel* level, X_BspNode* node, X_Vec3* point)
-{
-    if(x_bspnode_is_leaf(node))
-        return (X_BspLeaf *)node;
-    
-    X_BspNode* childToSearch = x_plane_point_is_on_normal_facing_side(&node->plane->plane, point) ? node->frontChild : node->backChild;
-        
-    return x_bsplevel_find_leaf_point_is_in_recursive(level, childToSearch, point);
-}
-
-// TODO: there's no reason for this to be recursive
 X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
 {
-    return x_bsplevel_find_leaf_point_is_in_recursive(level, x_bsplevel_get_root_node(level), point);
+    X_BspNode* node = x_bsplevel_get_root_node(level);
+ 
+    do
+    {
+        node = x_plane_point_is_on_normal_facing_side(&node->plane->plane, point) ? node->frontChild : node->backChild;
+    } while(!x_bspnode_is_leaf(node));
+    
+    return (X_BspLeaf*)node;
 }
 
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)

@@ -13,10 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include <SDL/SDL.h>
 #include <X3D/X3D.h>
-
-#pragma once
 
 typedef struct Context
 {
