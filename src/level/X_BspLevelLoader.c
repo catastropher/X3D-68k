@@ -261,13 +261,39 @@ static void x_bsploaderlevel_load_compressed_pvs(X_BspLevelLoader* level)
     x_file_read_buf(&level->file, pvsLump->length, level->compressedPvsData);
 }
 
+static void x_bsplevelloader_load_marksurfaces(X_BspLevelLoader* loader)
+{
+    const int MARKSURFACE_SIZE_IN_FILE = 2;
+    X_BspLoaderLump* markSurfaceLump = loader->header.lumps + X_LUMP_MARKSURFACES;
+    
+    loader->totalMarkSurfaces = markSurfaceLump->length / MARKSURFACE_SIZE_IN_FILE;
+    loader->markSurfaces = x_malloc(sizeof(unsigned short) * loader->totalMarkSurfaces);
+    
+    x_file_seek(&loader->file, markSurfaceLump->fileOffset);
+    
+    for(int i = 0; i < loader->totalMarkSurfaces; ++i)
+        loader->markSurfaces[i] = x_file_read_le_int16(&loader->file);
+}
+
+static void x_bsplevelloader_load_surfaceedgeids(X_BspLevelLoader* loader)
+{
+    const int SURFACEEDGEID_SIZE_IN_FILE = 4;
+    X_BspLoaderLump* surfaceEdgeIdsLump = loader->header.lumps + X_LUMP_SURFEDGES;
+    
+    loader->totalSurfaceEdgeIds = surfaceEdgeIdsLump->length / SURFACEEDGEID_SIZE_IN_FILE;
+    loader->surfaceEdgeIds = x_malloc(loader->totalSurfaceEdgeIds * sizeof(int));
+    
+    for(int i = 0; i < loader->totalSurfaceEdgeIds; ++i)
+        loader->surfaceEdgeIds[i] = x_file_read_le_int32(&loader->file);
+}
+
 static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     level->totalEdges = loader->totalEdges;
     level->edges = x_malloc(level->totalEdges * sizeof(X_BspEdge));
     
-    level->totalFaces = loader->totalFaces;
-    level->faces = x_malloc(level->totalEdges * sizeof(X_BspFace));
+    level->totalSurfaces = loader->totalFaces;
+    level->surfaces = x_malloc(level->totalEdges * sizeof(X_BspSurface));
     
     level->totalLeaves = loader->totalLeaves;
     level->leaves = x_malloc(level->totalLeaves * sizeof(X_BspLeaf));
@@ -283,6 +309,9 @@ static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader
     
     level->totalPlanes = loader->totalPlanes;
     level->planes = x_malloc(level->totalPlanes * sizeof(X_BspPlane));
+    
+    level->totalMarkSurfaces = loader->totalMarkSurfaces;
+    level->markSurfaces = x_malloc(level->totalMarkSurfaces * sizeof(X_BspSurface*));
 }
 
 static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* loader)
@@ -291,9 +320,15 @@ static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* 
         level->vertices[i].v = loader->vertices[i].v;
 }
 
-static void x_bsplevel_init_faces(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     
+}
+
+static void x_bsplevel_init_marksurfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
+{
+    for(int i = 0; i < level->totalMarkSurfaces; ++i)
+        level->markSurfaces[i] = level->surfaces + loader->markSurfaces[i];
 }
 
 static void x_bsplevel_init_planes(X_BspLevel* level, const X_BspLevelLoader* loader)
@@ -342,7 +377,7 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         X_BspModel* model = level->models + i;
         X_BspLoaderModel* loadModel = loader->models + i;
         
-        model->faces = level->faces + loadModel->firstFaceId;
+        model->faces = level->surfaces + loadModel->firstFaceId;
         model->totalFaces = loadModel->totalFaces;
         
         model->rootBspNode = x_bsplevel_get_node_from_id(level, loadModel->rootBspNode);
@@ -378,9 +413,16 @@ static void x_bsplevel_init_edges(X_BspLevel* level, const X_BspLevelLoader* loa
 
 static void x_bsplevel_init_pvs(X_BspLevel* level, X_BspLevelLoader* loader)
 {
-    // We steal the PVS (no sense in making a copy)
+    // Steal the PVS (no sense in making a copy)
     level->compressedPvsData = loader->compressedPvsData;
     loader->compressedPvsData = NULL;
+}
+
+static void x_bsplevel_init_surfacedgeids(X_BspLevel* level, X_BspLevelLoader* loader)
+{
+    // Steal the list of surface edges
+    level->surfaceEdgeIds = loader->surfaceEdgeIds;
+    loader->surfaceEdgeIds = NULL;
 }
 
 static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLoader* loader)
@@ -391,10 +433,12 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_vertices(level, loader);
     x_bsplevel_init_edges(level, loader);
     x_bsplevel_init_planes(level, loader);
-    x_bsplevel_init_faces(level, loader);
+    x_bsplevel_init_surfaces(level, loader);
+    x_bsplevel_init_marksurfaces(level, loader);
     x_bsplevel_init_leaves(level, loader);
     x_bsplevel_init_nodes(level, loader);
     x_bsplevel_init_models(level, loader);
+    x_bsplevel_init_surfacedgeids(level, loader);
 }
 
 _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)
@@ -419,6 +463,8 @@ _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileN
     x_bsploaderlevel_load_leaves(loader);
     x_bsploaderlevel_load_nodes(loader);
     x_bsploaderlevel_load_models(loader);
+    x_bsplevelloader_load_marksurfaces(loader);
+    x_bsplevelloader_load_surfaceedgeids(loader);
     
     return 1;
 }

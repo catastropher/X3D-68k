@@ -31,25 +31,29 @@ typedef struct X_BspBoundBox
     X_Vec3_short max;
 } X_BspBoundBox;
 
+typedef struct X_BspPlane
+{
+    X_Plane plane;
+} X_BspPlane;
+
 typedef struct X_BspVertex
 {
     X_Vec3 v;
 } X_BspVertex;
 
-typedef struct X_BspFace
+typedef struct X_BspSurface
 {
+    int lastVisibleFrame;
+    X_BspPlane* plane;
     
-} X_BspFace;
+    int firstEdgeId;
+    int totalEdges;
+} X_BspSurface;
 
 typedef struct X_BspEdge
 {
     unsigned short v[2];
 } X_BspEdge;
-
-typedef struct X_BspPlane
-{
-    X_Plane plane;
-} X_BspPlane;
 
 typedef enum X_BspLeafContents
 {
@@ -103,7 +107,7 @@ typedef struct X_BspModel
     int totalBspLeaves;
     
     // TODO: add clip node
-    X_BspFace* faces;
+    X_BspSurface* faces;
     int totalFaces;
 } X_BspModel;
 
@@ -117,8 +121,11 @@ typedef struct X_BspLevel
     X_BspEdge* edges;
     int totalEdges;
     
-    X_BspFace* faces;
-    int totalFaces;
+    X_BspSurface* surfaces;
+    int totalSurfaces;
+    
+    X_BspSurface** markSurfaces;
+    int totalMarkSurfaces;
     
     X_BspLeaf* leaves;
     int totalLeaves;
@@ -131,6 +138,9 @@ typedef struct X_BspLevel
     
     X_BspPlane* planes;
     int totalPlanes;
+    
+    int* surfaceEdgeIds;
+    int totalSurfaceEdgeIds;
     
     unsigned char* compressedPvsData;
 } X_BspLevel;

@@ -166,6 +166,12 @@ typedef struct X_BspLevelLoader
     X_BspLoaderModel* models;
     int totalModels;
     
+    unsigned short* markSurfaces;
+    int totalMarkSurfaces;
+    
+    int* surfaceEdgeIds;
+    int totalSurfaceEdgeIds;
+    
     unsigned char* compressedPvsData;       // Potential visibility set
 } X_BspLevelLoader;
 
