@@ -82,6 +82,19 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
     }
 }
 
+int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
+{
+    int count = 0;
+    
+    for(int i = 0; i < x_bsplevel_get_level_model(level)->totalBspLeaves; ++i)
+    {
+        if(pvs[i / 8] & (1 << (i % 8)))
+            ++count;
+    }
+    
+    return count;
+}
+
 void x_bsplevel_init_empty(X_BspLevel* level)
 {
 //     level->compressedPvsData = NULL;
@@ -109,26 +122,30 @@ void x_bsplevel_init_empty(X_BspLevel* level)
     level->flags = 0;
 }
 
-void x_bsplevel_mark_leaves_from_pvs(X_BspLevelLoader* level, unsigned char* pvs, int currentFrame)
+static void x_bspnode_mark_all_parents_as_visible(X_BspNode* node, int currentFrame)
 {
-//     X_BspLoaderModel* levelModel = x_bsploaderlevel_get_level_model(level);
-//     
-//     for(int i = 0; i < levelModel->totalBspLeaves; ++i)
-//     {
-//         _Bool potentiallVisible = pvs[i / 8] & (1 << ())
-//     }
+    do
+    {
+        // Don't bother walking all the way up the tree if we've already marked them as visible
+        if(node->lastVisibleFrame == currentFrame)
+            break;
+        
+        node->lastVisibleFrame = currentFrame;
+        node = node->parent;
+    } while(node != NULL);
 }
 
-int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
+void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame)
 {
-    int count = 0;
+    int totalLeaves = x_bsplevel_get_level_model(level)->totalBspLeaves;
     
-    for(int i = 0; i < x_bsplevel_get_level_model(level)->totalBspLeaves; ++i)
+    for(int i = 0; i < totalLeaves; ++i)
     {
-        if(pvs[i / 8] & (1 << (i % 8)))
-            ++count;
+        _Bool leafVisible = pvs[i / 8] & (1 << (i & 7));
+        X_BspNode* leafNode = (X_BspNode*)x_bsplevel_get_leaf(level, i + 1);    // PVS excludes leaf 0 so we start at leaf 1
+        
+        if(leafVisible)
+            x_bspnode_mark_all_parents_as_visible(leafNode, currentFrame);
     }
-    
-    return count;
 }
 

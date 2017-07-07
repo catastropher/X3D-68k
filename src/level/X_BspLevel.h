@@ -139,9 +139,9 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcon
 void x_bsplevel_init_empty(X_BspLevel* level);
 X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point);
 
-//void x_bsplevel_mark_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame);
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs);
+void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame);
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
 {
