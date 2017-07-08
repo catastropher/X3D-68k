@@ -33,5 +33,7 @@ typedef struct X_RenderContext
     X_Mat4x4* viewMatrix;
     struct X_EngineContext* engineContext;
     X_BspLevel* level;
+    int currentFrame;
+    X_Vec3 camPos;
 } X_RenderContext;
 

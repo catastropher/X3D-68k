@@ -60,6 +60,7 @@ add_library(X3D STATIC
     src/object/X_GameObject.c
     
     # render
+    src/render/X_activeedge.c
     src/render/X_Canvas.c
     src/render/X_Font.c
     src/render/X_Palette.c

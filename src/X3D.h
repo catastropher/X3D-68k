@@ -60,6 +60,7 @@
 #include "object/X_GameObject.h"
 
 // render
+#include "render/X_activeedge.h"
 #include "render/X_Canvas.h"
 #include "render/X_Font.h"
 #include "render/X_Palette.h"

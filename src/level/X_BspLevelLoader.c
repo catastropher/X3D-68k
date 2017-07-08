@@ -416,6 +416,8 @@ static void x_bsplevel_init_nodes(X_BspLevel* level, const X_BspLevelLoader* loa
         node->backChild = x_bsplevel_get_node_from_id(level, loadNode->children[1]);
         node->lastVisibleFrame = 0;
         node->plane = level->planes + loadNode->planeNum;
+        node->firstSurface = level->surfaces + loadNode->firstFace;
+        node->totalSurfaces = loadNode->totalFaces;
     }
 }
 

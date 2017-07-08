@@ -149,6 +149,17 @@ void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* p
     }
 }
 
+static void x_bspleaf_mark_all_surfaces_in_leaf_as_visible(X_BspLeaf* leaf, int currentFrame)
+{
+    X_BspSurface** surface = leaf->firstMarkSurface;
+    
+    for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
+    {
+        (*surface)->lastVisibleFrame = currentFrame;
+        ++surface;
+    }
+}
+
 void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, X_RenderContext* renderContext, X_Color color)
 {
     X_BspSurface** nextSurface = leaf->firstMarkSurface;
@@ -172,5 +183,74 @@ void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, X_RenderC
             x_ray3d_render(&ray, renderContext, color);
         }
     }
+}
+
+static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const X_Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
+{
+    _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);
+    
+    if(onNormalSide)
+    {
+        *frontSide = node->frontChild;
+        *backSide = node->backChild;
+    }
+    else
+    {
+        *frontSide = node->backChild;
+        *backSide = node->frontChild;
+    }
+}
+
+static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext)
+{
+    X_BspLevel* level = renderContext->level;
+    
+    for(int i = 0; i < node->totalSurfaces; ++i)
+    {
+        X_BspSurface* surface = node->firstSurface + i;
+        
+        if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
+            continue;
+        
+        for(int j = 0; j < surface->totalEdges; ++j)
+        {
+            int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
+            
+            X_BspEdge* edge = level->edges + abs(edgeId);
+            
+            X_Ray3 ray = x_ray3_make
+            (
+                level->vertices[edge->v[0]].v,
+                level->vertices[edge->v[1]].v
+            );
+            
+            x_ray3d_render(&ray, renderContext, 255);
+        }
+    }
+}
+
+void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext)
+{
+    if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
+        return;
+    
+    if(x_bspnode_is_leaf(node))
+    {
+        x_bspleaf_mark_all_surfaces_in_leaf_as_visible((X_BspLeaf*)node, renderContext->currentFrame);
+        return;
+    }
+    
+    X_BspNode* frontSide;
+    X_BspNode* backSide;
+    x_bspnode_determine_children_sides_relative_to_camera(node, &renderContext->camPos, &frontSide, &backSide);
+    
+    x_bspnode_render_recursive(frontSide, renderContext);
+    x_bspnode_render_surfaces(node, renderContext);
+    x_bspnode_render_recursive(backSide, renderContext);
+}
+
+void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
+{
+    x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext);
 }
 
