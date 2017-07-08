@@ -85,7 +85,6 @@ _Bool x_file_open_reading(X_File* file, const char* fileName)
     {
         strcat(nextFileToSearch, "/");
         strcat(nextFileToSearch, fileName);
-        printf("DEBUG: Try opening '%s'\n", nextFileToSearch);
         file->file = fopen(nextFileToSearch, "rb");
     }
     
