@@ -141,7 +141,7 @@ static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* fil
     model->totalFaces = x_file_read_le_int32(file);
 }
 
-static void x_bsploaderlevel_load_planes(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_planes(X_BspLevelLoader* level)
 {
     const int PLANE_SIZE_IN_FILE = 20;
     X_BspLoaderLump* planeLump = level->header.lumps + X_LUMP_PLANES;
@@ -157,7 +157,7 @@ static void x_bsploaderlevel_load_planes(X_BspLevelLoader* level)
         x_bsploaderplane_read_from_file(level->planes + i, &level->file);
 }
 
-static void x_bsploaderlevel_load_vertices(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_vertices(X_BspLevelLoader* level)
 {
     const int VERTEX_SIZE_IN_FILE = 12;
     X_BspLoaderLump* vertexLump = level->header.lumps + X_LUMP_VERTEXES;
@@ -173,7 +173,7 @@ static void x_bsploaderlevel_load_vertices(X_BspLevelLoader* level)
         x_bsploadervertex_read_from_file(level->vertices + i, &level->file);
 }
 
-static void x_bsploaderlevel_load_faces(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_faces(X_BspLevelLoader* level)
 {
     const int FACE_SIZE_IN_FILE = 20;
     X_BspLoaderLump* faceLump = level->header.lumps + X_LUMP_FACES;
@@ -189,7 +189,7 @@ static void x_bsploaderlevel_load_faces(X_BspLevelLoader* level)
         x_bsploaderface_read_from_file(level->faces + i, &level->file);
 }
 
-static void x_bsploaderlevel_load_leaves(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_leaves(X_BspLevelLoader* level)
 {
     const int LEAF_SIZE_IN_FILE = 28;
     X_BspLoaderLump* leafLump = level->header.lumps + X_LUMP_LEAFS;
@@ -205,7 +205,7 @@ static void x_bsploaderlevel_load_leaves(X_BspLevelLoader* level)
         x_bsploaderleaf_read_from_file(level->leaves + i, &level->file);
 }
 
-static void x_bsploaderlevel_load_nodes(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_nodes(X_BspLevelLoader* level)
 {
     const int NODE_SIZE_IN_FILE = 24;
     X_BspLoaderLump* nodeLump = level->header.lumps + X_LUMP_NODES;
@@ -221,7 +221,7 @@ static void x_bsploaderlevel_load_nodes(X_BspLevelLoader* level)
         x_bsploadernode_read_from_file(level->nodes + i, &level->file);
 }
 
-static void x_bsploaderlevel_load_edges(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_edges(X_BspLevelLoader* level)
 {
     const int EDGE_SIZE_IN_FILE = 4;
     X_BspLoaderLump* edgeLump = level->header.lumps + X_LUMP_EDGES;
@@ -237,7 +237,7 @@ static void x_bsploaderlevel_load_edges(X_BspLevelLoader* level)
         x_bsploaderedge_read_from_file(level->edges + i, &level->file);
 }
 
-static void x_bsploaderlevel_load_models(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_models(X_BspLevelLoader* level)
 {
     const int MODEL_SIZE_IN_FILE = 64;
     X_BspLoaderLump* modelLump = level->header.lumps + X_LUMP_MODELS;
@@ -253,7 +253,7 @@ static void x_bsploaderlevel_load_models(X_BspLevelLoader* level)
         x_bsploadermodel_read_from_file(level->models + i, &level->file);
 }
 
-static void x_bsploaderlevel_load_compressed_pvs(X_BspLevelLoader* level)
+static void x_bsplevelloader_load_compressed_pvs(X_BspLevelLoader* level)
 {
     X_BspLoaderLump* pvsLump = level->header.lumps + X_LUMP_VISIBILITY;
     
@@ -472,14 +472,14 @@ _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileN
     if(loader->header.bspVersion != 29)
         return 0;
     
-    x_bsploaderlevel_load_compressed_pvs(loader);
-    x_bsploaderlevel_load_planes(loader);
-    x_bsploaderlevel_load_vertices(loader);
-    x_bsploaderlevel_load_edges(loader);
-    x_bsploaderlevel_load_faces(loader);
-    x_bsploaderlevel_load_leaves(loader);
-    x_bsploaderlevel_load_nodes(loader);
-    x_bsploaderlevel_load_models(loader);
+    x_bsplevelloader_load_compressed_pvs(loader);
+    x_bsplevelloader_load_planes(loader);
+    x_bsplevelloader_load_vertices(loader);
+    x_bsplevelloader_load_edges(loader);
+    x_bsplevelloader_load_faces(loader);
+    x_bsplevelloader_load_leaves(loader);
+    x_bsplevelloader_load_nodes(loader);
+    x_bsplevelloader_load_models(loader);
     x_bsplevelloader_load_marksurfaces(loader);
     x_bsplevelloader_load_surfaceedgeids(loader);
     
