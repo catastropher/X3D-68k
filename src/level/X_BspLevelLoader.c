@@ -147,7 +147,7 @@ static void x_bsplevelloader_load_planes(X_BspLevelLoader* level)
     X_BspLoaderLump* planeLump = level->header.lumps + X_LUMP_PLANES;
     
     level->totalPlanes = planeLump->length / PLANE_SIZE_IN_FILE;
-    level->planes = malloc(level->totalPlanes * sizeof(X_BspLoaderPlane));
+    level->planes = x_malloc(level->totalPlanes * sizeof(X_BspLoaderPlane));
     
     x_log("Total planes: %d", level->totalPlanes);
     

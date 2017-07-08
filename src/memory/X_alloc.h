@@ -18,48 +18,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-////////////////////////////////////////////////////////////////////////////////
-/// Allocates memory using X3D's own allocators.
-///
-/// @param size - size of the memory to allocate
-///
-/// @return A block of memory at lease size bytes big.
-///
-/// @note This will abort if there is not enough memory available.
-/// @note Make sure to free this memory with @ref x_free() and NOT free().
-////////////////////////////////////////////////////////////////////////////////
-static inline void* x_malloc(size_t size)
-{
-    void* mem = malloc(size);
-    if(!mem)
-    {
-        fprintf(stderr, "Out of memory (request %zu bytes)\n", size);
-        abort();
-    }
-    
-    return mem;
-}
+#define x_malloc(_size) x_malloc_function(_size, __FILE__, __FUNCTION__, __LINE__)
+#define x_realloc(_ptr, _newSize) x_realloc_function(_ptr, _newSize, __FILE__, __FUNCTION__, __LINE__)
 
-////////////////////////////////////////////////////////////////////////////////
-/// Expands or shrinks a block of allocated memory.
-///
-/// @param ptr      - Memory previous allocated using e.g. @ref x_malloc()
-/// @param newSize  - New size of the allocated memory
-///
-/// @return A pointer to the resized memory block.
-///
-/// @todo This should throw an error if realloc fails.
-////////////////////////////////////////////////////////////////////////////////
-static inline void* x_realloc(void* ptr, size_t newSize)
-{
-    return realloc(ptr, newSize);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Frees memory allocated by X3D's allocators.
-////////////////////////////////////////////////////////////////////////////////
-static inline void x_free(void* mem)
-{
-    free(mem);
-}
+void* x_malloc_function(size_t size, const char* fileName, const char* functionName, int lineNumber);
+void x_free(void* mem);
+void* x_realloc_function(void* ptr, size_t newSize, const char* fileName, const char* function, int lineNumber);
+void x_memory_init(void);
+void x_memory_free_all(void);
 

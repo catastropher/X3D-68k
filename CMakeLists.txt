@@ -51,6 +51,7 @@ add_library(X3D STATIC
     src/math/X_trig.c
     
     # memory
+    src/memory/X_alloc.c
     src/memory/X_Factory.c
     src/memory/X_String.c
     

@@ -87,6 +87,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
     context->frameCount = 1;
     
+    x_memory_init();
     x_filesystem_init();
     x_filesystem_add_search_path("../assets");
     
@@ -108,6 +109,8 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_screen(context);
     cleanup_main_font(context);
     cleanup_console(context);
+    
+    x_memory_free_all();
 }
 
 X_Time x_enginecontext_get_time(const X_EngineContext* context)
