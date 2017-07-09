@@ -15,9 +15,14 @@
 
 #include <time.h>
 
+#ifdef X_GET_TIME_USING_SDL
+#include <SDL/SDL.h>
+#endif
+
 #include "X_EngineContext.h"
 #include "error/X_error.h"
 #include "system/X_File.h"
+#include "error/X_log.h"
 
 static inline void init_object_factory(X_EngineContext* context)
 {
@@ -73,6 +78,8 @@ static inline void cleanup_console(X_EngineContext* context)
     x_console_cleanup(&context->console);
 }
 
+extern char mountPath[512];
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Initializes an engine context.
 ///
@@ -88,7 +95,10 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
     context->frameCount = 1;
     
     x_memory_init();
+    x_log_init();
     x_filesystem_init();
+    x_log("Mount path: %s", mountPath);
+    x_filesystem_add_search_path(mountPath);
     x_filesystem_add_search_path("../assets");
     
     init_object_factory(context);
@@ -98,6 +108,8 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
     init_keystate(context);
     init_level(context);
 }
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Cleans up an engine context.
@@ -111,10 +123,15 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_console(context);
     
     x_memory_free_all();
+    x_log_cleanup();
 }
 
 X_Time x_enginecontext_get_time(const X_EngineContext* context)
 {
+#ifndef X_GET_TIME_USING_SDL
     return clock() * 1000 / CLOCKS_PER_SEC;
+#else
+    return SDL_GetTicks();
+#endif
 }
 

@@ -29,3 +29,7 @@
 #define X_FILE_AUTO_ADDED_EXTENSION ".tns"
 #endif
 
+#ifdef __nspire__
+#define X_GET_TIME_USING_SDL
+#endif
+
