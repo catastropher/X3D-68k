@@ -85,6 +85,11 @@ _Bool x_file_open_reading(X_File* file, const char* fileName)
     {
         strcat(nextFileToSearch, "/");
         strcat(nextFileToSearch, fileName);
+        
+#ifdef X_FILE_AUTO_ADDED_EXTENSION
+        strcat(nextFileToSearch, X_FILE_AUTO_ADDED_EXTENSION);
+#endif
+        
         file->file = fopen(nextFileToSearch, "rb");
     }
     
