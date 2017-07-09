@@ -37,7 +37,7 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     
     char fileName[512];
     strcpy(fileName, argv[1]);
-    x_set_default_file_extension(fileName, ".bsp");
+    x_filepath_set_default_file_extension(fileName, ".bsp");
     
     if(x_engine_level_is_loaded(context))
     {

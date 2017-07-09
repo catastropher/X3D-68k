@@ -221,22 +221,6 @@ void draw_grid(X_Vec3 center, int size, int step, X_RenderContext* rcontext, X_C
     }
 }
 
-void extract_path(const char* filePath, char* path)
-{
-    const char* str = filePath + strlen(filePath) - 1;
-    while(str != filePath && *str != '/')
-    {
-        --str;
-    }
-    
-    while(filePath < str)
-    {
-        *path++ = *filePath++;
-    }
-    
-    *path = '\0';
-}
-
 char mountPath[512];
 
 int main(int argc, char* argv[])
@@ -253,7 +237,7 @@ int main(int argc, char* argv[])
     h = 480;
 #endif
     
-    extract_path(argv[0], mountPath);
+    x_filepath_extract_path(argv[0], mountPath);
     
     init(&context, w, h);
     

@@ -337,6 +337,33 @@ void x_file_write_buf(X_File* file, int bufSize, void* src)
     fwrite(src, 1, bufSize, file->file);
 }
 
+void x_filepath_set_default_file_extension(char* filePath, const char* defaultExtension)
+{
+    char* str = filePath + strlen(filePath) - 1;
+    while(str != filePath && *str != '/')
+    {
+        if(*str == '.')
+            return;
+        
+        --str;
+    }
+    
+    strcat(filePath, defaultExtension);
+}
 
-
+void x_filepath_extract_path(const char* filePath, char* path)
+{
+    const char* str = filePath + strlen(filePath) - 1;
+    while(str != filePath && *str != '/')
+    {
+        --str;
+    }
+    
+    while(filePath < str)
+    {
+        *path++ = *filePath++;
+    }
+    
+    *path = '\0';
+}
 

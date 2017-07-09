@@ -13,20 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_util.h"
 
-#include <stdlib.h>
-#include <string.h>
+int x_count_prefix_match_length(const char* a, const char* b)
+{
+    int len = 0;
+    
+    while(*a && *b && *a++ == *b++)
+        ++len;
+    
+    return len;
+}
 
-#define X_SWAP(_a, _b) { __typeof__(_a) _temp = (_a); (_a) = (_b); (_b) = _temp; }
-
-#define X_MIN(_a, _b) ({ __typeof__(_a) _aa = _a; __typeof__(_b) _bb = _b; _aa < _bb ? _aa : _bb; })
-#define X_MAX(_a, _b) ({ __typeof__(_a) _aa = _a; __typeof__(_b) _bb = _b; _aa > _bb ? _aa : _bb; })
-
-#define X_SIGNOF(_v) ((_v) < 0 ? -1 : ((_v) > 0 ? 1 : 0))
-
-// TODO: this file deserves its own source file
-
-int x_count_prefix_match_length(const char* a, const char* b);
-void x_strncpy(char* dest, const char* src, size_t lengthToCopy);
+void x_strncpy(char* dest, const char* src, size_t lengthToCopy)
+{
+    while(*src && lengthToCopy > 0)
+    {
+        *dest++ = *src++;
+        --lengthToCopy;
+    }
+    
+    *dest = '\0';
+}
 

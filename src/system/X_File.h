@@ -63,6 +63,9 @@ _Bool x_file_open_writing_create_path(X_File* file, const char* fileName);
 void x_file_write_le_int16(X_File* file, int val);
 void x_file_write_buf(X_File* file, int bufSize, void* src);
 
+void x_filepath_set_default_file_extension(char* filePath, const char* defaultExtension);
+void x_filepath_extract_path(const char* filePath, char* path);
+
 static inline _Bool x_file_is_open_for_reading(const X_File* file)
 {
     return file->flags & X_FILE_OPEN_FOR_READING;
