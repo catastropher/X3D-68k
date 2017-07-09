@@ -61,3 +61,4 @@ static inline void x_set_default_file_extension(char* filePath, const char* defa
     
     strcat(filePath, defaultExtension);
 }
+

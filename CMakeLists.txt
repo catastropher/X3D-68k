@@ -15,9 +15,20 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined")
-
 project(X3D C)
+
+if(NOT DEFINED XTARGET)
+    set(X3D_TARGET "pc")
+endif()
+
+if(${XTARGET} STREQUAL "pc")
+    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined")
+elseif(${XTARGET} STREQUAL "nspire")
+    set(CMAKE_C_COMPILER nspire-gcc)
+    set(CMAKE_LI)
+    add_definitions(-D__nspire__)
+    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2")
+endif()
 
 include_directories(src/)
 
