@@ -86,7 +86,10 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_assert(renderContext->engineContext != NULL, "No engine context in render context");
     
     if(!x_engine_level_is_loaded(renderContext->engineContext))
+    {
+        x_canvas_draw_str(renderContext->canvas, "No level loaded", &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
         return;
+    }
     
     int currentFrame = x_enginecontext_get_frame(renderContext->engineContext);
     
