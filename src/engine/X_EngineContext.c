@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "X_config.h"
+
 #include <time.h>
 
 #ifdef X_GET_TIME_USING_SDL

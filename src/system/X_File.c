@@ -23,6 +23,7 @@
 #include "error/X_error.h"
 #include "memory/X_alloc.h"
 #include "memory/X_String.h"
+#include "engine/X_config.h"
 
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
