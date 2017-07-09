@@ -19,6 +19,7 @@
 
 #include "engine/X_config.h"
 #include "system/X_File.h"
+#include "error/X_error.h"
 
 #if X_ENABLE_COLOR_LOG
 
@@ -52,10 +53,7 @@ void x_log_init(void)
     strcat(logFileName, "/engine.log");
     
     if(!x_file_open_writing(&logFile, logFileName))
-    {
-        fprintf(stderr, "Failed to open log file\n");
-        abort();
-    }
+        x_system_error("Failed to open log file");
 }
 
 void x_log(const char* format, ...)

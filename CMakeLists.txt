@@ -41,6 +41,7 @@ add_library(X3D STATIC
     src/engine/X_EngineContext.c
 
     # error
+    src/error/X_error.c
     src/error/X_log.c
     
     # geo

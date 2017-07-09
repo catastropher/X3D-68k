@@ -15,6 +15,7 @@
 
 #include "X_alloc.h"
 #include "error/X_log.h"
+#include "error/X_error.h"
 #include "util/X_util.h"
 
 typedef struct X_MemoryAlloc
@@ -58,10 +59,8 @@ void* x_malloc_function(size_t size, const char* fileName, const char* functionN
     unsigned char* mem = malloc(size + sizeof(X_MemoryAlloc));
     
     if(!mem)
-    {
-        fprintf(stderr, "Out of memory (request %d bytes)\n", (int)size);
-        abort();
-    }
+        x_system_error("Out of memory");
+        
     
     X_MemoryAlloc* alloc = (X_MemoryAlloc*)mem;
     alloc->next = allocHead.next;
@@ -87,6 +86,9 @@ void* x_malloc_function(size_t size, const char* fileName, const char* functionN
 ////////////////////////////////////////////////////////////////////////////////
 void x_free(void* mem)
 {
+    if(!mem)
+        return;
+    
     X_MemoryAlloc* alloc = (X_MemoryAlloc*)((unsigned char*)mem - sizeof(X_MemoryAlloc));
 
     totalMemoryUsage -= alloc->size;
@@ -118,6 +120,9 @@ void* x_realloc_function(void* ptr, size_t newSize, const char* fileName, const 
     maxMemoryUsage = X_MAX(maxMemoryUsage, totalMemoryUsage);
     
     X_MemoryAlloc* newAlloc = realloc(oldAlloc, newSize + sizeof(X_MemoryAlloc));
+    
+    if(!newAlloc)
+        x_system_error("Realloc failed: out of memory");
     
     // We moved, so update the prev pointer
     newAlloc->prev->next = newAlloc;

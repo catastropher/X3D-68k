@@ -23,17 +23,19 @@
 #include "screen.h"
 #include "keys.h"
 
-
-
 _Bool init_sdl(Context* context, int screenW, int screenH)
 {
-    SDL_Init(SDL_INIT_VIDEO);
+    if(SDL_Init(SDL_INIT_VIDEO) != 0)
+        x_system_error("Failed to initialize SDL");
     
 #ifndef __nspire__
     context->screen = SDL_SetVideoMode(screenW, screenH, 32, SDL_SWSURFACE);
 #else
     context->screen = SDL_SetVideoMode(screenW, screenH, 16, SDL_SWSURFACE);
 #endif
+    
+    if(!context->screen)
+        x_system_error("Failed to set video mode");
     
     return context->screen != NULL;
 }
@@ -226,10 +228,8 @@ void draw_grid(X_Vec3 center, int size, int step, X_RenderContext* rcontext, X_C
 int main(int argc, char* argv[])
 {
     Context context;
- 
-    int w, h;
     
-    unlink("/engine.log");
+    int w, h;
     
 #ifdef __nspire__
     w = 320;
@@ -240,7 +240,6 @@ int main(int argc, char* argv[])
 #endif
     
     init(&context, w, h, argv[0]);
-    
     
     X_RenderContext rcontext;
     rcontext.cam = context.cam;

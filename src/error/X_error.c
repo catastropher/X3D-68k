@@ -13,13 +13,35 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include <stdio.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-#define x_assert(_cond, message...) x_assert_function(_cond, __FILE__, __LINE__, message)
+#ifdef __nspire__
+#include <libndls.h>
+#endif
 
-void x_assert_function(_Bool condition, const char* file, int line, const char* messageFormat, ...);
-void x_system_error(const char* error);
+#include "X_log.h"
+#include "X_error.h"
+
+void x_assert_function(_Bool condition, const char* file, int line, const char* messageFormat, ...)
+{
+    if(condition)
+        return;
+    
+    x_log_error("Assertion failed!\nFile: %s\nLine: %d\n\nMessage: %s\n", file, line, messageFormat);
+    x_system_error("Assertion Failed (check log for more details)");
+}
+
+void x_system_error(const char* error)
+{
+    x_log_error("%s", error);
+    
+#ifdef __nspire__
+    show_msgbox("System Error", error);
+#else
+    fprintf(stderr, "Fatal system error: %s\n", error);
+#endif
+    
+    exit(-1);
+}
 

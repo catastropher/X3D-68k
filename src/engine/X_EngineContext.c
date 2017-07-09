@@ -39,7 +39,9 @@ static inline void init_screen(X_EngineContext* context, int screenW, int screen
 static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
 {
     _Bool fontLoaded = x_font_load_from_xtex_file(&context->mainFont, fontFileName, fontW, fontH);
-    x_assert(fontLoaded, "Failed to load main font");
+    
+    if(!fontLoaded)
+        x_system_error("Failed to load font");
 }
 
 static inline void init_console(X_EngineContext* context)
