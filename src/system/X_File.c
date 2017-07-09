@@ -81,6 +81,15 @@ void x_filesystem_add_search_path(const char* searchPath)
     x_string_concat_cstr(&g_searchPaths, searchPath);
 }
 
+static void log_search_paths(void)
+{
+    char* nextSearchPath = g_searchPaths.data;
+    char path[512];
+    
+    while(get_next_search_path(&nextSearchPath, path))
+        x_log_error("    Searched %s", path);
+}
+
 _Bool x_file_open_reading(X_File* file, const char* fileName)
 {
     file->flags = 0;
@@ -105,6 +114,7 @@ _Bool x_file_open_reading(X_File* file, const char* fileName)
     if(!file->file)
     {
         x_log_error("Failed to open file '%s' for reading", fileName);
+        log_search_paths();
         return 0;
     }
     
