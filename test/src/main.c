@@ -25,8 +25,13 @@
 
 _Bool init_sdl(Context* context, int screenW, int screenH)
 {
-    SDL_Init(SDL_INIT_EVERYTHING);
+    SDL_Init(SDL_INIT_VIDEO);
+    
+#ifndef __nspire__
     context->screen = SDL_SetVideoMode(screenW, screenH, 32, SDL_SWSURFACE);
+#else
+    context->screen = SDL_SetVideoMode(screenW, screenH, 16, SDL_SWSURFACE);
+#endif
     
     return context->screen != NULL;
 }
@@ -114,6 +119,9 @@ void handle_keys(Context* context)
     
     _Bool adjustCam = 0;
     
+    if(key_is_down(SDLK_ESCAPE))
+        context->quit = 1;
+    
     if(x_console_is_open(&context->context.console))
     {
         handle_console_keys(&context->context);
@@ -177,9 +185,6 @@ void handle_keys(Context* context)
         adjustCam = 1;
     }
     
-    if(key_is_down(SDLK_ESCAPE))
-        context->quit = 1;
-    
     if(adjustCam)
     {
         x_cameraobject_update_view(context->cam);
@@ -216,11 +221,41 @@ void draw_grid(X_Vec3 center, int size, int step, X_RenderContext* rcontext, X_C
     }
 }
 
+void extract_path(const char* filePath, char* path)
+{
+    const char* str = filePath + strlen(filePath) - 1;
+    while(str != filePath && *str != '/')
+    {
+        --str;
+    }
+    
+    while(filePath < str)
+    {
+        *path++ = *filePath++;
+    }
+    
+    *path = '\0';
+}
+
+char mountPath[512];
+
 int main(int argc, char* argv[])
 {
     Context context;
+ 
+    int w, h;
     
-    init(&context, 640, 480);
+#ifdef __nspire__
+    w = 320;
+    h = 240;
+#else
+    w = 640;
+    h = 480;
+#endif
+    
+    extract_path(argv[0], mountPath);
+    
+    init(&context, w, h);
     
     
     X_RenderContext rcontext;
