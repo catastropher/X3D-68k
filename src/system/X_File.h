@@ -33,8 +33,10 @@ typedef struct X_File
     X_FileFlags flags;
 } X_File;
 
-void x_filesystem_init(void);
+void x_filesystem_init(const char* programPath);
 void x_filesystem_cleanup(void);
+const char* x_filesystem_get_program_path(void);
+
 void x_filesystem_add_search_path(const char* searchPath);
 
 _Bool x_file_open_reading(X_File* file, const char* fileName);

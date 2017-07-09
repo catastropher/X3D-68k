@@ -37,7 +37,7 @@ typedef struct X_EngineContext
     int frameCount;     // TODO Where should this go?
 } X_EngineContext;
 
-void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH);
+void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH, const char* programPath);
 void x_enginecontext_cleanup(X_EngineContext* context);
 X_Time x_enginecontext_get_time(const X_EngineContext* context);
 

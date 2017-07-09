@@ -36,11 +36,11 @@ _Bool init_sdl(Context* context, int screenW, int screenH)
     return context->screen != NULL;
 }
 
-void init_x3d(Context* context, int screenW, int screenH)
+void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
 {
     X_EngineContext* xContext = &context->context;
     
-    x_enginecontext_init(xContext, screenW, screenH);
+    x_enginecontext_init(xContext, screenW, screenH, programPath);
     
     context->cam = x_cameraobject_new(xContext);
     x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
@@ -67,12 +67,12 @@ void init_x3d(Context* context, int screenW, int screenH)
     x_frustum_print(&context->cam->viewport.viewFrustum);
 }
 
-void init(Context* context, int screenW, int screenH)
+void init(Context* context, int screenW, int screenH, const char* programPath)
 {
     context->quit = 0;
     
     init_sdl(context, screenW, screenH);
-    init_x3d(context, screenW, screenH);
+    init_x3d(context, screenW, screenH, programPath);
     build_color_table(context->screen);
     init_keys();
     
@@ -221,8 +221,6 @@ void draw_grid(X_Vec3 center, int size, int step, X_RenderContext* rcontext, X_C
     }
 }
 
-char mountPath[512];
-
 int main(int argc, char* argv[])
 {
     Context context;
@@ -237,9 +235,7 @@ int main(int argc, char* argv[])
     h = 480;
 #endif
     
-    x_filepath_extract_path(argv[0], mountPath);
-    
-    init(&context, w, h);
+    init(&context, w, h, argv[0]);
     
     
     X_RenderContext rcontext;

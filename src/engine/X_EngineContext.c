@@ -80,8 +80,6 @@ static inline void cleanup_console(X_EngineContext* context)
     x_console_cleanup(&context->console);
 }
 
-extern char mountPath[512];
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Initializes an engine context.
 ///
@@ -92,15 +90,13 @@ extern char mountPath[512];
 /// @note Make sure to call @ref x_enginecontext_cleanup() when done to release
 ///     the allocated resources!
 ////////////////////////////////////////////////////////////////////////////////
-void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
+void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH, const char* programPath)
 {
     context->frameCount = 1;
     
     x_memory_init();
+    x_filesystem_init(programPath);
     x_log_init();
-    x_filesystem_init();
-    x_log("Mount path: %s", mountPath);
-    x_filesystem_add_search_path(mountPath);
     x_filesystem_add_search_path("../assets");
     
     init_object_factory(context);

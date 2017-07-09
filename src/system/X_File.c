@@ -24,11 +24,13 @@
 #include "memory/X_alloc.h"
 #include "memory/X_String.h"
 #include "engine/X_config.h"
+#include "util/X_util.h"
 
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
 
 static X_String g_searchPaths;
+static char g_programPath[256];
 
 static inline void determine_file_size(X_File* file)
 {
@@ -57,9 +59,15 @@ static _Bool get_next_search_path(char** start, char* dest)
     return 1;
 }
 
-void x_filesystem_init(void)
+void x_filesystem_init(const char* programPath)
 {
-    x_string_init(&g_searchPaths, ".");
+    x_filepath_extract_path(programPath, g_programPath);
+    x_string_init(&g_searchPaths, g_programPath);
+}
+
+const char* x_filesystem_get_program_path(void)
+{
+    return g_programPath;
 }
 
 void x_filesystem_cleanup(void)
