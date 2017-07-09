@@ -59,7 +59,7 @@ void* x_malloc_function(size_t size, const char* fileName, const char* functionN
     
     if(!mem)
     {
-        fprintf(stderr, "Out of memory (request %zu bytes)\n", size);
+        fprintf(stderr, "Out of memory (request %d bytes)\n", (int)size);
         abort();
     }
     
@@ -132,7 +132,7 @@ void x_memory_free_all(void)
 {
     X_MemoryAlloc* alloc = allocHead.next;
     
-    x_log("Max memory usage during runtime: %zu bytes (%zu kb)", maxMemoryUsage, (maxMemoryUsage + 1023) / 1024);
+    x_log("Max memory usage during runtime: %d bytes (%d kb)", (int)maxMemoryUsage, (int)(maxMemoryUsage + 1023) / 1024);
     
     if(alloc == &allocTail)
     {
@@ -146,7 +146,7 @@ void x_memory_free_all(void)
     {
         X_MemoryAlloc* next = alloc->next;
         
-        x_log("%zu bytes allocated in %s (file %s, line %d)", alloc->size, alloc->functionName, alloc->fileName, alloc->lineNumber);
+        x_log("%d bytes allocated in %s (file %s, line %d)", (int)alloc->size, alloc->functionName, alloc->fileName, alloc->lineNumber);
         
         x_free((unsigned char*)alloc + sizeof(X_MemoryAlloc));
         alloc = next;
