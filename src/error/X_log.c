@@ -17,6 +17,7 @@
 #include <stdarg.h>
 
 #include "engine/X_config.h"
+#include "system/X_File.h"
 
 #if X_ENABLE_COLOR_LOG
 
@@ -36,6 +37,22 @@
 
 #endif
 
+static X_File logFile;
+
+void x_log_cleanup(void)
+{
+    x_file_close(&logFile);
+}
+
+void x_log_init(void)
+{
+    if(!x_file_open_writing(&logFile, "engine.log"))
+    {
+        fprintf(stderr, "Failed to open log file\n");
+        abort();
+    }
+}
+
 void x_log(const char* format, ...)
 {
     va_list list;
@@ -45,6 +62,15 @@ void x_log(const char* format, ...)
     va_start(list, format);
     vprintf(format, list);
     printf("\n");
+    
+    if(!x_file_is_open(&logFile))
+        return;
+    
+    va_start(list, format);
+    
+    fprintf(logFile.file, "[INFO] ");
+    vfprintf(logFile.file, format, list);
+    fputc('\n', logFile.file);
 }
 
 void x_log_error(const char* format, ...)
@@ -56,4 +82,15 @@ void x_log_error(const char* format, ...)
     va_start(list, format);
     vprintf(format, list);
     printf("\n");
+
+    if(!x_file_is_open(&logFile))
+        return;
+    
+    
+    va_start(list, format);
+    
+    fprintf(logFile.file, "[ERR ] ");
+    vfprintf(logFile.file, format, list);
+    fputc('\n', logFile.file);
 }
+
