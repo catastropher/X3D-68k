@@ -23,6 +23,8 @@
 #include "screen.h"
 #include "keys.h"
 
+
+
 _Bool init_sdl(Context* context, int screenW, int screenH)
 {
     SDL_Init(SDL_INIT_VIDEO);
@@ -227,6 +229,8 @@ int main(int argc, char* argv[])
  
     int w, h;
     
+    unlink("/engine.log");
+    
 #ifdef __nspire__
     w = 320;
     h = 240;
@@ -274,6 +278,11 @@ int main(int argc, char* argv[])
     }
     
     cleanup(&context);
+    
+// #ifdef __nspire__
+//     refresh_osscr();
+// #endif
+    
 }
 
 

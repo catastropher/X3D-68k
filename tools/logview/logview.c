@@ -18,13 +18,38 @@
 
 #include <nspireio/nspireio.h>
 #include <stdio.h>
+#include <string.h>
+#include <libndls.h>
+
+void filepath_extract_path(const char* filePath, char* path)
+{
+    const char* str = filePath + strlen(filePath) - 1;
+    while(str != filePath && *str != '/')
+    {
+        --str;
+    }
+    
+    while(filePath < str)
+    {
+        *path++ = *filePath++;
+    }
+    
+    *path = '\0';
+}
 
 int main(int argc, char* argv[])
 {
-    FILE* file = fopen("engine.log", "rb");
+    char logPath[256];
+    filepath_extract_path(argv[0], logPath);
+    strcat(logPath, "/engine.log");
+    
+    FILE* file = fopen(logPath, "rb");
     
     if(!file)
+    {
+        show_msgbox("Error", "engine.log not found");
         return 0;
+    }
     
     nio_console csl;
     nio_init(&csl, NIO_MAX_COLS, NIO_MAX_ROWS, 0, 0, NIO_COLOR_WHITE, NIO_COLOR_BLACK, true);

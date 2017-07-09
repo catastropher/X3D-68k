@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "engine/X_config.h"
 #include "system/X_File.h"
@@ -46,7 +47,11 @@ void x_log_cleanup(void)
 
 void x_log_init(void)
 {
-    if(!x_file_open_writing(&logFile, "engine.log"))
+    char logFileName[256];
+    strcpy(logFileName, x_filesystem_get_program_path());
+    strcat(logFileName, "/engine.log");
+    
+    if(!x_file_open_writing(&logFile, logFileName))
     {
         fprintf(stderr, "Failed to open log file\n");
         abort();
