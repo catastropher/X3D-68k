@@ -82,3 +82,8 @@ static inline x_fp16x16 x_fp16x16_clamp(x_fp16x16 val, x_fp16x16 minValue, x_fp1
     return val;
 }
 
+static inline x_fp16x16 x_int_div_as_fp16x16(int a, int b)
+{
+    return (a << 16) / b;
+}
+

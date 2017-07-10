@@ -48,6 +48,8 @@ typedef struct X_BspSurface
     
     int firstEdgeId;
     int totalEdges;
+    
+    X_Color color;
 } X_BspSurface;
 
 typedef struct X_BspEdge
