@@ -89,7 +89,7 @@ void cleanup_sdl(Context* context)
 
 void cleanup_x3d(Context* context)
 {
-    x_enginecontext_cleanup(context->context);
+    x_engine_cleanup();
 }
 
 void cleanup(Context* context)
@@ -260,18 +260,11 @@ int main(int argc, char* argv[])
     
     while(!context.quit)
     {
-        x_enginecontext_begin_frame(context.context);
+        x_engine_render_frame(context.context);
         
-        x_canvas_fill(&context.context->screen.canvas, 0);
-
         handle_keys(&context);
         
-        x_cameraobject_render(context.cam, &rcontext);
-
-        if(x_console_is_open(&context.context->console))
-            x_console_render(&context.context->console);
-        
-        update_screen(&context);        
+        update_screen(&context);
     }
     
     cleanup(&context);

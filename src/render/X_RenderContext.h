@@ -21,11 +21,13 @@
 #include "math/X_Mat4x4.h"
 #include "X_Screen.h"
 #include "level/X_BspLevel.h"
+#include "render/X_Renderer.h"
 
 struct X_EngineContext;
 
 typedef struct X_RenderContext
 {
+    X_Renderer* renderer;
     X_CameraObject* cam;
     X_Canvas* canvas;
     X_Screen* screen;

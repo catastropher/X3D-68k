@@ -17,6 +17,7 @@
 #include "error/X_error.h"
 #include "system/X_File.h"
 #include "error/X_log.h"
+#include "render/X_RenderContext.h"
 
 
 static _Bool g_engineInitialized = 0;
@@ -51,5 +52,47 @@ void x_engine_cleanup(void)
     x_log_cleanup();
 }
 
+static void x_engine_begin_frame(X_EngineContext* context)
+{
+    ++context->frameCount;
+    x_enginecontext_update_time(context);
+}
 
+static void x_engine_draw_fps(X_EngineContext* context)
+{
+    int diff = context->frameStart - context->lastFrameStart;
+    int fps;
+    
+    if(diff == 0)
+        fps = 1000;
+    else
+        fps = 1000 / diff;
+    
+    char fpsStr[20];
+    sprintf(fpsStr, "%d", fps);
+    
+    X_Vec2 pos = x_vec2_make(x_screen_w(&context->screen) - x_font_str_width(&context->mainFont, fpsStr), 0);
+    x_canvas_draw_str(&context->screen.canvas, fpsStr, &context->mainFont, pos);
+}
+
+void x_engine_render_frame(X_EngineContext* engineContext)
+{
+    x_engine_begin_frame(engineContext);
+    
+    if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
+        x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+    
+    for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    {
+        X_RenderContext renderContext;
+        x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+        x_cameraobject_render(cam, &renderContext);
+    }
+    
+    if(engineContext->renderer.showFps)
+        x_engine_draw_fps(engineContext);
+    
+    if(x_console_is_open(&engineContext->console))
+        x_console_render(&engineContext->console);
+}
 

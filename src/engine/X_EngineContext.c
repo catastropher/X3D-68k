@@ -23,6 +23,7 @@
 
 #include "X_EngineContext.h"
 #include "error/X_error.h"
+#include "render/X_RenderContext.h"
 
 static inline void init_object_factory(X_EngineContext* context)
 {
@@ -93,6 +94,9 @@ static inline void cleanup_console(X_EngineContext* context)
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
     context->frameCount = 1;
+    x_enginecontext_update_time(context);
+    context->lastFrameStart = context->frameStart;
+    
     
     init_object_factory(context);
     init_screen(context, screenW, screenH);
@@ -100,6 +104,8 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
     init_console(context);
     init_keystate(context);
     init_level(context);
+    
+    x_renderer_init(&context->renderer, &context->console);
 }
 
 
@@ -115,12 +121,33 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_console(context);
 }
 
+void x_enginecontext_update_time(X_EngineContext* context)
+{
+    context->lastFrameStart = context->frameStart;
+    
+#ifndef X_GET_TIME_USING_SDL
+    context->frameStart = clock() * 1000 / CLOCKS_PER_SEC;
+#else
+    context->frameStart = SDL_GetTicks();
+#endif
+}
+
 X_Time x_enginecontext_get_time(const X_EngineContext* context)
 {
-#ifndef X_GET_TIME_USING_SDL
-    return clock() * 1000 / CLOCKS_PER_SEC;
-#else
-    return SDL_GetTicks();
-#endif
+    return context->frameStart;
+}
+
+void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, X_CameraObject* cam, X_RenderContext* dest)
+{
+    dest->cam = cam;
+    dest->camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
+    dest->canvas = &engineContext->screen.canvas;
+    dest->currentFrame = x_enginecontext_get_frame(engineContext);
+    dest->engineContext = engineContext;
+    dest->level = &engineContext->currentLevel;
+    dest->renderer = &engineContext->renderer;
+    dest->screen = &engineContext->screen;
+    dest->viewFrustum = &cam->viewport.viewFrustum;
+    dest->viewMatrix = &cam->viewMatrix;
 }
 
