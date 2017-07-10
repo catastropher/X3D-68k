@@ -51,7 +51,7 @@ int convert_sdl_key_to_x3d_key(int sdlKey)
     if(sdlKey == SDLK_TAB)
         return '\t';
     
-    if(sdlKey == SDLK_BACKQUOTE || sdlKey == '~' || sdlKey == 178)
+    if(sdlKey == SDLK_BACKQUOTE || sdlKey == '~' || sdlKey == 178 || sdlKey == '9')
         return X_KEY_OPEN_CONSOLE;
     
     if(sdlKey == SDLK_SPACE)
@@ -93,7 +93,11 @@ void handle_key_events(X_EngineContext* context)
         {
             keyState[ev.key.keysym.sym] = 1;
             
+#ifndef __nspire__
             int sdlKey = (context->keystate.textInputMode ? ev.key.keysym.unicode : ev.key.keysym.sym);
+#else
+            int sdlKey = ev.key.keysym.sym;
+#endif
             int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
             
             if(x3dKey != INVALID_KEY)

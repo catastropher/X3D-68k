@@ -147,7 +147,7 @@ static void x_bsplevelloader_load_planes(X_BspLevelLoader* level)
     X_BspLoaderLump* planeLump = level->header.lumps + X_LUMP_PLANES;
     
     level->totalPlanes = planeLump->length / PLANE_SIZE_IN_FILE;
-    level->planes = malloc(level->totalPlanes * sizeof(X_BspLoaderPlane));
+    level->planes = x_malloc(level->totalPlanes * sizeof(X_BspLoaderPlane));
     
     x_log("Total planes: %d", level->totalPlanes);
     
@@ -416,6 +416,8 @@ static void x_bsplevel_init_nodes(X_BspLevel* level, const X_BspLevelLoader* loa
         node->backChild = x_bsplevel_get_node_from_id(level, loadNode->children[1]);
         node->lastVisibleFrame = 0;
         node->plane = level->planes + loadNode->planeNum;
+        node->firstSurface = level->surfaces + loadNode->firstFace;
+        node->totalSurfaces = loadNode->totalFaces;
     }
 }
 

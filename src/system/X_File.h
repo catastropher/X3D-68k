@@ -33,8 +33,10 @@ typedef struct X_File
     X_FileFlags flags;
 } X_File;
 
-void x_filesystem_init(void);
+void x_filesystem_init(const char* programPath);
 void x_filesystem_cleanup(void);
+const char* x_filesystem_get_program_path(void);
+
 void x_filesystem_add_search_path(const char* searchPath);
 
 _Bool x_file_open_reading(X_File* file, const char* fileName);
@@ -62,6 +64,9 @@ _Bool x_file_open_writing_create_path(X_File* file, const char* fileName);
 
 void x_file_write_le_int16(X_File* file, int val);
 void x_file_write_buf(X_File* file, int bufSize, void* src);
+
+void x_filepath_set_default_file_extension(char* filePath, const char* defaultExtension);
+void x_filepath_extract_path(const char* filePath, char* path);
 
 static inline _Bool x_file_is_open_for_reading(const X_File* file)
 {

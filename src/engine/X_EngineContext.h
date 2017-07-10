@@ -21,6 +21,9 @@
 #include "render/X_Font.h"
 #include "system/X_Time.h"
 #include "level/X_BspLevel.h"
+#include "render/X_Renderer.h"
+
+struct X_RenderContext;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
@@ -33,13 +36,18 @@ typedef struct X_EngineContext
     X_Font mainFont;
     X_KeyState keystate;
     X_BspLevel currentLevel;
+    X_Renderer renderer;
     
     int frameCount;     // TODO Where should this go?
+    X_Time frameStart;
+    X_Time lastFrameStart;
 } X_EngineContext;
 
 void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH);
 void x_enginecontext_cleanup(X_EngineContext* context);
+void x_enginecontext_update_time(X_EngineContext* context);
 X_Time x_enginecontext_get_time(const X_EngineContext* context);
+void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, X_CameraObject* cam, struct X_RenderContext* dest);
 
 static inline int x_enginecontext_get_frame(const X_EngineContext* context)
 {

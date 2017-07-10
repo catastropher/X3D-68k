@@ -18,14 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static inline void x_assert_function(_Bool condition, const char* file, int line, const char* messageFormat, ...)
-{
-    if(condition)
-        return;
-    
-    fprintf(stderr, "Assertion failed!\nFile: %s\nLine: %d\n\nMessage: %s\n", file, line, messageFormat);
-    exit(-1);
-}
-
 #define x_assert(_cond, message...) x_assert_function(_cond, __FILE__, __LINE__, message)
+
+void x_assert_function(_Bool condition, const char* file, int line, const char* messageFormat, ...);
+void x_system_error(const char* error);
 

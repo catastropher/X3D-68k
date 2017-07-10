@@ -15,6 +15,9 @@
 
 #pragma once
 
+void x_log_init(void);
+void x_log_cleanup(void);
+
 void x_log(const char* format, ...);
 void x_log_error(const char* format, ...);
 

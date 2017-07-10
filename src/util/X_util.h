@@ -27,37 +27,6 @@
 
 // TODO: this file deserves its own source file
 
-static inline int x_count_prefix_match_length(const char* a, const char* b)
-{
-    int len = 0;
-    
-    while(*a && *b && *a++ == *b++)
-        ++len;
-    
-    return len;
-}
+int x_count_prefix_match_length(const char* a, const char* b);
+void x_strncpy(char* dest, const char* src, size_t lengthToCopy);
 
-static inline void x_strncpy(char* dest, const char* src, size_t lengthToCopy)
-{
-    while(*src && lengthToCopy > 0)
-    {
-        *dest++ = *src++;
-        --lengthToCopy;
-    }
-    
-    *dest = '\0';
-}
-
-static inline void x_set_default_file_extension(char* filePath, const char* defaultExtension)
-{
-    char* str = filePath + strlen(filePath) - 1;
-    while(str != filePath && *str != '/')
-    {
-        if(*str == '.')
-            return;
-        
-        --str;
-    }
-    
-    strcat(filePath, defaultExtension);
-}

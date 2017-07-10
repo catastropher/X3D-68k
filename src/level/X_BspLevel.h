@@ -78,8 +78,12 @@ typedef struct X_BspNode
     
     // Unique elements for node
     X_BspPlane* plane;
+    
     struct X_BspNode* frontChild;
     struct X_BspNode* backChild;
+    
+    X_BspSurface* firstSurface;
+    int totalSurfaces;
 } X_BspNode;
 
 typedef struct X_BspLeaf
@@ -156,6 +160,7 @@ X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point);
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs);
 void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame);
+void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext);
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
 {
@@ -177,6 +182,10 @@ static inline _Bool x_bspnode_is_leaf(const X_BspNode* node)
     return node->contents < 0;
 }
 
+static inline _Bool x_bspnode_is_visible_this_frame(const X_BspNode* node, int currentFrame)
+{
+    return node->lastVisibleFrame == currentFrame;
+}
 
 static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
 {
@@ -186,5 +195,11 @@ static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
 static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
 {
     return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
+}
+
+
+static inline _Bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
+{
+    return surface->lastVisibleFrame == currentFrame;
 }
 

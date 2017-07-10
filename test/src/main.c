@@ -25,17 +25,24 @@
 
 _Bool init_sdl(Context* context, int screenW, int screenH)
 {
-    SDL_Init(SDL_INIT_EVERYTHING);
+    if(SDL_Init(SDL_INIT_VIDEO) != 0)
+        x_system_error("Failed to initialize SDL");
+    
+#ifndef __nspire__
     context->screen = SDL_SetVideoMode(screenW, screenH, 32, SDL_SWSURFACE);
+#else
+    context->screen = SDL_SetVideoMode(screenW, screenH, 16, SDL_SWSURFACE);
+#endif
+    
+    if(!context->screen)
+        x_system_error("Failed to set video mode");
     
     return context->screen != NULL;
 }
 
-void init_x3d(Context* context, int screenW, int screenH)
+void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
 {
-    X_EngineContext* xContext = &context->context;
-    
-    x_enginecontext_init(xContext, screenW, screenH);
+    X_EngineContext* xContext = context->context = x_engine_init(screenW, screenH, programPath);
     
     context->cam = x_cameraobject_new(xContext);
     x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
@@ -62,17 +69,17 @@ void init_x3d(Context* context, int screenW, int screenH)
     x_frustum_print(&context->cam->viewport.viewFrustum);
 }
 
-void init(Context* context, int screenW, int screenH)
+void init(Context* context, int screenW, int screenH, const char* programPath)
 {
     context->quit = 0;
     
     init_sdl(context, screenW, screenH);
-    init_x3d(context, screenW, screenH);
+    init_x3d(context, screenW, screenH, programPath);
     build_color_table(context->screen);
     init_keys();
     
-    x_console_execute_cmd(&context->context.console, "searchpath ..");
-    x_console_execute_cmd(&context->context.console, "exec engine.cfg");
+    x_console_execute_cmd(&context->context->console, "searchpath ..");
+    x_console_execute_cmd(&context->context->console, "exec engine.cfg");
 }
 
 void cleanup_sdl(Context* context)
@@ -82,7 +89,7 @@ void cleanup_sdl(Context* context)
 
 void cleanup_x3d(Context* context)
 {
-    x_enginecontext_cleanup(&context->context);
+    x_engine_cleanup();
 }
 
 void cleanup(Context* context)
@@ -110,21 +117,24 @@ void handle_console_keys(X_EngineContext* context)
 
 void handle_keys(Context* context)
 {
-    handle_key_events(&context->context);
+    handle_key_events(context->context);
     
     _Bool adjustCam = 0;
     
-    if(x_console_is_open(&context->context.console))
+    if(key_is_down(SDLK_ESCAPE))
+        context->quit = 1;
+    
+    if(x_console_is_open(&context->context->console))
     {
-        handle_console_keys(&context->context);
+        handle_console_keys(context->context);
         return;
     }
     
-    if(x_keystate_key_down(&context->context.keystate, X_KEY_OPEN_CONSOLE))
+    if(x_keystate_key_down(&context->context->keystate, X_KEY_OPEN_CONSOLE))
     {
-        x_console_open(&context->context.console);
-        x_keystate_reset_keys(&context->context.keystate);
-        x_keystate_enable_text_input(&context->context.keystate);
+        x_console_open(&context->context->console);
+        x_keystate_reset_keys(&context->context->keystate);
+        x_keystate_enable_text_input(&context->context->keystate);
         return;
     }
 
@@ -177,9 +187,6 @@ void handle_keys(Context* context)
         adjustCam = 1;
     }
     
-    if(key_is_down(SDLK_ESCAPE))
-        context->quit = 1;
-    
     if(adjustCam)
     {
         x_cameraobject_update_view(context->cam);
@@ -220,19 +227,28 @@ int main(int argc, char* argv[])
 {
     Context context;
     
-    init(&context, 640, 480);
+    int w, h;
     
+#ifdef __nspire__
+    w = 320;
+    h = 240;
+#else
+    w = 640;
+    h = 480;
+#endif
+    
+    init(&context, w, h, argv[0]);
     
     X_RenderContext rcontext;
     rcontext.cam = context.cam;
-    rcontext.canvas = &context.context.screen.canvas;
+    rcontext.canvas = &context.context->screen.canvas;
     rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
     rcontext.viewMatrix = &context.cam->viewMatrix;
-    rcontext.screen = &context.context.screen;
-    rcontext.engineContext = &context.context;
-    rcontext.level = x_engine_get_current_level(&context.context);
+    rcontext.screen = &context.context->screen;
+    rcontext.engineContext = context.context;
+    rcontext.level = x_engine_get_current_level(context.context);
     
-    x_screen_set_palette(&context.context.screen, x_palette_get_quake_palette());
+    x_screen_set_palette(&context.context->screen, x_palette_get_quake_palette());
     
     g_renderContext = &rcontext;
     
@@ -244,21 +260,19 @@ int main(int argc, char* argv[])
     
     while(!context.quit)
     {
-        x_enginecontext_begin_frame(&context.context);
+        x_engine_render_frame(context.context);
         
-        x_canvas_fill(&context.context.screen.canvas, 0);
-
         handle_keys(&context);
         
-        x_cameraobject_render(context.cam, &rcontext);
-
-        if(x_console_is_open(&context.context.console))
-            x_console_render(&context.context.console);
-        
-        update_screen(&context);        
+        update_screen(&context);
     }
     
     cleanup(&context);
+    
+// #ifdef __nspire__
+//     refresh_osscr();
+// #endif
+    
 }
 
 

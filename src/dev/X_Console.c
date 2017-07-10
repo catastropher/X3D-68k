@@ -22,6 +22,8 @@
 #include "engine/X_EngineContext.h"
 #include "engine/X_config.h"
 #include "util/X_util.h"
+#include "X_Console.h"
+#include "error/X_log.h"
 
 void x_console_open(X_Console* console)
 {
@@ -147,6 +149,7 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
     console->size.y = x_screen_h(&engineContext->screen) / font->charH / 2;
     console->font = font;
     console->engineContext = engineContext;
+    console->renderYOffset = 0;
     
     console->lastCursorBlink = x_enginecontext_get_time(engineContext);
     console->showCursor = 1;
@@ -278,6 +281,8 @@ static void x_console_print_word(X_Console* console, const char** wordStart)
 
 void x_console_print(X_Console* console, const char* str)
 {
+    x_log(str);
+    
     while(*str)
     {
         if(*str == '\n')

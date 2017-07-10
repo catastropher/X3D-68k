@@ -13,33 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_Renderer.h"
 
-#include <string.h>
-
-#include "X_Texture.h"
-
-#define X_FONT_TOTAL_CHARS 256
-
-typedef struct X_Font
+static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
-    int charW;
-    int charH;
-    size_t charSize;
-    X_Color* pixels;
-} X_Font;
-
-_Bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidth, int fontHeight);
-void x_font_cleanup(X_Font* font);
-
-static inline const X_Color* x_font_get_character_pixels(const X_Font* font, int charId)
-{
-    return font->pixels + charId * font->charSize;
+    x_console_register_var(console, &renderer->varFillColor, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
+    x_console_register_var(console, &renderer->varShowFps, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
 }
 
-static inline int x_font_str_width(const X_Font* font, const char* str)
+void x_renderer_init(X_Renderer* renderer, X_Console* console)
 {
-    return strlen(str) * font->charW;
+    x_renderer_init_console_vars(renderer, console);
 }
-
 

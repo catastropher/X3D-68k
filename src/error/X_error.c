@@ -13,33 +13,35 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <stdlib.h>
+#include <stdio.h>
 
-#include <string.h>
+#ifdef __nspire__
+#include <libndls.h>
+#endif
 
-#include "X_Texture.h"
+#include "X_log.h"
+#include "X_error.h"
 
-#define X_FONT_TOTAL_CHARS 256
-
-typedef struct X_Font
+void x_assert_function(_Bool condition, const char* file, int line, const char* messageFormat, ...)
 {
-    int charW;
-    int charH;
-    size_t charSize;
-    X_Color* pixels;
-} X_Font;
-
-_Bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidth, int fontHeight);
-void x_font_cleanup(X_Font* font);
-
-static inline const X_Color* x_font_get_character_pixels(const X_Font* font, int charId)
-{
-    return font->pixels + charId * font->charSize;
+    if(condition)
+        return;
+    
+    x_log_error("Assertion failed!\nFile: %s\nLine: %d\n\nMessage: %s\n", file, line, messageFormat);
+    x_system_error("Assertion Failed (check log for more details)");
 }
 
-static inline int x_font_str_width(const X_Font* font, const char* str)
+void x_system_error(const char* error)
 {
-    return strlen(str) * font->charW;
+    x_log_error("%s", error);
+    
+#ifdef __nspire__
+    show_msgbox("System Error", error);
+#else
+    fprintf(stderr, "Fatal system error: %s\n", error);
+#endif
+    
+    exit(-1);
 }
-
 

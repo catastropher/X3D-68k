@@ -17,6 +17,10 @@
 
 #include "X_EngineContext.h"
 
+X_EngineContext* x_engine_init(int screenW, int screenH, const char* programPath);
+void x_engine_cleanup(void);
+void x_engine_render_frame(X_EngineContext* engineContext);
+
 static inline _Bool x_engine_level_is_loaded(const X_EngineContext* context)
 {
     return x_bsplevel_file_is_loaded(&context->currentLevel);
@@ -25,10 +29,5 @@ static inline _Bool x_engine_level_is_loaded(const X_EngineContext* context)
 static inline X_BspLevel* x_engine_get_current_level(X_EngineContext* context)
 {
     return &context->currentLevel;
-}
-
-static inline void x_enginecontext_begin_frame(X_EngineContext* context)
-{
-    ++context->frameCount;
 }
 

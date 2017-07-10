@@ -15,11 +15,23 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan")
-
 project(xtest C)
 
+if(NOT DEFINED XTARGET)
+    set(X3D_TARGET "pc")
+endif()
+
+if(${XTARGET} STREQUAL "pc")
+    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan")
+elseif(${XTARGET} STREQUAL "nspire")
+    SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")       # Workaround for CMake wanting to add -rdynamic
+    set(CMAKE_C_COMPILER nspire-gcc)
+    add_definitions(-D__nspire__)
+    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2")
+endif()
+
 include_directories(/usr/local/include/X3D)
+include_directories(/usr/local/include/)
 
 add_executable(xtest
     src/keys.c
@@ -30,4 +42,5 @@ add_executable(xtest
 
 find_package(SDL REQUIRED)
 
-target_link_libraries(xtest X3D SDL m)
+find_library(X3D_LIBRARY X3D /usr/local/lib)
+target_link_libraries(xtest ${X3D_LIBRARY} SDL m)

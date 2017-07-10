@@ -15,9 +15,20 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined")
-
 project(X3D C)
+
+if(NOT DEFINED XTARGET)
+    set(X3D_TARGET "pc")
+endif()
+
+if(${XTARGET} STREQUAL "pc")
+    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined")
+elseif(${XTARGET} STREQUAL "nspire")
+    set(CMAKE_C_COMPILER nspire-gcc)
+    set(CMAKE_LI)
+    add_definitions(-D__nspire__)
+    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2")
+endif()
 
 include_directories(src/)
 
@@ -27,9 +38,11 @@ add_library(X3D STATIC
     src/dev/X_Console.c
 
     # engine
+    src/engine/X_engine.c
     src/engine/X_EngineContext.c
 
     # error
+    src/error/X_error.c
     src/error/X_log.c
     
     # geo
@@ -51,6 +64,7 @@ add_library(X3D STATIC
     src/math/X_trig.c
     
     # memory
+    src/memory/X_alloc.c
     src/memory/X_Factory.c
     src/memory/X_String.c
     
@@ -60,9 +74,11 @@ add_library(X3D STATIC
     src/object/X_GameObject.c
     
     # render
+    src/render/X_activeedge.c
     src/render/X_Canvas.c
     src/render/X_Font.c
     src/render/X_Palette.c
+    src/render/X_Renderer.c
     src/render/X_Screen.c
     src/render/X_Texture.c
     src/render/X_Viewport.c
@@ -71,6 +87,9 @@ add_library(X3D STATIC
     src/system/X_File.c
     src/system/X_Keys.c
     src/system/X_PackFile.c
+    
+    # util
+    src/util/X_util.c
 )
 
 install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)

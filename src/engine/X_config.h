@@ -24,4 +24,12 @@
 // Total time for the console to open or close (in ms)
 #define X_CONSOLE_TOGGLE_TIME 250
 
+// Extension to automatically add to all files that are opened for reading
+#ifdef __nspire__
+#define X_FILE_AUTO_ADDED_EXTENSION ".tns"
+#endif
+
+#ifdef __nspire__
+#define X_GET_TIME_USING_SDL
+#endif
 

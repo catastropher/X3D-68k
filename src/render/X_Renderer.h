@@ -15,31 +15,19 @@
 
 #pragma once
 
-#include <string.h>
-
 #include "X_Texture.h"
+#include "dev/X_Console.h"
 
-#define X_FONT_TOTAL_CHARS 256
+#define X_RENDERER_FILL_DISABLED -1
 
-typedef struct X_Font
+typedef struct X_Renderer
 {
-    int charW;
-    int charH;
-    size_t charSize;
-    X_Color* pixels;
-} X_Font;
+    int fillColor;
+    _Bool showFps;
+    
+    X_ConsoleVar varFillColor;
+    X_ConsoleVar varShowFps;
+} X_Renderer;
 
-_Bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidth, int fontHeight);
-void x_font_cleanup(X_Font* font);
-
-static inline const X_Color* x_font_get_character_pixels(const X_Font* font, int charId)
-{
-    return font->pixels + charId * font->charSize;
-}
-
-static inline int x_font_str_width(const X_Font* font, const char* str)
-{
-    return strlen(str) * font->charW;
-}
-
+void x_renderer_init(X_Renderer* renderer, X_Console* console);
 

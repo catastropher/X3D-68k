@@ -80,17 +80,44 @@ void sdl_putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
     }
 }
 
+#ifdef __nspire__
+
+static void update_screen_nspire(Context* context)
+{
+    unsigned short sdlColors[256];
+    
+    for(int i = 0; i < 256; ++i)
+        sdlColors[i] = get_sdl_color_from_x_color(i);
+    
+    X_Color* pixel = context->context->screen.canvas.tex.texels;
+    X_Color* pixelEnd = pixel + x_screen_w(&context->context->screen) * x_screen_h(&context->context->screen);
+    
+    unsigned short* pixelDest = context->screen->pixels;
+    
+    do
+    {
+        *pixelDest++ = sdlColors[*pixel++];
+    } while(pixel < pixelEnd);
+}
+
+#endif
+
 void update_screen(Context* context)
 {
+#ifdef __nspire__
+    update_screen_nspire(context);
+#else
+    
     for(int i = 0; i < context->screen->h; ++i)
     {
         for(int j = 0; j < context->screen->w; ++j)
         {
-            X_Color xColor = x_texture_get_texel(&context->context.screen.canvas.tex, j, i);
+            X_Color xColor = x_texture_get_texel(&context->context->screen.canvas.tex, j, i);
             unsigned int sdlColor = get_sdl_color_from_x_color(xColor);
             sdl_putpixel(context->screen, j, i, sdlColor);
         }
     }
+#endif
     
     SDL_Flip(context->screen);
 }

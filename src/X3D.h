@@ -60,10 +60,12 @@
 #include "object/X_GameObject.h"
 
 // render
+#include "render/X_activeedge.h"
 #include "render/X_Canvas.h"
 #include "render/X_Font.h"
 #include "render/X_Palette.h"
 #include "render/X_RenderContext.h"
+#include "render/X_Renderer.h"
 #include "render/X_Screen.h"
 #include "render/X_Texture.h"
 #include "render/X_Viewport.h"
@@ -73,4 +75,7 @@
 #include "system/X_Keys.h"
 #include "system/X_PackFile.h"
 #include "system/X_Time.h"
+
+// util
+#include "util/X_util.h"
 
