@@ -17,6 +17,9 @@
 
 #include "X_EngineContext.h"
 
+X_EngineContext* x_engine_init(int screenW, int screenH, const char* programPath);
+void x_engine_cleanup(void);
+
 static inline _Bool x_engine_level_is_loaded(const X_EngineContext* context)
 {
     return x_bsplevel_file_is_loaded(&context->currentLevel);

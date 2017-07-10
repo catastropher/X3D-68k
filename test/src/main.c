@@ -42,9 +42,7 @@ _Bool init_sdl(Context* context, int screenW, int screenH)
 
 void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
 {
-    X_EngineContext* xContext = &context->context;
-    
-    x_enginecontext_init(xContext, screenW, screenH, programPath);
+    X_EngineContext* xContext = context->context = x_engine_init(screenW, screenH, programPath);
     
     context->cam = x_cameraobject_new(xContext);
     x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
@@ -80,8 +78,8 @@ void init(Context* context, int screenW, int screenH, const char* programPath)
     build_color_table(context->screen);
     init_keys();
     
-    x_console_execute_cmd(&context->context.console, "searchpath ..");
-    x_console_execute_cmd(&context->context.console, "exec engine.cfg");
+    x_console_execute_cmd(&context->context->console, "searchpath ..");
+    x_console_execute_cmd(&context->context->console, "exec engine.cfg");
 }
 
 void cleanup_sdl(Context* context)
@@ -91,7 +89,7 @@ void cleanup_sdl(Context* context)
 
 void cleanup_x3d(Context* context)
 {
-    x_enginecontext_cleanup(&context->context);
+    x_enginecontext_cleanup(context->context);
 }
 
 void cleanup(Context* context)
@@ -119,24 +117,24 @@ void handle_console_keys(X_EngineContext* context)
 
 void handle_keys(Context* context)
 {
-    handle_key_events(&context->context);
+    handle_key_events(context->context);
     
     _Bool adjustCam = 0;
     
     if(key_is_down(SDLK_ESCAPE))
         context->quit = 1;
     
-    if(x_console_is_open(&context->context.console))
+    if(x_console_is_open(&context->context->console))
     {
-        handle_console_keys(&context->context);
+        handle_console_keys(context->context);
         return;
     }
     
-    if(x_keystate_key_down(&context->context.keystate, X_KEY_OPEN_CONSOLE))
+    if(x_keystate_key_down(&context->context->keystate, X_KEY_OPEN_CONSOLE))
     {
-        x_console_open(&context->context.console);
-        x_keystate_reset_keys(&context->context.keystate);
-        x_keystate_enable_text_input(&context->context.keystate);
+        x_console_open(&context->context->console);
+        x_keystate_reset_keys(&context->context->keystate);
+        x_keystate_enable_text_input(&context->context->keystate);
         return;
     }
 
@@ -243,14 +241,14 @@ int main(int argc, char* argv[])
     
     X_RenderContext rcontext;
     rcontext.cam = context.cam;
-    rcontext.canvas = &context.context.screen.canvas;
+    rcontext.canvas = &context.context->screen.canvas;
     rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
     rcontext.viewMatrix = &context.cam->viewMatrix;
-    rcontext.screen = &context.context.screen;
-    rcontext.engineContext = &context.context;
-    rcontext.level = x_engine_get_current_level(&context.context);
+    rcontext.screen = &context.context->screen;
+    rcontext.engineContext = context.context;
+    rcontext.level = x_engine_get_current_level(context.context);
     
-    x_screen_set_palette(&context.context.screen, x_palette_get_quake_palette());
+    x_screen_set_palette(&context.context->screen, x_palette_get_quake_palette());
     
     g_renderContext = &rcontext;
     
@@ -262,16 +260,16 @@ int main(int argc, char* argv[])
     
     while(!context.quit)
     {
-        x_enginecontext_begin_frame(&context.context);
+        x_enginecontext_begin_frame(context.context);
         
-        x_canvas_fill(&context.context.screen.canvas, 0);
+        x_canvas_fill(&context.context->screen.canvas, 0);
 
         handle_keys(&context);
         
         x_cameraobject_render(context.cam, &rcontext);
 
-        if(x_console_is_open(&context.context.console))
-            x_console_render(&context.context.console);
+        if(x_console_is_open(&context.context->console))
+            x_console_render(&context.context->console);
         
         update_screen(&context);        
     }

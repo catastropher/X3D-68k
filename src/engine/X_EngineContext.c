@@ -23,8 +23,6 @@
 
 #include "X_EngineContext.h"
 #include "error/X_error.h"
-#include "system/X_File.h"
-#include "error/X_log.h"
 
 static inline void init_object_factory(X_EngineContext* context)
 {
@@ -92,14 +90,9 @@ static inline void cleanup_console(X_EngineContext* context)
 /// @note Make sure to call @ref x_enginecontext_cleanup() when done to release
 ///     the allocated resources!
 ////////////////////////////////////////////////////////////////////////////////
-void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH, const char* programPath)
+void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
 {
     context->frameCount = 1;
-    
-    x_memory_init();
-    x_filesystem_init(programPath);
-    x_log_init();
-    x_filesystem_add_search_path("../assets");
     
     init_object_factory(context);
     init_screen(context, screenW, screenH);
@@ -116,14 +109,10 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH, co
 ////////////////////////////////////////////////////////////////////////////////
 void x_enginecontext_cleanup(X_EngineContext* context)
 {
-    x_filesystem_cleanup();
     cleanup_object_factory(context);
     cleanup_screen(context);
     cleanup_main_font(context);
     cleanup_console(context);
-    
-    x_memory_free_all();
-    x_log_cleanup();
 }
 
 X_Time x_enginecontext_get_time(const X_EngineContext* context)

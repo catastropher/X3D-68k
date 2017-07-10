@@ -21,7 +21,7 @@
 typedef struct Context
 {
     SDL_Surface* screen;
-    X_EngineContext context;
+    X_EngineContext* context;
     X_CameraObject* cam;
     _Bool quit;
 } Context;

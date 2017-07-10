@@ -86,7 +86,7 @@ void update_screen(Context* context)
     {
         for(int j = 0; j < context->screen->w; ++j)
         {
-            X_Color xColor = x_texture_get_texel(&context->context.screen.canvas.tex, j, i);
+            X_Color xColor = x_texture_get_texel(&context->context->screen.canvas.tex, j, i);
             unsigned int sdlColor = get_sdl_color_from_x_color(xColor);
             sdl_putpixel(context->screen, j, i, sdlColor);
         }

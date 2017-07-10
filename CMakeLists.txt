@@ -38,6 +38,7 @@ add_library(X3D STATIC
     src/dev/X_Console.c
 
     # engine
+    src/engine/X_engine.c
     src/engine/X_EngineContext.c
 
     # error
