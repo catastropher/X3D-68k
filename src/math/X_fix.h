@@ -25,7 +25,7 @@ typedef long long int x_fp32x32;
 ////////////////////////////////////////////////////////////////////////////////
 /// Creates an @ref x_fp16x16 from a whole number.
 ////////////////////////////////////////////////////////////////////////////////
-static inline x_fp16x16 x_fp16x16_make(int wholePart)
+static inline x_fp16x16 x_fp16x16_from_int(int wholePart)
 {
     return wholePart << 16;
 }

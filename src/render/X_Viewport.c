@@ -19,7 +19,7 @@
 
 static inline int calculate_distance_to_projection_plane(int w, x_angle256 fieldOfView)
 {
-    return x_fp16x16_make(w / 2) / x_tan(fieldOfView / 2);
+    return x_fp16x16_from_int(w / 2) / x_tan(fieldOfView / 2);
 }
 
 void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_angle256 fieldOfView)
