@@ -32,5 +32,5 @@ typedef struct X_Renderer
     X_ConsoleVar varShowFps;
 } X_Renderer;
 
-void x_renderer_init(X_Renderer* renderer, X_Console* console);
+void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen);
 

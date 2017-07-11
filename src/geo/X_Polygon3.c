@@ -26,8 +26,6 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
     
     for(int i = 0; i < src->totalVertices; ++i)
     {
-        printf("DotClip: %f\n", x_fp16x16_to_float(dot));
-        
         int next = (i + 1 < src->totalVertices ? i + 1 : 0);
         
         if(in)
@@ -36,8 +34,6 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
         x_fp16x16 nextDot = x_vec3_dot(&plane->normal, src->vertices + next);
         _Bool nextIn = nextDot >= -plane->d;
         int dotDiff = (nextDot - dot) >> 16;
-        
-        printf("Dot diff: %d\n", dotDiff);
         
         if(in != nextIn && dotDiff != 0)
         {
@@ -64,5 +60,38 @@ void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rconte
         
         x_ray3d_render(&ray, rcontext, color);
     }
+}
+
+void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest)
+{
+    if(dest == src)
+        return;
+    
+    dest->totalVertices = src->totalVertices;
+    memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3));
+}
+
+_Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest)
+{
+    X_Vec3 tempV[200];
+    X_Polygon3 temp[2] = 
+    {
+        x_polygon3_make(tempV, 100),
+        x_polygon3_make(tempV + 100, 100)
+    };
+    
+    int currentTemp = 0;
+    const X_Polygon3* polyToClip = poly;
+    
+    for(int i = 0; i < frustum->totalPlanes - 1; ++i)
+    {
+        if(!x_polygon3_clip_to_plane(polyToClip, frustum->planes + i, &temp[currentTemp]))
+            return 0;
+        
+        polyToClip = &temp[currentTemp];
+        currentTemp ^= 1;
+    }
+    
+    return x_polygon3_clip_to_plane(polyToClip, frustum->planes + frustum->totalPlanes - 1, dest);
 }
 

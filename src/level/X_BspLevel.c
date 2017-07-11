@@ -13,10 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "geo/X_Ray3.h"
+#include "render/X_activeedge.h"
+#include "render/X_RenderContext.h"
+#include "render/X_Renderer.h"
 #include "X_BspLevel.h"
 #include "X_BspLevelLoader.h"
-#include "render/X_RenderContext.h"
-#include "geo/X_Ray3.h"
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
 {
@@ -212,25 +214,37 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
             continue;
         
-        for(int j = 0; j < surface->totalEdges; ++j)
-        {
-            int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
-            
-            X_BspEdge* edge = level->edges + abs(edgeId);
-            
-            X_Ray3 ray = x_ray3_make
-            (
-                level->vertices[edge->v[0]].v,
-                level->vertices[edge->v[1]].v
-            );
-            
-            x_ray3d_render(&ray, renderContext, 255);
-        }
+        x_ae_context_add_level_polygon
+        (
+            &renderContext->renderer->activeEdgeContext,
+            renderContext->level,
+            level->surfaceEdgeIds + surface->firstEdgeId,
+            surface->totalEdges,
+            surface
+        );
+        
+        
+//         for(int j = 0; j < surface->totalEdges; ++j)
+//         {
+//             int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
+//             
+//             X_BspEdge* edge = level->edges + abs(edgeId);
+//             
+//             X_Ray3 ray = x_ray3_make
+//             (
+//                 level->vertices[edge->v[0]].v,
+//                 level->vertices[edge->v[1]].v
+//             );
+//             
+//             x_ray3d_render(&ray, renderContext, 255);
+//         }
     }
 }
 
 void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext)
 {
+    //printf("Enter node %d\n", (int)(x_bspnode_is_leaf(node) ? (X_) node - renderContext->level->nodes))
+    
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
         return;
     

@@ -105,7 +105,7 @@ void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
     init_keystate(context);
     init_level(context);
     
-    x_renderer_init(&context->renderer, &context->console);
+    x_renderer_init(&context->renderer, &context->console, &context->screen);
 }
 
 
@@ -149,5 +149,6 @@ void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext
     dest->screen = &engineContext->screen;
     dest->viewFrustum = &cam->viewport.viewFrustum;
     dest->viewMatrix = &cam->viewMatrix;
+    dest->renderer = &engineContext->renderer;
 }
 

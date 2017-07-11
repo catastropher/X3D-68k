@@ -21,8 +21,9 @@ static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* consol
     x_console_register_var(console, &renderer->varShowFps, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
 }
 
-void x_renderer_init(X_Renderer* renderer, X_Console* console)
+void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen)
 {
     x_renderer_init_console_vars(renderer, console);
+    x_ae_context_init(&renderer->activeEdgeContext, screen, 5000, 5000, 5000);
 }
 

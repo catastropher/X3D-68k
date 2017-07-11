@@ -337,6 +337,7 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
         surface->plane = level->planes + face->planeNum;
         surface->firstEdgeId = face->firstEdge;
         surface->totalEdges = face->totalEdges;
+        surface->color = rand() % 256;
     }
 }
 

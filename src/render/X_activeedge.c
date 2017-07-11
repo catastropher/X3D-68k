@@ -18,6 +18,7 @@
 #include "util/X_util.h"
 #include "X_activeedge.h"
 #include "level/X_BspLevel.h"
+#include "geo/X_Polygon3.h"
 
 static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
 {
@@ -58,11 +59,12 @@ void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdg
     x_ae_context_init_sentinal_edges(context);
     x_ae_context_init_edges(context, maxActiveEdges, edgePoolSize);
     x_ae_context_init_surfaces(context, surfacePoolSize);
-    x_ae_context_reset(context);
 }
 
-void x_ae_context_reset(X_AE_Context* context)
+void x_ae_context_reset(X_AE_Context* context, X_RenderContext* renderContext)
 {
+    context->renderContext = renderContext;
+    
     context->totalActiveEdges = 0;
     context->oldTotalActiveEdges = 0;
     
@@ -82,6 +84,8 @@ void x_ae_context_reset(X_AE_Context* context)
     context->background.bspSurface = &context->backgroundBspSurface;
     context->background.bspKey = 0x7FFFFFFF;
     context->backgroundBspSurface.color = 255;
+    
+    context->nextBspKey = 0;
 }
 
 static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY)
@@ -104,9 +108,9 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_
     x_assert(context->nextAvailableEdge < context->edgePoolEnd, "AE out of edges");
     
     X_AE_Edge* edge = context->nextAvailableEdge++;
-    edge->isLeadingEdge = height > 0;
+    edge->isLeadingEdge = height < 0;
     
-    if(!edge->isLeadingEdge)
+    if(edge->isLeadingEdge)
         X_SWAP(a, b);
     
     edge->x = x_fp16x16_from_int(a->x) + x_fp16x16_from_float(0.5);
@@ -124,46 +128,70 @@ static _Bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
+#include "geo/X_Ray3.h"
+
 void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface)
 {
     x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
     
-    X_AE_Surface* surface = context->nextAvailableSurface++;
-    
-    surface->bspSurface = bspSurface;
-    surface->crossCount = 0;
+    X_Vec3 v3d[100];
+    X_Polygon3 polygon = x_polygon3_make(v3d, 100);
+  
+    polygon.totalVertices = 0;
     
     for(int i = 0; i < totalEdges; ++i)
     {
-        X_Vec3* a3d;
-        X_Vec3* b3d;
-        
         if(!edge_is_flipped(edgeIds[i]))
-        {
-            X_BspEdge* levelEdge = level->edges + edgeIds[i];
-            a3d = &level->vertices[levelEdge->v[0]].v;
-            b3d = &level->vertices[levelEdge->v[1]].v;
-        }
+            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[edgeIds[i]].v[1]].v;
         else
-        {
-            X_BspEdge* levelEdge = level->edges + (-edgeIds[i]);
-            a3d = &level->vertices[levelEdge->v[1]].v;
-            b3d = &level->vertices[levelEdge->v[0]].v;
-        }
+            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[0]].v;
+    }
+    
+    X_Vec3 clippedV[100];
+    X_Polygon3 clipped = x_polygon3_make(clippedV, 100);
+    
+    if(!x_polygon3_clip_to_frustum(&polygon, context->renderContext->viewFrustum, &clipped))
+    {
+        return;
+    }
+ 
+    
+    X_AE_Surface* surface = context->nextAvailableSurface++;
+    
+    surface->bspKey = context->nextBspKey++;
+    surface->bspSurface = bspSurface;
+    surface->crossCount = 0;
+    
+    X_Vec2 v2d[100];
+    for(int i = 0; i < clipped.totalVertices; ++i)
+    {
+        X_Vec3 transformed;
+        x_mat4x4_transform_vec3(context->renderContext->viewMatrix, clipped.vertices + i, &transformed);
         
-        X_Vec2 a2d;
-        x_viewport_project(&context->renderContext->cam->viewport, a3d, &a2d);
-        
-        X_Vec2 b2d;
-        x_viewport_project(&context->renderContext->cam->viewport, b3d, &b2d);
-        
-        x_ae_context_add_edge(context, &a2d, &b2d, surface);
+        x_viewport_project(&context->renderContext->cam->viewport, &transformed, v2d + i);
+        x_viewport_clamp_vec2(&context->renderContext->cam->viewport, v2d + i);
+    }
+    
+    for(int i = 0; i < clipped.totalVertices; ++i)
+    {
+        int next = (i + 1 < clipped.totalVertices ? i + 1 : 0);
+        x_ae_context_add_edge(context, v2d + i, v2d + next, surface);
+        //x_canvas_draw_line(&context->screen->canvas, v2d[i], v2d[next], 255);
     }
 }
 
 static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
 {
+    if(right < left)
+        X_SWAP(left, right);
     
+    for(int i = left; i < right; ++i)
+    {
+        x_texture_set_texel(&context->screen->canvas.tex, i, y, surface->bspSurface->color);
+    }
+    
+    
+    //memset(context->screen->canvas.tex.texels + x_texture_texel_index(&context->screen->canvas.tex, left, y), surface->bspSurface->color, right - left);
 }
 
 static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
@@ -283,11 +311,16 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
     context->activeEdges[context->totalActiveEdges++] = &context->rightEdge;
 }
 
-void x_ae_context_scan_edges(X_AE_Context* context, X_RenderContext* renderContext)
+void x_ae_context_scan_edges(X_AE_Context* context)
 {
-    context->renderContext = renderContext;
-    
     for(int i = 0; i < x_screen_h(context->screen); ++i)
+    {
+        for(int j = 0; j < context->nextAvailableSurface - context->surfacePool; ++j)
+        {
+            context->surfacePool[j].crossCount = 0;
+        }
+        
         x_ae_context_process_edges(context, i);
+    }
 }
 
