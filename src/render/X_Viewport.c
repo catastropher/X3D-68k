@@ -80,7 +80,7 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const
     }
     
     // Near plane
-    int distToNearPlane = 16;
+    int distToNearPlane = 32;
     X_Vec3_fp16x16 translationAs16x16 = x_vec3_scale(forward, distToNearPlane);
     X_Vec3 translation = x_vec3_fp16x16_to_vec3(&translationAs16x16);
     X_Vec3 pointOnNearPlane = x_vec3_add(&translation, camPos);

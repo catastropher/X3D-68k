@@ -29,7 +29,10 @@
 #define X_FILE_AUTO_ADDED_EXTENSION ".tns"
 #endif
 
+// Nspire has no implementation of clock() so we use SDL_GetTicks()
 #ifdef __nspire__
 #define X_GET_TIME_USING_SDL
 #endif
+
+#define X_SDL_SUPPORT
 

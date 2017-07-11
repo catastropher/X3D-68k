@@ -185,13 +185,7 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
     if(right < left)
         X_SWAP(left, right);
     
-    for(int i = left; i < right; ++i)
-    {
-        x_texture_set_texel(&context->screen->canvas.tex, i, y, surface->bspSurface->color);
-    }
-    
-    
-    //memset(context->screen->canvas.tex.texels + x_texture_texel_index(&context->screen->canvas.tex, left, y), surface->bspSurface->color, right - left);
+    memset(context->screen->canvas.tex.texels + x_texture_texel_index(&context->screen->canvas.tex, left, y), surface->bspSurface->color, right - left);
 }
 
 static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)

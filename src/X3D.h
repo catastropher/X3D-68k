@@ -79,3 +79,7 @@
 // util
 #include "util/X_util.h"
 
+#ifdef X_SDL_SUPPORT
+#include "util/X_sdl.h"
+#endif
+

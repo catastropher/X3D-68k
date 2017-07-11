@@ -45,7 +45,7 @@ void init_x3d(Context* context, int screenW, int screenH, const char* programPat
     X_EngineContext* xContext = context->context = x_engine_init(screenW, screenH, programPath);
     
     context->cam = x_cameraobject_new(xContext);
-    x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, 640, 480, X_ANG_60);
+    x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, screenW, screenH, X_ANG_60);
     x_screen_attach_camera(&xContext->screen, context->cam);
     
     context->cam->base.orientation = x_quaternion_identity();
@@ -223,6 +223,8 @@ void draw_grid(X_Vec3 center, int size, int step, X_RenderContext* rcontext, X_C
     }
 }
 
+void screen_init_console_vars(X_Console* console);
+
 int main(int argc, char* argv[])
 {
     Context context;
@@ -233,11 +235,13 @@ int main(int argc, char* argv[])
     w = 320;
     h = 240;
 #else
-    w = 640;
-    h = 480;
+    w = 320;
+    h = 240;
 #endif
     
     init(&context, w, h, argv[0]);
+    screen_init_console_vars(&context.context->console);
+    
     
     X_RenderContext rcontext;
     rcontext.cam = context.cam;

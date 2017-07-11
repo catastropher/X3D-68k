@@ -13,10 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "palette.h"
-#include "Context.h"
+#pragma once
 
-Uint32 sdl_getpixel(SDL_Surface *surface, int x, int y)
+#include <SDL/SDL.h>
+
+#include "render/X_Texture.h"
+#include "render/X_Palette.h"
+#include "error/X_error.h"
+
+static inline Uint32 x_sdl_getpixel(SDL_Surface *surface, int x, int y)
 {
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to retrieve */
@@ -47,7 +52,7 @@ Uint32 sdl_getpixel(SDL_Surface *surface, int x, int y)
     }
 }
 
-void sdl_putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
+static inline void x_sdl_putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 {
     int bpp = surface->format->BytesPerPixel;
     /* Here p is the address to the pixel we want to set */
@@ -80,84 +85,27 @@ void sdl_putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
     }
 }
 
-#ifdef __nspire__
-
-static void update_screen_nspire(Context* context)
+static inline void x_texture_to_sdl_surface(const X_Texture* src, const X_Palette* palette, SDL_Surface* dest)
 {
-    unsigned short sdlColors[256];
+    x_assert(dest->w >= src->w && dest->h >= src->h, "SDL surface dimensions too small");
+    
+    unsigned int colorTable[256];
     
     for(int i = 0; i < 256; ++i)
-        sdlColors[i] = get_sdl_color_from_x_color(i);
-    
-    X_Color* pixel = context->context->screen.canvas.tex.texels;
-    X_Color* pixelEnd = pixel + x_screen_w(&context->context->screen) * x_screen_h(&context->context->screen);
-    
-    unsigned short* pixelDest = context->screen->pixels;
-    
-    do
     {
-        *pixelDest++ = sdlColors[*pixel++];
-    } while(pixel < pixelEnd);
-}
-
-#endif
-
-static _Bool record = 0;
-static char recordBaseFile[256];
-static int recordFrame;
-static int frameId;
-
-void update_screen(Context* context)
-{
-#ifdef __nspire__
-    update_screen_nspire(context);
-#else
-    x_texture_to_sdl_surface(&context->context->screen.canvas.tex, context->context->screen.palette, context->screen);
-    
-    if(record && (x_enginecontext_get_frame(context->context) % recordFrame) == 0) {
-        char fileName[512];
-        sprintf(fileName, "%s%.4d.bmp", recordBaseFile, frameId);
-        
-        SDL_SaveBMP(context->screen, fileName);
-        
-        ++frameId;
-        
-        SDL_Delay(50);
-    }
-#endif
-    
-    SDL_Flip(context->screen);
-}
-
-static void cmd_record(X_EngineContext* context, int argc, char* argv[])
-{
-    if(argc != 3)
-    {
-        x_console_printf(&context->console, "Usage: record [frameBaseFileName] [nth frame] -> records every nth frame to bitmap files\n");
-        return;
+        unsigned char r, g, b;
+        x_palette_get_rgb(palette, i, &r, &g, &b);
+        colorTable[i] = SDL_MapRGB(dest->format, r, g, b);
     }
     
-    strcpy(recordBaseFile, argv[1]);
-    recordFrame = X_MAX(1, atoi(argv[2]));
-    record = 1;
-    frameId = 0;
-    
-    x_console_printf(&context->console, "Recording enabled every %d frames", recordFrame);
+    for(int i = 0; i < src->h; ++i)
+    {
+        for(int j = 0; j < src->w; ++j)
+        {
+            x_sdl_putpixel(dest, j, i, colorTable[x_texture_get_texel(src, j, i)]);
+        }
+    }
 }
 
-static void cmd_endrecord(X_EngineContext* context, int argc, char* argv[])
-{
-    x_console_printf(&context->console, "Recording stopped\n");
-    record = 0;
-}
-
-void screen_init_console_vars(X_Console* console)
-{
-    static X_ConsoleCmd cmdRecord = { "record", cmd_record };
-    x_console_register_cmd(console, &cmdRecord);
-    
-    static X_ConsoleCmd endRecord = { "endrecord", cmd_endrecord };
-    x_console_register_cmd(console, &endRecord);
-}
 
 
