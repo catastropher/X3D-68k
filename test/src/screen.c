@@ -110,7 +110,13 @@ static int frameId;
 void update_screen(Context* context)
 {
 #ifdef __nspire__
-    update_screen_nspire(context);
+    if(!context->context->renderer.usePalette)
+        update_screen_nspire(context);
+    else
+    {
+        lcd_blit(context->context->screen.canvas.tex.texels, SCR_320x240_8);
+        return;
+    }
 #else
     x_texture_to_sdl_surface(&context->context->screen.canvas.tex, context->context->screen.palette, context->screen);
     
@@ -125,7 +131,7 @@ void update_screen(Context* context)
         SDL_Delay(50);
     }
 #endif
-    
+
     SDL_Flip(context->screen);
 }
 

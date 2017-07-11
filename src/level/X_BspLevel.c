@@ -214,6 +214,12 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
             continue;
         
+        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
+        _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
+        
+        if(!onNormalSide ^ planeFlipped)
+            continue;
+        
         x_ae_context_add_level_polygon
         (
             &renderContext->renderer->activeEdgeContext,

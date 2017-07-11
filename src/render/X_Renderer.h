@@ -26,6 +26,7 @@ typedef struct X_Renderer
     X_AE_Context activeEdgeContext;
     
     int fillColor;
+    _Bool usePalette;
     _Bool showFps;
     
     X_ConsoleVar varFillColor;

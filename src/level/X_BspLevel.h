@@ -41,6 +41,11 @@ typedef struct X_BspVertex
     X_Vec3 v;
 } X_BspVertex;
 
+typedef enum X_BspSurfaceFlags
+{
+    X_BSPSURFACE_FLIPPED = 1,
+} X_BspSurfaceFlags;
+
 typedef struct X_BspSurface
 {
     int lastVisibleFrame;
@@ -48,6 +53,8 @@ typedef struct X_BspSurface
     
     int firstEdgeId;
     int totalEdges;
+    
+    X_BspSurfaceFlags flags;
     
     X_Color color;
 } X_BspSurface;

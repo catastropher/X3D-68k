@@ -338,6 +338,10 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
         surface->firstEdgeId = face->firstEdge;
         surface->totalEdges = face->totalEdges;
         surface->color = rand() % 256;
+        surface->flags = 0;
+        
+        if(face->side != 0)
+            surface->flags |= X_BSPSURFACE_FLIPPED;
     }
 }
 

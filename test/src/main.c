@@ -235,8 +235,8 @@ int main(int argc, char* argv[])
     w = 320;
     h = 240;
 #else
-    w = 320;
-    h = 240;
+    w = 640;
+    h = 480;
 #endif
     
     init(&context, w, h, argv[0]);
@@ -273,9 +273,9 @@ int main(int argc, char* argv[])
     
     cleanup(&context);
     
-// #ifdef __nspire__
-//     refresh_osscr();
-// #endif
+ #ifdef __nspire__
+     lcd_init(SCR_TYPE_INVALID);
+ #endif
     
 }
 
