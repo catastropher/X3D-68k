@@ -17,11 +17,14 @@
 
 #include "X_Texture.h"
 #include "dev/X_Console.h"
+#include "X_activeedge.h"
 
 #define X_RENDERER_FILL_DISABLED -1
 
 typedef struct X_Renderer
 {
+    X_AE_Context activeEdgeContext;
+    
     int fillColor;
     _Bool showFps;
     

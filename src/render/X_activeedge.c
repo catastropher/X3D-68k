@@ -78,6 +78,21 @@ void x_ae_context_reset(X_AE_Context* context)
     context->activeEdges[0] = &context->leftEdge;
     context->activeEdges[1] = &context->rightEdge;
     context->totalActiveEdges = 2;
+    
+    context->background.bspSurface = &context->backgroundBspSurface;
+    context->background.bspKey = 0x7FFFFFFF;
+    context->backgroundBspSurface.color = 255;
+}
+
+static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY)
+{
+    X_AE_Edge* edge = (X_AE_Edge*)&context->newEdges[startY];
+    
+    while(edge->next->x < newEdge->x)
+        edge = edge->next;
+    
+    newEdge->next = edge->next;
+    edge->next = newEdge;
 }
 
 X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface)
@@ -99,6 +114,8 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_
     edge->endY = b->y - 1;
     edge->surface = surface;
     
+    x_ae_context_add_edge_to_starting_scanline(context, edge, a->y);
+    
     return edge;
 }
 
@@ -118,14 +135,159 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
     
     for(int i = 0; i < totalEdges; ++i)
     {
-        X_Vec2* a;
-        X_Vec2* b;
+        X_Vec3* a3d;
+        X_Vec3* b3d;
         
         if(!edge_is_flipped(edgeIds[i]))
         {
             X_BspEdge* levelEdge = level->edges + edgeIds[i];
-            //a = &level->vertices[levelEdge->v[0]].v;
+            a3d = &level->vertices[levelEdge->v[0]].v;
+            b3d = &level->vertices[levelEdge->v[1]].v;
+        }
+        else
+        {
+            X_BspEdge* levelEdge = level->edges + (-edgeIds[i]);
+            a3d = &level->vertices[levelEdge->v[1]].v;
+            b3d = &level->vertices[levelEdge->v[0]].v;
+        }
+        
+        X_Vec2 a2d;
+        x_viewport_project(&context->renderContext->cam->viewport, a3d, &a2d);
+        
+        X_Vec2 b2d;
+        x_viewport_project(&context->renderContext->cam->viewport, b3d, &b2d);
+        
+        x_ae_context_add_edge(context, &a2d, &b2d, surface);
+    }
+}
+
+static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
+{
+    
+}
+
+static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
+{
+    return a->bspKey < b->bspKey;
+}
+
+static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* edge, int y) {
+    X_AE_Surface* s = edge->surface;
+    X_AE_Surface* currentTop = context->background.next;
+    
+    if(edge->isLeadingEdge) {        
+        // Make sure the edges didn't cross
+        if(++s->crossCount != 1)
+            return;
+        
+        // Are we the top surface now?
+        if(x_ae_surface_closer(s, currentTop)) {
+            // Yes, emit span for the current top
+            int x = edge->x >> 16;
+            
+            x_ae_context_emit_span(context, currentTop->xStart, x, y, currentTop);
+            
+            s->xStart = x;
+            s->next = currentTop;
+            s->prev = &context->background;
+            
+            currentTop->prev = s;
+            context->background.next = s;
+        }
+        else {
+            // Sort into the surface stack
+            do {
+                currentTop = currentTop->next;
+            } while(x_ae_surface_closer(currentTop, s));
+            
+            s->next = currentTop;
+            s->prev = currentTop->prev;
+            currentTop->prev->next = s;
+            currentTop->prev = s;
         }
     }
+    else {
+        // Make sure the edges didn't cross
+        if(--s->crossCount != 0)
+            return;
+            
+        if(s == currentTop) {
+            // We were on top, so emit the span
+            int x = (edge->x) >> 16;
+            
+            x_ae_context_emit_span(context, s->xStart, x, y, s);
+            
+            s->next->xStart = x;
+        }
+        
+        // Remove the surface from the surface stack
+        s->next->prev = s->prev;
+        s->prev->next = s->next;
+    }
+}
+
+static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge* edge, int y) {
+    x_ae_context_process_edge(context, edge, y);
+    
+    if(edge->endY == y)
+        return;
+    
+    int pos = context->totalActiveEdges++;
+    
+    // Advance the edge
+    edge->x += edge->xSlope;
+    
+    // Resort the edge, if it moved out of order
+    while(edge->x < context->activeEdges[pos - 1]->x) {
+        context->activeEdges[pos] = context->activeEdges[pos - 1];
+        --pos;
+    }
+    
+    context->activeEdges[pos] = edge;
+}
+
+static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
+    context->background.crossCount = 1;
+    context->background.xStart = 0;
+    context->background.next = &context->background;
+    context->background.prev = &context->background;
+    
+    X_SWAP(context->oldActiveEdges, context->activeEdges);
+    context->oldTotalActiveEdges = context->totalActiveEdges;
+    
+    context->totalActiveEdges = 1;
+    context->activeEdges[0] = &context->leftEdge;
+    
+    X_AE_Edge** oldActiveEdge = context->oldActiveEdges + 1;
+    
+    X_AE_Edge* newEdge = context->newEdges[y].next;
+    
+    while(1) {
+        X_AE_Edge* e;
+        
+        if((*oldActiveEdge)->x < newEdge->x) {
+            e = *oldActiveEdge;
+            ++oldActiveEdge;
+        }
+        else {
+            e = newEdge;
+            newEdge = newEdge->next;
+        }
+        
+        if(e == &context->rightEdge)
+            break;
+        
+        x_ae_context_add_active_edge(context, e, y);
+    }
+    
+    context->activeEdges[context->totalActiveEdges++] = &context->rightEdge;
+}
+
+void x_ae_context_scan_edges(X_AE_Context* context, X_RenderContext* renderContext)
+{
+    context->renderContext = renderContext;
+    
+    for(int i = 0; i < x_screen_h(context->screen); ++i)
+        x_ae_context_process_edges(context, i);
 }
 

@@ -25,6 +25,7 @@ typedef struct X_AE_Surface
 {
     int bspKey;
     int crossCount;
+    int xStart;
     
     struct X_AE_Surface* next;
     struct X_AE_Surface* prev;
@@ -76,6 +77,7 @@ typedef struct X_AE_Context
     X_AE_Edge rightEdge;
     
     X_AE_Surface background;
+    X_BspSurface backgroundBspSurface;
     
     X_RenderContext* renderContext;
     X_Screen* screen;
@@ -84,5 +86,7 @@ typedef struct X_AE_Context
 void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdges, int edgePoolSize, int surfacePoolSize);
 void x_ae_context_reset(X_AE_Context* context);
 X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface);
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface);
+void x_ae_context_scan_edges(X_AE_Context* context, X_RenderContext* renderContext);
 
 
