@@ -20,10 +20,34 @@
 #include "memory/X_alloc.h"
 #include "render/X_RenderContext.h"
 #include "geo/X_Ray3.h"
+#include "util/X_util.h"
 
-static X_Vec3_float x_bsplevelloader_convert_coordinate(const X_Vec3_float* v)
+static X_Vec3_float x_bsplevelloader_convert_coordinate_float(const X_Vec3_float* v)
 {
     return x_vec3_float_make(v->y, -v->z, -v->x);
+}
+
+static X_Vec3 x_bsplevelloader_convert_coordinate(const X_Vec3* v)
+{
+    return x_vec3_make(v->y, -v->z, -v->x);
+}
+
+static void x_bspboundbox_convert_coordinate(X_BspBoundBox* box)
+{
+    box->v[0] = x_bsplevelloader_convert_coordinate(box->v + 0);
+    box->v[1] = x_bsplevelloader_convert_coordinate(box->v + 1);
+    
+    X_BspBoundBox temp;
+    
+    temp.v[0].x = X_MIN(box->v[0].x, box->v[1].x);
+    temp.v[0].y = X_MIN(box->v[0].y, box->v[1].y);
+    temp.v[0].z = X_MIN(box->v[0].z, box->v[1].z);
+    
+    temp.v[1].x = X_MAX(box->v[0].x, box->v[1].x);
+    temp.v[1].y = X_MAX(box->v[0].y, box->v[1].y);
+    temp.v[1].z = X_MAX(box->v[0].z, box->v[1].z);
+    
+    *box = temp;
 }
 
 static void x_bsploaderlump_read_from_file(X_BspLoaderLump* lump, X_File* file)
@@ -44,7 +68,7 @@ static void x_bsploaderplane_read_from_file(X_BspLoaderPlane* plane, X_File* fil
 {
     X_Vec3_float normal;
     x_file_read_vec3_float(file, &normal);
-    normal = x_bsplevelloader_convert_coordinate(&normal);
+    normal = x_bsplevelloader_convert_coordinate_float(&normal);
     
     plane->plane.normal = x_vec3_float_to_vec3_fp16x16(&normal);
     
@@ -59,7 +83,7 @@ static void x_bsploadervertex_read_from_file(X_BspLoaderVertex* vertex, X_File* 
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);
     
-    v = x_bsplevelloader_convert_coordinate(&v);
+    v = x_bsplevelloader_convert_coordinate_float(&v);
     vertex->v = x_vec3_float_to_vec3(&v);
 }
 
@@ -364,12 +388,21 @@ static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* lo
         X_BspLeaf* leaf = level->leaves + i;
         X_BspLoaderLeaf* loadLeaf = loader->leaves + i;
         
-        // TODO load boundbox
         leaf->compressedPvsData = level->compressedPvsData + loadLeaf->pvsOffset;
         leaf->contents = loadLeaf->contents;
         leaf->lastVisibleFrame = 0;
         leaf->firstMarkSurface = level->markSurfaces + loadLeaf->firstMarkSurface;
         leaf->totalMarkSurfaces = loadLeaf->totalMarkSurfaces;
+        
+        leaf->boundBox.v[0].x = loadLeaf->mins[0];
+        leaf->boundBox.v[0].y = loadLeaf->mins[1];
+        leaf->boundBox.v[0].z = loadLeaf->mins[2];
+        
+        leaf->boundBox.v[1].x = loadLeaf->maxs[0];
+        leaf->boundBox.v[1].y = loadLeaf->maxs[1];
+        leaf->boundBox.v[1].z = loadLeaf->maxs[2];
+        
+        x_bspboundbox_convert_coordinate(&leaf->boundBox);
     }
 }
 
@@ -423,6 +456,16 @@ static void x_bsplevel_init_nodes(X_BspLevel* level, const X_BspLevelLoader* loa
         node->plane = level->planes + loadNode->planeNum;
         node->firstSurface = level->surfaces + loadNode->firstFace;
         node->totalSurfaces = loadNode->totalFaces;
+        
+        node->boundBox.v[0].x = loadNode->mins[0];
+        node->boundBox.v[0].y = loadNode->mins[1];
+        node->boundBox.v[0].z = loadNode->mins[2];
+        
+        node->boundBox.v[1].x = loadNode->maxs[0];
+        node->boundBox.v[1].y = loadNode->maxs[1];
+        node->boundBox.v[1].z = loadNode->maxs[2];
+        
+        x_bspboundbox_convert_coordinate(&node->boundBox);
     }
 }
 

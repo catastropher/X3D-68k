@@ -27,8 +27,7 @@ typedef int X_BspLeafId;
 
 typedef struct X_BspBoundBox
 {
-    X_Vec3_short min;
-    X_Vec3_short max;
+    X_Vec3 v[2];
 } X_BspBoundBox;
 
 typedef struct X_BspPlane

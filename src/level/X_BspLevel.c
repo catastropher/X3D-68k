@@ -19,6 +19,30 @@
 #include "render/X_Renderer.h"
 #include "X_BspLevel.h"
 #include "X_BspLevelLoader.h"
+#include "error/X_error.h"
+
+_Bool x_bspboundbox_outside_plane(X_BspBoundBox* box, X_Plane* plane)
+{
+    int px = (plane->normal.x > 0 ? 1 : 0);
+    int py = (plane->normal.y > 0 ? 1 : 0);
+    int pz = (plane->normal.z > 0 ? 1 : 0);
+    
+    X_Vec3 furthestPointAlongNormal = x_vec3_make(box->v[px].x, box->v[py].y, box->v[pz].z);
+    
+    return !x_plane_point_is_on_normal_facing_side(plane, &furthestPointAlongNormal);
+}
+
+// Based on an algorithm described at http://www.txutxi.com/?p=584
+_Bool x_bspboundbox_outside_frustum(X_BspBoundBox* box, X_Frustum* frustum)
+{
+    for(int i = 0; i < frustum->totalPlanes - 1; ++i)
+    {
+        if(x_bspboundbox_outside_plane(box, frustum->planes + i))
+            return 1;
+    }
+    
+    return 0;
+}
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
 {
@@ -228,22 +252,6 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
             surface->totalEdges,
             surface
         );
-        
-        
-//         for(int j = 0; j < surface->totalEdges; ++j)
-//         {
-//             int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
-//             
-//             X_BspEdge* edge = level->edges + abs(edgeId);
-//             
-//             X_Ray3 ray = x_ray3_make
-//             (
-//                 level->vertices[edge->v[0]].v,
-//                 level->vertices[edge->v[1]].v
-//             );
-//             
-//             x_ray3d_render(&ray, renderContext, 255);
-//         }
     }
 }
 
@@ -252,6 +260,9 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext)
     //printf("Enter node %d\n", (int)(x_bspnode_is_leaf(node) ? (X_) node - renderContext->level->nodes))
     
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
+        return;
+    
+    if(x_bspboundbox_outside_frustum(&node->boundBox, renderContext->viewFrustum))
         return;
     
     if(x_bspnode_is_leaf(node))
