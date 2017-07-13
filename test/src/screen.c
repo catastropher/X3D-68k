@@ -84,7 +84,7 @@ void sdl_putpixel(SDL_Surface *surface, int x, int y, Uint32 pixel)
 
 static void update_screen_nspire(Context* context)
 {
-    unsigned short sdlColors[256];
+    unsigned int sdlColors[256];
     
     for(int i = 0; i < 256; ++i)
         sdlColors[i] = get_sdl_color_from_x_color(i);
@@ -92,11 +92,12 @@ static void update_screen_nspire(Context* context)
     X_Color* pixel = context->context->screen.canvas.tex.texels;
     X_Color* pixelEnd = pixel + x_screen_w(&context->context->screen) * x_screen_h(&context->context->screen);
     
-    unsigned short* pixelDest = context->screen->pixels;
+    unsigned int* pixelDest = REAL_SCREEN_BASE_ADDRESS;
     
     do
     {
-        *pixelDest++ = sdlColors[*pixel++];
+        *pixelDest++ = (sdlColors[pixel[0]]) + (sdlColors[pixel[1]] << 16);
+        pixel += 2;
     } while(pixel < pixelEnd);
 }
 
@@ -114,7 +115,8 @@ void update_screen(Context* context)
         update_screen_nspire(context);
     else
     {
-        lcd_blit(context->context->screen.canvas.tex.texels, SCR_320x240_8);
+        memcpy(REAL_SCREEN_BASE_ADDRESS, context->context->screen.canvas.tex.texels, 320 * 240);
+        //lcd_blit(context->context->screen.canvas.tex.texels, SCR_320x240_8);
         return;
     }
 #else
@@ -130,9 +132,9 @@ void update_screen(Context* context)
         
         SDL_Delay(50);
     }
-#endif
-
+    
     SDL_Flip(context->screen);
+#endif
 }
 
 static void cmd_record(X_EngineContext* context, int argc, char* argv[])

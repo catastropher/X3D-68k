@@ -79,21 +79,21 @@ void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
     
-    if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
-        x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+    //if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
+    //    x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
     
-    for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
-    {
-        X_RenderContext renderContext;
-        x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
-        x_ae_context_reset(&engineContext->renderer.activeEdgeContext, &renderContext);
-        
-        x_cameraobject_render(cam, &renderContext);
-        
-        //ae_test(&engineContext->renderer.activeEdgeContext);
-        
-        x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
-    }
+//     for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+//     {
+//         X_RenderContext renderContext;
+//         x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+//         x_ae_context_reset(&engineContext->renderer.activeEdgeContext, &renderContext);
+//         
+//         x_cameraobject_render(cam, &renderContext);
+//         
+//         //ae_test(&engineContext->renderer.activeEdgeContext);
+//         
+//         x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
+//     }
     
     if(engineContext->renderer.showFps)
         x_engine_draw_fps(engineContext);
