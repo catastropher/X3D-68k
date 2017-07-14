@@ -42,6 +42,7 @@ typedef struct X_BspFaceTexture
     x_fp16x16 uOffset;
     x_fp16x16 vOffset;
     X_BspTexture* texture;
+    int flags;
 } X_BspFaceTexture;
 
 typedef struct X_BspBoundBox
@@ -178,6 +179,9 @@ typedef struct X_BspLevel
     X_Color* textureTexels;
     X_BspTexture* textures;
     int totalTextures;
+    
+    X_BspFaceTexture* faceTextures;
+    int totalFaceTextures;
     
     unsigned char* compressedPvsData;
 } X_BspLevel;

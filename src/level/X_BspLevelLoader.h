@@ -99,6 +99,16 @@ typedef struct X_BspLoaderTexture
     unsigned int texelsOffset[X_BSPTEXTURE_MIP_LEVELS];
 } X_BspLoaderTexture;
 
+typedef struct X_BspLoaderFaceTexture
+{
+    X_Vec3_fp16x16 uOrientation;    // Orientation of texture in 3D space
+    X_Vec3_fp16x16 vOrientation;
+    x_fp16x16 uOffset;
+    x_fp16x16 vOffset;
+    int textureId;
+    int flags;
+} X_BspLoaderFaceTexture;
+
 #define X_BSPFACE_MAX_LIGHTMAPS 4
 
 typedef struct X_BspLoaderFace
@@ -183,6 +193,9 @@ typedef struct X_BspLevelLoader
     X_Color* textureTexels;
     X_BspLoaderTexture* textures;
     int totalTextures;
+    
+    X_BspLoaderFaceTexture* faceTextures;
+    int totalFaceTextures;
     
     unsigned short* markSurfaces;
     int totalMarkSurfaces;

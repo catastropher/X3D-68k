@@ -89,7 +89,21 @@ static void x_bsploadertexture_read_from_file(X_BspLoaderTexture* texture, X_Fil
         texture->texelsOffset[mipTex] = x_file_read_le_int32(file);
 }
 
-//static void x_bspfacetexture_read_from_file(X_BspFaceTexture)
+static void x_bsploaderfacetexture_read_from_file(X_BspLoaderFaceTexture* faceTexture, X_File* file)
+{
+    X_Vec3_float u;
+    x_file_read_vec3_float(file, &u);
+    faceTexture->uOrientation = x_vec3_float_to_vec3(&u);
+    faceTexture->uOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
+    
+    X_Vec3_float v;
+    x_file_read_vec3_float(file, &v);
+    faceTexture->vOrientation = x_vec3_float_to_vec3(&v);
+    faceTexture->vOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
+    
+    faceTexture->textureId = x_file_read_le_int32(file);
+    faceTexture->flags = x_file_read_le_int32(file);
+}
 
 static void x_bsploaderplane_read_from_file(X_BspLoaderPlane* plane, X_File* file)
 {
@@ -399,6 +413,24 @@ static void x_bsplevelloader_load_textures(X_BspLevelLoader* loader)
     x_bsploadermiptexturelump_cleanup(&mipLump);
 }
 
+static void x_bsplevelloader_load_facetextures(X_BspLevelLoader* loader)
+{
+    //x_bsploaderfacetexture_read_from_file
+    
+    int FACE_TEXTURE_SIZE_IN_FILE = 40;
+    X_BspLoaderLump* faceTextureLump = loader->header.lumps + X_LUMP_TEXINFO;
+    
+    loader->totalFaceTextures = faceTextureLump->length /  FACE_TEXTURE_SIZE_IN_FILE;
+    loader->faceTextures = x_malloc(loader->totalFaceTextures * sizeof(X_BspLoaderFaceTexture));
+    
+    x_file_seek(&loader->file, faceTextureLump->fileOffset);
+    
+    x_log("Total face textures: %d", loader->totalFaceTextures);
+    
+    for(int i = 0; i < loader->totalFaceTextures; ++i)
+        x_bsploaderfacetexture_read_from_file(loader->faceTextures + i, &loader->file);
+}
+
 static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     level->totalEdges = loader->totalEdges;
@@ -424,6 +456,12 @@ static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader
     
     level->totalMarkSurfaces = loader->totalMarkSurfaces;
     level->markSurfaces = x_malloc(level->totalMarkSurfaces * sizeof(X_BspSurface*));
+    
+    level->totalTextures = loader->totalTextures;
+    level->textures = x_malloc(level->totalTextures * sizeof(X_BspTexture));
+    
+    level->totalFaceTextures = loader->totalFaceTextures;
+    level->faceTextures = x_malloc(level->totalFaceTextures * sizeof(X_BspFaceTexture));
 }
 
 static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* loader)
@@ -579,9 +617,6 @@ static void x_bsplevel_init_textures(X_BspLevel* level, X_BspLevelLoader* loader
     level->textureTexels = loader->textureTexels;
     loader->textureTexels = NULL;
     
-    level->totalTextures = loader->totalTextures;
-    level->textures = x_malloc(level->totalTextures * sizeof(X_BspTexture));
-    
     for(int i = 0; i < level->totalTextures; ++i)
     {
         X_BspTexture* tex = level->textures + i;
@@ -595,6 +630,24 @@ static void x_bsplevel_init_textures(X_BspLevel* level, X_BspLevelLoader* loader
         {
             tex->mipTexels[mipTex] = level->textureTexels + loadTex->texelsOffset[mipTex];
         }
+    }
+}
+
+static void x_bsplevel_init_facetextures(X_BspLevel* level, X_BspLevelLoader* loader)
+{
+    for(int i = 0; i < level->totalFaceTextures; ++i)
+    {
+        X_BspFaceTexture* tex = level->faceTextures + i;
+        X_BspLoaderFaceTexture* loadTex = loader->faceTextures + i;
+        
+        tex->uOrientation = loadTex->uOrientation;
+        tex->uOffset = loadTex->uOffset;
+        
+        tex->vOrientation = loadTex->vOrientation;
+        tex->vOffset = loadTex->vOffset;
+        
+        tex->flags = loadTex->flags;
+        tex->texture = level->textures + loadTex->textureId;
     }
 }
 
@@ -613,6 +666,7 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_models(level, loader);
     x_bsplevel_init_surfacedgeids(level, loader);
     x_bsplevel_init_textures(level, loader);
+    x_bsplevel_init_facetextures(level, loader);
 }
 
 _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)
@@ -640,11 +694,7 @@ _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileN
     x_bsplevelloader_load_marksurfaces(loader);
     x_bsplevelloader_load_surfaceedgeids(loader);
     x_bsplevelloader_load_textures(loader);
-    
-    for(int i = 0; i < loader->totalTextures; ++i)
-    {
-        x_log("Texture name: %s\n", loader->textures[i].name);
-    }
+    x_bsplevelloader_load_facetextures(loader);
     
     return 1;
 }
