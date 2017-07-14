@@ -25,6 +25,25 @@ typedef int X_BspVertexId;
 typedef int X_BspEdgeId;
 typedef int X_BspLeafId;
 
+#define X_BSPTEXTURE_MIP_LEVELS 4
+
+typedef struct X_BspTexture
+{
+    char name[16];
+    unsigned int w;
+    unsigned int h;
+    unsigned int texelsOffset[X_BSPTEXTURE_MIP_LEVELS];
+} X_BspTexture;
+
+typedef struct X_BspFaceTexture
+{
+    X_Vec3_fp16x16 uOrientation;    // Orientation of texture in 3D space
+    X_Vec3_fp16x16 vOrientation;
+    x_fp16x16 uOffset;
+    x_fp16x16 vOffset;
+    X_BspTexture* texture;
+} X_BspFaceTexture;
+
 typedef struct X_BspBoundBox
 {
     X_Vec3 v[2];

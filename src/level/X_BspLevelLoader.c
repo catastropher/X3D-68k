@@ -64,6 +64,31 @@ static void x_bsploaderheader_read_from_file(X_BspLoaderHeader* header, X_File* 
         x_bsploaderlump_read_from_file(header->lumps + i, file);
 }
 
+static void x_bsptexture_read_from_file(X_BspTexture* texture, X_File* file)
+{
+    x_file_read_fixed_length_str(file, 16, texture->name);
+    texture->w = x_file_read_le_int32(file);
+    texture->h = x_file_read_le_int32(file);
+    
+    // Skip animation total
+    x_file_read_le_int32(file);
+    
+    // Skip animation and animation max
+    x_file_read_le_int32(file);
+    x_file_read_le_int32(file);
+    
+    // Skip animation next
+    x_file_read_le_int32(file);
+    
+    // Skip alernate animations
+    x_file_read_le_int32(file);
+    
+    for(int i = 0; i < 4; ++i)
+        texture->texelsOffset[i] = x_file_read_le_int32(file);
+}
+
+//static void x_bspfacetexture_read_from_file(X_BspFaceTexture)
+
 static void x_bsploaderplane_read_from_file(X_BspLoaderPlane* plane, X_File* file)
 {
     X_Vec3_float normal;

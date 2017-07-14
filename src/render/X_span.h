@@ -25,7 +25,7 @@ typedef struct X_AE_Span
 
 typedef struct X_AE_SurfaceRenderContext
 {
-    X_AE_Surface* surface;
+    struct X_AE_Surface* surface;
     
 } X_AE_SurfaceRenderContext;
 

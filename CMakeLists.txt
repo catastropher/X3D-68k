@@ -81,6 +81,7 @@ add_library(X3D STATIC
     src/render/X_Palette.c
     src/render/X_Renderer.c
     src/render/X_Screen.c
+    src/render/X_span.c
     src/render/X_Texture.c
     src/render/X_Viewport.c
     
