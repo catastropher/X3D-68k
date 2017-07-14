@@ -122,29 +122,7 @@ int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
 }
 
 void x_bsplevel_init_empty(X_BspLevel* level)
-{
-//     level->compressedPvsData = NULL;
-//     
-//     level->edges = NULL;
-//     level->totalEdges = 0;
-//     
-//     level->faces = NULL;
-//     level->totalFaces = 0;
-//     
-//     level->file.file = NULL;
-//     
-//     level->leaves = NULL;
-//     level->totalLeaves = 0;
-//     
-//     level->nodes = NULL;
-//     level->totalNodes = 0;
-//     
-//     level->planes = NULL;
-//     level->totalPlanes = 0;
-//     
-//     level->vertices = NULL;
-//     level->totalVertices = 0;
-    
+{    
     level->flags = 0;
 }
 
@@ -295,5 +273,25 @@ void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X
     dest->w = bspTex->w >> mipMapLevel;
     dest->h = bspTex->h >> mipMapLevel;
     dest->texels = bspTex->mipTexels[mipMapLevel];
+}
+
+void x_bsplevel_cleanup(X_BspLevel* level)
+{
+    if(!x_bsplevel_file_is_loaded(level))
+        return;
+    
+    x_free(level->compressedPvsData);
+    x_free(level->edges);
+    x_free(level->faceTextures);
+    x_free(level->leaves);
+    x_free(level->markSurfaces);
+    x_free(level->models);
+    x_free(level->nodes);
+    x_free(level->planes);
+    x_free(level->surfaceEdgeIds);
+    x_free(level->surfaces);
+    x_free(level->textures);
+    x_free(level->textureTexels);
+    x_free(level->vertices);
 }
 

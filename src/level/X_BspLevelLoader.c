@@ -669,7 +669,7 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_facetextures(level, loader);
 }
 
-_Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)
+static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)
 {
     if(!x_file_open_reading(&loader->file, fileName))
     {
@@ -699,6 +699,23 @@ _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileN
     return 1;
 }
 
+static void x_bsplevelloader_cleanup(X_BspLevelLoader* level)
+{
+    x_free(level->compressedPvsData);
+    x_free(level->edges);
+    x_free(level->faces);
+    x_free(level->faceTextures);
+    x_free(level->leaves);
+    x_free(level->markSurfaces);
+    x_free(level->models);
+    x_free(level->nodes);
+    x_free(level->planes);
+    x_free(level->surfaceEdgeIds);
+    x_free(level->textures);
+    x_free(level->textureTexels);
+    x_free(level->vertices);
+}
+
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
 {
     X_BspLevelLoader loader;
@@ -706,6 +723,7 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
         return 0;
     
     x_bsplevel_init_from_bsplevel_loader(level, &loader);
+    x_bsplevelloader_cleanup(&loader);
     
     level->flags = X_BSPLEVEL_LOADED;
     

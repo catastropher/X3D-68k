@@ -186,6 +186,8 @@ typedef struct X_BspLevel
     unsigned char* compressedPvsData;
 } X_BspLevel;
 
+void x_bsplevel_cleanup(X_BspLevel* level);
+
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
 void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, struct X_RenderContext* renderContext, X_Color color);
 

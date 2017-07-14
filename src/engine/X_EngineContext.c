@@ -119,6 +119,7 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_screen(context);
     cleanup_main_font(context);
     cleanup_console(context);
+    x_bsplevel_cleanup(&context->currentLevel);
 }
 
 void x_enginecontext_update_time(X_EngineContext* context)
