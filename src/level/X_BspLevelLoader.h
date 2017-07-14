@@ -52,6 +52,12 @@ typedef struct X_BspLoaderLump
     int length;
 } X_BspLoaderLump;
 
+typedef struct X_BspLoaderMipTextureLump
+{
+    int totalMipTextures;
+    int* mipTextureOffsets;
+} X_BspLoaderMipTextureLump;
+
 typedef struct X_BspLoaderHeader
 {
     int bspVersion;
@@ -84,6 +90,14 @@ typedef struct X_BspLoaderEdge
 {
     X_BspVertexId v[2];
 } X_BspLoaderEdge;
+
+typedef struct X_BspLoaderTexture
+{
+    char name[16];
+    int w;
+    int h;
+    unsigned int texelsOffset[X_BSPTEXTURE_MIP_LEVELS];
+} X_BspLoaderTexture;
 
 #define X_BSPFACE_MAX_LIGHTMAPS 4
 
@@ -165,6 +179,9 @@ typedef struct X_BspLevelLoader
     
     X_BspLoaderModel* models;
     int totalModels;
+    
+    X_BspTexture* textures;
+    int totalTextures;
     
     unsigned short* markSurfaces;
     int totalMarkSurfaces;

@@ -21,6 +21,7 @@
 #include "render/X_RenderContext.h"
 #include "geo/X_Ray3.h"
 #include "util/X_util.h"
+#include "error/X_error.h"
 
 static X_Vec3_float x_bsplevelloader_convert_coordinate_float(const X_Vec3_float* v)
 {
@@ -56,6 +57,20 @@ static void x_bsploaderlump_read_from_file(X_BspLoaderLump* lump, X_File* file)
     lump->length = x_file_read_le_int32(file);
 }
 
+static void x_bsploadermiptexturelump_read_from_file(X_BspLoaderMipTextureLump* lump, X_File* file)
+{
+    lump->totalMipTextures = x_file_read_le_int32(file);
+    lump->mipTextureOffsets = x_malloc(lump->totalMipTextures * sizeof(int));
+    
+    for(int i = 0; i < lump->totalMipTextures; ++i)
+        lump->mipTextureOffsets[i] = x_file_read_le_int32(file);
+}
+
+static void x_bsploadermiptexturelump_cleanup(X_BspLoaderMipTextureLump* lump)
+{
+    x_free(lump->mipTextureOffsets);
+}
+
 static void x_bsploaderheader_read_from_file(X_BspLoaderHeader* header, X_File* file)
 {
     header->bspVersion = x_file_read_le_int32(file);
@@ -66,22 +81,9 @@ static void x_bsploaderheader_read_from_file(X_BspLoaderHeader* header, X_File* 
 
 static void x_bsptexture_read_from_file(X_BspTexture* texture, X_File* file)
 {
-    x_file_read_fixed_length_str(file, 16, texture->name);
+    x_file_read_buf(file, 16, texture->name);
     texture->w = x_file_read_le_int32(file);
     texture->h = x_file_read_le_int32(file);
-    
-    // Skip animation total
-    x_file_read_le_int32(file);
-    
-    // Skip animation and animation max
-    x_file_read_le_int32(file);
-    x_file_read_le_int32(file);
-    
-    // Skip animation next
-    x_file_read_le_int32(file);
-    
-    // Skip alernate animations
-    x_file_read_le_int32(file);
     
     for(int i = 0; i < 4; ++i)
         texture->texelsOffset[i] = x_file_read_le_int32(file);
@@ -343,6 +345,29 @@ static void x_bsplevelloader_load_surfaceedgeids(X_BspLevelLoader* loader)
         loader->surfaceEdgeIds[i] = x_file_read_le_int32(&loader->file);
 }
 
+static void x_bsplevelloader_load_textures(X_BspLevelLoader* loader)
+{
+    const int TEXTURE_SIZE_IN_FILE = 40;
+    X_BspLoaderLump* textureLump = loader->header.lumps + X_LUMP_TEXTURES;
+    
+    x_file_seek(&loader->file, textureLump->fileOffset);
+    
+    X_BspLoaderMipTextureLump mipLump;
+    x_bsploadermiptexturelump_read_from_file(&mipLump, &loader->file);
+    
+    loader->totalTextures = mipLump.totalMipTextures;
+    
+    for(int i = 0; i < loader->totalTextures; ++i)
+    {
+        int textureFileOffset = textureLump->fileOffset + mipLump.mipTextureOffsets[i];
+        x_file_seek(&loader->file, textureFileOffset);
+        
+        x_bsptexture_read_from_file(loader->textures + i, &loader->file);
+    }
+    
+    x_bsploadermiptexturelump_cleanup(&mipLump);
+}
+
 static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     level->totalEdges = loader->totalEdges;
@@ -557,6 +582,12 @@ _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileN
     x_bsplevelloader_load_models(loader);
     x_bsplevelloader_load_marksurfaces(loader);
     x_bsplevelloader_load_surfaceedgeids(loader);
+    x_bsplevelloader_load_textures(loader);
+    
+    for(int i = 0; i < 1; ++i)
+    {
+        x_log("Texture name: %s\n", loader->textures[i].name);
+    }
     
     return 1;
 }
