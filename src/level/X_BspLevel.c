@@ -285,3 +285,15 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
     x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext);
 }
 
+void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
+{
+    x_assert(mipMapLevel >= 0 && mipMapLevel < 4, "Bad mip map request");
+    x_assert(textureId >= 0 && textureId < level->totalTextures, "Requested invalid texture");
+    
+    X_BspTexture* bspTex = level->textures + textureId;
+    
+    dest->w = bspTex->w >> mipMapLevel;
+    dest->h = bspTex->h >> mipMapLevel;
+    dest->texels = bspTex->mipTexels[mipMapLevel];
+}
+

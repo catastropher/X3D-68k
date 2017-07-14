@@ -268,6 +268,19 @@ int main(int argc, char* argv[])
         
         handle_keys(&context);
         
+        if(x_engine_level_is_loaded(context.context))
+        {
+            int y = 50;
+            
+            for(int i = 0; i < 4; ++i)
+            {
+                X_Texture texture;
+                x_bsplevel_get_texture(&context.context->currentLevel, 10, i, &texture);
+                x_canvas_blit_texture(&context.context->screen.canvas, &texture, x_vec2_make(0, y));
+                y += texture.h + 1;
+            }
+        }
+        
         update_screen(&context);
     }
     

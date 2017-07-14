@@ -180,7 +180,8 @@ typedef struct X_BspLevelLoader
     X_BspLoaderModel* models;
     int totalModels;
     
-    X_BspTexture* textures;
+    X_Color* textureTexels;
+    X_BspLoaderTexture* textures;
     int totalTextures;
     
     unsigned short* markSurfaces;

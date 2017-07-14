@@ -32,7 +32,7 @@ typedef struct X_BspTexture
     char name[16];
     unsigned int w;
     unsigned int h;
-    unsigned int texelsOffset[X_BSPTEXTURE_MIP_LEVELS];
+    unsigned char* mipTexels[X_BSPTEXTURE_MIP_LEVELS];
 } X_BspTexture;
 
 typedef struct X_BspFaceTexture
@@ -175,6 +175,10 @@ typedef struct X_BspLevel
     int* surfaceEdgeIds;
     int totalSurfaceEdgeIds;
     
+    X_Color* textureTexels;
+    X_BspTexture* textures;
+    int totalTextures;
+    
     unsigned char* compressedPvsData;
 } X_BspLevel;
 
@@ -188,6 +192,8 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs);
 void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame);
 void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext);
+
+void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
 {
