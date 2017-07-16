@@ -15,6 +15,7 @@
 
 #include "palette.h"
 #include "Context.h"
+#include "keys.h"
 
 Uint32 sdl_getpixel(SDL_Surface *surface, int x, int y)
 {
@@ -108,6 +109,8 @@ static char recordBaseFile[256];
 static int recordFrame;
 static int frameId;
 
+float g_zbuf[480][640];
+
 void update_screen(Context* context)
 {
 #ifdef __nspire__
@@ -120,7 +123,28 @@ void update_screen(Context* context)
         return;
     }
 #else
-    x_texture_to_sdl_surface(&context->context->screen.canvas.tex, context->context->screen.palette, context->screen);
+    
+    if(!key_is_down(SDLK_RETURN))
+        x_texture_to_sdl_surface(&context->context->screen.canvas.tex, context->context->screen.palette, context->screen);
+    else
+    {
+    
+    
+        for(int i = 0; i < 480; ++i)
+        {
+            for(int j = 0; j < 640; ++j)
+            {
+                int in = g_zbuf[i][j] * 255.0 / (1LL << 30) * 100;
+                
+                if(in < 0) in = 0;
+                else if(in > 255) in = 255;
+                
+                unsigned int pix = SDL_MapRGB(context->screen->format, in, in, in);
+                
+                sdl_putpixel(context->screen, j, i, pix);
+            }
+        }
+    }
     
     if(record && (x_enginecontext_get_frame(context->context) % recordFrame) == 0) {
         char fileName[512];

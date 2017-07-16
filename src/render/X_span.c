@@ -15,7 +15,58 @@
 
 #include "X_span.h"
 #include "level/X_BspLevel.h"
+#include "math/X_Mat4x4.h"
+#include "X_RenderContext.h"
+#include "X_activeedge.h"
 
+static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* context)
+{
+    X_Vec3 sAxis;
+    X_BspFaceTexture* tex = context->faceTexture;
+    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &tex->uOrientation, &sAxis);
+    
+    X_AE_TextureVar* sDivZ = &context->sDivZ;
+    sDivZ->uOrientationStep = (sAxis.x * context->viewport->distToNearPlane) >> context->mipLevel;
+    sDivZ->vOrientationStep = (sAxis.y * context->viewport->distToNearPlane) >> context->mipLevel;
+    
+    // TODO: move these into viewport struct
+    int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
+    int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
+    
+    sDivZ->origin = (sAxis.z >> context->mipLevel) - centerX * sDivZ->uOrientationStep - centerY * sDivZ->vOrientationStep;
+}
 
+static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* context)
+{
+    X_Vec3 tAxis;
+    X_BspFaceTexture* tex = context->faceTexture;
+    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &tex->vOrientation, &tAxis);
+    
+    X_AE_TextureVar* tDivZ = &context->sDivZ;
+    tDivZ->uOrientationStep = (tAxis.x * context->viewport->distToNearPlane) >> context->mipLevel;
+    tDivZ->vOrientationStep = (tAxis.y * context->viewport->distToNearPlane) >> context->mipLevel;
+    
+    // TODO: move these into viewport struct
+    int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
+    int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
+    
+    tDivZ->origin = (tAxis.z >> context->mipLevel) - centerX * tDivZ->uOrientationStep - centerY * tDivZ->vOrientationStep;
+}
+
+static void calculate_inverse_z_gradient(X_AE_SurfaceRenderContext* context)
+{
+    
+}
+
+void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)
+{
+    context->surface = surface;
+    context->faceTexture = context->surface->bspSurface->faceTexture;
+    context->renderContext = renderContext;
+    context->mipLevel = mipLevel;
+    
+    x_ae_surfacerendercontext_init_sdivz(context);
+    x_ae_surfacerendercontext_init_tdivz(context);
+}
 
 

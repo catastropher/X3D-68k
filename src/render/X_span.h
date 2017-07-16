@@ -15,7 +15,12 @@
 
 #pragma once
 
+#include "math/X_fix.h"
+
 struct X_AE_Surface;
+struct X_Viewport;
+struct X_RenderContext;
+struct X_BspFaceTexture;
 
 typedef struct X_AE_Span
 {
@@ -23,9 +28,23 @@ typedef struct X_AE_Span
     
 } X_AE_Span;
 
+typedef struct X_AE_TextureVar
+{
+    x_fp16x16 uOrientationStep;
+    x_fp16x16 vOrientationStep;
+    x_fp16x16 origin;
+    x_fp16x16 adjust;
+} X_AE_TextureVar;
+
 typedef struct X_AE_SurfaceRenderContext
 {
     struct X_AE_Surface* surface;
+    struct X_Viewport* viewport;
+    struct X_RenderContext* renderContext;
+    struct X_BspFaceTexture* faceTexture;
+    int mipLevel;
     
+    X_AE_TextureVar sDivZ;
+    X_AE_TextureVar tDivZ;
 } X_AE_SurfaceRenderContext;
 

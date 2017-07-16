@@ -76,6 +76,7 @@ typedef struct X_BspSurface
     X_BspSurfaceFlags flags;
     
     X_Color color;
+    X_BspFaceTexture* faceTexture;
 } X_BspSurface;
 
 typedef struct X_BspEdge

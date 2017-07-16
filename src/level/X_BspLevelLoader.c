@@ -485,6 +485,8 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
         
         if(face->side != 0)
             surface->flags |= X_BSPSURFACE_FLIPPED;
+        
+        surface->faceTexture = level->faceTextures + face->texInfo;
     }
 }
 

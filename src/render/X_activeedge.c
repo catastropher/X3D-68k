@@ -20,6 +20,8 @@
 #include "level/X_BspLevel.h"
 #include "geo/X_Polygon3.h"
 
+float g_zbuf[480][640];
+
 static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
 {
     context->leftEdge.x = x_fp16x16_from_float(-.5);
@@ -128,29 +130,53 @@ static _Bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-#include "geo/X_Ray3.h"
-
-void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface)
+static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Polygon3* polygonInViewSpace, X_Viewport* viewport, X_Mat4x4* viewMatrix)
 {
-    x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
+    X_Plane planeInViewSpace;
+    X_Vec3_fp16x16 planeNormal = surface->bspSurface->plane->plane.normal;
     
-    X_Vec3 v3d[100];
-    X_Polygon3 polygon = x_polygon3_make(v3d, 100);
-  
-    polygon.totalVertices = 0;
-    
-    for(int i = 0; i < totalEdges; ++i)
+    if(surface->bspSurface->flags & X_BSPSURFACE_FLIPPED)
     {
-        if(!edge_is_flipped(edgeIds[i]))
-            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[edgeIds[i]].v[1]].v;
-        else
-            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[0]].v;
+        planeNormal = x_vec3_neg(&planeNormal);
     }
     
+    x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &planeInViewSpace.normal);    
+    x_plane_init_from_normal_and_point(&planeInViewSpace, &planeInViewSpace.normal, polygonInViewSpace->vertices + 0);
+    
+    int dist = (-planeInViewSpace.d >> 16);
+    int scale = viewport->distToNearPlane;
+    
+    int distTimesScale = dist * scale;
+    
+    if(distTimesScale == 0)
+        return;
+    
+    int leadingZeros = __builtin_clz(distTimesScale > 0 ? distTimesScale : -distTimesScale);
+    
+    surface->zInverseShift = (30 - leadingZeros) - 1;
+    
+    int totalShift = surface->zInverseShift + 30;
+    
+    // This 64 bit division hurts...
+    int invDistTimesScale = (long long)(1LL << totalShift) / distTimesScale;
+    
+    int centerX = viewport->screenPos.x + viewport->w / 2;
+    int centerY = viewport->screenPos.y + viewport->h / 2;
+    
+    surface->zInverseXStep = ((long long)planeInViewSpace.normal.x * invDistTimesScale) >> 16;
+    surface->zInverseYStep = ((long long)planeInViewSpace.normal.y * invDistTimesScale) >> 16;
+    
+    int shiftDown = totalShift - 30;
+    
+    surface->zInverseOrigin = ((((long long)(planeInViewSpace.normal.z * scale) * invDistTimesScale) >> 16) - (long long)centerX * surface->zInverseXStep - (long long)centerY * surface->zInverseYStep) >> shiftDown;
+}
+
+void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspSurface* bspSurface)
+{
     X_Vec3 clippedV[100];
     X_Polygon3 clipped = x_polygon3_make(clippedV, 100);
     
-    if(!x_polygon3_clip_to_frustum(&polygon, context->renderContext->viewFrustum, &clipped))
+    if(!x_polygon3_clip_to_frustum(polygon, context->renderContext->viewFrustum, &clipped))
     {
         return;
     }
@@ -167,9 +193,19 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
     {
         X_Vec3 transformed;
         x_mat4x4_transform_vec3(context->renderContext->viewMatrix, clipped.vertices + i, &transformed);
+        clipped.vertices[i] = transformed;
+        
+        printf("Real inv z %d: %f\n", i, 1.0 / transformed.z);
         
         x_viewport_project(&context->renderContext->cam->viewport, &transformed, v2d + i);
         x_viewport_clamp_vec2(&context->renderContext->cam->viewport, v2d + i);
+    }
+    
+    x_ae_surface_calculate_inverse_z_gradient(surface, &clipped, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
+    
+    for(int i = 0; i < clipped.totalVertices; ++i)
+    {
+        printf("Calc inv z %d: %f\n", i, (float)x_ae_surface_calculate_inverse_z_at_screen_point(surface, v2d[i].x, v2d[i].y) / (1 << 30));
     }
     
     for(int i = 0; i < clipped.totalVertices; ++i)
@@ -180,12 +216,37 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
     }
 }
 
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface)
+{
+    x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
+ 
+    X_Vec3 v3d[100];
+    X_Polygon3 polygon = x_polygon3_make(v3d, 100);
+  
+    polygon.totalVertices = 0;
+    
+    for(int i = 0; i < totalEdges; ++i)
+    {
+        if(!edge_is_flipped(edgeIds[i]))
+            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[edgeIds[i]].v[1]].v;
+        else
+            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[0]].v;
+    }
+    
+    x_ae_context_add_polygon(context, &polygon, bspSurface);
+}
+
 static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
 {
     if(right < left)
         X_SWAP(left, right);
     
     memset(context->screen->canvas.tex.texels + x_texture_texel_index(&context->screen->canvas.tex, left, y), surface->bspSurface->color, right - left);
+    
+    for(int i = left; i < right; ++i)
+    {
+        g_zbuf[y][i] = x_ae_surface_calculate_inverse_z_at_screen_point(surface, i, y);
+    }
 }
 
 static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
@@ -316,5 +377,32 @@ void x_ae_context_scan_edges(X_AE_Context* context)
         
         x_ae_context_process_edges(context, i);
     }
+}
+
+void add_ae_test_polygon(X_AE_Context* context)
+{
+    int w = 500;
+    int h = 500;
+    int z = 500;
+    
+    X_Vec3 v[4] = 
+    {
+        x_vec3_make(-w, -h, z),
+        x_vec3_make(w, -h, z),
+        x_vec3_make(w, h, z),
+        x_vec3_make(-w, h, z)
+    };
+    
+    X_Polygon3 p = x_polygon3_make(v, 4);
+    static X_BspSurface surface;
+    static X_BspPlane plane;
+    
+    surface.plane = &plane;
+    surface.color = 128;
+    x_plane_init_from_three_points(&plane.plane, v + 0, v + 1, v + 2);
+    
+    surface.flags = 0;
+    
+    x_ae_context_add_polygon(context, &p, &surface);
 }
 

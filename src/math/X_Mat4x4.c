@@ -232,6 +232,13 @@ void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* 
     dest->z = res.z / res.w;
 }
 
+void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const X_Vec3_fp16x16* normal, X_Vec3_fp16x16* dest)
+{
+    dest->x = x_fp16x16_mul(normal->x, mat->elem[0][0]) + x_fp16x16_mul(normal->y, mat->elem[0][1]) + x_fp16x16_mul(normal->z, mat->elem[0][2]);
+    dest->y = x_fp16x16_mul(normal->x, mat->elem[1][0]) + x_fp16x16_mul(normal->y, mat->elem[1][1]) + x_fp16x16_mul(normal->z, mat->elem[1][2]);
+    dest->z = x_fp16x16_mul(normal->x, mat->elem[2][0]) + x_fp16x16_mul(normal->y, mat->elem[2][1]) + x_fp16x16_mul(normal->z, mat->elem[2][2]);
+}
+
 void x_mat4x4_print(const X_Mat4x4* mat)
 {
     for(int i = 0; i < 4; ++i)
