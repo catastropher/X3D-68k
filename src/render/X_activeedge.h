@@ -20,6 +20,9 @@
 #include "render/X_RenderContext.h"
 #include "X_Screen.h"
 #include "level/X_BspLevel.h"
+#include "X_span.h"
+
+#define X_AE_SURFACE_MAX_SPANS 1024
 
 typedef struct X_AE_Surface
 {
@@ -31,11 +34,15 @@ typedef struct X_AE_Surface
     struct X_AE_Surface* prev;
     
     X_BspSurface* bspSurface;
+
+    X_AE_Span spans[X_AE_SURFACE_MAX_SPANS];
+    int totalSpans;
     
-    int zInverseShift;
-    int zInverseXStep;
+    int zInverseShift;          // Number of places we need to shift down zInverseXStep and zInverseYStep to make them an x_fp0x30
+    
+    int zInverseXStep;          // Fixed point number with a decimal point that is shifted
     int zInverseYStep;
-    int zInverseOrigin;
+    x_fp0x30 zInverseOrigin;
 } X_AE_Surface;
 
 typedef struct X_AE_Edge

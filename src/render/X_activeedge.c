@@ -19,6 +19,7 @@
 #include "X_activeedge.h"
 #include "level/X_BspLevel.h"
 #include "geo/X_Polygon3.h"
+#include "X_span.h"
 
 float g_zbuf[480][640];
 
@@ -136,9 +137,7 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_P
     X_Vec3_fp16x16 planeNormal = surface->bspSurface->plane->plane.normal;
     
     if(surface->bspSurface->flags & X_BSPSURFACE_FLIPPED)
-    {
         planeNormal = x_vec3_neg(&planeNormal);
-    }
     
     x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &planeInViewSpace.normal);    
     x_plane_init_from_normal_and_point(&planeInViewSpace, &planeInViewSpace.normal, polygonInViewSpace->vertices + 0);
@@ -152,7 +151,6 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_P
         return;
     
     int leadingZeros = __builtin_clz(distTimesScale > 0 ? distTimesScale : -distTimesScale);
-    
     surface->zInverseShift = (30 - leadingZeros) - 1;
     
     int totalShift = surface->zInverseShift + 30;
@@ -168,7 +166,12 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_P
     
     int shiftDown = totalShift - 30;
     
-    surface->zInverseOrigin = ((((long long)(planeInViewSpace.normal.z * scale) * invDistTimesScale) >> 16) - (long long)centerX * surface->zInverseXStep - (long long)centerY * surface->zInverseYStep) >> shiftDown;
+    surface->zInverseOrigin = 
+    (
+        (((long long)(planeInViewSpace.normal.z * scale) * invDistTimesScale) >> 16) -
+        (long long)centerX * surface->zInverseXStep -
+        (long long)centerY * surface->zInverseYStep
+    ) >> shiftDown;
 }
 
 void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspSurface* bspSurface)
@@ -184,6 +187,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     
     X_AE_Surface* surface = context->nextAvailableSurface++;
     
+    surface->totalSpans = 0;
     surface->bspKey = context->nextBspKey++;
     surface->bspSurface = bspSurface;
     surface->crossCount = 0;
@@ -195,18 +199,12 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
         x_mat4x4_transform_vec3(context->renderContext->viewMatrix, clipped.vertices + i, &transformed);
         clipped.vertices[i] = transformed;
         
-        printf("Real inv z %d: %f\n", i, 1.0 / transformed.z);
-        
         x_viewport_project(&context->renderContext->cam->viewport, &transformed, v2d + i);
         x_viewport_clamp_vec2(&context->renderContext->cam->viewport, v2d + i);
     }
     
     x_ae_surface_calculate_inverse_z_gradient(surface, &clipped, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
     
-    for(int i = 0; i < clipped.totalVertices; ++i)
-    {
-        printf("Calc inv z %d: %f\n", i, (float)x_ae_surface_calculate_inverse_z_at_screen_point(surface, v2d[i].x, v2d[i].y) / (1 << 30));
-    }
     
     for(int i = 0; i < clipped.totalVertices; ++i)
     {
@@ -241,12 +239,21 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
     if(right < left)
         X_SWAP(left, right);
     
-    memset(context->screen->canvas.tex.texels + x_texture_texel_index(&context->screen->canvas.tex, left, y), surface->bspSurface->color, right - left);
+    //memset(context->screen->canvas.tex.texels + x_texture_texel_index(&context->screen->canvas.tex, left, y), surface->bspSurface->color, right - left);
     
-    for(int i = left; i < right; ++i)
-    {
-        g_zbuf[y][i] = x_ae_surface_calculate_inverse_z_at_screen_point(surface, i, y);
-    }
+//     for(int i = left; i < right; ++i)
+//     {
+//         g_zbuf[y][i] = x_ae_surface_calculate_inverse_z_at_screen_point(surface, i, y);
+//     }
+    
+    X_AE_Span* span = surface->spans + surface->totalSpans;
+    
+    span->x1 = left;
+    span->x2 = right;
+    span->y = y;
+    
+    if(surface->totalSpans + 1 < X_AE_SURFACE_MAX_SPANS)
+        ++surface->totalSpans;
 }
 
 static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
@@ -376,6 +383,13 @@ void x_ae_context_scan_edges(X_AE_Context* context)
         }
         
         x_ae_context_process_edges(context, i);
+    }
+    
+    for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
+    {
+        X_AE_SurfaceRenderContext surfaceRenderContext;
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, 0);
+        x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
 }
 

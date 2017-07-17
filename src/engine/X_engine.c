@@ -91,8 +91,8 @@ void x_engine_render_frame(X_EngineContext* engineContext)
         x_ae_context_reset(&engineContext->renderer.activeEdgeContext, &renderContext);
         
         x_cameraobject_render(cam, &renderContext);
-        
-        add_ae_test_polygon(&engineContext->renderer.activeEdgeContext);
+       
+        //add_ae_test_polygon(&engineContext->renderer.activeEdgeContext);
         
         x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
     }

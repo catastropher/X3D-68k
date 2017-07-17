@@ -93,12 +93,15 @@ static void x_bsploaderfacetexture_read_from_file(X_BspLoaderFaceTexture* faceTe
 {
     X_Vec3_float u;
     x_file_read_vec3_float(file, &u);
-    faceTexture->uOrientation = x_vec3_float_to_vec3(&u);
+    u = x_bsplevelloader_convert_coordinate_float(&u);
+    faceTexture->uOrientation = x_vec3_float_to_vec3_fp16x16(&u);
     faceTexture->uOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
     
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);
-    faceTexture->vOrientation = x_vec3_float_to_vec3(&v);
+    v = x_bsplevelloader_convert_coordinate_float(&v);
+    
+    faceTexture->vOrientation = x_vec3_float_to_vec3_fp16x16(&v);
     faceTexture->vOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
     
     faceTexture->textureId = x_file_read_le_int32(file);
