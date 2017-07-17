@@ -124,27 +124,7 @@ void update_screen(Context* context)
     }
 #else
     
-    if(!key_is_down(SDLK_RETURN))
-        x_texture_to_sdl_surface(&context->context->screen.canvas.tex, context->context->screen.palette, context->screen);
-    else
-    {
-    
-    
-        for(int i = 0; i < 480; ++i)
-        {
-            for(int j = 0; j < 640; ++j)
-            {
-                int in = g_zbuf[i][j] * 255.0 / (1LL << 30) * 100;
-                
-                if(in < 0) in = 0;
-                else if(in > 255) in = 255;
-                
-                unsigned int pix = SDL_MapRGB(context->screen->format, in, in, in);
-                
-                sdl_putpixel(context->screen, j, i, pix);
-            }
-        }
-    }
+    x_texture_to_sdl_surface(&context->context->screen.canvas.tex, context->context->screen.palette, context->screen);
     
     if(record && (x_enginecontext_get_frame(context->context) % recordFrame) == 0) {
         char fileName[512];

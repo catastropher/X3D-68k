@@ -79,20 +79,56 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     x_ae_surfacerendercontext_init_tdivz(context);
 }
 
-static x_fp16x16 calculate_u_div_z(X_AE_SurfaceRenderContext* context, int x, int y)
+static inline x_fp16x16 calculate_u_div_z(X_AE_SurfaceRenderContext* context, int x, int y)
 {
     return x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin;
 }
 
-static x_fp16x16 calculate_v_div_z(X_AE_SurfaceRenderContext* context, int x, int y)
+static inline x_fp16x16 calculate_v_div_z(X_AE_SurfaceRenderContext* context, int x, int y)
 {
     return x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin;
 }
 
 float g_zbuf[480][640];
 
+static inline void calculate_u_and_v_at_screen_point(X_AE_SurfaceRenderContext* context, int x, int y, x_fp16x16* u, x_fp16x16* v)
+{
+    x_fp16x16 uDivZ = calculate_u_div_z(context, x, y);
+    x_fp16x16 vDivZ = calculate_v_div_z(context, x, y);
+    x_fp0x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y)) >> 13;
+    
+    if(invZ == 0)
+        return;
+    
+    int z = (1 << 17) / invZ;
+        
+    *u = (uDivZ * z + context->sDivZ.adjust);
+    *v = (vDivZ * z + context->tDivZ.adjust);
+}
+
 static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
+    const x_fp16x16 recipTab[17] = 
+    {
+        0x7FFFFFFF,
+        X_FP16x16_ONE / 1,
+        X_FP16x16_ONE / 2,
+        X_FP16x16_ONE / 3,
+        X_FP16x16_ONE / 4,
+        X_FP16x16_ONE / 5,
+        X_FP16x16_ONE / 6,
+        X_FP16x16_ONE / 7,
+        X_FP16x16_ONE / 8,
+        X_FP16x16_ONE / 9,
+        X_FP16x16_ONE / 10,
+        X_FP16x16_ONE / 11,
+        X_FP16x16_ONE / 12,
+        X_FP16x16_ONE / 13,
+        X_FP16x16_ONE / 14,
+        X_FP16x16_ONE / 15,
+        X_FP16x16_ONE / 16,
+    };
+    
     X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
     X_Color* scanline = screenTex->texels + span->y * screenTex->w;
     
@@ -100,49 +136,87 @@ static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderConte
     X_BspLevel* level = context->renderContext->level;
     x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, 0, &faceTex);
     
-    for(int i = span->x1; i < span->x2; ++i)
+    int count = span->x2 - span->x1;
+    if(count == 0)
+        return;
+    
+    x_fp16x16 prevU;
+    x_fp16x16 prevV;
+    
+    int y = span->y;
+    
+    calculate_u_and_v_at_screen_point(context, span->x1, y, &prevU, &prevV);
+    
+    X_Color* pixel = scanline + span->x1;
+    X_Color* pixelEnd = scanline + span->x2;
+    
+    int SHIFT = 4;
+    int COUNT = (1 << SHIFT);
+    
+    x_fp16x16 nextU;
+    x_fp16x16 nextV;
+    
+    x_fp16x16 u;
+    x_fp16x16 v;
+    
+    x_fp16x16 du;
+    x_fp16x16 dv;
+    
+    X_Color* end;
+    
+    int uMask = faceTex.w - 1;
+    int vMask = faceTex.h - 1;
+    
+    do
     {
-        x_fp16x16 uDivZ = calculate_u_div_z(context, i, span->y);
-        x_fp16x16 vDivZ = calculate_v_div_z(context, i, span->y);
-        x_fp0x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, i, span->y)) >> 13;
         
-        if(invZ == 0)
-            continue;
+        calculate_u_and_v_at_screen_point(context, pixel - scanline + COUNT, y, &nextU, &nextV);
         
-        int z = (1 << 17) / invZ;
+        u = prevU;
+        v = prevV;
         
-        int u = (uDivZ * z + context->sDivZ.adjust) >> 16;
-        int v = (vDivZ * z + context->tDivZ.adjust) >> 16;
+        du = (nextU - prevU) >> SHIFT;
+        dv = (nextV - prevV) >> SHIFT;
         
-        //x_fp16x16 u = ((long long)uDivZ * invZ) >> 16;
-        //x_fp16x16 v = ((long long)vDivZ * invZ) >> 16;
+        end = pixel + COUNT;
+        if(end > pixelEnd)
+            end = pixelEnd;
         
+draw_group:
         
-        
-        //int u = (uDivZ / 65536.0) / ((float)invZ / (1 << 30)) + (context->sDivZ.adjust / 65536.0);
-        //int v = (vDivZ / 65536.0) / ((float)invZ / (1 << 30)) + (context->tDivZ.adjust / 65536.0);
-        
-//         if(i == 0)
-//             printf("U: %d V: %d\n", u, v);
-        
-        if(u >= 0)
-            u = (u % faceTex.w);
-        else
+        do
         {
-            while(u < 0)
-                u += faceTex.w;
-        }
+            int uu = u >> 16;
+            int vv = v >> 16;
+            
+            uu = uu & uMask;
+            vv = vv & vMask;
+            
+            *pixel++ = x_texture_get_texel(&faceTex, uu, vv);
+            u += du;
+            v += dv;
+        } while(pixel < end);
         
+        prevU = nextU;
+        prevV = nextV;
+    } while(pixel + COUNT < pixelEnd);
+    
+    if(pixel != pixelEnd)
+    {
+        end = pixelEnd;
+        calculate_u_and_v_at_screen_point(context, span->x2 - 1, y, &nextU, &nextV);
         
-        if(v >= 0)
-            v = (v % faceTex.h);
-        else
-        {
-             while(v < 0)
-                 v += faceTex.h;
-        }
+        int count = pixelEnd - pixel;
+//         du = ((long long)(nextU - prevU) * recipTab[count]) >> 16;
+//         dv = ((long long)(nextV - prevV) * recipTab[count]) >> 16;
         
-        scanline[i] = x_texture_get_texel(&faceTex, u, v);
+        du = (nextU - prevU) / count;
+        dv = (nextV - prevV) / count;
+        
+        u = prevU;
+        v = prevV;
+        
+        goto draw_group;
     }
 }
 
