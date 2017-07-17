@@ -36,6 +36,12 @@ static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* cont
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
     sDivZ->origin = (sAxis.z >> context->mipLevel) - centerX * sDivZ->uOrientationStep - centerY * sDivZ->vOrientationStep;
+    
+    X_Vec3 transormed;
+    X_Vec3 pos = x_vec3_neg(&x_bsplevel_get_level_model(context->renderContext->level)->origin);
+    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &pos, &transormed);
+    
+    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - (context->surface->bspSurface->textureMinCoord.x << 16) + (context->faceTexture->uOffset << 16);
 }
 
 static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* context)
@@ -53,6 +59,12 @@ static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* cont
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
     tDivZ->origin = (tAxis.z >> context->mipLevel) - centerX * tDivZ->uOrientationStep - centerY * tDivZ->vOrientationStep;
+    
+    X_Vec3 transormed;
+    X_Vec3 pos = x_bsplevel_get_level_model(context->renderContext->level)->origin;
+    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &pos, &transormed);
+    
+    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - (context->surface->bspSurface->textureMinCoord.y << 16) + (context->faceTexture->vOffset << 16);
 }
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)
@@ -92,13 +104,23 @@ static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderConte
     {
         x_fp16x16 uDivZ = calculate_u_div_z(context, i, span->y);
         x_fp16x16 vDivZ = calculate_v_div_z(context, i, span->y);
-        x_fp0x30 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, i, span->y);
+        x_fp0x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, i, span->y)) >> 13;
+        
+        if(invZ == 0)
+            continue;
+        
+        int z = (1 << 17) / invZ;
+        
+        int u = (uDivZ * z + context->sDivZ.adjust) >> 16;
+        int v = (vDivZ * z + context->tDivZ.adjust) >> 16;
         
         //x_fp16x16 u = ((long long)uDivZ * invZ) >> 16;
         //x_fp16x16 v = ((long long)vDivZ * invZ) >> 16;
         
-        int u = (uDivZ / 65536.0) / ((float)invZ / (1 << 30));
-        int v = (vDivZ / 65536.0) / ((float)invZ / (1 << 30));
+        
+        
+        //int u = (uDivZ / 65536.0) / ((float)invZ / (1 << 30)) + (context->sDivZ.adjust / 65536.0);
+        //int v = (vDivZ / 65536.0) / ((float)invZ / (1 << 30)) + (context->tDivZ.adjust / 65536.0);
         
 //         if(i == 0)
 //             printf("U: %d V: %d\n", u, v);

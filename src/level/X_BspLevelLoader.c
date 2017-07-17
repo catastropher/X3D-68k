@@ -193,9 +193,9 @@ static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* fil
     
     for(int i = 0; i < 3; ++i)
         model->maxs[i] = x_file_read_le_float32(file);
-    
-    for(int i = 0; i < 3; ++i)
-        model->origin[i] = x_file_read_le_float32(file);
+
+    x_file_read_vec3_float(file, &model->origin);
+    model->origin = x_bsplevelloader_convert_coordinate_float(&model->origin);
     
     model->rootBspNode = x_file_read_le_int32(file);
     model->rootClipNode = x_file_read_le_int32(file);
@@ -473,6 +473,53 @@ static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* 
         level->vertices[i].v = loader->vertices[i].v;
 }
 
+static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, X_Vec3* v)
+{
+    return x_vec2_make
+    (
+        x_vec3_fp16x16_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
+        x_vec3_fp16x16_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
+     );
+}
+
+static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspLevel* level)
+{
+    X_BspBoundRect textureCoordsBoundRect;
+    x_bspboundrect_init(&textureCoordsBoundRect);
+    
+    for(int i = 0; i < surface->totalEdges; ++i)
+    {
+        X_BspVertex* v;
+        int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + i];
+        
+        if(edgeId >= 0)
+            v = level->vertices + level->edges[edgeId].v[0];
+        else
+            v = level->vertices + level->edges[-edgeId].v[1];
+        
+        X_Vec2 textureCoord = x_bspsurface_calculate_texture_coordinate_of_vertex(surface, &v->v);
+        x_bspboundrect_add_point(&textureCoordsBoundRect, textureCoord);
+    }
+    
+    textureCoordsBoundRect.v[0].x /= 16;
+    textureCoordsBoundRect.v[0].x /= 16;
+    
+    textureCoordsBoundRect.v[1].x = (textureCoordsBoundRect.v[0].x + 15) / 16;
+    textureCoordsBoundRect.v[1].y = (textureCoordsBoundRect.v[0].y + 15) / 16;
+    
+    surface->textureMinCoord = x_vec2_make
+    (
+        textureCoordsBoundRect.v[0].x * 16,
+        textureCoordsBoundRect.v[0].y * 16
+    );
+        
+    surface->textureExtent = x_vec2_make
+    (
+        (textureCoordsBoundRect.v[1].x - textureCoordsBoundRect.v[0].x) * 16,
+        (textureCoordsBoundRect.v[1].y - textureCoordsBoundRect.v[0].y) * 16
+    );
+}
+
 static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < loader->totalFaces; ++i)
@@ -490,6 +537,8 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
             surface->flags |= X_BSPSURFACE_FLIPPED;
         
         surface->faceTexture = level->faceTextures + face->texInfo;
+        
+        x_bspsurface_calculate_texture_extents(surface, level);
     }
 }
 
@@ -561,6 +610,8 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         
         model->rootBspNode = x_bsplevel_get_node_from_id(level, loadModel->rootBspNode);
         model->totalBspLeaves = loadModel->totalBspLeaves;
+        
+        model->origin = x_vec3_float_to_vec3(&loadModel->origin);
         
         x_bspnode_assign_parent(model->rootBspNode, NULL);
     }
@@ -664,7 +715,6 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_vertices(level, loader);
     x_bsplevel_init_edges(level, loader);
     x_bsplevel_init_planes(level, loader);
-    x_bsplevel_init_surfaces(level, loader);
     x_bsplevel_init_marksurfaces(level, loader);
     x_bsplevel_init_leaves(level, loader);
     x_bsplevel_init_nodes(level, loader);
@@ -672,6 +722,7 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_surfacedgeids(level, loader);
     x_bsplevel_init_textures(level, loader);
     x_bsplevel_init_facetextures(level, loader);
+    x_bsplevel_init_surfaces(level, loader);
 }
 
 static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)

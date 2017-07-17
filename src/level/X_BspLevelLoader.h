@@ -155,7 +155,7 @@ typedef struct X_BspLoaderModel
 {
     float mins[3];
     float maxs[3];
-    float origin[3];
+    X_Vec3_float origin;
     int rootBspNode;
     int rootClipNode;
     int secondRootClipNode;     // TODO: What is this used for?

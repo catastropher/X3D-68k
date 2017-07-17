@@ -18,6 +18,7 @@
 #include "geo/X_Vec3.h"
 #include "render/X_Texture.h"
 #include "geo/X_Plane.h"
+#include "util/X_util.h"
 
 struct X_RenderContext;
 
@@ -50,6 +51,11 @@ typedef struct X_BspBoundBox
     X_Vec3 v[2];
 } X_BspBoundBox;
 
+typedef struct X_BspBoundRect
+{
+    X_Vec2 v[2];
+} X_BspBoundRect;
+
 typedef struct X_BspPlane
 {
     X_Plane plane;
@@ -77,6 +83,9 @@ typedef struct X_BspSurface
     
     X_Color color;
     X_BspFaceTexture* faceTexture;
+    
+    X_Vec2 textureMinCoord;
+    X_Vec2 textureExtent;
 } X_BspSurface;
 
 typedef struct X_BspEdge
@@ -144,6 +153,8 @@ typedef struct X_BspModel
     // TODO: add clip node
     X_BspSurface* faces;
     int totalFaces;
+    
+    X_Vec3 origin;
 } X_BspModel;
 
 typedef struct X_BspLevel
@@ -241,5 +252,22 @@ static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
 static inline _Bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
 {
     return surface->lastVisibleFrame == currentFrame;
+}
+
+static inline void x_bspboundrect_init(X_BspBoundRect* rect)
+{
+    rect->v[0].x = 0x7FFFFFFF;
+    rect->v[0].y = 0x7FFFFFFF;
+    rect->v[1].x = -0x7FFFFFFF;
+    rect->v[1].y = -0x7FFFFFFF;
+}
+
+static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, X_Vec2 point)
+{
+    rect->v[0].x = X_MIN(rect->v[0].x, point.x);
+    rect->v[0].y = X_MIN(rect->v[0].y, point.y);
+    
+    rect->v[1].x = X_MAX(rect->v[1].x, point.x);
+    rect->v[1].y = X_MAX(rect->v[1].y, point.y);
 }
 
