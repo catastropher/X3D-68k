@@ -388,7 +388,7 @@ void x_ae_context_scan_edges(X_AE_Context* context)
     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
     {
         X_AE_SurfaceRenderContext surfaceRenderContext;
-        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, 0);
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, (context->renderContext->currentFrame / 200) % 4);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
 }

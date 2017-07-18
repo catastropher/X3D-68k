@@ -41,7 +41,12 @@ static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* cont
     X_Vec3 pos = x_vec3_neg(&x_bsplevel_get_level_model(context->renderContext->level)->origin);
     x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &pos, &transormed);
     
-    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - (context->surface->bspSurface->textureMinCoord.x << 16) + (context->faceTexture->uOffset << 16);
+    transormed.x >>= context->mipLevel;
+    transormed.y >>= context->mipLevel;
+    transormed.z >>= context->mipLevel;
+    
+    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.x << 16) >> context->mipLevel) +
+        ((context->faceTexture->uOffset << 16) >> context->mipLevel);
 }
 
 static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* context)
@@ -64,7 +69,12 @@ static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* cont
     X_Vec3 pos = x_bsplevel_get_level_model(context->renderContext->level)->origin;
     x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &pos, &transormed);
     
-    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - (context->surface->bspSurface->textureMinCoord.y << 16) + (context->faceTexture->vOffset << 16);
+    transormed.x >>= context->mipLevel;
+    transormed.y >>= context->mipLevel;
+    transormed.z >>= context->mipLevel;
+    
+    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.y << 16) >> context->mipLevel) + 
+        ((context->faceTexture->vOffset << 16) >> context->mipLevel);
 }
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)
@@ -134,7 +144,7 @@ static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderConte
     
     X_Texture faceTex;
     X_BspLevel* level = context->renderContext->level;
-    x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, 0, &faceTex);
+    x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &faceTex);
     
     int count = span->x2 - span->x1;
     if(count == 0)
@@ -207,11 +217,11 @@ draw_group:
         calculate_u_and_v_at_screen_point(context, span->x2 - 1, y, &nextU, &nextV);
         
         int count = pixelEnd - pixel;
-//         du = ((long long)(nextU - prevU) * recipTab[count]) >> 16;
-//         dv = ((long long)(nextV - prevV) * recipTab[count]) >> 16;
+        du = ((long long)(nextU - prevU) * recipTab[count]) >> 16;
+        dv = ((long long)(nextV - prevV) * recipTab[count]) >> 16;
         
-        du = (nextU - prevU) / count;
-        dv = (nextV - prevV) / count;
+//         du = (nextU - prevU) / count;
+//         dv = (nextV - prevV) / count;
         
         u = prevU;
         v = prevV;
