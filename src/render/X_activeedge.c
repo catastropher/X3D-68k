@@ -220,11 +220,14 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     X_Vec3 clippedV[100];
     X_Polygon3 clipped = x_polygon3_make(clippedV, 100);
     
-    if(!x_polygon3_clip_to_frustum(polygon, context->renderContext->viewFrustum, &clipped))
+    x_polygon3_to_polygon3_fp16x16(polygon, polygon);
+    
+    if(!x_polygon3_fp16x16_clip_to_frustum(polygon, context->renderContext->viewFrustum, &clipped))
     {
         return;
     }
  
+    x_polygon3_fp16x16_to_polygon3(&clipped, &clipped);
     
     X_AE_Surface* surface = context->nextAvailableSurface++;
     

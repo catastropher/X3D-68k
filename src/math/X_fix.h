@@ -18,7 +18,7 @@
 typedef int x_fp16x16;
 typedef int x_fp24x8;
 typedef long long int x_fp32x32;
-typedef int x_fp0x30;
+typedef int x_fp2x30;
 
 #define X_FP16x16_ONE 0x10000
 #define X_FP16x16_HALF (X_FP16x16_ONE / 2)
@@ -63,9 +63,14 @@ static inline x_fp16x16 x_fp16x16_mul_three(x_fp16x16 a, x_fp16x16 b, x_fp16x16 
     return x_fp16x16_mul(a, x_fp16x16_mul(b, c));
 }
 
-static inline int x_lerp(int x0, int x1, x_fp16x16 t)
+static inline int x_int_lerp(int x0, int x1, x_fp16x16 t)
 {
     return x0 + (((x1 - x0) * t) >> 16);
+}
+
+static inline x_fp16x16 x_fp16x16_lerp(x_fp16x16 x0, x_fp16x16 x1, x_fp16x16 t)
+{
+    return x0 + x_fp16x16_mul(x1 - x0, t);
 }
 
 static inline float x_fp16x16_to_float(x_fp16x16 val)

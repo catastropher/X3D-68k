@@ -42,7 +42,7 @@ typedef struct X_AE_Surface
     
     int zInverseXStep;          // Fixed point number with a decimal point that is shifted
     int zInverseYStep;
-    x_fp0x30 zInverseOrigin;
+    x_fp2x30 zInverseOrigin;
 } X_AE_Surface;
 
 typedef struct X_AE_Edge
@@ -108,7 +108,7 @@ void x_ae_context_scan_edges(X_AE_Context* context);
 
 static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {
-    x_fp0x30 temp = ((long long)x * surface->zInverseXStep + (long long)y * surface->zInverseYStep) >> surface->zInverseShift;
+    x_fp2x30 temp = ((long long)x * surface->zInverseXStep + (long long)y * surface->zInverseYStep) >> surface->zInverseShift;
 
     return temp + surface->zInverseOrigin;
 }

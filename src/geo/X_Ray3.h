@@ -19,14 +19,16 @@
 #include "math/X_fix.h"
 #include "render/X_Texture.h"
 
+struct X_Plane;
+struct X_Frustum;
+struct X_RenderContext;
+
 typedef struct X_Ray3
 {
     X_Vec3 v[2];
 } X_Ray3;
 
-struct X_Plane;
-struct X_Frustum;
-struct X_RenderContext;
+typedef X_Ray3 X_Ray3_fp16x16;
 
 _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const struct X_Plane* plane, X_Ray3* dest);
 _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const struct X_Frustum* frustum, X_Ray3* dest);
@@ -42,8 +44,15 @@ static inline X_Ray3 x_ray3_make(X_Vec3 start, X_Vec3 end)
 
 static inline void x_ray3_lerp(const X_Ray3* ray, x_fp16x16 t, X_Vec3* dest)
 {
-    dest->x = x_lerp(ray->v[0].x, ray->v[1].x, t);
-    dest->y = x_lerp(ray->v[0].y, ray->v[1].y, t);
-    dest->z = x_lerp(ray->v[0].z, ray->v[1].z, t);
+    dest->x = x_int_lerp(ray->v[0].x, ray->v[1].x, t);
+    dest->y = x_int_lerp(ray->v[0].y, ray->v[1].y, t);
+    dest->z = x_int_lerp(ray->v[0].z, ray->v[1].z, t);
+}
+
+static inline void x_ray3_fp16x16_lerp(const X_Ray3_fp16x16* ray, x_fp16x16 t, X_Vec3_fp16x16* dest)
+{
+    dest->x = x_fp16x16_lerp(ray->v[0].x, ray->v[1].x, t);
+    dest->y = x_fp16x16_lerp(ray->v[0].y, ray->v[1].y, t);
+    dest->z = x_fp16x16_lerp(ray->v[0].z, ray->v[1].z, t);
 }
 
