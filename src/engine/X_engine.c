@@ -86,7 +86,7 @@ void x_engine_render_frame(X_EngineContext* engineContext)
     {
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
-        x_ae_context_reset(&engineContext->renderer.activeEdgeContext, &renderContext);
+        x_ae_context_begin_render(&engineContext->renderer.activeEdgeContext, &renderContext);
         
         x_cameraobject_render(cam, &renderContext);
        

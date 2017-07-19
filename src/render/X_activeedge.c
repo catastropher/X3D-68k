@@ -64,29 +64,46 @@ void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdg
     x_ae_context_init_surfaces(context, surfacePoolSize);
 }
 
-void x_ae_context_reset(X_AE_Context* context, X_RenderContext* renderContext)
+static void x_ae_context_reset_active_edges(X_AE_Context* context)
 {
-    context->renderContext = renderContext;
-    
-    context->totalActiveEdges = 0;
     context->oldTotalActiveEdges = 0;
     
+    context->activeEdges[0] = &context->leftEdge;
+    context->activeEdges[1] = &context->rightEdge;
+    context->totalActiveEdges = 2;
+}
+
+static void x_ae_context_reset_background_surface(X_AE_Context* context)
+{
+    context->background.bspSurface = &context->backgroundBspSurface;
+    context->background.bspKey = 0x7FFFFFFF;
+    context->backgroundBspSurface.color = 255;
+}
+
+static void x_ae_context_reset_pools(X_AE_Context* context)
+{
     context->nextAvailableEdge = context->edgePool;
     context->nextAvailableSurface = context->surfacePool;
-    
+}
+
+static void x_ae_context_reset_new_edges(X_AE_Context* context)
+{
+    // TODO: we can probably reset these as we sort in the new edges for each scanline
     for(int i = 0; i < x_screen_h(context->screen); ++i)
     {
         context->newEdges[i].next = &context->rightEdge;
         context->newEdges[i].x = x_fp16x16_from_float(-0.5);
     }
+}
+
+void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext)
+{
+    context->renderContext = renderContext;
     
-    context->activeEdges[0] = &context->leftEdge;
-    context->activeEdges[1] = &context->rightEdge;
-    context->totalActiveEdges = 2;
-    
-    context->background.bspSurface = &context->backgroundBspSurface;
-    context->background.bspKey = 0x7FFFFFFF;
-    context->backgroundBspSurface.color = 255;
+    x_ae_context_reset_active_edges(context);
+    x_ae_context_reset_background_surface(context);
+    x_ae_context_reset_pools(context);
+    x_ae_context_reset_new_edges(context);
     
     context->nextBspKey = 0;
 }
@@ -94,7 +111,8 @@ void x_ae_context_reset(X_AE_Context* context, X_RenderContext* renderContext)
 static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY)
 {
     X_AE_Edge* edge = (X_AE_Edge*)&context->newEdges[startY];
-    
+ 
+    // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
     while(edge->next->x < newEdge->x)
         edge = edge->next;
     
@@ -102,27 +120,43 @@ static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_
     edge->next = newEdge;
 }
 
+static _Bool is_horizontal_edge(int height)
+{
+    return height == 0;
+}
+
+static _Bool is_leading_edge(int height)
+{
+    return height < 0;
+}
+
+static void x_ae_edge_init_position_variables(X_AE_Edge* edge, X_Vec2* top, X_Vec2* bottom)
+{
+    edge->x = x_fp16x16_from_int(top->x) + x_fp16x16_from_float(0.5);
+    edge->xSlope = x_int_div_as_fp16x16(bottom->x - top->x, bottom->y - top->y);
+    edge->endY = bottom->y - 1;
+}
+
+static X_AE_Edge* x_ae_context_allocate_edge(X_AE_Context* context)
+{
+    x_assert(context->nextAvailableEdge < context->edgePoolEnd, "AE out of edges");
+    return context->nextAvailableEdge++;
+}
+
 X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface)
 {
     int height = b->y - a->y;
-    if(height == 0)
+    if(is_horizontal_edge(height))
         return NULL;
     
-    x_assert(context->nextAvailableEdge < context->edgePoolEnd, "AE out of edges");
-    
-    X_AE_Edge* edge = context->nextAvailableEdge++;
-    edge->isLeadingEdge = height < 0;
+    X_AE_Edge* edge = x_ae_context_allocate_edge(context);
+    edge->isLeadingEdge = is_leading_edge(height);
     
     if(edge->isLeadingEdge)
         X_SWAP(a, b);
-    
-    edge->x = x_fp16x16_from_int(a->x) + x_fp16x16_from_float(0.5);
-    edge->xSlope = x_int_div_as_fp16x16(b->x - a->x, b->y - a->y);
-    edge->endY = b->y - 1;
+
     edge->surface = surface;
-    //edge->bspEdge = bspEdge;
-    //edge->frameCreated = context->renderContext->currentFrame;
-    
+    x_ae_edge_init_position_variables(edge, a, b);
     x_ae_context_add_edge_to_starting_scanline(context, edge, a->y);
     
     return edge;
@@ -133,18 +167,23 @@ static _Bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Polygon3* polygonInViewSpace, X_Viewport* viewport, X_Mat4x4* viewMatrix)
+static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3* pointOnSurface, X_Mat4x4* viewMatrix, X_Plane* dest)
 {
-    X_Plane planeInViewSpace;
-    X_Vec3_fp16x16 planeNormal = surface->bspSurface->plane->plane.normal;
+    X_Vec3_fp16x16 planeNormal = surface->plane->plane.normal;
     
-    if(surface->bspSurface->flags & X_BSPSURFACE_FLIPPED)
+    if(x_bspsurface_plane_is_flipped(surface))
         planeNormal = x_vec3_neg(&planeNormal);
     
-    x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &planeInViewSpace.normal);    
-    x_plane_init_from_normal_and_point(&planeInViewSpace, &planeInViewSpace.normal, polygonInViewSpace->vertices + 0);
+    x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);    
+    x_plane_init_from_normal_and_point(dest, &dest->normal, pointOnSurface);
+}
+
+static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3* pointOnSurface, X_Viewport* viewport, X_Mat4x4* viewMatrix)
+{
+    X_Plane planeInViewSpace;
+    x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, pointOnSurface, viewMatrix, &planeInViewSpace);
     
-    int dist = (-planeInViewSpace.d >> 16);
+    int dist = -x_fp16x16_to_int(planeInViewSpace.d);
     int scale = viewport->distToNearPlane;
     
     int distTimesScale = dist * scale;
@@ -205,7 +244,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
         x_viewport_clamp_vec2(&context->renderContext->cam->viewport, v2d + i);
     }
     
-    x_ae_surface_calculate_inverse_z_gradient(surface, &clipped, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
+    x_ae_surface_calculate_inverse_z_gradient(surface, clipped.vertices + 0, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
     
     
     for(int i = 0; i < clipped.totalVertices; ++i)

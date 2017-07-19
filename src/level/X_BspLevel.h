@@ -256,6 +256,11 @@ static inline _Bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surfa
     return surface->lastVisibleFrame == currentFrame;
 }
 
+static inline _Bool x_bspsurface_plane_is_flipped(const X_BspSurface* surface)
+{
+    return surface->flags & X_BSPSURFACE_FLIPPED;
+}
+
 //======================== pvs ========================
 
 static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
