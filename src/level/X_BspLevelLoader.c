@@ -128,7 +128,7 @@ static void x_bsploadervertex_read_from_file(X_BspLoaderVertex* vertex, X_File* 
     x_file_read_vec3_float(file, &v);
     
     v = x_bsplevelloader_convert_coordinate_float(&v);
-    vertex->v = x_vec3_float_to_vec3(&v);
+    vertex->v = x_vec3_float_to_vec3_fp16x16(&v);
 }
 
 static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)

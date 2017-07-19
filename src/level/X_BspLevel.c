@@ -52,8 +52,8 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
         
         X_Ray3 ray = x_ray3_make
         (
-            level->vertices[edge->v[0]].v,
-            level->vertices[edge->v[1]].v
+            x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[0]].v),
+            x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[1]].v)
         );
         
         x_ray3d_render(&ray, rcontext, color);
