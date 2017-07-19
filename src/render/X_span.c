@@ -46,7 +46,7 @@ static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* cont
     transormed.z >>= context->mipLevel;
     
     sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.x << 16) >> context->mipLevel) +
-        ((context->faceTexture->uOffset << 16) >> context->mipLevel);
+        ((context->faceTexture->uOffset) >> context->mipLevel);
 }
 
 static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* context)
@@ -74,7 +74,7 @@ static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* cont
     transormed.z >>= context->mipLevel;
     
     tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.y << 16) >> context->mipLevel) + 
-        ((context->faceTexture->vOffset << 16) >> context->mipLevel);
+        ((context->faceTexture->vOffset) >> context->mipLevel);
 }
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)

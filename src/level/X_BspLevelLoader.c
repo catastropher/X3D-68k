@@ -477,8 +477,8 @@ static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* 
 {
     return x_vec2_make
     (
-        x_vec3_fp16x16_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
-        x_vec3_fp16x16_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
+        (x_vec3_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset) >> 16,
+        (x_vec3_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset) >> 16
      );
 }
 
@@ -502,7 +502,7 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspL
     }
     
     textureCoordsBoundRect.v[0].x /= 16;
-    textureCoordsBoundRect.v[0].x /= 16;
+    textureCoordsBoundRect.v[0].y /= 16;
     
     textureCoordsBoundRect.v[1].x = (textureCoordsBoundRect.v[0].x + 15) / 16;
     textureCoordsBoundRect.v[1].y = (textureCoordsBoundRect.v[0].y + 15) / 16;
@@ -518,6 +518,8 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspL
         (textureCoordsBoundRect.v[1].x - textureCoordsBoundRect.v[0].x) * 16,
         (textureCoordsBoundRect.v[1].y - textureCoordsBoundRect.v[0].y) * 16
     );
+    
+    printf("Min coord: %d %d\n", surface->textureMinCoord.x, surface->textureMinCoord.y);
 }
 
 static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
