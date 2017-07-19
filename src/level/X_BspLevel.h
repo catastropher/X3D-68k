@@ -21,6 +21,7 @@
 #include "util/X_util.h"
 
 struct X_RenderContext;
+struct X_AE_Edge;
 
 typedef int X_BspVertexId;
 typedef int X_BspEdgeId;
@@ -91,6 +92,7 @@ typedef struct X_BspSurface
 typedef struct X_BspEdge
 {
     unsigned short v[2];
+    unsigned int cacheFlags;
 } X_BspEdge;
 
 typedef enum X_BspLeafContents
@@ -213,6 +215,8 @@ void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext)
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
 
+//======================== level ========================
+
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
 {
     return (level->flags & X_BSPLEVEL_LOADED) != 0;
@@ -228,6 +232,13 @@ static inline X_BspModel* x_bsplevel_get_level_model(const X_BspLevel* level)
     return level->models + 0;
 }
 
+static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
+{
+    return x_bsplevel_get_level_model(level)->rootBspNode;
+}
+
+//======================== node ========================
+
 static inline _Bool x_bspnode_is_leaf(const X_BspNode* node)
 {
     return node->contents < 0;
@@ -238,21 +249,21 @@ static inline _Bool x_bspnode_is_visible_this_frame(const X_BspNode* node, int c
     return node->lastVisibleFrame == currentFrame;
 }
 
-static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
-{
-    return x_bsplevel_get_level_model(level)->rootBspNode;
-}
- 
-static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
-{
-    return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
-}
-
+//======================== surface ========================
 
 static inline _Bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
 {
     return surface->lastVisibleFrame == currentFrame;
 }
+
+//======================== pvs ========================
+
+static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
+{
+    return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
+}
+
+//======================== boundrect ========================
 
 static inline void x_bspboundrect_init(X_BspBoundRect* rect)
 {

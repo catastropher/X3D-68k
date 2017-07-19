@@ -75,8 +75,6 @@ static void x_engine_draw_fps(X_EngineContext* context)
     x_canvas_draw_str(&context->screen.canvas, fpsStr, &context->mainFont, pos);
 }
 
-void add_ae_test_polygon(X_AE_Context* context);
-
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
@@ -92,8 +90,6 @@ void x_engine_render_frame(X_EngineContext* engineContext)
         
         x_cameraobject_render(cam, &renderContext);
        
-        //add_ae_test_polygon(&engineContext->renderer.activeEdgeContext);
-        
         x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
     }
     

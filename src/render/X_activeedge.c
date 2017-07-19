@@ -120,6 +120,8 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_
     edge->xSlope = x_int_div_as_fp16x16(b->x - a->x, b->y - a->y);
     edge->endY = b->y - 1;
     edge->surface = surface;
+    //edge->bspEdge = bspEdge;
+    //edge->frameCreated = context->renderContext->currentFrame;
     
     x_ae_context_add_edge_to_starting_scanline(context, edge, a->y);
     
@@ -236,16 +238,6 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
 
 static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
 {
-    if(right < left)
-        X_SWAP(left, right);
-    
-    //memset(context->screen->canvas.tex.texels + x_texture_texel_index(&context->screen->canvas.tex, left, y), surface->bspSurface->color, right - left);
-    
-//     for(int i = left; i < right; ++i)
-//     {
-//         g_zbuf[y][i] = x_ae_surface_calculate_inverse_z_at_screen_point(surface, i, y);
-//     }
-    
     X_AE_Span* span = surface->spans + surface->totalSpans;
     
     span->x1 = left;
@@ -376,47 +368,13 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
 void x_ae_context_scan_edges(X_AE_Context* context)
 {
     for(int i = 0; i < x_screen_h(context->screen); ++i)
-    {
-        for(int j = 0; j < context->nextAvailableSurface - context->surfacePool; ++j)
-        {
-            context->surfacePool[j].crossCount = 0;
-        }
-        
         x_ae_context_process_edges(context, i);
-    }
     
     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
     {
         X_AE_SurfaceRenderContext surfaceRenderContext;
-        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, (context->renderContext->currentFrame / 200) % 4);
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, 0);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
-}
-
-void add_ae_test_polygon(X_AE_Context* context)
-{
-    int w = 500;
-    int h = 500;
-    int z = 500;
-    
-    X_Vec3 v[4] = 
-    {
-        x_vec3_make(-w, -h, z),
-        x_vec3_make(w, -h, z),
-        x_vec3_make(w, h, z),
-        x_vec3_make(-w, h, z)
-    };
-    
-    X_Polygon3 p = x_polygon3_make(v, 4);
-    static X_BspSurface surface;
-    static X_BspPlane plane;
-    
-    surface.plane = &plane;
-    surface.color = 128;
-    x_plane_init_from_three_points(&plane.plane, v + 0, v + 1, v + 2);
-    
-    surface.flags = 0;
-    
-    x_ae_context_add_polygon(context, &p, &surface);
 }
 

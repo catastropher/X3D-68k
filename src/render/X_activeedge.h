@@ -56,6 +56,9 @@ typedef struct X_AE_Edge
     X_AE_Surface* surface;
     int endY;
     _Bool isLeadingEdge;
+    
+    X_BspEdge* bspEdge;
+    int frameCreated;
 } X_AE_Edge;
 
 typedef struct X_AE_DummyEdge
