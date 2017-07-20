@@ -19,6 +19,30 @@
 #include "render/X_Renderer.h"
 #include "X_BspLevel.h"
 #include "X_BspLevelLoader.h"
+#include "error/X_error.h"
+
+_Bool x_bspboundbox_outside_plane(X_BspBoundBox* box, X_Plane* plane)
+{
+    int px = (plane->normal.x > 0 ? 1 : 0);
+    int py = (plane->normal.y > 0 ? 1 : 0);
+    int pz = (plane->normal.z > 0 ? 1 : 0);
+    
+    X_Vec3 furthestPointAlongNormal = x_vec3_make(box->v[px].x, box->v[py].y, box->v[pz].z);
+    
+    return !x_plane_point_is_on_normal_facing_side(plane, &furthestPointAlongNormal);
+}
+
+// Based on an algorithm described at http://www.txutxi.com/?p=584
+_Bool x_bspboundbox_outside_frustum(X_BspBoundBox* box, X_Frustum* frustum)
+{
+    for(int i = 0; i < frustum->totalPlanes - 1; ++i)
+    {
+        if(x_bspboundbox_outside_plane(box, frustum->planes + i))
+            return 1;
+    }
+    
+    return 0;
+}
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
 {
@@ -28,8 +52,8 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
         
         X_Ray3 ray = x_ray3_make
         (
-            level->vertices[edge->v[0]].v,
-            level->vertices[edge->v[1]].v
+            x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[0]].v),
+            x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[1]].v)
         );
         
         x_ray3d_render(&ray, rcontext, color);
@@ -98,29 +122,7 @@ int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
 }
 
 void x_bsplevel_init_empty(X_BspLevel* level)
-{
-//     level->compressedPvsData = NULL;
-//     
-//     level->edges = NULL;
-//     level->totalEdges = 0;
-//     
-//     level->faces = NULL;
-//     level->totalFaces = 0;
-//     
-//     level->file.file = NULL;
-//     
-//     level->leaves = NULL;
-//     level->totalLeaves = 0;
-//     
-//     level->nodes = NULL;
-//     level->totalNodes = 0;
-//     
-//     level->planes = NULL;
-//     level->totalPlanes = 0;
-//     
-//     level->vertices = NULL;
-//     level->totalVertices = 0;
-    
+{    
     level->flags = 0;
 }
 
@@ -214,6 +216,12 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
             continue;
         
+        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
+        _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
+        
+        if(!onNormalSide ^ planeFlipped)
+            continue;
+        
         x_ae_context_add_level_polygon
         (
             &renderContext->renderer->activeEdgeContext,
@@ -222,22 +230,6 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
             surface->totalEdges,
             surface
         );
-        
-        
-//         for(int j = 0; j < surface->totalEdges; ++j)
-//         {
-//             int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
-//             
-//             X_BspEdge* edge = level->edges + abs(edgeId);
-//             
-//             X_Ray3 ray = x_ray3_make
-//             (
-//                 level->vertices[edge->v[0]].v,
-//                 level->vertices[edge->v[1]].v
-//             );
-//             
-//             x_ray3d_render(&ray, renderContext, 255);
-//         }
     }
 }
 
@@ -246,6 +238,9 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext)
     //printf("Enter node %d\n", (int)(x_bspnode_is_leaf(node) ? (X_) node - renderContext->level->nodes))
     
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
+        return;
+    
+    if(x_bspboundbox_outside_frustum(&node->boundBox, renderContext->viewFrustum))
         return;
     
     if(x_bspnode_is_leaf(node))
@@ -266,5 +261,37 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext)
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
     x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext);
+}
+
+void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
+{
+    x_assert(mipMapLevel >= 0 && mipMapLevel < 4, "Bad mip map request");
+    x_assert(textureId >= 0 && textureId < level->totalTextures, "Requested invalid texture");
+    
+    X_BspTexture* bspTex = level->textures + textureId;
+    
+    dest->w = bspTex->w >> mipMapLevel;
+    dest->h = bspTex->h >> mipMapLevel;
+    dest->texels = bspTex->mipTexels[mipMapLevel];
+}
+
+void x_bsplevel_cleanup(X_BspLevel* level)
+{
+    if(!x_bsplevel_file_is_loaded(level))
+        return;
+    
+    x_free(level->compressedPvsData);
+    x_free(level->edges);
+    x_free(level->faceTextures);
+    x_free(level->leaves);
+    x_free(level->markSurfaces);
+    x_free(level->models);
+    x_free(level->nodes);
+    x_free(level->planes);
+    x_free(level->surfaceEdgeIds);
+    x_free(level->surfaces);
+    x_free(level->textures);
+    x_free(level->textureTexels);
+    x_free(level->vertices);
 }
 

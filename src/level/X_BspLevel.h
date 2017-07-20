@@ -18,18 +18,44 @@
 #include "geo/X_Vec3.h"
 #include "render/X_Texture.h"
 #include "geo/X_Plane.h"
+#include "util/X_util.h"
 
 struct X_RenderContext;
+struct X_AE_Edge;
 
 typedef int X_BspVertexId;
 typedef int X_BspEdgeId;
 typedef int X_BspLeafId;
 
+#define X_BSPTEXTURE_MIP_LEVELS 4
+
+typedef struct X_BspTexture
+{
+    char name[16];
+    unsigned int w;
+    unsigned int h;
+    unsigned char* mipTexels[X_BSPTEXTURE_MIP_LEVELS];
+} X_BspTexture;
+
+typedef struct X_BspFaceTexture
+{
+    X_Vec3_fp16x16 uOrientation;    // Orientation of texture in 3D space
+    X_Vec3_fp16x16 vOrientation;
+    x_fp16x16 uOffset;
+    x_fp16x16 vOffset;
+    X_BspTexture* texture;
+    int flags;
+} X_BspFaceTexture;
+
 typedef struct X_BspBoundBox
 {
-    X_Vec3_short min;
-    X_Vec3_short max;
+    X_Vec3 v[2];
 } X_BspBoundBox;
+
+typedef struct X_BspBoundRect
+{
+    X_Vec2 v[2];
+} X_BspBoundRect;
 
 typedef struct X_BspPlane
 {
@@ -38,8 +64,13 @@ typedef struct X_BspPlane
 
 typedef struct X_BspVertex
 {
-    X_Vec3 v;
+    X_Vec3_fp16x16 v;
 } X_BspVertex;
+
+typedef enum X_BspSurfaceFlags
+{
+    X_BSPSURFACE_FLIPPED = 1,
+} X_BspSurfaceFlags;
 
 typedef struct X_BspSurface
 {
@@ -49,12 +80,19 @@ typedef struct X_BspSurface
     int firstEdgeId;
     int totalEdges;
     
+    X_BspSurfaceFlags flags;
+    
     X_Color color;
+    X_BspFaceTexture* faceTexture;
+    
+    X_Vec2 textureMinCoord;
+    X_Vec2 textureExtent;
 } X_BspSurface;
 
 typedef struct X_BspEdge
 {
     unsigned short v[2];
+    unsigned int cacheFlags;
 } X_BspEdge;
 
 typedef enum X_BspLeafContents
@@ -117,6 +155,8 @@ typedef struct X_BspModel
     // TODO: add clip node
     X_BspSurface* faces;
     int totalFaces;
+    
+    X_Vec3 origin;
 } X_BspModel;
 
 typedef struct X_BspLevel
@@ -150,8 +190,17 @@ typedef struct X_BspLevel
     int* surfaceEdgeIds;
     int totalSurfaceEdgeIds;
     
+    X_Color* textureTexels;
+    X_BspTexture* textures;
+    int totalTextures;
+    
+    X_BspFaceTexture* faceTextures;
+    int totalFaceTextures;
+    
     unsigned char* compressedPvsData;
 } X_BspLevel;
+
+void x_bsplevel_cleanup(X_BspLevel* level);
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
 void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, struct X_RenderContext* renderContext, X_Color color);
@@ -163,6 +212,10 @@ void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsi
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs);
 void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame);
 void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext);
+
+void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
+
+//======================== level ========================
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
 {
@@ -179,6 +232,13 @@ static inline X_BspModel* x_bsplevel_get_level_model(const X_BspLevel* level)
     return level->models + 0;
 }
 
+static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
+{
+    return x_bsplevel_get_level_model(level)->rootBspNode;
+}
+
+//======================== node ========================
+
 static inline _Bool x_bspnode_is_leaf(const X_BspNode* node)
 {
     return node->contents < 0;
@@ -189,19 +249,41 @@ static inline _Bool x_bspnode_is_visible_this_frame(const X_BspNode* node, int c
     return node->lastVisibleFrame == currentFrame;
 }
 
-static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
+//======================== surface ========================
+
+static inline _Bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
 {
-    return x_bsplevel_get_level_model(level)->rootBspNode;
+    return surface->lastVisibleFrame == currentFrame;
 }
- 
+
+static inline _Bool x_bspsurface_plane_is_flipped(const X_BspSurface* surface)
+{
+    return surface->flags & X_BSPSURFACE_FLIPPED;
+}
+
+//======================== pvs ========================
+
 static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
 {
     return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
 }
 
+//======================== boundrect ========================
 
-static inline _Bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
+static inline void x_bspboundrect_init(X_BspBoundRect* rect)
 {
-    return surface->lastVisibleFrame == currentFrame;
+    rect->v[0].x = 0x7FFFFFFF;
+    rect->v[0].y = 0x7FFFFFFF;
+    rect->v[1].x = -0x7FFFFFFF;
+    rect->v[1].y = -0x7FFFFFFF;
+}
+
+static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, X_Vec2 point)
+{
+    rect->v[0].x = X_MIN(rect->v[0].x, point.x);
+    rect->v[0].y = X_MIN(rect->v[0].y, point.y);
+    
+    rect->v[1].x = X_MAX(rect->v[1].x, point.x);
+    rect->v[1].y = X_MAX(rect->v[1].y, point.y);
 }
 

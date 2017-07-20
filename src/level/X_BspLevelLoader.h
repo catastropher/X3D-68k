@@ -52,6 +52,12 @@ typedef struct X_BspLoaderLump
     int length;
 } X_BspLoaderLump;
 
+typedef struct X_BspLoaderMipTextureLump
+{
+    int totalMipTextures;
+    int* mipTextureOffsets;
+} X_BspLoaderMipTextureLump;
+
 typedef struct X_BspLoaderHeader
 {
     int bspVersion;
@@ -77,13 +83,31 @@ typedef struct X_BspLoaderPlane
 
 typedef struct X_BspLoaderVertex
 {
-    X_Vec3 v;
+    X_Vec3_fp16x16 v;
 } X_BspLoaderVertex;
 
 typedef struct X_BspLoaderEdge
 {
     X_BspVertexId v[2];
 } X_BspLoaderEdge;
+
+typedef struct X_BspLoaderTexture
+{
+    char name[16];
+    int w;
+    int h;
+    unsigned int texelsOffset[X_BSPTEXTURE_MIP_LEVELS];
+} X_BspLoaderTexture;
+
+typedef struct X_BspLoaderFaceTexture
+{
+    X_Vec3_fp16x16 uOrientation;    // Orientation of texture in 3D space
+    X_Vec3_fp16x16 vOrientation;
+    x_fp16x16 uOffset;
+    x_fp16x16 vOffset;
+    int textureId;
+    int flags;
+} X_BspLoaderFaceTexture;
 
 #define X_BSPFACE_MAX_LIGHTMAPS 4
 
@@ -131,7 +155,7 @@ typedef struct X_BspLoaderModel
 {
     float mins[3];
     float maxs[3];
-    float origin[3];
+    X_Vec3_float origin;
     int rootBspNode;
     int rootClipNode;
     int secondRootClipNode;     // TODO: What is this used for?
@@ -165,6 +189,13 @@ typedef struct X_BspLevelLoader
     
     X_BspLoaderModel* models;
     int totalModels;
+    
+    X_Color* textureTexels;
+    X_BspLoaderTexture* textures;
+    int totalTextures;
+    
+    X_BspLoaderFaceTexture* faceTextures;
+    int totalFaceTextures;
     
     unsigned short* markSurfaces;
     int totalMarkSurfaces;

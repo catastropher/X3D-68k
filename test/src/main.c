@@ -23,30 +23,39 @@
 #include "screen.h"
 #include "keys.h"
 
-_Bool init_sdl(Context* context, int screenW, int screenH)
-{
-    if(SDL_Init(SDL_INIT_VIDEO) != 0)
-        x_system_error("Failed to initialize SDL");
-    
-#ifndef __nspire__
-    context->screen = SDL_SetVideoMode(screenW, screenH, 32, SDL_SWSURFACE);
+#ifdef __nspire__
+
+#define KEY_FORWARD '7'
+#define KEY_BACKWARD '4'
+
 #else
-    context->screen = SDL_SetVideoMode(screenW, screenH, 16, SDL_SWSURFACE);
+
+#define KEY_FORWARD 'w'
+#define KEY_BACKWARD 's'
+
 #endif
-    
-    if(!context->screen)
-        x_system_error("Failed to set video mode");
-    
-    return context->screen != NULL;
+
+void cam_screen_size_changed_callback(X_CameraObject* cam, X_Screen* screen, int fov)
+{
+    x_viewport_init(&cam->viewport, x_vec2_make(0, 0), x_screen_w(screen), x_screen_h(screen), fov);
 }
 
 void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
 {
-    X_EngineContext* xContext = context->context = x_engine_init(screenW, screenH, programPath);
+    X_Config config;
+    x_config_init(&config);
+    
+    x_config_set_program_path(&config, programPath);
+    
+    x_config_set_screen_defaults(&config, screenW, screenH, X_ANG_60, 0);
+    screen_set_callbacks(context, &config);
+    
+    X_EngineContext* xContext = context->engineContext = x_engine_init(&config);
     
     context->cam = x_cameraobject_new(xContext);
     x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, screenW, screenH, X_ANG_60);
     x_screen_attach_camera(&xContext->screen, context->cam);
+    context->cam->screenResizeCallback = cam_screen_size_changed_callback;
     
     context->cam->base.orientation = x_quaternion_identity();
     
@@ -73,17 +82,19 @@ void init(Context* context, int screenW, int screenH, const char* programPath)
 {
     context->quit = 0;
     
-    init_sdl(context, screenW, screenH);
     init_x3d(context, screenW, screenH, programPath);
     build_color_table(context->screen);
     init_keys();
     
-    x_console_execute_cmd(&context->context->console, "searchpath ..");
-    x_console_execute_cmd(&context->context->console, "exec engine.cfg");
+    x_console_execute_cmd(&context->engineContext->console, "searchpath ..");
+    x_console_execute_cmd(&context->engineContext->console, "exec engine.cfg");
 }
 
 void cleanup_sdl(Context* context)
 {
+    // Make sure we don't quit without putting the screen back to normal
+    SDL_SetVideoMode(context->nativeResolutionW, context->nativeResolutionH, 32, SDL_SWSURFACE);
+    
     SDL_Quit();
 }
 
@@ -117,46 +128,46 @@ void handle_console_keys(X_EngineContext* context)
 
 void handle_keys(Context* context)
 {
-    handle_key_events(context->context);
+    handle_key_events(context->engineContext);
     
     _Bool adjustCam = 0;
     
     if(key_is_down(SDLK_ESCAPE))
         context->quit = 1;
     
-    if(x_console_is_open(&context->context->console))
+    if(x_console_is_open(&context->engineContext->console))
     {
-        handle_console_keys(context->context);
+        handle_console_keys(context->engineContext);
         return;
     }
     
-    if(x_keystate_key_down(&context->context->keystate, X_KEY_OPEN_CONSOLE))
+    if(x_keystate_key_down(&context->engineContext->keystate, X_KEY_OPEN_CONSOLE))
     {
-        x_console_open(&context->context->console);
-        x_keystate_reset_keys(&context->context->keystate);
-        x_keystate_enable_text_input(&context->context->keystate);
+        x_console_open(&context->engineContext->console);
+        x_keystate_reset_keys(&context->engineContext->keystate);
+        x_keystate_enable_text_input(&context->engineContext->keystate);
         return;
     }
 
     if(key_is_down(SDLK_UP))
     {
-        context->cam->angleX--;
+        context->cam->angleX -= 2;
         adjustCam = 1;
     }
     else if(key_is_down(SDLK_DOWN))
     {
-        context->cam->angleX++;
+        context->cam->angleX += 2;
         adjustCam = 1;
     }
     
     if(key_is_down(SDLK_LEFT))
     {
-        context->cam->angleY++;
+        context->cam->angleY += 2;
         adjustCam = 1;
     }
     else if(key_is_down(SDLK_RIGHT))
     {
-        context->cam->angleY--;
+        context->cam->angleY -= 2;
         adjustCam = 1;
     }
     
@@ -165,12 +176,12 @@ void handle_keys(Context* context)
     
     x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
     
-    if(key_is_down('w'))
+    if(key_is_down(KEY_FORWARD))
     {
         context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, moveSpeed);
         adjustCam = 1;
     }
-    else if(key_is_down('s'))
+    else if(key_is_down(KEY_BACKWARD))
     {
         context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, -moveSpeed);
         adjustCam = 1;
@@ -193,37 +204,19 @@ void handle_keys(Context* context)
     }
 }
 
-X_RenderContext* g_renderContext;
-_Bool g_Pause;
+void screen_init_console_vars(X_Console* console);
 
-void draw_grid(X_Vec3 center, int size, int step, X_RenderContext* rcontext, X_Color color)
+void gameloop(Context* context)
 {
-    int totalSteps = size / step;
-    
-    for(int i = 0; i < totalSteps + 1; ++i)
+    while(!context->quit)
     {
-        int relStep = i - totalSteps / 2;
-        X_Vec3 top = x_vec3_make(center.x + relStep * step, center.y, center.z - size / 2);
-        X_Vec3 bottom = top;
-        bottom.z += size;
+        x_engine_render_frame(context->engineContext);
         
-        X_Ray3 ray = x_ray3_make(top, bottom);
-        x_ray3d_render(&ray, rcontext, color);
-    }
-    
-    for(int i = 0; i < totalSteps + 1; ++i)
-    {
-        int relStep = i - totalSteps / 2;
-        X_Vec3 left = x_vec3_make(center.x - size / 2, center.y, center.z + relStep * step);
-        X_Vec3 right = left;
-        right.x += size;
+        handle_keys(context);
         
-        X_Ray3 ray = x_ray3_make(left, right);
-        x_ray3d_render(&ray, rcontext, color);
+        screen_update(context);
     }
 }
-
-void screen_init_console_vars(X_Console* console);
 
 int main(int argc, char* argv[])
 {
@@ -235,47 +228,28 @@ int main(int argc, char* argv[])
     w = 320;
     h = 240;
 #else
-    w = 320;
-    h = 240;
+    w = 640;
+    h = 480;
 #endif
     
     init(&context, w, h, argv[0]);
-    screen_init_console_vars(&context.context->console);
+    screen_init_console_vars(&context.engineContext->console);
     
-    
-    X_RenderContext rcontext;
-    rcontext.cam = context.cam;
-    rcontext.canvas = &context.context->screen.canvas;
-    rcontext.viewFrustum = &rcontext.cam->viewport.viewFrustum;
-    rcontext.viewMatrix = &context.cam->viewMatrix;
-    rcontext.screen = &context.context->screen;
-    rcontext.engineContext = context.context;
-    rcontext.level = x_engine_get_current_level(context.context);
-    
-    x_screen_set_palette(&context.context->screen, x_palette_get_quake_palette());
-    
-    g_renderContext = &rcontext;
+    x_screen_set_palette(&context.engineContext->screen, x_palette_get_quake_palette());
     
     context.cam->angleX = 0;
     context.cam->angleY = 0;
-    context.cam->base.position = x_vec3_make(0, -200 * 65536, 0);
+    context.cam->base.position = x_vec3_make(0, -50 * 65536, -800 * 65536);
     
     x_cameraobject_update_view(context.cam);
     
-    while(!context.quit)
-    {
-        x_engine_render_frame(context.context);
-        
-        handle_keys(&context);
-        
-        update_screen(&context);
-    }
+    gameloop(&context);
     
     cleanup(&context);
     
-// #ifdef __nspire__
-//     refresh_osscr();
-// #endif
+ #ifdef __nspire__
+     lcd_init(SCR_TYPE_INVALID);
+ #endif
     
 }
 

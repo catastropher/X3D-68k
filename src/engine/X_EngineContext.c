@@ -30,9 +30,9 @@ static inline void init_object_factory(X_EngineContext* context)
     x_factory_init(&context->gameObjectFactory, 5, 10);
 }
 
-static inline void init_screen(X_EngineContext* context, int screenW, int screenH)
+static inline void init_screen(X_EngineContext* context, int screenW, int screenH, X_ScreenEventHandlers* handlers)
 {
-    x_screen_init(&context->screen, screenW, screenH);
+    x_screen_init(&context->screen, screenW, screenH, handlers);
 }
 
 static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
@@ -91,24 +91,36 @@ static inline void cleanup_console(X_EngineContext* context)
 /// @note Make sure to call @ref x_enginecontext_cleanup() when done to release
 ///     the allocated resources!
 ////////////////////////////////////////////////////////////////////////////////
-void x_enginecontext_init(X_EngineContext* context, int screenW, int screenH)
+void x_enginecontext_init(X_EngineContext* context, X_Config* config)
 {
     context->frameCount = 1;
     x_enginecontext_update_time(context);
     context->lastFrameStart = context->frameStart;
     
-    
     init_object_factory(context);
-    init_screen(context, screenW, screenH);
-    init_main_font(context, "font.xtex", 8, 8);
+    init_screen(context, config->screenW, config->screenH, &config->screenHandlers);
+    init_main_font(context, "font.xtex", 8, 8);     // TODO: this should be configurable
     init_console(context);
     init_keystate(context);
     init_level(context);
     
-    x_renderer_init(&context->renderer, &context->console, &context->screen);
+    x_renderer_init(&context->renderer, &context->console, &context->screen, config->fov);
 }
 
-
+void x_enginecontext_restart_video(X_EngineContext* context)
+{
+    int newW = context->renderer.screenW;
+    int newH = context->renderer.screenH;
+    int newFov = context->renderer.fov;
+    
+    if(context->screen.handlers.restartVideo == NULL)
+        x_system_error("No restart video callback");
+    
+    x_screen_restart_video(&context->screen, newW, newH, newFov);
+    x_renderer_restart_video(&context->renderer, &context->screen);
+    
+    context->screen.handlers.restartVideo(context, context->screen.handlers.userData);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Cleans up an engine context.
@@ -119,6 +131,7 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_screen(context);
     cleanup_main_font(context);
     cleanup_console(context);
+    x_bsplevel_cleanup(&context->currentLevel);
 }
 
 void x_enginecontext_update_time(X_EngineContext* context)

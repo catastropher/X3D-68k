@@ -41,7 +41,8 @@ add_library(X3D STATIC
     # engine
     src/engine/X_engine.c
     src/engine/X_EngineContext.c
-
+    src/engine/X_init.c
+    
     # error
     src/error/X_error.c
     src/error/X_log.c
@@ -81,6 +82,7 @@ add_library(X3D STATIC
     src/render/X_Palette.c
     src/render/X_Renderer.c
     src/render/X_Screen.c
+    src/render/X_span.c
     src/render/X_Texture.c
     src/render/X_Viewport.c
     

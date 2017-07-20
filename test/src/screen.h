@@ -17,5 +17,6 @@
 
 #include "Context.h"
 
-void update_screen(Context* context);
+void screen_update(Context* context);
+void screen_set_callbacks(Context* context, X_Config* config);
 

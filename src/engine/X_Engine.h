@@ -17,7 +17,7 @@
 
 #include "X_EngineContext.h"
 
-X_EngineContext* x_engine_init(int screenW, int screenH, const char* programPath);
+X_EngineContext* x_engine_init(X_Config* config);
 void x_engine_cleanup(void);
 void x_engine_render_frame(X_EngineContext* engineContext);
 

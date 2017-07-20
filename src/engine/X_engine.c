@@ -28,18 +28,22 @@ static X_EngineContext* x_engine_get_context(void)
     return &g_engineContext;
 }
 
-X_EngineContext* x_engine_init(int screenW, int screenH, const char* programPath)
+X_EngineContext* x_engine_init(X_Config* config)
 {
     if(g_engineInitialized)
         x_system_error("Called x_engine_int() after engine already initialized");
     
     x_memory_init();
-    x_filesystem_init(programPath);
+    x_filesystem_init(config->programPath);
     x_log_init();
     x_filesystem_add_search_path("../assets");
     
     X_EngineContext* engineContext = x_engine_get_context();
-    x_enginecontext_init(engineContext, screenW, screenH);
+    x_enginecontext_init(engineContext, config);
+    
+    // Perform a vidrestart so that we call the client's screen initialization code
+    x_console_execute_cmd(&engineContext->console, "vidrestart");
+    engineContext->renderer.videoInitialized = 1;
     
     return engineContext;
 }
@@ -75,24 +79,34 @@ static void x_engine_draw_fps(X_EngineContext* context)
     x_canvas_draw_str(&context->screen.canvas, fpsStr, &context->mainFont, pos);
 }
 
+static void draw_current_leaf_info(X_CameraObject* cam, X_RenderContext* renderContext)
+{
+    char str[128];
+    sprintf(str, "Current Leaf: %d\nVisible leaves: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves),
+            x_bsplevel_count_visible_leaves(renderContext->level, cam->pvsForCurrentLeaf));
+    
+    x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
+}
+
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
     
     if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
-        x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+       x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
     
     for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
-        x_ae_context_reset(&engineContext->renderer.activeEdgeContext, &renderContext);
+        x_ae_context_begin_render(&engineContext->renderer.activeEdgeContext, &renderContext);
         
         x_cameraobject_render(cam, &renderContext);
         
-        //ae_test(&engineContext->renderer.activeEdgeContext);
-        
         x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
+        
+        if(x_engine_level_is_loaded(engineContext))
+            draw_current_leaf_info(cam, &renderContext);
     }
     
     if(engineContext->renderer.showFps)

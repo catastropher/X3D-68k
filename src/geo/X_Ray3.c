@@ -81,7 +81,7 @@ void x_ray3d_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
     
     X_Vec2 projected[2];
     for(int i = 0; i < 2; ++i)
-        x_viewport_project(&rcontext->cam->viewport, transformed.v + i, projected + i);
+        x_viewport_project_vec3(&rcontext->cam->viewport, transformed.v + i, projected + i);
     
     x_viewport_clamp_vec2(&rcontext->cam->viewport, projected + 0);
     x_viewport_clamp_vec2(&rcontext->cam->viewport, projected + 1);
