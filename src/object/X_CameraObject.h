@@ -21,6 +21,7 @@
 
 struct X_EngineContext;
 struct X_RenderContext;
+struct X_Screen;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// 
@@ -35,6 +36,8 @@ typedef struct X_CameraObject
     X_BspLeaf* currentLeaf;
     X_BspLeaf* lastLeaf;
     unsigned char pvsForCurrentLeaf[256];//X_BSPFILE_PVS_SIZE];
+    
+    void (*screenResizeCallback)(struct X_CameraObject* cam, struct X_Screen* screen, int fov);
 } X_CameraObject;
 
 X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);

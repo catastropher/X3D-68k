@@ -64,6 +64,15 @@ void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdg
     x_ae_context_init_surfaces(context, surfacePoolSize);
 }
 
+void x_ae_context_cleanup(X_AE_Context* context)
+{
+    x_free(context->activeEdges);
+    x_free(context->oldActiveEdges);
+    x_free(context->edgePool);
+    x_free(context->newEdges);
+    x_free(context->surfacePool);
+}
+
 static void x_ae_context_reset_active_edges(X_AE_Context* context)
 {
     context->oldTotalActiveEdges = 0;

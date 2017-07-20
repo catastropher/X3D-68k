@@ -28,18 +28,22 @@ static X_EngineContext* x_engine_get_context(void)
     return &g_engineContext;
 }
 
-X_EngineContext* x_engine_init(int screenW, int screenH, const char* programPath)
+X_EngineContext* x_engine_init(X_Config* config)
 {
     if(g_engineInitialized)
         x_system_error("Called x_engine_int() after engine already initialized");
     
     x_memory_init();
-    x_filesystem_init(programPath);
+    x_filesystem_init(config->programPath);
     x_log_init();
     x_filesystem_add_search_path("../assets");
     
     X_EngineContext* engineContext = x_engine_get_context();
-    x_enginecontext_init(engineContext, screenW, screenH);
+    x_enginecontext_init(engineContext, config);
+    
+    // Perform a vidrestart so that we call the client's screen initialization code
+    x_console_execute_cmd(&engineContext->console, "vidrestart");
+    engineContext->renderer.videoInitialized = 1;
     
     return engineContext;
 }

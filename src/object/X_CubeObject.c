@@ -255,7 +255,6 @@ static x_fp16x16 calculate_impulse(X_CubeObject* cube, x_fp16x16 deltaTime, Coll
     return x_fp16x16_div(n, constraintMass);
 }
 
-extern X_RenderContext* g_renderContext;
 extern _Bool g_Pause;
 
 static _Bool cube_is_colliding_with_xz_plane(X_CubeObject* cube)

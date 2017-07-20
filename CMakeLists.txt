@@ -41,7 +41,8 @@ add_library(X3D STATIC
     # engine
     src/engine/X_engine.c
     src/engine/X_EngineContext.c
-
+    src/engine/X_init.c
+    
     # error
     src/error/X_error.c
     src/error/X_log.c

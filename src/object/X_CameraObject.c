@@ -27,6 +27,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     X_CameraObject* cam = (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
     
     cam->lastLeaf = NULL;
+    cam->screenResizeCallback = NULL;
     
     return cam;
 }

@@ -32,6 +32,7 @@
 #include "engine/X_config.h"
 #include "engine/X_Engine.h"
 #include "engine/X_EngineContext.h"
+#include "engine/X_init.h"
 
 // error
 #include "error/X_error.h"

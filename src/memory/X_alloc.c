@@ -59,7 +59,10 @@ void* x_malloc_function(size_t size, const char* fileName, const char* functionN
     unsigned char* mem = malloc(size + sizeof(X_MemoryAlloc));
     
     if(!mem)
+    {
+        x_log_error("Out of mem, tried to alloc from %s line %d", functionName, lineNumber);
         x_system_error("Out of memory");
+    }
         
     
     X_MemoryAlloc* alloc = (X_MemoryAlloc*)mem;
@@ -122,7 +125,10 @@ void* x_realloc_function(void* ptr, size_t newSize, const char* fileName, const 
     X_MemoryAlloc* newAlloc = realloc(oldAlloc, newSize + sizeof(X_MemoryAlloc));
     
     if(!newAlloc)
+    {
+        x_log_error("Out of mem, tried to alloc from %s line %d", function, lineNumber);
         x_system_error("Realloc failed: out of memory");
+    }
     
     // We moved, so update the prev pointer
     newAlloc->prev->next = newAlloc;

@@ -29,9 +29,20 @@ typedef struct X_Renderer
     _Bool usePalette;
     _Bool showFps;
     
+    int screenW;
+    int screenH;
+    int fov;
+    _Bool fullscreen;
+    _Bool videoInitialized;
+    
     X_ConsoleVar varFillColor;
     X_ConsoleVar varShowFps;
+    X_ConsoleVar varScreenW;
+    X_ConsoleVar varScreenH;
+    X_ConsoleVar varFov;
+    X_ConsoleVar varFullscreen;
 } X_Renderer;
 
-void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen);
+void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov);
+void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen);
 

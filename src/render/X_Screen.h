@@ -19,20 +19,35 @@
 #include "object/X_CameraObject.h"
 #include "X_Palette.h"
 
+struct X_Screen;
+struct X_EngineContext;
+
+typedef struct X_ScreenEventHandlers
+{
+    void* userData;         // Pointer to user-defined data passed to screen updates
+    void (*displayFrame)(struct X_Screen* screen, void* userData);
+    void (*restartVideo)(struct X_EngineContext* context, void* userData);
+    _Bool (*isValidResolution)(int w, int h);
+} X_ScreenEventHandlers;
+
 typedef struct X_Screen
 {
     X_Canvas canvas;
     X_CameraObject* cameraListHead;
     const X_Palette* palette;
+    X_ScreenEventHandlers handlers;
 } X_Screen;
 
 void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera);
 void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera);
 
-static inline void x_screen_init(X_Screen* screen, int w, int h)
+void x_screen_restart_video(X_Screen* screen, int newW, int newH, int newFov);
+
+static inline void x_screen_init(X_Screen* screen, int w, int h, X_ScreenEventHandlers* handlers)
 {
     x_canvas_init(&screen->canvas, w, h);
     screen->cameraListHead = NULL;
+    screen->handlers = *handlers;
 }
 
 static inline void x_screen_set_palette(X_Screen* screen, const X_Palette* palette)

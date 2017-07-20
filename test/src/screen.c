@@ -90,8 +90,8 @@ static void update_screen_nspire(Context* context)
     for(int i = 0; i < 256; ++i)
         sdlColors[i] = get_sdl_color_from_x_color(i);
     
-    X_Color* pixel = context->context->screen.canvas.tex.texels;
-    X_Color* pixelEnd = pixel + x_screen_w(&context->context->screen) * x_screen_h(&context->context->screen);
+    X_Color* pixel = context->engineContext->screen.canvas.tex.texels;
+    X_Color* pixelEnd = pixel + x_screen_w(&context->engineContext->screen) * x_screen_h(&context->engineContext->screen);
     
     unsigned int* pixelDest = REAL_SCREEN_BASE_ADDRESS;
     
@@ -109,24 +109,22 @@ static char recordBaseFile[256];
 static int recordFrame;
 static int frameId;
 
-float g_zbuf[480][640];
-
-void update_screen(Context* context)
+void screen_update(Context* context)
 {
 #ifdef __nspire__
-    if(!context->context->renderer.usePalette)
+    if(!context->engineContext->renderer.usePalette)
         update_screen_nspire(context);
     else
     {
-        memcpy(REAL_SCREEN_BASE_ADDRESS, context->context->screen.canvas.tex.texels, 320 * 240);
+        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
         //lcd_blit(context->context->screen.canvas.tex.texels, SCR_320x240_8);
         return;
     }
 #else
     
-    x_texture_to_sdl_surface(&context->context->screen.canvas.tex, context->context->screen.palette, context->screen);
+    x_texture_to_sdl_surface(&context->engineContext->screen.canvas.tex, context->engineContext->screen.palette, context->screen);
     
-    if(record && (x_enginecontext_get_frame(context->context) % recordFrame) == 0) {
+    if(record && (x_enginecontext_get_frame(context->engineContext) % recordFrame) == 0) {
         char fileName[512];
         sprintf(fileName, "%s%.4d.bmp", recordBaseFile, frameId);
         
@@ -168,8 +166,50 @@ void screen_init_console_vars(X_Console* console)
     static X_ConsoleCmd cmdRecord = { "record", cmd_record };
     x_console_register_cmd(console, &cmdRecord);
     
-    static X_ConsoleCmd endRecord = { "endrecord", cmd_endrecord };
-    x_console_register_cmd(console, &endRecord);
+    static X_ConsoleCmd cmdEndRecord = { "endrecord", cmd_endrecord };
+    x_console_register_cmd(console, &cmdEndRecord);
 }
 
+static _Bool is_valid_resolution_callback(int w, int h)
+{
+    return (w == 320 && h == 240) || (w == 640 && h == 480);
+}
+
+static void video_restart_callback(X_EngineContext* engineContext, void* userData)
+{
+    Context* context = (Context*)userData;
+    X_Screen* screen = &engineContext->screen;
+    
+    if(!engineContext->renderer.videoInitialized)
+    {
+        if(SDL_Init(SDL_INIT_VIDEO) != 0)
+            x_system_error("Failed to initialize SDL");
+        
+        // Grab the native desktop resolution
+        const SDL_VideoInfo* info = SDL_GetVideoInfo();
+        context->nativeResolutionW = info->current_w;
+        context->nativeResolutionH = info->current_h;
+    }
+    
+#ifdef __nspire__
+    context->screen = SDL_SetVideoMode(x_screen_w(screen), x_screen_h(screen), 16, SDL_SWSURFACE);
+#else
+    int flags = SDL_SWSURFACE;
+    
+    if(engineContext->renderer.fullscreen)
+        flags |= SDL_FULLSCREEN;
+    
+    context->screen = SDL_SetVideoMode(x_screen_w(screen), x_screen_h(screen), 32, flags);
+#endif
+    
+    if(!context->screen)
+        x_system_error("Failed to set video mode");
+}
+
+void screen_set_callbacks(Context* context, X_Config* config)
+{
+    x_config_set_screen_is_valid_resolution_callback(config, is_valid_resolution_callback);
+    x_config_set_screen_restart_video_callback(config, video_restart_callback);
+    x_config_set_screen_user_data(config, context);
+}
 
