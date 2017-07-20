@@ -167,21 +167,18 @@ static _Bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3_fp16x16* pointOnSurface, X_Mat4x4* viewMatrix, X_Plane* dest)
+static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest)
 {
     X_Vec3_fp16x16 planeNormal = surface->plane->plane.normal;
     
-    if(x_bspsurface_plane_is_flipped(surface))
-        planeNormal = x_vec3_neg(&planeNormal);
-    
-    x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
-    dest->d = -x_vec3_fp16x16_dot(&dest->normal, pointOnSurface);
+    x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);    
+    dest->d = surface->plane->plane.d + x_vec3_dot(&planeNormal, camPos);
 }
 
-static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3_fp16x16* pointOnSurface, X_Viewport* viewport, X_Mat4x4* viewMatrix)
+static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3_fp16x16* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix)
 {
     X_Plane planeInViewSpace;
-    x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, pointOnSurface, viewMatrix, &planeInViewSpace);
+    x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace);
     
     int dist = -x_fp16x16_to_int(planeInViewSpace.d);
     int scale = viewport->distToNearPlane;
@@ -248,7 +245,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
         x_viewport_clamp_vec2(&context->renderContext->cam->viewport, v2d + i);
     }
     
-    x_ae_surface_calculate_inverse_z_gradient(surface, clipped.vertices + 0, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
+    x_ae_surface_calculate_inverse_z_gradient(surface, &context->renderContext->camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
     
     x_polygon3_fp16x16_to_polygon3(&clipped, &clipped);
     

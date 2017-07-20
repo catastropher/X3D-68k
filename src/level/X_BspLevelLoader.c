@@ -477,8 +477,8 @@ static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* 
 {
     return x_vec2_make
     (
-        (x_vec3_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset) >> 16,
-        (x_vec3_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset) >> 16
+        x_vec3_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
+        x_vec3_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
      );
 }
 
