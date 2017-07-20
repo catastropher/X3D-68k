@@ -23,6 +23,18 @@
 #include "screen.h"
 #include "keys.h"
 
+#ifdef __nspire__
+
+#define KEY_FORWARD '7'
+#define KEY_BACKWARD '4'
+
+#else
+
+#define KEY_FORWARD 'w'
+#define KEY_BACKWARD 's'
+
+#endif
+
 _Bool init_sdl(Context* context, int screenW, int screenH)
 {
     if(SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -140,23 +152,23 @@ void handle_keys(Context* context)
 
     if(key_is_down(SDLK_UP))
     {
-        context->cam->angleX--;
+        context->cam->angleX -= 2;
         adjustCam = 1;
     }
     else if(key_is_down(SDLK_DOWN))
     {
-        context->cam->angleX++;
+        context->cam->angleX += 2;
         adjustCam = 1;
     }
     
     if(key_is_down(SDLK_LEFT))
     {
-        context->cam->angleY++;
+        context->cam->angleY += 2;
         adjustCam = 1;
     }
     else if(key_is_down(SDLK_RIGHT))
     {
-        context->cam->angleY--;
+        context->cam->angleY -= 2;
         adjustCam = 1;
     }
     
@@ -165,12 +177,12 @@ void handle_keys(Context* context)
     
     x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
     
-    if(key_is_down('w'))
+    if(key_is_down(KEY_FORWARD))
     {
         context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, moveSpeed);
         adjustCam = 1;
     }
-    else if(key_is_down('s'))
+    else if(key_is_down(KEY_BACKWARD))
     {
         context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, -moveSpeed);
         adjustCam = 1;
@@ -258,7 +270,7 @@ int main(int argc, char* argv[])
     
     context.cam->angleX = 0;
     context.cam->angleY = 0;
-    context.cam->base.position = x_vec3_make(0, -200 * 65536, 0);
+    context.cam->base.position = x_vec3_make(0, -50 * 65536, -800 * 65536);
     
     x_cameraobject_update_view(context.cam);
     
