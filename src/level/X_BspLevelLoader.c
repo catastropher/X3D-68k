@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <math.h>
+
 #include "X_BspLevel.h"
 #include "X_BspLevelLoader.h"
 #include "system/X_File.h"
@@ -477,8 +479,8 @@ static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* 
 {
     return x_vec2_make
     (
-        x_vec3_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
-        x_vec3_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
+        x_vec3_fp16x16_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
+        x_vec3_fp16x16_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
      );
 }
 
@@ -493,33 +495,33 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspL
         int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + i];
         
         if(edgeId >= 0)
-            v = level->vertices + level->edges[edgeId].v[0];
+            v = level->vertices + level->edges[edgeId].v[1];
         else
-            v = level->vertices + level->edges[-edgeId].v[1];
+            v = level->vertices + level->edges[-edgeId].v[0];
         
         X_Vec2 textureCoord = x_bspsurface_calculate_texture_coordinate_of_vertex(surface, &v->v);
         x_bspboundrect_add_point(&textureCoordsBoundRect, textureCoord);
     }
     
-    textureCoordsBoundRect.v[0].x /= 16;
-    textureCoordsBoundRect.v[0].y /= 16;
+    textureCoordsBoundRect.v[0].x = floor((float)textureCoordsBoundRect.v[0].x / (16 * 65536));
+    textureCoordsBoundRect.v[0].y = floor((float)textureCoordsBoundRect.v[0].y / (16 * 65536));
     
-    textureCoordsBoundRect.v[1].x = (textureCoordsBoundRect.v[0].x + 15) / 16;
-    textureCoordsBoundRect.v[1].y = (textureCoordsBoundRect.v[0].y + 15) / 16;
+    textureCoordsBoundRect.v[1].x = ceil((float)textureCoordsBoundRect.v[1].x / (16 * 65536));
+    textureCoordsBoundRect.v[1].y = ceil((float)textureCoordsBoundRect.v[1].y / (16 * 65536));
     
     surface->textureMinCoord = x_vec2_make
     (
-        textureCoordsBoundRect.v[0].x * 16,
-        textureCoordsBoundRect.v[0].y * 16
+        textureCoordsBoundRect.v[0].x * 16 * 65536,
+        textureCoordsBoundRect.v[0].y * 16 * 65536
     );
         
     surface->textureExtent = x_vec2_make
     (
-        (textureCoordsBoundRect.v[1].x - textureCoordsBoundRect.v[0].x) * 16,
-        (textureCoordsBoundRect.v[1].y - textureCoordsBoundRect.v[0].y) * 16
+        (textureCoordsBoundRect.v[1].x - textureCoordsBoundRect.v[0].x) * 16 * 65536,
+        (textureCoordsBoundRect.v[1].y - textureCoordsBoundRect.v[0].y) * 16 * 65536
     );
     
-    printf("Min coord: %d %d\n", surface->textureMinCoord.x, surface->textureMinCoord.y);
+    x_log("extent: %d %d", surface->textureExtent.x / 65536, surface->textureExtent.y / 65536);
 }
 
 static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* loader)

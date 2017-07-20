@@ -45,7 +45,7 @@ static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* cont
     transormed.y >>= context->mipLevel;
     transormed.z >>= context->mipLevel;
     
-    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.x << 16) >> context->mipLevel) +
+    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.x) >> context->mipLevel) +
         ((context->faceTexture->uOffset) >> context->mipLevel);
 }
 
@@ -73,8 +73,8 @@ static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* cont
     transormed.y >>= context->mipLevel;
     transormed.z >>= context->mipLevel;
     
-    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.y << 16) >> context->mipLevel) + 
-        ((context->faceTexture->vOffset) >> context->mipLevel);
+    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.y) >> context->mipLevel) + 
+        ((context->faceTexture->vOffset) >> context->mipLevel);        
 }
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)
@@ -115,6 +115,8 @@ static inline void calculate_u_and_v_at_screen_point(X_AE_SurfaceRenderContext* 
     *u = (uDivZ * z + context->sDivZ.adjust);
     *v = (vDivZ * z + context->tDivZ.adjust);
 }
+
+#define CLAMP
 
 static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
@@ -177,10 +179,48 @@ static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderConte
     int uMask = faceTex.w - 1;
     int vMask = faceTex.h - 1;
     
+    // Clamp to the texture bounds
+    X_Vec2 mins = x_vec2_make(0, 0);
+    X_Vec2 extent = context->surface->bspSurface->textureExtent;
+    
+    X_Vec2 maxs = extent;//x_vec2_make(mins.x + extent.x, mins.y + extent.y);
+    
+    // Clamp
+#ifdef CLAMP
+    if(prevU < 0)
+        prevU = 0;
+    else if(prevU > maxs.x)
+        prevU = maxs.x;
+    
+    if(prevV < 0)
+        prevV = 0;
+    else if(prevV > maxs.y)
+        prevV = maxs.y;
+#endif
+    
+    const int ROUNDOFF_ERROR_GUARD = COUNT;
+    
     do
     {
-        
         calculate_u_and_v_at_screen_point(context, pixel - scanline + COUNT, y, &nextU, &nextV);
+        
+        if(nextU > maxs.x)
+            nextU = maxs.x;
+        
+        if(nextV > maxs.y)
+            nextV = maxs.y;
+        
+#ifdef CLAMP
+        if(nextU > maxs.x)
+            nextU = maxs.x;
+        else if(nextU < ROUNDOFF_ERROR_GUARD)
+            nextU = ROUNDOFF_ERROR_GUARD;
+        
+        if(nextV > maxs.y)
+            nextV = maxs.y;
+        else if(nextV < ROUNDOFF_ERROR_GUARD)
+            nextV = ROUNDOFF_ERROR_GUARD;
+#endif
         
         u = prevU;
         v = prevV;
@@ -196,8 +236,8 @@ draw_group:
         
         do
         {
-            int uu = u >> 16;
-            int vv = v >> 16;
+            int uu = (u + context->surface->bspSurface->textureMinCoord.x) >> 16;
+            int vv = (v + context->surface->bspSurface->textureMinCoord.y) >> 16;
             
             uu = uu & uMask;
             vv = vv & vMask;
@@ -215,6 +255,19 @@ draw_group:
     {
         end = pixelEnd;
         calculate_u_and_v_at_screen_point(context, span->x2 - 1, y, &nextU, &nextV);
+      
+#ifdef CLAMP
+        if(nextU > maxs.x)
+            nextU = maxs.x;
+        else if(nextU < ROUNDOFF_ERROR_GUARD)
+            nextU = ROUNDOFF_ERROR_GUARD;
+        
+        if(nextV > maxs.y)
+            nextV = maxs.y;
+        else if(nextV < ROUNDOFF_ERROR_GUARD)
+            nextV = ROUNDOFF_ERROR_GUARD;
+#endif
+        
         
         int count = pixelEnd - pixel;
         du = ((long long)(nextU - prevU) * recipTab[count]) >> 16;
