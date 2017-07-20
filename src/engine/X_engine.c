@@ -75,6 +75,15 @@ static void x_engine_draw_fps(X_EngineContext* context)
     x_canvas_draw_str(&context->screen.canvas, fpsStr, &context->mainFont, pos);
 }
 
+static void draw_current_leaf_info(X_CameraObject* cam, X_RenderContext* renderContext)
+{
+    char str[128];
+    sprintf(str, "Current Leaf: %d\nVisible leaves: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves),
+            x_bsplevel_count_visible_leaves(renderContext->level, cam->pvsForCurrentLeaf));
+    
+    x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
+}
+
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
@@ -89,8 +98,11 @@ void x_engine_render_frame(X_EngineContext* engineContext)
         x_ae_context_begin_render(&engineContext->renderer.activeEdgeContext, &renderContext);
         
         x_cameraobject_render(cam, &renderContext);
-       
+        
         x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
+        
+        if(x_engine_level_is_loaded(engineContext))
+            draw_current_leaf_info(cam, &renderContext);
     }
     
     if(engineContext->renderer.showFps)

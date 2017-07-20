@@ -71,15 +71,6 @@ static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_Rend
     x_bsplevel_decompress_pvs_for_leaf(renderContext->level, cam->currentLeaf, cam->pvsForCurrentLeaf);
 }
 
-static void draw_current_leaf_info(X_CameraObject* cam, X_RenderContext* renderContext)
-{
-    char str[128];
-    sprintf(str, "Current Leaf: %d\nVisible leaves: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves),
-            x_bsplevel_count_visible_leaves(renderContext->level, cam->pvsForCurrentLeaf));
-    
-    x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
-}
-
 void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
 {
     x_assert(renderContext != NULL, "No render context");
@@ -96,30 +87,15 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_cameraobject_determine_current_bspleaf(cam, renderContext);
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
     x_bsplevel_mark_visible_leaves_from_pvs(renderContext->level, cam->pvsForCurrentLeaf, currentFrame);
-    draw_current_leaf_info(cam, renderContext);
     
     renderContext->camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
     renderContext->currentFrame = currentFrame;
     
     if(cam->currentLeaf != renderContext->level->leaves + 0)
-    {
         x_bsplevel_render(renderContext->level, renderContext);
         
-    
-//         for(int i = 0; i < renderContext->level->totalLeaves; ++i)
-//         {
-//             X_BspLeaf* leaf = renderContext->level->leaves + i;
-//             
-//             if(leaf->lastVisibleFrame == currentFrame)
-//             {
-//                 x_bsplevel_draw_edges_in_leaf(renderContext->level, leaf, renderContext, renderContext->screen->palette->brightRed);
-//             }
-//         }
-    }
     else
-    {
         x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
-    }
 }
 
 

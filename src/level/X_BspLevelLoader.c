@@ -519,9 +519,7 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspL
     (
         (textureCoordsBoundRect.v[1].x - textureCoordsBoundRect.v[0].x) * 16 * 65536,
         (textureCoordsBoundRect.v[1].y - textureCoordsBoundRect.v[0].y) * 16 * 65536
-    );
-    
-    x_log("extent: %d %d", surface->textureExtent.x / 65536, surface->textureExtent.y / 65536);
+    );    
 }
 
 static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
