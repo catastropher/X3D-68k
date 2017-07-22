@@ -16,6 +16,7 @@
 #pragma once
 
 #include "math/X_fix.h"
+#include "render/X_Texture.h"
 
 struct X_AE_Surface;
 struct X_Viewport;
@@ -47,6 +48,10 @@ typedef struct X_AE_SurfaceRenderContext
     
     X_AE_TextureVar sDivZ;
     X_AE_TextureVar tDivZ;
+    
+    X_Texture faceTex;
+    int uMask;
+    int vMask;
 } X_AE_SurfaceRenderContext;
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, struct X_AE_Surface* surface, struct X_RenderContext* renderContext, int mipLevel);

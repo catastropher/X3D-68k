@@ -89,6 +89,12 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     
     x_ae_surfacerendercontext_init_sdivz(context);
     x_ae_surfacerendercontext_init_tdivz(context);
+    
+    X_BspLevel* level = context->renderContext->level;
+    x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &context->faceTex);
+    
+    context->uMask = context->faceTex.w - 1;        // Must be powers of 2 for this to work!
+    context->vMask = context->faceTex.h - 1;
 }
 
 static inline x_fp16x16 calculate_u_div_z(X_AE_SurfaceRenderContext* context, int x, int y)
@@ -118,37 +124,25 @@ static inline void calculate_u_and_v_at_screen_point(X_AE_SurfaceRenderContext* 
     *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);
 }
 
-#define CLAMP
+//#define CLAMP
 
-static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
+static inline void draw_texel(X_AE_SurfaceRenderContext* context, x_fp16x16* u, x_fp16x16* v, x_fp16x16 du, x_fp16x16 dv, X_Color* pixel)
 {
-    const x_fp16x16 recipTab[17] = 
-    {
-        0x7FFFFFFF,
-        X_FP16x16_ONE / 1,
-        X_FP16x16_ONE / 2,
-        X_FP16x16_ONE / 3,
-        X_FP16x16_ONE / 4,
-        X_FP16x16_ONE / 5,
-        X_FP16x16_ONE / 6,
-        X_FP16x16_ONE / 7,
-        X_FP16x16_ONE / 8,
-        X_FP16x16_ONE / 9,
-        X_FP16x16_ONE / 10,
-        X_FP16x16_ONE / 11,
-        X_FP16x16_ONE / 12,
-        X_FP16x16_ONE / 13,
-        X_FP16x16_ONE / 14,
-        X_FP16x16_ONE / 15,
-        X_FP16x16_ONE / 16,
-    };
+    int uu = (*u + context->surface->bspSurface->textureMinCoord.x) >> 16;
+    int vv = (*v + context->surface->bspSurface->textureMinCoord.y) >> 16;
     
+    uu = uu & context->uMask;
+    vv = vv & context->vMask;
+    
+    *pixel = x_texture_get_texel(&context->faceTex, uu, vv);
+    *u += du;
+    *v += dv;
+}
+
+static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
+{
     X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
     X_Color* scanline = screenTex->texels + span->y * screenTex->w;
-    
-    X_Texture faceTex;
-    X_BspLevel* level = context->renderContext->level;
-    x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &faceTex);
     
     int count = span->x2 - span->x1;
     if(count == 0)
@@ -177,12 +171,8 @@ static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderConte
     x_fp16x16 dv;
     
     X_Color* end;
-    
-    int uMask = faceTex.w - 1;
-    int vMask = faceTex.h - 1;
-    
+        
     // Clamp to the texture bounds
-    X_Vec2 mins = x_vec2_make(0, 0);
     X_Vec2 extent = context->surface->bspSurface->textureExtent;
     
     X_Vec2 maxs = extent;//x_vec2_make(mins.x + extent.x, mins.y + extent.y);
@@ -201,6 +191,9 @@ static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderConte
 #endif
     
     const int ROUNDOFF_ERROR_GUARD = COUNT;
+    
+    if(pixelEnd - pixel < COUNT)
+        goto last_group;
     
     do
     {
@@ -236,18 +229,22 @@ static inline void x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderConte
         
 draw_group:
         
-        do
-        {
-            int uu = (u + context->surface->bspSurface->textureMinCoord.x) >> 16;
-            int vv = (v + context->surface->bspSurface->textureMinCoord.y) >> 16;
-            
-            uu = uu & uMask;
-            vv = vv & vMask;
-            
-            *pixel++ = x_texture_get_texel(&faceTex, uu, vv);
-            u += du;
-            v += dv;
-        } while(pixel < end);
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
         
         prevU = nextU;
         prevV = nextV;
@@ -255,6 +252,7 @@ draw_group:
     
     if(pixel != pixelEnd)
     {
+last_group:
         end = pixelEnd;
         calculate_u_and_v_at_screen_point(context, span->x2 - 1, y, &nextU, &nextV);
       
@@ -272,16 +270,32 @@ draw_group:
         
         
         int count = pixelEnd - pixel;
-        du = ((long long)(nextU - prevU) * recipTab[count]) >> 16;
-        dv = ((long long)(nextV - prevV) * recipTab[count]) >> 16;
-        
-//         du = (nextU - prevU) / count;
-//         dv = (nextV - prevV) / count;
+        du = (nextU - prevU) / count;
+        dv = (nextV - prevV) / count;
         
         u = prevU;
         v = prevV;
         
-        goto draw_group;
+        switch(COUNT - count)
+        {
+            case 0:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 1:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 2:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 3:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 4:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 5:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 6:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 7:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 8:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 9:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 10:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 11:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 12:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 13:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 14:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+            case 15:     draw_texel(context, &u, &v, du, dv, pixel);     ++pixel;
+        }
+        
     }
 }
 

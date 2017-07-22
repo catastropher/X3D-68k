@@ -292,7 +292,7 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
 
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
-    X_BspBoundBoxFrustumFlags enableAllPlanes = (1 << 30) - 1;
+    X_BspBoundBoxFrustumFlags enableAllPlanes = (1 << 14) - 1;
     x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
 }
 
