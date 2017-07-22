@@ -570,15 +570,15 @@ static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* lo
         leaf->firstMarkSurface = level->markSurfaces + loadLeaf->firstMarkSurface;
         leaf->totalMarkSurfaces = loadLeaf->totalMarkSurfaces;
         
-        leaf->boundBox.v[0].x = loadLeaf->mins[0];
-        leaf->boundBox.v[0].y = loadLeaf->mins[1];
-        leaf->boundBox.v[0].z = loadLeaf->mins[2];
+        leaf->nodeBoundBox.v[0].x = loadLeaf->mins[0];
+        leaf->nodeBoundBox.v[0].y = loadLeaf->mins[1];
+        leaf->nodeBoundBox.v[0].z = loadLeaf->mins[2];
         
-        leaf->boundBox.v[1].x = loadLeaf->maxs[0];
-        leaf->boundBox.v[1].y = loadLeaf->maxs[1];
-        leaf->boundBox.v[1].z = loadLeaf->maxs[2];
+        leaf->nodeBoundBox.v[1].x = loadLeaf->maxs[0];
+        leaf->nodeBoundBox.v[1].y = loadLeaf->maxs[1];
+        leaf->nodeBoundBox.v[1].z = loadLeaf->maxs[2];
         
-        x_bspboundbox_convert_coordinate(&leaf->boundBox);
+        x_bspboundbox_convert_coordinate(&leaf->nodeBoundBox);
     }
 }
 
@@ -635,15 +635,15 @@ static void x_bsplevel_init_nodes(X_BspLevel* level, const X_BspLevelLoader* loa
         node->firstSurface = level->surfaces + loadNode->firstFace;
         node->totalSurfaces = loadNode->totalFaces;
         
-        node->boundBox.v[0].x = loadNode->mins[0];
-        node->boundBox.v[0].y = loadNode->mins[1];
-        node->boundBox.v[0].z = loadNode->mins[2];
+        node->nodeBoundBox.v[0].x = loadNode->mins[0];
+        node->nodeBoundBox.v[0].y = loadNode->mins[1];
+        node->nodeBoundBox.v[0].z = loadNode->mins[2];
         
-        node->boundBox.v[1].x = loadNode->maxs[0];
-        node->boundBox.v[1].y = loadNode->maxs[1];
-        node->boundBox.v[1].z = loadNode->maxs[2];
+        node->nodeBoundBox.v[1].x = loadNode->maxs[0];
+        node->nodeBoundBox.v[1].y = loadNode->maxs[1];
+        node->nodeBoundBox.v[1].z = loadNode->maxs[2];
         
-        x_bspboundbox_convert_coordinate(&node->boundBox);
+        x_bspboundbox_convert_coordinate(&node->nodeBoundBox);
     }
 }
 
@@ -710,6 +710,61 @@ static void x_bsplevel_init_facetextures(X_BspLevel* level, X_BspLevelLoader* lo
     }
 }
 
+static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspSurface* surface, X_BspLevel* level)
+{
+    for(int i = 0; i < surface->totalEdges; ++i)
+    {
+        int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + i];
+        X_Vec3_fp16x16 v;
+        
+        if(edgeId > 0)
+            v = level->vertices[level->edges[edgeId].v[1]].v;
+        else
+            v = level->vertices[level->edges[-edgeId].v[0]].v;
+        
+        x_bspboundbox_add_point(&node->geoBoundBox, x_vec3_fp16x16_to_vec3(&v));
+    }
+}
+
+static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
+{
+    if(x_bspnode_is_leaf(node))
+        return;
+    
+    x_bspboundbox_init(&node->geoBoundBox);
+
+    for(int i = 0; i < node->totalSurfaces; ++i)
+        x_bspnode_calculate_geo_boundbox_add_surface(node, node->firstSurface + i, level);
+    
+    const float SNAP = 16;
+    node->geoBoundBox.v[0].x = floor(node->geoBoundBox.v[0].x / SNAP) * SNAP;
+    node->geoBoundBox.v[0].y = floor(node->geoBoundBox.v[0].y / SNAP) * SNAP;
+    node->geoBoundBox.v[0].z = floor(node->geoBoundBox.v[0].z / SNAP) * SNAP;
+    
+    node->geoBoundBox.v[1].x = ceil(node->geoBoundBox.v[1].x / SNAP) * SNAP;
+    node->geoBoundBox.v[1].y = ceil(node->geoBoundBox.v[1].y / SNAP) * SNAP;
+    node->geoBoundBox.v[1].z = ceil(node->geoBoundBox.v[1].z / SNAP) * SNAP;
+    
+    x_bspnode_calculate_geo_boundbox(node->frontChild, level);
+    x_bspnode_calculate_geo_boundbox(node->backChild, level);
+}
+
+// static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
+// {
+//     if(x_bspnode_is_leaf(node))
+//     {
+//         
+//         //x_bspleaf_calculate_geo_boundbox((X_BspLeaf*)node, level);
+//         return;
+//     }
+//     
+//     x_bspnode_calculate_geo_boundbox()
+//     
+// //     x_bspnode_calculate_geo_boundbox(node->frontChild, level);
+// //     x_bspnode_calculate_geo_boundbox(node->backChild, level);
+// //     x_bspboundbox_merge(&node->frontChild->geoBoundBox, &node->backChild->geoBoundBox, &node->geoBoundBox);
+// }
+
 static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLoader* loader)
 {
     x_bsplevel_allocate_memory(level, loader);
@@ -726,6 +781,15 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_textures(level, loader);
     x_bsplevel_init_facetextures(level, loader);
     x_bsplevel_init_surfaces(level, loader);
+    
+    X_BspNode* levelRootNode = x_bsplevel_get_root_node(level);
+    x_bspnode_calculate_geo_boundbox(levelRootNode, level);
+    
+    printf("Calculated:\n");
+    x_bspboundbox_print(&levelRootNode->frontChild->geoBoundBox);
+    
+    printf("Real:\n");
+    x_bspboundbox_print(&levelRootNode->frontChild->nodeBoundBox);
 }
 
 static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)

@@ -18,7 +18,7 @@
 #include "system/X_File.h"
 #include "error/X_log.h"
 #include "render/X_RenderContext.h"
-
+#include "geo/X_Polygon3.h"
 
 static _Bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -102,12 +102,23 @@ static void draw_crosshair(X_RenderContext* context)
     x_texture_set_texel(tex, centerX, centerY + 1, white);
 }
 
+void draw_render_stats(X_RenderContext* renderContext)
+{
+    char str[128];
+    sprintf(str, "Surfaces rendered: %d\nClip iterations: %d\b", renderContext->renderer->totalSurfacesRendered, x_polygon3_get_clip_counter());
+    
+    x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 8));
+}
+
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
+    x_polygon3_reset_clip_counter();
     
     if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
        x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+    
+    engineContext->renderer.totalSurfacesRendered = 0;
     
     for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
@@ -120,7 +131,10 @@ void x_engine_render_frame(X_EngineContext* engineContext)
         x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
         
         if(x_engine_level_is_loaded(engineContext))
+        {
             draw_current_leaf_info(cam, &renderContext);
+            draw_render_stats(&renderContext);
+        }
         
         draw_crosshair(&renderContext);
     }

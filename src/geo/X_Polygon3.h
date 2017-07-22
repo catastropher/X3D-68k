@@ -35,10 +35,13 @@ void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rconte
 void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest);
 
 _Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest);
-_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest);
+_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest, unsigned int clipFlags);
 
 void x_polygon3_to_polygon3_fp16x16(const X_Polygon3* poly, X_Polygon3_fp16x16* dest);
 void x_polygon3_fp16x16_to_polygon3(const X_Polygon3_fp16x16* poly, X_Polygon3* dest);
+
+void x_polygon3_reset_clip_counter();
+int x_polygon3_get_clip_counter();
 
 static inline X_Polygon3 x_polygon3_make(X_Vec3* vertices, int totalVertices)
 {

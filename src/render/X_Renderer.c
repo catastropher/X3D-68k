@@ -26,6 +26,7 @@ static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* consol
 {
     x_console_register_var(console, &renderer->varFillColor, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
     x_console_register_var(console, &renderer->varShowFps, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
+    x_console_register_var(console, &renderer->varFrustumClip, &renderer->frustumClip, "frustumClip", X_CONSOLEVAR_BOOL, "1", 0);
 }
 
 static void cmd_enablePalette(X_EngineContext* context, int argc, char* argv[])

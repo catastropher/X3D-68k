@@ -51,6 +51,18 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
     return dest->totalVertices > 2;
 }
 
+static int g_totalPlaneIterations;
+
+void x_polygon3_reset_clip_counter()
+{
+    g_totalPlaneIterations = 0;
+}
+
+int x_polygon3_get_clip_counter()
+{
+    return g_totalPlaneIterations;
+}
+
 _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest)
 {
     dest->totalVertices = 0;
@@ -80,6 +92,8 @@ _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Pl
         
         dot = nextDot;
         in = nextIn;
+        
+        ++g_totalPlaneIterations;
     }
     
     return dest->totalVertices > 2;
@@ -129,7 +143,7 @@ _Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustu
     return x_polygon3_clip_to_plane(polyToClip, frustum->planes + frustum->totalPlanes - 1, dest);
 }
 
-_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest)
+_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest, unsigned int clipFlags)
 {
     X_Vec3_fp16x16 tempV[200];
     X_Polygon3_fp16x16 temp[2] = 
@@ -141,16 +155,22 @@ _Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X
     int currentTemp = 0;
     const X_Polygon3_fp16x16* polyToClip = poly;
     
-    for(int i = 0; i < frustum->totalPlanes - 1; ++i)
+    int lastClipPlane = 31 - __builtin_clz(clipFlags);
+    
+    for(int plane = 0; plane < lastClipPlane; ++plane)
     {
-        if(!x_polygon3_fp16x16_clip_to_plane(polyToClip, frustum->planes + i, &temp[currentTemp]))
+        _Bool clipToPlane = (clipFlags & (1 << plane)) != 0;
+        if(!clipToPlane)
+            continue;
+        
+        if(!x_polygon3_fp16x16_clip_to_plane(polyToClip, frustum->planes + plane, &temp[currentTemp]))
             return 0;
         
         polyToClip = &temp[currentTemp];
         currentTemp ^= 1;
     }
     
-    return x_polygon3_fp16x16_clip_to_plane(polyToClip, frustum->planes + frustum->totalPlanes - 1, dest);
+    return x_polygon3_fp16x16_clip_to_plane(polyToClip, frustum->planes + lastClipPlane, dest);
 }
 
 void x_polygon3_to_polygon3_fp16x16(const X_Polygon3* poly, X_Polygon3_fp16x16* dest)

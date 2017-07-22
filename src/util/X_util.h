@@ -27,8 +27,10 @@
 #define X_SIGNOF(_v) ((_v) < 0 ? -1 : ((_v) > 0 ? 1 : 0))
 
 
-static inline void x_print_binary(int num, int bits)
+static inline void x_print_binary(const char* label, int num, int bits)
 {
+    printf("%s: ", label);
+    
     for(int i = bits - 1; i >= 0; --i)
     {
         printf("%d", (num & (1 << i)) != 0);

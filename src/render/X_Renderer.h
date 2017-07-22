@@ -34,7 +34,11 @@ typedef struct X_Renderer
     int fov;
     _Bool fullscreen;
     _Bool videoInitialized;
+    _Bool frustumClip;              // debug
     
+    int totalSurfacesRendered;
+    
+    X_ConsoleVar varFrustumClip;    // debug
     X_ConsoleVar varFillColor;
     X_ConsoleVar varShowFps;
     X_ConsoleVar varScreenW;

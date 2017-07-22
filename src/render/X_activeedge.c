@@ -20,6 +20,7 @@
 #include "level/X_BspLevel.h"
 #include "geo/X_Polygon3.h"
 #include "X_span.h"
+#include "render/X_Renderer.h"
 
 float g_zbuf[480][640];
 
@@ -221,12 +222,19 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_V
     ) >> shiftDown;
 }
 
-void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon, X_BspSurface* bspSurface)
+void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags)
 {
     X_Vec3 clippedV[100];
     X_Polygon3 clipped = x_polygon3_make(clippedV, 100);
     
-    if(!x_polygon3_fp16x16_clip_to_frustum(polygon, context->renderContext->viewFrustum, &clipped))
+    ++context->renderContext->renderer->totalSurfacesRendered;
+    
+    if(geoFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
+    {
+        // Don't bother clipping if fully inside the frustum
+        clipped = *polygon;
+    }
+    else if(!x_polygon3_fp16x16_clip_to_frustum(polygon, context->renderContext->viewFrustum, &clipped, geoFlags))
     {
         return;
     }
@@ -264,7 +272,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     }
 }
 
-void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface)
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags)
 {
     x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
  
@@ -272,6 +280,12 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
     X_Polygon3 polygon = x_polygon3_make(v3d, 100);
   
     polygon.totalVertices = 0;
+    
+    if(!context->renderContext->renderer->frustumClip)
+    {
+        // Enable all clipping planes
+        geoFlags = (1 << context->renderContext->viewFrustum->totalPlanes) - 1;
+    }
     
     for(int i = 0; i < totalEdges; ++i)
     {
@@ -281,7 +295,7 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
             polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[0]].v;
     }
     
-    x_ae_context_add_polygon(context, &polygon, bspSurface);
+    x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags);
 }
 
 static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)

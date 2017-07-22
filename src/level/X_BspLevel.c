@@ -181,12 +181,13 @@ void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* p
 
 static void x_bspleaf_mark_all_surfaces_in_leaf_as_visible(X_BspLeaf* leaf, int currentFrame)
 {
-    X_BspSurface** surface = leaf->firstMarkSurface;
+    X_BspSurface** nextSurface = leaf->firstMarkSurface;
     
     for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
     {
-        (*surface)->lastVisibleFrame = currentFrame;
-        ++surface;
+        X_BspSurface* surface = *nextSurface;        
+        surface->lastVisibleFrame = currentFrame;
+        ++nextSurface;
     }
 }
 
@@ -231,7 +232,7 @@ static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNod
     }
 }
 
-static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext)
+static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, X_BspBoundBoxFrustumFlags geoFlags)
 {
     X_BspLevel* level = renderContext->level;
     
@@ -245,7 +246,7 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
         _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
         
-        if(!onNormalSide ^ planeFlipped)
+        if((!onNormalSide) ^ planeFlipped)
             continue;
         
         x_ae_context_add_level_polygon
@@ -254,17 +255,18 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
             renderContext->level,
             level->surfaceEdgeIds + surface->firstEdgeId,
             surface->totalEdges,
-            surface
-        );
+            surface,
+            geoFlags
+        );        
     }
 }
 
-void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BspBoundBoxFrustumFlags parentFlags)
+void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BspBoundBoxFrustumFlags parentNodeFlags)
 {
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
         return;
     
-    X_BspBoundBoxFrustumFlags nodeFlags = x_bspboundbox_determine_frustum_clip_flags(&node->boundBox, renderContext->viewFrustum, parentFlags);
+    X_BspBoundBoxFrustumFlags nodeFlags = x_bspboundbox_determine_frustum_clip_flags(&node->nodeBoundBox, renderContext->viewFrustum, parentNodeFlags);
     if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
         return;
     
@@ -278,8 +280,13 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     X_BspNode* backSide;
     x_bspnode_determine_children_sides_relative_to_camera(node, &renderContext->camPos, &frontSide, &backSide);
     
+    X_BspBoundBoxFrustumFlags geoFlags = x_bspboundbox_determine_frustum_clip_flags(&node->geoBoundBox, renderContext->viewFrustum, nodeFlags);
+
     x_bspnode_render_recursive(frontSide, renderContext, nodeFlags);
-    x_bspnode_render_surfaces(node, renderContext);
+    
+    if(geoFlags != X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
+        x_bspnode_render_surfaces(node, renderContext, geoFlags);
+    
     x_bspnode_render_recursive(backSide, renderContext, nodeFlags);
 }
 
