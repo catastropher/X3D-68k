@@ -88,6 +88,20 @@ static void draw_current_leaf_info(X_CameraObject* cam, X_RenderContext* renderC
     x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
 }
 
+static void draw_crosshair(X_RenderContext* context)
+{
+    X_Color white = context->screen->palette->white;
+    X_Texture* tex = &context->screen->canvas.tex;
+    
+    int centerX = tex->w / 2;
+    int centerY = tex->h / 2;
+    
+    x_texture_set_texel(tex, centerX - 1, centerY, white);
+    x_texture_set_texel(tex, centerX + 1, centerY, white);
+    x_texture_set_texel(tex, centerX, centerY - 1, white);
+    x_texture_set_texel(tex, centerX, centerY + 1, white);
+}
+
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
@@ -107,6 +121,8 @@ void x_engine_render_frame(X_EngineContext* engineContext)
         
         if(x_engine_level_is_loaded(engineContext))
             draw_current_leaf_info(cam, &renderContext);
+        
+        draw_crosshair(&renderContext);
     }
     
     if(engineContext->renderer.showFps)

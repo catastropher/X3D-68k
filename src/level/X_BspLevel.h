@@ -47,6 +47,19 @@ typedef struct X_BspFaceTexture
     int flags;
 } X_BspFaceTexture;
 
+typedef enum X_BoundBoxPlaneFlags
+{
+    X_BOUNDBOX_OUTSIDE_PLANE = 0,
+    X_BOUNDBOX_INSIDE_PLANE = 1,
+    X_BOUNDBOX_INTERSECT_PLANE = 2
+} X_BoundBoxPlaneFlags;
+
+typedef enum X_BspBoundBoxFrustumFlags
+{
+    X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM = -1,
+    X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM = 0,
+} X_BspBoundBoxFrustumFlags;
+
 typedef struct X_BspBoundBox
 {
     X_Vec3 v[2];
@@ -74,6 +87,7 @@ typedef enum X_BspSurfaceFlags
 
 typedef struct X_BspSurface
 {
+    int id;     // Just for debugging
     int lastVisibleFrame;
     X_BspPlane* plane;
     

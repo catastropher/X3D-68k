@@ -21,27 +21,53 @@
 #include "X_BspLevelLoader.h"
 #include "error/X_error.h"
 
-_Bool x_bspboundbox_outside_plane(X_BspBoundBox* box, X_Plane* plane)
+X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BspBoundBox* box, X_Plane* plane)
 {
     int px = (plane->normal.x > 0 ? 1 : 0);
     int py = (plane->normal.y > 0 ? 1 : 0);
     int pz = (plane->normal.z > 0 ? 1 : 0);
     
     X_Vec3 furthestPointAlongNormal = x_vec3_make(box->v[px].x, box->v[py].y, box->v[pz].z);
+    if(!x_plane_point_is_on_normal_facing_side(plane, &furthestPointAlongNormal))
+        return X_BOUNDBOX_OUTSIDE_PLANE;
     
-    return !x_plane_point_is_on_normal_facing_side(plane, &furthestPointAlongNormal);
+    //return X_BOUNDBOX_INTERSECT_PLANE;
+    
+    X_Vec3 closestPointAlongNormal = x_vec3_make(box->v[px ^ 1].x, box->v[py ^ 1].y, box->v[pz ^ 1].z);
+    if(x_plane_point_is_on_normal_facing_side(plane, &closestPointAlongNormal))
+        return X_BOUNDBOX_INSIDE_PLANE;
+    
+    return X_BOUNDBOX_INTERSECT_PLANE;
+}
+
+_Bool x_boundbox_clip_against_frustum_plane(X_BspBoundBoxFrustumFlags flags, int planeId)
+{
+    return flags & (1 << planeId);
 }
 
 // Based on an algorithm described at http://www.txutxi.com/?p=584
-_Bool x_bspboundbox_outside_frustum(X_BspBoundBox* box, X_Frustum* frustum)
+X_BspBoundBoxFrustumFlags x_bspboundbox_determine_frustum_clip_flags(X_BspBoundBox* box, X_Frustum* frustum, X_BspBoundBoxFrustumFlags parentFlags)
 {
-    for(int i = 0; i < frustum->totalPlanes - 1; ++i)
+    if(parentFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
+        return X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM;
+    
+    X_BspBoundBoxFrustumFlags newFlags = 0;
+    
+    for(int i = 0; i < frustum->totalPlanes; ++i)
     {
-        if(x_bspboundbox_outside_plane(box, frustum->planes + i))
-            return 1;
+        if(!x_boundbox_clip_against_frustum_plane(parentFlags, i))
+            continue;
+        
+        X_BoundBoxPlaneFlags planeFlags = x_bspboundbox_determine_plane_clip_flags(box, frustum->planes + i);
+        
+        if(planeFlags == X_BOUNDBOX_OUTSIDE_PLANE)
+            return X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM;
+        
+        if(planeFlags == X_BOUNDBOX_INTERSECT_PLANE)
+            newFlags |= (1 << i);
     }
     
-    return 0;
+    return newFlags;
 }
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
@@ -233,14 +259,13 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
     }
 }
 
-void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext)
+void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BspBoundBoxFrustumFlags parentFlags)
 {
-    //printf("Enter node %d\n", (int)(x_bspnode_is_leaf(node) ? (X_) node - renderContext->level->nodes))
-    
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
         return;
     
-    if(x_bspboundbox_outside_frustum(&node->boundBox, renderContext->viewFrustum))
+    X_BspBoundBoxFrustumFlags nodeFlags = x_bspboundbox_determine_frustum_clip_flags(&node->boundBox, renderContext->viewFrustum, parentFlags);
+    if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
         return;
     
     if(x_bspnode_is_leaf(node))
@@ -253,14 +278,15 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext)
     X_BspNode* backSide;
     x_bspnode_determine_children_sides_relative_to_camera(node, &renderContext->camPos, &frontSide, &backSide);
     
-    x_bspnode_render_recursive(frontSide, renderContext);
+    x_bspnode_render_recursive(frontSide, renderContext, nodeFlags);
     x_bspnode_render_surfaces(node, renderContext);
-    x_bspnode_render_recursive(backSide, renderContext);
+    x_bspnode_render_recursive(backSide, renderContext, nodeFlags);
 }
 
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
-    x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext);
+    X_BspBoundBoxFrustumFlags enableAllPlanes = (1 << 30) - 1;
+    x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
 }
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)

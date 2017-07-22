@@ -20,6 +20,7 @@
 #include "X_Renderer.h"
 #include "engine/X_EngineContext.h"
 #include "error/X_error.h"
+#include "engine/X_Engine.h"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
@@ -89,6 +90,23 @@ static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
     x_console_printf(&context->console, "Effect will take place on next vidrestart\n");;
 }
 
+// Prints the ID of the surface we're currently looking at
+static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
+{
+    // Render a frame so we can get the span data
+    //x_engine_render_frame(context);
+    
+    int centerX = x_screen_w(&context->screen) / 2;
+    int centerY = x_screen_h(&context->screen) / 2;
+    
+    int surfaceId = x_ae_context_find_surface_point_is_in(&context->renderer.activeEdgeContext, centerX, centerY, &context->currentLevel);
+    
+    if(surfaceId != -1)
+        x_console_printf(&context->console, "Looking at surface #%d\n", surfaceId);
+    else
+        x_console_print(&context->console, "Not looking at a surface\n");
+}
+
 #define MAX_SURFACES 1000
 #define MAX_EDGES 5000
 #define MAX_ACTIVE_EDGES 5000
@@ -106,6 +124,9 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     
     static X_ConsoleCmd cmdFullscreen = { "fullscreen", cmd_fullscreen };
     x_console_register_cmd(console, &cmdFullscreen);
+    
+    static X_ConsoleCmd cmdSurfid = { "surfid", cmd_surfid };
+    x_console_register_cmd(console, &cmdSurfid);
     
     x_renderer_init_console_vars(renderer, console);
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);

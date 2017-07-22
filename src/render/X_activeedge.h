@@ -108,6 +108,8 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_
 void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface);
 void x_ae_context_scan_edges(X_AE_Context* context);
 
+int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level);
+
 static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {
     x_fp2x30 temp = ((long long)x * surface->zInverseXStep + (long long)y * surface->zInverseYStep) >> surface->zInverseShift;

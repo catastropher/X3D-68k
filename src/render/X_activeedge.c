@@ -226,8 +226,6 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     X_Vec3 clippedV[100];
     X_Polygon3 clipped = x_polygon3_make(clippedV, 100);
     
-    //x_polygon3_to_polygon3_fp16x16(polygon, polygon);
-    
     if(!x_polygon3_fp16x16_clip_to_frustum(polygon, context->renderContext->viewFrustum, &clipped))
     {
         return;
@@ -426,5 +424,28 @@ void x_ae_context_scan_edges(X_AE_Context* context)
         x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, 0);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
+}
+
+_Bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)
+{
+    for(int i = 0; i < surface->totalSpans; ++i)
+    {
+        X_AE_Span* span = surface->spans + i;
+        if(span->y == y && x >= span->x1 && x < span->x2)
+            return 1;
+    }
+    
+    return 0;
+}
+
+int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level)
+{
+    for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
+    {
+        if(x_ae_surface_point_is_in_surface_spans(context->surfacePool + i, x, y))
+            return context->surfacePool[i].bspSurface - level->surfaces;
+    }
+    
+    return -1;
 }
 

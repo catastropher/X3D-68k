@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define X_SWAP(_a, _b) { __typeof__(_a) _temp = (_a); (_a) = (_b); (_b) = _temp; }
 
@@ -25,7 +26,16 @@
 
 #define X_SIGNOF(_v) ((_v) < 0 ? -1 : ((_v) > 0 ? 1 : 0))
 
-// TODO: this file deserves its own source file
+
+static inline void x_print_binary(int num, int bits)
+{
+    for(int i = bits - 1; i >= 0; --i)
+    {
+        printf("%d", (num & (1 << i)) != 0);
+    }
+    
+    printf("\n");
+}
 
 int x_count_prefix_match_length(const char* a, const char* b);
 void x_strncpy(char* dest, const char* src, size_t lengthToCopy);
