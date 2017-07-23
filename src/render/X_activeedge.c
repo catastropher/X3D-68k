@@ -274,6 +274,9 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
 
 void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags)
 {
+    if((context->renderContext->renderer->renderMode & 2) == 0)
+        return;
+    
     x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
  
     X_Vec3 v3d[100];
@@ -429,13 +432,19 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
 
 void x_ae_context_scan_edges(X_AE_Context* context)
 {
-    for(int i = 0; i < x_screen_h(context->screen); ++i)
-        x_ae_context_process_edges(context, i);
+    if((context->renderContext->renderer->renderMode & 2) != 0)
+    {
+        for(int i = 0; i < x_screen_h(context->screen); ++i)
+            x_ae_context_process_edges(context, i);
+    }
+ 
+    if((context->renderContext->renderer->renderMode & 1) == 0)
+        return;
     
     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
     {
         X_AE_SurfaceRenderContext surfaceRenderContext;
-        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, 0);
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, context->renderContext->renderer->mipLevel);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
 }
