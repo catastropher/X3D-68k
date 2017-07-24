@@ -17,6 +17,8 @@
 
 #include "X_Texture.h"
 
+struct X_Screen;
+
 typedef struct X_Palette
 {
     unsigned char colorRGB[256][3];
@@ -39,6 +41,8 @@ typedef struct X_Palette
 
 X_Color x_palette_get_closest_color_from_rgb(const X_Palette* palette, unsigned char r, unsigned char g, unsigned char b);
 const X_Palette* x_palette_get_quake_palette(void);
+
+void x_palette_visualize(struct X_Screen* screen);
 
 static inline void x_palette_get_rgb(const X_Palette* palette, X_Color color, unsigned char* r, unsigned char* g, unsigned char* b)
 {

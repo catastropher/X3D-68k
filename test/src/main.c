@@ -18,7 +18,6 @@
 #include <unistd.h>
 #include <math.h>
 
-#include "palette.h"
 #include "Context.h"
 #include "screen.h"
 #include "keys.h"
@@ -49,6 +48,7 @@ void init_x3d(Context* context, int screenW, int screenH, const char* programPat
     
     x_config_set_screen_defaults(&config, screenW, screenH, X_ANG_60, 0);
     screen_set_callbacks(context, &config);
+    x_config_screen_set_palette(&config, x_palette_get_quake_palette());
     
     X_EngineContext* xContext = context->engineContext = x_engine_init(&config);
     
@@ -83,7 +83,6 @@ void init(Context* context, int screenW, int screenH, const char* programPath)
     context->quit = 0;
     
     init_x3d(context, screenW, screenH, programPath);
-    build_color_table(context->screen);
     init_keys();
     
     x_console_execute_cmd(&context->engineContext->console, "searchpath ..");
@@ -211,7 +210,7 @@ void gameloop(Context* context)
     while(!context->quit)
     {
         x_engine_render_frame(context->engineContext);
-        
+    
         handle_keys(context);
         
         screen_update(context);
@@ -223,7 +222,7 @@ int main(int argc, char* argv[])
     Context context;
     
     int w, h;
-    
+
 #ifdef __nspire__
     w = 320;
     h = 240;
@@ -235,8 +234,6 @@ int main(int argc, char* argv[])
     init(&context, w, h, argv[0]);
     screen_init_console_vars(&context.engineContext->console);
     
-    x_screen_set_palette(&context.engineContext->screen, x_palette_get_quake_palette());
-    
     context.cam->angleX = 0;
     context.cam->angleY = 0;
     context.cam->base.position = x_vec3_make(0, -50 * 65536, -800 * 65536);
@@ -246,11 +243,6 @@ int main(int argc, char* argv[])
     gameloop(&context);
     
     cleanup(&context);
-    
- #ifdef __nspire__
-     lcd_init(SCR_TYPE_INVALID);
- #endif
-    
 }
 
 

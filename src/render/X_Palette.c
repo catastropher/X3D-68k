@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_Palette.h"
+#include "X_Screen.h"
 
 static void x_palette_set_palette_color_constants(X_Palette* palette)
 {
@@ -330,5 +331,27 @@ const X_Palette* x_palette_get_quake_palette(void)
 {
     x_palette_set_palette_color_constants(&quakeColorPalette);
     return &quakeColorPalette;
+}
+
+void x_palette_visualize(X_Screen* screen)
+{
+    int size = 8;
+    for(int i = 0; i < 16; ++i)
+    {
+        for(int j = 0; j < 16; ++j)
+        {
+            int y = i * size;
+            int x = j * size;
+            X_Color color = i * 16 + j;
+            
+            for(int k = 0; k < 8; ++k)
+            {
+                for(int d = 0; d < 8; ++d)
+                {
+                    x_texture_set_texel(&screen->canvas.tex, x + d, y + k, color);
+                }
+            }
+        }
+    }
 }
 

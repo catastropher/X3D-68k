@@ -36,7 +36,6 @@ include_directories(/usr/local/include/)
 add_executable(xtest
     src/keys.c
     src/main.c
-    src/palette.c
     src/screen.c
 )
 

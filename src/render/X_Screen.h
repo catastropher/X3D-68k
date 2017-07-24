@@ -27,6 +27,7 @@ typedef struct X_ScreenEventHandlers
     void* userData;         // Pointer to user-defined data passed to screen updates
     void (*displayFrame)(struct X_Screen* screen, void* userData);
     void (*restartVideo)(struct X_EngineContext* context, void* userData);
+    void (*cleanupVideo)(struct X_EngineContext* context, void* userData);
     _Bool (*isValidResolution)(int w, int h);
 } X_ScreenEventHandlers;
 

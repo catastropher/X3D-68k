@@ -20,6 +20,7 @@
 typedef struct X_Config
 {
     X_ScreenEventHandlers screenHandlers;
+    const X_Palette* palette;
     
     int screenW;
     int screenH;
@@ -36,9 +37,15 @@ void x_config_set_screen_display_frame_callback(X_Config* config, void (*display
 void x_config_set_screen_restart_video_callback(X_Config* config, void (*restartVideoCallback)(struct X_EngineContext* context, void* userData));
 void x_config_set_screen_is_valid_resolution_callback(X_Config* config, _Bool (*isValidResolutionCallback)(int w, int h));
 void x_config_set_screen_user_data(X_Config* config, void* userData);
+void x_config_set_screen_cleanup_video_callback(X_Config* config, void (*cleanupVideoCallback)(struct X_EngineContext* context, void* userData));
 
 static inline void x_config_set_program_path(X_Config* config, const char* programPath)
 {
     config->programPath = programPath;
+}
+
+static inline void x_config_screen_set_palette(X_Config* config, const X_Palette* palette)
+{
+    config->palette = palette;
 }
 

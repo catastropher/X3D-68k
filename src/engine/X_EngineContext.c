@@ -30,9 +30,10 @@ static inline void init_object_factory(X_EngineContext* context)
     x_factory_init(&context->gameObjectFactory, 5, 10);
 }
 
-static inline void init_screen(X_EngineContext* context, int screenW, int screenH, X_ScreenEventHandlers* handlers)
+static inline void init_screen(X_EngineContext* context, X_Config* config)
 {
-    x_screen_init(&context->screen, screenW, screenH, handlers);
+    x_screen_init(&context->screen, config->screenW, config->screenH, &config->screenHandlers);
+    x_screen_set_palette(&context->screen, config->palette);
 }
 
 static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
@@ -98,7 +99,7 @@ void x_enginecontext_init(X_EngineContext* context, X_Config* config)
     context->lastFrameStart = context->frameStart;
     
     init_object_factory(context);
-    init_screen(context, config->screenW, config->screenH, &config->screenHandlers);
+    init_screen(context, config);
     init_main_font(context, "font.xtex", 8, 8);     // TODO: this should be configurable
     init_console(context);
     init_keystate(context);
@@ -132,6 +133,8 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_main_font(context);
     cleanup_console(context);
     x_bsplevel_cleanup(&context->currentLevel);
+    
+    context->screen.handlers.cleanupVideo(context, context->screen.handlers.userData);
 }
 
 void x_enginecontext_update_time(X_EngineContext* context)

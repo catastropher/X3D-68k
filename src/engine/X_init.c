@@ -58,3 +58,8 @@ void x_config_set_screen_user_data(X_Config* config, void* userData)
     config->screenHandlers.userData = userData;
 }
 
+void x_config_set_screen_cleanup_video_callback(X_Config* config, void (*cleanupVideoCallback)(struct X_EngineContext* context, void* userData))
+{
+    config->screenHandlers.cleanupVideo = cleanupVideoCallback;
+}
+

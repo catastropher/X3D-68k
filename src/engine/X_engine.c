@@ -45,6 +45,8 @@ X_EngineContext* x_engine_init(X_Config* config)
     x_console_execute_cmd(&engineContext->console, "vidrestart");
     engineContext->renderer.videoInitialized = 1;
     
+    g_engineInitialized = 1;
+    
     return engineContext;
 }
 
