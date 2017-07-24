@@ -31,22 +31,6 @@ static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* consol
     x_console_register_var(console, &renderer->varRenderMode, &renderer->renderMode, "rendermode", X_CONSOLEVAR_INT, "3", 0);
 }
 
-static void cmd_enablePalette(X_EngineContext* context, int argc, char* argv[])
-{
-    if(context->renderer.usePalette)
-    {
-        x_console_print(&context->console, "Already switched to palette\n");
-        return;
-    }
-    
-#ifdef __nspire__
-    context->renderer.usePalette = 1;
-    lcd_init(SCR_320x240_8);
-#else
-    x_console_print(&context->console, "Not available on PC\n");
-#endif
-}
-
 static void cmd_res(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
@@ -116,9 +100,6 @@ static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
 
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
 {
-    static X_ConsoleCmd cmdEnablePalette = { "enablePalette", cmd_enablePalette };
-    x_console_register_cmd(console, &cmdEnablePalette);
-    
     static X_ConsoleCmd cmdRes = { "res", cmd_res };
     x_console_register_cmd(console, &cmdRes);
     
