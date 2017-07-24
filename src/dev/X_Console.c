@@ -696,7 +696,31 @@ static void print_variable_value(X_Console* console, const char* varName)
         return;
     }
     
-    x_console_printf(console, "Variable %s is currently %s\n", varName, var->assignedValueString);
+    char varValue[1024];
+    
+    switch(var->type)
+    {
+        case X_CONSOLEVAR_INT:
+            sprintf(varValue, "%d", *var->intPtr);
+            break;
+            
+        case X_CONSOLEVAR_FLOAT:
+            sprintf(varValue, "%f", *var->floatPtr);
+            break;
+            
+        case X_CONSOLEVAR_STRING:
+            sprintf(varValue, "%s", var->stringPtr->data);
+            break;
+            
+        case X_CONSOLEVAR_FP16X16:
+            sprintf(varValue, "%f", x_fp16x16_to_float(*var->fp16x16Ptr));
+            break;
+        case X_CONSOLEVAR_BOOL:
+            sprintf(varValue, "%s", *var->boolPtr ? "true" : "false");
+            break;
+    }
+    
+    x_console_printf(console, "Variable %s is currently %s\n", varName, varValue);
 }
 
 static void set_variable_value(X_Console* console, const char* varName, const char* varValue)
