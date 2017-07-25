@@ -7,6 +7,7 @@ You will need:
   2. CMake
   3. gcc or clang (a version with gnu99 support)
   4. libasan for debugging runtime errors
+  5. Doxygen for building the documentation
 
 ## Library Build Instructions
 ```
@@ -14,7 +15,7 @@ git clone https://github.com/catastropher/X3D-68k.git
 cd X3D-68k
 mkdir build
 cd build
-cmake ..
+cmake .. -DXTARGET=pc
 make
 sudo make install
 ```
@@ -29,7 +30,7 @@ You will need:
 cd test
 mkdir build
 cd build
-cmake ..
+cmake .. -DXTARGET=pc
 make
 ./xtest
 ```
