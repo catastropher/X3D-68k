@@ -14,31 +14,9 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <X3D/X3D.h>
-#include <SDL/SDL.h>
-#include <unistd.h>
-#include <math.h>
 
 #include "Context.h"
-#include "screen.h"
-#include "keys.h"
-#include "init.h"
 
-void gameloop(Context* context)
-{
-    while(!context->quit)
-    {
-        x_engine_render_frame(context->engineContext);
-        handle_keys(context);
-        screen_update(context);
-    }
-}
-
-int main(int argc, char* argv[])
-{
-    Context context;
-    
-    init(&context, argv[0]);
-    gameloop(&context);
-    cleanup(&context);
-}
+void init(Context* context, const char* programPath);
+void cleanup(Context* context);
 

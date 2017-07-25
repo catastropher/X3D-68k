@@ -34,6 +34,7 @@ include_directories(/usr/local/include/X3D)
 include_directories(/usr/local/include/)
 
 add_executable(xtest
+    src/init.c
     src/keys.c
     src/main.c
     src/screen.c
