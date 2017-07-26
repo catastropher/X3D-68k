@@ -36,8 +36,6 @@ typedef struct X_CacheBlock
     struct X_CacheBlock* lruNext;
     struct X_CacheBlock* lruPrev;
     
-    struct X_CacheBlock* nextFree;
-    
     X_CacheEntry* cacheEntry;
     
     unsigned char memory[];
@@ -57,7 +55,11 @@ typedef struct X_Cache
 void x_cache_init(X_Cache* cache, size_t size, const char* name);
 void x_cache_cleanup(X_Cache* cache);
 
-static inline _Bool x_cacheblock_is_free(X_CacheBlock* block)
+void x_cache_alloc(X_Cache* cache, size_t size, X_CacheEntry* entryDest);
+void* x_cache_get_cached_data(X_Cache* cache, X_CacheEntry* entry);
+
+static inline _Bool x_cachentry_is_in_cache(const X_CacheEntry* entry)
 {
-    return block->flags & X_CACHEBLOCK_FREE;
+    return entry->cacheData != NULL;
 }
+
