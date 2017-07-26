@@ -38,7 +38,7 @@ typedef struct X_CacheBlock
     
     X_CacheEntry* cacheEntry;
     
-    unsigned char memory[];
+    unsigned char memory[0];
 } X_CacheBlock;
 
 typedef struct X_Cache

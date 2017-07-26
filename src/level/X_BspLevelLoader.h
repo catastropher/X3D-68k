@@ -204,6 +204,8 @@ typedef struct X_BspLevelLoader
     int totalSurfaceEdgeIds;
     
     unsigned char* compressedPvsData;       // Potential visibility set
+    
+    unsigned char* lightmapData;
 } X_BspLevelLoader;
 
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);

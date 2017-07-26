@@ -24,6 +24,7 @@
 typedef struct X_Renderer
 {
     X_AE_Context activeEdgeContext;
+    X_Cache surfaceCache;
     
     int fillColor;
     _Bool usePalette;
