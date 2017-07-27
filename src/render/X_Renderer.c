@@ -113,7 +113,9 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_console_register_cmd(console, &cmdSurfid);
     
     x_renderer_init_console_vars(renderer, console);
+    
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
+    x_cache_init(&renderer->surfaceCache, 2000000, "surfacecache");     // TODO: this size should be configurable
     
     renderer->screenW = x_screen_w(screen);
     renderer->screenH = x_screen_h(screen);

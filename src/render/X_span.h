@@ -49,7 +49,7 @@ typedef struct X_AE_SurfaceRenderContext
     X_AE_TextureVar sDivZ;
     X_AE_TextureVar tDivZ;
     
-    X_Texture faceTex;
+    X_Texture surfaceTexture;
     int uMask;
     int vMask;
 } X_AE_SurfaceRenderContext;

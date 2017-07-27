@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include <stdlib.h>
 
 typedef struct X_CacheEntry
@@ -37,8 +39,6 @@ typedef struct X_CacheBlock
     struct X_CacheBlock* lruPrev;
     
     X_CacheEntry* cacheEntry;
-    
-    unsigned char memory[0];
 } X_CacheBlock;
 
 typedef struct X_Cache
@@ -61,5 +61,10 @@ void* x_cache_get_cached_data(X_Cache* cache, X_CacheEntry* entry);
 static inline _Bool x_cachentry_is_in_cache(const X_CacheEntry* entry)
 {
     return entry->cacheData != NULL;
+}
+
+static inline void x_cacheentry_init(X_CacheEntry* entry)
+{
+    entry->cacheData = NULL;
 }
 

@@ -19,6 +19,7 @@
 #include "X_RenderContext.h"
 #include "X_activeedge.h"
 #include "X_Renderer.h"
+#include "X_Surface.h"
 
 #define SHIFTUP 8
 
@@ -48,7 +49,7 @@ static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* cont
     transormed.y >>= context->mipLevel;
     transormed.z >>= context->mipLevel;
     
-    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) /*- ((context->surface->bspSurface->textureMinCoord.x) >> context->mipLevel)*/ +
+    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.x) >> context->mipLevel) +
         ((context->faceTexture->uOffset) >> context->mipLevel);
 }
 
@@ -76,7 +77,7 @@ static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* cont
     transormed.y >>= context->mipLevel;
     transormed.z >>= context->mipLevel;
     
-    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) /*- ((context->surface->bspSurface->textureMinCoord.y) >> context->mipLevel)*/ + 
+    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.y) >> context->mipLevel) + 
         ((context->faceTexture->vOffset) >> context->mipLevel);        
 }
 
@@ -91,11 +92,13 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     x_ae_surfacerendercontext_init_sdivz(context);
     x_ae_surfacerendercontext_init_tdivz(context);
     
-    X_BspLevel* level = context->renderContext->level;
-    x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &context->faceTex);
+    //X_BspLevel* level = context->renderContext->level;
+    //x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &context->faceTex);
     
-    context->uMask = context->faceTex.w - 1;        // Must be powers of 2 for this to work!
-    context->vMask = context->faceTex.h - 1;
+    x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, 0, renderContext->renderer, &context->surfaceTexture);
+    
+    context->uMask = context->surfaceTexture.w - 1;        // Must be powers of 2 for this to work!
+    context->vMask = context->surfaceTexture.h - 1;
 }
 
 static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
@@ -135,17 +138,26 @@ static inline void draw_texel(X_AE_SurfaceRenderContext* context, x_fp16x16* u, 
     uu = uu & context->uMask;
     vv = vv & context->vMask;
     
-    *pixel = x_texture_get_texel(&context->faceTex, uu, vv);
+    *pixel = x_texture_get_texel(&context->surfaceTexture, uu, vv);
     *u += du;
     *v += dv;
 }
 
 static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16x16 u, x_fp16x16 v)
 {
-    int uu = (u >> 16) & context->uMask;
-    int vv = (v >> 16) & context->vMask;
+    int uu = (u >> 16);
+    int vv = (v >> 16);
     
-    return context->faceTex.texels[vv * context->faceTex.w + uu];
+    int w = context->surfaceTexture.w;
+    int h = context->surfaceTexture.h;
+    
+    while(uu < 0) uu += w;
+    while(uu >= w) uu -= w;
+    
+    while(vv < 0) vv += h;
+    while(vv >= h) vv -= h;
+    
+    return context->surfaceTexture.texels[vv * context->surfaceTexture.w + uu];
 }
 
 #define WRITE_TEXELS_SHORT()            \

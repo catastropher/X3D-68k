@@ -18,6 +18,42 @@
 #include "error/X_log.h"
 #include "error/X_error.h"
 
+static _Bool x_cacheblock_is_free(X_CacheBlock* block)
+{
+    return block->flags & X_CACHEBLOCK_FREE;
+}
+
+static void x_cache_print_blocks(X_Cache* cache)
+{
+    for(X_CacheBlock* block = cache->head.next; block != &cache->tail; block = block->next)
+    {
+        printf("Block %zu \n\tSize: %d\n\tFree: %d\n", (size_t)block, (int)block->size, (int)x_cacheblock_is_free(block));
+    }
+    
+    printf("================\n");
+}
+
+static void verify_block_order(X_Cache* cache, const char* function)
+{
+    for(X_CacheBlock* block = cache->head.next; block != &cache->tail; block = block->next)
+    {
+        if(block->prev->next != block)
+            x_system_error("Bad prev->next ptr: %s", function);
+        
+        if(block->next->prev != block)
+            x_system_error("Bad next->prev ptr %s", function);
+    }
+    
+    for(X_CacheBlock* block = cache->head.lruNext; block != &cache->tail; block = block->lruNext)
+    {
+        if(block->lruPrev->lruNext != block)
+            x_system_error("Bad LRU prev->next ptr: %s", function);
+        
+        if(block->next->prev != block)
+            x_system_error("Bad LRU next->prev ptr %s", function);
+    }
+}
+
 void x_cache_init(X_Cache* cache, size_t size, const char* name)
 {
     cache->name = name;
@@ -29,7 +65,7 @@ void x_cache_init(X_Cache* cache, size_t size, const char* name)
     
     cache->head.next = block;
     cache->head.prev = NULL;
-    cache->head.lruNext = block;
+    cache->head.lruNext = &cache->tail;
     cache->head.lruPrev = NULL;
     cache->head.flags = 0;
     
@@ -43,10 +79,10 @@ void x_cache_init(X_Cache* cache, size_t size, const char* name)
     cache->tail.next = NULL;
     cache->tail.prev = block;
     cache->tail.lruNext = NULL;
-    cache->tail.lruPrev = block;
+    cache->tail.lruPrev = &cache->head;
     cache->tail.flags = 0;
     
-    x_log("Created cache %s (size = %d bytes)", name, (int)size);
+    x_log("Created cache %s (size = %d bytes)", name, (int)size);    
 }
 
 void x_cache_cleanup(X_Cache* cache)
@@ -54,19 +90,13 @@ void x_cache_cleanup(X_Cache* cache)
     x_free(cache->cacheMem);
 }
 
-static _Bool x_cacheblock_is_free(X_CacheBlock* block)
-{
-    return block->flags & X_CACHEBLOCK_FREE;
-}
-
-
 static void x_cache_mark_block_as_least_recently_used(X_Cache* cache, X_CacheBlock* block)
 {
     block->lruNext = cache->head.lruNext;
-    cache->head.lruNext->lruPrev = block;
+    block->lruNext->lruPrev = block;
     
     cache->head.lruNext = block;
-    block->lruPrev = &cache->head;
+    block->lruPrev = &cache->head;    
 }
 
 static void x_cacheblock_unlink_lru(X_CacheBlock* block)
@@ -82,18 +112,18 @@ static void x_cache_mark_block_as_most_recently_used(X_Cache* cache, X_CacheBloc
 {
     x_cacheblock_unlink_lru(block);
     
-    block->lruNext = &cache->tail;
-    cache->tail.lruPrev = block;
-    
     X_CacheBlock* oldMostRecent = cache->tail.lruPrev;
     oldMostRecent->lruNext = block;
     block->lruPrev = oldMostRecent;
+    
+    block->lruNext = &cache->tail;
+    cache->tail.lruPrev = block;    
 }
 
 static void x_cacheblock_insert_after(X_CacheBlock* blockToInsertAfter, X_CacheBlock* blockToInsert)
 {
     blockToInsert->next = blockToInsertAfter->next;
-    blockToInsertAfter->prev = blockToInsert;
+    blockToInsert->next->prev = blockToInsert;
     
     blockToInsert->prev = blockToInsertAfter;
     blockToInsertAfter->next = blockToInsert;
@@ -105,11 +135,12 @@ static void x_cacheblock_split(X_CacheBlock* block, size_t size)
     if(block->size - size <= sizeof(X_CacheBlock))
         return;
     
-    X_CacheBlock* newBlock = (X_CacheBlock*)((unsigned char*)block + sizeof(X_CacheBlock));
+    X_CacheBlock* newBlock = (X_CacheBlock*)((unsigned char*)block + sizeof(X_CacheBlock) + size);
     newBlock->size = block->size - size - sizeof(X_CacheBlock);
+    newBlock->flags = X_CACHEBLOCK_FREE;
     x_cacheblock_insert_after(block, newBlock);
     
-    block->size -= size + sizeof(X_CacheBlock);
+    block->size = size;
 }
 
 static void x_cacheblock_merge_with_next(X_CacheBlock* block)
@@ -129,12 +160,13 @@ static X_CacheBlock* x_cache_try_alloc(X_Cache* cache, size_t size)
     // Round size up to the nearest multiple of 8 (for mem alignment)
     size = (size + 7) & (~7);
     
-    for(X_CacheBlock* block = cache->head.next; block != NULL; block = block->next)
+    for(X_CacheBlock* block = cache->head.next; block != &cache->tail; block = block->next)
     {
         if(x_cacheblock_is_free(block) && block->size >= size)
         {
             x_cacheblock_split(block, size);
             x_cache_mark_block_as_least_recently_used(cache, block);
+            block->flags &= (~X_CACHEBLOCK_FREE);
             
             return block;
         }
@@ -146,17 +178,19 @@ static X_CacheBlock* x_cache_try_alloc(X_Cache* cache, size_t size)
 static void x_cacheblock_free(X_CacheBlock* block)
 {
     block->cacheEntry->cacheData = NULL;
+    block->flags |= X_CACHEBLOCK_FREE;
+    
+    x_cacheblock_unlink_lru(block);
     
     if(x_cacheblock_is_free(block->prev))
     {
-        x_cacheblock_unlink_lru(block);
+        x_assert(block->prev->next == block, "Bad block order");
         block = block->prev;
         x_cacheblock_merge_with_next(block);
     }
     
     if(x_cacheblock_is_free(block->next))
     {
-        x_cacheblock_unlink_lru(block);
         x_cacheblock_merge_with_next(block);
     }
 }
@@ -183,6 +217,7 @@ void x_cache_alloc(X_Cache* cache, size_t size, X_CacheEntry* entryDest)
         
         if(newBlock)
         {
+            newBlock->cacheEntry = entryDest;
             entryDest->cacheData = newBlock;
             return;
         }
@@ -197,8 +232,9 @@ void* x_cache_get_cached_data(X_Cache* cache, X_CacheEntry* entry)
         return NULL;
     
     X_CacheBlock* block = (X_CacheBlock*)entry->cacheData;
+    
     x_cache_mark_block_as_most_recently_used(cache, block);
     
-    return (void*)block->memory;
+    return (X_CacheBlock*)((unsigned char*)block + sizeof(X_CacheBlock));
 }
 

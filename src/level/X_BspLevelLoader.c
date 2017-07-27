@@ -552,6 +552,9 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
         surface->lightmapData = level->lightmapData + face->lightmapOffset;
         
         x_bspsurface_calculate_texture_extents(surface, level);
+        
+        for(int j = 0; j < 4; ++j)
+            x_cacheentry_init(surface->cachedSurfaces + j);
     }
 }
 
