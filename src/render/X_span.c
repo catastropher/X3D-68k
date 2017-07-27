@@ -126,6 +126,20 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
         
     *u = ((((long long)uDivZ * z) >> SHIFTUP) + context->sDivZ.adjust);
     *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);
+    
+    X_BspSurface* bspSurface = context->surface->bspSurface;
+    
+    if(*u < 0)
+        *u = 16;
+    
+    if(*u >= bspSurface->textureExtent.x)
+        *u = bspSurface->textureExtent.x - X_FP16x16_ONE;
+    
+    if(*v < 0)
+        *v = 16;
+    
+    if(*v >= bspSurface->textureExtent.y)
+        *v = bspSurface->textureExtent.y - X_FP16x16_ONE;
 }
 
 //#define CLAMP
@@ -151,12 +165,12 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
     int w = context->surfaceTexture.w;
     int h = context->surfaceTexture.h;
     
-    while(uu < 0) uu += w;
-    while(uu >= w) uu -= w;
-    
-    while(vv < 0) vv += h;
-    while(vv >= h) vv -= h;
-    
+//     while(uu < 0) uu += w;
+//     while(uu >= w) uu -= w;
+//     
+//     while(vv < 0) vv += h;
+//     while(vv >= h) vv -= h;
+//     
     return context->surfaceTexture.texels[vv * context->surfaceTexture.w + uu];
 }
 

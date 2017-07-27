@@ -65,24 +65,24 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
     tex.w = faceTex->w >> mipLevel;
     tex.h = faceTex->h >> mipLevel;
     
+    int minX = surface->textureMinCoord.x >> 16;
+    int minY = surface->textureMinCoord.y >> 16;
+    
+    while(minX < 0) minX += tex.w;
+    while(minY < 0) minY += tex.h;
+    
     if(!renderer->enableLighting)
     {
         for(int i = 0; i < h; ++i)
         {
             for(int j = 0; j < w; ++j)
             {
-                texels[i * w + j] = x_texture_get_texel(&tex, j % tex.w, i % tex.h);
+                texels[i * w + j] = x_texture_get_texel(&tex, (j + minX) % tex.w, (i + minY) % tex.h);
             }
         }
         
         return;
     }
-    
-    int minX = (surface->textureMinCoord.x + surface->faceTexture->uOffset) >> 16;
-    int minY = (surface->textureMinCoord.y + surface->faceTexture->vOffset) >> 16;
-    
-    while(minX < 0) minX += w;
-    while(minY < 0) minY += h;
     
     for(int i = 0; i < lightH - 1; ++i)
     {
