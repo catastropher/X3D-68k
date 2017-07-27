@@ -78,6 +78,12 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
         return;
     }
     
+    int minX = (surface->textureMinCoord.x + surface->faceTexture->uOffset) >> 16;
+    int minY = (surface->textureMinCoord.y + surface->faceTexture->vOffset) >> 16;
+    
+    while(minX < 0) minX += w;
+    while(minY < 0) minY += h;
+    
     for(int i = 0; i < lightH - 1; ++i)
     {
         for(int j = 0; j < lightW - 1; ++j)
@@ -101,7 +107,7 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
                     int right = topRight + dRight * k;
                     int dRow = (right - left) >> 4;
                     
-                    X_Color texel =  x_texture_get_texel(&tex, x % tex.w, y % tex.h);
+                    X_Color texel = x_texture_get_texel(&tex, (x + minX) % tex.w, (y + minY) % tex.h);
                     
                     int intensity = (left + dRow * d) >> 16;
                     
