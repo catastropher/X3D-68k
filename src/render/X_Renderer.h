@@ -36,6 +36,7 @@ typedef struct X_Renderer
     _Bool fullscreen;
     _Bool videoInitialized;
     _Bool frustumClip;              // debug
+    _Bool enableLighting;
     
     int renderMode;
     

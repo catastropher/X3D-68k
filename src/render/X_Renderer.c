@@ -94,6 +94,18 @@ static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
         x_console_print(&context->console, "Not looking at a surface\n");
 }
 
+static void cmd_lighting(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage: lighting [1/0] -> enables/disables lighting");
+        return;
+    }
+    
+    context->renderer.enableLighting = atoi(argv[1]);
+    x_cache_flush(&context->renderer.surfaceCache);
+}
+
 #define MAX_SURFACES 1000
 #define MAX_EDGES 5000
 #define MAX_ACTIVE_EDGES 5000
@@ -112,6 +124,9 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     static X_ConsoleCmd cmdSurfid = { "surfid", cmd_surfid };
     x_console_register_cmd(console, &cmdSurfid);
     
+    static X_ConsoleCmd cmdLighting = { "lighting", cmd_lighting };
+    x_console_register_cmd(console, &cmdLighting);
+    
     x_renderer_init_console_vars(renderer, console);
     
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
@@ -122,6 +137,7 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     renderer->videoInitialized = 0;
     renderer->fullscreen = 0;
     renderer->fov = fov;
+    renderer->enableLighting = 1;
     
     renderer->usePalette = 0;
 }

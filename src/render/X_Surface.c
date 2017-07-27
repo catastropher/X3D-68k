@@ -65,6 +65,19 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
     tex.w = faceTex->w >> mipLevel;
     tex.h = faceTex->h >> mipLevel;
     
+    if(!renderer->enableLighting)
+    {
+        for(int i = 0; i < h; ++i)
+        {
+            for(int j = 0; j < w; ++j)
+            {
+                texels[i * w + j] = x_texture_get_texel(&tex, j % tex.w, i % tex.h);
+            }
+        }
+        
+        return;
+    }
+    
     for(int i = 0; i < lightH - 1; ++i)
     {
         for(int j = 0; j < lightW - 1; ++j)

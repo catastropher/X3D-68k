@@ -238,3 +238,20 @@ void* x_cache_get_cached_data(X_Cache* cache, X_CacheEntry* entry)
     return (X_CacheBlock*)((unsigned char*)block + sizeof(X_CacheBlock));
 }
 
+void x_cache_flush(X_Cache* cache)
+{
+    X_CacheBlock* block = cache->head.next;
+    
+    while(block != &cache->tail)
+    {
+        X_CacheBlock* next = block->next;
+        
+        if(!x_cacheblock_is_free(block))
+            x_cacheblock_free(block);
+        
+        block = next;
+    }
+    
+    x_log("Flushed cache %s", cache->name);
+}
+
