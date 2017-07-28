@@ -31,6 +31,11 @@ static int convert_shade(int intensity, int shade)
 
 #define X_LIGHTMAP_MAX_SIZE 34
 
+static _Bool is_power_of_2(int val)
+{
+    return val != 0 && (val & (val - 1)) == 0;
+}
+
 static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* renderer)
 {
     int combinedLightmap[X_LIGHTMAP_MAX_SIZE * X_LIGHTMAP_MAX_SIZE];
@@ -111,13 +116,24 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
     while(minX < 0) minX += tex.w;
     while(minY < 0) minY += tex.h;
     
+    _Bool canUseWrapMask = 1;//is_power_of_2(w) && is_power_of_2(h);
+    
+    if(!is_power_of_2(tex.w))
+        uMask = 255;
+    
+    if(!is_power_of_2(tex.h))
+        vMask = 255;
+    
     if(!renderer->enableLighting)
     {
         for(int i = 0; i < h; ++i)
         {
             for(int j = 0; j < w; ++j)
             {
-                texels[i * w + j] = x_texture_get_texel(&tex, (j + minX) & uMask, (i + minY) & vMask);
+                if(canUseWrapMask)
+                    texels[i * w + j] = x_texture_get_texel(&tex, (j + minX) & uMask, (i + minY) & vMask);
+                else
+                    texels[i * w + j] = x_texture_get_texel(&tex, (j + minX) % w, (i + minY) % h);
             }
         }
         
@@ -147,7 +163,12 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
                     int right = topRight + dRight * k;
                     int dRow = (right - left) >> 4;
                     
-                    X_Color texel = x_texture_get_texel(&tex, (x + minX) & uMask, (y + minY) & vMask);
+                    X_Color texel;
+                    
+                    if(canUseWrapMask)
+                        texel = x_texture_get_texel(&tex, (x + minX) & uMask, (y + minY) & vMask);
+                    else
+                        texel = x_texture_get_texel(&tex, (x + minX) % w, (y + minY) % h);
                     
                     int intensity = X_MIN(63, (left + dRow * d) >> (16 + 2));
                     
@@ -156,6 +177,8 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
             }
         }
     }
+
+    printf("Build surface %d\n", surface->id);
     
     //x_cache_alloc(&renderer->surfaceCache, totalTexels * sizeof(X_Color), surface->cachedSurfaces + mipLevel);
 }
