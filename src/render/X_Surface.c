@@ -19,15 +19,6 @@
 
 #define GET_LUMEL(_x, _y) ((int)combinedLightmap[(_y) * lightW + (_x)] << 16)
 
-#define SHADES_PER_COLOR 64
-
-static X_Color colorMap[256][SHADES_PER_COLOR];
-_Bool g_colorMapBuilt = 0;
-
-static int convert_shade(int intensity, int shade)
-{
-    return (intensity * (shade) + 16) / 32;
-}
 
 #define X_LIGHTMAP_MAX_SIZE 34
 
@@ -39,36 +30,6 @@ static _Bool is_power_of_2(int val)
 static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* renderer)
 {
     int combinedLightmap[X_LIGHTMAP_MAX_SIZE * X_LIGHTMAP_MAX_SIZE];
-    
-    if(!g_colorMapBuilt)
-    {
-        const int TOTAL_FULLBRIGHTS = 32;
-        
-        const X_Palette* palette = x_palette_get_quake_palette();
-        unsigned char r, g, b;
-        
-        for(int i = 0; i < 256 - TOTAL_FULLBRIGHTS; ++i)
-        {
-            x_palette_get_rgb(palette, i, &r, &g, &b);
-            
-            for(int j = 0; j < SHADES_PER_COLOR; ++j)
-            {
-                int rr = X_MIN(255, convert_shade(r, j));
-                int gg = X_MIN(255, convert_shade(g, j));
-                int bb = X_MIN(255, convert_shade(b, j));
-                
-                colorMap[i][j] = x_palette_get_closest_color_from_rgb(palette, rr, gg, bb);
-            }
-        }
-        
-        for(int i = 256 - TOTAL_FULLBRIGHTS; i < 256; ++i)
-        {
-            for(int j = 0; j < SHADES_PER_COLOR; ++j)
-                colorMap[i][j] = i;
-        }
-        
-        g_colorMapBuilt = 1;
-    }
     
     int w = surface->textureExtent.x >> (mipLevel + 16);
     int h = surface->textureExtent.y >> (mipLevel + 16);
@@ -172,7 +133,7 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
                     
                     int intensity = X_MIN(63, (left + dRow * d) >> (16 + 2));
                     
-                    texels[y * w + x] = colorMap[texel][intensity];
+                    texels[y * w + x] = x_renderer_get_shaded_color(renderer, texel, intensity); //colorMap[texel][intensity];
                 }
             }
         }

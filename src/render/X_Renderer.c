@@ -110,6 +110,42 @@ static void cmd_lighting(X_EngineContext* context, int argc, char* argv[])
 #define MAX_EDGES 5000
 #define MAX_ACTIVE_EDGES 5000
 
+static int convert_shade(int intensity, int shade)
+{
+    return (intensity * (shade) + 16) / 32;
+}
+
+static void init_color_shade(X_Color* colorMap, const X_Palette* palette, X_Color color)
+{
+    for(int i = 0; i < X_COLORMAP_SHADES_PER_COLOR; ++i)
+    {
+        unsigned char r, g, b;
+        x_palette_get_rgb(palette, color, &r, &g, &b);
+        
+        int rr = X_MIN(255, convert_shade(r, i));
+        int gg = X_MIN(255, convert_shade(g, i));
+        int bb = X_MIN(255, convert_shade(b, i));
+        
+        colorMap[(int)color * X_COLORMAP_SHADES_PER_COLOR + i] = x_palette_get_closest_color_from_rgb(palette, rr, gg, bb);
+    }
+}
+
+static void x_renderer_init_colormap(X_Renderer* renderer, const X_Palette* palette)
+{
+    renderer->colorMap = x_malloc(256 * X_COLORMAP_SHADES_PER_COLOR * sizeof(X_Color));
+    
+    const int TOTAL_FULLBRIGHTS = 32;
+    
+    for(int i = 0; i < 256 - TOTAL_FULLBRIGHTS; ++i)
+        init_color_shade(renderer->colorMap, palette, i);
+    
+    for(int i = 256 - TOTAL_FULLBRIGHTS; i < 256; ++i)
+    {
+        for(int j = 0; j < X_COLORMAP_SHADES_PER_COLOR; ++j)
+            renderer->colorMap[i * X_COLORMAP_SHADES_PER_COLOR + j] = i;
+    }    
+}
+
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
 {
     static X_ConsoleCmd cmdRes = { "res", cmd_res };
@@ -140,6 +176,8 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     renderer->enableLighting = 1;
     
     renderer->usePalette = 0;
+    
+    x_renderer_init_colormap(renderer, screen->palette);
 }
 
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
