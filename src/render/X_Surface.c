@@ -17,30 +17,49 @@
 #include "X_Renderer.h"
 #include "X_Surface.h"
 
-#define GET_LUMEL(_x, _y) ((int)lumels[(_y) * lightW + (_x)] << 16)
+#define GET_LUMEL(_x, _y) ((int)combinedLightmap[(_y) * lightW + (_x)] << 16)
 
-static X_Color colorMap[256][256];
+#define SHADES_PER_COLOR 64
+
+static X_Color colorMap[256][SHADES_PER_COLOR];
 _Bool g_colorMapBuilt = 0;
+
+static int convert_shade(int intensity, int shade)
+{
+    return (intensity * (shade) + 16) / 32;
+}
+
+#define X_LIGHTMAP_MAX_SIZE 34
 
 static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* renderer)
 {
+    int combinedLightmap[X_LIGHTMAP_MAX_SIZE * X_LIGHTMAP_MAX_SIZE];
+    
     if(!g_colorMapBuilt)
     {
+        const int TOTAL_FULLBRIGHTS = 32;
+        
         const X_Palette* palette = x_palette_get_quake_palette();
         unsigned char r, g, b;
         
-        for(int i = 0; i < 256; ++i)
+        for(int i = 0; i < 256 - TOTAL_FULLBRIGHTS; ++i)
         {
             x_palette_get_rgb(palette, i, &r, &g, &b);
             
-            for(int j = 0; j < 256; ++j)
+            for(int j = 0; j < SHADES_PER_COLOR; ++j)
             {
-                int rr = X_MIN(255, (r * j) >> 7);
-                int gg = X_MIN(255, (g * j) >> 7);
-                int bb = X_MIN(255, (b * j) >> 7);
+                int rr = X_MIN(255, convert_shade(r, j));
+                int gg = X_MIN(255, convert_shade(g, j));
+                int bb = X_MIN(255, convert_shade(b, j));
                 
                 colorMap[i][j] = x_palette_get_closest_color_from_rgb(palette, rr, gg, bb);
             }
+        }
+        
+        for(int i = 256 - TOTAL_FULLBRIGHTS; i < 256; ++i)
+        {
+            for(int j = 0; j < SHADES_PER_COLOR; ++j)
+                colorMap[i][j] = i;
         }
         
         g_colorMapBuilt = 1;
@@ -55,7 +74,25 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
     int lightW = w / 16 + 1;
     int lightH = h / 16 + 1;
     
+    int lightSize = lightW * lightH;
+    
+    // Clear to ambient
+    for(int i = 0; i < lightSize; ++i)
+        combinedLightmap[i] = 0;
+    
     unsigned char* lumels = surface->lightmapData;
+    
+    for(int i = 0; i < X_BSPSURFACE_MAX_LIGHTMAPS; ++i)
+    {
+        if(surface->lightmapStyles[i] == 255)
+            break;
+        
+        for(int j = 0; j < lightSize; ++j)
+            combinedLightmap[j] += lumels[j];
+        
+        lumels += lightSize;
+    }
+    
     X_Color* texels = x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel);
     
     X_BspTexture* faceTex = surface->faceTexture->texture;
@@ -64,6 +101,9 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
     tex.texels = faceTex->mipTexels[mipLevel];
     tex.w = faceTex->w >> mipLevel;
     tex.h = faceTex->h >> mipLevel;
+    
+    int uMask = tex.w - 1;
+    int vMask = tex.h - 1;
     
     int minX = surface->textureMinCoord.x >> 16;
     int minY = surface->textureMinCoord.y >> 16;
@@ -77,7 +117,7 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
         {
             for(int j = 0; j < w; ++j)
             {
-                texels[i * w + j] = x_texture_get_texel(&tex, (j + minX) % tex.w, (i + minY) % tex.h);
+                texels[i * w + j] = x_texture_get_texel(&tex, (j + minX) & uMask, (i + minY) & vMask);
             }
         }
         
@@ -107,9 +147,9 @@ static void rebuild_surface(X_BspSurface* surface, int mipLevel, X_Renderer* ren
                     int right = topRight + dRight * k;
                     int dRow = (right - left) >> 4;
                     
-                    X_Color texel = x_texture_get_texel(&tex, (x + minX) % tex.w, (y + minY) % tex.h);
+                    X_Color texel = x_texture_get_texel(&tex, (x + minX) & uMask, (y + minY) & vMask);
                     
-                    int intensity = (left + dRow * d) >> 16;
+                    int intensity = X_MIN(63, (left + dRow * d) >> (16 + 2));
                     
                     texels[y * w + x] = colorMap[texel][intensity];
                 }

@@ -142,7 +142,7 @@ static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)
     face->texInfo = x_file_read_le_int16(file);
     
     for(int i = 0; i < X_BSPFACE_MAX_LIGHTMAPS; ++i)
-        face->lightmapStypes[i] = x_file_read_char(file);
+        face->lightmapStyles[i] = x_file_read_char(file);
     
     face->lightmapOffset = x_file_read_le_int32(file);
 }
@@ -554,7 +554,10 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
         x_bspsurface_calculate_texture_extents(surface, level);
         
         for(int j = 0; j < 4; ++j)
+        {
             x_cacheentry_init(surface->cachedSurfaces + j);
+            surface->lightmapStyles[j] = face->lightmapStyles[j];
+        }
     }
 }
 

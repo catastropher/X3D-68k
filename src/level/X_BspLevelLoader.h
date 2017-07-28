@@ -119,7 +119,7 @@ typedef struct X_BspLoaderFace
     short totalEdges;
     short texInfo;
     
-    unsigned char lightmapStypes[X_BSPFACE_MAX_LIGHTMAPS];
+    unsigned char lightmapStyles[X_BSPFACE_MAX_LIGHTMAPS];
     int lightmapOffset;
 } X_BspLoaderFace;
 
