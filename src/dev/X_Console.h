@@ -50,9 +50,7 @@ typedef struct X_ConsoleVar
         _Bool* boolPtr;
         X_String* stringPtr;
         void* voidPtr;
-    };
-    
-    struct X_ConsoleVar* next;
+    };    
 } X_ConsoleVar;
 
 
@@ -61,9 +59,7 @@ typedef void (*X_ConsoleCmdHandler)(struct X_EngineContext* context, int argc, c
 typedef struct X_ConsoleCmd
 {
     const char* name;
-    X_ConsoleCmdHandler handler;
-    
-    struct X_ConsoleCmd* next;
+    X_ConsoleCmdHandler handler;    
 } X_ConsoleCmd;
 
 
@@ -77,8 +73,11 @@ typedef enum X_ConsoleOpenState
 
 typedef struct X_Console
 {
-    X_ConsoleVar* consoleVarsHead;
-    X_ConsoleCmd* consoleCmdHead;
+    X_ConsoleVar* consoleVars;
+    int totalConsoleVars;
+    
+    X_ConsoleCmd* consoleCmds;
+    int totalConsoleCmds;
     
     X_Vec2 cursor;
     X_Vec2 size;
@@ -102,9 +101,9 @@ void x_console_close(X_Console* console);
 
 X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName);
 _Bool x_console_cmd_exists(X_Console* console, const char* cmdName);
-void x_console_register_cmd(X_Console* console, X_ConsoleCmd* cmd);
+void x_console_register_cmd(X_Console* console, const char* name, X_ConsoleCmdHandler handler);
 
-void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
+void x_console_register_var(X_Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
 void x_console_init(X_Console* console, struct X_EngineContext* engineContext, X_Font* font);

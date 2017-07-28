@@ -129,11 +129,8 @@ static void cmd_endrecord(X_EngineContext* context, int argc, char* argv[])
 
 void screen_init_console_vars(X_Console* console)
 {
-    static X_ConsoleCmd cmdRecord = { "record", cmd_record };
-    x_console_register_cmd(console, &cmdRecord);
-    
-    static X_ConsoleCmd cmdEndRecord = { "endrecord", cmd_endrecord };
-    x_console_register_cmd(console, &cmdEndRecord);
+    x_console_register_cmd(console, "record", cmd_record);    
+    x_console_register_cmd(console, "endrecord", cmd_endrecord);
 }
 
 static _Bool is_valid_resolution_callback(int w, int h)
