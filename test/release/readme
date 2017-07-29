@@ -6,6 +6,7 @@ Instructions
     - Depending on your version of Ndless, either run xtest (newer) or xtest.prg (older)
     - Open the dev console by pressing 9
     - Run the command "map e1m1" to load the map
+    - Where you're outside the level, it'll render in wireframe. To switch to solid mode, walk inside the level.
 
 Keys
     - Look around: arrow keys
