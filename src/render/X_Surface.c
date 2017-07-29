@@ -218,7 +218,7 @@ static void x_surfacebuilder_init(X_SurfaceBuilder* builder, X_BspSurface* surfa
     x_surfacebuilder_calculate_texture_offset(builder);
 }
 
-static void x_bspsurface_rebuild(X_BspSurface* surface, int mipLevel, X_Renderer* renderer)
+static void __attribute__((hot)) x_bspsurface_rebuild(X_BspSurface* surface, int mipLevel, X_Renderer* renderer)
 {
     X_SurfaceBuilder builder;
     x_surfacebuilder_init(&builder, surface, mipLevel, renderer);
@@ -238,5 +238,4 @@ void x_bspsurface_get_surface_texture_for_mip_level(X_BspSurface* surface, int m
     dest->h = surface->textureExtent.y >> (mipLevel + 16);
     dest->texels = x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel);
 }
-
 
