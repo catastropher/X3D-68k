@@ -142,7 +142,7 @@ static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)
     face->texInfo = x_file_read_le_int16(file);
     
     for(int i = 0; i < X_BSPFACE_MAX_LIGHTMAPS; ++i)
-        face->lightmapStypes[i] = x_file_read_char(file);
+        face->lightmapStyles[i] = x_file_read_char(file);
     
     face->lightmapOffset = x_file_read_le_int32(file);
 }
@@ -330,6 +330,15 @@ static void x_bsplevelloader_load_compressed_pvs(X_BspLevelLoader* level)
     level->compressedPvsData = x_malloc(pvsLump->length);
     x_file_seek(&level->file, pvsLump->fileOffset);
     x_file_read_buf(&level->file, pvsLump->length, level->compressedPvsData);
+}
+
+static void x_bsplevelloader_load_lightmap_data(X_BspLevelLoader* loader)
+{
+    X_BspLoaderLump* lightmapDataLump = loader->header.lumps + X_LUMP_LIGHTING;
+    loader->lightmapData = x_malloc(lightmapDataLump->length);
+    
+    x_file_seek(&loader->file, lightmapDataLump->fileOffset);
+    x_file_read_buf(&loader->file, lightmapDataLump->length, loader->lightmapData);
 }
 
 static void x_bsplevelloader_load_marksurfaces(X_BspLevelLoader* loader)
@@ -540,8 +549,15 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
             surface->flags |= X_BSPSURFACE_FLIPPED;
         
         surface->faceTexture = level->faceTextures + face->texInfo;
+        surface->lightmapData = level->lightmapData + face->lightmapOffset;
         
         x_bspsurface_calculate_texture_extents(surface, level);
+        
+        for(int j = 0; j < 4; ++j)
+        {
+            x_cacheentry_init(surface->cachedSurfaces + j);
+            surface->lightmapStyles[j] = face->lightmapStyles[j];
+        }
     }
 }
 
@@ -749,27 +765,18 @@ static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
     x_bspnode_calculate_geo_boundbox(node->backChild, level);
 }
 
-// static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
-// {
-//     if(x_bspnode_is_leaf(node))
-//     {
-//         
-//         //x_bspleaf_calculate_geo_boundbox((X_BspLeaf*)node, level);
-//         return;
-//     }
-//     
-//     x_bspnode_calculate_geo_boundbox()
-//     
-// //     x_bspnode_calculate_geo_boundbox(node->frontChild, level);
-// //     x_bspnode_calculate_geo_boundbox(node->backChild, level);
-// //     x_bspboundbox_merge(&node->frontChild->geoBoundBox, &node->backChild->geoBoundBox, &node->geoBoundBox);
-// }
+static void x_bsplevel_init_lightmap_data(X_BspLevel* level, X_BspLevelLoader* loader)
+{
+    level->lightmapData = loader->lightmapData;
+    loader->lightmapData = NULL;
+}
 
 static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLoader* loader)
 {
     x_bsplevel_allocate_memory(level, loader);
     
     x_bsplevel_init_pvs(level, loader);
+    x_bsplevel_init_lightmap_data(level, loader);
     x_bsplevel_init_vertices(level, loader);
     x_bsplevel_init_edges(level, loader);
     x_bsplevel_init_planes(level, loader);
@@ -807,6 +814,7 @@ static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char
         return 0;
     
     x_bsplevelloader_load_compressed_pvs(loader);
+    x_bsplevelloader_load_lightmap_data(loader);
     x_bsplevelloader_load_planes(loader);
     x_bsplevelloader_load_vertices(loader);
     x_bsplevelloader_load_edges(loader);
@@ -825,6 +833,7 @@ static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char
 static void x_bsplevelloader_cleanup(X_BspLevelLoader* level)
 {
     x_free(level->compressedPvsData);
+    x_free(level->lightmapData);
     x_free(level->edges);
     x_free(level->faces);
     x_free(level->faceTextures);

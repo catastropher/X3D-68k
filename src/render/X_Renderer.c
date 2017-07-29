@@ -94,9 +94,57 @@ static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
         x_console_print(&context->console, "Not looking at a surface\n");
 }
 
+static void cmd_lighting(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage: lighting [1/0] -> enables/disables lighting");
+        return;
+    }
+    
+    context->renderer.enableLighting = atoi(argv[1]);
+    x_cache_flush(&context->renderer.surfaceCache);
+}
+
 #define MAX_SURFACES 1000
 #define MAX_EDGES 5000
 #define MAX_ACTIVE_EDGES 5000
+
+static int convert_shade(int intensity, int shade)
+{
+    return (intensity * (shade) + 16) / 32;
+}
+
+static void init_color_shade(X_Color* colorMap, const X_Palette* palette, X_Color color)
+{
+    for(int i = 0; i < X_COLORMAP_SHADES_PER_COLOR; ++i)
+    {
+        unsigned char r, g, b;
+        x_palette_get_rgb(palette, color, &r, &g, &b);
+        
+        int rr = X_MIN(255, convert_shade(r, i));
+        int gg = X_MIN(255, convert_shade(g, i));
+        int bb = X_MIN(255, convert_shade(b, i));
+        
+        colorMap[(int)color * X_COLORMAP_SHADES_PER_COLOR + i] = x_palette_get_closest_color_from_rgb(palette, rr, gg, bb);
+    }
+}
+
+static void x_renderer_init_colormap(X_Renderer* renderer, const X_Palette* palette)
+{
+    renderer->colorMap = x_malloc(256 * X_COLORMAP_SHADES_PER_COLOR * sizeof(X_Color));
+    
+    const int TOTAL_FULLBRIGHTS = 32;
+    
+    for(int i = 0; i < 256 - TOTAL_FULLBRIGHTS; ++i)
+        init_color_shade(renderer->colorMap, palette, i);
+    
+    for(int i = 256 - TOTAL_FULLBRIGHTS; i < 256; ++i)
+    {
+        for(int j = 0; j < X_COLORMAP_SHADES_PER_COLOR; ++j)
+            renderer->colorMap[i * X_COLORMAP_SHADES_PER_COLOR + j] = i;
+    }    
+}
 
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
 {
@@ -112,16 +160,24 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     static X_ConsoleCmd cmdSurfid = { "surfid", cmd_surfid };
     x_console_register_cmd(console, &cmdSurfid);
     
+    static X_ConsoleCmd cmdLighting = { "lighting", cmd_lighting };
+    x_console_register_cmd(console, &cmdLighting);
+    
     x_renderer_init_console_vars(renderer, console);
+    
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
+    x_cache_init(&renderer->surfaceCache, 3000000, "surfacecache");     // TODO: this size should be configurable
     
     renderer->screenW = x_screen_w(screen);
     renderer->screenH = x_screen_h(screen);
     renderer->videoInitialized = 0;
     renderer->fullscreen = 0;
     renderer->fov = fov;
+    renderer->enableLighting = 1;
     
     renderer->usePalette = 0;
+    
+    x_renderer_init_colormap(renderer, screen->palette);
 }
 
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)

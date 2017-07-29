@@ -15,6 +15,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #ifdef __nspire__
 #include <libndls.h>
@@ -32,8 +33,14 @@ void x_assert_function(_Bool condition, const char* file, int line, const char* 
     x_system_error("Assertion Failed (check log for more details)");
 }
 
-void x_system_error(const char* error)
+void x_system_error(const char* format, ...)
 {
+    char error[4096];
+    
+    va_list list;
+    va_start(list, format);
+    vsnprintf(error, sizeof(error), format, list);
+    
     x_log_error("%s", error);
     
 #ifdef __nspire__

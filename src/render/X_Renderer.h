@@ -24,6 +24,9 @@
 typedef struct X_Renderer
 {
     X_AE_Context activeEdgeContext;
+    X_Cache surfaceCache;
+    
+    X_Color* colorMap;
     
     int fillColor;
     _Bool usePalette;
@@ -35,6 +38,7 @@ typedef struct X_Renderer
     _Bool fullscreen;
     _Bool videoInitialized;
     _Bool frustumClip;              // debug
+    _Bool enableLighting;
     
     int renderMode;
     
@@ -52,6 +56,13 @@ typedef struct X_Renderer
     X_ConsoleVar varMipLevel;
     X_ConsoleVar varRenderMode;
 } X_Renderer;
+
+#define X_COLORMAP_SHADES_PER_COLOR 64
+
+static inline X_Color x_renderer_get_shaded_color(X_Renderer* renderer, X_Color color, int intensity)
+{
+    return renderer->colorMap[(int)color * X_COLORMAP_SHADES_PER_COLOR + intensity];
+}
 
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov);
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen);

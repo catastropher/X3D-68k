@@ -435,7 +435,12 @@ void x_ae_context_scan_edges(X_AE_Context* context)
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
         for(int i = 0; i < x_screen_h(context->screen); ++i)
+        {
+            for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
+                s->crossCount = 0;
+            
             x_ae_context_process_edges(context, i);
+        }
     }
  
     if((context->renderContext->renderer->renderMode & 1) == 0)
@@ -443,6 +448,9 @@ void x_ae_context_scan_edges(X_AE_Context* context)
     
     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
     {
+        if(context->surfacePool[i].totalSpans == 0)
+            continue;
+        
         X_AE_SurfaceRenderContext surfaceRenderContext;
         x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, context->renderContext->renderer->mipLevel);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);

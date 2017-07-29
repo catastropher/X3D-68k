@@ -19,6 +19,7 @@
 #include "render/X_Texture.h"
 #include "geo/X_Plane.h"
 #include "util/X_util.h"
+#include "memory/X_Cache.h"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -85,6 +86,8 @@ typedef enum X_BspSurfaceFlags
     X_BSPSURFACE_FLIPPED = 1,
 } X_BspSurfaceFlags;
 
+#define X_BSPSURFACE_MAX_LIGHTMAPS 4
+
 typedef struct X_BspSurface
 {
     int id;     // Just for debugging
@@ -101,6 +104,11 @@ typedef struct X_BspSurface
     
     X_Vec2 textureMinCoord;
     X_Vec2 textureExtent;
+    
+    unsigned char* lightmapData;
+    unsigned char lightmapStyles[X_BSPSURFACE_MAX_LIGHTMAPS];
+    
+    X_CacheEntry cachedSurfaces[X_BSPTEXTURE_MIP_LEVELS];   // Cached surface for each mipmap level
 } X_BspSurface;
 
 typedef struct X_BspEdge
@@ -214,6 +222,8 @@ typedef struct X_BspLevel
     int totalFaceTextures;
     
     unsigned char* compressedPvsData;
+    
+    unsigned char* lightmapData;
 } X_BspLevel;
 
 void x_bsplevel_cleanup(X_BspLevel* level);

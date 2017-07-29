@@ -137,7 +137,7 @@ void x_engine_render_frame(X_EngineContext* engineContext)
         if(x_engine_level_is_loaded(engineContext))
         {
             draw_current_leaf_info(cam, &renderContext);
-            draw_render_stats(&renderContext);
+            //draw_render_stats(&renderContext);
         }
         
         draw_crosshair(&renderContext);

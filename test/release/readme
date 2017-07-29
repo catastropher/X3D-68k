@@ -1,0 +1,35 @@
+About
+    This is a demo for X3D, a cross platform 3D engine being developed for the Nspire CX and PC. Ports for other platforms will be created later. As of recently, X3D can load Quake levels and this demo is to show off that and the static lighting engine.
+
+Instructions
+    - Send all of the files (except for this one!) to the calculator
+    - Depending on your version of Ndless, either run xtest (newer) or xtest.prg (older)
+    - Open the dev console by pressing 9
+    - Run the command "map e1m1" to load the map
+    - Where you're outside the level, it'll render in wireframe. To switch to solid mode, walk inside the level.
+
+Keys
+    - Look around: arrow keys
+    - Forward/backward: 7/4
+    - Open dev console: 9
+    - Quit: Esc
+    - Autocomplete in the console: Tab
+    - List autocomplete options: hit Tab twice
+
+Useful console commands
+    - map [name]      -> loads a map
+    - lighting [0/1]  -> enables/disables lighting
+    - surfid          -> prints the id of the polygon you're looking at
+    - echo            -> prints text on the screen
+    - exec            -> executes a script
+
+    Don't run the other commands unless you know what you're doing!
+    
+What to do if there's a bug
+    If there is a detectable error that can be prevented, it will quit with a message box saying what the error is. All engine events get dumped to engine.log, so if there's any problem please decribe what happened and send it to me!
+
+Author
+    Michael Wilder aka catastropher <mwilder.w@gmail.com>
+
+Source code
+    X3D is completely free and open source (published under the GPL). Source is available here: https://github.com/catastropher/X3D-68k
