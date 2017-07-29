@@ -50,6 +50,7 @@ typedef struct X_SurfaceBuilder
     X_SurfaceBuilderBlock block;
 } X_SurfaceBuilder;
 
+// TODO: should this be moved into utils?
 static _Bool is_power_of_2(int val)
 {
     return val != 0 && (val & (val - 1)) == 0;
@@ -74,6 +75,7 @@ static void x_surfacebuilder_combine_lightmaps(X_SurfaceBuilder* builder)
         for(int j = 0; j < builder->lightmapTotalLumels; ++j)
             builder->combinedLightmap[j] += lumels[j];
         
+        // Lightmaps are stored consecutively in memory
         lumels += builder->lightmapTotalLumels;
     }
 }

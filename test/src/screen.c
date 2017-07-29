@@ -164,6 +164,7 @@ static void video_restart_callback(X_EngineContext* engineContext, void* userDat
         
 #ifdef __nspire__
         lcd_init(SCR_320x240_8);
+        memset(REAL_SCREEN_BASE_ADDRESS, 0, 320 * 240);     // Prevent the screen from flashing when we switch palettes
         save_old_palette();
         set_palette(engineContext->screen.palette);
 #endif
