@@ -98,3 +98,20 @@ static inline x_fp16x16 x_int_div_as_fp16x16(int a, int b)
     return (a << 16) / b;
 }
 
+// Calculates the reciprocal of a number in the range 1...65536
+static inline x_fp16x16 x_fastrecip(unsigned int val)
+{
+    int shiftUp = __builtin_clz(val) - 16;
+    val <<= shiftUp;
+    
+    const unsigned int ADD = (48 << 16) / 17;
+    
+    unsigned int x = ADD - (val << 1);
+    
+    x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
+    x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
+    x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
+    
+    return x >> (16 - shiftUp);
+}
+

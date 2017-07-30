@@ -28,7 +28,7 @@ void gameloop(Context* context)
     while(!context->quit)
     {
         x_engine_render_frame(context->engineContext);
-        handle_keys(context);
+        handle_keys(context);        
         screen_update(context);
     }
 }

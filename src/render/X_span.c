@@ -117,12 +117,12 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
 {
     x_fp16x16 uDivZ = calculate_u_div_z(context, x, y);
     x_fp16x16 vDivZ = calculate_v_div_z(context, x, y);
-    x_fp2x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y)) >> 13;
+    x_fp2x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y)) >> 14;
     
     if(invZ == 0)
         return;
     
-    int z = (1 << 17) / invZ;
+    int z = x_fastrecip(invZ); //(1 << 17) / invZ;
         
     *u = ((((long long)uDivZ * z) >> SHIFTUP) + context->sDivZ.adjust);
     *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);

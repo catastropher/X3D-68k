@@ -15,10 +15,10 @@
 
 cmake_minimum_required(VERSION 2.6)
 
-project(X3D C)
+project(X3D C ASM)
 
 if(NOT DEFINED XTARGET)
-    set(X3D_TARGET "pc")
+    set(XTARGET "pc")
 endif()
 
 if(${XTARGET} STREQUAL "pc")
@@ -26,6 +26,7 @@ if(${XTARGET} STREQUAL "pc")
     #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O2")
 elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_C_COMPILER nspire-gcc)
+    set(CMAKE_ASM_COMPILER nspire-as)
     set(CMAKE_LI)
     add_definitions(-D__nspire__)
     set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2")
@@ -33,7 +34,7 @@ endif()
 
 include_directories(src/)
 
-add_library(X3D STATIC
+set(X3D_SOURCES
     # dev
     src/dev/X_conCommands.c
     src/dev/X_Console.c
@@ -87,7 +88,7 @@ add_library(X3D STATIC
     src/render/X_Surface.c
     src/render/X_Texture.c
     src/render/X_Viewport.c
-    
+        
     # system
     src/system/X_File.c
     src/system/X_Keys.c
@@ -96,6 +97,12 @@ add_library(X3D STATIC
     # util
     src/util/X_util.c
 )
+
+if(${XTARGET} STREQUAL "nspire")
+    set(X3D_SOURCES ${X3D_SOURCES} src/render/X_span_arm.s)
+endif()
+
+add_library(X3D STATIC ${X3D_SOURCES})
 
 install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)
 install(DIRECTORY src/ DESTINATION /usr/local/include/X3D FILES_MATCHING PATTERN "*.h")
