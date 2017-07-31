@@ -48,6 +48,8 @@ typedef struct X_SurfaceBuilder
     int mipLevel;
     
     X_SurfaceBuilderBlock block;
+    
+    X_Light* currentLight;
 } X_SurfaceBuilder;
 
 // TODO: should this be moved into utils?
@@ -191,10 +193,63 @@ static void x_surfacebuilder_build_from_combined_lightmap(X_SurfaceBuilder* buil
     }
 }
 
+static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, X_Vec3* dest, int* distDest)
+{
+    X_Plane* plane = &builder->bspSurface->plane->plane;
+    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &builder->currentLight->position));
+    
+    dest->x = builder->currentLight->position.x - x_fp16x16_to_int(plane->normal.x * dist);
+    dest->y = builder->currentLight->position.y - x_fp16x16_to_int(plane->normal.y * dist);
+    dest->z = builder->currentLight->position.z - x_fp16x16_to_int(plane->normal.z * dist);
+    
+    *distDest = abs(dist);
+}
+
+static void x_surfacebuilder_apply_dynamic_light(X_SurfaceBuilder* builder)
+{
+    int lightDistToPlane;
+    X_Vec3 closestPoint;
+    x_surfacebuilder_surface_point_closest_to_light(builder, &closestPoint, &lightDistToPlane);
+    
+    // We use linear falloff
+    x_fp24x8 intensityAtClosestPoint = builder->currentLight->intensity - lightDistToPlane;
+    
+    X_BspFaceTexture* faceTexture = builder->bspSurface->faceTexture;
+    X_Vec2 closestIn2D = x_vec2_make
+    (
+        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->uOrientation) + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x),
+        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->vOrientation) + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y)
+    );
+    
+    for(int i = 0; i < builder->lightmapSize.y; ++i)
+    {
+        int vDist = abs(closestIn2D.y - i * 16);
+        
+        for(int j = 0; j < builder->lightmapSize.x; ++j)
+        {
+            int uDist = abs(closestIn2D.x - j * 16);
+            int approxDist = (uDist > vDist ? uDist + (vDist >> 1) : vDist + (uDist >> 1));
+            
+            builder->combinedLightmap[i * builder->lightmapSize.x + j] += X_MAX(0, intensityAtClosestPoint - approxDist);
+        }
+    }
+}
+
+static void x_surfacebuilder_clamp_lightmap(X_SurfaceBuilder* builder)
+{
+    for(int i = 0; i < builder->lightmapTotalLumels; ++i)
+        builder->combinedLightmap[i] = X_MIN(255, builder->combinedLightmap[i]);
+}
+
 static void x_surfacebuilder_build_with_lighting(X_SurfaceBuilder* builder)
 {
     clear_to_ambient_light(builder->combinedLightmap, builder->lightmapTotalLumels);
-    x_surfacebuilder_combine_lightmaps(builder);
+    //x_surfacebuilder_combine_lightmaps(builder);
+    
+    builder->currentLight = builder->renderer->dynamicLights + 0;
+    x_surfacebuilder_apply_dynamic_light(builder);
+    x_surfacebuilder_clamp_lightmap(builder);
+    
     x_surfacebuilder_build_from_combined_lightmap(builder);
 }
 

@@ -146,6 +146,14 @@ static void x_renderer_init_colormap(X_Renderer* renderer, const X_Palette* pale
     }    
 }
 
+static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
+{
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+        renderer->dynamicLights[i].flags = X_LIGHT_FREE;
+    
+    renderer->dynamicLightsNeedingUpdated = 0;
+}
+
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
 {
     static X_ConsoleCmd cmdRes = { "res", cmd_res };
@@ -178,6 +186,7 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     renderer->usePalette = 0;
     
     x_renderer_init_colormap(renderer, screen->palette);
+    x_renderer_init_dynamic_lights(renderer);
 }
 
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)

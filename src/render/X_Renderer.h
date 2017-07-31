@@ -18,13 +18,19 @@
 #include "X_Texture.h"
 #include "dev/X_Console.h"
 #include "X_activeedge.h"
+#include "X_Light.h"
 
 #define X_RENDERER_FILL_DISABLED -1
+
+#define X_RENDERER_MAX_LIGHTS 32
 
 typedef struct X_Renderer
 {
     X_AE_Context activeEdgeContext;
     X_Cache surfaceCache;
+    
+    X_Light dynamicLights[X_RENDERER_MAX_LIGHTS];
+    unsigned int dynamicLightsNeedingUpdated;
     
     X_Color* colorMap;
     

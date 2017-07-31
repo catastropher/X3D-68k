@@ -112,6 +112,16 @@ void draw_render_stats(X_RenderContext* renderContext)
     x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 8));
 }
 
+void update_test_light(X_RenderContext* context)
+{
+    X_Light* light = context->renderer->dynamicLights + 0;
+    light->position = context->camPos;
+    light->intensity = 500;
+    
+    // :(
+    x_cache_flush(&context->renderer->surfaceCache);
+}
+
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
@@ -126,6 +136,8 @@ void x_engine_render_frame(X_EngineContext* engineContext)
     {
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+        
+        update_test_light(&renderContext);
         
         if((engineContext->renderer.renderMode & 2) != 0)
             x_ae_context_begin_render(&engineContext->renderer.activeEdgeContext, &renderContext);
