@@ -112,14 +112,66 @@ void draw_render_stats(X_RenderContext* renderContext)
     x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 8));
 }
 
+X_Light* add_light(X_RenderContext* context)
+{
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(x_light_is_free(context->renderer->dynamicLights + i))
+        {
+            context->renderer->dynamicLights[i].flags &= ~X_LIGHT_FREE;
+            return context->renderer->dynamicLights + i;
+        }
+    }
+    
+    return NULL;
+}
+
 void update_test_light(X_RenderContext* context)
 {
-    X_Light* light = context->renderer->dynamicLights + 0;
-    light->position = context->camPos;
-    light->intensity = 500;
+    _Bool down = x_keystate_key_down(&context->engineContext->keystate, 'q');
+    static _Bool lastDown;
+    
+    if(down && !lastDown)
+    {
+        X_Vec3 up, right, forward;
+        x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
+        
+        X_Light* light = add_light(context);
+        
+        if(light == NULL)
+            return;
+        
+        light->position = context->cam->base.position;
+        light->intensity = 300;
+        light->direction = forward;
+        light->flags |= X_LIGHT_ENABLED;
+    }
+    
+    X_Light* lights = context->renderer->dynamicLights;
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(x_light_is_enabled(context->renderer->dynamicLights + i))
+        {
+            lights[i].position = x_vec3_add_scaled(&lights[i].position, &lights[i].direction, 10 << 16);
+        }
+    }
+    
+    lastDown = down;
     
     // :(
-    x_cache_flush(&context->renderer->surfaceCache);
+    //x_cache_flush(&context->renderer->surfaceCache);
+}
+
+static void mark_lights(X_EngineContext* context)
+{
+    X_Light* lights = context->renderer.dynamicLights;
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(!x_light_is_free(lights + i))
+        {
+            x_bsplevel_mark_surfaces_light_is_close_to(&context->currentLevel, lights + i, context->frameCount);
+        }
+    }
 }
 
 void x_engine_render_frame(X_EngineContext* engineContext)
@@ -131,6 +183,10 @@ void x_engine_render_frame(X_EngineContext* engineContext)
        x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
     
     engineContext->renderer.totalSurfacesRendered = 0;
+    engineContext->renderer.currentFrame = engineContext->frameCount;
+    engineContext->renderer.dynamicLightsNeedingUpdated = 0xFFFFFFFF;
+    
+    mark_lights(engineContext);
     
     for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {

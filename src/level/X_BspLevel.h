@@ -20,6 +20,7 @@
 #include "geo/X_Plane.h"
 #include "util/X_util.h"
 #include "memory/X_Cache.h"
+#include "render/X_Light.h"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -107,6 +108,9 @@ typedef struct X_BspSurface
     
     unsigned char* lightmapData;
     unsigned char lightmapStyles[X_BSPSURFACE_MAX_LIGHTMAPS];
+    
+    unsigned int lightsTouchingSurface;
+    int lastLightUpdateFrame;
     
     X_CacheEntry cachedSurfaces[X_BSPTEXTURE_MIP_LEVELS];   // Cached surface for each mipmap level
 } X_BspSurface;
@@ -240,6 +244,8 @@ void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* p
 void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext);
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
+
+void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light* light, int currentFrame);
 
 //======================== level ========================
 

@@ -149,7 +149,10 @@ static void x_renderer_init_colormap(X_Renderer* renderer, const X_Palette* pale
 static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
 {
     for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
         renderer->dynamicLights[i].flags = X_LIGHT_FREE;
+        renderer->dynamicLights[i].id = i;
+    }
     
     renderer->dynamicLightsNeedingUpdated = 0;
 }

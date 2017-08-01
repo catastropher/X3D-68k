@@ -52,6 +52,9 @@ typedef struct X_AE_SurfaceRenderContext
     X_Texture surfaceTexture;
     int uMask;
     int vMask;
+    
+    x_fp16x16 surfaceW;
+    x_fp16x16 surfaceH;
 } X_AE_SurfaceRenderContext;
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, struct X_AE_Surface* surface, struct X_RenderContext* renderContext, int mipLevel);

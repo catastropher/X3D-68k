@@ -34,6 +34,8 @@ typedef struct X_Renderer
     
     X_Color* colorMap;
     
+    int currentFrame;
+    
     int fillColor;
     _Bool usePalette;
     _Bool showFps;

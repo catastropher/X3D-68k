@@ -95,10 +95,13 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     //X_BspLevel* level = context->renderContext->level;
     //x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &context->faceTex);
     
-    x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, 0, renderContext->renderer, &context->surfaceTexture);
+    x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, renderContext->renderer->mipLevel, renderContext->renderer, &context->surfaceTexture);
     
     context->uMask = context->surfaceTexture.w - 1;        // Must be powers of 2 for this to work!
     context->vMask = context->surfaceTexture.h - 1;
+    
+    context->surfaceW = x_fp16x16_from_int(context->surfaceTexture.w);
+    context->surfaceH = x_fp16x16_from_int(context->surfaceTexture.h);
 }
 
 static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
@@ -127,19 +130,17 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
     *u = ((((long long)uDivZ * z) >> SHIFTUP) + context->sDivZ.adjust);
     *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);
     
-    X_BspSurface* bspSurface = context->surface->bspSurface;
-    
     if(*u < 0)
         *u = 16;
     
-    if(*u >= bspSurface->textureExtent.x)
-        *u = bspSurface->textureExtent.x - X_FP16x16_ONE;
+    if(*u >= context->surfaceW)
+        *u = context->surfaceW - X_FP16x16_ONE;
     
     if(*v < 0)
         *v = 16;
     
-    if(*v >= bspSurface->textureExtent.y)
-        *v = bspSurface->textureExtent.y - X_FP16x16_ONE;
+    if(*v >= context->surfaceH)
+        *v = context->surfaceH - X_FP16x16_ONE;
 }
 
 //#define CLAMP
