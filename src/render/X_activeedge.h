@@ -43,6 +43,8 @@ typedef struct X_AE_Surface
     int zInverseXStep;          // Fixed point number with a decimal point that is shifted
     int zInverseYStep;
     x_fp2x30 zInverseOrigin;
+    
+    x_fp16x16 closestZ;
 } X_AE_Surface;
 
 typedef struct X_AE_Edge

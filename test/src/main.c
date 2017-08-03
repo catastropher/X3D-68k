@@ -33,14 +33,14 @@ void gameloop(Context* context)
         
 //         if(x_engine_level_is_loaded(context->engineContext))
 //         {
-//             X_BspSurface* test = context->engineContext->currentLevel.surfaces + 4095;
+//             X_BspSurface* test = context->engineContext->currentLevel.surfaces + 27;
 //             int mipLevel = context->engineContext->renderer.mipLevel;
 //             X_Texture tex;
 //             x_bspsurface_get_surface_texture_for_mip_level(test, mipLevel, &context->engineContext->renderer, &tex);
 //             
 //             x_canvas_blit_texture(&context->engineContext->screen.canvas, &tex, x_vec2_make(0, 0));
 //         }
-//         
+        
         handle_keys(context);        
         screen_update(context);
     }

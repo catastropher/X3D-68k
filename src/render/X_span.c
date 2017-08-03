@@ -86,7 +86,7 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     context->surface = surface;
     context->faceTexture = context->surface->bspSurface->faceTexture;
     context->renderContext = renderContext;
-    context->mipLevel = mipLevel;
+    context->mipLevel = x_viewport_get_miplevel_for_closest_z(&renderContext->cam->viewport, surface->closestZ);
     context->viewport = &renderContext->cam->viewport;
     
     x_ae_surfacerendercontext_init_sdivz(context);
@@ -95,7 +95,7 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     //X_BspLevel* level = context->renderContext->level;
     //x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &context->faceTex);
     
-    x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, renderContext->renderer->mipLevel, renderContext->renderer, &context->surfaceTexture);
+    x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, context->mipLevel, renderContext->renderer, &context->surfaceTexture);
     
     context->uMask = context->surfaceTexture.w - 1;        // Must be powers of 2 for this to work!
     context->vMask = context->surfaceTexture.h - 1;
@@ -106,12 +106,12 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
 
 static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return  ((2 * x + 1) * context->sDivZ.uOrientationStep + (2 * y + 1)  * context->sDivZ.vOrientationStep) / 2 + context->sDivZ.origin;
+    return  x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin;
 }
 
 static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return ((2 * x + 1) * context->tDivZ.uOrientationStep + (2 * y + 1)  * context->tDivZ.vOrientationStep) / 2 + context->tDivZ.origin;
+    return x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin;
 }
 
 float g_zbuf[480][640];
@@ -143,35 +143,11 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
         *v = context->surfaceH - X_FP16x16_ONE;
 }
 
-//#define CLAMP
-
-static inline void draw_texel(X_AE_SurfaceRenderContext* context, x_fp16x16* u, x_fp16x16* v, x_fp16x16 du, x_fp16x16 dv, X_Color* pixel)
-{
-    int uu = (*u + context->surface->bspSurface->textureMinCoord.x) >> 16;
-    int vv = (*v + context->surface->bspSurface->textureMinCoord.y) >> 16;
-    
-    uu = uu & context->uMask;
-    vv = vv & context->vMask;
-    
-    *pixel = x_texture_get_texel(&context->surfaceTexture, uu, vv);
-    *u += du;
-    *v += dv;
-}
-
 static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16x16 u, x_fp16x16 v)
 {
-    int uu = (u >> 16);
-    int vv = (v >> 16);
+    unsigned short uu = (u >> 16);
+    unsigned short vv = (v >> 16);
     
-    int w = context->surfaceTexture.w;
-    int h = context->surfaceTexture.h;
-    
-//     while(uu < 0) uu += w;
-//     while(uu >= w) uu -= w;
-//     
-//     while(vv < 0) vv += h;
-//     while(vv >= h) vv -= h;
-//     
     return context->surfaceTexture.texels[vv * context->surfaceTexture.w + uu];
 }
 
@@ -308,53 +284,58 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     x_fp16x16 u, v;
     calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
     
-    int count = span->x2 - span->x1;
-    if(count == 0)
+    int spanLength = span->x2 - span->x1;
+    if(spanLength == 0)
         return;
     
-    if(count < 20)
-    {
-        draw_small_group(context, pixels, count, &u, &v, span->x1, span->y, recip_tab);
-        return;
-    }
+    X_Color* pixelsEnd = pixels + spanLength;
     
-    X_Color* pixelsEnd = pixels + count;
+    int pixelsUntilMultipleOfFour = (4 - (span->x1 & 3)) & 3;
+    int count = X_MIN(pixelsUntilMultipleOfFour + 16, spanLength);
     
-    // First get us to a pixel address that's a multiple of 4
-    int unalignedCount = 4 - (span->x1 & 3);
-    if(unalignedCount != 4)     // 4 means we're already a multiple of 4
-    {
-        draw_unaligned_group(context, pixels, unalignedCount, &u, &v, span->x1, span->y);
-        pixels += unalignedCount;
-    }
+    pixelsUntilMultipleOfFour = X_MIN(pixelsUntilMultipleOfFour, count);
     
-    // Now, draw groups of 16 pixels that are all nicely aligned, so we can pack 4 texels into a single write
-    while(pixels + 16 < pixelsEnd)
-    {
-        draw_aligned_16_group(context, pixels, &u, &v, pixels - scanline, span->y);
-        pixels += 16;
-    }
-    
-    int pixelsLeft = pixelsEnd - pixels;
     x_fp16x16 nextU, nextV;
-    calculate_u_and_v_at_screen_point(context, pixels - scanline + pixelsLeft, span->y, &nextU, &nextV);
+    calculate_u_and_v_at_screen_point(context, span->x1 + count, span->y, &nextU, &nextV);
     
-    x_fp16x16 du = x_fp16x16_mul(nextU - u, recip_tab[pixelsLeft]);
-    x_fp16x16 dv = x_fp16x16_mul(nextV - v, recip_tab[pixelsLeft]);
+    x_fp16x16 du = x_fp16x16_mul(nextU - u, recip_tab[count]);
+    x_fp16x16 dv = x_fp16x16_mul(nextV - v, recip_tab[count]);
     
-    // Draw as many aligned groups of 4 as possible (< 16 texels left)
-    while(pixels + 4 < pixelsEnd)
-    {
-        draw_aligned_group(context, pixels, du, dv, &u, &v);
-        pixels += 4;
-    }
-    
-    // Draw whatever is left
-    while(pixels < pixelsEnd)
+    while(pixelsUntilMultipleOfFour != 0)
     {
         *pixels++ = get_texel(context, u, v);
         u += du;
         v += dv;
+        --pixelsUntilMultipleOfFour;
+    }
+    
+    unsigned int pixelGroup = 0;
+    
+    count = pixelsEnd - pixels;
+    
+    if(count >= 16)
+    {
+        do
+        {
+            unsigned int a, b, c, d;
+            
+            
+            pixelGroup = (pixelGroup << 8) | get_texel(context, u, v);      u += du;    v += dv;
+            *((unsigned int*)pixels) = __builtin_bswap32(pixelGroup);
+            pixels += 4;
+            
+            count = pixelsEnd - pixels;
+            if(count < 16)
+                break;
+            
+            u = nextU;
+            v = nextV;
+            
+            calculate_u_and_v_at_screen_point(context, pixels - scanline + 16, span->y, &nextU, &nextV);
+            
+            du = (nextU - u) >> 4;
+            dv = (nextV - v) >> 4;
+        } while(1);
     }
 }
 

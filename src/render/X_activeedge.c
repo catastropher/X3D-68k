@@ -245,6 +245,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     surface->bspKey = context->nextBspKey++;
     surface->bspSurface = bspSurface;
     surface->crossCount = 0;
+    surface->closestZ = 0x7FFFFFFF;
     
     X_Vec2 v2d[100];
     for(int i = 0; i < clipped.totalVertices; ++i)
@@ -253,6 +254,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
         x_mat4x4_transform_vec3_fp16x16(context->renderContext->viewMatrix, clipped.vertices + i, &transformed);
         clipped.vertices[i] = transformed;
         
+        surface->closestZ = X_MIN(surface->closestZ, transformed.z);
         
         X_Vec3 temp = x_vec3_fp16x16_to_vec3(&transformed);
         

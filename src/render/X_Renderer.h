@@ -53,6 +53,7 @@ typedef struct X_Renderer
     int totalSurfacesRendered;
 
     int mipLevel;
+    x_fp16x16 mipDistances[X_BSPTEXTURE_MIP_LEVELS - 1];
     
     X_ConsoleVar varFrustumClip;    // debug
     X_ConsoleVar varFillColor;

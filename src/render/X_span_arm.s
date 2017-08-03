@@ -58,3 +58,19 @@ draw_span_solid_loop:
     pop { r3, r4 }
     
     bx lr
+
+    
+# r0 -> scanline
+# r1 -> surface address
+# r2 -> surface width
+# r3 -> u
+# r4 -> v
+# r5 -> du
+# r6 -> dv
+draw_aligned_span_16:
+    mov r7, r4, lsr #16
+    mla r7, r2, r7, r1      @ texelAddr = surfaceW * (v >> 16) + surfaceAddr
+    ldrb 
+    
+    
+    

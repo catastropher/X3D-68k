@@ -88,8 +88,8 @@ static void x_surfacebuilder_calculate_texture_offset(X_SurfaceBuilder* builder)
     // Guarantee a positive coordinate by adding 64k x the size of the texture
     builder->textureOffset = x_vec2_make
     (
-        ((builder->bspSurface->textureMinCoord.x >> 16) + (builder->texture.w << 16)) % builder->texture.w,
-        ((builder->bspSurface->textureMinCoord.y >> 16) + (builder->texture.h << 16)) % builder->texture.h
+        ((builder->bspSurface->textureMinCoord.x >> (16 + builder->mipLevel)) + (builder->texture.w << 16)) % builder->texture.w,
+        ((builder->bspSurface->textureMinCoord.y >> (16 + builder->mipLevel)) + (builder->texture.h << 16)) % builder->texture.h
     );
 }
 
@@ -123,6 +123,15 @@ static X_Color x_surfacebuilder_get_texture_texel(X_SurfaceBuilder* builder, int
 {
     int textureX = ((surfaceX ) + builder->textureOffset.x) & builder->textureMask.x;
     int textureY = ((surfaceY ) + builder->textureOffset.y) & builder->textureMask.y;
+ 
+    if(textureX >= builder->texture.w || textureY >= builder->texture.h)
+    {
+        if(builder->bspSurface->id == 27)
+        {
+            printf("%d %d -> %d %d\n", builder->texture.w, builder->texture.h, textureX, textureY);
+            printf("Offset: %d %d\n", builder->textureOffset.x, builder->textureOffset.y);
+        }
+    }
     
     return x_texture_get_texel(&builder->texture, textureX, textureY);
 }
@@ -155,6 +164,8 @@ static x_fp16x16 x_surfacebuilderblock_get_intensity_at_offset(X_SurfaceBuilderB
 static void x_surfacebuilder_build_16x16_block(X_SurfaceBuilder* builder)
 {
     X_SurfaceBuilderBlock* block = &builder->block;
+    
+    //int texX = builder->te
     
     for(int i = 0; i < block->blockSize; ++i)
     {
@@ -264,6 +275,11 @@ static void x_surfacebuilder_build_with_lighting(X_SurfaceBuilder* builder)
         }
     }
     
+    if(builder->bspSurface->id == 27)
+    {
+        printf("W: %d %d\n", builder->textureOffset.x, builder->textureOffset.y);
+    }
+    
     x_surfacebuilder_clamp_lightmap(builder);
     
     x_surfacebuilder_build_from_combined_lightmap(builder);
@@ -281,10 +297,12 @@ static void x_surfacebuilder_init(X_SurfaceBuilder* builder, X_BspSurface* surfa
     int totalTexels = builder->surface.w * builder->surface.h;
     
     if(!x_cachentry_is_in_cache(surface->cachedSurfaces + mipLevel))
+    {
         x_cache_alloc(&renderer->surfaceCache, totalTexels, surface->cachedSurfaces + mipLevel);
+    }
     
     builder->surface.texels = x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel);
-    
+
     X_BspTexture* faceTex = surface->faceTexture->texture;
     builder->texture.texels = faceTex->mipTexels[mipLevel];
     builder->texture.w = faceTex->w >> mipLevel;

@@ -28,7 +28,19 @@ typedef struct X_Viewport
     x_angle256 fieldOfView;
     X_Frustum viewFrustum;
     X_Plane viewFrustumPlanes[6];
+    x_fp16x16 mipDistances[3];
 } X_Viewport;
+
+static inline int x_viewport_get_miplevel_for_closest_z(X_Viewport* viewport, x_fp16x16 z)
+{
+    for(int i = 0; i < 3; ++i)
+    {
+        if(z < viewport->mipDistances[i])
+            return i;
+    }
+    
+    return 3;
+}
 
 void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_angle256 fieldOfView);
 void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const X_Vec3_fp16x16* forward, const X_Vec3_fp16x16* right, const X_Vec3_fp16x16* up);
