@@ -30,9 +30,6 @@ typedef struct X_AE_Surface
     int crossCount;
     int xStart;
     
-    struct X_AE_Surface* next;
-    struct X_AE_Surface* prev;
-    
     X_BspSurface* bspSurface;
 
     X_AE_Span spans[X_AE_SURFACE_MAX_SPANS];
@@ -110,6 +107,8 @@ typedef struct X_AE_Context
     
     X_RenderContext* renderContext;
     X_Screen* screen;
+    
+    X_AE_SurfaceHeap surfaceHeap;
     
     int nextBspKey;
 } X_AE_Context;
