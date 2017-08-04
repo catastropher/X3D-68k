@@ -305,6 +305,9 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
 
 static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
 {
+    if(left == right)
+        return;
+    
     X_AE_Span* span = surface->spans + surface->totalSpans;
     
     span->x1 = left;
@@ -438,8 +441,8 @@ void x_ae_context_scan_edges(X_AE_Context* context)
     {
         for(int i = 0; i < x_screen_h(context->screen); ++i)
         {
-            for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
-                s->crossCount = 0;
+//             for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
+//                 s->crossCount = 0;
             
             x_ae_context_process_edges(context, i);
         }

@@ -68,9 +68,20 @@ draw_span_solid_loop:
 # r5 -> du
 # r6 -> dv
 draw_aligned_span_16:
-    mov r7, r4, lsr #16
-    mla r7, r2, r7, r1      @ texelAddr = surfaceW * (v >> 16) + surfaceAddr
-    ldrb 
+    # r11 is scratch
+    mov r11, r4, lsr #16
+    mla r11, r2, r11, r1            @ texelAddr = surfaceW * (v >> 16) + surfaceAddr
+    ldrb r11, [r11, r3, lsr #16]    @ pixel = *(texelAddr + u >> 16)
+    orr r7, r11, r7, lsl #8         @ a = (a << 8) | pixel
+    add r3, r3, r5                  @ u += du
+    add r4, r4, r6                  @ v += dv
+    
+# r0 -> span pointer
+# r1 -> surface address
+# r3 -> surface w
+draw_span_asm:
+    
+    
     
     
     

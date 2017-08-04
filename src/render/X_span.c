@@ -285,8 +285,6 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
     
     int spanLength = span->x2 - span->x1;
-    if(spanLength == 0)
-        return;
     
     X_Color* pixelsEnd = pixels + spanLength;
     
@@ -296,10 +294,20 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     pixelsUntilMultipleOfFour = X_MIN(pixelsUntilMultipleOfFour, count);
     
     x_fp16x16 nextU, nextV;
-    calculate_u_and_v_at_screen_point(context, span->x1 + count, span->y, &nextU, &nextV);
+    x_fp16x16 du, dv;
     
-    x_fp16x16 du = x_fp16x16_mul(nextU - u, recip_tab[count]);
-    x_fp16x16 dv = x_fp16x16_mul(nextV - v, recip_tab[count]);
+    if(spanLength > 2)
+    {
+        calculate_u_and_v_at_screen_point(context, span->x1 + count, span->y, &nextU, &nextV);
+        
+        du = x_fp16x16_mul(nextU - u, recip_tab[count]);
+        dv = x_fp16x16_mul(nextV - v, recip_tab[count]);
+    }
+    else
+    {
+        du = 0;
+        dv = 0;
+    }
     
     while(pixelsUntilMultipleOfFour != 0)
     {
@@ -309,7 +317,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         --pixelsUntilMultipleOfFour;
     }
     
-    unsigned int pixelGroup = 0;
+    unsigned int* pixelGroup = (unsigned int*)pixels;
     
     count = pixelsEnd - pixels;
     
@@ -318,20 +326,36 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         do
         {
             unsigned int a, b, c, d;
+                        
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
             
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
             
-            pixelGroup = (pixelGroup << 8) | get_texel(context, u, v);      u += du;    v += dv;
-            *((unsigned int*)pixels) = __builtin_bswap32(pixelGroup);
-            pixels += 4;
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
             
-            count = pixelsEnd - pixels;
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
+            
+            count = pixelsEnd - (unsigned char*)pixelGroup;
             if(count < 16)
                 break;
             
-            u = nextU;
-            v = nextV;
-            
-            calculate_u_and_v_at_screen_point(context, pixels - scanline + 16, span->y, &nextU, &nextV);
+            calculate_u_and_v_at_screen_point(context, (unsigned char*)pixelGroup - scanline + 16, span->y, &nextU, &nextV);
             
             du = (nextU - u) >> 4;
             dv = (nextV - v) >> 4;

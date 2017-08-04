@@ -21,6 +21,7 @@
 #include "engine/X_EngineContext.h"
 #include "error/X_error.h"
 #include "engine/X_Engine.h"
+#include "system/X_File.h"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
@@ -76,6 +77,29 @@ static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
     
     x_console_printf(&context->console, "Effect will take place on next vidrestart\n");;
 }
+
+#include "error/X_log.h"
+
+static void cmd_spanProfile(X_EngineContext* context, int argc, char* argv[])
+{
+    int count[640] = { 0 };
+    
+    for(int j = 0; j < context->renderer.activeEdgeContext.nextAvailableSurface - context->renderer.activeEdgeContext.surfacePool; ++j)
+    {
+        X_AE_Surface* surface = context->renderer.activeEdgeContext.surfacePool + j;
+        
+        for(int i = 0; i < surface->totalSpans; ++i)
+        {
+            X_AE_Span* span = surface->spans + i;
+            ++count[span->x2 - span->x1];
+        }
+    }
+    
+    for(int i = 0; i < x_screen_w(&context->screen); ++i)
+    {
+        x_log("%d:   %d", i, count[i]);
+    }
+}    
 
 // Prints the ID of the surface we're currently looking at
 static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
@@ -173,6 +197,9 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     
     static X_ConsoleCmd cmdLighting = { "lighting", cmd_lighting };
     x_console_register_cmd(console, &cmdLighting);
+    
+    static X_ConsoleCmd cmdSpanProfile = { "spanprofile", cmd_spanProfile };
+    x_console_register_cmd(console, &cmdSpanProfile);
     
     x_renderer_init_console_vars(renderer, console);
     

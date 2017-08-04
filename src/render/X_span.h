@@ -25,9 +25,9 @@ struct X_BspFaceTexture;
 
 typedef struct X_AE_Span
 {
-    short x1;
-    short x2;
-    short y;
+    int x1;
+    int x2;
+    int y;
 } X_AE_Span;
 
 typedef struct X_AE_TextureVar
