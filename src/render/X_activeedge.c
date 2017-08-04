@@ -29,104 +29,17 @@ int g_stackCount;
 
 static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
 {
-    return a->bspKey < b->bspKey;
-}
-
-static int x_ae_surfaceheap_left_child(int nodeId)
-{
-    return nodeId * 2;
-}
-
-static int x_ae_surfaceheap_right_child(int nodeId)
-{
-    return nodeId * 2 + 1;
-}
-
-static int x_ae_surfaceheap_parent(int nodeId)
-{
-    return nodeId / 2;
-}
-
-static void x_ae_surfaceheap_insert(X_AE_SurfaceHeap* heap, X_AE_Surface* surface)
-{
-    heap->surfaces[++heap->size] = surface;
-
-    int node = heap->size;
-    do 
-    {
-        int parent = x_ae_surfaceheap_parent(node);
-        if(!x_ae_surface_closer(heap->surfaces[node], heap->surfaces[parent]))
-            break;
-        
-        X_SWAP(heap->surfaces[node], heap->surfaces[parent]);
-        node = parent;
-    } while(1);
-}
-
-static X_AE_Surface* x_ae_surfaceheap_top(X_AE_SurfaceHeap* heap)
-{
-    return heap->surfaces[1];
-}
-
-static void x_ae_surfaceheap_delete_min(X_AE_SurfaceHeap* heap)
-{
-    int count = 0;
-    
-    do
-    {
-        ++count;
-        heap->surfaces[X_AE_SURFACEHEAP_ROOT] = heap->surfaces[heap->size--];
-        
-        int node = X_AE_SURFACEHEAP_ROOT;
-        do
-        {
-            int left = x_ae_surfaceheap_left_child(node);
-            int right = x_ae_surfaceheap_right_child(node);
-            
-            int smallest = node;
-            if(left < heap->size && x_ae_surface_closer(heap->surfaces[left], heap->surfaces[smallest]))
-                smallest = left;
-            
-            if(right < heap->size && x_ae_surface_closer(heap->surfaces[right], heap->surfaces[smallest]))
-                smallest = right;
-            
-            if(smallest == node)
-                break;
-            
-            X_SWAP(heap->surfaces[smallest], heap->surfaces[node]);
-            node = smallest;
-        } while(1);
-    } while(heap->surfaces[X_AE_SURFACEHEAP_ROOT]->wasDeleted);
-    
-    if(count > 5)
-    {
-        printf("Count %d, size: %d\n", count, heap->size);
-    }
-}
-
-static void x_ae_surfaceheap_init(X_AE_SurfaceHeap* heap)
-{
-    heap->surfaces[0] = &heap->sentinal;
-    heap->sentinal.bspKey = -0x7FFFFFFF;
-    heap->size = 0;
-}
-
-static void x_ae_surfaceheap_reset(X_AE_SurfaceHeap* heap, X_AE_Surface* backgroundSurface)
-{
-    heap->surfaces[X_AE_SURFACEHEAP_ROOT] = backgroundSurface;
-    heap->size = 1;
+    return a->bspKey > b->bspKey;
 }
 
 static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
 {
     context->leftEdge.x = x_fp16x16_from_float(-.5);
     context->leftEdge.xSlope = 0;
-    context->leftEdge.surface = &context->background;
     
     context->rightEdge.x = x_fp16x16_from_int(x_screen_w(context->screen));
     context->rightEdge.endY = x_screen_h(context->screen);
     context->rightEdge.xSlope = 0;
-    context->rightEdge.surface = &context->background;
     context->rightEdge.next = NULL;
 }
 
@@ -156,7 +69,6 @@ void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdg
     x_ae_context_init_sentinal_edges(context);
     x_ae_context_init_edges(context, maxActiveEdges, edgePoolSize);
     x_ae_context_init_surfaces(context, surfacePoolSize);
-    x_ae_surfaceheap_init(&context->surfaceHeap);
 }
 
 void x_ae_context_cleanup(X_AE_Context* context)
@@ -178,10 +90,18 @@ static void x_ae_context_reset_active_edges(X_AE_Context* context)
 }
 
 static void x_ae_context_reset_background_surface(X_AE_Context* context)
-{
-    context->background.bspSurface = &context->backgroundBspSurface;
-    context->background.bspKey = 0x7FFFFFFF;
-    context->backgroundBspSurface.color = 255;
+{    
+    context->leftEdge.surface = context->nextAvailableSurface;
+    context->rightEdge.surface = context->nextAvailableSurface;
+    context->nextAvailableSurface->bspSurface = &context->backgroundBspSurface;
+    context->nextAvailableSurface->bspKey = context->nextBspKey;
+    context->backgroundSurface = context->nextAvailableSurface;
+    context->backgroundSurface->totalSpans = 0;
+    
+    ++context->nextBspKey;
+    ++context->nextAvailableSurface;
+    
+    //printf("Back id: %d\n", context->nextBspKey - 1 == context->nextAvailableSurface - context->surfacePool - 1);
 }
 
 static void x_ae_context_reset_pools(X_AE_Context* context)
@@ -208,7 +128,6 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     context->renderContext = renderContext;
     
     x_ae_context_reset_active_edges(context);
-    x_ae_context_reset_background_surface(context);
     x_ae_context_reset_pools(context);
     x_ae_context_reset_new_edges(context);
     
@@ -405,6 +324,9 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
 
 static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
 {
+    if(surface == context->backgroundSurface)
+        return;
+    
     if(left == right)
         return;
     
@@ -420,22 +342,28 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
 
 static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* edge, int y) {
     X_AE_Surface* s = edge->surface;
-    X_AE_Surface* currentTop = x_ae_surfaceheap_top(&context->surfaceHeap);
+    int currentTop = context->maxActiveSurface;
+    
+    X_AE_Surface* topSurface = context->surfacePool + context->nextBspKey - currentTop - 1;
+    unsigned int surfaceKeyBit = (unsigned int)1 << (s->bspKey & 31);
     
     if(edge->isLeadingEdge) {        
         // Make sure the edges didn't cross
         if(++s->crossCount != 1)
             return;
         
-        s->wasDeleted = 0;
-        x_ae_surfaceheap_insert(&context->surfaceHeap, s);
+        // Enable the edge's surface
+        context->activeSurfaces[s->bspKey / 32] |= surfaceKeyBit;
+        
+        //printf("Compare %d %d\n", s->bspKey, topSurface->bspKey);
         
         // Are we the top surface now?
-        if(s == x_ae_surfaceheap_top(&context->surfaceHeap)) {
+        if(x_ae_surface_closer(s, topSurface)) {
             // Yes, emit span for the current top
             int x = edge->x >> 16;
             
-            x_ae_context_emit_span(context, currentTop->xStart, x, y, currentTop);
+            x_ae_context_emit_span(context, topSurface->xStart, x, y, topSurface);
+            context->maxActiveSurface = s->bspKey;
             
             s->xStart = x;
         }
@@ -444,19 +372,22 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
         // Make sure the edges didn't cross
         if(--s->crossCount != 0)
             return;
-            
-        if(s == currentTop) {
+         
+        // Disable the current top
+        context->activeSurfaces[s->bspKey / 32] &= ~(1 << (s->bspKey & 31));
+        
+        if(s == topSurface) {
             // We were on top, so emit the span
             int x = (edge->x) >> 16;
             
             x_ae_context_emit_span(context, s->xStart, x, y, s);
             
-            x_ae_surfaceheap_delete_min(&context->surfaceHeap);
-            x_ae_surfaceheap_top(&context->surfaceHeap)->xStart = x;
-        }
-        else
-        {
-            s->wasDeleted = 1;
+            // Find who's the new top
+            int group;
+            for(group = currentTop / 32; context->activeSurfaces[group] == 0; --group) ;
+            
+            context->maxActiveSurface = group * 32 + (31 - __builtin_clz(context->activeSurfaces[group]));
+            context->surfacePool[context->nextBspKey - context->maxActiveSurface - 1].xStart = x;
         }
     }
 }
@@ -482,10 +413,9 @@ static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge
 }
 
 static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
-    context->background.crossCount = 1;
-    context->background.xStart = 0;
-    
-    x_ae_surfaceheap_reset(&context->surfaceHeap, &context->background);
+    context->backgroundSurface->crossCount = 1;
+    context->backgroundSurface->xStart = 0;
+    context->activeSurfaces[0] = 1;
     
     X_SWAP(context->oldActiveEdges, context->activeEdges);
     context->oldTotalActiveEdges = context->totalActiveEdges;
@@ -520,6 +450,22 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
 
 #include "engine/X_EngineContext.h"
 
+static void x_ae_context_invert_bsp_keys(X_AE_Context* context)
+{
+    int maxBspKey = context->nextBspKey - 1;
+    
+    for(X_AE_Surface* surface = context->surfacePool; surface < context->nextAvailableSurface; ++surface)
+        surface->bspKey = maxBspKey - surface->bspKey;
+}
+
+static void x_ae_context_reset_active_surfaces(X_AE_Context* context)
+{
+    for(int i = 0; i < context->totalActiveSurfaceGroups; ++i)
+        context->activeSurfaces[i] = 0;
+    
+    context->maxActiveSurface = 0;
+}
+
 void x_ae_context_scan_edges(X_AE_Context* context)
 {
     static _Bool initialized = 0;
@@ -531,14 +477,18 @@ void x_ae_context_scan_edges(X_AE_Context* context)
         initialized = 1;
     }
     
+    context->totalActiveSurfaceGroups = (context->nextBspKey - 1 + 31) / 32;
+    x_ae_context_reset_background_surface(context);
+    x_ae_context_invert_bsp_keys(context);
     
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
         for(int i = 0; i < x_screen_h(context->screen); ++i)
         {
-//             for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
-//                 s->crossCount = 0;
-            
+//              for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
+//                  s->crossCount = 0;
+//             
+            x_ae_context_reset_active_surfaces(context);
             x_ae_context_process_edges(context, i);
         }
     }

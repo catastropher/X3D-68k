@@ -241,6 +241,7 @@ static inline void draw_small_group(const X_AE_SurfaceRenderContext* context, X_
 
 static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
+#if 1
     const x_fp16x16 recip_tab[32] = 
     {
         0,
@@ -361,6 +362,99 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
             dv = (nextV - v) >> 4;
         } while(1);
     }
+#else
+const x_fp16x16 recip_tab[32] = 
+    {
+        0,
+        X_FP16x16_ONE / 1,
+        X_FP16x16_ONE / 2,
+        X_FP16x16_ONE / 3,
+        X_FP16x16_ONE / 4,
+        X_FP16x16_ONE / 5,
+        X_FP16x16_ONE / 6,
+        X_FP16x16_ONE / 7,
+        X_FP16x16_ONE / 8,
+        X_FP16x16_ONE / 9,
+        X_FP16x16_ONE / 10,
+        X_FP16x16_ONE / 11,
+        X_FP16x16_ONE / 12,
+        X_FP16x16_ONE / 13,
+        X_FP16x16_ONE / 14,
+        X_FP16x16_ONE / 15,
+        X_FP16x16_ONE / 16,
+        X_FP16x16_ONE / 17,
+        X_FP16x16_ONE / 18,
+        X_FP16x16_ONE / 19,
+        X_FP16x16_ONE / 20,
+        X_FP16x16_ONE / 21,
+        X_FP16x16_ONE / 22,
+        X_FP16x16_ONE / 23,
+        X_FP16x16_ONE / 24,
+        X_FP16x16_ONE / 25,
+        X_FP16x16_ONE / 26,
+        X_FP16x16_ONE / 27,
+        X_FP16x16_ONE / 28,
+        X_FP16x16_ONE / 29,
+        X_FP16x16_ONE / 30,
+        X_FP16x16_ONE / 31,
+    };
+    
+    X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
+    X_Color* scanline = screenTex->texels + span->y * screenTex->w;
+    X_Color* pixels = scanline + span->x1;
+    
+    x_fp16x16 u, v;
+    calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
+    
+    int count = span->x2 - span->x1;
+    if(count == 0)
+        return;
+    
+    if(count < 20)
+    {
+        draw_small_group(context, pixels, count, &u, &v, span->x1, span->y, recip_tab);
+        return;
+    }
+    
+    X_Color* pixelsEnd = pixels + count;
+    
+    // First get us to a pixel address that's a multiple of 4
+    int unalignedCount = 4 - (span->x1 & 3);
+    if(unalignedCount != 4)     // 4 means we're already a multiple of 4
+    {
+        draw_unaligned_group(context, pixels, unalignedCount, &u, &v, span->x1, span->y);
+        pixels += unalignedCount;
+    }
+    
+    // Now, draw groups of 16 pixels that are all nicely aligned, so we can pack 4 texels into a single write
+    while(pixels + 16 < pixelsEnd)
+    {
+        draw_aligned_16_group(context, pixels, &u, &v, pixels - scanline, span->y);
+        pixels += 16;
+    }
+    
+    int pixelsLeft = pixelsEnd - pixels;
+    x_fp16x16 nextU, nextV;
+    calculate_u_and_v_at_screen_point(context, pixels - scanline + pixelsLeft, span->y, &nextU, &nextV);
+    
+    x_fp16x16 du = x_fp16x16_mul(nextU - u, recip_tab[pixelsLeft]);
+    x_fp16x16 dv = x_fp16x16_mul(nextV - v, recip_tab[pixelsLeft]);
+    
+    // Draw as many aligned groups of 4 as possible (< 16 texels left)
+    while(pixels + 4 < pixelsEnd)
+    {
+        draw_aligned_group(context, pixels, du, dv, &u, &v);
+        pixels += 4;
+    }
+    
+    // Draw whatever is left
+    while(pixels < pixelsEnd)
+    {
+        *pixels++ = get_texel(context, u, v);
+        u += du;
+        v += dv;
+    }
+#endif
 }
 
 void x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context)

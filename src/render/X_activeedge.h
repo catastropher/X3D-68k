@@ -46,16 +46,6 @@ typedef struct X_AE_Surface
     _Bool wasDeleted;
 } X_AE_Surface;
 
-#define X_AE_SURFACEHEAP_MAX_SIZE 1024
-#define X_AE_SURFACEHEAP_ROOT 1
-
-typedef struct X_AE_SurfaceHeap
-{
-    X_AE_Surface sentinal;
-    X_AE_Surface* surfaces[X_AE_SURFACEHEAP_MAX_SIZE];
-    int size;
-} X_AE_SurfaceHeap;
-
 typedef struct X_AE_Edge
 {
     // Attributes shared with X_AE_DummyEdge (do not reorder!)
@@ -78,6 +68,8 @@ typedef struct X_AE_DummyEdge
     x_fp16x16 x;
     struct X_AE_Edge* next;
 } X_AE_DummyEdge;
+
+#define X_ACTIVE_SURFACES_SIZE 32
 
 typedef struct X_AE_Context
 {
@@ -104,11 +96,15 @@ typedef struct X_AE_Context
     
     X_AE_Surface background;
     X_BspSurface backgroundBspSurface;
+    X_AE_Surface* backgroundSurface;
     
     X_RenderContext* renderContext;
     X_Screen* screen;
     
-    X_AE_SurfaceHeap surfaceHeap;
+    int maxActiveSurface;
+    unsigned int activeSurfaces[X_ACTIVE_SURFACES_SIZE];
+    int totalActiveSurfaceGroups;
+    
     
     int nextBspKey;
 } X_AE_Context;
