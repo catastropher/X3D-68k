@@ -188,9 +188,7 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_console_register_cmd(console, "fullscreen", cmd_fullscreen);    
     x_console_register_cmd(console, "surfid", cmd_surfid);    
     x_console_register_cmd(console, "lighting", cmd_lighting);
-    
-    static X_ConsoleCmd cmdSpanProfile = { "spanprofile", cmd_spanProfile };
-    x_console_register_cmd(console, &cmdSpanProfile);
+    x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
     
     x_renderer_init_console_vars(renderer, console);
     

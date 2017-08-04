@@ -24,6 +24,96 @@
 
 float g_zbuf[480][640];
 
+int g_sortCount;
+int g_stackCount;
+
+static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
+{
+    return a->bspKey < b->bspKey;
+}
+
+static int x_ae_surfaceheap_left_child(int nodeId)
+{
+    return nodeId * 2;
+}
+
+static int x_ae_surfaceheap_right_child(int nodeId)
+{
+    return nodeId * 2 + 1;
+}
+
+static int x_ae_surfaceheap_parent(int nodeId)
+{
+    return nodeId / 2;
+}
+
+static void x_ae_surfaceheap_insert(X_AE_SurfaceHeap* heap, X_AE_Surface* surface)
+{
+    if(heap->size == 0)
+    {
+        heap->surfaces[++heap->size] = surface;
+        return;
+    }
+    
+    heap->surfaces[++heap->size] = surface;
+
+    int node = heap->size;
+    do 
+    {
+        int parent = x_ae_surfaceheap_parent(node);
+        if(!x_ae_surface_closer(heap->surfaces[node], heap->surfaces[parent]))
+            break;
+        
+        X_SWAP(heap->surfaces[node], heap->surfaces[parent]);
+        node = parent;
+    } while(1);
+}
+
+static X_AE_Surface* x_ae_surfaceheap_top(X_AE_SurfaceHeap* heap)
+{
+    return heap->surfaces[1];
+}
+
+static void x_ae_surfaceheap_delete_min(X_AE_SurfaceHeap* heap)
+{
+    heap->surfaces[X_AE_SURFACEHEAP_ROOT] = heap->surfaces[heap->size--];
+    
+    do
+    {
+        int node = X_AE_SURFACEHEAP_ROOT;
+        do
+        {
+            int left = x_ae_surfaceheap_left_child(node);
+            int right = x_ae_surfaceheap_right_child(node);
+            
+            int smallest = node;
+            if(left < heap->size && x_ae_surface_closer(heap->surfaces[left], heap->surfaces[smallest]))
+                smallest = left;
+            
+            if(right < heap->size && x_ae_surface_closer(heap->surfaces[right], heap->surfaces[smallest]))
+                smallest = right;
+            
+            if(smallest == node)
+                break;
+            
+            X_SWAP(heap->surfaces[smallest], heap->surfaces[node]);
+            node = smallest;
+        } while(1);
+    } while(heap->surfaces[X_AE_SURFACEHEAP_ROOT]->wasDeleted);
+}
+
+static void x_ae_surfaceheap_init(X_AE_SurfaceHeap* heap)
+{
+    heap->surfaces[0] = &heap->sentinal;
+    heap->sentinal.bspKey = -0x7FFFFFFF;
+    heap->size = 0;
+}
+
+static void x_ae_surfaceheap_reset(X_AE_SurfaceHeap* heap)
+{
+    heap->size = 0;
+}
+
 static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
 {
     context->leftEdge.x = x_fp16x16_from_float(-.5);
@@ -108,6 +198,9 @@ static void x_ae_context_reset_new_edges(X_AE_Context* context)
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext)
 {
+    g_sortCount = 0;
+    g_stackCount = 0;
+    
     context->renderContext = renderContext;
     
     x_ae_context_reset_active_edges(context);
@@ -124,7 +217,10 @@ static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_
  
     // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
     while(edge->next->x < newEdge->x)
+    {
         edge = edge->next;
+        ++g_sortCount;
+    }
     
     newEdge->next = edge->next;
     edge->next = newEdge;
@@ -318,11 +414,6 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
         ++surface->totalSpans;
 }
 
-static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
-{
-    return a->bspKey < b->bspKey;
-}
-
 static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* edge, int y) {
     X_AE_Surface* s = edge->surface;
     X_AE_Surface* currentTop = context->background.next;
@@ -350,6 +441,7 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
             // Sort into the surface stack
             do {
                 currentTop = currentTop->next;
+                ++g_stackCount;
             } while(x_ae_surface_closer(currentTop, s));
             
             s->next = currentTop;
@@ -435,8 +527,20 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
     context->activeEdges[context->totalActiveEdges++] = &context->rightEdge;
 }
 
+#include "engine/X_EngineContext.h"
+
 void x_ae_context_scan_edges(X_AE_Context* context)
 {
+    static _Bool initialized = 0;
+    
+    if(!initialized)
+    {
+        x_console_register_var(&context->renderContext->engineContext->console, &g_sortCount, "sortCount", X_CONSOLEVAR_INT, "0", 0);
+        x_console_register_var(&context->renderContext->engineContext->console, &g_stackCount, "stackCount", X_CONSOLEVAR_INT, "0", 0);
+        initialized = 1;
+    }
+    
+    
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
         for(int i = 0; i < x_screen_h(context->screen); ++i)

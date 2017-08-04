@@ -45,7 +45,19 @@ typedef struct X_AE_Surface
     x_fp2x30 zInverseOrigin;
     
     x_fp16x16 closestZ;
+    
+    _Bool wasDeleted;
 } X_AE_Surface;
+
+#define X_AE_SURFACEHEAP_MAX_SIZE 1024
+#define X_AE_SURFACEHEAP_ROOT 1
+
+typedef struct X_AE_SurfaceHeap
+{
+    X_AE_Surface sentinal;
+    X_AE_Surface* surfaces[X_AE_SURFACEHEAP_MAX_SIZE];
+    int size;
+} X_AE_SurfaceHeap;
 
 typedef struct X_AE_Edge
 {
