@@ -25,11 +25,11 @@
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
-    x_console_register_var(console, &renderer->varFillColor, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
-    x_console_register_var(console, &renderer->varShowFps, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
-    x_console_register_var(console, &renderer->varFrustumClip, &renderer->frustumClip, "frustumClip", X_CONSOLEVAR_BOOL, "1", 0);
-    x_console_register_var(console, &renderer->varMipLevel, &renderer->mipLevel, "mipLevel", X_CONSOLEVAR_INT, "0", 0);
-    x_console_register_var(console, &renderer->varRenderMode, &renderer->renderMode, "rendermode", X_CONSOLEVAR_INT, "3", 0);
+    x_console_register_var(console, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
+    x_console_register_var(console, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
+    x_console_register_var(console, &renderer->frustumClip, "frustumClip", X_CONSOLEVAR_BOOL, "1", 0);
+    x_console_register_var(console, &renderer->mipLevel, "mipLevel", X_CONSOLEVAR_INT, "0", 0);
+    x_console_register_var(console, &renderer->renderMode, "rendermode", X_CONSOLEVAR_INT, "3", 0);
 }
 
 static void cmd_res(X_EngineContext* context, int argc, char* argv[])
@@ -183,20 +183,11 @@ static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
 
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
 {
-    static X_ConsoleCmd cmdRes = { "res", cmd_res };
-    x_console_register_cmd(console, &cmdRes);
-    
-    static X_ConsoleCmd cmdVidrestart = { "vidrestart", cmd_vidrestart };
-    x_console_register_cmd(console, &cmdVidrestart);
-    
-    static X_ConsoleCmd cmdFullscreen = { "fullscreen", cmd_fullscreen };
-    x_console_register_cmd(console, &cmdFullscreen);
-    
-    static X_ConsoleCmd cmdSurfid = { "surfid", cmd_surfid };
-    x_console_register_cmd(console, &cmdSurfid);
-    
-    static X_ConsoleCmd cmdLighting = { "lighting", cmd_lighting };
-    x_console_register_cmd(console, &cmdLighting);
+    x_console_register_cmd(console, "res", cmd_res);    
+    x_console_register_cmd(console, "vidrestart", cmd_vidrestart);    
+    x_console_register_cmd(console, "fullscreen", cmd_fullscreen);    
+    x_console_register_cmd(console, "surfid", cmd_surfid);    
+    x_console_register_cmd(console, "lighting", cmd_lighting);
     
     static X_ConsoleCmd cmdSpanProfile = { "spanprofile", cmd_spanProfile };
     x_console_register_cmd(console, &cmdSpanProfile);

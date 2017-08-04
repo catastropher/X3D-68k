@@ -44,38 +44,43 @@ static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* n
     consoleVar->name = name;
     consoleVar->type = type;
     consoleVar->saveToConfig = saveToConfig;
-    consoleVar->next = NULL;
     consoleVar->voidPtr = var;
     
     x_consolevar_set_value(consoleVar, initialValue);
 }
 
-void x_console_register_var(X_Console* console, X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
+static X_ConsoleVar* x_console_add_var(X_Console* console)
 {
+    ++console->totalConsoleVars;
+    console->consoleVars = x_realloc(console->consoleVars, console->totalConsoleVars * sizeof(X_ConsoleVar));
+    
+    return console->consoleVars + console->totalConsoleVars - 1;    
+}
+
+void x_console_register_var(X_Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
+{    
+    if(x_console_cmd_exists(console, name))
+    {
+        x_console_printf(console, "Can't register variable %s, name is already used for command\n", name);
+        return;
+    }
+    
+    if(x_console_var_exists(console, name))
+    {
+        x_console_printf(console, "Can't register variable %s, already defined\n", name);
+        return;
+    }
+    
+    X_ConsoleVar* consoleVar = x_console_add_var(console);
     x_consolevar_init(consoleVar, var, name, type, initialValue, saveToConfig);
-    
-    if(x_console_cmd_exists(console, consoleVar->name))
-    {
-        x_console_printf(console, "Can't register variable %s, name is already used for command\n", consoleVar->name);
-        return;
-    }
-    
-    if(x_console_var_exists(console, consoleVar->name))
-    {
-        x_console_printf(console, "Can't register variable %s, already defined\n", consoleVar->name);
-        return;
-    }
-    
-    consoleVar->next = console->consoleVarsHead;
-    console->consoleVarsHead = consoleVar;
 }
 
 X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName)
 {
-    for(X_ConsoleCmd* cmd = console->consoleCmdHead; cmd != NULL; cmd = cmd->next)
+    for(int i = 0; i < console->totalConsoleCmds; ++i)
     {
-        if(strcmp(cmd->name, cmdName) == 0)
-            return cmd;
+        if(strcmp(console->consoleCmds[i].name, cmdName) == 0)
+            return console->consoleCmds + i;
     }
     
     return NULL;
@@ -86,22 +91,31 @@ _Bool x_console_cmd_exists(X_Console* console, const char* cmdName)
     return x_console_get_cmd(console, cmdName) != NULL;
 }
 
-void x_console_register_cmd(X_Console* console, X_ConsoleCmd* cmd)
+static X_ConsoleCmd* x_console_add_cmd(X_Console* console)
 {
-    if(x_console_var_exists(console, cmd->name))
+    ++console->totalConsoleCmds;
+    console->consoleCmds = x_realloc(console->consoleCmds, console->totalConsoleCmds * sizeof(X_ConsoleCmd));
+    
+    return console->consoleCmds + console->totalConsoleCmds - 1;
+}
+
+void x_console_register_cmd(X_Console* console, const char* name, X_ConsoleCmdHandler handler)
+{    
+    if(x_console_var_exists(console, name))
     {
-        x_console_printf(console, "Can't register command %s, name is already used for variable\n", cmd->name);
+        x_console_printf(console, "Can't register command %s, name is already used for variable\n", name);
         return;
     }
     
-    if(x_console_cmd_exists(console, cmd->name))
+    if(x_console_cmd_exists(console, name))
     {
-        x_console_printf(console, "Can't register command %s, already defined\n", cmd->name);
+        x_console_printf(console, "Can't register command %s, already defined\n", name);
         return;
     }
     
-    cmd->next = console->consoleCmdHead;
-    console->consoleCmdHead = cmd;
+    X_ConsoleCmd* cmd = x_console_add_cmd(console);
+    cmd->name = name;
+    cmd->handler = handler;
 }
 
 static int x_console_bytes_in_line(const X_Console* console)
@@ -142,8 +156,6 @@ void x_console_register_builtin_commands(X_Console* console);
 void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* font)
 {
     console->openState = X_CONSOLE_STATE_CLOSED;
-    console->consoleVarsHead = NULL;
-    console->consoleCmdHead = NULL;
     console->cursor = x_vec2_make(0, 0);
     console->size.x = x_screen_w(&engineContext->screen) / font->charW;
     console->size.y = x_screen_h(&engineContext->screen) / font->charH / 2;
@@ -156,6 +168,12 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
     
     console->text = x_malloc(x_console_bytes_in_line(console) * console->size.y);
     x_console_clear(console);
+    
+    console->consoleCmds = NULL;
+    console->totalConsoleCmds = 0;
+    
+    console->consoleVars = NULL;
+    console->totalConsoleVars = 0;
     
     x_console_register_builtin_commands(console);
 }
@@ -176,10 +194,10 @@ void x_console_cleanup(X_Console* console)
 
 X_ConsoleVar* x_console_get_var(X_Console* console, const char* varName)
 {
-    for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
+    for(int i = 0; i < console->totalConsoleVars; ++i)
     {
-        if(strcmp(var->name, varName) == 0)
-            return var;
+        if(strcmp(console->consoleVars[i].name, varName) == 0)
+            return console->consoleVars + i;
     }
     
     return NULL;
@@ -502,11 +520,11 @@ static _Bool x_console_autocomplete(X_Console* console)
     int minMatchLength = 0x7FFFFFFF;
     const char* minMatchStr = console->input;
     
-    for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
-        x_console_autocomplete_add_option(console, var->name, &minMatchLength, &minMatchStr);
+    for(int i = 0; i < console->totalConsoleVars; ++i)
+        x_console_autocomplete_add_option(console, console->consoleVars[i].name, &minMatchLength, &minMatchStr);
     
-    for(X_ConsoleCmd* cmd = console->consoleCmdHead; cmd != NULL; cmd = cmd->next)
-        x_console_autocomplete_add_option(console, cmd->name, &minMatchLength, &minMatchStr);
+    for(int i = 0; i < console->totalConsoleCmds; ++i)
+        x_console_autocomplete_add_option(console, console->consoleCmds[i].name, &minMatchLength, &minMatchStr);
     
     _Bool foundStringToAutocompleteFrom = minMatchStr != console->input;
     if(foundStringToAutocompleteFrom)
@@ -538,16 +556,16 @@ static void x_console_print_autocomplete_matches(X_Console* console)
     
     int inputLength = console->inputPos;
     
-    for(X_ConsoleVar* var = console->consoleVarsHead; var != NULL; var = var->next)
+    for(int i = 0; i < console->totalConsoleVars; ++i)
     {
-        if(x_count_prefix_match_length(console->input, var->name) == inputLength)
-            autocompleteMatches[totalAutocompleteMatches++] = var->name;
+        if(x_count_prefix_match_length(console->input, console->consoleVars[i].name) == inputLength)
+            autocompleteMatches[totalAutocompleteMatches++] = console->consoleVars[i].name;
     }
     
-    for(X_ConsoleCmd* cmd = console->consoleCmdHead; cmd != NULL; cmd = cmd->next)
+    for(int i = 0; i < console->totalConsoleCmds; ++i)
     {
-        if(x_count_prefix_match_length(console->input, cmd->name) == inputLength)
-            autocompleteMatches[totalAutocompleteMatches++] = cmd->name;
+        if(x_count_prefix_match_length(console->input, console->consoleCmds[i].name) == inputLength)
+            autocompleteMatches[totalAutocompleteMatches++] = console->consoleCmds[i].name;
     }
     
     qsort(autocompleteMatches, totalAutocompleteMatches, sizeof(char**), compare_matches);

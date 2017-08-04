@@ -140,22 +140,11 @@ static void cmd_exec(X_EngineContext* context, int argc, char* argv[])
 
 void x_console_register_builtin_commands(X_Console* console)
 {
-    static X_ConsoleCmd cmdEcho = { "echo", cmd_echo };
-    x_console_register_cmd(console, &cmdEcho);
-    
-    static X_ConsoleCmd cmdMap = { "map", cmd_map };
-    x_console_register_cmd(console, &cmdMap);
-    
-    static X_ConsoleCmd cmdPacklist = { "packlist", cmd_packlist };
-    x_console_register_cmd(console, &cmdPacklist);
-    
-    static X_ConsoleCmd cmdPackextract = { "packextract", cmd_packextract};
-    x_console_register_cmd(console, &cmdPackextract);
-    
-    static X_ConsoleCmd cmdSearchpath = { "searchpath", cmd_searchpath };
-    x_console_register_cmd(console, &cmdSearchpath);
-    
-    static X_ConsoleCmd cmdExec = { "exec", cmd_exec };
-    x_console_register_cmd(console, &cmdExec);
+    x_console_register_cmd(console, "echo", cmd_echo);    
+    x_console_register_cmd(console, "map", cmd_map);    
+    x_console_register_cmd(console, "packlist", cmd_packlist);    
+    x_console_register_cmd(console, "packextract", cmd_packextract);    
+    x_console_register_cmd(console, "searchpath", cmd_searchpath);    
+    x_console_register_cmd(console, "exec", cmd_exec);
 }
 
