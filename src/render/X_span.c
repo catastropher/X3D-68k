@@ -241,7 +241,7 @@ static inline void draw_small_group(const X_AE_SurfaceRenderContext* context, X_
 
 static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
-#if 1
+#if 0
     const x_fp16x16 recip_tab[32] = 
     {
         0,
