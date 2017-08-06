@@ -114,7 +114,7 @@ void x_ae_context_cleanup(X_AE_Context* context);
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
 X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface);
-void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags);
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags);
 void x_ae_context_scan_edges(X_AE_Context* context);
 
 int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level);

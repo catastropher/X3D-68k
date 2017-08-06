@@ -241,19 +241,24 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_V
     ) >> shiftDown;
 }
 
-void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags)
+// TODO: check whether edgeIds is NULL
+void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags, int* edgeIds)
 {
-    X_Vec3 clippedV[100];
-    X_Polygon3 clipped = x_polygon3_make(clippedV, 100);
+    X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
+    X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
     
     ++context->renderContext->renderer->totalSurfacesRendered;
+    
+    int tempEdgeIds[X_POLYGON3_MAX_VERTS];
+    int* newEdgeIds = tempEdgeIds;
     
     if(geoFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
     {
         // Don't bother clipping if fully inside the frustum
         clipped = *polygon;
+        newEdgeIds = edgeIds;
     }
-    else if(!x_polygon3_fp16x16_clip_to_frustum(polygon, context->renderContext->viewFrustum, &clipped, geoFlags))
+    else if(!x_polygon3_fp16x16_clip_to_frustum_edge_ids(polygon, context->renderContext->viewFrustum, &clipped, geoFlags, edgeIds, newEdgeIds))
     {
         return;
     }
@@ -293,7 +298,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     }
 }
 
-void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags)
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags)
 {
     if((context->renderContext->renderer->renderMode & 2) == 0)
         return;
@@ -319,7 +324,7 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, co
             polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[0]].v;
     }
     
-    x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags);
+    x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags, edgeIds);
 }
 
 static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)

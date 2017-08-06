@@ -83,9 +83,53 @@ _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Pl
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane->d - dot, dotDiff); //((-plane->d - dot) / dotDiff;
+            x_fp16x16 scale = x_fp16x16_div(-plane->d - dot, dotDiff);
             X_Ray3_fp16x16 ray = x_ray3_make(src->vertices[i], src->vertices[next]);
             x_ray3_fp16x16_lerp(&ray, scale, dest->vertices + dest->totalVertices);
+            
+            ++dest->totalVertices;
+        }
+        
+        dot = nextDot;
+        in = nextIn;
+        
+        ++g_totalPlaneIterations;
+    }
+    
+    return dest->totalVertices > 2;
+}
+
+_Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest, int* edgeIds, int* edgeIdsDest)
+{
+    dest->totalVertices = 0;
+    
+    x_fp16x16 dot = x_vec3_fp16x16_dot(&plane->normal, src->vertices + 0);
+    _Bool in = dot >= -plane->d;
+    
+    for(int i = 0; i < src->totalVertices; ++i)
+    {
+        int next = (i + 1 < src->totalVertices ? i + 1 : 0);
+        
+        if(in)
+        {
+            dest->vertices[dest->totalVertices++] = src->vertices[i];
+            *edgeIdsDest++ = edgeIds[i];
+        }
+        
+        x_fp16x16 nextDot = x_vec3_fp16x16_dot(&plane->normal, src->vertices + next);
+        _Bool nextIn = nextDot >= -plane->d;
+        int dotDiff = nextDot - dot;
+        
+        if(in != nextIn && dotDiff != 0)
+        {
+            x_fp16x16 scale = x_fp16x16_div(-plane->d - dot, dotDiff);
+            X_Ray3_fp16x16 ray = x_ray3_make(src->vertices[i], src->vertices[next]);
+            x_ray3_fp16x16_lerp(&ray, scale, dest->vertices + dest->totalVertices);
+            
+            if(in)
+                *edgeIdsDest++ = -1;    // Create a new edge
+            else
+                *edgeIdsDest++ = edgeIds[i];
             
             ++dest->totalVertices;
         }
@@ -171,6 +215,42 @@ _Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X
     }
     
     return x_polygon3_fp16x16_clip_to_plane(polyToClip, frustum->planes + lastClipPlane, dest);
+}
+
+// Clips a polygon to a frustum and keeps track of the id's of the edges
+// If a new edge is inserted, it will have an ID of -1
+_Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest,
+                                                  unsigned int clipFlags, int* edgeIds, int* edgeIdsDest)
+{
+    X_Vec3_fp16x16 tempV[200];
+    X_Polygon3_fp16x16 tempPoly[2] = 
+    {
+        x_polygon3_make(tempV, 100),
+        x_polygon3_make(tempV + 100, 100)
+    };
+    int tempIds[2][100];
+    
+    int currentTemp = 0;
+    const X_Polygon3_fp16x16* polyToClip = poly;
+    int* polyEdgeIds = edgeIds;
+    
+    int lastClipPlane = 31 - __builtin_clz(clipFlags);
+    
+    for(int plane = 0; plane < lastClipPlane; ++plane)
+    {
+        _Bool clipToPlane = (clipFlags & (1 << plane)) != 0;
+        if(!clipToPlane)
+            continue;
+        
+        if(!x_polygon3_fp16x16_clip_to_plane_edge_ids(polyToClip, frustum->planes + plane, &tempPoly[currentTemp], polyEdgeIds, tempIds[currentTemp]))
+            return 0;
+        
+        polyToClip = &tempPoly[currentTemp];
+        polyEdgeIds = tempIds[currentTemp];
+        currentTemp ^= 1;
+    }
+    
+    return x_polygon3_fp16x16_clip_to_plane_edge_ids(polyToClip, frustum->planes + lastClipPlane, dest, polyEdgeIds, edgeIdsDest);
 }
 
 void x_polygon3_to_polygon3_fp16x16(const X_Polygon3* poly, X_Polygon3_fp16x16* dest)
