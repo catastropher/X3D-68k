@@ -172,7 +172,7 @@ static X_AE_Edge* x_ae_context_allocate_edge(X_AE_Context* context)
     return context->nextAvailableEdge++;
 }
 
-X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface)
+X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
 {
     int height = b->y - a->y;
     if(is_horizontal_edge(height))
@@ -185,6 +185,11 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_
         X_SWAP(a, b);
 
     edge->surface = surface;
+    edge->frameCreated = context->renderContext->currentFrame;
+    edge->bspEdge = bspEdge;
+    
+    bspEdge->cachedEdgeOffset = (unsigned char*)edge - (unsigned char*)context->edgePool;
+    
     x_ae_edge_init_position_variables(edge, a, b);
     x_ae_context_add_edge_to_starting_scanline(context, edge, a->y);
     
@@ -241,6 +246,16 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_V
     ) >> shiftDown;
 }
 
+static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int currentFrame)
+{
+    X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)context->edgePool + edge->cachedEdgeOffset);
+    
+    if(aeEdge->frameCreated != currentFrame || aeEdge->bspEdge != edge)
+        return NULL;
+    
+    return aeEdge;
+}
+
 // TODO: check whether edgeIds is NULL
 void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags, int* edgeIds)
 {
@@ -250,15 +265,15 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     ++context->renderContext->renderer->totalSurfacesRendered;
     
     int tempEdgeIds[X_POLYGON3_MAX_VERTS];
-    int* newEdgeIds = tempEdgeIds;
+    int* clippedEdgeIds = tempEdgeIds;
     
     if(geoFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
     {
         // Don't bother clipping if fully inside the frustum
         clipped = *polygon;
-        newEdgeIds = edgeIds;
+        clippedEdgeIds = edgeIds;
     }
-    else if(!x_polygon3_fp16x16_clip_to_frustum_edge_ids(polygon, context->renderContext->viewFrustum, &clipped, geoFlags, edgeIds, newEdgeIds))
+    else if(!x_polygon3_fp16x16_clip_to_frustum_edge_ids(polygon, context->renderContext->viewFrustum, &clipped, geoFlags, edgeIds, clippedEdgeIds))
     {
         return;
     }
@@ -292,9 +307,17 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     
     for(int i = 0; i < clipped.totalVertices; ++i)
     {
+        int edgeId = abs(clippedEdgeIds[i]);
+        X_BspEdge* bspEdge = context->renderContext->level->edges + edgeId;
+        X_AE_Edge* cachedEdge = get_cached_edge(context, bspEdge, context->renderContext->currentFrame);
+        
+        if(cachedEdge != NULL)
+        {
+            printf("Found cached edge!\n");
+        }
+        
         int next = (i + 1 < clipped.totalVertices ? i + 1 : 0);
-        x_ae_context_add_edge(context, v2d + i, v2d + next, surface);
-        //x_canvas_draw_line(&context->screen->canvas, v2d[i], v2d[next], 255);
+        x_ae_context_add_edge(context, v2d + i, v2d + next, surface, bspEdge);
     }
 }
 

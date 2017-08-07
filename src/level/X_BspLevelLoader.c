@@ -669,6 +669,7 @@ static void x_bsplevel_init_edges(X_BspLevel* level, const X_BspLevelLoader* loa
     {
         level->edges[i].v[0] = loader->edges[i].v[0];
         level->edges[i].v[1] = loader->edges[i].v[1];
+        level->edges[i].cachedEdgeOffset = 0;
     }
 }
 

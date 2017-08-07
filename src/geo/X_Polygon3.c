@@ -127,7 +127,7 @@ _Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3_fp16x16* src, c
             x_ray3_fp16x16_lerp(&ray, scale, dest->vertices + dest->totalVertices);
             
             if(in)
-                *edgeIdsDest++ = -1;    // Create a new edge
+                *edgeIdsDest++ = 0;    // Create a new edge
             else
                 *edgeIdsDest++ = edgeIds[i];
             
@@ -218,7 +218,7 @@ _Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X
 }
 
 // Clips a polygon to a frustum and keeps track of the id's of the edges
-// If a new edge is inserted, it will have an ID of -1
+// If a new edge is inserted, it will have an ID of 0
 _Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest)
 {

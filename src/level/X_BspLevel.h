@@ -118,7 +118,7 @@ typedef struct X_BspSurface
 typedef struct X_BspEdge
 {
     unsigned short v[2];
-    unsigned int cacheFlags;
+    unsigned int cachedEdgeOffset;
 } X_BspEdge;
 
 typedef enum X_BspLeafContents
