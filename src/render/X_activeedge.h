@@ -46,6 +46,9 @@ typedef struct X_AE_Surface
     _Bool wasDeleted;
 } X_AE_Surface;
 
+#define X_AE_EDGE_LEFT_SURFACE 0
+#define X_AE_EDGE_RIGHT_SURFACE 1
+
 typedef struct X_AE_Edge
 {
     // Attributes shared with X_AE_DummyEdge (do not reorder!)
@@ -54,7 +57,7 @@ typedef struct X_AE_Edge
     
     // Unique to X_AE_Edge
     x_fp16x16 xSlope;
-    X_AE_Surface* surface;
+    X_AE_Surface* surfaces[2];
     int endY;
     _Bool isLeadingEdge;
     

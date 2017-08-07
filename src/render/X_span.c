@@ -148,6 +148,11 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
     unsigned short uu = (u >> 16);
     unsigned short vv = (v >> 16);
     
+#if 1
+    uu = uu % context->surfaceTexture.w;
+    vv = vv % context->surfaceTexture.h;
+#endif
+    
     return context->surfaceTexture.texels[vv * context->surfaceTexture.w + uu];
 }
 
