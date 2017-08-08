@@ -148,7 +148,7 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
     unsigned short uu = (u >> 16);
     unsigned short vv = (v >> 16);
     
-#if 1
+#if 0
     uu = uu % context->surfaceTexture.w;
     vv = vv % context->surfaceTexture.h;
 #endif
@@ -232,7 +232,7 @@ static inline void draw_small_group(const X_AE_SurfaceRenderContext* context, X_
 {
     x_fp16x16 nextU, nextV;
     calculate_u_and_v_at_screen_point(context, x + count, y, &nextU, &nextV);
-    
+
     x_fp16x16 du = x_fp16x16_mul(nextU - *u, recip_tab[count]);
     x_fp16x16 dv = x_fp16x16_mul(nextV - *v, recip_tab[count]);
     
@@ -404,6 +404,9 @@ const x_fp16x16 recip_tab[32] =
         X_FP16x16_ONE / 31,
     };
     
+     if(span->x1 > span->x2)
+        return; //X_SWAP(span->x1, span->x2);
+    
     X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
     X_Color* scanline = screenTex->texels + span->y * screenTex->w;
     X_Color* pixels = scanline + span->x1;
@@ -412,6 +415,7 @@ const x_fp16x16 recip_tab[32] =
     calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
     
     int count = span->x2 - span->x1;
+    
     if(count == 0)
         return;
     

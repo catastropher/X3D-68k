@@ -37,7 +37,7 @@ static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
     context->leftEdge.x = x_fp16x16_from_float(-.5);
     context->leftEdge.xSlope = 0;
     
-    context->rightEdge.x = x_fp16x16_from_int(x_screen_w(context->screen));
+    context->rightEdge.x = x_fp16x16_from_int(x_screen_w(context->screen) + 10);
     context->rightEdge.endY = x_screen_h(context->screen);
     context->rightEdge.xSlope = 0;
     context->rightEdge.next = NULL;
@@ -141,9 +141,17 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
 static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY)
 {
     X_AE_Edge* edge = (X_AE_Edge*)&context->newEdges[startY];
- 
+
+    if(!edge)
+        return;
+    
+    x_fp16x16 edgeX = newEdge->x;
+    
+    if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
+        ++edgeX;
+    
     // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
-    while(edge->next->x < newEdge->x)
+    while(edge->next->x < edgeX)
     {
         edge = edge->next;
         ++g_sortCount;
@@ -165,8 +173,8 @@ static _Bool is_leading_edge(int height)
 
 static void x_ae_edge_init_position_variables(X_AE_Edge* edge, X_Vec2* top, X_Vec2* bottom)
 {
-    edge->x = x_fp16x16_from_int(top->x) + x_fp16x16_from_float(0.5);
     edge->xSlope = x_int_div_as_fp16x16(bottom->x - top->x, bottom->y - top->y);
+    edge->x = x_fp16x16_from_int(top->x) + x_fp16x16_from_float(0.5);
     edge->endY = bottom->y - 1;
 }
 
@@ -287,7 +295,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     
     ++context->renderContext->renderer->totalSurfacesRendered;
     
-    int tempEdgeIds[X_POLYGON3_MAX_VERTS];
+    int tempEdgeIds[X_POLYGON3_MAX_VERTS] = { 0 };
     int* clippedEdgeIds = tempEdgeIds;
     
     if(geoFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
@@ -295,6 +303,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
         // Don't bother clipping if fully inside the frustum
         clipped = *polygon;
         clippedEdgeIds = edgeIds;
+        
     }
     else if(!x_polygon3_fp16x16_clip_to_frustum_edge_ids(polygon, context->renderContext->viewFrustum, &clipped, geoFlags, edgeIds, clippedEdgeIds))
     {
@@ -331,20 +340,6 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     
     x_polygon3_fp16x16_to_polygon3(&clipped, &clipped);
     
-    //if(bspSurface->id == 4097)
-    //    return;
-    
-//     if(bspSurface->id == 4097 || bspSurface->id == 4034)
-//     {
-//         printf("ID: %d\n", bspSurface->id);
-//         for(int i = 0; i < clipped.totalVertices; ++i)
-//         {
-//             printf("Edge %d: %d\n", i, edgeIds[i]);
-//         }
-//         
-//         printf("----------------\n");
-//     }
-    
     for(int i = 0; i < clipped.totalVertices; ++i)
     {
         int edgeId = abs(clippedEdgeIds[i]);
@@ -356,7 +351,6 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
             
             if(cachedEdge != NULL)
             {
-                X_AE_Surface* s = X_MAX(cachedEdge->surfaces[0], cachedEdge->surfaces[1]);                
                 x_ae_context_emit_cached_edge(cachedEdge, surface);
                 continue;
             }
@@ -371,6 +365,11 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
 {
     if((context->renderContext->renderer->renderMode & 2) == 0)
         return;
+    
+#if 0
+    if(bspSurface->id != 4119 && bspSurface->id != 4020)
+        return;
+#endif
     
     x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
  
@@ -423,7 +422,7 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
     if(isDoubleSidedEdge)
     {
         surfaceToDisable = edge->surfaces[X_AE_EDGE_LEFT_SURFACE];
-        surfaceToEnable = edge->surfaces[X_AE_EDGE_RIGHT_SURFACE];
+        surfaceToEnable = edge->surfaces[X_AE_EDGE_RIGHT_SURFACE];        
     }
     else
     {
@@ -441,7 +440,7 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
     {
         // Make sure the edges didn't cross
         if(--surfaceToDisable->crossCount != 0)
-            return;
+            goto enable;
          
         // Disable the current top
         context->activeSurfaces[surfaceToDisable->bspKey / 32] &= ~(1 << (surfaceToDisable->bspKey & 31));
@@ -464,6 +463,7 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
         }
     }
     
+enable:
     
     if(surfaceToEnable != NULL) {        
         // Make sure the edges didn't cross
@@ -580,9 +580,9 @@ void x_ae_context_scan_edges(X_AE_Context* context)
     {
         for(int i = 0; i < x_screen_h(context->screen); ++i)
         {
-             for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
-                 s->crossCount = 0;
-            
+//                for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
+//                    s->crossCount = 0;
+             
             x_ae_context_reset_active_surfaces(context);
             x_ae_context_process_edges(context, i);
         }
