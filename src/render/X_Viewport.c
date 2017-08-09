@@ -22,6 +22,26 @@ static inline int calculate_distance_to_projection_plane(int w, x_angle256 field
     return x_fp16x16_from_int(w / 2) / x_tan(fieldOfView / 2);
 }
 
+static void x_viewport_init_mip_distances(X_Viewport* viewport)
+{
+    x_fp16x16 mipScale[3] =
+    {
+        x_fp16x16_from_float(1.0),
+        x_fp16x16_from_float(0.5 * 0.8),
+        x_fp16x16_from_float(0.25 * 0.8)
+    };
+    
+    // TODO: this will need to take into account y scale once it's added
+    x_fp16x16 xScale = x_fp16x16_from_int(viewport->distToNearPlane);
+    for(int i = 0; i < 3; ++i)
+    {
+        viewport->mipDistances[i] = x_fp16x16_div(xScale, mipScale[i]);
+        printf("Mip Distance: %f\n", x_fp16x16_to_float(viewport->mipDistances[i]));
+    }
+    
+    // screen->w / z = 1.0
+}
+
 void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_angle256 fieldOfView)
 {
     viewport->screenPos = screenPos;
@@ -32,6 +52,8 @@ void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_ang
     /// @todo If we add a far plane, this should be 6
     viewport->viewFrustum.totalPlanes = 5;
     viewport->viewFrustum.planes = viewport->viewFrustumPlanes;
+    
+    x_viewport_init_mip_distances(viewport);
 }
 
 static inline X_Vec3 calculate_center_of_near_plane(const X_Viewport* viewport, const X_Vec3* camPos, const X_Vec3_fp16x16* forward)

@@ -25,9 +25,9 @@ struct X_BspFaceTexture;
 
 typedef struct X_AE_Span
 {
-    short x1;
-    short x2;
-    short y;
+    int x1;
+    int x2;
+    int y;
 } X_AE_Span;
 
 typedef struct X_AE_TextureVar
@@ -40,18 +40,21 @@ typedef struct X_AE_TextureVar
 
 typedef struct X_AE_SurfaceRenderContext
 {
+    X_AE_TextureVar sDivZ;
+    X_AE_TextureVar tDivZ;
+    
     struct X_AE_Surface* surface;
     struct X_Viewport* viewport;
     struct X_RenderContext* renderContext;
     struct X_BspFaceTexture* faceTexture;
     int mipLevel;
     
-    X_AE_TextureVar sDivZ;
-    X_AE_TextureVar tDivZ;
-    
     X_Texture surfaceTexture;
     int uMask;
     int vMask;
+    
+    x_fp16x16 surfaceW;
+    x_fp16x16 surfaceH;
 } X_AE_SurfaceRenderContext;
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, struct X_AE_Surface* surface, struct X_RenderContext* renderContext, int mipLevel);

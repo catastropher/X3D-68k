@@ -92,7 +92,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     renderContext->camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
     renderContext->currentFrame = currentFrame;
     
-    if(cam->currentLeaf != renderContext->level->leaves + 0)
+    if(cam->currentLeaf != renderContext->level->leaves + 0 && !x_keystate_key_down(&renderContext->engineContext->keystate, 'p'))
         x_bsplevel_render(renderContext->level, renderContext);
         
     else

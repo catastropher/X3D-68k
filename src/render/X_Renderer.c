@@ -21,14 +21,15 @@
 #include "engine/X_EngineContext.h"
 #include "error/X_error.h"
 #include "engine/X_Engine.h"
+#include "system/X_File.h"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
-    x_console_register_var(console, &renderer->varFillColor, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
-    x_console_register_var(console, &renderer->varShowFps, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
-    x_console_register_var(console, &renderer->varFrustumClip, &renderer->frustumClip, "frustumClip", X_CONSOLEVAR_BOOL, "1", 0);
-    x_console_register_var(console, &renderer->varMipLevel, &renderer->mipLevel, "mipLevel", X_CONSOLEVAR_INT, "0", 0);
-    x_console_register_var(console, &renderer->varRenderMode, &renderer->renderMode, "rendermode", X_CONSOLEVAR_INT, "3", 0);
+    x_console_register_var(console, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
+    x_console_register_var(console, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
+    x_console_register_var(console, &renderer->frustumClip, "frustumClip", X_CONSOLEVAR_BOOL, "1", 0);
+    x_console_register_var(console, &renderer->mipLevel, "mipLevel", X_CONSOLEVAR_INT, "0", 0);
+    x_console_register_var(console, &renderer->renderMode, "rendermode", X_CONSOLEVAR_INT, "3", 0);
 }
 
 static void cmd_res(X_EngineContext* context, int argc, char* argv[])
@@ -76,6 +77,29 @@ static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
     
     x_console_printf(&context->console, "Effect will take place on next vidrestart\n");;
 }
+
+#include "error/X_log.h"
+
+static void cmd_spanProfile(X_EngineContext* context, int argc, char* argv[])
+{
+    int count[640] = { 0 };
+    
+    for(int j = 0; j < context->renderer.activeEdgeContext.nextAvailableSurface - context->renderer.activeEdgeContext.surfacePool; ++j)
+    {
+        X_AE_Surface* surface = context->renderer.activeEdgeContext.surfacePool + j;
+        
+        for(int i = 0; i < surface->totalSpans; ++i)
+        {
+            X_AE_Span* span = surface->spans + i;
+            ++count[span->x2 - span->x1];
+        }
+    }
+    
+    for(int i = 0; i < x_screen_w(&context->screen); ++i)
+    {
+        x_log("%d:   %d", i, count[i]);
+    }
+}    
 
 // Prints the ID of the surface we're currently looking at
 static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
@@ -146,22 +170,25 @@ static void x_renderer_init_colormap(X_Renderer* renderer, const X_Palette* pale
     }    
 }
 
+static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
+{
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        renderer->dynamicLights[i].flags = X_LIGHT_FREE;
+        renderer->dynamicLights[i].id = i;
+    }
+    
+    renderer->dynamicLightsNeedingUpdated = 0;
+}
+
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
 {
-    static X_ConsoleCmd cmdRes = { "res", cmd_res };
-    x_console_register_cmd(console, &cmdRes);
-    
-    static X_ConsoleCmd cmdVidrestart = { "vidrestart", cmd_vidrestart };
-    x_console_register_cmd(console, &cmdVidrestart);
-    
-    static X_ConsoleCmd cmdFullscreen = { "fullscreen", cmd_fullscreen };
-    x_console_register_cmd(console, &cmdFullscreen);
-    
-    static X_ConsoleCmd cmdSurfid = { "surfid", cmd_surfid };
-    x_console_register_cmd(console, &cmdSurfid);
-    
-    static X_ConsoleCmd cmdLighting = { "lighting", cmd_lighting };
-    x_console_register_cmd(console, &cmdLighting);
+    x_console_register_cmd(console, "res", cmd_res);    
+    x_console_register_cmd(console, "vidrestart", cmd_vidrestart);    
+    x_console_register_cmd(console, "fullscreen", cmd_fullscreen);    
+    x_console_register_cmd(console, "surfid", cmd_surfid);    
+    x_console_register_cmd(console, "lighting", cmd_lighting);
+    x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
     
     x_renderer_init_console_vars(renderer, console);
     
@@ -178,6 +205,7 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     renderer->usePalette = 0;
     
     x_renderer_init_colormap(renderer, screen->palette);
+    x_renderer_init_dynamic_lights(renderer);
 }
 
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)

@@ -86,7 +86,7 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     context->surface = surface;
     context->faceTexture = context->surface->bspSurface->faceTexture;
     context->renderContext = renderContext;
-    context->mipLevel = mipLevel;
+    context->mipLevel = x_viewport_get_miplevel_for_closest_z(&renderContext->cam->viewport, surface->closestZ);
     context->viewport = &renderContext->cam->viewport;
     
     x_ae_surfacerendercontext_init_sdivz(context);
@@ -95,20 +95,23 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     //X_BspLevel* level = context->renderContext->level;
     //x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &context->faceTex);
     
-    x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, 0, renderContext->renderer, &context->surfaceTexture);
+    x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, context->mipLevel, renderContext->renderer, &context->surfaceTexture);
     
     context->uMask = context->surfaceTexture.w - 1;        // Must be powers of 2 for this to work!
     context->vMask = context->surfaceTexture.h - 1;
+    
+    context->surfaceW = x_fp16x16_from_int(context->surfaceTexture.w);
+    context->surfaceH = x_fp16x16_from_int(context->surfaceTexture.h);
 }
 
 static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return  ((2 * x + 1) * context->sDivZ.uOrientationStep + (2 * y + 1)  * context->sDivZ.vOrientationStep) / 2 + context->sDivZ.origin;
+    return  x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin;
 }
 
 static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return ((2 * x + 1) * context->tDivZ.uOrientationStep + (2 * y + 1)  * context->tDivZ.vOrientationStep) / 2 + context->tDivZ.origin;
+    return x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin;
 }
 
 float g_zbuf[480][640];
@@ -127,50 +130,29 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
     *u = ((((long long)uDivZ * z) >> SHIFTUP) + context->sDivZ.adjust);
     *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);
     
-    X_BspSurface* bspSurface = context->surface->bspSurface;
-    
     if(*u < 0)
         *u = 16;
     
-    if(*u >= bspSurface->textureExtent.x)
-        *u = bspSurface->textureExtent.x - X_FP16x16_ONE;
+    if(*u >= context->surfaceW)
+        *u = context->surfaceW - X_FP16x16_ONE;
     
     if(*v < 0)
         *v = 16;
     
-    if(*v >= bspSurface->textureExtent.y)
-        *v = bspSurface->textureExtent.y - X_FP16x16_ONE;
-}
-
-//#define CLAMP
-
-static inline void draw_texel(X_AE_SurfaceRenderContext* context, x_fp16x16* u, x_fp16x16* v, x_fp16x16 du, x_fp16x16 dv, X_Color* pixel)
-{
-    int uu = (*u + context->surface->bspSurface->textureMinCoord.x) >> 16;
-    int vv = (*v + context->surface->bspSurface->textureMinCoord.y) >> 16;
-    
-    uu = uu & context->uMask;
-    vv = vv & context->vMask;
-    
-    *pixel = x_texture_get_texel(&context->surfaceTexture, uu, vv);
-    *u += du;
-    *v += dv;
+    if(*v >= context->surfaceH)
+        *v = context->surfaceH - X_FP16x16_ONE;
 }
 
 static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16x16 u, x_fp16x16 v)
 {
-    int uu = (u >> 16);
-    int vv = (v >> 16);
+    unsigned short uu = (u >> 16);
+    unsigned short vv = (v >> 16);
     
-    int w = context->surfaceTexture.w;
-    int h = context->surfaceTexture.h;
+#if 1
+    uu = uu % context->surfaceTexture.w;
+    vv = vv % context->surfaceTexture.h;
+#endif
     
-//     while(uu < 0) uu += w;
-//     while(uu >= w) uu -= w;
-//     
-//     while(vv < 0) vv += h;
-//     while(vv >= h) vv -= h;
-//     
     return context->surfaceTexture.texels[vv * context->surfaceTexture.w + uu];
 }
 
@@ -250,7 +232,7 @@ static inline void draw_small_group(const X_AE_SurfaceRenderContext* context, X_
 {
     x_fp16x16 nextU, nextV;
     calculate_u_and_v_at_screen_point(context, x + count, y, &nextU, &nextV);
-    
+
     x_fp16x16 du = x_fp16x16_mul(nextU - *u, recip_tab[count]);
     x_fp16x16 dv = x_fp16x16_mul(nextV - *v, recip_tab[count]);
     
@@ -264,6 +246,7 @@ static inline void draw_small_group(const X_AE_SurfaceRenderContext* context, X_
 
 static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
+#if 0
     const x_fp16x16 recip_tab[32] = 
     {
         0,
@@ -307,7 +290,132 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     x_fp16x16 u, v;
     calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
     
+    int spanLength = span->x2 - span->x1;
+    
+    X_Color* pixelsEnd = pixels + spanLength;
+    
+    int pixelsUntilMultipleOfFour = (4 - (span->x1 & 3)) & 3;
+    int count = X_MIN(pixelsUntilMultipleOfFour + 16, spanLength);
+    
+    pixelsUntilMultipleOfFour = X_MIN(pixelsUntilMultipleOfFour, count);
+    
+    x_fp16x16 nextU, nextV;
+    x_fp16x16 du, dv;
+    
+    if(spanLength > 2)
+    {
+        calculate_u_and_v_at_screen_point(context, span->x1 + count, span->y, &nextU, &nextV);
+        
+        du = x_fp16x16_mul(nextU - u, recip_tab[count]);
+        dv = x_fp16x16_mul(nextV - v, recip_tab[count]);
+    }
+    else
+    {
+        du = 0;
+        dv = 0;
+    }
+    
+    while(pixelsUntilMultipleOfFour != 0)
+    {
+        *pixels++ = get_texel(context, u, v);
+        u += du;
+        v += dv;
+        --pixelsUntilMultipleOfFour;
+    }
+    
+    unsigned int* pixelGroup = (unsigned int*)pixels;
+    
+    count = pixelsEnd - pixels;
+    
+    if(count >= 16)
+    {
+        do
+        {
+            unsigned int a, b, c, d;
+                        
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
+            
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
+            
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
+            
+            a = get_texel(context, u, v);    u += du;    v += dv;
+            b = get_texel(context, u, v);    u += du;    v += dv;
+            c = get_texel(context, u, v);    u += du;    v += dv;
+            d = get_texel(context, u, v);    u += du;    v += dv;
+            *pixelGroup++ = a | (b << 8) | (c << 16) | (d << 24);
+            
+            count = pixelsEnd - (unsigned char*)pixelGroup;
+            if(count < 16)
+                break;
+            
+            calculate_u_and_v_at_screen_point(context, (unsigned char*)pixelGroup - scanline + 16, span->y, &nextU, &nextV);
+            
+            du = (nextU - u) >> 4;
+            dv = (nextV - v) >> 4;
+        } while(1);
+    }
+#else
+const x_fp16x16 recip_tab[32] = 
+    {
+        0,
+        X_FP16x16_ONE / 1,
+        X_FP16x16_ONE / 2,
+        X_FP16x16_ONE / 3,
+        X_FP16x16_ONE / 4,
+        X_FP16x16_ONE / 5,
+        X_FP16x16_ONE / 6,
+        X_FP16x16_ONE / 7,
+        X_FP16x16_ONE / 8,
+        X_FP16x16_ONE / 9,
+        X_FP16x16_ONE / 10,
+        X_FP16x16_ONE / 11,
+        X_FP16x16_ONE / 12,
+        X_FP16x16_ONE / 13,
+        X_FP16x16_ONE / 14,
+        X_FP16x16_ONE / 15,
+        X_FP16x16_ONE / 16,
+        X_FP16x16_ONE / 17,
+        X_FP16x16_ONE / 18,
+        X_FP16x16_ONE / 19,
+        X_FP16x16_ONE / 20,
+        X_FP16x16_ONE / 21,
+        X_FP16x16_ONE / 22,
+        X_FP16x16_ONE / 23,
+        X_FP16x16_ONE / 24,
+        X_FP16x16_ONE / 25,
+        X_FP16x16_ONE / 26,
+        X_FP16x16_ONE / 27,
+        X_FP16x16_ONE / 28,
+        X_FP16x16_ONE / 29,
+        X_FP16x16_ONE / 30,
+        X_FP16x16_ONE / 31,
+    };
+    
+     if(span->x1 > span->x2)
+        return; //X_SWAP(span->x1, span->x2);
+    
+    X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
+    X_Color* scanline = screenTex->texels + span->y * screenTex->w;
+    X_Color* pixels = scanline + span->x1;
+    
+    x_fp16x16 u, v;
+    calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
+    
     int count = span->x2 - span->x1;
+    
     if(count == 0)
         return;
     
@@ -355,7 +463,25 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         u += du;
         v += dv;
     }
+#endif
 }
+
+// static void render_spans(X_AE_SurfaceRenderContext* context)
+// {
+//     for(int i = 0; i < context->surface->totalSpans; ++i)
+//     {
+//         X_AE_Span* span = context->surface->spans + i;
+//         X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
+//         X_Color* scanline = screenTex->texels + span->y * screenTex->w;
+//         X_Color* pixel = scanline + span->x1;
+//         X_Color* scanlineEnd = scanline + span->x2;
+//         
+//         x_fp16x16 u, v;
+//         calculate_u_and_v_at_screen_point(context, pixel - scanline, span->y, &u, &v);
+//         
+//         
+//     }
+// }
 
 void x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context)
 {

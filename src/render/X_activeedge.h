@@ -30,9 +30,6 @@ typedef struct X_AE_Surface
     int crossCount;
     int xStart;
     
-    struct X_AE_Surface* next;
-    struct X_AE_Surface* prev;
-    
     X_BspSurface* bspSurface;
 
     X_AE_Span spans[X_AE_SURFACE_MAX_SPANS];
@@ -43,7 +40,14 @@ typedef struct X_AE_Surface
     int zInverseXStep;          // Fixed point number with a decimal point that is shifted
     int zInverseYStep;
     x_fp2x30 zInverseOrigin;
+    
+    x_fp16x16 closestZ;
+    
+    _Bool wasDeleted;    
 } X_AE_Surface;
+
+#define X_AE_EDGE_LEFT_SURFACE 0
+#define X_AE_EDGE_RIGHT_SURFACE 1
 
 typedef struct X_AE_Edge
 {
@@ -53,7 +57,7 @@ typedef struct X_AE_Edge
     
     // Unique to X_AE_Edge
     x_fp16x16 xSlope;
-    X_AE_Surface* surface;
+    X_AE_Surface* surfaces[2];
     int endY;
     _Bool isLeadingEdge;
     
@@ -67,6 +71,8 @@ typedef struct X_AE_DummyEdge
     x_fp16x16 x;
     struct X_AE_Edge* next;
 } X_AE_DummyEdge;
+
+#define X_ACTIVE_SURFACES_SIZE 32
 
 typedef struct X_AE_Context
 {
@@ -93,19 +99,24 @@ typedef struct X_AE_Context
     
     X_AE_Surface background;
     X_BspSurface backgroundBspSurface;
+    X_AE_Surface* backgroundSurface;
     
     X_RenderContext* renderContext;
     X_Screen* screen;
     
-    int nextBspKey;
+    int maxActiveSurface;
+    unsigned int activeSurfaces[X_ACTIVE_SURFACES_SIZE];
+    int totalActiveSurfaceGroups;
+    
+    int nextBspKey;    
 } X_AE_Context;
 
 void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdges, int edgePoolSize, int surfacePoolSize);
 void x_ae_context_cleanup(X_AE_Context* context);
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
-X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface);
-void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, const int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags);
+X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface, X_BspEdge* bspEdge);
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags);
 void x_ae_context_scan_edges(X_AE_Context* context);
 
 int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level);

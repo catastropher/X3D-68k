@@ -191,6 +191,55 @@ static void x_bspleaf_mark_all_surfaces_in_leaf_as_visible(X_BspLeaf* leaf, int 
     }
 }
 
+static void x_bspnode_mark_surfaces_in_node_as_close_to_light(X_BspNode* node, const X_Light* light, int currentFrame)
+{
+    for(int i = 0; i < node->totalSurfaces; ++i)
+    {
+        X_BspSurface* surface = node->firstSurface + i;
+        
+        if(surface->lastLightUpdateFrame != currentFrame)
+        {
+            surface->lastLightUpdateFrame = currentFrame;
+            surface->lightsTouchingSurface = 0;
+        }
+        
+        surface->lightsTouchingSurface |= (1 << light->id);
+    }
+}
+
+static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_Light* light, int currentFrame)
+{
+    if(x_bspnode_is_leaf(node))
+        return;
+    
+    X_Plane* plane = &node->plane->plane;
+    X_Vec3 lightPos = x_vec3_fp16x16_to_vec3(&light->position);
+    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &lightPos));
+    
+    if(dist > light->intensity)
+    {
+        // Too far away from this node on the front side
+        x_bspnode_mark_surfaces_light_is_close_to(node->frontChild, light, currentFrame);
+        return;
+    }
+    
+    if(dist < -light->intensity)
+    {
+        // Too far away from this node on the back side
+        x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
+        return;
+    }
+    
+    x_bspnode_mark_surfaces_in_node_as_close_to_light(node, light, currentFrame);
+    x_bspnode_mark_surfaces_light_is_close_to(node->frontChild, light, currentFrame);
+    x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
+}
+
+void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light* light, int currentFrame)
+{
+    x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
+}
+
 void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, X_RenderContext* renderContext, X_Color color)
 {
     X_BspSurface** nextSurface = leaf->firstMarkSurface;
