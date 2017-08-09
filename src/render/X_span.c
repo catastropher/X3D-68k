@@ -148,7 +148,7 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
     unsigned short uu = (u >> 16);
     unsigned short vv = (v >> 16);
     
-#if 0
+#if 1
     uu = uu % context->surfaceTexture.w;
     vv = vv % context->surfaceTexture.h;
 #endif
@@ -465,6 +465,23 @@ const x_fp16x16 recip_tab[32] =
     }
 #endif
 }
+
+// static void render_spans(X_AE_SurfaceRenderContext* context)
+// {
+//     for(int i = 0; i < context->surface->totalSpans; ++i)
+//     {
+//         X_AE_Span* span = context->surface->spans + i;
+//         X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
+//         X_Color* scanline = screenTex->texels + span->y * screenTex->w;
+//         X_Color* pixel = scanline + span->x1;
+//         X_Color* scanlineEnd = scanline + span->x2;
+//         
+//         x_fp16x16 u, v;
+//         calculate_u_and_v_at_screen_point(context, pixel - scanline, span->y, &u, &v);
+//         
+//         
+//     }
+// }
 
 void x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context)
 {

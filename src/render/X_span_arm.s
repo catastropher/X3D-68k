@@ -1,3 +1,5 @@
+
+
 # This file is part of X3D.
 #
 # X3D is free software: you can redistribute it and/or modify
@@ -12,6 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with X3D. If not, see <http:#www.gnu.org/licenses/>.
+
+    .cpu arm926ej-s
+	.fpu softvfp
 
 .global draw_span_solid
 .global fast_div
@@ -59,7 +64,42 @@ draw_span_solid_loop:
     
     bx lr
 
+.macro load_texel surface, surfaceW, u, v, du, dv, dest, shift, scratch
+    mov \scratch, \v, lsr #16
+    mla \scratch, \surfaceW, \scratch, \surface
+    ldrb \scratch, [\scratch, \u, lsr #16]
+    orr \dest, \scratch, \dest, lsl #\shift
+    add \u, \u, \du
+    add \v, \v, \dv
+.endm
+
+.macro draw_aligned_span_16 scanline, surface, surfaceW, u, v, du, dv, groupA, groupB, groupC, groupD, scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 0, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 8, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 16, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 24, \scratch
     
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 0, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 8, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 16, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 24, \scratch
+    
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 0, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 8, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 16, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 24, \scratch
+    
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 0, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 8, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 16, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 24, \scratch
+    
+    stm \scanline!, { \groupA, \groupB, \groupC, \groupD }
+.endm
+
+.macro calculate_texture_coord
+
+
 # r0 -> scanline
 # r1 -> surface address
 # r2 -> surface width
@@ -67,7 +107,7 @@ draw_span_solid_loop:
 # r4 -> v
 # r5 -> du
 # r6 -> dv
-draw_aligned_span_16:
+draw:
     # r11 is scratch
     mov r11, r4, lsr #16
     mla r11, r2, r11, r1            @ texelAddr = surfaceW * (v >> 16) + surfaceAddr
@@ -76,11 +116,17 @@ draw_aligned_span_16:
     add r3, r3, r5                  @ u += du
     add r4, r4, r6                  @ v += dv
     
-# r0 -> span pointer
-# r1 -> surface address
-# r3 -> surface w
-draw_span_asm:
+    draw_aligned_span_16 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11
     
+# r0 -> X_SurfaceRenderContext
+draw_surface_spans:
+    mov r12, r0
+
+    
+draw_surface_span:
+    
+    # r12 -> context
+    # r1 -> scanline
     
     
     

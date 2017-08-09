@@ -40,14 +40,14 @@ typedef struct X_AE_TextureVar
 
 typedef struct X_AE_SurfaceRenderContext
 {
+    X_AE_TextureVar sDivZ;
+    X_AE_TextureVar tDivZ;
+    
     struct X_AE_Surface* surface;
     struct X_Viewport* viewport;
     struct X_RenderContext* renderContext;
     struct X_BspFaceTexture* faceTexture;
     int mipLevel;
-    
-    X_AE_TextureVar sDivZ;
-    X_AE_TextureVar tDivZ;
     
     X_Texture surfaceTexture;
     int uMask;

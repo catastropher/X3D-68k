@@ -417,20 +417,8 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
     X_AE_Surface* surfaceToEnable = NULL;
     X_AE_Surface* surfaceToDisable = NULL;
     
-    _Bool isDoubleSidedEdge = edge->surfaces[0] != NULL && edge->surfaces[1] != NULL;
-    
-    if(isDoubleSidedEdge)
-    {
-        surfaceToDisable = edge->surfaces[X_AE_EDGE_LEFT_SURFACE];
-        surfaceToEnable = edge->surfaces[X_AE_EDGE_RIGHT_SURFACE];        
-    }
-    else
-    {
-        if(edge->isLeadingEdge)
-            surfaceToEnable = edge->surfaces[X_AE_EDGE_RIGHT_SURFACE];
-        else
-            surfaceToDisable = edge->surfaces[X_AE_EDGE_LEFT_SURFACE];
-    }
+    surfaceToDisable = edge->surfaces[X_AE_EDGE_LEFT_SURFACE];
+    surfaceToEnable = edge->surfaces[X_AE_EDGE_RIGHT_SURFACE];
     
     int currentTop = context->maxActiveSurface;
     
@@ -561,7 +549,7 @@ static void x_ae_context_reset_active_surfaces(X_AE_Context* context)
     context->maxActiveSurface = 0;
 }
 
-void x_ae_context_scan_edges(X_AE_Context* context)
+void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 {
     static _Bool initialized = 0;
     
