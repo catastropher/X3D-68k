@@ -97,7 +97,6 @@ draw_span_solid_loop:
     stm \scanline!, { \groupA, \groupB, \groupC, \groupD }
 .endm
 
-.macro calculate_texture_coord
 
 
 # r0 -> scanline
