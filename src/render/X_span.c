@@ -473,7 +473,23 @@ const x_fp16x16 recip_tab[32] =
 #endif
 }
 
+typedef struct SpanContext
+{
+    X_Color* scanline;
+    X_Color* surface;
+    int surfaceW;
+    int u;
+    int v;
+    int du;
+    int dv;
+} SpanContext;
 
+void draw_surface_span(SpanContext* context);
+
+int divdiv(int d)
+{
+    return x_fastrecip(d);
+}
 
 static void render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
@@ -667,13 +683,29 @@ calc_16_group_vars:
         du = (nextU - u) >> 4;
         dv = (nextV - v) >> 4;
         
+        SpanContext s;
+        
 draw_aligned_16_group:
-        for(int i = 0; i < 16; ++i)
-        {
-            *pixel++ = get_texel(context, u, v);
-            u += du;
-            v += dv;
-        }
+        s.du = -du;
+        s.dv = -dv;
+        s.scanline = pixel + 12;
+        s.surface = context->surfaceTexture.texels;
+        s.surfaceW = context->surfaceTexture.w;
+        s.u = nextU;
+        s.v = nextV;
+
+        draw_surface_span(&s);
+        
+        u = nextU;
+        v = nextV;
+        pixel += 16;
+
+//         for(int i = 0; i < 16; ++i)
+//         {
+//             *pixel++ = get_texel(context, u, v);
+//             u += du;
+//             v += dv;
+//         }
     }
     while(pixelEnd - pixel >= 16);
     

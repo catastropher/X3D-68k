@@ -19,7 +19,48 @@
 	.fpu softvfp
 
 .global draw_span_solid
-.global fast_div
+.global draw_surface_span
+
+
+# Calculates the reciprocal of r0
+.macro fastrecip
+    push	{r1, r2, r3, r4, r5}
+    clz	r1, r0
+    ldr	r3, fastrecip_constant
+    sub	r1, r1, #16
+    lsl	r2, r0, r1
+    sub	r3, r3, r2, lsl #1
+    smull	r4, r5, r2, r3
+    rsb	r0, r1, #16
+    lsr	r1, r4, #16
+    orr	r1, r1, r5, lsl #16
+    rsb	r1, r1, #65536
+    smull	r4, r5, r1, r3
+    lsr	r1, r4, #16
+    orr	r1, r1, r5, lsl #16
+    add	r3, r3, r1
+    smull	r4, r5, r2, r3
+    lsr	r1, r4, #16
+    orr	r1, r1, r5, lsl #16
+    rsb	r1, r1, #65536
+    smull	r4, r5, r1, r3
+    lsr	r1, r4, #16
+    orr	r1, r1, r5, lsl #16
+    add	r3, r3, r1
+    smull	r4, r5, r2, r3
+    lsr	r2, r4, #16
+    orr	r2, r2, r5, lsl #16
+    rsb	r2, r2, #65536
+    smull	r4, r5, r2, r3
+    lsr	r2, r4, #16
+    orr	r2, r2, r5, lsl #16
+    add	r3, r3, r2
+    lsr	r0, r3, r0
+    pop	{r1, r2, r3, r4, r5}
+.endm
+    
+fastrecip_constant:
+    .word 185042
 
 # typedef struct X_AE_Span
 # {
@@ -64,69 +105,148 @@ draw_span_solid_loop:
     
     bx lr
 
-.macro load_texel surface, surfaceW, u, v, du, dv, dest, shift, scratch
+.macro load_texel surface, surfaceW, u, v, du, dv, dest, scratch
     mov \scratch, \v, lsr #16
     mla \scratch, \surfaceW, \scratch, \surface
-    ldrb \scratch, [\scratch, \u, lsr #16]
-    orr \dest, \scratch, \dest, lsl #\shift
-    add \u, \u, \du
     add \v, \v, \dv
+    ldrb \scratch, [\scratch, \u, lsr #16]
+    add \u, \u, \du
+    orr \dest, \scratch, \dest, lsl #8
 .endm
 
-.macro draw_aligned_span_16 scanline, surface, surfaceW, u, v, du, dv, groupA, groupB, groupC, groupD, scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 0, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 8, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 16, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupA, 24, \scratch
+.macro draw_aligned_span_16 scanline, surface, surfaceW, u, v, du, dv, pixelGroup, scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    str \pixelGroup,[\scanline], #-4
     
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 0, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 8, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 16, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupB, 24, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    str \pixelGroup,[\scanline], #-4
     
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 0, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 8, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 16, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupC, 24, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    str \pixelGroup,[\scanline], #-4
     
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 0, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 8, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 16, \scratch
-    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \groupD, 24, \scratch
-    
-    stm \scanline!, { \groupA, \groupB, \groupC, \groupD }
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
+    str \pixelGroup,[\scanline], #-4
 .endm
 
-
-
-# r0 -> scanline
-# r1 -> surface address
-# r2 -> surface width
-# r3 -> u
-# r4 -> v
-# r5 -> du
-# r6 -> dv
-draw:
-    # r11 is scratch
-    mov r11, r4, lsr #16
-    mla r11, r2, r11, r1            @ texelAddr = surfaceW * (v >> 16) + surfaceAddr
-    ldrb r11, [r11, r3, lsr #16]    @ pixel = *(texelAddr + u >> 16)
-    orr r7, r11, r7, lsl #8         @ a = (a << 8) | pixel
-    add r3, r3, r5                  @ u += du
-    add r4, r4, r6                  @ v += dv
+.macro calculate_initial_inv_z x, y, invZStepX, invZStepY, invZOrigin, dest, invZDest
+    # Calculate 1/z
+    push { r0 }
+    mul \invZDest, \x, \invZStepX
+    mla \invZDest, \y, \invZStepY, \invZDest
+    add \invZDest, \invZDest, \invZOrigin
+    mov r0, \invZDest, lsr #10
     
-    draw_aligned_span_16 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11
-    
-# r0 -> X_SurfaceRenderContext
-draw_surface_spans:
-    mov r12, r0
+    # Calculate z (1/1/z)
+    fastrecip
+    mov \dest, r0
+    pop { r0 }
+.endm
 
+.macro calculate_initial_u x, y, uStepX, uStepY, uOrigin, z, dest, uDivZDest
+    # Calculate u/z
+    mul \uDivZDest, \x, \uStepX
+    mla \uDivZDest, \y, \uStepY, \uDivZDest
+    add \uDivZDest, \uDivZDest, \uOrigin
     
+    # Calculate u (u/z * z)
+    mul \dest, \z, \uDivZDest
+.endm
+
+.macro calculate_initial_v x, y, vStepX, vStepY, vOrigin, z, dest, vDivZDest
+    # Calculate v/z
+    mul \vDivZDest, \x, \vStepX
+    mla \vDivZDest, \y, \vStepY, \vDivZDest
+    add \vDivZDest, \vDivZDest, \vOrigin
+    
+    # Calculate v (v/z * z)
+    mul \dest, \z, \vDivZDest
+.endm
+
+.macro advance_inv_by_16 invZ, uDivZ, vDivZ, scratch
+    ldr \scratch, [r0]      @ Load invZStepXNeg
+    add \invZ, \invZ, \scratch, lsl #4
+    
+    ldr \scratch [r0, #4]   @ Load uStepXNeg
+    add \uDivZ, \uDivZ, \scratch, lsl #4
+    
+    ldr \scratch, [r0, #8]  @ Load vStepXNeg
+    add \vDivZ, \vDivZ, \scratch, lsl #4
+.endm
+
+.macro advance_inv_by_count invZ, uDivZ, vDivZ, count, scratch
+    ldr \scratch, [r0]      @ Load invZStepXNeg
+    mla \invZ, \count, \scratch, \invZ
+
+    ldr \scratch [r0, #4]   @ Load uStepXNeg
+    mla \uDivZ, \count, \scratch, \uDivZ
+
+    ldr \scratch, [r0, #8]  @ Load vStepXNeg
+    mla \vDivZ, \count, \scratch, \vDivZ
+.endm
+
+# r0 -> context
+# r1 -> span
 draw_surface_span:
+    # Load left, right, and y
+    ldm r1, { r2, r3, r4 }
     
-    # r12 -> context
-    # r1 -> scanline
+    # left = r2
+    # right = r3
+    # y = r4
     
+    # Load 1/z variables and u variables
+    ldm r0!, { r5, r6, r7, r8, r9, r10 }
+    
+    calculate_initial_inv_z r3, r4, r5, r6, r7, r11, r12        @ Calculate z (r11) and invZ (r12) at right end of span
+    calculate_initial_u r3, r4, r8, r9, r10, r11, r5, r6        @ Calculate u (r5) and uDivZ (r6) at right end of span
+    
+    ldm r0!, { r9, r10, r14 }                                   @ Load v variables
+    calculate_initial_v r3, r4, r9, r10, r14, r11, r7, r8       @ Calculate v (r7) and vDivZ (r8) at right end of span
+    
+    # Calculate start and end address of span
+    ldr r9, [r0, #12]
+    mov r10, #320
+    mla r9, r4, r10, r9     @ scanline (r9) = y * 320 + screenAddress
+    
+    add r2, r2, r9          @ r2 = span start address
+    add r3, r3, r9          @ r3 = span end address
+    
+    # Registers free: r4, r9, r10, r14
+    
+    and r4, r3, #3      @ Calculate pixels until we reach a multiple of 4 going backwards (r4)
+    
+    # Make sure after getting to a multiple of 4 we have at least one group of 16
+    sub r9, r3, r2      @ r9 = length of scanline
+    sub r9, r9, r4      @ r9 = lengthOfScanline - pixelsUntilMultipleOfFour
+    cmp r9, #16
+    blt draw_span_using_shorts
+
+    cmp r4, #0
+    beq draw_span_using_ints
+    
+    
+    
+draw_span_using_ints:
+    
+    
+draw_span_using_ints_skip_uv_calculation:
+    
+    
+    
+draw_span_using_shorts:
+
     
     
     
