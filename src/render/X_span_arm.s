@@ -254,6 +254,7 @@ draw_surface_span:
     ldr r10, [r0, #16]      @ r10 = surfaceW
     
     and r4, r3, #3          @ Calculate pixels until we reach a multiple of 4 going backwards (r4)
+    add r4, r4, #1
     
     # Make sure after getting to a multiple of 4 we have at least one group of 16
     sub r9, r3, r2      @ r9 = length of scanline
@@ -261,10 +262,10 @@ draw_surface_span:
     cmp r9, #16
     blt draw_span_using_shorts
 
-    cmp r4, #0
-    subeq r3, #4        @ Need to start at the preceding word
+    cmp r4, #4
+    subeq r3, #3        @ Need to start at the preceding word
     beq draw_span_using_ints
-    
+
     add r4, r4, #16     @ r4 = count
     advance_inv_by_count r12, r6, r8, r4, r14
     
@@ -272,7 +273,7 @@ draw_surface_span:
     ldr r11, [r14, r4, lsl #2]   @ r11 = recipTab[r4]
     
     mov r14, r0     @ Save r0
-    mov r0, r12, lsr #10
+    mov r0, r12, asr #10
     fastrecip
     
     mul r4, r6, r0      @ r4 = (u / z) * z
@@ -286,21 +287,22 @@ draw_surface_span:
     sub r9, r9, r7
     
     smull r4, r14, r11, r4      @ Calculate du (r4)
-    asr r4, #16
+    lsr r4, #16
     orr r4, r4, r14, lsl #16
     
     smull r9, r14, r11, r9      @ Calculate du (r9)
-    asr r9, #16
+    lsr r9, #16
     orr r9, r9, r14, lsl #16
     
     # Draw individual pixels until we reach a multiple of 4
 draw_until_multiple_of_4:
     load_texel r1, r10, r5, r7, r4, r9, r11, r14
-    strb r11, [r3], #-1
     ands r14, r3, #3
+    strb r11, [r3], #-1
     bne draw_until_multiple_of_4
     
-    sub r3, r3, #4
+    add r3, r3, #-3
+    
     b draw_span_using_ints_skip_uv_calculation 
     
 draw_span_using_ints:
@@ -363,15 +365,15 @@ draw_span_using_shorts:
     sub r9, r9, r7
     
     smull r4, r14, r11, r4      @ Calculate du (r4)
-    asr r4, #16
+    lsr r4, #16
     orr r4, r4, r14, lsl #16
     
     smull r9, r14, r11, r9      @ Calculate du (r9)
-    asr r9, #16
+    lsr r9, #16
+    orr r9, r9, r14, lsl #16
     
 write_texel_loop:
-    mov r11, #14
-    #load_texel r1, r10, r5, r7, r4, r9, r11, r14
+    load_texel r1, r10, r5, r7, r4, r9, r11, r14
     strb r11, [r3], #-1
     cmp r2, r3
     bne write_texel_loop

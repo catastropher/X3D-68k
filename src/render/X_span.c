@@ -794,8 +794,8 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
     context->screen = context->renderContext->screen->canvas.tex.texels;
     //context->color = context->surface->bspSurface->color;
     
-    context->surfaceW = context->surface->bspSurface->textureExtent.x - X_FP16x16_ONE;
-    context->surfaceH = context->surface->bspSurface->textureExtent.y - X_FP16x16_ONE;
+    context->surfaceW = (context->surface->bspSurface->textureExtent.x >> context->mipLevel) - X_FP16x16_ONE;
+    context->surfaceH = (context->surface->bspSurface->textureExtent.y >> context->mipLevel) - X_FP16x16_ONE;
     
     context->texW = context->surfaceTexture.w;
     context->surfaceTexels = context->surfaceTexture.texels;
