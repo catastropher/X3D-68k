@@ -40,6 +40,32 @@ typedef struct X_AE_TextureVar
 
 typedef struct X_AE_SurfaceRenderContext
 {
+    int invZStepX;          // 0
+    int invZStepY;          // 4
+    int invZOrigin;         // 8
+    
+    int uStepX;             // 12
+    int uStepY;             // 16
+    int uOrigin;            // 20
+    
+    int vStepX;             // 24
+    int vStepY;             // 28
+    int vStepOrigin;        // 32
+    
+    int invZStepXNeg;       // 36 (0)
+    int uStepXNeg;          // 40 (4)
+    int vStepXNeg;          // 44 (8)
+    
+    X_Color* screen;        // 48 (12)
+    
+    int texW;               // 48
+    
+    x_fp16x16 surfaceW;
+    x_fp16x16 surfaceH;
+    X_Color* surfaceTexels;
+    
+    
+    
     X_AE_TextureVar sDivZ;
     X_AE_TextureVar tDivZ;
     
@@ -52,9 +78,6 @@ typedef struct X_AE_SurfaceRenderContext
     X_Texture surfaceTexture;
     int uMask;
     int vMask;
-    
-    x_fp16x16 surfaceW;
-    x_fp16x16 surfaceH;
 } X_AE_SurfaceRenderContext;
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, struct X_AE_Surface* surface, struct X_RenderContext* renderContext, int mipLevel);
