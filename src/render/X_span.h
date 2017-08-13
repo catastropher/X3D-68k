@@ -58,11 +58,17 @@ typedef struct X_AE_SurfaceRenderContext
     
     X_Color* screen;        // 48 (12)
     
-    int texW;               // 48
+    int texW;               // 52 (16)
     
-    x_fp16x16 surfaceW;
-    x_fp16x16 surfaceH;
-    X_Color* surfaceTexels;
+    int uAdjust;            // 56 (20)
+    int vAdjust;            // 60 (24)
+    
+    x_fp16x16 surfaceW;     // 64 (28)
+    x_fp16x16 surfaceH;     // 68 (32)
+    
+    X_Color* surfaceTexels; // 72 (36)
+    
+    int* recipTab;          // 76 (40)
     
     
     

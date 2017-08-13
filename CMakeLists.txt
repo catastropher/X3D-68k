@@ -29,7 +29,7 @@ elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_ASM_COMPILER nspire-as)
     set(CMAKE_LI)
     add_definitions(-D__nspire__)
-    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2 -S")
+    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2")
 endif()
 
 include_directories(src/)

@@ -116,6 +116,8 @@ static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* conte
 
 float g_zbuf[480][640];
 
+int g_z;
+
 static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y, x_fp16x16* u, x_fp16x16* v)
 {
     x_fp16x16 uDivZ = calculate_u_div_z(context, x, y);
@@ -131,6 +133,8 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
     }
     
     int z = x_fastrecip(invZ >> 10); //(1 << 17) / invZ;
+    
+    g_z = z;
     
     //printf("Z: %d\n", z);
         
@@ -484,12 +488,9 @@ typedef struct SpanContext
     int dv;
 } SpanContext;
 
-void draw_surface_span(SpanContext* context);
+void draw_surface_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span);
 
-int divdiv(int d)
-{
-    return x_fastrecip(d);
-}
+#if 0
 
 static void render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
@@ -715,6 +716,8 @@ draw_aligned_16_group:
         goto draw_aligned_2_group;
 }
 
+#endif
+
 // static void render_spans(X_AE_SurfaceRenderContext* context)
 // {
 //     for(int i = 0; i < context->surface->totalSpans; ++i)
@@ -731,14 +734,109 @@ draw_aligned_16_group:
 //     }
 // }
 
+const x_fp16x16 recip_tab[32] = 
+    {
+        0,
+        X_FP16x16_ONE / 1,
+        X_FP16x16_ONE / 2,
+        X_FP16x16_ONE / 3,
+        X_FP16x16_ONE / 4,
+        X_FP16x16_ONE / 5,
+        X_FP16x16_ONE / 6,
+        X_FP16x16_ONE / 7,
+        X_FP16x16_ONE / 8,
+        X_FP16x16_ONE / 9,
+        X_FP16x16_ONE / 10,
+        X_FP16x16_ONE / 11,
+        X_FP16x16_ONE / 12,
+        X_FP16x16_ONE / 13,
+        X_FP16x16_ONE / 14,
+        X_FP16x16_ONE / 15,
+        X_FP16x16_ONE / 16,
+        X_FP16x16_ONE / 17,
+        X_FP16x16_ONE / 18,
+        X_FP16x16_ONE / 19,
+        X_FP16x16_ONE / 20,
+        X_FP16x16_ONE / 21,
+        X_FP16x16_ONE / 22,
+        X_FP16x16_ONE / 23,
+        X_FP16x16_ONE / 24,
+        X_FP16x16_ONE / 25,
+        X_FP16x16_ONE / 26,
+        X_FP16x16_ONE / 27,
+        X_FP16x16_ONE / 28,
+        X_FP16x16_ONE / 29,
+        X_FP16x16_ONE / 30,
+        X_FP16x16_ONE / 31,
+    };
+
 void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context)
 {
+    context->invZStepX = context->surface->zInverseXStep;
+    context->invZStepY = context->surface->zInverseYStep;
+    context->invZOrigin = context->surface->zInverseOrigin;
+    
+    context->uStepX = context->sDivZ.uOrientationStep;
+    context->uStepY = context->sDivZ.vOrientationStep;
+    context->uOrigin = context->sDivZ.origin;
+    
+    context->vStepX = context->tDivZ.uOrientationStep;
+    context->vStepY = context->tDivZ.vOrientationStep;
+    context->vStepOrigin = context->tDivZ.origin;
+    
+    context->invZStepXNeg = -context->invZStepX;
+    context->uStepXNeg = -context->uStepX;
+    context->vStepXNeg = -context->vStepX;
+    
+    context->uAdjust = context->sDivZ.adjust;
+    context->vAdjust = context->tDivZ.adjust;
+    
+    context->screen = context->renderContext->screen->canvas.tex.texels;
+    //context->color = context->surface->bspSurface->color;
+    
+    context->surfaceW = context->surface->bspSurface->textureExtent.x - X_FP16x16_ONE;
+    context->surfaceH = context->surface->bspSurface->textureExtent.y - X_FP16x16_ONE;
+    
+    context->texW = context->surfaceTexture.w;
+    context->surfaceTexels = context->surfaceTexture.texels;
+    
+    context->recipTab = (int *)recip_tab;
+    
     if(((context->renderContext->renderer->renderMode) & 1) == 0)
         return;
     
     for(int i = 0; i < context->surface->totalSpans; ++i)
     {
-        render_span(context, context->surface->spans + i);
+//         calculate_u_and_v_at_screen_point(context, context->surface->spans[i].x2, context->surface->spans[i].y, &context->u, &context->v);
+        
+//         context->u = context->surface->spans[i].x2 * context->uStepX
+//             + context->surface->spans[i].y * context->uStepY + context->uOrigin;
+//         
+//         context->z = g_z;
+        
+//         context->u *= context->z;
+        
+        //x_log("Z: %d\n", context->z);
+        
+        draw_surface_span(context, context->surface->spans + i);
+        
+//         int u, v;
+//         calculate_u_and_v_at_screen_point(context, context->surface->spans[i].x1, context->surface->spans[i].y, &u, &v);
+//         
+//         int count = context->surface->spans[i].x2 - context->surface->spans[i].x1;
+//         int du = (context->u - u) / count;
+//         int dv = (context->v - v) / count;
+//         
+//         unsigned char* pixel = context->surface->spans[i].y * 320 + context->surface->spans[i].x1 + context->renderContext->screen->canvas.tex.texels;
+//         
+//         for(int j = context->surface->spans[i].x1; j < context->surface->spans[i].x2; ++j)
+//         {
+//             *pixel++ = get_texel(context, u, v);
+//             u += du;
+//             v += dv;
+//         }
+        
+        //render_span(context, context->surface->spans + i);
     }
 }
 

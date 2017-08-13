@@ -140,9 +140,9 @@ draw_span_solid_loop:
     str \pixelGroup,[\scanline], #-4
 .endm
 
-.macro calculate_initial_inv_z x, y, invZStepX, invZStepY, invZOrigin, dest, invZDest
+.macro calculate_initial_inv_z x, y, invZStepX, invZStepY, invZOrigin, dest, invZDest, scratch
     # Calculate 1/z
-    push { r0 }
+    mov \scratch, r0
     mul \invZDest, \x, \invZStepX
     mla \invZDest, \y, \invZStepY, \invZDest
     add \invZDest, \invZDest, \invZOrigin
@@ -151,7 +151,7 @@ draw_span_solid_loop:
     # Calculate z (1/1/z)
     fastrecip
     mov \dest, r0
-    pop { r0 }
+    mov r0, \scratch
 .endm
 
 .macro calculate_initial_u x, y, uStepX, uStepY, uOrigin, z, dest, uDivZDest
@@ -178,7 +178,7 @@ draw_span_solid_loop:
     ldr \scratch, [r0]      @ Load invZStepXNeg
     add \invZ, \invZ, \scratch, lsl #4
     
-    ldr \scratch [r0, #4]   @ Load uStepXNeg
+    ldr \scratch, [r0, #4]   @ Load uStepXNeg
     add \uDivZ, \uDivZ, \scratch, lsl #4
     
     ldr \scratch, [r0, #8]  @ Load vStepXNeg
@@ -189,16 +189,42 @@ draw_span_solid_loop:
     ldr \scratch, [r0]      @ Load invZStepXNeg
     mla \invZ, \count, \scratch, \invZ
 
-    ldr \scratch [r0, #4]   @ Load uStepXNeg
+    ldr \scratch, [r0, #4]   @ Load uStepXNeg
     mla \uDivZ, \count, \scratch, \uDivZ
 
     ldr \scratch, [r0, #8]  @ Load vStepXNeg
     mla \vDivZ, \count, \scratch, \vDivZ
 .endm
 
+.macro adjust_and_clamp_u u, scratch
+    ldr \scratch, [r0, #20]         @ scratch = uAdjustment
+    
+    adds \u, \u, \scratch           @ u += uAdjustment
+    movmi \u, #32                   @ if(u < 0) u = roundOffGuard
+    ldr \scratch, [r0, #28]         @ scratch = surfaceW
+    cmp \u, \scratch
+    movgt \u, \scratch              @ if(u > surfaceW) u = surfaceW
+.endm
+
+.macro adjust_and_clamp_v v, scratch
+    ldr \scratch, [r0, #24]         @ scratch = vAdjustment
+    
+    adds \v, \v, \scratch           @ v += vAdjustment
+    movmi \v, #32                   @ if(v < 0) v = roundOffGuard
+    ldr \scratch, [r0, #32]         @ scratch = surfaceH
+    cmp \v, \scratch
+    movgt \v, \scratch              @ if(v > surfaceH) v = surfaceH
+.endm
+    
+.macro adjust_and_clamp_uv u, v, scratch
+    adjust_and_clamp_u \u, \scratch
+    adjust_and_clamp_v \v, \scratch
+.endm
+    
 # r0 -> context
 # r1 -> span
 draw_surface_span:
+    push { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
     # Load left, right, and y
     ldm r1, { r2, r3, r4 }
     
@@ -209,12 +235,15 @@ draw_surface_span:
     # Load 1/z variables and u variables
     ldm r0!, { r5, r6, r7, r8, r9, r10 }
     
-    calculate_initial_inv_z r3, r4, r5, r6, r7, r11, r12        @ Calculate z (r11) and invZ (r12) at right end of span
+    calculate_initial_inv_z r3, r4, r5, r6, r7, r11, r12, r14   @ Calculate z (r11) and invZ (r12) at right end of span
+    
     calculate_initial_u r3, r4, r8, r9, r10, r11, r5, r6        @ Calculate u (r5) and uDivZ (r6) at right end of span
     
     ldm r0!, { r9, r10, r14 }                                   @ Load v variables
     calculate_initial_v r3, r4, r9, r10, r14, r11, r7, r8       @ Calculate v (r7) and vDivZ (r8) at right end of span
     
+    adjust_and_clamp_uv r5, r7, r9
+  
     # Calculate start and end address of span
     ldr r9, [r0, #12]
     mov r10, #320
@@ -223,9 +252,10 @@ draw_surface_span:
     add r2, r2, r9          @ r2 = span start address
     add r3, r3, r9          @ r3 = span end address
     
-    # Registers free: r4, r9, r10, r14
+    ldr r1, [r0, #36]       @ r1 = surfaceTexels
+    ldr r10, [r0, #16]      @ r10 = surfaceW
     
-    and r4, r3, #3      @ Calculate pixels until we reach a multiple of 4 going backwards (r4)
+    and r4, r3, #3          @ Calculate pixels until we reach a multiple of 4 going backwards (r4)
     
     # Make sure after getting to a multiple of 4 we have at least one group of 16
     sub r9, r3, r2      @ r9 = length of scanline
@@ -234,19 +264,123 @@ draw_surface_span:
     blt draw_span_using_shorts
 
     cmp r4, #0
+    subeq r3, #4        @ Need to start at the preceding word
     beq draw_span_using_ints
     
+    add r4, r4, #16     @ r4 = count
+    advance_inv_by_count r12, r6, r8, r4, r14
     
+    ldr r14, [r0, #40]  @ r14 = recipTab
+    ldr r11, [r14, r4, lsl #2]   @ r11 = recipTab[r4]
+    
+    mov r14, r0     @ Save r0
+    mov r0, r12, lsr #10
+    fastrecip
+    
+    mul r4, r6, r0      @ r4 = (u / z) * z
+    mul r9, r8, r0      @ r9 = (v / z) * z
+    
+    mov r0, r14     @ Restore r0
+    
+    adjust_and_clamp_uv r4, r9, r14
+    
+    sub r4, r4, r5
+    sub r9, r9, r7
+    
+    smull r4, r14, r11, r4      @ Calculate du (r4)
+    asr r4, #16
+    orr r4, r4, r14, lsl #16
+    
+    smull r9, r14, r11, r9      @ Calculate du (r9)
+    asr r9, #16
+    orr r9, r9, r14, lsl #16
+    
+    # Draw individual pixels until we reach a multiple of 4
+draw_until_multiple_of_4:
+    load_texel r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    ands r14, r3, #3
+    bne draw_until_multiple_of_4
+    
+    sub r3, r3, #4
+    b draw_span_using_ints_skip_uv_calculation 
     
 draw_span_using_ints:
+    # Calculate u and v 16 pixels to the left
+    advance_inv_by_16 r12, r6, r8, r14
+    mov r14, r0         @ Save r0
+    mov r0, r12, lsr #10
+    fastrecip
     
+    mul r4, r6, r0      @ r4 = (u / z) * z
+    mul r9, r8, r0      @ r9 = (v / z) * z
     
+    mov r0, r14         @ Restore r0
+    
+    adjust_and_clamp_uv r4, r9, r11
+    
+    sub r4, r4, r5
+    asr r4, #4          @ r4 = du
+    
+    sub r9, r9, r7
+    asr r9, #4          @ r9 = dv
+
+# u -> r5
+# v -> r7
+# du -> r4
+# dv -> r9
+# surface texels -> r1
+# surfaceW -> r10
+# currentPixel -> r3
+# beginning of span -> r2
 draw_span_using_ints_skip_uv_calculation:
+    draw_aligned_span_16 r3, r1, r10, r5, r7, r4, r9, r11, r14
+    sub r14, r3, #16
+    cmp r14, r2
+    bge draw_span_using_ints
     
-    
+    add r3, #4
     
 draw_span_using_shorts:
+    subs r4, r3, r2
+    beq done
 
+    advance_inv_by_count r12, r6, r8, r4, r14
+    
+    ldr r14, [r0, #40]  @ r14 = recipTab
+    ldr r11, [r14, r4, lsl #2]   @ r11 = recipTab[r4]
+    
+    mov r14, r0     @ Save r0
+    mov r0, r12, lsr #10
+    fastrecip
+    
+    mul r4, r6, r0      @ r4 = (u / z) * z
+    mul r9, r8, r0      @ r9 = (v / z) * z
+    
+    mov r0, r14     @ Restore r0
+    
+    adjust_and_clamp_uv r4, r9, r14
+    
+    sub r4, r4, r5
+    sub r9, r9, r7
+    
+    smull r4, r14, r11, r4      @ Calculate du (r4)
+    asr r4, #16
+    orr r4, r4, r14, lsl #16
+    
+    smull r9, r14, r11, r9      @ Calculate du (r9)
+    asr r9, #16
+    
+write_texel_loop:
+    mov r11, #14
+    #load_texel r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    cmp r2, r3
+    bne write_texel_loop
+    
+done:
+    pop { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    bx lr
     
     
     
