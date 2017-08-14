@@ -71,7 +71,6 @@ typedef struct X_AE_SurfaceRenderContext
     int* recipTab;          // 76 (40)
     
     
-    
     X_AE_TextureVar sDivZ;
     X_AE_TextureVar tDivZ;
     

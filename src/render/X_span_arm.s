@@ -1,5 +1,3 @@
-
-
 # This file is part of X3D.
 #
 # X3D is free software: you can redistribute it and/or modify
@@ -381,6 +379,4 @@ write_texel_loop:
 done:
     pop { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
     bx lr
-    
-    
-    
+
