@@ -68,7 +68,7 @@ typedef struct X_AE_SurfaceRenderContext
     
     X_Color* surfaceTexels; // 72 (36)
     
-    int* recipTab;          // 76 (40)
+    const int* recipTab;    // 76 (40)
     
     
     X_AE_TextureVar sDivZ;
@@ -81,8 +81,6 @@ typedef struct X_AE_SurfaceRenderContext
     int mipLevel;
     
     X_Texture surfaceTexture;
-    int uMask;
-    int vMask;
 } X_AE_SurfaceRenderContext;
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, struct X_AE_Surface* surface, struct X_RenderContext* renderContext, int mipLevel);
