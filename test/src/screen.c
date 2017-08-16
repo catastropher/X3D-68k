@@ -43,8 +43,10 @@ void scale_screen(Context* context)
 
 static void update_screen_nspire(Context* context)
 {
-    scale_screen(context);
-    //memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
+    if(context->engineContext->renderer.scaleScreen)
+        scale_screen(context);
+    else
+        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
 }
 
 static unsigned short map_rgb_to_nspire_color(const unsigned char color[3])

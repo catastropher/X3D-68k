@@ -130,6 +130,40 @@ static void cmd_lighting(X_EngineContext* context, int argc, char* argv[])
     x_cache_flush(&context->renderer.surfaceCache);
 }
 
+static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_printf(&context->console, "Usage: %s [0/1] - enables/disables screen scaling", argv[0]);
+        return;
+    }
+    
+#ifndef __nspire__
+    x_console_print("Screen scaling only available on Nspire\n");
+    return;
+#endif
+    
+    X_CameraObject* cam = context->screen.cameraListHead;
+    int w;
+    int h;
+    
+    context->renderer.scaleScreen = atoi(argv[1]) != 0;
+    
+    if(context->renderer.scaleScreen)
+    {
+        w = 320 / 2;
+        h = 240 / 2;
+    }
+    else
+    {
+        w = 320;
+        h = 240;
+    }
+    
+    // FIXME: don't hardcode angle
+    x_viewport_init(&cam->viewport, x_vec2_make(0, 0), w, h, X_ANG_60);
+}
+
 #define MAX_SURFACES 1000
 #define MAX_EDGES 5000
 #define MAX_ACTIVE_EDGES 5000
@@ -189,6 +223,7 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_console_register_cmd(console, "surfid", cmd_surfid);    
     x_console_register_cmd(console, "lighting", cmd_lighting);
     x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
+    x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
     
     x_renderer_init_console_vars(renderer, console);
     
@@ -203,6 +238,8 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     renderer->enableLighting = 1;
     
     renderer->usePalette = 0;
+    
+    renderer->scaleScreen = 0;
     
     x_renderer_init_colormap(renderer, screen->palette);
     x_renderer_init_dynamic_lights(renderer);

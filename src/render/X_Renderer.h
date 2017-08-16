@@ -48,6 +48,8 @@ typedef struct X_Renderer
     _Bool frustumClip;              // debug
     _Bool enableLighting;
     
+    _Bool scaleScreen;
+    
     int renderMode;
     
     int totalSurfacesRendered;
