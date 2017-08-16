@@ -167,6 +167,8 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     
     context->surfaceW = x_fp16x16_from_int(context->surfaceTexture.w);
     context->surfaceH = x_fp16x16_from_int(context->surfaceTexture.h);
+    
+    x_ae_surfacerendercontext_setup_constants(context);
 }
 
 static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)

@@ -112,6 +112,14 @@ draw_span_solid_loop:
     orr \dest, \scratch, \dest, lsl #8
 .endm
 
+.macro load_texel_small surface, surfaceW, u, v, du, dv, dest, scratch
+    mov \dest, \v, lsr #16
+    mla \dest, \surfaceW, \dest, \surface
+    add \v, \v, \dv
+    ldrb \dest, [\dest, \u, lsr #16]
+    add \u, \u, \du
+.endm
+
 .macro draw_aligned_span_16 scanline, surface, surfaceW, u, v, du, dv, pixelGroup, scratch
     load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
     load_texel \surface, \surfaceW, \u, \v, \du, \dv, \pixelGroup, \scratch
@@ -339,7 +347,7 @@ draw_span_using_ints_skip_uv_calculation:
     cmp r14, r2
     bge draw_span_using_ints
     
-    add r3, #4
+    add r3, #3
     
 draw_span_using_shorts:
     subs r4, r3, r2
@@ -371,14 +379,71 @@ draw_span_using_shorts:
     smull r9, r14, r11, r9      @ Calculate du (r9)
     lsr r9, #16
     orr r9, r9, r14, lsl #16
+        
+    sub r8, r3, r2             @ Jump
+    rsb r8, r8, #21
+    mov r11, #(write_texel_unroll_end - write_texel_unroll_start)
+    mul r8, r11, r8
+    ldr r11, =write_texel_unroll_start
+    add r11, r11, r8
+    mov pc, r11
     
-write_texel_loop:
-    load_texel r1, r10, r5, r7, r4, r9, r11, r14
+write_texel_unroll_start:
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
     strb r11, [r3], #-1
-    cmp r2, r3
-    bne write_texel_loop
+write_texel_unroll_end:    
+    
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
+    load_texel_small r1, r10, r5, r7, r4, r9, r11, r14
+    strb r11, [r3], #-1
     
 done:
     pop { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
     bx lr
-
+    
+# r0 -> frame buffer
+# r1 -> screen address
+nspire_scale_screen:
+    
+# nspire_scale_scanline:
+#     ldrb r2, [r0], #1
+#     orr r2, r2, r2, lsl #8
+#     strsh r2, [r1]
+#     strsh 

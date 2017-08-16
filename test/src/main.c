@@ -51,6 +51,9 @@ int main(int argc, char* argv[])
     Context context;
     
     init(&context, argv[0]);
+    
+    x_viewport_init(&context.cam->viewport, x_vec2_make(0, 0), 320 / 2, 240 / 2, X_ANG_60);
+    
     gameloop(&context);
     cleanup(&context);
 }
