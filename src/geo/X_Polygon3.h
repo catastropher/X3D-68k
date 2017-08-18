@@ -44,9 +44,6 @@ _Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly
 void x_polygon3_to_polygon3_fp16x16(const X_Polygon3* poly, X_Polygon3_fp16x16* dest);
 void x_polygon3_fp16x16_to_polygon3(const X_Polygon3_fp16x16* poly, X_Polygon3* dest);
 
-void x_polygon3_reset_clip_counter();
-int x_polygon3_get_clip_counter();
-
 static inline X_Polygon3 x_polygon3_make(X_Vec3* vertices, int totalVertices)
 {
     return (X_Polygon3) { totalVertices, vertices };

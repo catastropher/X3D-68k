@@ -139,7 +139,7 @@ static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
     }
     
 #ifndef __nspire__
-    x_console_print("Screen scaling only available on Nspire\n");
+    x_console_print(&context->console, "Screen scaling only available on Nspire\n");
     return;
 #endif
     
@@ -254,5 +254,99 @@ void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
 {
     x_ae_context_cleanup(&renderer->activeEdgeContext);
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
+}
+
+static void x_engine_begin_frame(X_EngineContext* context)
+{
+    ++context->frameCount;
+    x_enginecontext_update_time(context);
+}
+
+X_Light* add_light(X_RenderContext* context)
+{
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(x_light_is_free(context->renderer->dynamicLights + i))
+        {
+            context->renderer->dynamicLights[i].flags &= ~X_LIGHT_FREE;
+            return context->renderer->dynamicLights + i;
+        }
+    }
+    
+    return NULL;
+}
+
+void update_test_light(X_RenderContext* context)
+{
+    _Bool down = x_keystate_key_down(&context->engineContext->keystate, 'q');
+    static _Bool lastDown;
+    
+    if(down && !lastDown)
+    {
+        X_Vec3 up, right, forward;
+        x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
+        
+        X_Light* light = add_light(context);
+        
+        if(light == NULL)
+            return;
+        
+        light->position = context->cam->base.position;
+        light->intensity = 300;
+        light->direction = forward;
+        light->flags |= X_LIGHT_ENABLED;
+    }
+    
+    X_Light* lights = context->renderer->dynamicLights;
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(x_light_is_enabled(context->renderer->dynamicLights + i))
+        {
+            lights[i].position = x_vec3_add_scaled(&lights[i].position, &lights[i].direction, 10 << 16);
+        }
+    }
+    
+    lastDown = down;
+}
+
+static void mark_lights(X_EngineContext* context)
+{
+    X_Light* lights = context->renderer.dynamicLights;
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(!x_light_is_free(lights + i))
+        {
+            x_bsplevel_mark_surfaces_light_is_close_to(&context->currentLevel, lights + i, context->frameCount);
+        }
+    }
+}
+
+void x_renderer_render_frame(X_EngineContext* engineContext)
+{
+    x_engine_begin_frame(engineContext);
+    
+    if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
+       x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+    
+    engineContext->renderer.totalSurfacesRendered = 0;
+    engineContext->renderer.currentFrame = engineContext->frameCount;
+    engineContext->renderer.dynamicLightsNeedingUpdated = 0xFFFFFFFF;
+    
+    mark_lights(engineContext);
+    
+    for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    {
+        X_RenderContext renderContext;
+        x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+        
+        update_test_light(&renderContext);
+        
+        if((engineContext->renderer.renderMode & 2) != 0)
+            x_ae_context_begin_render(&engineContext->renderer.activeEdgeContext, &renderContext);
+        
+        x_cameraobject_render(cam, &renderContext);
+        
+        x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
+    }
 }
 

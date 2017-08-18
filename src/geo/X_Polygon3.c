@@ -51,18 +51,6 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
     return dest->totalVertices > 2;
 }
 
-static int g_totalPlaneIterations;
-
-void x_polygon3_reset_clip_counter()
-{
-    g_totalPlaneIterations = 0;
-}
-
-int x_polygon3_get_clip_counter()
-{
-    return g_totalPlaneIterations;
-}
-
 _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest)
 {
     dest->totalVertices = 0;
@@ -92,8 +80,6 @@ _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Pl
         
         dot = nextDot;
         in = nextIn;
-        
-        ++g_totalPlaneIterations;
     }
     
     return dest->totalVertices > 2;
@@ -135,9 +121,7 @@ _Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3_fp16x16* src, c
         }
         
         dot = nextDot;
-        in = nextIn;
-        
-        ++g_totalPlaneIterations;
+        in = nextIn;        
     }
     
     return dest->totalVertices > 2;

@@ -31,8 +31,6 @@ X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BspBoundBox* box
     if(!x_plane_point_is_on_normal_facing_side(plane, &furthestPointAlongNormal))
         return X_BOUNDBOX_OUTSIDE_PLANE;
     
-    //return X_BOUNDBOX_INTERSECT_PLANE;
-    
     X_Vec3 closestPointAlongNormal = x_vec3_make(box->v[px ^ 1].x, box->v[py ^ 1].y, box->v[pz ^ 1].z);
     if(x_plane_point_is_on_normal_facing_side(plane, &closestPointAlongNormal))
         return X_BOUNDBOX_INSIDE_PLANE;

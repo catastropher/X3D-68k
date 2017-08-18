@@ -37,6 +37,7 @@ add_executable(xtest
     src/init.c
     src/keys.c
     src/main.c
+    src/render.c
     src/screen.c
 )
 

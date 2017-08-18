@@ -67,3 +67,5 @@ static inline X_Color x_renderer_get_shaded_color(X_Renderer* renderer, X_Color 
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov);
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen);
 
+void x_renderer_render_frame(struct X_EngineContext* engineContext);
+
