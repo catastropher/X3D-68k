@@ -101,13 +101,7 @@ static int frameId;
 void screen_update(Context* context)
 {
 #ifdef __nspire__
-    if(!context->engineContext->renderer.usePalette)
-        update_screen_nspire(context);
-    else
-    {
-        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
-        return;
-    }
+    update_screen_nspire(context);
 #else
     
     x_texture_to_sdl_surface(&context->engineContext->screen.canvas.tex, context->engineContext->screen.palette, context->screen);
