@@ -57,14 +57,63 @@ static void draw_crosshair(X_EngineContext* engineContext)
     x_texture_set_texel(tex, centerX, centerY + 1, white);
 }
 
+X_Light* add_light(X_Renderer* renderer)
+{
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(x_light_is_free(renderer->dynamicLights + i))
+        {
+            renderer->dynamicLights[i].flags &= ~X_LIGHT_FREE;
+            return renderer->dynamicLights + i;
+        }
+    }
+    
+    return NULL;
+}
+
+
+static void update_dynamic_lights(X_EngineContext* engineContext)
+{
+    _Bool down = x_keystate_key_down(&engineContext->keystate, 'q');
+    static _Bool lastDown;
+    X_CameraObject* cam = engineContext->screen.cameraListHead;
+    
+    if(down && !lastDown)
+    {
+        X_Vec3 up, right, forward;
+        x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
+        
+        X_Light* light = add_light(&engineContext->renderer);
+        
+        if(light == NULL)
+            return;
+        
+        light->position = cam->base.position;
+        light->intensity = 300;
+        light->direction = forward;
+        light->flags |= X_LIGHT_ENABLED;
+    }
+    
+    X_Light* lights = engineContext->renderer.dynamicLights;
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(x_light_is_enabled(engineContext->renderer.dynamicLights + i))
+        {
+            lights[i].position = x_vec3_add_scaled(&lights[i].position, &lights[i].direction, 10 << 16);
+        }
+    }
+    
+    lastDown = down;
+}
+
 void render(Context* context)
 {
     X_EngineContext* engineContext = context->engineContext;
     
+    update_dynamic_lights(engineContext);
     x_engine_render_frame(engineContext);
     
     if(x_console_is_open(&engineContext->console))
         x_console_render(&engineContext->console);
 }
-
 

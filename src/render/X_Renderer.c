@@ -262,53 +262,6 @@ static void x_engine_begin_frame(X_EngineContext* context)
     x_enginecontext_update_time(context);
 }
 
-X_Light* add_light(X_RenderContext* context)
-{
-    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
-    {
-        if(x_light_is_free(context->renderer->dynamicLights + i))
-        {
-            context->renderer->dynamicLights[i].flags &= ~X_LIGHT_FREE;
-            return context->renderer->dynamicLights + i;
-        }
-    }
-    
-    return NULL;
-}
-
-void update_test_light(X_RenderContext* context)
-{
-    _Bool down = x_keystate_key_down(&context->engineContext->keystate, 'q');
-    static _Bool lastDown;
-    
-    if(down && !lastDown)
-    {
-        X_Vec3 up, right, forward;
-        x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
-        
-        X_Light* light = add_light(context);
-        
-        if(light == NULL)
-            return;
-        
-        light->position = context->cam->base.position;
-        light->intensity = 300;
-        light->direction = forward;
-        light->flags |= X_LIGHT_ENABLED;
-    }
-    
-    X_Light* lights = context->renderer->dynamicLights;
-    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
-    {
-        if(x_light_is_enabled(context->renderer->dynamicLights + i))
-        {
-            lights[i].position = x_vec3_add_scaled(&lights[i].position, &lights[i].direction, 10 << 16);
-        }
-    }
-    
-    lastDown = down;
-}
-
 static void mark_lights(X_EngineContext* context)
 {
     X_Light* lights = context->renderer.dynamicLights;
@@ -338,8 +291,6 @@ void x_renderer_render_frame(X_EngineContext* engineContext)
     {
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
-        
-        update_test_light(&renderContext);
         
         if((engineContext->renderer.renderMode & 2) != 0)
             x_ae_context_begin_render(&engineContext->renderer.activeEdgeContext, &renderContext);
