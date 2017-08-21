@@ -106,12 +106,19 @@ static void update_dynamic_lights(X_EngineContext* engineContext)
     lastDown = down;
 }
 
+static void draw_hud(X_EngineContext* engineContext)
+{
+    draw_crosshair(engineContext);
+    draw_fps(engineContext);
+}
+
 void render(Context* context)
 {
     X_EngineContext* engineContext = context->engineContext;
     
     update_dynamic_lights(engineContext);
     x_engine_render_frame(engineContext);
+    draw_hud(engineContext);
     
     if(x_console_is_open(&engineContext->console))
         x_console_render(&engineContext->console);

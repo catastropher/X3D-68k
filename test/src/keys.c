@@ -93,27 +93,40 @@ void handle_key_events(X_EngineContext* context)
         {
             sdlKeyState[ev.key.keysym.sym] = 1;
             
+            int sdlKey;
+            int unicodeSdlKey;
+            
+            int x3dKey;
+            int unicodeX3dKey;
+            
 #ifndef __nspire__
-            int sdlKey = (context->keystate.textInputMode ? ev.key.keysym.unicode : ev.key.keysym.sym);
+            sdlKey = ev.key.keysym.sym;
+            unicodeSdlKey = ev.key.keysym.unicode;
+            x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
+            unicodeX3dKey = convert_sdl_key_to_x3d_key(unicodeSdlKey);
 #else
-            int sdlKey = ev.key.keysym.sym;
+            sdlKey = ev.key.keysym.sym;
+            unicodeSdlKey = sdlKey;
+            x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
+            unicodeX3dKey = x3dKey;
 #endif
-            int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
             
             if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_press(&context->keystate, x3dKey);
+                x_keystate_send_key_press(&context->keystate, x3dKey, unicodeX3dKey);
         }
         else if(ev.type == SDL_KEYUP)
         {
             sdlKeyState[ev.key.keysym.sym] = 0;
             
-            int sdlKey = (context->keystate.textInputMode ? ev.key.keysym.unicode : ev.key.keysym.sym);
+            int sdlKey = ev.key.keysym.sym;
             int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
             
             if(x3dKey != INVALID_KEY)
                 x_keystate_send_key_release(&context->keystate, x3dKey);
         }
     }
+    
+    x_keystate_handle_key_repeat(&context->keystate, x_enginecontext_get_time(context));
 }
 
 _Bool key_is_down(int sdlKey)

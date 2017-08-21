@@ -24,8 +24,10 @@ static void build_shift_keys(X_KeyState* state)
 void x_keystate_init(X_KeyState* state)
 {
     build_shift_keys(state);
-    state->textInputMode = 0;
     x_keystate_reset_keys(state);
+    
+    state->textInputMode = 0;
+    state->lastKeyPressed = X_KEY_INVALID;
 }
 
 void x_keystate_reset_keys(X_KeyState* state)
@@ -69,12 +71,14 @@ _Bool x_keystate_queue_empty(const X_KeyState* state)
     return !state->textInputMode || state->keyQueueHead == state->keyQueueTail;
 }
 
-void x_keystate_send_key_press(X_KeyState* state, X_Key key)
+void x_keystate_send_key_press(X_KeyState* state, X_Key key, X_Key unicodeKey)
 {
     if(state->textInputMode)
     {
-        X_Key modifiedKey = key;
-        x_keystate_enqueue(state, modifiedKey);
+        x_keystate_enqueue(state, unicodeKey);
+        state->lastKeyPressed = key;
+        state->keyToRepeat = unicodeKey;
+        state->nextKeyRepeat = state->currentTime + X_KEY_REPEAT_INITIAL_TIME;
     }
     
     state->keyDown[key] = 1;
@@ -83,5 +87,21 @@ void x_keystate_send_key_press(X_KeyState* state, X_Key key)
 void x_keystate_send_key_release(X_KeyState* state, X_Key key)
 {
     state->keyDown[key] = 0;
+    state->keyToRepeat = X_KEY_INVALID;
+}
+
+void x_keystate_handle_key_repeat(X_KeyState* state, X_Time currentTime)
+{
+    if(!state->textInputMode)
+        return;
+    
+    state->currentTime = currentTime;
+    _Bool validKeyIsStillPressed = state->keyToRepeat != X_KEY_INVALID && x_keystate_key_down(state, state->lastKeyPressed);
+    
+    if(!validKeyIsStillPressed || currentTime < state->nextKeyRepeat)
+        return;
+    
+    x_keystate_enqueue(state, state->keyToRepeat);
+    state->nextKeyRepeat = currentTime + X_KEY_REPEAT_TIME;
 }
 
