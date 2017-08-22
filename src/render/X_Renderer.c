@@ -274,30 +274,41 @@ static void mark_lights(X_EngineContext* context)
     }
 }
 
+static void fill_with_background_color(X_EngineContext* engineContext)
+{
+    if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
+       x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+}
+
+static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engineContext)
+{
+    renderer->totalSurfacesRendered = 0;
+    renderer->currentFrame = engineContext->frameCount;
+    renderer->dynamicLightsNeedingUpdated = 0xFFFFFFFF;
+}
+
+static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineContext* engineContext)
+{
+    X_RenderContext renderContext;
+    x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+    
+    if((renderer->renderMode & 2) != 0)
+        x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
+    
+    x_cameraobject_render(cam, &renderContext);
+    x_ae_context_scan_edges(&renderer->activeEdgeContext);
+}
+
 void x_renderer_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
-    
-    if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
-       x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
-    
-    engineContext->renderer.totalSurfacesRendered = 0;
-    engineContext->renderer.currentFrame = engineContext->frameCount;
-    engineContext->renderer.dynamicLightsNeedingUpdated = 0xFFFFFFFF;
-    
+    x_renderer_begin_frame(&engineContext->renderer, engineContext);
+    fill_with_background_color(engineContext);
     mark_lights(engineContext);
     
     for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
-        X_RenderContext renderContext;
-        x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
-        
-        if((engineContext->renderer.renderMode & 2) != 0)
-            x_ae_context_begin_render(&engineContext->renderer.activeEdgeContext, &renderContext);
-        
-        x_cameraobject_render(cam, &renderContext);
-        
-        x_ae_context_scan_edges(&engineContext->renderer.activeEdgeContext);
+        render_camera(&engineContext->renderer, cam, engineContext);
     }
 }
 
