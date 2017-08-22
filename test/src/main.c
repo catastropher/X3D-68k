@@ -24,8 +24,6 @@
 #include "init.h"
 #include "render.h"
 
-void x_bspsurface_get_surface_texture_for_mip_level(X_BspSurface* surface, int mipLevel, X_Renderer* renderer, X_Texture* dest);
-
 void gameloop(Context* context)
 {
     while(!context->quit)
@@ -40,8 +38,7 @@ int main(int argc, char* argv[])
 {
     Context context;
     
-    init(&context, argv[0]);
-    
+    init(&context, argv[0]);    
     gameloop(&context);
     cleanup(&context);
 }

@@ -96,40 +96,48 @@ X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
     return (X_BspLeaf*)node;
 }
 
-void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+static void mark_all_leaves_in_pvs_as_visible(unsigned char* pvs, int pvsSize)
 {
-    // The PVS is compressed using zero run-length encoding
-    int pos = 0;
-    int pvsSize = x_bspfile_node_pvs_size(level);
-    unsigned char* pvsData = leaf->compressedPvsData;
+    for(int i = 0; i < pvsSize; ++i)
+        pvs[i] = 0xFF;
+}
+
+static void decompress_pvs_using_run_length_encoding(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
+{
+    unsigned char* decompressedPvsEnd = decompressedPvsDest + pvsSize;
     
-    _Bool outsideLevel = leaf == level->leaves + 0;
-    
-    // No visibility info (whoever compiled the map didn't run the vis tool)
-    if(pvsData == NULL || outsideLevel)
+    while(decompressedPvsDest < decompressedPvsEnd)
     {
-        // Mark all leaves as visible
-        for(int i = 0; i < pvsSize; ++i)
-            decompressedPvsDest[i] = 0xFF;
-            
-        return;
-    }
-    
-    while(pos < pvsSize)
-    {
-        if(*pvsData == 0)
+        if(*compressedPvsData == 0)
         {
-            ++pvsData;
-            int count = *pvsData++;
+            ++compressedPvsData;
+            int count = *compressedPvsData++;
             
-            for(int i = 0; i < count && pos < pvsSize; ++i)
-                decompressedPvsDest[pos++] = 0;
+            for(int i = 0; i < count; ++i)
+                *decompressedPvsDest++ = 0;
         }
         else
         {
-            decompressedPvsDest[pos++] = *pvsData++;
+            *decompressedPvsDest++ = *compressedPvsData++;
         }
     }
+}
+
+void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+{
+    int pvsSize = x_bspfile_node_pvs_size(level);
+    unsigned char* pvsData = leaf->compressedPvsData;
+
+    _Bool outsideLevel = leaf == level->leaves + 0;
+    _Bool hasVisibilityInfoForCurrentLeaf = pvsData != NULL && !outsideLevel;
+    
+    if(!hasVisibilityInfoForCurrentLeaf)
+    {
+        mark_all_leaves_in_pvs_as_visible(decompressedPvsDest, pvsSize);
+        return;
+    }
+    
+    decompress_pvs_using_run_length_encoding(pvsData, pvsSize, decompressedPvsDest);
 }
 
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
