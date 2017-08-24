@@ -39,8 +39,6 @@ void x_console_close(X_Console* console)
 
 static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
 {
-    x_string_init(&consoleVar->assignedValueString, "");
-    
     consoleVar->name = name;
     consoleVar->type = type;
     consoleVar->saveToConfig = saveToConfig;
@@ -125,7 +123,6 @@ static int x_console_bytes_in_line(const X_Console* console)
 
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
 {
-    x_string_assign(&var->assignedValueString, varValue);
     /// @TODO maybe add type checking?
     
     switch(var->type)

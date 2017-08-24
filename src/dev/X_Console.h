@@ -39,7 +39,6 @@ struct X_EngineContext;
 typedef struct X_ConsoleVar
 {
     const char* name;
-    X_String assignedValueString;
     X_ConsoleVarType type;
     _Bool saveToConfig;
     
