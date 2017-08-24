@@ -246,31 +246,6 @@ void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light
     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 }
 
-void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, X_RenderContext* renderContext, X_Color color)
-{
-    X_BspSurface** nextSurface = leaf->firstMarkSurface;
-    
-    for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
-    {
-        X_BspSurface* surface = *nextSurface++;
-        
-        for(int j = 0; j < surface->totalEdges; ++j)
-        {
-            int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
-            
-            X_BspEdge* edge = level->edges + abs(edgeId);
-            
-            X_Ray3 ray = x_ray3_make
-            (
-                level->vertices[edge->v[0]].v,
-                level->vertices[edge->v[1]].v
-            );
-            
-            x_ray3d_render(&ray, renderContext, color);
-        }
-    }
-}
-
 static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const X_Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
 {
     _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);

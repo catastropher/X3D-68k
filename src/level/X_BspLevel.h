@@ -233,7 +233,6 @@ typedef struct X_BspLevel
 void x_bsplevel_cleanup(X_BspLevel* level);
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
-void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, struct X_RenderContext* renderContext, X_Color color);
 
 void x_bsplevel_init_empty(X_BspLevel* level);
 X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point);
