@@ -596,6 +596,45 @@ static void x_console_print_autocomplete_matches(X_Console* console)
     x_console_print(console, "\n\n");
 }
 
+static void handle_backspace_key(X_Console* console)
+{
+    if(console->inputPos > 0) {
+        --console->inputPos;
+        console->input[console->inputPos] = '\0';
+    }
+}
+
+static void handle_enter_key(X_Console* console)
+{
+    x_console_printf(console, "] %s\n", console->input);
+    x_console_execute_cmd(console, console->input);
+    
+    console->inputPos = 0;
+    console->input[0] = '\0';
+}
+
+static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
+{
+    if(x_console_autocomplete(console) || lastKeyPressed == '\t')
+        return;
+        
+    x_console_print_autocomplete_matches(console);
+    console->lastKeyPressed = 0;
+}
+
+static void handle_character_key(X_Console* console, X_Key key)
+{
+    if(console->inputPos + 1 < X_CONSOLE_INPUT_BUF_SIZE)
+        console->input[console->inputPos++] = key;
+    
+    console->input[console->inputPos] = '\0';
+}
+
+static _Bool is_character_key(X_Key key)
+{
+    return key < 128 && isprint(key);
+}
+
 void x_console_send_key(X_Console* console, X_Key key)
 {
     X_Key lastKey = console->lastKeyPressed;
@@ -603,42 +642,25 @@ void x_console_send_key(X_Console* console, X_Key key)
     
     if(key == '\b')
     {
-        if(console->inputPos > 0) {
-            --console->inputPos;
-            console->input[console->inputPos] = '\0';
-        }
-        
+        handle_backspace_key(console);
         return;
     }
     
     if(key == '\n')
     {
-        x_console_printf(console, "] %s\n", console->input);
-        x_console_execute_cmd(console, console->input);
-        
-        console->inputPos = 0;
-        console->input[0] = '\0';
-        
+        handle_enter_key(console);
         return;
     }
     
     if(key == '\t')
     {
-        if(!x_console_autocomplete(console) && lastKey == '\t')
-        {
-            x_console_print_autocomplete_matches(console);
-            console->lastKeyPressed = 0;
-        }
-        
+        handle_tab_key(console, lastKey);
         return;
     }
     
-    if(key < 128 && isprint(key))
+    if(is_character_key(key))
     {
-        if(console->inputPos + 1 < X_CONSOLE_INPUT_BUF_SIZE)
-            console->input[console->inputPos++] = key;
-        
-        console->input[console->inputPos] = '\0';        
+        handle_character_key(console, key);
         return;
     }
 }
