@@ -493,47 +493,6 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
-static void x_console_autocomplete_add_option(X_Console* console, const char* option, int* minMatchLength, const char** minMatchStr)
-{
-    int inputLength = console->inputPos;
-    int matchLength = x_count_prefix_match_length(*minMatchStr, option);
-    
-    if(matchLength < inputLength)
-        return;
-    
-    if(*minMatchStr == console->input)
-    {
-        *minMatchStr = option;
-        *minMatchLength = strlen(option);
-    }
-    else if(matchLength < *minMatchLength) {
-        *minMatchLength = matchLength;
-        *minMatchStr = option;
-    }
-}
-
-static _Bool x_console_autocomplete(X_Console* console)
-{
-    int minMatchLength = 0x7FFFFFFF;
-    const char* minMatchStr = console->input;
-    
-    for(int i = 0; i < console->totalConsoleVars; ++i)
-        x_console_autocomplete_add_option(console, console->consoleVars[i].name, &minMatchLength, &minMatchStr);
-    
-    for(int i = 0; i < console->totalConsoleCmds; ++i)
-        x_console_autocomplete_add_option(console, console->consoleCmds[i].name, &minMatchLength, &minMatchStr);
-    
-    _Bool foundStringToAutocompleteFrom = minMatchStr != console->input;
-    if(foundStringToAutocompleteFrom)
-    {
-        x_strncpy(console->input, minMatchStr, minMatchLength);
-        console->inputPos = strlen(console->input);
-    }
-    
-    _Bool autoCompletePerfectMatch = (minMatchLength == strlen(minMatchStr));
-    return autoCompletePerfectMatch;
-}
-
 #define MATCHES_PER_ROW 4
 #define MATCH_SPACING 4
 
@@ -543,6 +502,103 @@ static int compare_matches(const void* a, const void* b)
     const char* strB = *((const char **)b);
     
     return strcmp(strA, strB);
+}
+
+typedef struct X_Autocompleter
+{
+    char* strToMatch;
+    int strToMatchLength;
+    
+    int totalMatches;
+    int maxMatches;
+    const char** matches;
+    
+    const char* minMatchStr;
+    int minMatchLength;
+} X_Autocompleter;
+
+void x_autocompleter_init(X_Autocompleter* ac, char* strToMatch, int strToMatchLength, const char** matches, int maxMatches)
+{
+    ac->strToMatch = strToMatch;
+    ac->strToMatchLength = strToMatchLength;
+    ac->matches = matches;
+    ac->maxMatches = maxMatches;
+    
+    ac->totalMatches = 0;
+    ac->minMatchStr = strToMatch;
+    ac->minMatchLength = 0x7FFFFFFF;
+}
+
+void x_autocompleter_add_match_candidate(X_Autocompleter* ac, const char* candidate)
+{
+    int matchLength = x_count_prefix_match_length(ac->minMatchStr, candidate);
+    if(matchLength < ac->strToMatchLength)
+        return;
+    
+    ac->matches[ac->totalMatches++] = candidate;
+    
+    if(ac->minMatchStr == ac->strToMatch)
+    {
+        ac->minMatchStr = candidate;
+        ac->minMatchLength = strlen(candidate);
+        return;
+    }
+    
+    if(matchLength >= ac->minMatchLength)
+        return;
+    
+    ac->minMatchLength = matchLength;
+    ac->minMatchStr = candidate;
+}
+
+_Bool x_autocompleter_complete_partial_match(X_Autocompleter* ac)
+{    
+    if(ac->minMatchStr == ac->strToMatch)
+        return 0;
+    
+    x_strncpy(ac->strToMatch, ac->minMatchStr, ac->minMatchLength);
+    return 1;
+}
+
+_Bool x_autocompleter_has_exact_match(const X_Autocompleter* ac)
+{
+    return ac->minMatchLength == strlen(ac->minMatchStr);
+}
+
+static void x_console_add_autcomplete_candidates(X_Console* console, X_Autocompleter* ac)
+{
+    for(int i = 0; i < console->totalConsoleVars; ++i)
+        x_autocompleter_add_match_candidate(ac, console->consoleVars[i].name);
+    
+    for(int i = 0; i < console->totalConsoleCmds; ++i)
+        x_autocompleter_add_match_candidate(ac, console->consoleCmds[i].name);
+}
+
+static void x_console_add_trailing_space(X_Console* console)
+{
+    console->input[console->inputPos++] = ' ';
+    console->input[console->inputPos] = '\0';
+}
+
+static _Bool x_console_autocomplete(X_Console* console)
+{
+    const int MAX_MATCHES = 100;
+    const char* matches[MAX_MATCHES];
+    
+    X_Autocompleter ac;
+    x_autocompleter_init(&ac, console->input, console->inputPos, matches, MAX_MATCHES);
+    x_console_add_autcomplete_candidates(console, &ac);
+    
+    if(!x_autocompleter_complete_partial_match(&ac))
+        return 0;
+    
+    console->inputPos = strlen(console->input);
+    
+    if(!x_autocompleter_has_exact_match(&ac))
+        return 0;
+    
+    x_console_add_trailing_space(console);
+    return 1;
 }
 
 static void x_console_print_autocomplete_matches(X_Console* console)
@@ -615,7 +671,7 @@ static void handle_enter_key(X_Console* console)
 
 static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
 {
-    if(x_console_autocomplete(console) || lastKeyPressed == '\t')
+    if(x_console_autocomplete(console) || lastKeyPressed != '\t')
         return;
         
     x_console_print_autocomplete_matches(console);
