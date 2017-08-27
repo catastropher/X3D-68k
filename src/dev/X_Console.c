@@ -665,74 +665,88 @@ void x_console_send_key(X_Console* console, X_Key key)
     }
 }
 
-typedef struct TokenContext
+typedef struct X_TokenLexer
 {
     X_Console* console;
-    const char* str;
+    const char* inputStr;
     char* tokenBuf;
     char* tokenBufEnd;
     char** tokens;
     char** tokensEnd;
     _Bool errorOccured;
     int totalTokens;
-} TokenContext;
+} X_TokenLexer;
 
-static void skip_whitespace(TokenContext* c)
+void x_tokenlexer_init(X_TokenLexer* lexer, const char* inputStr, char* tokenBuf, int tokenBufSize, char** tokens, int maxTokens, X_Console* console)
 {
-    while(*c->str == ' ')
-        ++c->str;
+    lexer->errorOccured = 0;
+    lexer->inputStr = inputStr;
+    lexer->tokenBuf = tokenBuf;
+    lexer->tokenBufEnd = tokenBuf + tokenBufSize;
+    lexer->tokens = tokens;
+    lexer->tokensEnd = tokens + maxTokens;
+    lexer->console = console;
 }
 
-static _Bool grab_next_token(TokenContext* c)
+static void x_tokenlexer_skip_whitespace(X_TokenLexer* lexer)
 {
-    if(c->tokens == c->tokensEnd)
+    while(*lexer->inputStr == ' ')
+        ++lexer->inputStr;
+}
+
+static _Bool x_tokenlexer_at_end_of_token(const X_TokenLexer* lexer)
+{
+    return *lexer->inputStr == '\0' || *lexer->inputStr == ' ';
+}
+
+static _Bool x_tokenlexer_lex_token(X_TokenLexer* lexer)
+{
+    while(!x_tokenlexer_at_end_of_token(lexer))
     {
-        x_console_print(c->console, "Can't execute command (too many tokens)\n");
-        c->errorOccured = 1;
-        return 0;
-    }
-    
-    skip_whitespace(c);
-    
-    if(*c->str == '\0')
-        return 0;
-    
-    *c->tokens++ = c->tokenBuf;
-    
-    while(*c->str != '\0' && *c->str != ' ')
-    {
-        if(c->tokenBuf == c->tokenBufEnd)
+        if(lexer->tokenBuf == lexer->tokenBufEnd)
         {
-            x_console_print(c->console, "Can't execute command (command too long)\n");
-            c->errorOccured = 1;
+            x_console_print(lexer->console, "Can't execute command (command too long)\n");
+            lexer->errorOccured = 1;
             return 0;
         }
         
-        *c->tokenBuf++ = *c->str++;
+        *lexer->tokenBuf++ = *lexer->inputStr++;
     }
     
-    *c->tokenBuf++ = '\0';
+    *lexer->tokenBuf++ = '\0';
     
     return 1;
 }
 
-static void tokenize(TokenContext* c)
+static _Bool x_tokenlexer_grab_next_token(X_TokenLexer* lexer)
 {
-    c->totalTokens = 0;
-    
-    while(grab_next_token(c))
-        ++c->totalTokens;
-}
-
-static void print_variable_value(X_Console* console, const char* varName)
-{
-    X_ConsoleVar* var = x_console_get_var(console, varName);
-    if(!var)
+    if(lexer->tokens == lexer->tokensEnd)
     {
-        x_console_printf(console, "Unknown variable %s\n", varName);
-        return;
+        x_console_print(lexer->console, "Can't execute command (too many tokens)\n");
+        lexer->errorOccured = 1;
+        return 0;
     }
     
+    x_tokenlexer_skip_whitespace(lexer);
+    
+    if(*lexer->inputStr == '\0')
+        return 0;
+    
+    *lexer->tokens++ = lexer->tokenBuf;
+    
+    return x_tokenlexer_lex_token(lexer);
+}
+
+static void x_tokenlexer_tokenize(X_TokenLexer* lexer)
+{
+    lexer->totalTokens = 0;
+    
+    while(x_tokenlexer_grab_next_token(lexer))
+        ++lexer->totalTokens;
+}
+
+static void print_variable_value(X_Console* console, X_ConsoleVar* var)
+{
     char varValue[1024];
     
     switch(var->type)
@@ -757,63 +771,75 @@ static void print_variable_value(X_Console* console, const char* varName)
             break;
     }
     
-    x_console_printf(console, "Variable %s is currently %s\n", varName, varValue);
+    x_console_printf(console, "Variable %s is currently %s\n", var->name, varValue);
 }
 
-static void set_variable_value(X_Console* console, const char* varName, const char* varValue)
+static _Bool token_begins_comment_line(const char* token)
 {
-    X_ConsoleVar* var = x_console_get_var(console, varName);
+    return token[0] == '/' && token[1] == '/';
+}
+
+static _Bool x_tokenlexer_is_valid_console_input(X_TokenLexer* lexer, char** tokens)
+{
+    return !lexer->errorOccured &&
+        lexer->totalTokens > 0 &&
+        !token_begins_comment_line(tokens[0]);
+}
+
+static _Bool x_console_input_try_execute_command(X_Console* console, char** tokens, int totalTokens)
+{
+    X_ConsoleCmd* cmd = x_console_get_cmd(console, tokens[0]);
+    
+    if(cmd == NULL)
+        return 0;
+    
+    cmd->handler(console->engineContext, totalTokens, tokens);
+    return 1;
+}
+
+static _Bool x_console_input_try_set_variable(X_Console* console, char** tokens, int totalTokens)
+{
+    X_ConsoleVar* var = x_console_get_var(console, tokens[0]);
     if(!var)
+        return 0;
+    
+    if(totalTokens > 2)
     {
-        x_console_printf(console, "Unknown variable %s\n", varName);
-        return;
+        x_console_print(console, "Expected syntax <var> <value to set to>\n");
+        return 1;
     }
     
-    x_consolevar_set_value(var, varValue);
+    if(totalTokens == 1)
+    {
+        print_variable_value(console, var);
+        return 1;
+    }
+    
+    x_consolevar_set_value(var, tokens[1]);
+    return 1;
 }
-
-#define MAX_TOKENS 512
-#define TOKEN_BUF_SIZE 1024
-
 
 void x_console_execute_cmd(X_Console* console, const char* str)
 {
-    char tokenBuf[TOKEN_BUF_SIZE];
+    const int MAX_TOKENS = 512;
     char* tokens[MAX_TOKENS];
     
-    TokenContext context;
-    context.errorOccured = 0;
-    context.str = str;
-    context.tokenBuf = tokenBuf;
-    context.tokenBufEnd = tokenBuf + TOKEN_BUF_SIZE;
-    context.tokens = tokens;
-    context.tokensEnd = tokens + MAX_TOKENS;
+    const int TOKEN_BUF_SIZE = 1024;
+    char tokenBuf[TOKEN_BUF_SIZE];
     
-    tokenize(&context);
+    X_TokenLexer lexer;
+    x_tokenlexer_init(&lexer, str, tokenBuf, TOKEN_BUF_SIZE, tokens, MAX_TOKENS, console);
+    x_tokenlexer_tokenize(&lexer);
     
-    if(context.errorOccured)
+    if(!x_tokenlexer_is_valid_console_input(&lexer, tokens))
         return;
     
-    if(context.totalTokens == 0)
+    if(x_console_input_try_execute_command(console, tokens, lexer.totalTokens))
         return;
     
-    // Comment line
-    if(tokens[0][0] == '/' && tokens[0][1] == '/')
+    if(x_console_input_try_set_variable(console, tokens, lexer.totalTokens))
         return;
     
-    X_ConsoleCmd* cmd = x_console_get_cmd(console, tokens[0]);
-    
-    if(cmd != NULL)
-    {
-        cmd->handler(console->engineContext, context.totalTokens, tokens);
-        return;
-    }
-    
-    if(context.totalTokens == 1)
-        print_variable_value(console, tokens[0]);
-    else if(context.totalTokens == 2)
-        set_variable_value(console, tokens[0], tokens[1]);
-    else
-        x_console_print(console, "Bad command\n");          // Need better message
+    x_console_printf(console, "Unknown command or var %s\n", tokens[0]);
 }
 
