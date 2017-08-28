@@ -493,17 +493,6 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
-#define MATCHES_PER_ROW 4
-#define MATCH_SPACING 4
-
-static int compare_matches(const void* a, const void* b)
-{
-    const char* strA = *((const char **)a);
-    const char* strB = *((const char **)b);
-    
-    return strcmp(strA, strB);
-}
-
 typedef struct X_Autocompleter
 {
     char* strToMatch;
@@ -565,6 +554,19 @@ _Bool x_autocompleter_has_exact_match(const X_Autocompleter* ac)
     return ac->minMatchLength == strlen(ac->minMatchStr);
 }
 
+static int compare_matches(const void* a, const void* b)
+{
+    const char* strA = *((const char **)a);
+    const char* strB = *((const char **)b);
+    
+    return strcmp(strA, strB);
+}
+
+static void x_autocompleter_sort_matches(X_Autocompleter* ac)
+{
+    qsort(ac->matches, ac->totalMatches, sizeof(char**), compare_matches);
+}
+
 static void x_console_add_autcomplete_candidates(X_Console* console, X_Autocompleter* ac)
 {
     for(int i = 0; i < console->totalConsoleVars; ++i)
@@ -580,76 +582,117 @@ static void x_console_add_trailing_space(X_Console* console)
     console->input[console->inputPos] = '\0';
 }
 
-static _Bool x_console_autocomplete(X_Console* console)
+static _Bool x_console_autocomplete(X_Console* console, X_Autocompleter* ac)
 {
-    const int MAX_MATCHES = 100;
-    const char* matches[MAX_MATCHES];
-    
-    X_Autocompleter ac;
-    x_autocompleter_init(&ac, console->input, console->inputPos, matches, MAX_MATCHES);
-    x_console_add_autcomplete_candidates(console, &ac);
-    
-    if(!x_autocompleter_complete_partial_match(&ac))
+    if(!x_autocompleter_complete_partial_match(ac))
         return 0;
     
     console->inputPos = strlen(console->input);
     
-    if(!x_autocompleter_has_exact_match(&ac))
+    if(!x_autocompleter_has_exact_match(ac))
         return 0;
     
     x_console_add_trailing_space(console);
     return 1;
 }
 
-static void x_console_print_autocomplete_matches(X_Console* console)
+static void determine_column_widths(const char** items, int totalItems, int totalColumns, int* colWidths)
 {
-    const int MAX_AUTOCOMPLETE_MATCHES = 128;
-    const char* autocompleteMatches[MAX_AUTOCOMPLETE_MATCHES];
-    int totalAutocompleteMatches = 0;
+    for(int i = 0; i < totalColumns; ++i)
+        colWidths[i] = 0;
     
-    int inputLength = console->inputPos;
-    
-    for(int i = 0; i < console->totalConsoleVars; ++i)
+    for(int col = 0; col < totalColumns; ++col)
     {
-        if(x_count_prefix_match_length(console->input, console->consoleVars[i].name) == inputLength)
-            autocompleteMatches[totalAutocompleteMatches++] = console->consoleVars[i].name;
-    }
-    
-    for(int i = 0; i < console->totalConsoleCmds; ++i)
-    {
-        if(x_count_prefix_match_length(console->input, console->consoleCmds[i].name) == inputLength)
-            autocompleteMatches[totalAutocompleteMatches++] = console->consoleCmds[i].name;
-    }
-    
-    qsort(autocompleteMatches, totalAutocompleteMatches, sizeof(char**), compare_matches);
-    
-    int colWidth[MATCHES_PER_ROW] = { 0 };
-    
-    for(int col = 0; col < MATCHES_PER_ROW; ++col)
-    {
-        for(int match = col; match < totalAutocompleteMatches; match += MATCHES_PER_ROW)
+        for(int item = col; item < totalItems; item += totalColumns)
         {
-            colWidth[col] = X_MAX(colWidth[col], strlen(autocompleteMatches[match]));
+            colWidths[col] = X_MAX(colWidths[col], strlen(items[item]));
         }
     }
-    
-    x_console_printf(console, "] %s\n\n", console->input);
-    
-    for(int match = 0; match < totalAutocompleteMatches; ++match)
+}
+
+static _Bool row_exceeds_width_of_console(X_Console* console, int row, int totalColumns, int* colWidths, int totalItems, int colSpacing)
+{
+    int totalWidth = 0;
+    for(int col = 0; col < totalColumns; ++col)
     {
-        int row = match / MATCHES_PER_ROW;
-        int col = match % MATCHES_PER_ROW;
+        int item = row * totalColumns + col;
+        if(item >= totalItems)
+            break;
+        
+        totalWidth += colWidths[col];
+        
+        if(col != totalColumns - 1)
+            totalWidth += colSpacing;
+    }
+    
+    return totalWidth >= console->size.x;
+}
+
+static _Bool columns_widths_exceed_width_of_console(X_Console* console, int totalColumns, int* colWidths, int totalItems, int colSpacing)
+{
+    int totalRows = (totalItems + totalColumns - 1) / totalColumns;
+    for(int row = 0; row < totalRows; ++row)
+    {
+        if(row_exceeds_width_of_console(console, row, totalColumns, colWidths, totalItems, colSpacing))
+            return 1;
+    }
+    
+    return 0;
+}
+
+static int determine_max_number_of_items_per_row(X_Console* console, const char** items, int totalItems, int maxItemsPerRow, int* colWidths, int itemSpacing)
+{
+    int matchesPerRow = maxItemsPerRow;
+    
+    do
+    {
+        determine_column_widths(items, totalItems, matchesPerRow, colWidths);
+        
+        if(!columns_widths_exceed_width_of_console(console, matchesPerRow, colWidths, totalItems, itemSpacing))
+            break;
+    } while(--matchesPerRow > 1);
+    
+    return matchesPerRow;
+}
+
+static void print_items_in_columns(X_Console* console, const char** items, int totalItems, int totalColumns, int* colWidths, int itemSpacing)
+{    
+    for(int match = 0; match < totalItems; ++match)
+    {
+        int row = match / totalColumns;
+        int col = match % totalColumns;
         
         if(col == 0 && row != 0)
             x_console_print(console, "\n");
         
-        x_console_print(console, autocompleteMatches[match]);
+        x_console_print(console, items[match]);
         
-        for(int i = 0; i < colWidth[col] - strlen(autocompleteMatches[match]) + MATCH_SPACING; ++i)
+        int spacing = (col != totalColumns - 1 ? itemSpacing : 0);
+        
+        for(int i = 0; i < colWidths[col] - strlen(items[match]) + spacing; ++i)
             x_console_print(console, " ");
     }
     
-    x_console_print(console, "\n\n");
+    x_console_print(console, "\n");
+}
+
+static void print_items_in_columns_fit_to_console(X_Console* console, const char** items, int totalItems, int itemSpacing)
+{
+    const int MAX_MATCHES_PER_ROW = 10;
+    int colWidths[MAX_MATCHES_PER_ROW];
+    int itemsPerRow = determine_max_number_of_items_per_row(console, items, totalItems, MAX_MATCHES_PER_ROW, colWidths, itemSpacing);
+    
+    print_items_in_columns(console, items, totalItems, itemsPerRow, colWidths, itemSpacing);
+}
+
+static void x_console_print_autocomplete_matches(X_Console* console, X_Autocompleter* ac)
+{
+    x_autocompleter_sort_matches(ac);
+    x_console_printf(console, "] %s\n\n", console->input);
+    
+    const int MATCH_SPACING = 3;
+    print_items_in_columns_fit_to_console(console, ac->matches, ac->totalMatches, MATCH_SPACING);
+    x_console_print(console, "\n");
 }
 
 static void handle_backspace_key(X_Console* console)
@@ -671,10 +714,17 @@ static void handle_enter_key(X_Console* console)
 
 static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
 {
-    if(x_console_autocomplete(console) || lastKeyPressed != '\t')
+    const int MAX_MATCHES = 100;
+    const char* matches[MAX_MATCHES];
+    
+    X_Autocompleter ac;
+    x_autocompleter_init(&ac, console->input, console->inputPos, matches, MAX_MATCHES);
+    x_console_add_autcomplete_candidates(console, &ac);
+    
+    if(x_console_autocomplete(console, &ac) || lastKeyPressed != '\t')
         return;
         
-    x_console_print_autocomplete_matches(console);
+    x_console_print_autocomplete_matches(console, &ac);
     console->lastKeyPressed = 0;
 }
 
