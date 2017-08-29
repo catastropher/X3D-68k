@@ -24,6 +24,8 @@
 #include "util/X_util.h"
 #include "X_Console.h"
 #include "error/X_log.h"
+#include "X_AutoCompleter.h"
+#include "X_TokenLexer.h"
 
 void x_console_open(X_Console* console)
 {
@@ -493,81 +495,7 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
-typedef struct X_Autocompleter
-{
-    char* strToMatch;
-    int strToMatchLength;
-    
-    int totalMatches;
-    int maxMatches;
-    const char** matches;
-    
-    const char* minMatchStr;
-    int minMatchLength;
-} X_Autocompleter;
-
-void x_autocompleter_init(X_Autocompleter* ac, char* strToMatch, int strToMatchLength, const char** matches, int maxMatches)
-{
-    ac->strToMatch = strToMatch;
-    ac->strToMatchLength = strToMatchLength;
-    ac->matches = matches;
-    ac->maxMatches = maxMatches;
-    
-    ac->totalMatches = 0;
-    ac->minMatchStr = strToMatch;
-    ac->minMatchLength = 0x7FFFFFFF;
-}
-
-void x_autocompleter_add_match_candidate(X_Autocompleter* ac, const char* candidate)
-{
-    int matchLength = x_count_prefix_match_length(ac->minMatchStr, candidate);
-    if(matchLength < ac->strToMatchLength)
-        return;
-    
-    ac->matches[ac->totalMatches++] = candidate;
-    
-    if(ac->minMatchStr == ac->strToMatch)
-    {
-        ac->minMatchStr = candidate;
-        ac->minMatchLength = strlen(candidate);
-        return;
-    }
-    
-    if(matchLength >= ac->minMatchLength)
-        return;
-    
-    ac->minMatchLength = matchLength;
-    ac->minMatchStr = candidate;
-}
-
-_Bool x_autocompleter_complete_partial_match(X_Autocompleter* ac)
-{    
-    if(ac->minMatchStr == ac->strToMatch)
-        return 0;
-    
-    x_strncpy(ac->strToMatch, ac->minMatchStr, ac->minMatchLength);
-    return 1;
-}
-
-_Bool x_autocompleter_has_exact_match(const X_Autocompleter* ac)
-{
-    return ac->minMatchLength == strlen(ac->minMatchStr);
-}
-
-static int compare_matches(const void* a, const void* b)
-{
-    const char* strA = *((const char **)a);
-    const char* strB = *((const char **)b);
-    
-    return strcmp(strA, strB);
-}
-
-static void x_autocompleter_sort_matches(X_Autocompleter* ac)
-{
-    qsort(ac->matches, ac->totalMatches, sizeof(char**), compare_matches);
-}
-
-static void x_console_add_autcomplete_candidates(X_Console* console, X_Autocompleter* ac)
+static void x_console_add_autcomplete_candidates(X_Console* console, X_AutoCompleter* ac)
 {
     for(int i = 0; i < console->totalConsoleVars; ++i)
         x_autocompleter_add_match_candidate(ac, console->consoleVars[i].name);
@@ -582,7 +510,7 @@ static void x_console_add_trailing_space(X_Console* console)
     console->input[console->inputPos] = '\0';
 }
 
-static _Bool x_console_autocomplete(X_Console* console, X_Autocompleter* ac)
+static _Bool x_console_autocomplete(X_Console* console, X_AutoCompleter* ac)
 {
     if(!x_autocompleter_complete_partial_match(ac))
         return 0;
@@ -685,7 +613,7 @@ static void print_items_in_columns_fit_to_console(X_Console* console, const char
     print_items_in_columns(console, items, totalItems, itemsPerRow, colWidths, itemSpacing);
 }
 
-static void x_console_print_autocomplete_matches(X_Console* console, X_Autocompleter* ac)
+static void x_console_print_autocomplete_matches(X_Console* console, X_AutoCompleter* ac)
 {
     x_autocompleter_sort_matches(ac);
     x_console_printf(console, "] %s\n\n", console->input);
@@ -717,7 +645,7 @@ static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
     const int MAX_MATCHES = 100;
     const char* matches[MAX_MATCHES];
     
-    X_Autocompleter ac;
+    X_AutoCompleter ac;
     x_autocompleter_init(&ac, console->input, console->inputPos, matches, MAX_MATCHES);
     x_console_add_autcomplete_candidates(console, &ac);
     
@@ -769,86 +697,6 @@ void x_console_send_key(X_Console* console, X_Key key)
         handle_character_key(console, key);
         return;
     }
-}
-
-typedef struct X_TokenLexer
-{
-    X_Console* console;
-    const char* inputStr;
-    char* tokenBuf;
-    char* tokenBufEnd;
-    char** tokens;
-    char** tokensEnd;
-    _Bool errorOccured;
-    int totalTokens;
-} X_TokenLexer;
-
-void x_tokenlexer_init(X_TokenLexer* lexer, const char* inputStr, char* tokenBuf, int tokenBufSize, char** tokens, int maxTokens, X_Console* console)
-{
-    lexer->errorOccured = 0;
-    lexer->inputStr = inputStr;
-    lexer->tokenBuf = tokenBuf;
-    lexer->tokenBufEnd = tokenBuf + tokenBufSize;
-    lexer->tokens = tokens;
-    lexer->tokensEnd = tokens + maxTokens;
-    lexer->console = console;
-}
-
-static void x_tokenlexer_skip_whitespace(X_TokenLexer* lexer)
-{
-    while(*lexer->inputStr == ' ')
-        ++lexer->inputStr;
-}
-
-static _Bool x_tokenlexer_at_end_of_token(const X_TokenLexer* lexer)
-{
-    return *lexer->inputStr == '\0' || *lexer->inputStr == ' ';
-}
-
-static _Bool x_tokenlexer_lex_token(X_TokenLexer* lexer)
-{
-    while(!x_tokenlexer_at_end_of_token(lexer))
-    {
-        if(lexer->tokenBuf == lexer->tokenBufEnd)
-        {
-            x_console_print(lexer->console, "Can't execute command (command too long)\n");
-            lexer->errorOccured = 1;
-            return 0;
-        }
-        
-        *lexer->tokenBuf++ = *lexer->inputStr++;
-    }
-    
-    *lexer->tokenBuf++ = '\0';
-    
-    return 1;
-}
-
-static _Bool x_tokenlexer_grab_next_token(X_TokenLexer* lexer)
-{
-    if(lexer->tokens == lexer->tokensEnd)
-    {
-        x_console_print(lexer->console, "Can't execute command (too many tokens)\n");
-        lexer->errorOccured = 1;
-        return 0;
-    }
-    
-    x_tokenlexer_skip_whitespace(lexer);
-    
-    if(*lexer->inputStr == '\0')
-        return 0;
-    
-    *lexer->tokens++ = lexer->tokenBuf;
-    
-    return x_tokenlexer_lex_token(lexer);
-}
-
-static void x_tokenlexer_tokenize(X_TokenLexer* lexer)
-{
-    lexer->totalTokens = 0;
-    
-    while(x_tokenlexer_grab_next_token(lexer))
-        ++lexer->totalTokens;
 }
 
 static void print_variable_value(X_Console* console, X_ConsoleVar* var)

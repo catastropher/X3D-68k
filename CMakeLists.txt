@@ -36,8 +36,10 @@ include_directories(src/)
 
 set(X3D_SOURCES
     # dev
+    src/dev/X_AutoCompleter.c
     src/dev/X_conCommands.c
     src/dev/X_Console.c
+    src/dev/X_TokenLexer.c
 
     # engine
     src/engine/X_engine.c
