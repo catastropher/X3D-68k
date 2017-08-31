@@ -174,6 +174,12 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
     console->consoleVars = NULL;
     console->totalConsoleVars = 0;
     
+    console->commandHistorySize = 0;
+    console->commandHistoryPos = 0;
+    
+    for(int i = 0; i < X_CONSOLE_COMMAND_HISTORY_SIZE; ++i)
+        x_string_init(console->commandHistory + i, "");
+    
     x_console_register_builtin_commands(console);
 }
 
@@ -631,8 +637,27 @@ static void handle_backspace_key(X_Console* console)
     }
 }
 
+static void add_input_to_command_history(X_Console* console)
+{
+    if(console->commandHistorySize == X_CONSOLE_COMMAND_HISTORY_SIZE - 1)
+    {
+        x_string_cleanup(console->commandHistory + 0);
+        
+        for(int i = 0; i < X_CONSOLE_COMMAND_HISTORY_SIZE - 1; ++i)
+            console->commandHistory[i] = console->commandHistory[i + 1];
+        
+        --console->commandHistorySize;
+        x_string_init(console->commandHistory + X_CONSOLE_COMMAND_HISTORY_SIZE - 1, "");
+    }
+    
+    x_string_assign(console->commandHistory + console->commandHistorySize++, console->input);
+}
+
 static void handle_enter_key(X_Console* console)
 {
+    add_input_to_command_history(console);
+    console->commandHistoryPos = console->commandHistorySize;
+    
     x_console_printf(console, "] %s\n", console->input);
     x_console_execute_cmd(console, console->input);
     
@@ -664,6 +689,29 @@ static void handle_character_key(X_Console* console, X_Key key)
     console->input[console->inputPos] = '\0';
 }
 
+static void handle_up_key(X_Console* console)
+{
+    if(console->commandHistoryPos == 0)
+        return;
+    
+    _Bool onCurrentInput = console->commandHistoryPos == console->commandHistorySize;
+    
+    if(onCurrentInput)
+        x_string_assign(console->commandHistory + console->commandHistorySize, console->input);
+    
+    strcpy(console->input, console->commandHistory[--console->commandHistoryPos].data);
+    console->inputPos = strlen(console->input);
+}
+
+static void handle_down_key(X_Console* console)
+{
+    if(console->commandHistoryPos == console->commandHistorySize)
+        return;
+    
+    strcpy(console->input, console->commandHistory[++console->commandHistoryPos].data);
+    console->inputPos = strlen(console->input);
+}
+
 static _Bool is_character_key(X_Key key)
 {
     return key < 128 && isprint(key);
@@ -689,6 +737,18 @@ void x_console_send_key(X_Console* console, X_Key key)
     if(key == '\t')
     {
         handle_tab_key(console, lastKey);
+        return;
+    }
+    
+    if(key == X_KEY_UP)
+    {
+        handle_up_key(console);
+        return;
+    }
+    
+    if(key == X_KEY_DOWN)
+    {
+        handle_down_key(console);
         return;
     }
     

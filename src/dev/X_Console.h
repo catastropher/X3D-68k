@@ -70,6 +70,8 @@ typedef enum X_ConsoleOpenState
     X_CONSOLE_STATE_CLOSING
 } X_ConsoleOpenState;
 
+#define X_CONSOLE_COMMAND_HISTORY_SIZE 10
+
 typedef struct X_Console
 {
     X_ConsoleVar* consoleVars;
@@ -85,6 +87,9 @@ typedef struct X_Console
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;
+    X_String commandHistory[X_CONSOLE_COMMAND_HISTORY_SIZE];
+    int commandHistorySize;
+    int commandHistoryPos;
     
     _Bool showCursor;
     X_Time lastCursorBlink;

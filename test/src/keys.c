@@ -102,6 +102,10 @@ void handle_key_events(X_EngineContext* context)
 #ifndef __nspire__
             sdlKey = ev.key.keysym.sym;
             unicodeSdlKey = ev.key.keysym.unicode;
+            
+            if(!isprint(sdlKey))
+                unicodeSdlKey = sdlKey;
+            
             x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
             unicodeX3dKey = convert_sdl_key_to_x3d_key(unicodeSdlKey);
 #else
