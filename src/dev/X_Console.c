@@ -195,6 +195,12 @@ void x_console_clear(X_Console* console)
 void x_console_cleanup(X_Console* console)
 {
     x_free(console->text);
+    
+    for(int i = 0; i < X_CONSOLE_COMMAND_HISTORY_SIZE; ++i)
+        x_string_cleanup(console->commandHistory + i);
+    
+    x_free(console->consoleCmds);
+    x_free(console->consoleVars);
 }
 
 X_ConsoleVar* x_console_get_var(X_Console* console, const char* varName)

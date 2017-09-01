@@ -250,6 +250,14 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_renderer_init_dynamic_lights(renderer);
 }
 
+void x_renderer_cleanup(X_Renderer* renderer)
+{
+    x_ae_context_cleanup(&renderer->activeEdgeContext);
+    x_cache_cleanup(&renderer->surfaceCache);
+    
+    x_free(renderer->colorMap);
+}
+
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
 {
     x_ae_context_cleanup(&renderer->activeEdgeContext);

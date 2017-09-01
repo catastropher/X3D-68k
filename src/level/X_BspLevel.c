@@ -347,6 +347,7 @@ void x_bsplevel_cleanup(X_BspLevel* level)
     x_free(level->edges);
     x_free(level->faceTextures);
     x_free(level->leaves);
+    x_free(level->lightmapData);
     x_free(level->markSurfaces);
     x_free(level->models);
     x_free(level->nodes);

@@ -133,6 +133,7 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_main_font(context);
     cleanup_console(context);
     x_bsplevel_cleanup(&context->currentLevel);
+    x_renderer_cleanup(&context->renderer);
     
     context->screen.handlers.cleanupVideo(context, context->screen.handlers.userData);
 }
