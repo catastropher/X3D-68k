@@ -146,7 +146,8 @@ unsigned char* x_file_read_contents(const char* fileName)
         return NULL;
     
     unsigned char* data = x_malloc(file.size);
-    fread(data, 1, file.size, file.file);
+    if(fread(data, 1, file.size, file.file) != file.size)
+        x_system_error("Failed to load %s file contents", fileName);
     
     x_file_close(&file);
     return data;
@@ -268,7 +269,8 @@ void x_file_read_fixed_length_str(X_File* file, int strLength, char* dest)
 void x_file_read_buf(X_File* file, int bufSize, void* dest)
 {
     ASSERT_OPEN_FOR_READING(file);
-    fread(dest, 1, bufSize, file->file);
+    if(fread(dest, 1, bufSize, file->file) != bufSize)
+        x_system_error("Failed to write buf to file");
 }
 
 void x_file_read_vec3(X_File* file, X_Vec3* dest)

@@ -23,37 +23,6 @@ static _Bool x_cacheblock_is_free(X_CacheBlock* block)
     return block->flags & X_CACHEBLOCK_FREE;
 }
 
-static void x_cache_print_blocks(X_Cache* cache)
-{
-    for(X_CacheBlock* block = cache->head.next; block != &cache->tail; block = block->next)
-    {
-        printf("Block %zu \n\tSize: %d\n\tFree: %d\n", (size_t)block, (int)block->size, (int)x_cacheblock_is_free(block));
-    }
-    
-    printf("================\n");
-}
-
-static void verify_block_order(X_Cache* cache, const char* function)
-{
-    for(X_CacheBlock* block = cache->head.next; block != &cache->tail; block = block->next)
-    {
-        if(block->prev->next != block)
-            x_system_error("Bad prev->next ptr: %s", function);
-        
-        if(block->next->prev != block)
-            x_system_error("Bad next->prev ptr %s", function);
-    }
-    
-    for(X_CacheBlock* block = cache->head.lruNext; block != &cache->tail; block = block->lruNext)
-    {
-        if(block->lruPrev->lruNext != block)
-            x_system_error("Bad LRU prev->next ptr: %s", function);
-        
-        if(block->next->prev != block)
-            x_system_error("Bad LRU next->prev ptr %s", function);
-    }
-}
-
 void x_cache_init(X_Cache* cache, size_t size, const char* name)
 {
     cache->name = name;

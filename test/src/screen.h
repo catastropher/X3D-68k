@@ -20,3 +20,5 @@
 void screen_update(Context* context);
 void screen_set_callbacks(Context* context, X_Config* config);
 
+void screen_init_console_vars(X_Console* console);
+

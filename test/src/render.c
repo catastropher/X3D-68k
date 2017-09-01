@@ -34,15 +34,6 @@ static void draw_fps(X_EngineContext* context)
     x_canvas_draw_str(&context->screen.canvas, fpsStr, &context->mainFont, pos);
 }
 
-static void draw_current_leaf_info(X_CameraObject* cam, X_RenderContext* renderContext)
-{
-    char str[128];
-    sprintf(str, "Current Leaf: %d\nVisible leaves: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves),
-            x_bsplevel_count_visible_leaves(renderContext->level, cam->pvsForCurrentLeaf));
-    
-    x_canvas_draw_str(renderContext->canvas, str, &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
-}
-
 static void draw_crosshair(X_EngineContext* engineContext)
 {
     X_Color white = engineContext->screen.palette->white;
