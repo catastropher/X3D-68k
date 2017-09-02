@@ -253,28 +253,39 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_V
     if(distTimesScale == 0)
         return;
     
-    int leadingZeros = __builtin_clz(distTimesScale > 0 ? distTimesScale : -distTimesScale);
-    surface->zInverseShift = (30 - leadingZeros) - 1;
+    x_fp16x16 invDistTimesScale = (1 << 26) / distTimesScale;
     
-    int totalShift = surface->zInverseShift + 30;
-    
-    // This 64 bit division hurts...
-    int invDistTimesScale = (long long)(1LL << totalShift) / distTimesScale;
+    surface->zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x);
+    surface->zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y);
     
     int centerX = viewport->screenPos.x + viewport->w / 2;
     int centerY = viewport->screenPos.y + viewport->h / 2;
     
-    surface->zInverseXStep = ((long long)planeInViewSpace.normal.x * invDistTimesScale) >> 16;
-    surface->zInverseYStep = ((long long)planeInViewSpace.normal.y * invDistTimesScale) >> 16;
+    surface->zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z * scale, invDistTimesScale) -
+        centerX * surface->zInverseXStep -
+        centerY * surface->zInverseYStep;
     
-    int shiftDown = totalShift - 30;
     
-    surface->zInverseOrigin = 
-    (
-        (((long long)(planeInViewSpace.normal.z * scale) * invDistTimesScale) >> 16) -
-        (long long)centerX * surface->zInverseXStep -
-        (long long)centerY * surface->zInverseYStep
-    ) >> shiftDown;
+    
+//     int leadingZeros = __builtin_clz(distTimesScale > 0 ? distTimesScale : -distTimesScale);
+//     surface->zInverseShift = (30 - leadingZeros) - 1;
+//     
+//     int totalShift = surface->zInverseShift + 30;
+//     
+//     // This 64 bit division hurts...
+//     int invDistTimesScale = (long long)(1LL << totalShift) / distTimesScale;
+//     
+//     surface->zInverseXStep = ((long long)planeInViewSpace.normal.x * invDistTimesScale) >> 16;
+//     surface->zInverseYStep = ((long long)planeInViewSpace.normal.y * invDistTimesScale) >> 16;
+//     
+//     int shiftDown = totalShift - 30;
+//     
+//     surface->zInverseOrigin = 
+//     (
+//         (((long long)(planeInViewSpace.normal.z * scale) * invDistTimesScale) >> 16) -
+//         (long long)centerX * surface->zInverseXStep -
+//         (long long)centerY * surface->zInverseYStep
+//     ) >> shiftDown;
 }
 
 static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int currentFrame)

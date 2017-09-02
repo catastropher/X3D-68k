@@ -22,9 +22,31 @@ static unsigned short oldColorPalette[256];
 
 #ifdef __nspire__
 
+void scale_screen(Context* context)
+{
+    unsigned char* texels = context->engineContext->screen.canvas.tex.texels;
+    
+    unsigned short* screen = REAL_SCREEN_BASE_ADDRESS;
+    
+    for(int i = 0; i < 240 / 2; ++i)
+    {
+        for(int j = 0; j < 320 / 2; ++j)
+        {
+            unsigned int tex = texels[i * 320 + j];
+            unsigned int res = tex | (tex << 8);
+            
+            screen[(i * 2) * (320 / 2) + j] = res;
+            screen[(i * 2 + 1) * (320 / 2) + j] = res;
+        }
+    }
+}
+
 static void update_screen_nspire(Context* context)
 {
-    memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
+    if(context->engineContext->renderer.scaleScreen)
+        scale_screen(context);
+    else
+        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
 }
 
 static unsigned short map_rgb_to_nspire_color(const unsigned char color[3])
@@ -79,13 +101,7 @@ static int frameId;
 void screen_update(Context* context)
 {
 #ifdef __nspire__
-    if(!context->engineContext->renderer.usePalette)
-        update_screen_nspire(context);
-    else
-    {
-        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
-        return;
-    }
+    update_screen_nspire(context);
 #else
     
     x_texture_to_sdl_surface(&context->engineContext->screen.canvas.tex, context->engineContext->screen.palette, context->screen);

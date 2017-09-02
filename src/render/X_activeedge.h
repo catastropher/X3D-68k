@@ -123,7 +123,9 @@ int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X
 
 static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {
-    x_fp2x30 temp = ((long long)x * surface->zInverseXStep + (long long)y * surface->zInverseYStep) >> surface->zInverseShift;
+    return x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin;
+    
+    //x_fp2x30 temp = ((long long)x * surface->zInverseXStep + (long long)y * surface->zInverseYStep) >> surface->zInverseShift;
 
-    return temp + surface->zInverseOrigin;
+    //return temp + surface->zInverseOrigin;
 }

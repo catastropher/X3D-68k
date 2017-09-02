@@ -24,6 +24,8 @@
 #include "util/X_util.h"
 #include "X_Console.h"
 #include "error/X_log.h"
+#include "X_AutoCompleter.h"
+#include "X_TokenLexer.h"
 
 void x_console_open(X_Console* console)
 {
@@ -39,8 +41,6 @@ void x_console_close(X_Console* console)
 
 static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
 {
-    x_string_init(&consoleVar->assignedValueString, "");
-    
     consoleVar->name = name;
     consoleVar->type = type;
     consoleVar->saveToConfig = saveToConfig;
@@ -125,7 +125,6 @@ static int x_console_bytes_in_line(const X_Console* console)
 
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
 {
-    x_string_assign(&var->assignedValueString, varValue);
     /// @TODO maybe add type checking?
     
     switch(var->type)
@@ -496,107 +495,178 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
-static void x_console_autocomplete_add_option(X_Console* console, const char* option, int* minMatchLength, const char** minMatchStr)
+static void x_console_add_autcomplete_candidates(X_Console* console, X_AutoCompleter* ac)
 {
-    int inputLength = console->inputPos;
-    int matchLength = x_count_prefix_match_length(*minMatchStr, option);
-    
-    if(matchLength < inputLength)
-        return;
-    
-    if(*minMatchStr == console->input)
-    {
-        *minMatchStr = option;
-        *minMatchLength = strlen(option);
-    }
-    else if(matchLength < *minMatchLength) {
-        *minMatchLength = matchLength;
-        *minMatchStr = option;
-    }
-}
-
-static _Bool x_console_autocomplete(X_Console* console)
-{
-    int minMatchLength = 0x7FFFFFFF;
-    const char* minMatchStr = console->input;
-    
     for(int i = 0; i < console->totalConsoleVars; ++i)
-        x_console_autocomplete_add_option(console, console->consoleVars[i].name, &minMatchLength, &minMatchStr);
+        x_autocompleter_add_match_candidate(ac, console->consoleVars[i].name);
     
     for(int i = 0; i < console->totalConsoleCmds; ++i)
-        x_console_autocomplete_add_option(console, console->consoleCmds[i].name, &minMatchLength, &minMatchStr);
-    
-    _Bool foundStringToAutocompleteFrom = minMatchStr != console->input;
-    if(foundStringToAutocompleteFrom)
-    {
-        x_strncpy(console->input, minMatchStr, minMatchLength);
-        console->inputPos = strlen(console->input);
-    }
-    
-    _Bool autoCompletePerfectMatch = (minMatchLength == strlen(minMatchStr));
-    return autoCompletePerfectMatch;
+        x_autocompleter_add_match_candidate(ac, console->consoleCmds[i].name);
 }
 
-#define MATCHES_PER_ROW 4
-#define MATCH_SPACING 4
-
-static int compare_matches(const void* a, const void* b)
+static void x_console_add_trailing_space(X_Console* console)
 {
-    const char* strA = *((const char **)a);
-    const char* strB = *((const char **)b);
-    
-    return strcmp(strA, strB);
+    console->input[console->inputPos++] = ' ';
+    console->input[console->inputPos] = '\0';
 }
 
-static void x_console_print_autocomplete_matches(X_Console* console)
+static _Bool x_console_autocomplete(X_Console* console, X_AutoCompleter* ac)
 {
-    const int MAX_AUTOCOMPLETE_MATCHES = 128;
-    const char* autocompleteMatches[MAX_AUTOCOMPLETE_MATCHES];
-    int totalAutocompleteMatches = 0;
+    if(!x_autocompleter_complete_partial_match(ac))
+        return 0;
     
-    int inputLength = console->inputPos;
+    console->inputPos = strlen(console->input);
     
-    for(int i = 0; i < console->totalConsoleVars; ++i)
+    if(!x_autocompleter_has_exact_match(ac))
+        return 0;
+    
+    x_console_add_trailing_space(console);
+    return 1;
+}
+
+static void determine_column_widths(const char** items, int totalItems, int totalColumns, int* colWidths)
+{
+    for(int i = 0; i < totalColumns; ++i)
+        colWidths[i] = 0;
+    
+    for(int col = 0; col < totalColumns; ++col)
     {
-        if(x_count_prefix_match_length(console->input, console->consoleVars[i].name) == inputLength)
-            autocompleteMatches[totalAutocompleteMatches++] = console->consoleVars[i].name;
-    }
-    
-    for(int i = 0; i < console->totalConsoleCmds; ++i)
-    {
-        if(x_count_prefix_match_length(console->input, console->consoleCmds[i].name) == inputLength)
-            autocompleteMatches[totalAutocompleteMatches++] = console->consoleCmds[i].name;
-    }
-    
-    qsort(autocompleteMatches, totalAutocompleteMatches, sizeof(char**), compare_matches);
-    
-    int colWidth[MATCHES_PER_ROW] = { 0 };
-    
-    for(int col = 0; col < MATCHES_PER_ROW; ++col)
-    {
-        for(int match = col; match < totalAutocompleteMatches; match += MATCHES_PER_ROW)
+        for(int item = col; item < totalItems; item += totalColumns)
         {
-            colWidth[col] = X_MAX(colWidth[col], strlen(autocompleteMatches[match]));
+            colWidths[col] = X_MAX(colWidths[col], strlen(items[item]));
         }
     }
-    
-    x_console_printf(console, "] %s\n\n", console->input);
-    
-    for(int match = 0; match < totalAutocompleteMatches; ++match)
+}
+
+static _Bool row_exceeds_width_of_console(X_Console* console, int row, int totalColumns, int* colWidths, int totalItems, int colSpacing)
+{
+    int totalWidth = 0;
+    for(int col = 0; col < totalColumns; ++col)
     {
-        int row = match / MATCHES_PER_ROW;
-        int col = match % MATCHES_PER_ROW;
+        int item = row * totalColumns + col;
+        if(item >= totalItems)
+            break;
+        
+        totalWidth += colWidths[col];
+        
+        if(col != totalColumns - 1)
+            totalWidth += colSpacing;
+    }
+    
+    return totalWidth >= console->size.x;
+}
+
+static _Bool columns_widths_exceed_width_of_console(X_Console* console, int totalColumns, int* colWidths, int totalItems, int colSpacing)
+{
+    int totalRows = (totalItems + totalColumns - 1) / totalColumns;
+    for(int row = 0; row < totalRows; ++row)
+    {
+        if(row_exceeds_width_of_console(console, row, totalColumns, colWidths, totalItems, colSpacing))
+            return 1;
+    }
+    
+    return 0;
+}
+
+static int determine_max_number_of_items_per_row(X_Console* console, const char** items, int totalItems, int maxItemsPerRow, int* colWidths, int itemSpacing)
+{
+    int matchesPerRow = maxItemsPerRow;
+    
+    do
+    {
+        determine_column_widths(items, totalItems, matchesPerRow, colWidths);
+        
+        if(!columns_widths_exceed_width_of_console(console, matchesPerRow, colWidths, totalItems, itemSpacing))
+            break;
+    } while(--matchesPerRow > 1);
+    
+    return matchesPerRow;
+}
+
+static void print_items_in_columns(X_Console* console, const char** items, int totalItems, int totalColumns, int* colWidths, int itemSpacing)
+{    
+    for(int match = 0; match < totalItems; ++match)
+    {
+        int row = match / totalColumns;
+        int col = match % totalColumns;
         
         if(col == 0 && row != 0)
             x_console_print(console, "\n");
         
-        x_console_print(console, autocompleteMatches[match]);
+        x_console_print(console, items[match]);
         
-        for(int i = 0; i < colWidth[col] - strlen(autocompleteMatches[match]) + MATCH_SPACING; ++i)
+        int spacing = (col != totalColumns - 1 ? itemSpacing : 0);
+        
+        for(int i = 0; i < colWidths[col] - strlen(items[match]) + spacing; ++i)
             x_console_print(console, " ");
     }
     
-    x_console_print(console, "\n\n");
+    x_console_print(console, "\n");
+}
+
+static void print_items_in_columns_fit_to_console(X_Console* console, const char** items, int totalItems, int itemSpacing)
+{
+    const int MAX_MATCHES_PER_ROW = 10;
+    int colWidths[MAX_MATCHES_PER_ROW];
+    int itemsPerRow = determine_max_number_of_items_per_row(console, items, totalItems, MAX_MATCHES_PER_ROW, colWidths, itemSpacing);
+    
+    print_items_in_columns(console, items, totalItems, itemsPerRow, colWidths, itemSpacing);
+}
+
+static void x_console_print_autocomplete_matches(X_Console* console, X_AutoCompleter* ac)
+{
+    x_autocompleter_sort_matches(ac);
+    x_console_printf(console, "] %s\n\n", console->input);
+    
+    const int MATCH_SPACING = 3;
+    print_items_in_columns_fit_to_console(console, ac->matches, ac->totalMatches, MATCH_SPACING);
+    x_console_print(console, "\n");
+}
+
+static void handle_backspace_key(X_Console* console)
+{
+    if(console->inputPos > 0) {
+        --console->inputPos;
+        console->input[console->inputPos] = '\0';
+    }
+}
+
+static void handle_enter_key(X_Console* console)
+{
+    x_console_printf(console, "] %s\n", console->input);
+    x_console_execute_cmd(console, console->input);
+    
+    console->inputPos = 0;
+    console->input[0] = '\0';
+}
+
+static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
+{
+    const int MAX_MATCHES = 100;
+    const char* matches[MAX_MATCHES];
+    
+    X_AutoCompleter ac;
+    x_autocompleter_init(&ac, console->input, console->inputPos, matches, MAX_MATCHES);
+    x_console_add_autcomplete_candidates(console, &ac);
+    
+    if(x_console_autocomplete(console, &ac) || lastKeyPressed != '\t')
+        return;
+        
+    x_console_print_autocomplete_matches(console, &ac);
+    console->lastKeyPressed = 0;
+}
+
+static void handle_character_key(X_Console* console, X_Key key)
+{
+    if(console->inputPos + 1 < X_CONSOLE_INPUT_BUF_SIZE)
+        console->input[console->inputPos++] = key;
+    
+    console->input[console->inputPos] = '\0';
+}
+
+static _Bool is_character_key(X_Key key)
+{
+    return key < 128 && isprint(key);
 }
 
 void x_console_send_key(X_Console* console, X_Key key)
@@ -606,114 +676,31 @@ void x_console_send_key(X_Console* console, X_Key key)
     
     if(key == '\b')
     {
-        if(console->inputPos > 0) {
-            --console->inputPos;
-            console->input[console->inputPos] = '\0';
-        }
-        
+        handle_backspace_key(console);
         return;
     }
     
     if(key == '\n')
     {
-        x_console_printf(console, "] %s\n", console->input);
-        x_console_execute_cmd(console, console->input);
-        
-        console->inputPos = 0;
-        console->input[0] = '\0';
-        
+        handle_enter_key(console);
         return;
     }
     
     if(key == '\t')
     {
-        if(!x_console_autocomplete(console) && lastKey == '\t')
-        {
-            x_console_print_autocomplete_matches(console);
-            console->lastKeyPressed = 0;
-        }
-        
+        handle_tab_key(console, lastKey);
         return;
     }
     
-    if(key < 128 && isprint(key))
+    if(is_character_key(key))
     {
-        if(console->inputPos + 1 < X_CONSOLE_INPUT_BUF_SIZE)
-            console->input[console->inputPos++] = key;
-        
-        console->input[console->inputPos] = '\0';        
+        handle_character_key(console, key);
         return;
     }
 }
 
-typedef struct TokenContext
+static void print_variable_value(X_Console* console, X_ConsoleVar* var)
 {
-    X_Console* console;
-    const char* str;
-    char* tokenBuf;
-    char* tokenBufEnd;
-    char** tokens;
-    char** tokensEnd;
-    _Bool errorOccured;
-    int totalTokens;
-} TokenContext;
-
-static void skip_whitespace(TokenContext* c)
-{
-    while(*c->str == ' ')
-        ++c->str;
-}
-
-static _Bool grab_next_token(TokenContext* c)
-{
-    if(c->tokens == c->tokensEnd)
-    {
-        x_console_print(c->console, "Can't execute command (too many tokens)\n");
-        c->errorOccured = 1;
-        return 0;
-    }
-    
-    skip_whitespace(c);
-    
-    if(*c->str == '\0')
-        return 0;
-    
-    *c->tokens++ = c->tokenBuf;
-    
-    while(*c->str != '\0' && *c->str != ' ')
-    {
-        if(c->tokenBuf == c->tokenBufEnd)
-        {
-            x_console_print(c->console, "Can't execute command (command too long)\n");
-            c->errorOccured = 1;
-            return 0;
-        }
-        
-        *c->tokenBuf++ = *c->str++;
-    }
-    
-    *c->tokenBuf++ = '\0';
-    
-    return 1;
-}
-
-static void tokenize(TokenContext* c)
-{
-    c->totalTokens = 0;
-    
-    while(grab_next_token(c))
-        ++c->totalTokens;
-}
-
-static void print_variable_value(X_Console* console, const char* varName)
-{
-    X_ConsoleVar* var = x_console_get_var(console, varName);
-    if(!var)
-    {
-        x_console_printf(console, "Unknown variable %s\n", varName);
-        return;
-    }
-    
     char varValue[1024];
     
     switch(var->type)
@@ -738,63 +725,75 @@ static void print_variable_value(X_Console* console, const char* varName)
             break;
     }
     
-    x_console_printf(console, "Variable %s is currently %s\n", varName, varValue);
+    x_console_printf(console, "Variable %s is currently %s\n", var->name, varValue);
 }
 
-static void set_variable_value(X_Console* console, const char* varName, const char* varValue)
+static _Bool token_begins_comment_line(const char* token)
 {
-    X_ConsoleVar* var = x_console_get_var(console, varName);
+    return token[0] == '/' && token[1] == '/';
+}
+
+static _Bool x_tokenlexer_is_valid_console_input(X_TokenLexer* lexer, char** tokens)
+{
+    return !lexer->errorOccured &&
+        lexer->totalTokens > 0 &&
+        !token_begins_comment_line(tokens[0]);
+}
+
+static _Bool x_console_input_try_execute_command(X_Console* console, char** tokens, int totalTokens)
+{
+    X_ConsoleCmd* cmd = x_console_get_cmd(console, tokens[0]);
+    
+    if(cmd == NULL)
+        return 0;
+    
+    cmd->handler(console->engineContext, totalTokens, tokens);
+    return 1;
+}
+
+static _Bool x_console_input_try_set_variable(X_Console* console, char** tokens, int totalTokens)
+{
+    X_ConsoleVar* var = x_console_get_var(console, tokens[0]);
     if(!var)
+        return 0;
+    
+    if(totalTokens > 2)
     {
-        x_console_printf(console, "Unknown variable %s\n", varName);
-        return;
+        x_console_print(console, "Expected syntax <var> <value to set to>\n");
+        return 1;
     }
     
-    x_consolevar_set_value(var, varValue);
+    if(totalTokens == 1)
+    {
+        print_variable_value(console, var);
+        return 1;
+    }
+    
+    x_consolevar_set_value(var, tokens[1]);
+    return 1;
 }
-
-#define MAX_TOKENS 512
-#define TOKEN_BUF_SIZE 1024
-
 
 void x_console_execute_cmd(X_Console* console, const char* str)
 {
-    char tokenBuf[TOKEN_BUF_SIZE];
+    const int MAX_TOKENS = 512;
     char* tokens[MAX_TOKENS];
     
-    TokenContext context;
-    context.errorOccured = 0;
-    context.str = str;
-    context.tokenBuf = tokenBuf;
-    context.tokenBufEnd = tokenBuf + TOKEN_BUF_SIZE;
-    context.tokens = tokens;
-    context.tokensEnd = tokens + MAX_TOKENS;
+    const int TOKEN_BUF_SIZE = 1024;
+    char tokenBuf[TOKEN_BUF_SIZE];
     
-    tokenize(&context);
+    X_TokenLexer lexer;
+    x_tokenlexer_init(&lexer, str, tokenBuf, TOKEN_BUF_SIZE, tokens, MAX_TOKENS, console);
+    x_tokenlexer_tokenize(&lexer);
     
-    if(context.errorOccured)
+    if(!x_tokenlexer_is_valid_console_input(&lexer, tokens))
         return;
     
-    if(context.totalTokens == 0)
+    if(x_console_input_try_execute_command(console, tokens, lexer.totalTokens))
         return;
     
-    // Comment line
-    if(tokens[0][0] == '/' && tokens[0][1] == '/')
+    if(x_console_input_try_set_variable(console, tokens, lexer.totalTokens))
         return;
     
-    X_ConsoleCmd* cmd = x_console_get_cmd(console, tokens[0]);
-    
-    if(cmd != NULL)
-    {
-        cmd->handler(console->engineContext, context.totalTokens, tokens);
-        return;
-    }
-    
-    if(context.totalTokens == 1)
-        print_variable_value(console, tokens[0]);
-    else if(context.totalTokens == 2)
-        set_variable_value(console, tokens[0], tokens[1]);
-    else
-        x_console_print(console, "Bad command\n");          // Need better message
+    x_console_printf(console, "Unknown command or var %s\n", tokens[0]);
 }
 

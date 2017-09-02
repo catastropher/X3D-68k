@@ -31,8 +31,6 @@ X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BspBoundBox* box
     if(!x_plane_point_is_on_normal_facing_side(plane, &furthestPointAlongNormal))
         return X_BOUNDBOX_OUTSIDE_PLANE;
     
-    //return X_BOUNDBOX_INTERSECT_PLANE;
-    
     X_Vec3 closestPointAlongNormal = x_vec3_make(box->v[px ^ 1].x, box->v[py ^ 1].y, box->v[pz ^ 1].z);
     if(x_plane_point_is_on_normal_facing_side(plane, &closestPointAlongNormal))
         return X_BOUNDBOX_INSIDE_PLANE;
@@ -98,40 +96,48 @@ X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
     return (X_BspLeaf*)node;
 }
 
-void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+static void mark_all_leaves_in_pvs_as_visible(unsigned char* pvs, int pvsSize)
 {
-    // The PVS is compressed using zero run-length encoding
-    int pos = 0;
-    int pvsSize = x_bspfile_node_pvs_size(level);
-    unsigned char* pvsData = leaf->compressedPvsData;
+    for(int i = 0; i < pvsSize; ++i)
+        pvs[i] = 0xFF;
+}
+
+static void decompress_pvs_using_run_length_encoding(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
+{
+    unsigned char* decompressedPvsEnd = decompressedPvsDest + pvsSize;
     
-    _Bool outsideLevel = leaf == level->leaves + 0;
-    
-    // No visibility info (whoever compiled the map didn't run the vis tool)
-    if(pvsData == NULL || outsideLevel)
+    while(decompressedPvsDest < decompressedPvsEnd)
     {
-        // Mark all leaves as visible
-        for(int i = 0; i < pvsSize; ++i)
-            decompressedPvsDest[i] = 0xFF;
-            
-        return;
-    }
-    
-    while(pos < pvsSize)
-    {
-        if(*pvsData == 0)
+        if(*compressedPvsData == 0)
         {
-            ++pvsData;
-            int count = *pvsData++;
+            ++compressedPvsData;
+            int count = *compressedPvsData++;
             
-            for(int i = 0; i < count && pos < pvsSize; ++i)
-                decompressedPvsDest[pos++] = 0;
+            for(int i = 0; i < count; ++i)
+                *decompressedPvsDest++ = 0;
         }
         else
         {
-            decompressedPvsDest[pos++] = *pvsData++;
+            *decompressedPvsDest++ = *compressedPvsData++;
         }
     }
+}
+
+void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+{
+    int pvsSize = x_bspfile_node_pvs_size(level);
+    unsigned char* pvsData = leaf->compressedPvsData;
+
+    _Bool outsideLevel = leaf == level->leaves + 0;
+    _Bool hasVisibilityInfoForCurrentLeaf = pvsData != NULL && !outsideLevel;
+    
+    if(!hasVisibilityInfoForCurrentLeaf)
+    {
+        mark_all_leaves_in_pvs_as_visible(decompressedPvsDest, pvsSize);
+        return;
+    }
+    
+    decompress_pvs_using_run_length_encoding(pvsData, pvsSize, decompressedPvsDest);
 }
 
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
@@ -240,31 +246,6 @@ void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light
     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 }
 
-void x_bsplevel_draw_edges_in_leaf(X_BspLevel* level, X_BspLeaf* leaf, X_RenderContext* renderContext, X_Color color)
-{
-    X_BspSurface** nextSurface = leaf->firstMarkSurface;
-    
-    for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
-    {
-        X_BspSurface* surface = *nextSurface++;
-        
-        for(int j = 0; j < surface->totalEdges; ++j)
-        {
-            int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + j];
-            
-            X_BspEdge* edge = level->edges + abs(edgeId);
-            
-            X_Ray3 ray = x_ray3_make
-            (
-                level->vertices[edge->v[0]].v,
-                level->vertices[edge->v[1]].v
-            );
-            
-            x_ray3d_render(&ray, renderContext, color);
-        }
-    }
-}
-
 static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const X_Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
 {
     _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);
@@ -341,7 +322,7 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
 
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
-    X_BspBoundBoxFrustumFlags enableAllPlanes = (1 << 14) - 1;
+    X_BspBoundBoxFrustumFlags enableAllPlanes = (1 << renderContext->viewFrustum->totalPlanes) - 1;
     x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
 }
 

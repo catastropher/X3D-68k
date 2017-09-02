@@ -37,7 +37,6 @@ typedef struct X_Renderer
     int currentFrame;
     
     int fillColor;
-    _Bool usePalette;
     _Bool showFps;
     
     int screenW;
@@ -48,22 +47,14 @@ typedef struct X_Renderer
     _Bool frustumClip;              // debug
     _Bool enableLighting;
     
+    _Bool scaleScreen;
+    
     int renderMode;
     
     int totalSurfacesRendered;
 
     int mipLevel;
     x_fp16x16 mipDistances[X_BSPTEXTURE_MIP_LEVELS - 1];
-    
-    X_ConsoleVar varFrustumClip;    // debug
-    X_ConsoleVar varFillColor;
-    X_ConsoleVar varShowFps;
-    X_ConsoleVar varScreenW;
-    X_ConsoleVar varScreenH;
-    X_ConsoleVar varFov;
-    X_ConsoleVar varFullscreen;
-    X_ConsoleVar varMipLevel;
-    X_ConsoleVar varRenderMode;
 } X_Renderer;
 
 #define X_COLORMAP_SHADES_PER_COLOR 64
@@ -75,4 +66,6 @@ static inline X_Color x_renderer_get_shaded_color(X_Renderer* renderer, X_Color 
 
 void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov);
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen);
+
+void x_renderer_render_frame(struct X_EngineContext* engineContext);
 

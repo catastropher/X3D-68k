@@ -15,10 +15,16 @@
 
 #pragma once
 
+#include "system/X_Time.h"
+
 #define X_TOTAL_KEYS 256
+
+#define X_KEY_REPEAT_INITIAL_TIME 500
+#define X_KEY_REPEAT_TIME 100
 
 typedef enum X_Key
 {
+    X_KEY_INVALID = 0,
     X_KEY_ENTER = '\n',
     X_KEY_TAB = 't',
     X_KEY_OPEN_CONSOLE = 128,
@@ -40,14 +46,20 @@ typedef struct X_KeyState
     int keyQueueHead;
     int keyQueueTail;
     unsigned char keyshift[X_TOTAL_KEYS];
+    
+    X_Time currentTime;
+    X_Time nextKeyRepeat;
+    X_Key lastKeyPressed;
+    X_Key keyToRepeat;
 } X_KeyState;
 
 void x_keystate_init(X_KeyState* state);
 void x_keystate_reset_keys(X_KeyState* state);
 _Bool x_keystate_queue_empty(const X_KeyState* state);
 _Bool x_keystate_dequeue(X_KeyState* state, X_Key* dest);
-void x_keystate_send_key_press(X_KeyState* state, X_Key key);
+void x_keystate_send_key_press(X_KeyState* state, X_Key key, X_Key unicodeKey);
 void x_keystate_send_key_release(X_KeyState* state, X_Key key);
+void x_keystate_handle_key_repeat(X_KeyState* state, X_Time currentTime);
 
 static inline _Bool x_keystate_key_down(const X_KeyState* keystate, X_Key key)
 {

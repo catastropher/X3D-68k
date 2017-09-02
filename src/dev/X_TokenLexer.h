@@ -13,33 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D/X3D.h>
-#include <SDL/SDL.h>
-#include <unistd.h>
-#include <math.h>
+#pragma once
 
-#include "Context.h"
-#include "screen.h"
-#include "keys.h"
-#include "init.h"
-#include "render.h"
+struct X_Console;
 
-void gameloop(Context* context)
+typedef struct X_TokenLexer
 {
-    while(!context->quit)
-    {
-        render(context);
-        handle_keys(context);        
-        screen_update(context);
-    }
-}
+    struct X_Console* console;
+    const char* inputStr;
+    char* tokenBuf;
+    char* tokenBufEnd;
+    char** tokens;
+    char** tokensEnd;
+    _Bool errorOccured;
+    int totalTokens;
+} X_TokenLexer;
 
-int main(int argc, char* argv[])
-{
-    Context context;
-    
-    init(&context, argv[0]);    
-    gameloop(&context);
-    cleanup(&context);
-}
+void x_tokenlexer_init(X_TokenLexer* lexer, const char* inputStr, char* tokenBuf, int tokenBufSize, char** tokens, int maxTokens, struct X_Console* console);
+void x_tokenlexer_tokenize(X_TokenLexer* lexer);
 

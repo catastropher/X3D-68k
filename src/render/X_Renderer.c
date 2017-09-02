@@ -130,6 +130,40 @@ static void cmd_lighting(X_EngineContext* context, int argc, char* argv[])
     x_cache_flush(&context->renderer.surfaceCache);
 }
 
+static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_printf(&context->console, "Usage: %s [0/1] - enables/disables screen scaling", argv[0]);
+        return;
+    }
+    
+#ifndef __nspire__
+    x_console_print(&context->console, "Screen scaling only available on Nspire\n");
+    return;
+#endif
+    
+    X_CameraObject* cam = context->screen.cameraListHead;
+    int w;
+    int h;
+    
+    context->renderer.scaleScreen = atoi(argv[1]) != 0;
+    
+    if(context->renderer.scaleScreen)
+    {
+        w = 320 / 2;
+        h = 240 / 2;
+    }
+    else
+    {
+        w = 320;
+        h = 240;
+    }
+    
+    // FIXME: don't hardcode angle
+    x_viewport_init(&cam->viewport, x_vec2_make(0, 0), w, h, X_ANG_60);
+}
+
 #define MAX_SURFACES 1000
 #define MAX_EDGES 5000
 #define MAX_ACTIVE_EDGES 5000
@@ -181,7 +215,7 @@ static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
     renderer->dynamicLightsNeedingUpdated = 0;
 }
 
-void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
+static void x_renderer_console_cmds(X_Console* console)
 {
     x_console_register_cmd(console, "res", cmd_res);    
     x_console_register_cmd(console, "vidrestart", cmd_vidrestart);    
@@ -189,20 +223,28 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_console_register_cmd(console, "surfid", cmd_surfid);    
     x_console_register_cmd(console, "lighting", cmd_lighting);
     x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
-    
-    x_renderer_init_console_vars(renderer, console);
-    
-    x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
-    x_cache_init(&renderer->surfaceCache, 3000000, "surfacecache");     // TODO: this size should be configurable
-    
+    x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
+}
+
+static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen, int fov)
+{
     renderer->screenW = x_screen_w(screen);
     renderer->screenH = x_screen_h(screen);
     renderer->videoInitialized = 0;
     renderer->fullscreen = 0;
     renderer->fov = fov;
     renderer->enableLighting = 1;
+    renderer->scaleScreen = 0;
+}
+
+void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
+{
+    x_renderer_console_cmds(console);
+    x_renderer_init_console_vars(renderer, console);
+    x_renderer_set_default_values(renderer, screen, fov);
     
-    renderer->usePalette = 0;
+    x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
+    x_cache_init(&renderer->surfaceCache, 3000000, "surfacecache");     // TODO: this size should be configurable
     
     x_renderer_init_colormap(renderer, screen->palette);
     x_renderer_init_dynamic_lights(renderer);
@@ -212,5 +254,61 @@ void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
 {
     x_ae_context_cleanup(&renderer->activeEdgeContext);
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
+}
+
+static void x_engine_begin_frame(X_EngineContext* context)
+{
+    ++context->frameCount;
+    x_enginecontext_update_time(context);
+}
+
+static void mark_lights(X_EngineContext* context)
+{
+    X_Light* lights = context->renderer.dynamicLights;
+    for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
+    {
+        if(!x_light_is_free(lights + i))
+        {
+            x_bsplevel_mark_surfaces_light_is_close_to(&context->currentLevel, lights + i, context->frameCount);
+        }
+    }
+}
+
+static void fill_with_background_color(X_EngineContext* engineContext)
+{
+    if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
+       x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+}
+
+static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engineContext)
+{
+    renderer->totalSurfacesRendered = 0;
+    renderer->currentFrame = engineContext->frameCount;
+    renderer->dynamicLightsNeedingUpdated = 0xFFFFFFFF;
+}
+
+static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineContext* engineContext)
+{
+    X_RenderContext renderContext;
+    x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+    
+    if((renderer->renderMode & 2) != 0)
+        x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
+    
+    x_cameraobject_render(cam, &renderContext);
+    x_ae_context_scan_edges(&renderer->activeEdgeContext);
+}
+
+void x_renderer_render_frame(X_EngineContext* engineContext)
+{
+    x_engine_begin_frame(engineContext);
+    x_renderer_begin_frame(&engineContext->renderer, engineContext);
+    fill_with_background_color(engineContext);
+    mark_lights(engineContext);
+    
+    for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    {
+        render_camera(&engineContext->renderer, cam, engineContext);
+    }
 }
 
