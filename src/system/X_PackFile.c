@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <string.h>
+#include <strings.h>
 
 #include "X_PackFile.h"
 #include "error/X_log.h"
@@ -83,7 +84,7 @@ void x_packfile_print_files(X_PackFile* file)
 
 void x_packfile_cleanup(X_PackFile* file)
 {
-    free(file->entries);
+    x_free(file->entries);
     file->entries = NULL;
     file->totalEntries = 0;
     
@@ -135,6 +136,20 @@ _Bool x_packfile_extract(X_PackFile* file, const char* dirToExtractTo)
     }
     
     return 1;
+}
+
+X_PackFileEntry* x_packfile_find_file(X_PackFile* file, const char* fileToFind)
+{
+    for(int i = 0; i < file->totalEntries; ++i)
+    {
+        char fileName[256];
+        x_filepath_extract_filename(file->entries[i].name, fileName);
+        
+        if(strcasecmp(fileName, fileToFind) == 0)
+            return file->entries + i;
+    }
+    
+    return NULL;
 }
 
 

@@ -46,4 +46,5 @@ void x_packfile_print_files(X_PackFile* file);
 void x_packfile_cleanup(X_PackFile* file);
 char* x_packfile_load_file(X_PackFile* file, const char* fileName);
 _Bool x_packfile_extract(X_PackFile* file, const char* dirToExtractTo);
+X_PackFileEntry* x_packfile_find_file(X_PackFile* file, const char* fileToFind);
 

@@ -17,13 +17,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
 
 #include "geo/X_Vec3.h"
 
 typedef enum X_FileFlags
 {
     X_FILE_OPEN_FOR_READING = 1,
-    X_FILE_OPEN_FOR_WRITING = 2
+    X_FILE_OPEN_FOR_WRITING = 2,
+    X_FILE_OPEN_IN_MEM = 3
 } X_FileFlags;
 
 typedef struct X_File
@@ -31,7 +33,14 @@ typedef struct X_File
     FILE* file;
     size_t size;
     X_FileFlags flags;
+    void* buffer;
 } X_File;
+
+typedef struct X_DirectoryIterator
+{
+    DIR* directory;
+    const char* searchExtension;
+} X_DirectoryIterator;
 
 void x_filesystem_init(const char* programPath);
 void x_filesystem_cleanup(void);
@@ -67,6 +76,15 @@ void x_file_write_buf(X_File* file, int bufSize, void* src);
 
 void x_filepath_set_default_file_extension(char* filePath, const char* defaultExtension);
 void x_filepath_extract_path(const char* filePath, char* path);
+void x_filepath_extract_filename(const char* filePath, char* fileName);
+void x_filepath_extract_extension(const char* filePath, char* extension);
+
+_Bool x_file_open_from_packfile(X_File* file, const char* fileName);
+
+_Bool x_directoryiterator_open(X_DirectoryIterator* iter, const char* path);
+void x_directoryiterator_set_search_extension(X_DirectoryIterator* iter, const char* searchExtension);
+_Bool x_directoryiterator_read_next(X_DirectoryIterator* iter, char* nextFileDest);
+void x_directoryiterator_close(X_DirectoryIterator* iter);
 
 static inline _Bool x_file_is_open_for_reading(const X_File* file)
 {

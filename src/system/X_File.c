@@ -17,8 +17,10 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <string.h>
+#include <dirent.h>
 
 #include "X_File.h"
+#include "system/X_PackFile.h"
 #include "error/X_log.h"
 #include "error/X_error.h"
 #include "memory/X_alloc.h"
@@ -113,6 +115,12 @@ _Bool x_file_open_reading(X_File* file, const char* fileName)
     
     if(!file->file)
     {
+        // It's possible the file is a pack file
+        x_file_open_from_packfile(file, fileName);
+    }
+    
+    if(!file->file)
+    {
         x_log_error("Failed to open file '%s' for reading", fileName);
         log_search_paths();
         return 0;
@@ -137,6 +145,12 @@ void x_file_close(X_File* file)
     file->file = NULL;
     file->flags = 0;
     file->size = 0;
+    
+    if(file->flags & X_FILE_OPEN_IN_MEM)
+    {
+        x_free(file->buffer);
+        file->buffer = 0;
+    }
 }
 
 unsigned char* x_file_read_contents(const char* fileName)
@@ -385,5 +399,140 @@ void x_filepath_extract_path(const char* filePath, char* path)
     }
     
     *path = '\0';
+}
+
+void x_filepath_extract_filename(const char* filePath, char* fileName)
+{
+    const char* str = filePath + strlen(filePath) - 1;
+    while(str >= filePath && *str != '/')
+        --str;
+    
+    strcpy(fileName, str + 1);
+}
+
+void x_filepath_extract_extension(const char* filePath, char* extension)
+{
+    const char* str = filePath + strlen(filePath) - 1;
+    
+    while(str != filePath && *str != '/')
+    {
+        if(*str == '.')
+        {
+            strcpy(extension, str + 1);
+            return;
+        }
+        
+        --str;
+    }
+    
+    *extension = '\0';
+}
+
+_Bool x_directoryiterator_open(X_DirectoryIterator* iter, const char* path)
+{
+    iter->directory = opendir(path);
+    iter->searchExtension = NULL;
+    
+    if(!iter->directory)
+    {
+        x_log_error("Failed to open directory iterator %s\n", path);
+        return 0;
+    }
+    
+    return 1;
+}
+
+void x_directoryiterator_set_search_extension(X_DirectoryIterator* iter, const char* searchExtension)
+{
+    iter->searchExtension = searchExtension;
+}
+
+_Bool x_directoryiterator_read_next(X_DirectoryIterator* iter, char* nextFileDest)
+{
+    struct dirent* entry;
+    char fileExtension[256];
+    _Bool matchesExtension = 1;
+    
+    do
+    {
+        entry = readdir(iter->directory);
+        
+        if(entry == NULL)
+            return 0;
+        
+        if(iter->searchExtension != NULL)
+        {
+            x_filepath_extract_extension(entry->d_name, fileExtension);
+            matchesExtension = strcmp(fileExtension, iter->searchExtension) == 0;
+        }
+        
+    } while(!matchesExtension);
+    
+    strcpy(nextFileDest, entry->d_name);
+    return 1;
+}
+
+void x_directoryiterator_close(X_DirectoryIterator* iter)
+{
+    if(iter->directory)
+        closedir(iter->directory);
+}
+
+static _Bool search_packfiles_in_directory(const char* directory, const char* fileToFind, char** fileContents, size_t* fileContentsSize)
+{
+    X_DirectoryIterator iter;
+    if(!x_directoryiterator_open(&iter, directory))
+        return 0;
+    
+    x_directoryiterator_set_search_extension(&iter, "pak");
+    
+    char packFileName[256];
+    _Bool found = 0;
+    
+    while(!found && x_directoryiterator_read_next(&iter, packFileName))
+    {
+        X_PackFile packFile;
+        if(!x_packfile_read_from_file(&packFile, packFileName))
+            continue;
+        
+        X_PackFileEntry* foundFile = x_packfile_find_file(&packFile, fileToFind);
+        if(foundFile != NULL)
+        {
+            *fileContents = x_packfile_load_file(&packFile, foundFile->name);
+            *fileContentsSize = foundFile->size;
+            found = 1;
+        }
+        
+        x_packfile_cleanup(&packFile);
+    }
+    
+    x_directoryiterator_close(&iter);
+    
+    return found;
+}
+
+_Bool x_file_open_from_packfile(X_File* file, const char* fileName)
+{
+    char nextFileToSearch[512];
+    char* nextSearchPath = g_searchPaths.data;
+    char* fileContents = NULL;
+    size_t fileContentsSize;
+    
+    while(!file->file && get_next_search_path(&nextSearchPath, nextFileToSearch))
+    {
+        if(search_packfiles_in_directory(nextFileToSearch, fileName, &fileContents, &fileContentsSize))
+        {
+            file->file = fmemopen(fileContents, fileContentsSize, "r");
+            
+            if(!file->file)
+                return 0;
+            
+            file->buffer = fileContents;
+            file->flags = X_FILE_OPEN_FOR_READING | X_FILE_OPEN_IN_MEM;
+            return 1;
+        }
+    }
+    
+    return 0;
 }
 
