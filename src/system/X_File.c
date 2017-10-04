@@ -244,6 +244,11 @@ float x_file_read_le_float32(X_File* file)
     return converter.f;
 }
 
+x_fp16x16 x_file_read_le_float32_as_fp16x16(X_File* file)
+{
+    return x_fp16x16_from_float(x_file_read_le_float32(file));
+}
+
 int x_file_read_be_int32(X_File* file)
 {
     ASSERT_OPEN_FOR_READING(file);
@@ -301,6 +306,13 @@ void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest)
     dest->x = x_file_read_le_float32(file);
     dest->y = x_file_read_le_float32(file);
     dest->z = x_file_read_le_float32(file);
+}
+
+void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3_fp16x16* dest)
+{
+    X_Vec3_float v;
+    x_file_read_vec3_float(file, &v);
+    *dest = x_vec3_float_to_vec3_fp16x16(&v);
 }
 
 _Bool x_file_open_writing(X_File* file, const char* fileName)
