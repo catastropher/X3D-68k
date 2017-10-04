@@ -32,6 +32,14 @@ void gameloop(Context* context)
     while(!context->quit)
     {
         render(context);
+        
+        for(int i = 0; i < model.totalSkins; ++i)
+        {
+            X_Texture skinTex;
+            x_entitymodel_get_skin_texture(&model, 0, 0, &skinTex);
+            x_canvas_blit_texture(&context->engineContext->screen.canvas, &skinTex, x_vec2_make(0, i * model.skinHeight));
+        }
+        
         handle_keys(context);        
         screen_update(context);
     }

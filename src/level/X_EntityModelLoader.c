@@ -48,7 +48,7 @@ static _Bool read_header(X_EntityModelLoader* loader)
     header->radius = x_file_read_le_float32_as_fp16x16(file);
     x_file_read_vec3_float_as_fp16x16(file, &header->offsets);
     
-    header->totalSkinTextures = x_file_read_le_int32(file);
+    header->totalSkins = x_file_read_le_int32(file);
     header->skinWidth = x_file_read_le_int32(file);
     header->skinHeight = x_file_read_le_int32(file);
     header->totalVertices = x_file_read_le_int32(file);
@@ -61,6 +61,61 @@ static _Bool read_header(X_EntityModelLoader* loader)
     return 1;
 }
 
+static void read_skin_texture_duration_times(X_EntityModelLoader* loader, X_EntitySkin* skin)
+{
+    X_File* file = &loader->file;
+    
+    if(skin->totalTextures == 1)
+        return;
+        
+    for(int i = 0; i < skin->totalTextures; ++i)
+        skin->textures[i].displayDuration = x_file_read_le_float32_as_fp16x16(file);
+}
+
+static void read_skin_texture_texels(X_EntityModelLoader* loader, X_EntitySkin* skin)
+{
+    X_EntityModel* model = loader->modelDest;
+    X_File* file = &loader->file;
+    
+    int skinSize = model->skinWidth * model->skinHeight;
+    X_Color* textureTexels = x_malloc(skinSize * skin->totalTextures);
+    
+    for(int i = 0; i < skin->totalTextures; ++i)
+    {
+        skin->textures[i].texels = textureTexels + skinSize * i;
+        x_file_read_buf(file, skinSize, skin->textures[i].texels);
+    }
+}
+
+static void read_skin(X_EntityModelLoader* loader, X_EntitySkin* skin)
+{
+    X_EntityModel* model = loader->modelDest;
+    X_File* file = &loader->file;
+    
+    int totalGroups = x_file_read_le_int32(file);
+    
+    if(totalGroups == 0)
+        skin->totalTextures = 1;
+    else
+        skin->totalTextures = x_file_read_le_int32(file);
+    
+    skin->textures = x_malloc(sizeof(X_EntitySkinTexture) * skin->totalTextures);
+    read_skin_texture_duration_times(loader, skin);
+    read_skin_texture_texels(loader, skin);
+}
+
+static void read_skins(X_EntityModelLoader* loader)
+{
+    X_EntityModel* model = loader->modelDest;
+    model->skins = x_malloc(sizeof(X_EntitySkin) * loader->header.totalSkins);
+    model->totalSkins = loader->header.totalSkins;
+    model->skinWidth = loader->header.skinWidth;
+    model->skinHeight = loader->header.skinHeight;
+    
+    for(int i = 0; i < loader->header.totalSkins; ++i)
+        read_skin(loader, model->skins + i);
+}
+
 static void print_header(X_EntityModelHeader* header)
 {
     printf("Id: %X\n", header->id);
@@ -70,11 +125,16 @@ static void print_header(X_EntityModelHeader* header)
     printf("Total Vertices: %d\n", header->totalVertices);
     printf("Total Triangles: %d\n", header->totalTriangles);
     printf("Total Frames: %d\n", header->totalFrames);
+    printf("Total skins: %d\n", header->totalSkins);
 }
 
 static _Bool read_contents(X_EntityModelLoader* loader)
 {
-    return read_header(loader);
+    if(!read_header(loader))
+        return 0;
+    
+    read_skins(loader);
+    return 1;
 }
 
 _Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName)
@@ -93,6 +153,8 @@ _Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, cons
 _Bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
 {
     X_EntityModelLoader loader;
+    loader.modelDest = model;
+    
     if(!x_entitymodelloader_load_model_from_file(&loader, fileName))
     {
         x_log_error("Failed to load model %s\n", fileName);
@@ -101,3 +163,11 @@ _Bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
     
     return 1;
 }
+
+void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest)
+{
+    dest->texels = model->skins[skinId].textures[textureId].texels;
+    dest->w = model->skinWidth;
+    dest->h = model->skinHeight;
+}
+

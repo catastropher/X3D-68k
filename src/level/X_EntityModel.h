@@ -15,8 +15,27 @@
 
 #pragma once
 
+#include "render/X_Texture.h"
+
+typedef struct X_EntitySkinTexture
+{
+    X_Color* texels;
+    x_fp16x16 displayDuration;
+} X_EntitySkinTexture;
+
+typedef struct X_EntitySkin
+{
+    int totalTextures;
+    X_EntitySkinTexture* textures;
+} X_EntitySkin;
+
 typedef struct X_EntityModel
 {
-    
+    int totalSkins;
+    X_EntitySkin* skins;
+    int skinWidth;
+    int skinHeight;
 } X_EntityModel;
+
+void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest);
 

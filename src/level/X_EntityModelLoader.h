@@ -26,7 +26,7 @@ typedef struct X_EntityModelHeader
     X_Vec3_fp16x16 origin;
     x_fp16x16 radius;
     X_Vec3_fp16x16 offsets;
-    int totalSkinTextures;
+    int totalSkins;
     int skinWidth;
     int skinHeight;
     int totalVertices;
@@ -37,13 +37,14 @@ typedef struct X_EntityModelHeader
     x_fp16x16 averageTriangleSize;
 } X_EntityModelHeader;
 
+struct X_EntityModel;
+
 typedef struct X_EntityModelLoader
 {
     X_File file;
     X_EntityModelHeader header;
+    struct X_EntityModel* modelDest;
 } X_EntityModelLoader;
-
-struct X_EntityModel;
 
 _Bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);
 
