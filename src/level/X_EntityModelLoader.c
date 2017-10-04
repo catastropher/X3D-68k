@@ -24,7 +24,7 @@ static _Bool read_header(X_EntityModelLoader* loader)
     
     header->id = x_file_read_le_int32(file);
     
-    unsigned int FILE_MAGIC_NUMBER = 'I' + ('D' << 8) + ('P' << 16) + ('Q' << 24);
+    unsigned int FILE_MAGIC_NUMBER = 'I' + ('D' << 8) + ('P' << 16) + ('O' << 24);
     if(header->id != FILE_MAGIC_NUMBER)
     {
         x_log_error("Bad model magic number (expected %u): %u\n", FILE_MAGIC_NUMBER, header->id);
