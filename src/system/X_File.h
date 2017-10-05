@@ -20,6 +20,7 @@
 #include <dirent.h>
 
 #include "geo/X_Vec3.h"
+#include "geo/X_Vec2.h"
 
 typedef enum X_FileFlags
 {
@@ -69,6 +70,8 @@ void x_file_read_fixed_length_str(X_File* file, int strLength, char* dest);
 void x_file_read_vec3(X_File* file, X_Vec3* dest);
 void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest);
 void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3_fp16x16* dest);
+
+void x_file_read_vec2(X_File* file, X_Vec2* dest);
 
 _Bool x_file_open_writing(X_File* file, const char* fileName);
 _Bool x_file_open_writing_create_path(X_File* file, const char* fileName);

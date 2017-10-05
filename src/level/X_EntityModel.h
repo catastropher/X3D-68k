@@ -30,12 +30,30 @@ typedef struct X_EntitySkin
     X_EntitySkinTexture* textures;
 } X_EntitySkin;
 
+typedef struct X_EntityTextureCoord
+{
+    X_Vec2 coord;
+    _Bool onSeam;
+} X_EntityTextureCoord;
+
+typedef struct X_EntityTriangle
+{
+    int vertexIds[3];
+    _Bool facesFront;
+} X_EntityTriangle;
+
 typedef struct X_EntityModel
 {
     int totalSkins;
     X_EntitySkin* skins;
     int skinWidth;
     int skinHeight;
+    
+    int totalTextureCoords;
+    X_EntityTextureCoord* textureCoords;
+    
+    int totalTriangles;
+    X_EntityTriangle* triangles;
 } X_EntityModel;
 
 _Bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);

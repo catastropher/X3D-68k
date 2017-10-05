@@ -115,6 +115,48 @@ static void read_skins(X_EntityModelLoader* loader)
         read_skin(loader, model->skins + i);
 }
 
+static void read_texture_coords(X_EntityModelLoader* loader)
+{
+    X_EntityModel* model = loader->modelDest;
+    
+    model->totalTextureCoords = loader->header.totalVertices;
+    model->textureCoords = x_malloc(sizeof(X_EntityTextureCoord) * model->totalTextureCoords);
+    
+    for(int i = 0; i < model->totalTextureCoords; ++i)
+    {
+        model->textureCoords[i].onSeam = x_file_read_le_int32(&loader->file);
+        x_file_read_vec2(&loader->file, &model->textureCoords[i].coord);
+    }
+}
+
+static void read_triangles(X_EntityModelLoader* loader)
+{
+    X_EntityModel* model = loader->modelDest;
+    
+    model->totalTriangles = loader->header.totalTriangles;
+    model->triangles = x_malloc(sizeof(X_EntityTriangle) * model->totalTriangles);
+    
+    for(int i = 0; i < model->totalTriangles; ++i)
+    {
+        model->triangles[i].facesFront = x_file_read_le_int32(&loader->file);
+        
+        for(int v = 0; v < 3; ++v)
+            model->triangles[i].vertexIds[v] = x_file_read_le_int32(&loader->file);
+    }
+}
+
+static _Bool read_contents(X_EntityModelLoader* loader)
+{
+    if(!read_header(loader))
+        return 0;
+    
+    read_skins(loader);
+    read_texture_coords(loader);
+    read_triangles(loader);
+    
+    return 1;
+}
+
 static void print_header(X_EntityModelHeader* header)
 {
     printf("Id: %X\n", header->id);
@@ -125,15 +167,6 @@ static void print_header(X_EntityModelHeader* header)
     printf("Total Triangles: %d\n", header->totalTriangles);
     printf("Total Frames: %d\n", header->totalFrames);
     printf("Total skins: %d\n", header->totalSkins);
-}
-
-static _Bool read_contents(X_EntityModelLoader* loader)
-{
-    if(!read_header(loader))
-        return 0;
-    
-    read_skins(loader);
-    return 1;
 }
 
 _Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName, X_EntityModel* dest)

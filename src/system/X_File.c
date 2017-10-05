@@ -317,6 +317,12 @@ void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3_fp16x16* dest)
     *dest = x_vec3_float_to_vec3_fp16x16(&v);
 }
 
+void x_file_read_vec2(X_File* file, X_Vec2* dest)
+{
+    dest->x = x_file_read_le_int32(file);
+    dest->y = x_file_read_le_int32(file);
+}
+
 _Bool x_file_open_writing(X_File* file, const char* fileName)
 {
     file->file = fopen(fileName, "wb");

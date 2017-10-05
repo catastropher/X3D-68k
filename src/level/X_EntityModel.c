@@ -49,5 +49,7 @@ void x_entitymodel_cleanup(X_EntityModel* model)
     }
     
     x_free(model->skins);
+    x_free(model->textureCoords);
+    x_free(model->triangles);
 }
 
