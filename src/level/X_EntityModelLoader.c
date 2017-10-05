@@ -145,6 +145,57 @@ static void read_triangles(X_EntityModelLoader* loader)
     }
 }
 
+static void read_vertex(X_File* file, X_EntityVertex* vertex)
+{
+    vertex->v.x = x_file_read_char(file);
+    vertex->v.y = x_file_read_char(file);
+    vertex->v.z = x_file_read_char(file);
+    vertex->normalIndex = x_file_read_char(file);
+}
+
+static void read_boundbox(X_File* file, X_EntityBoundBox* boundBox)
+{
+    read_vertex(file, &boundBox->min);
+    read_vertex(file, &boundBox->max);
+}
+
+static void read_frame(X_EntityModelLoader* loader, X_EntityFrame* frame)
+{
+    read_boundbox(&loader->file, &frame->boundBox);
+    x_file_read_buf(&loader->file, 16, frame->name);
+    
+    frame->vertices = x_malloc(sizeof(X_EntityVertex) * loader->header.totalVertices);
+    
+    printf("Frame name: %s\n", frame->name);
+    
+    for(int i = 0; i < loader->header.totalVertices; ++i)
+        read_vertex(&loader->file, frame->vertices + i);
+}
+
+static void read_frame_group(X_EntityModelLoader* loader, X_EntityFrameGroup* group)
+{
+    int partOfGroup = x_file_read_le_int32(&loader->file);
+    
+    printf("Part of group: %d\n", partOfGroup);
+    
+    if(partOfGroup)
+        exit(0);
+    
+    group->totalFrames = (partOfGroup ? x_file_read_le_int32(&loader->file) : 1);
+    
+    X_EntityFrame frame;
+    read_frame(loader, &frame);
+}
+
+static void read_frame_groups(X_EntityModelLoader* loader)
+{
+    for(int i = 0; i < loader->header.totalFrames; ++i)
+    {
+        X_EntityFrameGroup group;
+        read_frame_group(loader, &group);
+    }
+}
+
 static _Bool read_contents(X_EntityModelLoader* loader)
 {
     if(!read_header(loader))
@@ -153,6 +204,7 @@ static _Bool read_contents(X_EntityModelLoader* loader)
     read_skins(loader);
     read_texture_coords(loader);
     read_triangles(loader);
+    read_frame_groups(loader);
     
     return 1;
 }

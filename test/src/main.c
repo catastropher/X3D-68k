@@ -27,7 +27,7 @@
 void gameloop(Context* context)
 {
     X_EntityModel model;
-    x_entitymodel_load_from_file(&model, "ogre.mdl");
+    x_entitymodel_load_from_file(&model, "player.mdl");
     
     while(!context->quit)
     {

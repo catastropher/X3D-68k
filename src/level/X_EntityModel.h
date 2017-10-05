@@ -16,7 +16,7 @@
 #pragma once
 
 #include "render/X_Texture.h"
-#include "math/X_fix.h"
+#include "geo/X_Vec3.h"
 
 typedef struct X_EntitySkinTexture
 {
@@ -42,6 +42,33 @@ typedef struct X_EntityTriangle
     _Bool facesFront;
 } X_EntityTriangle;
 
+typedef struct X_EntityVertex
+{
+    X_Vec3_fp16x16 v;
+    int normalIndex;
+} X_EntityVertex;
+
+typedef struct X_EntityBoundBox
+{
+    X_EntityVertex min;
+    X_EntityVertex max;
+} X_EntityBoundBox;
+
+typedef struct X_EntityFrame
+{
+    X_EntityBoundBox boundBox;
+    char name[16];
+    X_EntityVertex* vertices;
+} X_EntityFrame;
+
+typedef struct X_EntityFrameGroup
+{
+    int totalFrames;
+    X_EntityFrame* frames;
+    X_EntityBoundBox boundBox;
+    x_fp16x16 displayDuration;
+} X_EntityFrameGroup;
+
 typedef struct X_EntityModel
 {
     int totalSkins;
@@ -54,6 +81,9 @@ typedef struct X_EntityModel
     
     int totalTriangles;
     X_EntityTriangle* triangles;
+    
+    int totalFrameGroups;
+    X_EntityFrameGroup* frameGroups;
 } X_EntityModel;
 
 _Bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);
