@@ -27,7 +27,7 @@
 void gameloop(Context* context)
 {
     X_EntityModel model;
-    x_entitymodel_load_from_file(&model, "armor.mdl");
+    x_entitymodel_load_from_file(&model, "ogre.mdl");
     
     while(!context->quit)
     {
@@ -43,6 +43,8 @@ void gameloop(Context* context)
         handle_keys(context);        
         screen_update(context);
     }
+    
+    x_entitymodel_cleanup(&model);
 }
 
 int main(int argc, char* argv[])

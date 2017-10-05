@@ -61,6 +61,7 @@ set(X3D_SOURCES
     # level
     src/level/X_BspLevel.c
     src/level/X_BspLevelLoader.c
+    src/level/X_EntityModel.c
     src/level/X_EntityModelLoader.c
     
     # math

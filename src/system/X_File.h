@@ -25,7 +25,7 @@ typedef enum X_FileFlags
 {
     X_FILE_OPEN_FOR_READING = 1,
     X_FILE_OPEN_FOR_WRITING = 2,
-    X_FILE_OPEN_IN_MEM = 3
+    X_FILE_OPEN_IN_MEM = 4
 } X_FileFlags;
 
 typedef struct X_File

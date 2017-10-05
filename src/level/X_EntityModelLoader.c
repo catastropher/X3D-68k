@@ -89,7 +89,6 @@ static void read_skin_texture_texels(X_EntityModelLoader* loader, X_EntitySkin* 
 
 static void read_skin(X_EntityModelLoader* loader, X_EntitySkin* skin)
 {
-    X_EntityModel* model = loader->modelDest;
     X_File* file = &loader->file;
     
     int totalGroups = x_file_read_le_int32(file);
@@ -137,37 +136,16 @@ static _Bool read_contents(X_EntityModelLoader* loader)
     return 1;
 }
 
-_Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName)
+_Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName, X_EntityModel* dest)
 {
     if(!x_file_open_reading(&loader->file, fileName))
         return 0;
     
+    loader->modelDest = dest;
     _Bool success = read_contents(loader);
     print_header(&loader->header);
     
     x_file_close(&loader->file);
     return success;
-}
-
-
-_Bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
-{
-    X_EntityModelLoader loader;
-    loader.modelDest = model;
-    
-    if(!x_entitymodelloader_load_model_from_file(&loader, fileName))
-    {
-        x_log_error("Failed to load model %s\n", fileName);
-        return 0;
-    }
-    
-    return 1;
-}
-
-void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest)
-{
-    dest->texels = model->skins[skinId].textures[textureId].texels;
-    dest->w = model->skinWidth;
-    dest->h = model->skinHeight;
 }
 

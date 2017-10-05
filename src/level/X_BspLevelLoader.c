@@ -847,6 +847,8 @@ static void x_bsplevelloader_cleanup(X_BspLevelLoader* level)
     x_free(level->textures);
     x_free(level->textureTexels);
     x_free(level->vertices);
+    
+    x_file_close(&level->file);
 }
 
 _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)

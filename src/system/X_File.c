@@ -127,7 +127,8 @@ _Bool x_file_open_reading(X_File* file, const char* fileName)
     }
     
     x_log("Opened file '%s' for reading", fileName);
-    file->flags = X_FILE_OPEN_FOR_READING;
+    file->flags |= X_FILE_OPEN_FOR_READING;
+    
     determine_file_size(file);
     
     return 1;
@@ -141,16 +142,17 @@ void x_file_close(X_File* file)
         return;
     }
     
-    fclose(file->file);
-    file->file = NULL;
-    file->flags = 0;
-    file->size = 0;
-    
     if(file->flags & X_FILE_OPEN_IN_MEM)
     {
         x_free(file->buffer);
-        file->buffer = 0;
+        file->buffer = NULL;
     }
+    
+    file->flags = 0;
+    file->size = 0;
+    
+    fclose(file->file);
+    file->file = NULL;
 }
 
 unsigned char* x_file_read_contents(const char* fileName)
@@ -541,6 +543,7 @@ _Bool x_file_open_from_packfile(X_File* file, const char* fileName)
             
             file->buffer = fileContents;
             file->flags = X_FILE_OPEN_FOR_READING | X_FILE_OPEN_IN_MEM;
+            
             return 1;
         }
     }
