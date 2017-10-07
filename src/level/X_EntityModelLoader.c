@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <ctype.h>
+
 #include "X_EntityModelLoader.h"
 #include "X_EntityModel.h"
 #include "error/X_log.h"
@@ -204,6 +206,46 @@ static void read_frame_groups(X_EntityModelLoader* loader)
         read_frame_group(loader, model->frameGroups + i);
 }
 
+static _Bool split_frame_name_into_base_and_number(const char* frameName, char* baseName, char* frameNumber)
+{
+    const char* frameNumberStart = frameName + strlen(frameName) - 1;
+    
+    while(isdigit(*frameNumberStart))
+        --frameNumberStart;
+    
+    strcpy(frameNumber, frameNumberStart + 1);
+    
+    while(frameName <= frameNumberStart)
+        *baseName++ = *frameName++;
+
+    *baseName = '\0';
+    
+    return *frameNumber != '\0';
+}
+
+static void stitch_frames_into_animations(X_EntityModel* model)
+{
+    char baseName[16];
+    char frameNumber[16];
+    
+    for(int i = 1; i < model->totalFrameGroups; ++i)
+    {
+        X_EntityFrame* frame = model->frameGroups[i].frames + 0;
+        frame->nextInSequence = NULL;
+        
+        if(!split_frame_name_into_base_and_number(frame->name, baseName, frameNumber))
+            continue;
+        
+        char previousFrameName[20];
+        sprintf(previousFrameName, "%s%d", baseName, atoi(frameNumber) - 1);
+        
+        X_EntityFrame* prevFrame = model->frameGroups[i - 1].frames + 0;
+        
+        if(strcmp(prevFrame->name, previousFrameName) == 0)
+            prevFrame->nextInSequence = frame;
+    }
+}
+
 static _Bool read_contents(X_EntityModelLoader* loader)
 {
     if(!read_header(loader))
@@ -213,6 +255,8 @@ static _Bool read_contents(X_EntityModelLoader* loader)
     read_texture_coords(loader);
     read_triangles(loader);
     read_frame_groups(loader);
+    
+    stitch_frames_into_animations(loader->modelDest);
     
     return 1;
 }

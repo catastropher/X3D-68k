@@ -88,6 +88,13 @@ X_EntityFrame* x_entitymodel_get_frame(X_EntityModel* model, const char* frameNa
     return NULL;
 }
 
+X_EntityFrame* x_entitymodel_get_animation_start_frame(X_EntityModel* model, const char* animationName)
+{
+    char startFrameName[20];
+    sprintf(startFrameName, "%s1", animationName);
+    return x_entitymodel_get_frame(model, startFrameName);
+}
+
 void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3_fp16x16 pos, X_Color color, X_RenderContext* renderContext)
 {
     for(X_EntityTriangle* triangle = model->triangles; triangle < model->triangles + model->totalTriangles; ++triangle)

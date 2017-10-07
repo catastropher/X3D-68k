@@ -94,6 +94,7 @@ void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textur
 void x_entitymodel_cleanup(X_EntityModel* model);
 
 X_EntityFrame* x_entitymodel_get_frame(X_EntityModel* model, const char* frameName);
+X_EntityFrame* x_entitymodel_get_animation_start_frame(X_EntityModel* model, const char* animationName);
 
 struct X_RenderContext;
 

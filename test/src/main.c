@@ -32,6 +32,8 @@ void gameloop(Context* context)
     int frameId = 0;
     int count = 0;
     
+    X_EntityFrame* frame = NULL;
+    
     while(!context->quit)
     {
         render(context);
@@ -49,16 +51,14 @@ void gameloop(Context* context)
         if(++count == 10)
         {
             count = 0;
-            frameId = (frameId + 1) % 8;
+            frame = frame->nextInSequence;
         }
         
-        char name[16];
-        sprintf(name, "run%d", frameId + 1);
-        
-        X_EntityFrame* frame = x_entitymodel_get_frame(&model, name);
+        if(!frame)
+            frame = x_entitymodel_get_animation_start_frame(&model, "swing");
         
         if(!frame)
-            x_system_error("No such frame %s", name);
+            x_system_error("No such frame");
         
         x_entitymodel_draw_frame_wireframe(&model, frame, x_vec3_make(0, 0, 0), 255, &renderContext);
         
