@@ -285,3 +285,9 @@ static inline X_Vec3_fp16x16 x_vec3_float_to_vec3_fp16x16(const X_Vec3_float* v)
     return x_vec3_make(v->x * 65536, v->y * 65536, v->z * 65536);
 }
 
+static inline X_Vec3 x_vec3_convert_quake_coord_to_x3d_coord(const X_Vec3* v)
+{
+    return x_vec3_make(v->y, -v->z, -v->x);
+}
+
+

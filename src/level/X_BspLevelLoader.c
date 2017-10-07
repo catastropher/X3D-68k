@@ -30,6 +30,7 @@ static X_Vec3_float x_bsplevelloader_convert_coordinate_float(const X_Vec3_float
     return x_vec3_float_make(v->y, -v->z, -v->x);
 }
 
+// TODO: replace with new version in X_Vec3.h
 static X_Vec3 x_bsplevelloader_convert_coordinate(const X_Vec3* v)
 {
     return x_vec3_make(v->y, -v->z, -v->x);

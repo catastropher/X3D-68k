@@ -27,18 +27,40 @@
 void gameloop(Context* context)
 {
     X_EntityModel model;
-    x_entitymodel_load_from_file(&model, "player.mdl");
+    x_entitymodel_load_from_file(&model, "ogre.mdl");
+    
+    int frameId = 0;
+    int count = 0;
     
     while(!context->quit)
     {
         render(context);
         
-        for(int i = 0; i < model.totalSkins; ++i)
+//         for(int i = 0; i < model.totalSkins; ++i)
+//         {
+//             X_Texture skinTex;
+//             x_entitymodel_get_skin_texture(&model, 0, 0, &skinTex);
+//             x_canvas_blit_texture(&context->engineContext->screen.canvas, &skinTex, x_vec2_make(0, i * model.skinHeight));
+//         }
+        
+        X_RenderContext renderContext;
+        x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
+        
+        if(++count == 10)
         {
-            X_Texture skinTex;
-            x_entitymodel_get_skin_texture(&model, 0, 0, &skinTex);
-            x_canvas_blit_texture(&context->engineContext->screen.canvas, &skinTex, x_vec2_make(0, i * model.skinHeight));
+            count = 0;
+            frameId = (frameId + 1) % 8;
         }
+        
+        char name[16];
+        sprintf(name, "run%d", frameId + 1);
+        
+        X_EntityFrame* frame = x_entitymodel_get_frame(&model, name);
+        
+        if(!frame)
+            x_system_error("No such frame %s", name);
+        
+        x_entitymodel_draw_frame_wireframe(&model, frame, x_vec3_make(0, 0, 0), 255, &renderContext);
         
         handle_keys(context);        
         screen_update(context);

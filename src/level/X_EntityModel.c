@@ -18,6 +18,9 @@
 #include "error/X_log.h"
 #include "error/X_error.h"
 
+#include "render/X_RenderContext.h"
+#include "geo/X_Ray3.h"
+
 _Bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
 {
     X_EntityModelLoader loader;
@@ -27,6 +30,8 @@ _Bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
         x_log_error("Failed to load model %s\n", fileName);
         return 0;
     }
+    
+    x_log("Loaded model %s", model->name);
     
     return 1;
 }
@@ -51,5 +56,56 @@ void x_entitymodel_cleanup(X_EntityModel* model)
     x_free(model->skins);
     x_free(model->textureCoords);
     x_free(model->triangles);
+    
+    for(int i = 0; i < model->totalFrameGroups; ++i)
+    {
+        X_EntityFrameGroup* group = model->frameGroups + i;
+        for(int frameId = 0; frameId < group->totalFrames; ++frameId)
+        {
+            X_EntityFrame* frame = group->frames + frameId;
+            x_free(frame->vertices);
+        }
+        
+        x_free(group->frames);
+    }
+    
+    x_free(model->frameGroups);
+}
+
+X_EntityFrame* x_entitymodel_get_frame(X_EntityModel* model, const char* frameName)
+{
+    for(int i = 0; i < model->totalFrameGroups; ++i)
+    {
+        X_EntityFrameGroup* group = model->frameGroups + i;
+        
+        for(int frameId = 0; frameId < group->totalFrames; ++frameId)
+        {
+            if(strcmp(group->frames[frameId].name, frameName) == 0)
+                return group->frames + frameId;
+        }
+    }
+    
+    return NULL;
+}
+
+void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3_fp16x16 pos, X_Color color, X_RenderContext* renderContext)
+{
+    for(X_EntityTriangle* triangle = model->triangles; triangle < model->triangles + model->totalTriangles; ++triangle)
+    {
+        X_Vec3_fp16x16 v[3];
+        X_EntityVertex* vertices[3];
+        
+        for(int i = 0; i < 3; ++i)
+        {
+            vertices[i] = frame->vertices + triangle->vertexIds[i];
+            v[i] = x_vec3_add(&vertices[i]->v, &pos);
+        }
+        
+        for(int i = 0; i < 3; ++i)
+        {
+            X_Ray3_fp16x16 ray = x_ray3_make(x_vec3_fp16x16_to_vec3(&v[i]), x_vec3_fp16x16_to_vec3(&v[(i + 1) % 3]));
+            x_ray3d_render(&ray, renderContext, color);
+        }
+    }
 }
 

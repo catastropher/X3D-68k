@@ -16,6 +16,8 @@
 #include "X_EntityModelLoader.h"
 #include "X_EntityModel.h"
 #include "error/X_log.h"
+#include "error/X_error.h"
+#include "util/X_util.h"
 
 static _Bool read_header(X_EntityModelLoader* loader)
 {
@@ -147,9 +149,12 @@ static void read_triangles(X_EntityModelLoader* loader)
 
 static void read_vertex(X_File* file, X_EntityVertex* vertex)
 {
-    vertex->v.x = x_file_read_char(file);
-    vertex->v.y = x_file_read_char(file);
-    vertex->v.z = x_file_read_char(file);
+    vertex->v.x = x_fp16x16_from_int(x_file_read_char(file));
+    vertex->v.y = x_fp16x16_from_int(x_file_read_char(file));
+    vertex->v.z = x_fp16x16_from_int(x_file_read_char(file));
+    vertex->v = x_vec3_convert_quake_coord_to_x3d_coord(&vertex->v);
+    
+    
     vertex->normalIndex = x_file_read_char(file);
 }
 
@@ -174,26 +179,29 @@ static void read_frame(X_EntityModelLoader* loader, X_EntityFrame* frame)
 
 static void read_frame_group(X_EntityModelLoader* loader, X_EntityFrameGroup* group)
 {
-    int partOfGroup = x_file_read_le_int32(&loader->file);
-    
-    printf("Part of group: %d\n", partOfGroup);
-    
-    if(partOfGroup)
-        exit(0);
+    _Bool partOfGroup = x_file_read_le_int32(&loader->file);
     
     group->totalFrames = (partOfGroup ? x_file_read_le_int32(&loader->file) : 1);
+    group->frames = x_malloc(sizeof(X_EntityFrame) * group->totalFrames);
+
+    if(group->totalFrames != 1)
+    {
+        x_system_error("Model %s has a frame group, which is not supported yet (group size = %d)", loader->modelDest->name, group->totalFrames);
+    }
     
-    X_EntityFrame frame;
-    read_frame(loader, &frame);
+    for(int i = 0; i < group->totalFrames; ++i)
+        read_frame(loader, group->frames + i);
 }
 
 static void read_frame_groups(X_EntityModelLoader* loader)
 {
+    X_EntityModel* model = loader->modelDest;
+    
+    model->totalFrameGroups = loader->header.totalFrames;
+    model->frameGroups = x_malloc(sizeof(X_EntityFrameGroup) * model->totalFrameGroups);
+    
     for(int i = 0; i < loader->header.totalFrames; ++i)
-    {
-        X_EntityFrameGroup group;
-        read_frame_group(loader, &group);
-    }
+        read_frame_group(loader, model->frameGroups + i);
 }
 
 static _Bool read_contents(X_EntityModelLoader* loader)
@@ -223,6 +231,10 @@ static void print_header(X_EntityModelHeader* header)
 
 _Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName, X_EntityModel* dest)
 {
+    char modelName[256];
+    x_filepath_extract_filename(fileName, modelName);
+    x_strncpy(dest->name, modelName, sizeof(dest->name) - 1);
+    
     if(!x_file_open_reading(&loader->file, fileName))
         return 0;
     
@@ -231,6 +243,7 @@ _Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, cons
     print_header(&loader->header);
     
     x_file_close(&loader->file);
+    
     return success;
 }
 
