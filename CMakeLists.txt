@@ -91,6 +91,7 @@ set(X3D_SOURCES
     src/render/X_span.c
     src/render/X_Surface.c
     src/render/X_Texture.c
+    src/render/X_TriangleFiller.c
     src/render/X_Viewport.c
         
     # system
