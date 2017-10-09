@@ -20,6 +20,7 @@
 
 #include "render/X_RenderContext.h"
 #include "geo/X_Ray3.h"
+#include "geo/X_Polygon3.h"
 
 _Bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
 {
@@ -115,4 +116,20 @@ void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* fra
         }
     }
 }
+
+void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, X_RenderContext* renderContext)
+{
+    for(int i = 0; i < model->totalTriangles; ++i)
+    {
+        X_Vec3 v[3];
+        X_Polygon3 poly = x_polygon3_make(v, 3);
+        X_EntityTriangle* tri = model->triangles + i;
+        
+        for(int j = 0; j < 3; ++j)
+            v[j] = x_vec3_fp16x16_to_vec3(&frame->vertices[tri->vertexIds[j]].v);
+        
+        x_polygon3_render_flat_shaded(&poly, renderContext, i);
+    }
+}
+
 

@@ -16,6 +16,7 @@
 #include "X_Polygon3.h"
 #include "X_Plane.h"
 #include "X_Ray3.h"
+#include "render/X_TriangleFiller.h"
 
 _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest)
 {
@@ -252,4 +253,34 @@ void x_polygon3_fp16x16_to_polygon3(const X_Polygon3_fp16x16* poly, X_Polygon3* 
     for(int i = 0; i < poly->totalVertices; ++i)
         poly->vertices[i] = x_vec3_fp16x16_to_vec3(poly->vertices + i);
 }
+
+void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color)
+{
+    X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
+    X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
+    
+    if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
+        return;
+    
+    if(clipped.totalVertices != 3)
+        return;
+    
+    X_Vec2 projectedV[3];
+    
+    for(int i = 0; i < 3; ++i)
+    {
+        X_Vec3 transformed;
+        x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
+        x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, projectedV + i);
+    }
+    
+    X_TriangleFiller filler;
+    x_trianglefiller_init(&filler, renderContext);
+    
+    for(int i = 0; i < 3; ++i)
+        x_trianglefiller_set_flat_shaded_vertex(&filler, i, projectedV[i]);
+    
+    x_trianglefiller_fill_flat_shaded(&filler, color);
+}
+
 

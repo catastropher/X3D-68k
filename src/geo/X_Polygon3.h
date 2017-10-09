@@ -34,6 +34,8 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const struct X_Plane* plan
 _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest);
 
 void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color);
+void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color);
+
 void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest);
 
 _Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest);

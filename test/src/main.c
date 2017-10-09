@@ -47,7 +47,15 @@ void gameloop(Context* context)
         
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
+
+        X_Vec3 v[3] = 
+        {
+            x_vec3_make(0, 0, 0),
+            x_vec3_make(200, 0, 0),
+            x_vec3_make(200, -200, 0),
+        };
         
+                
         if(++count == 10)
         {
             count = 0;
@@ -60,7 +68,9 @@ void gameloop(Context* context)
         if(!frame)
             x_system_error("No such frame");
         
-        x_entitymodel_draw_frame_wireframe(&model, frame, x_vec3_make(0, 0, 0), 255, &renderContext);
+        //x_entitymodel_draw_frame_wireframe(&model, frame, x_vec3_make(0, 0, 0), 255, &renderContext);
+        x_entitymodel_render_flat_shaded(&model, frame, &renderContext);
+        
         
         handle_keys(context);        
         screen_update(context);

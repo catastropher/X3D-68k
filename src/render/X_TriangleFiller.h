@@ -22,9 +22,8 @@
 
 typedef enum X_TriangleFillerType
 {
-    X_TRIANGLE_FLAT_TOP = 0,
-    X_TRIANGLE_FLAT_BOTTOM = 1,
-    X_TRIANGLE_GENERIC = 2
+    X_TRIANGLE_FLAT = 0,
+    X_TRIANGLE_GENERIC = 1
 } X_TriangleFillerType;
 
 typedef struct X_TriangleFillerVertex
@@ -59,4 +58,12 @@ typedef struct X_TriangleFiller
     
     X_RenderContext* renderContext;
 } X_TriangleFiller;
+
+void x_trianglefiller_fill_flat_shaded(X_TriangleFiller* filler, X_Color color);
+void x_trianglefiller_init(X_TriangleFiller* filler, X_RenderContext* renderContext);
+
+static inline void x_trianglefiller_set_flat_shaded_vertex(X_TriangleFiller* filler, int vertexId, X_Vec2 vertex)
+{
+    filler->vertices[vertexId].v = vertex;
+}
 
