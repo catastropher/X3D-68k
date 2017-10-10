@@ -169,21 +169,3 @@ void x_trianglefiller_init(X_TriangleFiller* filler, X_RenderContext* renderCont
     filler->y = 0xFFFF;
 }
 
-void test_triangle_filler(X_RenderContext* renderContext)
-{
-    X_TriangleFiller filler;
-    x_trianglefiller_init(&filler, renderContext);
-    
-    X_Vec2 v[3] =
-    {
-        x_vec2_make(10, 10),
-        x_vec2_make(100, 50),
-        x_vec2_make(50, 300)
-    };
-    
-    for(int i = 0; i < 3; ++i)
-        x_trianglefiller_set_flat_shaded_vertex(&filler, i, v[i]);
-        
-    x_trianglefiller_fill_flat_shaded(&filler, 255);
-}
-
