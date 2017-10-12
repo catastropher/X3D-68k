@@ -18,6 +18,7 @@
 #include "X_Texture.h"
 #include "memory/X_alloc.h"
 #include "X_Font.h"
+#include "math/X_fix.h"
 
 #define X_ZBUF_FURTHEST_VALUE 0
 
@@ -27,7 +28,7 @@
 typedef struct X_Canvas
 {
     X_Texture tex;      ///< Internal texture everything gets drawn to
-    short* zbuf;        ///< Z-buffer
+    x_fp0x16* zbuf;        ///< Z-buffer
 } X_Canvas;
 
 void x_canvas_clamp_vec2(const X_Canvas* canvas, X_Vec2* v);
@@ -100,7 +101,7 @@ static inline void x_canvas_cleanup(X_Canvas* canvas)
 ////////////////////////////////////////////////////////////////////////////////
 static inline void x_canvas_zbuf_clear(X_Canvas* canvas)
 {
-    memset(canvas->tex.texels, X_ZBUF_FURTHEST_VALUE, x_canvas_zbuf_size(canvas));
+    memset(canvas->zbuf, X_ZBUF_FURTHEST_VALUE, x_canvas_zbuf_size(canvas));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

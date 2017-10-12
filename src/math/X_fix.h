@@ -19,6 +19,7 @@ typedef int x_fp16x16;
 typedef int x_fp24x8;
 typedef long long int x_fp32x32;
 typedef int x_fp2x30;
+typedef short x_fp0x16;
 
 #define X_FP16x16_ONE 0x10000
 #define X_FP16x16_HALF (X_FP16x16_ONE / 2)

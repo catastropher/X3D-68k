@@ -15,16 +15,39 @@
 
 #include "X_TriangleFiller.h"
 
-static void fill_solid_span(X_RenderContext* context, x_fp16x16 left, x_fp16x16 right, int y, X_Color color)
+static void fill_solid_span(X_RenderContext* context, X_TriangleFillerEdge* left, X_TriangleFillerEdge* right, int y, X_Color color)
 {
-    int leftPixel = x_fp16x16_to_int(left);
-    int rightPixel = x_fp16x16_to_int(right);
-
-    if(y < 0)
+    int leftX = x_fp16x16_to_int(left->x);
+    int rightX = x_fp16x16_to_int(right->x);
+    int dx = rightX - leftX;
+    
+    if(dx <= 0)
         return;
     
-    for(int i = leftPixel; i <= rightPixel; ++i)
-        x_texture_set_texel(&context->screen->canvas.tex, i, y, color);
+    x_fp16x16 z = left->z;
+    x_fp16x16 dZ = (right->z - left->z) / dx;
+    
+    int screenW = x_screen_w(context->screen);
+    int screenH = x_screen_h(context->screen);
+    
+    x_fp0x16* zbuf = context->screen->canvas.zbuf + y * screenW;
+    
+    if(leftX < 0 || rightX >= screenW)
+        return;
+    
+    if(y < 0 || y >= screenH)
+        return;
+    
+    for(int i = leftX; i < rightX; ++i)
+    {
+        if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
+        {
+            x_texture_set_texel(&context->screen->canvas.tex, i, y, color);
+            zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
+        }
+        
+        z += dZ;
+    }
         
 }
 
@@ -35,9 +58,14 @@ static void fill_flat_shaded_draw_half(X_TriangleFiller* filler)
     
     while(filler->y < filler->endY)
     {
-        fill_solid_span(filler->renderContext, leftEdge->x, rightEdge->x, filler->y, filler->fillColor);
+        fill_solid_span(filler->renderContext, leftEdge, rightEdge, filler->y, filler->fillColor);
+        
         leftEdge->x += leftEdge->xSlope;
+        leftEdge->z += leftEdge->zSlope;
+        
         rightEdge->x += rightEdge->xSlope;
+        rightEdge->z += rightEdge->zSlope;
+        
         ++filler->y;
     }
 }
@@ -95,8 +123,13 @@ static void init_edge_slopes(X_TriangleFillerEdge* edge, X_TriangleFillerVertex*
     if(a->v.y > b->v.y)
         X_SWAP(a, b);
     
+    int dy = b->v.y - a->v.y;
     edge->x = x_fp16x16_from_int(a->v.x) + X_FP16x16_HALF;
-    edge->xSlope = x_int_div_as_fp16x16(b->v.x - a->v.x, b->v.y - a->v.y);
+    edge->xSlope = x_int_div_as_fp16x16(b->v.x - a->v.x, dy);
+    
+    edge->z = a->z;
+    edge->zSlope = (b->z - a->z) / dy;
+    
     edge->endY = b->v.y;
 }
 

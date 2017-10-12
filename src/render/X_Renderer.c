@@ -307,10 +307,16 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
     x_ae_context_scan_edges(&renderer->activeEdgeContext);
 }
 
+static void clear_zbuffer(X_EngineContext* engineContext)
+{
+    x_canvas_zbuf_clear(&engineContext->screen.canvas);
+}
+
 void x_renderer_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
     x_renderer_begin_frame(&engineContext->renderer, engineContext);
+    clear_zbuffer(engineContext);
     fill_with_background_color(engineContext);
     mark_lights(engineContext);
     

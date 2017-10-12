@@ -56,10 +56,13 @@ void gameloop(Context* context)
         };
         
                 
-        if(++count == 10)
+        if(key_is_down(SDLK_RETURN))
         {
-            count = 0;
-            frame = frame->nextInSequence;
+            if(++count == 10)
+            {
+                count = 0;
+                frame = frame->nextInSequence;
+            }
         }
         
         if(!frame)
