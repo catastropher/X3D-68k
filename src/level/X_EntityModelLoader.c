@@ -149,26 +149,30 @@ static void read_triangles(X_EntityModelLoader* loader)
     }
 }
 
-static void read_vertex(X_File* file, X_EntityVertex* vertex)
+static void read_vertex(X_File* file, X_EntityVertex* vertex, X_Vec3_fp16x16 scale, X_Vec3_fp16x16 translation)
 {
     vertex->v.x = x_fp16x16_from_int(x_file_read_char(file));
     vertex->v.y = x_fp16x16_from_int(x_file_read_char(file));
     vertex->v.z = x_fp16x16_from_int(x_file_read_char(file));
-    vertex->v = x_vec3_convert_quake_coord_to_x3d_coord(&vertex->v);
     
+    vertex->v.x = x_fp16x16_mul(vertex->v.x, scale.x) + translation.x;
+    vertex->v.y = x_fp16x16_mul(vertex->v.y, scale.x) + translation.y;
+    vertex->v.z = x_fp16x16_mul(vertex->v.z, scale.x) + translation.z;
+    
+    vertex->v = x_vec3_convert_quake_coord_to_x3d_coord(&vertex->v);
     
     vertex->normalIndex = x_file_read_char(file);
 }
 
-static void read_boundbox(X_File* file, X_EntityBoundBox* boundBox)
+static void read_boundbox(X_File* file, X_EntityBoundBox* boundBox, X_Vec3_fp16x16 scale, X_Vec3_fp16x16 translation)
 {
-    read_vertex(file, &boundBox->min);
-    read_vertex(file, &boundBox->max);
+    read_vertex(file, &boundBox->min, scale, translation);
+    read_vertex(file, &boundBox->max, scale, translation);
 }
 
 static void read_frame(X_EntityModelLoader* loader, X_EntityFrame* frame)
 {
-    read_boundbox(&loader->file, &frame->boundBox);
+    read_boundbox(&loader->file, &frame->boundBox, loader->header.scale, loader->header.origin);
     x_file_read_buf(&loader->file, 16, frame->name);
     
     frame->vertices = x_malloc(sizeof(X_EntityVertex) * loader->header.totalVertices);
@@ -176,7 +180,7 @@ static void read_frame(X_EntityModelLoader* loader, X_EntityFrame* frame)
     printf("Frame name: %s\n", frame->name);
     
     for(int i = 0; i < loader->header.totalVertices; ++i)
-        read_vertex(&loader->file, frame->vertices + i);
+        read_vertex(&loader->file, frame->vertices + i, loader->header.scale, loader->header.origin);
 }
 
 static void read_frame_group(X_EntityModelLoader* loader, X_EntityFrameGroup* group)

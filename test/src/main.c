@@ -27,7 +27,7 @@
 void gameloop(Context* context)
 {
     X_EntityModel model;
-    x_entitymodel_load_from_file(&model, "player.mdl");
+    x_entitymodel_load_from_file(&model, "knight.mdl");
     
     int frameId = 0;
     int count = 0;
@@ -62,7 +62,7 @@ void gameloop(Context* context)
         }
         
         if(!frame)
-            frame = x_entitymodel_get_animation_start_frame(&model, "rockatt");
+            frame = x_entitymodel_get_animation_start_frame(&model, "runattack");
         
         if(!frame)
             x_system_error("No such frame");
