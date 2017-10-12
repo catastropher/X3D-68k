@@ -30,6 +30,8 @@ typedef struct X_TriangleFillerVertex
 {
     X_Vec2 v;
     x_fp16x16 z;
+    
+    X_Vec2 textureCoord;
 } X_TriangleFillerVertex;
 
 typedef struct X_TriangleFillerEdge
@@ -40,6 +42,12 @@ typedef struct X_TriangleFillerEdge
     x_fp16x16 z;
     x_fp16x16 zSlope;
     
+    x_fp16x16 u;
+    x_fp16x16 uSlope;
+    
+    x_fp16x16 v;
+    x_fp16x16 vSlope;
+    
     int endY;
 } X_TriangleFillerEdge;
 
@@ -49,6 +57,8 @@ typedef struct X_TriangleFiller
     X_TriangleFillerType type;
     
     X_Color fillColor;
+    X_Texture* fillTexture;
+    
     int y;
     int endY;
     
@@ -62,9 +72,12 @@ typedef struct X_TriangleFiller
     X_TriangleFillerEdge* middleStartingEdge;
     
     X_RenderContext* renderContext;
+    
+    void (*drawSpan)(struct X_TriangleFiller*);
 } X_TriangleFiller;
 
 void x_trianglefiller_fill_flat_shaded(X_TriangleFiller* filler, X_Color color);
+void x_trianglefiller_fill_textured(X_TriangleFiller* filler, X_Texture* texture);
 void x_trianglefiller_init(X_TriangleFiller* filler, X_RenderContext* renderContext);
 
 #define X_TRIANGLEFILLER_EXTRA_PRECISION 4
@@ -73,5 +86,12 @@ static inline void x_trianglefiller_set_flat_shaded_vertex(X_TriangleFiller* fil
 {
     filler->vertices[vertexId].v = vertex;
     filler->vertices[vertexId].z = (X_FP16x16_ONE << X_TRIANGLEFILLER_EXTRA_PRECISION) / z;
+}
+
+static inline void x_trianglefiller_set_textured_vertex(X_TriangleFiller* filler, int vertexId, X_Vec2 vertex, int z, X_Vec2 textureCoord)
+{
+    filler->vertices[vertexId].v = vertex;
+    filler->vertices[vertexId].z = (X_FP16x16_ONE << X_TRIANGLEFILLER_EXTRA_PRECISION) / z;
+    filler->vertices[vertexId].textureCoord = textureCoord;
 }
 

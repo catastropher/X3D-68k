@@ -285,12 +285,41 @@ void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderCont
     if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
         return;
     
-    x_fp16x16 dir = 46340;
-    X_Vec3_fp16x16 light = {  dir, -dir, 0 }; 
-    
-    int shade = X_MAX(0, x_vec3_fp16x16_dot(&plane.normal, &light)) / (65536 / 16);
-    
     x_trianglefiller_fill_flat_shaded(&filler, color);
+}
+
+void x_polygon3_render_textured(X_Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, X_Vec2 textureCoords[3])
+{
+    X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
+    X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
+    
+    if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
+        return;
+    
+    if(clipped.totalVertices != 3)
+        return;
+    
+    X_TriangleFiller filler;
+    x_trianglefiller_init(&filler, renderContext);
+    
+    for(int i = 0; i < 3; ++i)
+    {
+        X_Vec3 transformed;
+        x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
+        
+        X_Vec2 projected;
+        x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, &projected);
+        
+        x_trianglefiller_set_textured_vertex(&filler, i, projected, transformed.z, textureCoords[i]);
+    }
+    
+//     X_Plane plane;
+//     x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
+//     
+//     if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
+//         return;
+//     
+    x_trianglefiller_fill_textured(&filler, texture);
 }
 
 

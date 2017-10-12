@@ -15,8 +15,13 @@
 
 #include "X_TriangleFiller.h"
 
-static void fill_solid_span(X_RenderContext* context, X_TriangleFillerEdge* left, X_TriangleFillerEdge* right, int y, X_Color color)
+static void fill_solid_span(X_TriangleFiller* filler)
 {
+    int y = filler->y;
+    X_TriangleFillerEdge* left = filler->leftEdge;
+    X_TriangleFillerEdge* right = filler->rightEdge;
+    X_RenderContext* renderContext = filler->renderContext;
+    
     int leftX = x_fp16x16_to_int(left->x);
     int rightX = x_fp16x16_to_int(right->x);
     int dx = rightX - leftX;
@@ -27,10 +32,10 @@ static void fill_solid_span(X_RenderContext* context, X_TriangleFillerEdge* left
     x_fp16x16 z = left->z;
     x_fp16x16 dZ = (right->z - left->z) / dx;
     
-    int screenW = x_screen_w(context->screen);
-    int screenH = x_screen_h(context->screen);
+    int screenW = x_screen_w(renderContext->screen);
+    int screenH = x_screen_h(renderContext->screen);
     
-    x_fp0x16* zbuf = context->screen->canvas.zbuf + y * screenW;
+    x_fp0x16* zbuf = renderContext->screen->canvas.zbuf + y * screenW;
     
     if(leftX < 0 || rightX >= screenW)
         return;
@@ -42,7 +47,7 @@ static void fill_solid_span(X_RenderContext* context, X_TriangleFillerEdge* left
     {
         if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
         {
-            x_texture_set_texel(&context->screen->canvas.tex, i, y, color);
+            x_texture_set_texel(&renderContext->screen->canvas.tex, i, y, filler->fillColor);
             zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
         }
         
@@ -51,20 +56,74 @@ static void fill_solid_span(X_RenderContext* context, X_TriangleFillerEdge* left
         
 }
 
-static void fill_flat_shaded_draw_half(X_TriangleFiller* filler)
+static void fill_textured_span(X_TriangleFiller* filler)
+{
+    int y = filler->y;
+    X_TriangleFillerEdge* left = filler->leftEdge;
+    X_TriangleFillerEdge* right = filler->rightEdge;
+    X_RenderContext* renderContext = filler->renderContext;
+    
+    int leftX = x_fp16x16_to_int(left->x);
+    int rightX = x_fp16x16_to_int(right->x);
+    int dx = rightX - leftX;
+    
+    if(dx <= 0)
+        return;
+    
+    x_fp16x16 z = left->z;
+    x_fp16x16 dZ = (right->z - left->z) / dx;
+    
+    x_fp16x16 u = left->u;
+    x_fp16x16 dU = (right->u - left->u) / dx;
+    
+    x_fp16x16 v = left->v;
+    x_fp16x16 dV = (right->v - left->v) / dx;
+    
+    int screenW = x_screen_w(renderContext->screen);
+    int screenH = x_screen_h(renderContext->screen);
+    
+    x_fp0x16* zbuf = renderContext->screen->canvas.zbuf + y * screenW;
+    
+    if(leftX < 0 || rightX >= screenW)
+        return;
+    
+    if(y < 0 || y >= screenH)
+        return;
+    
+    for(int i = leftX; i < rightX; ++i)
+    {
+        if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
+        {
+            X_Color texel = x_texture_get_texel(filler->fillTexture, u >> 16, v >> 16);
+            x_texture_set_texel(&renderContext->screen->canvas.tex, i, y, texel);
+            zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
+        }
+        
+        z += dZ;
+        u += dU;
+        v += dV;
+    }
+        
+}
+
+static void draw_half(X_TriangleFiller* filler)
 {
     X_TriangleFillerEdge* leftEdge = filler->leftEdge;
     X_TriangleFillerEdge* rightEdge = filler->rightEdge;
     
     while(filler->y < filler->endY)
     {
-        fill_solid_span(filler->renderContext, leftEdge, rightEdge, filler->y, filler->fillColor);
+        filler->drawSpan(filler);
         
         leftEdge->x += leftEdge->xSlope;
         leftEdge->z += leftEdge->zSlope;
+        leftEdge->u += leftEdge->uSlope;
+        leftEdge->v += leftEdge->vSlope;
         
         rightEdge->x += rightEdge->xSlope;
         rightEdge->z += rightEdge->zSlope;
+        rightEdge->u += rightEdge->uSlope;
+        rightEdge->v += rightEdge->vSlope;
         
         ++filler->y;
     }
@@ -124,11 +183,18 @@ static void init_edge_slopes(X_TriangleFillerEdge* edge, X_TriangleFillerVertex*
         X_SWAP(a, b);
     
     int dy = b->v.y - a->v.y;
+    
     edge->x = x_fp16x16_from_int(a->v.x) + X_FP16x16_HALF;
     edge->xSlope = x_int_div_as_fp16x16(b->v.x - a->v.x, dy);
     
     edge->z = a->z;
     edge->zSlope = (b->z - a->z) / dy;
+    
+    edge->u = x_fp16x16_from_int(a->textureCoord.x);
+    edge->uSlope = x_fp16x16_from_int(b->textureCoord.x - a->textureCoord.x) / dy;
+    
+    edge->v = x_fp16x16_from_int(a->textureCoord.y);
+    edge->vSlope = x_fp16x16_from_int(b->textureCoord.y - a->textureCoord.y) / dy;
     
     edge->endY = b->v.y;
 }
@@ -168,9 +234,8 @@ static void init_edges(X_TriangleFiller* filler)
     }
 }
 
-void x_trianglefiller_fill_flat_shaded(X_TriangleFiller* filler, X_Color color)
+static void fill_triangle(X_TriangleFiller* filler)
 {
-    filler->fillColor = color;
     init_edges(filler);
     
     if(!filler->leftEdge || !filler->rightEdge)
@@ -182,15 +247,29 @@ void x_trianglefiller_fill_flat_shaded(X_TriangleFiller* filler, X_Color color)
     if(filler->type != X_TRIANGLE_GENERIC)
     {
         filler->endY = filler->leftEdge->endY;
-        fill_flat_shaded_draw_half(filler);
+        draw_half(filler);
         return;
     }
     
     filler->endY = (*filler->firstEndingEdge)->endY;
     
-    fill_flat_shaded_draw_half(filler);
+    draw_half(filler);
     switch_to_bottom_half_of_triangle(filler);
-    fill_flat_shaded_draw_half(filler);
+    draw_half(filler);
+}
+
+void x_trianglefiller_fill_flat_shaded(X_TriangleFiller* filler, X_Color color)
+{
+    filler->drawSpan = fill_solid_span;
+    filler->fillColor = color;
+    fill_triangle(filler);
+}
+
+void x_trianglefiller_fill_textured(X_TriangleFiller* filler, X_Texture* texture)
+{
+    filler->drawSpan = fill_textured_span;
+    filler->fillTexture = texture;
+    fill_triangle(filler);
 }
 
 void x_trianglefiller_init(X_TriangleFiller* filler, X_RenderContext* renderContext)

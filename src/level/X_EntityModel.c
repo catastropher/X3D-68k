@@ -124,11 +124,23 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
         X_Vec3 v[3];
         X_Polygon3 poly = x_polygon3_make(v, 3);
         X_EntityTriangle* tri = model->triangles + i;
+        X_Vec2 textureCoords[3];
         
         for(int j = 0; j < 3; ++j)
+        {
             v[j] = x_vec3_fp16x16_to_vec3(&frame->vertices[tri->vertexIds[j]].v);
+            
+            X_EntityTextureCoord* coord = model->textureCoords + tri->vertexIds[j];
+            
+            textureCoords[j] = coord->coord;
+            if(!tri->facesFront && coord->onSeam)
+                textureCoords[j].x += model->skinWidth / 2;
+        }
         
-        x_polygon3_render_flat_shaded(&poly, renderContext, i);
+        X_Texture skin;
+        x_entitymodel_get_skin_texture(model, 0, 0, &skin);
+        
+        x_polygon3_render_textured(&poly, renderContext, &skin, textureCoords);
     }
 }
 
