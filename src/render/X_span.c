@@ -181,21 +181,8 @@ static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* conte
     return x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin;
 }
 
-static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y, x_fp16x16* u, x_fp16x16* v)
+static inline void clamp_texture_coord(const X_AE_SurfaceRenderContext* context, x_fp16x16* u, x_fp16x16* v)
 {
-    x_fp16x16 uDivZ = calculate_u_div_z(context, x, y);
-    x_fp16x16 vDivZ = calculate_v_div_z(context, x, y);
-    x_fp2x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y));
-    
-    if(invZ == 0)
-        return;
-    
-    int z = x_fastrecip(invZ >> 10); //(1 << 17) / invZ;
-    
-        
-    *u = ((((long long)uDivZ * z) >> SHIFTUP) + context->sDivZ.adjust);
-    *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);
-    
     if(*u < 0)
         *u = 16;
     
@@ -209,10 +196,30 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
         *v = context->surfaceH - X_FP16x16_ONE;
 }
 
+static int calculate_z_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y)
+{
+    x_fp2x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y));
+    
+    return x_fastrecip(invZ >> 10);
+}
+
+static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y, x_fp16x16* u, x_fp16x16* v)
+{
+    x_fp16x16 uDivZ = calculate_u_div_z(context, x, y);
+    x_fp16x16 vDivZ = calculate_v_div_z(context, x, y);
+    
+    int z = calculate_z_at_screen_point(context, x, y);
+    
+    *u = ((((long long)uDivZ * z) >> SHIFTUP) + context->sDivZ.adjust);
+    *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);
+    
+    clamp_texture_coord(context, u, v);
+}
+
 static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16x16 u, x_fp16x16 v)
 {
-    unsigned short uu = (u >> 16);
-    unsigned short vv = (v >> 16);
+    int uu = (u >> 16);
+    int vv = (v >> 16);
     
 #if 1
     uu = uu % context->surfaceTexture.w;
