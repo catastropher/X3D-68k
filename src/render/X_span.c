@@ -23,23 +23,19 @@
 
 #define SHIFTUP 0
 
-static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* context)
+
+static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationAxis, int minTexCoord, int texOffset)
 {
-    X_Vec3 sAxis;
-    X_BspFaceTexture* tex = context->faceTexture;
-    x_mat4x4_rotate_normal(context->renderContext->viewMatrix, &tex->uOrientation, &sAxis);
+    X_Vec3_fp16x16 transformedAxis;
+    x_mat4x4_rotate_normal(context->renderContext->viewMatrix, orientationAxis, &transformedAxis);
     
-    X_AE_TextureVar* sDivZ = &context->sDivZ;
-    sDivZ->uOrientationStep = ((sAxis.x << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
-    sDivZ->vOrientationStep = ((sAxis.y << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
+    var->uOrientationStep = ((transformedAxis.x << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
+    var->vOrientationStep = ((transformedAxis.y << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
     
-    //x_vec3_fp16x16_print(&tex->vOrientation, "V");
-    
-    // TODO: move these into viewport struct
     int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
-    sDivZ->origin = ((sAxis.z << SHIFTUP) >> context->mipLevel) - centerX * sDivZ->uOrientationStep - centerY * sDivZ->vOrientationStep;
+    var->origin = ((transformedAxis.z << SHIFTUP) >> context->mipLevel) - centerX * var->uOrientationStep - centerY * var->vOrientationStep;
     
     X_Vec3 transormed;
     X_Vec3 pos = x_vec3_neg(&x_bsplevel_get_level_model(context->renderContext->level)->origin);
@@ -49,36 +45,7 @@ static void x_ae_surfacerendercontext_init_sdivz(X_AE_SurfaceRenderContext* cont
     transormed.y >>= context->mipLevel;
     transormed.z >>= context->mipLevel;
     
-    sDivZ->adjust = -x_vec3_dot(&sAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.x) >> context->mipLevel) +
-        ((context->faceTexture->uOffset) >> context->mipLevel);
-}
-
-static void x_ae_surfacerendercontext_init_tdivz(X_AE_SurfaceRenderContext* context)
-{
-    X_Vec3 tAxis;
-    X_BspFaceTexture* tex = context->faceTexture;
-    x_mat4x4_rotate_normal(context->renderContext->viewMatrix, &tex->vOrientation, &tAxis);
-    
-    X_AE_TextureVar* tDivZ = &context->tDivZ;
-    tDivZ->uOrientationStep = ((tAxis.x << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
-    tDivZ->vOrientationStep = ((tAxis.y << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
-    
-    // TODO: move these into viewport struct
-    int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
-    int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
-    
-    tDivZ->origin = ((tAxis.z << SHIFTUP) >> context->mipLevel) - centerX * tDivZ->uOrientationStep - centerY * tDivZ->vOrientationStep;
-    
-    X_Vec3 transormed;
-    X_Vec3 pos = x_bsplevel_get_level_model(context->renderContext->level)->origin;
-    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &pos, &transormed);
-    
-    transormed.x >>= context->mipLevel;
-    transormed.y >>= context->mipLevel;
-    transormed.z >>= context->mipLevel;
-    
-    tDivZ->adjust = -x_vec3_dot(&tAxis, &transormed) - ((context->surface->bspSurface->textureMinCoord.y) >> context->mipLevel) + 
-        ((context->faceTexture->vOffset) >> context->mipLevel);        
+    var->adjust = -x_vec3_dot(&transformedAxis, &transormed) - (minTexCoord >> context->mipLevel) + (texOffset >> context->mipLevel);
 }
 
 const x_fp16x16 recip_tab[32] = 
@@ -157,11 +124,10 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     context->mipLevel = x_viewport_get_miplevel_for_closest_z(&renderContext->cam->viewport, surface->closestZ);
     context->viewport = &renderContext->cam->viewport;
     
-    x_ae_surfacerendercontext_init_sdivz(context);
-    x_ae_surfacerendercontext_init_tdivz(context);
-    
-    //X_BspLevel* level = context->renderContext->level;
-    //x_bsplevel_get_texture(level, context->faceTexture->texture - level->textures, context->mipLevel, &context->faceTex);
+    X_BspFaceTexture* tex = context->faceTexture;
+    X_BspSurface* bspSurface = context->surface->bspSurface;
+    x_ae_texturevar_init(&context->sDivZ, context, &tex->uOrientation, bspSurface->textureMinCoord.x, tex->uOffset);
+    x_ae_texturevar_init(&context->tDivZ, context, &tex->vOrientation, bspSurface->textureMinCoord.y, tex->vOffset);
     
     x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, context->mipLevel, renderContext->renderer, &context->surfaceTexture);
     
