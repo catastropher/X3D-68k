@@ -222,152 +222,63 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
     return context->surfaceTexture.texels[vv * context->surfaceTexture.w + uu];
 }
 
-#define WRITE_TEXELS_SHORT()            \
-    lo = get_texel(context, *u, *v);    \
-    *u += du;                           \
-    *v += dv;                           \
-    hi = get_texel(context, *u, *v);    \
-    *((unsigned short*)pixels) = ((unsigned short)hi << 8) | lo;
-
-static inline void draw_unaligned_group(const X_AE_SurfaceRenderContext* context, X_Color* pixels, x_fp16x16 count, x_fp16x16* restrict u, x_fp16x16* restrict v, int x, int y)
-{
-    if(count == 0)
-        return;
-    
-    x_fp16x16 nextU, nextV;
-    calculate_u_and_v_at_screen_point(context, x + count, y, &nextU, &nextV);
-    
-    x_fp16x16 du, dv;
-    
-    X_Color hi, lo;
-    
-    switch(count)
-    {
-        case 1:
-            *pixels = get_texel(context, *u, *v);
-            break;
-            
-        case 2:
-            du = (nextU - *u) >> 1;
-            dv = (nextV - *v) >> 1;
-            WRITE_TEXELS_SHORT();
-            break;
-            
-        case 3:
-            du = (nextU - *u) / 3;
-            dv = (nextV - *v) / 3;
-            *pixels++ = get_texel(context, *u, *v);
-            *u += du;
-            *v += dv;
-            WRITE_TEXELS_SHORT();
-            break;
-    }
-    
-    *u = nextU;
-    *v = nextV;
-}
-
-static inline void draw_aligned_group(const X_AE_SurfaceRenderContext* context, X_Color* pixels, x_fp16x16 du, x_fp16x16 dv, x_fp16x16* restrict u, x_fp16x16* restrict v)
-{
-    unsigned int a, b, c, d;
-    
-    a = get_texel(context, *u, *v);     *u += du;       *v += dv;
-    b = get_texel(context, *u, *v);     *u += du;       *v += dv;
-    c = get_texel(context, *u, *v);     *u += du;       *v += dv;
-    d = get_texel(context, *u, *v);     *u += du;       *v += dv;
-    
-    *((unsigned int*)pixels) = a | (b << 8) | (c << 16) | (d << 24);
-}
-
-static inline void draw_aligned_16_group(const X_AE_SurfaceRenderContext* context, X_Color* pixels, x_fp16x16* restrict u, x_fp16x16* restrict v, int x, int y)
-{
-    const int GROUP_SIZE = 16;
-    x_fp16x16 nextU, nextV;
-    calculate_u_and_v_at_screen_point(context, x + GROUP_SIZE, y, &nextU, &nextV);
-    
-    x_fp16x16 du = (nextU - *u) >> 4;
-    x_fp16x16 dv = (nextV - *v) >> 4;
-    
-    draw_aligned_group(context, pixels, du, dv, u, v);  pixels += 4;
-    draw_aligned_group(context, pixels, du, dv, u, v);  pixels += 4;
-    draw_aligned_group(context, pixels, du, dv, u, v);  pixels += 4;
-    draw_aligned_group(context, pixels, du, dv, u, v);  pixels += 4;
-}
-
-static inline void draw_small_group(const X_AE_SurfaceRenderContext* context, X_Color* pixels, x_fp16x16 count, x_fp16x16* restrict u, x_fp16x16* restrict v, int x, int y, const x_fp16x16* recip_tab)
-{
-    x_fp16x16 nextU, nextV;
-    calculate_u_and_v_at_screen_point(context, x + count, y, &nextU, &nextV);
-
-    x_fp16x16 du = x_fp16x16_mul(nextU - *u, recip_tab[count]);
-    x_fp16x16 dv = x_fp16x16_mul(nextV - *v, recip_tab[count]);
-    
-    for(int i = 0; i < count; ++i)
-    {
-        *pixels++ = get_texel(context, *u, *v);
-        *u += du;
-        *v += dv;
-    }
-}
 
 static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {    
     X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
     X_Color* scanline = screenTex->texels + span->y * screenTex->w;
-    X_Color* pixels = scanline + span->x1;
+    x_fp0x16* zbuf = context->renderContext->screen->canvas.zbuf + span->y * screenTex->w;
+    
+    x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, span->y) >> 10;
+    x_fp16x16 dInvZ = context->surface->zInverseXStep >> 10;
     
     x_fp16x16 u, v;
     calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
     
-    int count = span->x2 - span->x1;
+    int x = span->x1;
+    while(x < span->x2 - 16)
+    {
+        x_fp16x16 nextU, nextV;
+        calculate_u_and_v_at_screen_point(context, x + 16, span->y, &nextU, &nextV);
+        
+        x_fp16x16 dU = (nextU - u) >> 4;
+        x_fp16x16 dV = (nextV - v) >> 4;
+        
+        for(int i = 0; i < 16; ++i)
+        {
+            scanline[x] = get_texel(context, u, v);
+            zbuf[x] = invZ;
+            
+            invZ += dInvZ;
+            u += dU;
+            v += dV;
+            
+            ++x;
+        }
+    }
     
-    if(count == 0)
+    if(x == span->x2)
         return;
     
-    if(count < 20)
-    {
-        draw_small_group(context, pixels, count, &u, &v, span->x1, span->y, recip_tab);
-        return;
-    }
-    
-    X_Color* pixelsEnd = pixels + count;
-    
-    // First get us to a pixel address that's a multiple of 4
-    int unalignedCount = 4 - (span->x1 & 3);
-    if(unalignedCount != 4)     // 4 means we're already a multiple of 4
-    {
-        draw_unaligned_group(context, pixels, unalignedCount, &u, &v, span->x1, span->y);
-        pixels += unalignedCount;
-    }
-    
-    // Now, draw groups of 16 pixels that are all nicely aligned, so we can pack 4 texels into a single write
-    while(pixels + 16 < pixelsEnd)
-    {
-        draw_aligned_16_group(context, pixels, &u, &v, pixels - scanline, span->y);
-        pixels += 16;
-    }
-    
-    int pixelsLeft = pixelsEnd - pixels;
     x_fp16x16 nextU, nextV;
-    calculate_u_and_v_at_screen_point(context, pixels - scanline + pixelsLeft, span->y, &nextU, &nextV);
+    calculate_u_and_v_at_screen_point(context, span->x2, span->y, &nextU, &nextV);
     
-    x_fp16x16 du = x_fp16x16_mul(nextU - u, recip_tab[pixelsLeft]);
-    x_fp16x16 dv = x_fp16x16_mul(nextV - v, recip_tab[pixelsLeft]);
+    int dX = span->x2 - x;
+    x_fp16x16 dU = (nextU - u) / dX;
+    x_fp16x16 dV = (nextV - v) / dX;
     
-    // Draw as many aligned groups of 4 as possible (< 16 texels left)
-    while(pixels + 4 < pixelsEnd)
+    while(x < span->x2)
     {
-        draw_aligned_group(context, pixels, du, dv, &u, &v);
-        pixels += 4;
+        scanline[x] = get_texel(context, u, v);
+        zbuf[x] = invZ;
+        
+        invZ += dInvZ;
+        u += dU;
+        v += dV;
+        
+        ++x;
     }
     
-    // Draw whatever is left
-    while(pixels < pixelsEnd)
-    {
-        *pixels++ = get_texel(context, u, v);
-        u += du;
-        v += dv;
-    }
 }
 
 void draw_surface_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span);
