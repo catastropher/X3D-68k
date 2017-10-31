@@ -40,6 +40,9 @@ typedef struct X_AE_TextureVar
 
 typedef struct X_AE_SurfaceRenderContext
 {
+    // !!! DO NOT REORDER THESE, THE ASM CODE EXPECTS THEM IN THIS ORDER !!!
+    // The numbers in the comments are the offset (in bytes) from the beginning
+    // of the struct
     int invZStepX;          // 0
     int invZStepY;          // 4
     int invZOrigin;         // 8

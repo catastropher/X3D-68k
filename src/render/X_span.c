@@ -21,6 +21,12 @@
 #include "X_Renderer.h"
 #include "X_Surface.h"
 
+// Scales a value down based on the current mip map level
+static inline int mip_adjust(int val, int mipLevel)
+{
+    return val >> mipLevel;
+}
+
 static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* vecToRotate, X_Vec3_fp16x16* dest)
 {
     x_mat4x4_rotate_normal(context->renderContext->viewMatrix, vecToRotate, dest);   
@@ -28,8 +34,8 @@ static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* conte
 
 static inline void calculate_uv_orientation_steps_in_screen_space(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationInEyeSpace)
 {
-    var->uOrientationStep = (orientationInEyeSpace->x / context->viewport->distToNearPlane) >> context->mipLevel;
-    var->vOrientationStep = (orientationInEyeSpace->y / context->viewport->distToNearPlane) >> context->mipLevel;
+    var->uOrientationStep = mip_adjust(orientationInEyeSpace->x / context->viewport->distToNearPlane, context->mipLevel);
+    var->vOrientationStep = mip_adjust(orientationInEyeSpace->y / context->viewport->distToNearPlane, context->mipLevel);
 }
 
 static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationInEyeSpace)
@@ -37,7 +43,9 @@ static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureV
     int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
-    var->origin = (orientationInEyeSpace->z  >> context->mipLevel) - centerX * var->uOrientationStep - centerY * var->vOrientationStep;
+    var->origin = mip_adjust(orientationInEyeSpace->z, context->mipLevel) -
+        centerX * var->uOrientationStep -
+        centerY * var->vOrientationStep;
 }
 
 static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationInEyeSpace, int minTexCoord, int texOffset)
@@ -46,9 +54,12 @@ static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_Surfa
     X_Vec3 inverseModelPosInEyeSpace;
     x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &inverseModelPos, &inverseModelPosInEyeSpace);
     
-    inverseModelPosInEyeSpace = x_vec3_shift_right(&inverseModelPosInEyeSpace, context->mipLevel);
+    int mipLevel = context->mipLevel;
+    inverseModelPosInEyeSpace = x_vec3_shift_right(&inverseModelPosInEyeSpace, mipLevel);
     
-    var->adjust = -x_vec3_dot(orientationInEyeSpace, &inverseModelPosInEyeSpace) - (minTexCoord >> context->mipLevel) + (texOffset >> context->mipLevel);
+    var->adjust = -x_vec3_dot(orientationInEyeSpace, &inverseModelPosInEyeSpace) -
+        mip_adjust(minTexCoord, mipLevel) +
+        mip_adjust(texOffset, mipLevel);
 }
 
 static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationAxis, int minTexCoord, int texOffset)
@@ -97,36 +108,62 @@ const x_fp16x16 recip_tab[32] =
     X_FP16x16_ONE / 31,
 };
 
-void x_ae_surfacerendercontext_setup_constants(X_AE_SurfaceRenderContext* context)
+static inline void setup_inv_z_step(X_AE_SurfaceRenderContext* context)
 {
-    context->invZStepX = context->surface->zInverseXStep;
-    context->invZStepY = context->surface->zInverseYStep;
-    context->invZOrigin = context->surface->zInverseOrigin;
-    
-    context->uStepX = context->sDivZ.uOrientationStep;
-    context->uStepY = context->sDivZ.vOrientationStep;
-    context->uOrigin = context->sDivZ.origin;
-    
-    context->vStepX = context->tDivZ.uOrientationStep;
-    context->vStepY = context->tDivZ.vOrientationStep;
-    context->vStepOrigin = context->tDivZ.origin;
+    X_AE_Surface* surface = context->surface;
+    context->invZStepX = surface->zInverseXStep;
+    context->invZStepY = surface->zInverseYStep;
+    context->invZOrigin = surface->zInverseOrigin;
     
     context->invZStepXNeg = -context->invZStepX;
     context->uStepXNeg = -context->uStepX;
     context->vStepXNeg = -context->vStepX;
-    
+}
+
+static inline void setup_u_step(X_AE_SurfaceRenderContext* context)
+{
+    context->uStepX = context->sDivZ.uOrientationStep;
+    context->uStepY = context->sDivZ.vOrientationStep;
+    context->uOrigin = context->sDivZ.origin;
     context->uAdjust = context->sDivZ.adjust;
+}
+
+static inline void setup_v_step(X_AE_SurfaceRenderContext* context)
+{
+    context->vStepX = context->tDivZ.uOrientationStep;
+    context->vStepY = context->tDivZ.vOrientationStep;
+    context->vStepOrigin = context->tDivZ.origin;
     context->vAdjust = context->tDivZ.adjust;
-    
-    context->screen = context->renderContext->screen->canvas.tex.texels;
-    
-    context->surfaceW = (context->surface->bspSurface->textureExtent.x >> context->mipLevel) - X_FP16x16_ONE;
-    context->surfaceH = (context->surface->bspSurface->textureExtent.y >> context->mipLevel) - X_FP16x16_ONE;
-    
+}
+
+static inline void setup_surface(X_AE_SurfaceRenderContext* context)
+{
+    X_Vec2 surfaceSize = context->surface->bspSurface->textureExtent;
+    context->surfaceW = mip_adjust(surfaceSize.x, context->mipLevel) - X_FP16x16_ONE;
+    context->surfaceH = mip_adjust(surfaceSize.y, context->mipLevel) - X_FP16x16_ONE;
     context->texW = context->surfaceTexture.w;
-    context->surfaceTexels = context->surfaceTexture.texels;
     
+    context->surfaceTexels = context->surfaceTexture.texels;
+}
+
+static inline void setup_recip_tab(X_AE_SurfaceRenderContext* context)
+{
     context->recipTab = recip_tab;
+}
+
+static inline void setup_screen(X_AE_SurfaceRenderContext* context)
+{
+    context->screen = context->renderContext->screen->canvas.tex.texels;
+}
+
+void x_ae_surfacerendercontext_setup_constants(X_AE_SurfaceRenderContext* context)
+{
+    setup_inv_z_step(context);
+    setup_u_step(context);
+    setup_v_step(context);
+    setup_surface(context);
+    setup_recip_tab(context);
+    setup_screen(context);
 }
 
 void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)
@@ -143,10 +180,6 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     x_ae_texturevar_init(&context->tDivZ, context, &tex->vOrientation, bspSurface->textureMinCoord.y, tex->vOffset);
     
     x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, context->mipLevel, renderContext->renderer, &context->surfaceTexture);
-    
-    context->surfaceW = x_fp16x16_from_int(context->surfaceTexture.w);
-    context->surfaceH = x_fp16x16_from_int(context->surfaceTexture.h);
-    
     x_ae_surfacerendercontext_setup_constants(context);
 }
 
@@ -162,17 +195,11 @@ static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* conte
 
 static inline void clamp_texture_coord(const X_AE_SurfaceRenderContext* context, x_fp16x16* u, x_fp16x16* v)
 {
-    if(*u < 0)
-        *u = 16;
+    if(*u < 0) *u = 16;
+    else if(*u >= context->surfaceW) *u = context->surfaceW - X_FP16x16_ONE;
     
-    if(*u >= context->surfaceW)
-        *u = context->surfaceW - X_FP16x16_ONE;
-    
-    if(*v < 0)
-        *v = 16;
-    
-    if(*v >= context->surfaceH)
-        *v = context->surfaceH - X_FP16x16_ONE;
+    if(*v < 0)*v = 16;
+    else if(*v >= context->surfaceH) *v = context->surfaceH - X_FP16x16_ONE;
 }
 
 static int calculate_z_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y)
@@ -283,6 +310,4 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
 #endif
     }
 }
-
-
 
