@@ -96,6 +96,11 @@ static inline X_Vec3 x_vec3_add_scaled(const X_Vec3* a, const X_Vec3* vecToScale
     );
 }
 
+static inline X_Vec3 x_vec3_shift_right(X_Vec3* v, int shift)
+{
+    return x_vec3_make(v->x >> shift, v->y >> shift, v->z >> shift);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Adds three 3D vectors.
 /// @return a + b + c

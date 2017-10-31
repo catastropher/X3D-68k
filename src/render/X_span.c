@@ -21,31 +21,44 @@
 #include "X_Renderer.h"
 #include "X_Surface.h"
 
-#define SHIFTUP 0
-
-
-static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationAxis, int minTexCoord, int texOffset)
+static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* vecToRotate, X_Vec3_fp16x16* dest)
 {
-    X_Vec3_fp16x16 transformedAxis;
-    x_mat4x4_rotate_normal(context->renderContext->viewMatrix, orientationAxis, &transformedAxis);
-    
-    var->uOrientationStep = ((transformedAxis.x << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
-    var->vOrientationStep = ((transformedAxis.y << SHIFTUP) / context->viewport->distToNearPlane) >> context->mipLevel;
-    
+    x_mat4x4_rotate_normal(context->renderContext->viewMatrix, vecToRotate, dest);   
+}
+
+static inline void calculate_uv_orientation_steps_in_screen_space(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationInEyeSpace)
+{
+    var->uOrientationStep = (orientationInEyeSpace->x / context->viewport->distToNearPlane) >> context->mipLevel;
+    var->vOrientationStep = (orientationInEyeSpace->y / context->viewport->distToNearPlane) >> context->mipLevel;
+}
+
+static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationInEyeSpace)
+{
     int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
-    var->origin = ((transformedAxis.z << SHIFTUP) >> context->mipLevel) - centerX * var->uOrientationStep - centerY * var->vOrientationStep;
+    var->origin = (orientationInEyeSpace->z  >> context->mipLevel) - centerX * var->uOrientationStep - centerY * var->vOrientationStep;
+}
+
+static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationInEyeSpace, int minTexCoord, int texOffset)
+{
+    X_Vec3 inverseModelPos = x_vec3_neg(&x_bsplevel_get_level_model(context->renderContext->level)->origin);
+    X_Vec3 inverseModelPosInEyeSpace;
+    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &inverseModelPos, &inverseModelPosInEyeSpace);
     
-    X_Vec3 transormed;
-    X_Vec3 pos = x_vec3_neg(&x_bsplevel_get_level_model(context->renderContext->level)->origin);
-    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &pos, &transormed);
+    inverseModelPosInEyeSpace = x_vec3_shift_right(&inverseModelPosInEyeSpace, context->mipLevel);
     
-    transormed.x >>= context->mipLevel;
-    transormed.y >>= context->mipLevel;
-    transormed.z >>= context->mipLevel;
+    var->adjust = -x_vec3_dot(orientationInEyeSpace, &inverseModelPosInEyeSpace) - (minTexCoord >> context->mipLevel) + (texOffset >> context->mipLevel);
+}
+
+static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationAxis, int minTexCoord, int texOffset)
+{
+    X_Vec3_fp16x16 orientationInEyeSpace;
+    rotate_vector_into_eye_space(context, orientationAxis, &orientationInEyeSpace);
     
-    var->adjust = -x_vec3_dot(&transformedAxis, &transormed) - (minTexCoord >> context->mipLevel) + (texOffset >> context->mipLevel);
+    calculate_uv_orientation_steps_in_screen_space(var, context, &orientationInEyeSpace);
+    calculate_uv_origin_relative_to_screen_top_left(var, context, &orientationInEyeSpace);
+    calculate_texture_adjustment(var, context, &orientationInEyeSpace, minTexCoord, texOffset);
 }
 
 const x_fp16x16 recip_tab[32] = 
@@ -176,8 +189,8 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
     
     int z = calculate_z_at_screen_point(context, x, y);
     
-    *u = ((((long long)uDivZ * z) >> SHIFTUP) + context->sDivZ.adjust);
-    *v = ((((long long)vDivZ * z) >> SHIFTUP) + context->tDivZ.adjust);
+    *u = uDivZ * z + context->sDivZ.adjust;
+    *v = vDivZ * z + context->tDivZ.adjust;
     
     clamp_texture_coord(context, u, v);
 }
