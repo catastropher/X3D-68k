@@ -191,6 +191,7 @@ static void x_bsploaderedge_read_from_file(X_BspLoaderEdge* edge, X_File* file)
 
 static void x_bspclipnode_read_from_file(X_BspClipNode* node, X_File* file)
 {
+    node->planeId = x_file_read_le_int32(file);
     node->frontChild = x_file_read_le_int16(file);
     node->backChild = x_file_read_le_int16(file);
 }
@@ -209,9 +210,7 @@ static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* fil
     model->rootBspNode = x_file_read_le_int32(file);
     model->rootClipNode = x_file_read_le_int32(file);
     model->secondRootClipNode = x_file_read_le_int32(file);
-    
-    // Skip the unused field
-    x_file_read_le_int32(file);
+    model->thirdRootClipNode = x_file_read_le_int32(file);
     
     model->totalBspLeaves = x_file_read_le_int32(file);
     model->firstFaceId = x_file_read_le_int32(file);
@@ -220,7 +219,7 @@ static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* fil
 
 static void x_bsplevelloader_load_clip_nodes(X_BspLevelLoader* loader)
 {
-    const int NODE_SIZE_IN_FILE = 4;
+    const int NODE_SIZE_IN_FILE = 8;
     X_BspLoaderLump* nodeLump = loader->header.lumps + X_LUMP_CLIPNODES;
     
     loader->totalClipNodes = nodeLump->length / NODE_SIZE_IN_FILE;

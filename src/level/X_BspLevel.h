@@ -189,6 +189,7 @@ typedef struct X_BspModel
 
 typedef struct X_BspClipNode
 {
+    int planeId;
     int frontChild;
     int backChild;
 } X_BspClipNode;

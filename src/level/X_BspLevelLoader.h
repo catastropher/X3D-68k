@@ -158,7 +158,8 @@ typedef struct X_BspLoaderModel
     X_Vec3_float origin;
     int rootBspNode;
     int rootClipNode;
-    int secondRootClipNode;     // TODO: What is this used for?
+    int secondRootClipNode;
+    int thirdRootClipNode;
     int totalBspLeaves;
     int firstFaceId;
     int totalFaces;
