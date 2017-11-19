@@ -190,9 +190,16 @@ typedef struct X_BspModel
 typedef struct X_BspClipNode
 {
     int planeId;
-    int frontChild;
-    int backChild;
+    short frontChild;
+    short backChild;
 } X_BspClipNode;
+
+typedef struct X_BspCollisionHull
+{
+    short rootNode;
+} X_BspCollisionHull;
+
+#define X_BSPLEVEL_MAX_COLLISION_HULLS 4
 
 typedef struct X_BspLevel
 {
@@ -218,6 +225,8 @@ typedef struct X_BspLevel
     
     X_BspClipNode* clipNodes;
     int totalClipNodes;
+    
+    X_BspCollisionHull collisionHulls[X_BSPLEVEL_MAX_COLLISION_HULLS];
     
     X_BspModel* models;
     int totalModels;

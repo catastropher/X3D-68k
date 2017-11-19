@@ -191,6 +191,8 @@ typedef struct X_BspLevelLoader
     X_BspClipNode* clipNodes;
     int totalClipNodes;
     
+    X_BspCollisionHull collisionHulls[X_BSPLEVEL_MAX_COLLISION_HULLS];
+    
     X_BspLoaderModel* models;
     int totalModels;
     

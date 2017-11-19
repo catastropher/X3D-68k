@@ -467,6 +467,16 @@ static void x_bsplevelloader_load_facetextures(X_BspLevelLoader* loader)
         x_bsploaderfacetexture_read_from_file(loader->faceTextures + i, &loader->file);
 }
 
+static void x_bsplevelloader_init_collision_hulls(X_BspLevelLoader* loader)
+{
+    X_BspLoaderModel* levelModel = loader->models + 0;
+    
+    loader->collisionHulls[0].rootNode = levelModel->rootBspNode;
+    loader->collisionHulls[1].rootNode = levelModel->rootClipNode;
+    loader->collisionHulls[2].rootNode = levelModel->secondRootClipNode;
+    loader->collisionHulls[3].rootNode = levelModel->thirdRootClipNode;
+}
+
 static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     level->totalEdges = loader->totalEdges;
@@ -802,6 +812,12 @@ static void x_bsplevel_init_clipnodes(X_BspLevel* level, X_BspLevelLoader* loade
     level->totalClipNodes = loader->totalClipNodes;
 }
 
+static void x_bsplevel_init_collision_hulls(X_BspLevel* level, X_BspLevelLoader* loader)
+{
+    for(int i = 0; i < X_BSPLEVEL_MAX_COLLISION_HULLS; ++i)
+        level->collisionHulls[i] = loader->collisionHulls[i];
+}
+
 static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLoader* loader)
 {
     x_bsplevel_allocate_memory(level, loader);
@@ -820,6 +836,8 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_facetextures(level, loader);
     x_bsplevel_init_surfaces(level, loader);
     x_bsplevel_init_clipnodes(level, loader);
+    
+    x_bsplevel_init_collision_hulls(level, loader);
     
     X_BspNode* levelRootNode = x_bsplevel_get_root_node(level);
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
@@ -859,6 +877,8 @@ static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char
     x_bsplevelloader_load_textures(loader);
     x_bsplevelloader_load_facetextures(loader);
     x_bsplevelloader_load_clip_nodes(loader);
+    
+    x_bsplevelloader_init_collision_hulls(loader);
     
     return 1;
 }

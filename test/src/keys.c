@@ -155,6 +155,49 @@ void handle_console_keys(X_EngineContext* context)
     }
 }
 
+_Bool everInLevel = 0;
+
+void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16x16 newPos)
+{
+    _Bool success = 0;
+    
+    for(int i = 0; i < 4 && !success; ++i)
+    {
+        if(!x_bsplevel_file_is_loaded(&context->currentLevel))
+        {
+            success = 1;
+        }
+        else
+        {
+            if(!everInLevel)
+            {
+                X_Vec3 point = x_vec3_fp16x16_to_vec3(&newPos);
+                everInLevel = x_bsplevel_find_leaf_point_is_in(&context->currentLevel, &point)->contents != X_BSPLEAF_SOLID;
+                success = 1;
+            }
+            else
+            {
+                X_RayTracer trace;
+                x_raytracer_init(&trace, &context->currentLevel, &cam->base.position, &newPos, NULL);
+                success = !x_raytracer_trace(&trace);
+                
+                if(!success)
+                {
+                    x_fp16x16 penDepth = -x_plane_point_distance_fp16x16(&trace.collisionPlane, &newPos);
+                    printf("Pen depth: %f\n", x_fp16x16_to_float(penDepth));
+                    newPos = x_vec3_add_scaled(&newPos, &trace.collisionPlane.normal, penDepth);
+                }
+            }
+        }
+    }
+    
+    if(success)
+    {
+        cam->base.position = newPos;
+        x_cameraobject_update_view(cam);
+    }
+}
+
 void handle_keys(Context* context)
 {
     handle_key_events(context->engineContext);
@@ -207,8 +250,9 @@ void handle_keys(Context* context)
     
     if(key_is_down(KEY_FORWARD))
     {
-        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, moveSpeed);
-        adjustCam = 1;
+        X_Vec3_fp16x16 newPos = x_vec3_add_scaled(&context->cam->base.position, &forward, moveSpeed);
+        attempt_move_cam(context->engineContext, context->cam, newPos);
+        //adjustCam = 1;
     }
     else if(key_is_down(KEY_BACKWARD))
     {

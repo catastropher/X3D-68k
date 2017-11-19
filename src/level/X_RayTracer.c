@@ -108,7 +108,14 @@ static inline _Bool explore_both_sides_of_node(X_RayTracer* trace,
     if(!intersectionInSolidLeaf)
         return visit_node(trace, endChildNode, &intersection, intersectionT, end, endT);
     
-    printf("Found impact!\n");
+    trace->collisionPlane = *plane;
+    
+    if(startDist < 0)
+    {
+        // Flip the direction of the plane because we're colliding on the wrong side
+        x_plane_flip_direction(&trace->collisionPlane);
+    }
+    
     return 0;
 }
 
@@ -139,7 +146,7 @@ void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_Vec3_fp16x16* sta
     trace->level = level;
     trace->ray.v[0] = *start;
     trace->ray.v[1] = *end;
-    trace->rootClipNode = 0;
+    trace->rootClipNode = level->collisionHulls[1].rootNode;
 }
 
 _Bool x_raytracer_trace(X_RayTracer* trace)
