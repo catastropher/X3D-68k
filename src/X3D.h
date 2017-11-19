@@ -43,6 +43,7 @@
 #include "level/X_BspLevelLoader.h"
 #include "level/X_EntityModel.h"
 #include "level/X_EntityModelLoader.h"
+#include "level/X_RayTracer.h"
 
 // math
 #include "math/X_angle.h"

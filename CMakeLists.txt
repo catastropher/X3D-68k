@@ -63,6 +63,7 @@ set(X3D_SOURCES
     src/level/X_BspLevelLoader.c
     src/level/X_EntityModel.c
     src/level/X_EntityModelLoader.c
+    src/level/X_RayTracer.c
     
     # math
     src/math/X_Mat4x4.c
