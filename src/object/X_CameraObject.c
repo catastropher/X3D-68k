@@ -28,6 +28,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     
     cam->lastLeaf = NULL;
     cam->screenResizeCallback = NULL;
+    cam->base.velocity = x_vec3_origin();
     
     return cam;
 }

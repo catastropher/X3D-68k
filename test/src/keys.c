@@ -156,10 +156,15 @@ void handle_console_keys(X_EngineContext* context)
 }
 
 _Bool everInLevel = 0;
+_Bool onGround;
 
 void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16x16 newPos)
 {
     _Bool success = 0;
+    
+    X_Vec3 oldVelocity = cam->base.velocity;
+    
+    onGround = 0;
     
     for(int i = 0; i < 4 && !success; ++i)
     {
@@ -186,6 +191,22 @@ void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16
                     x_fp16x16 penDepth = -x_plane_point_distance_fp16x16(&trace.collisionPlane, &newPos);
                     printf("Pen depth: %f\n", x_fp16x16_to_float(penDepth));
                     newPos = x_vec3_add_scaled(&newPos, &trace.collisionPlane.normal, penDepth);
+                    
+                    X_Vec3* velocity = &cam->base.velocity;
+                    
+                    x_fp16x16 dot = x_vec3_fp16x16_dot(&trace.collisionPlane.normal, velocity);
+                    *velocity = x_vec3_add_scaled(velocity, &trace.collisionPlane.normal, -dot);
+                    
+                    int type = 0;
+                    
+                    if(trace.collisionPlane.normal.y < x_fp16x16_from_float(0.7))
+                        type = 1;
+                    
+                    if(trace.collisionPlane.normal.y == 0)
+                        type = 2;
+                    
+                    if(type == 1 || type == 2)
+                        onGround = 1;
                 }
             }
         }
@@ -193,7 +214,7 @@ void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16
     
     if(success)
     {
-        cam->base.position = newPos;
+        cam->base.position = x_vec3_add(&cam->base.position, &cam->base.velocity);
         x_cameraobject_update_view(cam);
     }
 }
@@ -220,6 +241,15 @@ void handle_keys(Context* context)
         x_keystate_enable_text_input(&context->engineContext->keystate);
         return;
     }
+    
+    if(key_is_down(' '))
+    {
+        if(onGround)
+        {
+            X_Vec3_fp16x16 launch = x_vec3_make(0, -x_fp16x16_from_int(6), 0);
+            context->cam->base.velocity = x_vec3_add(&context->cam->base.velocity, &launch);
+        }
+    }
 
     if(key_is_down(SDLK_UP))
     {
@@ -243,21 +273,23 @@ void handle_keys(Context* context)
         adjustCam = 1;
     }
     
-    x_fp16x16 moveSpeed = 10 * 65536;
+    x_fp16x16 moveSpeed = 65536;
     X_Vec3 up, right, forward;
+    
+    x_fp16x16 gravityStrength = x_fp16x16_from_float(.25);
+    X_Vec3_fp16x16 gravity = x_vec3_make(0, gravityStrength, 0);
+    
+    context->cam->base.velocity = x_vec3_add(&gravity, &context->cam->base.velocity);
     
     x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
     
     if(key_is_down(KEY_FORWARD))
     {
-        X_Vec3_fp16x16 newPos = x_vec3_add_scaled(&context->cam->base.position, &forward, moveSpeed);
-        attempt_move_cam(context->engineContext, context->cam, newPos);
-        //adjustCam = 1;
+        context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &forward, moveSpeed);
     }
     else if(key_is_down(KEY_BACKWARD))
     {
-        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &forward, -moveSpeed);
-        adjustCam = 1;
+        context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &forward, -moveSpeed);
     }
     
     if(key_is_down('d'))
@@ -271,9 +303,12 @@ void handle_keys(Context* context)
         adjustCam = 1;
     }
     
-    if(adjustCam)
-    {
-        x_cameraobject_update_view(context->cam);
-    }
+    X_Vec3_fp16x16 newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
+    attempt_move_cam(context->engineContext, context->cam, newPos);
+    
+    //if(adjustCam)
+    //{
+    //    x_cameraobject_update_view(context->cam);
+   // }
 }
 
