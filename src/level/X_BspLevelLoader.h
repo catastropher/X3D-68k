@@ -187,6 +187,9 @@ typedef struct X_BspLevelLoader
     X_BspLoaderNode* nodes;
     int totalNodes;
     
+    X_BspClipNode* clipNodes;
+    int totalClipNodes;
+    
     X_BspLoaderModel* models;
     int totalModels;
     

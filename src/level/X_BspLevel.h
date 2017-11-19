@@ -187,6 +187,12 @@ typedef struct X_BspModel
     X_Vec3 origin;
 } X_BspModel;
 
+typedef struct X_BspClipNode
+{
+    int frontChild;
+    int backChild;
+} X_BspClipNode;
+
 typedef struct X_BspLevel
 {
     X_BspLevelFlags flags;
@@ -208,6 +214,9 @@ typedef struct X_BspLevel
     
     X_BspNode* nodes;
     int totalNodes;
+    
+    X_BspClipNode* clipNodes;
+    int totalClipNodes;
     
     X_BspModel* models;
     int totalModels;

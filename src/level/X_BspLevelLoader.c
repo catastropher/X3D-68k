@@ -189,6 +189,12 @@ static void x_bsploaderedge_read_from_file(X_BspLoaderEdge* edge, X_File* file)
     edge->v[1] = x_file_read_le_int16(file);
 }
 
+static void x_bspclipnode_read_from_file(X_BspClipNode* node, X_File* file)
+{
+    node->frontChild = x_file_read_le_int16(file);
+    node->backChild = x_file_read_le_int16(file);
+}
+
 static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* file)
 {
     for(int i = 0; i < 3; ++i)
@@ -210,6 +216,22 @@ static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* fil
     model->totalBspLeaves = x_file_read_le_int32(file);
     model->firstFaceId = x_file_read_le_int32(file);
     model->totalFaces = x_file_read_le_int32(file);
+}
+
+static void x_bsplevelloader_load_clip_nodes(X_BspLevelLoader* loader)
+{
+    const int NODE_SIZE_IN_FILE = 4;
+    X_BspLoaderLump* nodeLump = loader->header.lumps + X_LUMP_CLIPNODES;
+    
+    loader->totalClipNodes = nodeLump->length / NODE_SIZE_IN_FILE;
+    loader->clipNodes = x_malloc(loader->totalClipNodes * sizeof(X_BspClipNode));
+    
+    x_log("Total clip nodes: %d", loader->totalClipNodes);
+    
+    x_file_seek(&loader->file, nodeLump->fileOffset);
+    
+    for(int i = 0; i < loader->totalClipNodes; ++i)
+        x_bspclipnode_read_from_file(loader->clipNodes + i, &loader->file);
 }
 
 static void x_bsplevelloader_load_planes(X_BspLevelLoader* level)
@@ -773,6 +795,14 @@ static void x_bsplevel_init_lightmap_data(X_BspLevel* level, X_BspLevelLoader* l
     loader->lightmapData = NULL;
 }
 
+static void x_bsplevel_init_clipnodes(X_BspLevel* level, X_BspLevelLoader* loader)
+{
+    level->clipNodes = loader->clipNodes;
+    loader->clipNodes = NULL;
+    
+    level->totalClipNodes = loader->totalClipNodes;
+}
+
 static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLoader* loader)
 {
     x_bsplevel_allocate_memory(level, loader);
@@ -790,6 +820,7 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_textures(level, loader);
     x_bsplevel_init_facetextures(level, loader);
     x_bsplevel_init_surfaces(level, loader);
+    x_bsplevel_init_clipnodes(level, loader);
     
     X_BspNode* levelRootNode = x_bsplevel_get_root_node(level);
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
@@ -828,6 +859,7 @@ static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char
     x_bsplevelloader_load_surfaceedgeids(loader);
     x_bsplevelloader_load_textures(loader);
     x_bsplevelloader_load_facetextures(loader);
+    x_bsplevelloader_load_clip_nodes(loader);
     
     return 1;
 }
@@ -848,6 +880,7 @@ static void x_bsplevelloader_cleanup(X_BspLevelLoader* level)
     x_free(level->textures);
     x_free(level->textureTexels);
     x_free(level->vertices);
+    x_free(level->clipNodes);
     
     x_file_close(&level->file);
 }
