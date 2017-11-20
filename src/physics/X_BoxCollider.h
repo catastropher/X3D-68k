@@ -33,5 +33,8 @@ typedef struct X_BoxCollider
     X_Vec3_fp16x16 position;
     X_Vec3_fp16x16 velocity;
     X_Vec3_fp16x16* gravity;
+    x_fp16x16 bounceCoefficient;
+    x_fp16x16 frictionCoefficient;
+    x_fp16x16 maxSpeed;
 } X_BoxCollider;
 
