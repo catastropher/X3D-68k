@@ -64,6 +64,9 @@
 #include "object/X_CubeObject.h"
 #include "object/X_GameObject.h"
 
+// physics
+#include "physics/X_BoxCollider.h"
+
 // render
 #include "render/X_activeedge.h"
 #include "render/X_Canvas.h"

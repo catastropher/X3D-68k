@@ -166,7 +166,8 @@ void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16
     
     onGround = 0;
     
-    for(int i = 0; i < 4 && !success; ++i)
+    int i;
+    for(i = 0; i < 4 && !success; ++i)
     {
         if(!x_bsplevel_file_is_loaded(&context->currentLevel))
         {
@@ -189,7 +190,8 @@ void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16
                 if(!success)
                 {
                     x_fp16x16 penDepth = -x_plane_point_distance_fp16x16(&trace.collisionPlane, &newPos);
-                    printf("Pen depth: %f\n", x_fp16x16_to_float(penDepth));
+                    //printf("Pen depth: %f\n", x_fp16x16_to_float(penDepth));
+                    
                     newPos = x_vec3_add_scaled(&newPos, &trace.collisionPlane.normal, penDepth);
                     
                     X_Vec3* velocity = &cam->base.velocity;
@@ -197,25 +199,48 @@ void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16
                     x_fp16x16 dot = x_vec3_fp16x16_dot(&trace.collisionPlane.normal, velocity);
                     *velocity = x_vec3_add_scaled(velocity, &trace.collisionPlane.normal, -dot);
                     
+                    *velocity = x_vec3_origin();
+                    
+                    //if(X_SIGNOF(velocity->z) != X_SIGNOF(oldVelocity.y))
+                    //    velocity->y = 0;
+                    
+                    
                     int type = 0;
                     
                     if(trace.collisionPlane.normal.y < x_fp16x16_from_float(0.7))
                         type = 1;
                     
                     if(trace.collisionPlane.normal.y == 0)
+                    {
                         type = 2;
+                    }
                     
-                    if(type == 1 || type == 2)
+                    if(!onGround && (type == 1 || type == 2))
+                    {
+                        printf("----------\n");
+                        printf("Iter = %d\n", i);
+                        x_vec3_fp16x16_print(&oldVelocity, "Old velocity");
+                        x_vec3_fp16x16_print(velocity, "New velocity");
+                        x_vec3_fp16x16_print(&trace.collisionPlane.normal, "Normal");
+                        printf("Dot product: %f\n", x_fp16x16_to_float(dot));
+                        printf("----------\n");
+                    }
+                    
+                    if(type == 1)
                         onGround = 1;
                 }
             }
         }
     }
     
+    printf("Total iter: %d\n", i);
+    
+done:
     if(success)
     {
-        cam->base.position = x_vec3_add(&cam->base.position, &cam->base.velocity);
+        cam->base.position = newPos;//x_vec3_add(&cam->base.position, &cam->base.velocity);
         x_cameraobject_update_view(cam);
+        
     }
 }
 
@@ -273,15 +298,18 @@ void handle_keys(Context* context)
         adjustCam = 1;
     }
     
-    x_fp16x16 moveSpeed = 65536;
+    x_fp16x16 moveSpeed = 65536 * 5;
     X_Vec3 up, right, forward;
     
     x_fp16x16 gravityStrength = x_fp16x16_from_float(.25);
     X_Vec3_fp16x16 gravity = x_vec3_make(0, gravityStrength, 0);
     
-    context->cam->base.velocity = x_vec3_add(&gravity, &context->cam->base.velocity);
+    if(everInLevel)
+        context->cam->base.velocity = x_vec3_add(&gravity, &context->cam->base.velocity);
     
     x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
+    
+    forward.y = 0;
     
     if(key_is_down(KEY_FORWARD))
     {
@@ -294,17 +322,20 @@ void handle_keys(Context* context)
     
     if(key_is_down('d'))
     {
-        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &right, moveSpeed);
+        context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &right, moveSpeed);
         adjustCam = 1;
     }
     else if(key_is_down('a'))
     {
-        context->cam->base.position = x_vec3_add_scaled(&context->cam->base.position, &right, -moveSpeed);
+        context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &right, -moveSpeed);
         adjustCam = 1;
     }
     
     X_Vec3_fp16x16 newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
     attempt_move_cam(context->engineContext, context->cam, newPos);
+    
+    context->cam->base.velocity.x = 0;
+    context->cam->base.velocity.z = 0;
     
     //if(adjustCam)
     //{

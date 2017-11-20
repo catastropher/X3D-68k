@@ -82,6 +82,9 @@ set(X3D_SOURCES
     src/object/X_CubeObject.c
     src/object/X_GameObject.c
     
+    # physics
+    src/physics/X_BoxCollider.c
+    
     # render
     src/render/X_activeedge.c
     src/render/X_Canvas.c
