@@ -157,14 +157,16 @@ void handle_console_keys(X_EngineContext* context)
 
 _Bool everInLevel = 0;
 _Bool onGround;
+_Bool hitVerticalWall;
 
-void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16x16 newPos)
+_Bool attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16x16 newPos)
 {
     _Bool success = 0;
     
     X_Vec3 oldVelocity = cam->base.velocity;
     
     onGround = 0;
+    hitVerticalWall = 0;
     
     X_RayTracer trace;
     
@@ -195,8 +197,6 @@ void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16
                 {
                     somethingHit = 1;
                     newPos = trace.collisionPoint;
-                    
-                    x_vec3_fp16x16_print(&newPos, "Hit");
                     
 //                     x_fp16x16 penDepth = -x_plane_point_distance_fp16x16(&trace.collisionPlane, &newPos);
 //                     //printf("Pen depth: %f\n", x_fp16x16_to_float(penDepth));
@@ -237,14 +237,14 @@ void attempt_move_cam(X_EngineContext* context, X_CameraObject* cam, X_Vec3_fp16
                     
                     if(type == 1)
                         onGround = 1;
+                    
+                    if(type == 2)
+                        hitVerticalWall = 1;
                 }
             }
         }
     }
     
-    printf("Total iter: %d\n", i);
-    
-done:
     if(somethingHit)
     {
         x_fp16x16 speed = x_vec3_fp16x16_length(&cam->base.velocity);
@@ -252,8 +252,6 @@ done:
         if(speed != 0)
         {
         
-            printf("Speed: %f\n", x_fp16x16_to_float(speed));
-            
             const x_fp16x16 friction = x_fp16x16_from_float(4.0);
             x_fp16x16 newSpeed = speed - friction;
             if(newSpeed < 0)
@@ -264,7 +262,6 @@ done:
                 newSpeed = maxSpeed;
             
             newSpeed = x_fp16x16_div(newSpeed, speed);
-            printf("New speed: %f\n", x_fp16x16_to_float(newSpeed));
             
             X_Vec3 origin = x_vec3_origin();
             cam->base.velocity = x_vec3_add_scaled(&origin, &cam->base.velocity, newSpeed);
@@ -284,11 +281,8 @@ done:
             
             if(x_raytracer_trace(&trace))
             {
-                printf("SNAP!\n");
-                x_vec3_fp16x16_print(&newPos, "Start");
-                x_vec3_fp16x16_print(&beneath, "End");
-                x_vec3_fp16x16_print(&trace.collisionPoint, "Collision point");
                 newPos = trace.collisionPoint;
+                onGround = 1;
             }
         }
         
@@ -296,6 +290,8 @@ done:
         x_cameraobject_update_view(cam);
         
     }
+    
+    return success;
 }
 
 void handle_keys(Context* context)
@@ -363,9 +359,10 @@ void handle_keys(Context* context)
     
     x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
     
-    forward.y = 0;
+    if(everInLevel)
+        forward.y = 0;
     
-    if(onGround)
+    if(onGround || !everInLevel)
     {
         if(key_is_down(KEY_FORWARD))
         {
@@ -388,8 +385,38 @@ void handle_keys(Context* context)
         }
     }
     
+    X_Vec3_fp16x16 oldVelocity = context->cam->base.velocity;
+    X_Vec3_fp16x16 oldPos = context->cam->base.position;
+    
     X_Vec3_fp16x16 newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
-    attempt_move_cam(context->engineContext, context->cam, newPos);
+    if(attempt_move_cam(context->engineContext, context->cam, newPos))
+    {
+        if(hitVerticalWall)
+        {
+            X_Vec3_fp16x16 adjustVelocity = context->cam->base.velocity;
+            X_Vec3_fp16x16 adjustPos = context->cam->base.position;
+            
+            const x_fp16x16 stepSize = x_fp16x16_from_int(18);
+            context->cam->base.position = oldPos;
+            context->cam->base.position.y -= stepSize;
+            context->cam->base.velocity = oldVelocity;
+            
+            newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
+            
+            attempt_move_cam(context->engineContext, context->cam, newPos);
+            
+            if(!onGround)
+            {
+                context->cam->base.position = adjustPos;
+                context->cam->base.velocity = adjustVelocity;
+                x_cameraobject_update_view(context->cam);
+            }
+            
+            
+            //printf("Failed to move because of vertical wall\n");
+            
+        }
+    }
     
     //if(adjustCam)
     //{

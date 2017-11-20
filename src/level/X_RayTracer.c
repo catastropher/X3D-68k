@@ -51,8 +51,6 @@ static inline x_fp16x16 calculate_intersection_t(x_fp16x16 startDist, x_fp16x16 
     
     x_fp16x16 t = x_fp16x16_div(top, startDist - endDist);
     
-    printf("T: %f %f %f\n", x_fp16x16_to_float(top), x_fp16x16_to_float(startDist), x_fp16x16_to_float(endDist));
-    
     return x_fp16x16_clamp(t, 0, X_FP16x16_ONE);
 }
 
@@ -120,9 +118,6 @@ static inline _Bool explore_both_sides_of_node(X_RayTracer* trace,
     }
     
     trace->collisionPoint = intersection;
-    x_vec3_fp16x16_print(start, "START");
-    x_vec3_fp16x16_print(end, "END");
-    printf("Intersection T: %f\n", x_fp16x16_to_float(intersectionT));
     trace->collisionFrac = intersectionT;
     
     return 0;
@@ -146,9 +141,6 @@ _Bool visit_node(X_RayTracer* trace, int clipNodeId, X_Vec3_fp16x16* start, x_fp
     
     // The ray spans the split plane, so we need to explore both sides
     x_fp16x16 intersectionT = calculate_intersection_t(startDist, endDist);
-    
-    if(intersectionT != 0)
-        printf("IntersectionT NON ZERO: %d---------------------------------------\n", intersectionT);
     
     return explore_both_sides_of_node(trace, node, start, startT, end, endT, plane, intersectionT, startDist);
 }
