@@ -415,8 +415,18 @@ static void x_bsplevelloader_load_textures(X_BspLevelLoader* loader)
     
     int totalTexels = 0;
     
+    const int INVALID_TEXTURE_OFFSET = -1;
+    
     for(int i = 0; i < loader->totalTextures; ++i)
     {
+        if(mipLump.mipTextureOffsets[i] == INVALID_TEXTURE_OFFSET)
+        {
+            for(int j = 0; j < 4; ++j)
+                loader->textures[i].texelsOffset[j] = INVALID_TEXTURE_OFFSET;
+            
+            continue;
+        }
+        
         int textureFileOffset = textureLump->fileOffset + mipLump.mipTextureOffsets[i];
         x_file_seek(&loader->file, textureFileOffset);
         x_bsploadertexture_read_from_file(loader->textures + i, &loader->file);
@@ -430,6 +440,9 @@ static void x_bsplevelloader_load_textures(X_BspLevelLoader* loader)
     X_Color* texels = loader->textureTexels;    
     for(int i = 0; i < loader->totalTextures; ++i)
     {
+        if(mipLump.mipTextureOffsets[i] == INVALID_TEXTURE_OFFSET)
+            continue;
+        
         X_BspLoaderTexture* tex = loader->textures + i;
         int texelsInMipTexture = tex->w * tex->h;
         
@@ -729,6 +742,15 @@ static void x_bsplevel_init_textures(X_BspLevel* level, X_BspLevelLoader* loader
     {
         X_BspTexture* tex = level->textures + i;
         X_BspLoaderTexture* loadTex = loader->textures + i;
+    
+        const int INVALID_TEXTURE_OFFSET = -1;
+        if(loadTex->texelsOffset[0] == INVALID_TEXTURE_OFFSET)
+        {
+            for(int j = 0; j < 4; ++j)
+                tex->mipTexels[j] = NULL;
+            
+            continue;
+        }
         
         strcpy(tex->name, loadTex->name);
         tex->w = loadTex->w;
