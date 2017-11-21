@@ -50,11 +50,9 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     
     x_mat4x4_mul(&rotation, &translation, &cam->viewMatrix);
     
-    X_Vec3 camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
-    
     X_Vec3 forward, up, right;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
-    x_viewport_update_frustum(&cam->viewport, &camPos, &forward, &right, &up);
+    x_viewport_update_frustum(&cam->viewport, &cam->base.position, &forward, &right, &up);
 }
 
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)

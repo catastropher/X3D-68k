@@ -96,6 +96,16 @@ static inline X_Vec3 x_vec3_add_scaled(const X_Vec3* a, const X_Vec3* vecToScale
     );
 }
 
+static inline X_Vec3_fp16x16 x_vec3_fp16x16_scale(const X_Vec3_fp16x16* v, x_fp16x16 scale)
+{
+    return x_vec3_make
+    (
+        x_fp16x16_mul(v->x, scale),
+        x_fp16x16_mul(v->y, scale),
+        x_fp16x16_mul(v->z, scale)
+    );
+}
+
 static inline X_Vec3 x_vec3_shift_right(X_Vec3* v, int shift)
 {
     return x_vec3_make(v->x >> shift, v->y >> shift, v->z >> shift);
