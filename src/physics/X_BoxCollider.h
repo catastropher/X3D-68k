@@ -38,3 +38,8 @@ typedef struct X_BoxCollider
     x_fp16x16 maxSpeed;
 } X_BoxCollider;
 
+void x_boxcollider_init(X_BoxCollider* collider, X_BspBoundBox* boundBox, X_BoxColliderFlags flags);
+void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level);
+
+//static inline void x_boxcollider_apply_velocity(X_BoxCollider* collider, X_Vec3_fp16x16*)
+

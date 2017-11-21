@@ -16,10 +16,6 @@
 #include "X_BoxCollider.h"
 #include "level/X_RayTracer.h"
 
-void x_boxcollider_init(X_BoxCollider* collider)
-{
-    
-}
 
 static _Bool flag_enabled(X_BoxCollider* collider, X_BoxColliderFlags flag)
 {
@@ -124,6 +120,9 @@ static IterationFlags run_move_iterations(X_BoxCollider* collider, X_BspLevel* l
     for(i = 0; i < MAX_ITERATIONS && !(flags & IT_MOVE_SUCCESS); ++i)
         flags |= move_and_adjust_velocity(collider, level, lastHitWall, &newVelocity, &newPos);
     
+    collider->position = newPos;
+    collider->velocity = newVelocity;
+    
     return flags | (i != 0 ? IT_HIT_ANYTHING : 0);
 }
 
@@ -167,6 +166,8 @@ IterationFlags stick_to_floor(X_BoxCollider* collider, X_BspLevel* level)
         return 0;
     
     collider->position = floor.collisionPoint;
+    adjust_velocity_to_slide_along_wall(&collider->velocity, &floor.collisionPlane, collider->bounceCoefficient);
+    
     return IT_ON_FLOOR;
 }
 
@@ -178,16 +179,44 @@ static _Bool try_move(X_BoxCollider* collider, X_BspLevel* level)
     X_RayTracer lastHitWall;
     IterationFlags flags = run_move_iterations(collider, level, &lastHitWall);
     
-    if(!(flags & IT_MOVE_SUCCESS))
-        return 0;
-    
     if(flags & IT_HIT_VERTICAL_WALL)
-        try_and_move_up_step(collider, level, &oldPos, &oldVelocity, &lastHitWall);
+    {
+        if(try_and_move_up_step(collider, level, &oldPos, &oldVelocity, &lastHitWall))
+            flags |= IT_MOVE_SUCCESS;
+    }
+    
+    if(!(flags & IT_MOVE_SUCCESS))
+    {
+        collider->velocity = x_vec3_origin();
+        collider->position = oldPos;
+        return 0;
+    }
     
     flags |= stick_to_floor(collider, level);
-    apply_friction(collider);
+    
+    if(flags & IT_ON_FLOOR)
+    {
+        apply_friction(collider);
+        collider->flags |= X_BOXCOLLIDER_ON_GROUND;
+    }
+    else
+    {
+        collider->flags &= ~X_BOXCOLLIDER_ON_GROUND;
+    }
     
     return 1;
+}
+
+void x_boxcollider_init(X_BoxCollider* collider, X_BspBoundBox* boundBox, X_BoxColliderFlags flags)
+{
+    static X_Vec3_fp16x16 gravity = { 0, 0.25 * 65536, 0 };
+    
+    collider->boundBox = *boundBox;
+    collider->flags = flags;
+    collider->gravity = &gravity;
+    collider->frictionCoefficient = x_fp16x16_from_float(4.0);
+    collider->maxSpeed = x_fp16x16_from_float(20.0);
+    collider->bounceCoefficient = X_FP16x16_ONE;
 }
 
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level)

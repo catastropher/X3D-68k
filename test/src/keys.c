@@ -354,8 +354,8 @@ void handle_keys(Context* context)
     x_fp16x16 gravityStrength = x_fp16x16_from_float(.25);
     X_Vec3_fp16x16 gravity = x_vec3_make(0, gravityStrength, 0);
     
-    if(everInLevel)
-        context->cam->base.velocity = x_vec3_add(&gravity, &context->cam->base.velocity);
+//     if(everInLevel)
+//         context->cam->base.velocity = x_vec3_add(&gravity, &context->cam->base.velocity);
     
     x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
     
@@ -384,39 +384,68 @@ void handle_keys(Context* context)
             adjustCam = 1;
         }
     }
-    
-    X_Vec3_fp16x16 oldVelocity = context->cam->base.velocity;
-    X_Vec3_fp16x16 oldPos = context->cam->base.position;
-    
-    X_Vec3_fp16x16 newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
-    if(attempt_move_cam(context->engineContext, context->cam, newPos))
+   
+    if(!everInLevel)
     {
-        if(hitVerticalWall)
-        {
-            X_Vec3_fp16x16 adjustVelocity = context->cam->base.velocity;
-            X_Vec3_fp16x16 adjustPos = context->cam->base.position;
-            
-            const x_fp16x16 stepSize = x_fp16x16_from_int(18);
-            context->cam->base.position = oldPos;
-            context->cam->base.position.y -= stepSize;
-            context->cam->base.velocity = oldVelocity;
-            
-            newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
-            
-            attempt_move_cam(context->engineContext, context->cam, newPos);
-            
-            if(!onGround)
-            {
-                context->cam->base.position = adjustPos;
-                context->cam->base.velocity = adjustVelocity;
-                x_cameraobject_update_view(context->cam);
-            }
-            
-            
-            //printf("Failed to move because of vertical wall\n");
-            
-        }
+        X_Vec3_fp16x16 newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
+        X_Vec3 point = x_vec3_fp16x16_to_vec3(&newPos);
+        everInLevel = x_engine_level_is_loaded(context->engineContext) && x_bsplevel_find_leaf_point_is_in(&context->engineContext->currentLevel, &point)->contents != X_BSPLEAF_SOLID;
+        context->cam->base.position = newPos;
+        x_cameraobject_update_view(context->cam);
+        
+        context->cam->base.velocity = x_vec3_origin();
     }
+    else
+    {
+        X_BspBoundBox box;
+        X_BoxCollider collider;
+        x_boxcollider_init(&collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+        
+        collider.position = context->cam->base.position;
+        collider.velocity = context->cam->base.velocity;
+        
+        x_boxcollider_update(&collider, &context->engineContext->currentLevel);
+        
+        context->cam->base.velocity = collider.velocity;
+        context->cam->base.position = collider.position;
+        
+        onGround = collider.flags & X_BOXCOLLIDER_ON_GROUND;
+        
+        x_cameraobject_update_view(context->cam);
+    }
+   
+//     X_Vec3_fp16x16 oldVelocity = context->cam->base.velocity;
+//     X_Vec3_fp16x16 oldPos = context->cam->base.position;
+//     
+//     X_Vec3_fp16x16 newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
+//     if(attempt_move_cam(context->engineContext, context->cam, newPos))
+//     {
+//         if(hitVerticalWall)
+//         {
+//             X_Vec3_fp16x16 adjustVelocity = context->cam->base.velocity;
+//             X_Vec3_fp16x16 adjustPos = context->cam->base.position;
+//             
+//             const x_fp16x16 stepSize = x_fp16x16_from_int(18);
+//             context->cam->base.position = oldPos;
+//             context->cam->base.position.y -= stepSize;
+//             context->cam->base.velocity = oldVelocity;
+//             
+//             newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
+//             
+//             attempt_move_cam(context->engineContext, context->cam, newPos);
+//             
+//             if(!onGround)
+//             {
+//                 context->cam->base.position = adjustPos;
+//                 context->cam->base.velocity = adjustVelocity;
+//                 x_cameraobject_update_view(context->cam);
+//             }
+//             
+//             
+//             //printf("Failed to move because of vertical wall\n");
+//             
+//         }
+//     }
     
     //if(adjustCam)
     //{
