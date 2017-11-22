@@ -221,8 +221,6 @@ void handle_console_keys(X_EngineContext* context)
     }
 }
 
-_Bool everInLevel = 0;
-
 static void keep_horizontal_component(X_Vec3_fp16x16* v)
 {
     v->y = 0;
