@@ -27,7 +27,7 @@
 void gameloop(Context* context)
 {
     X_EntityModel model;
-    x_entitymodel_load_from_file(&model, "knight.mdl");
+    x_entitymodel_load_from_file(&model, "shambler.mdl");
     
     int frameId = 0;
     int count = 0;
@@ -62,13 +62,13 @@ void gameloop(Context* context)
         }
         
         if(!frame)
-            frame = x_entitymodel_get_animation_start_frame(&model, "runattack");
+            frame = x_entitymodel_get_animation_start_frame(&model, "swingr");
         
         if(!frame)
             x_system_error("No such frame");
         
         //x_entitymodel_draw_frame_wireframe(&model, frame, x_vec3_make(0, 0, 0), 255, &renderContext);
-        x_entitymodel_render_flat_shaded(&model, frame, &renderContext);
+        //x_entitymodel_render_flat_shaded(&model, frame, &renderContext);
         
         
         handle_keys(context);        

@@ -17,6 +17,7 @@
 
 // dev
 #include "dev/X_Console.h"
+#include "dev/X_DemoRecorder.h"
 
 // geo
 #include "geo/X_Cube.h"

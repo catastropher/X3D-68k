@@ -359,10 +359,10 @@ void handle_keys(Context* context)
     
     x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
     
-    if(everInLevel)
+    if(everInLevel && !key_is_down(SDLK_LCTRL))
         forward.y = 0;
     
-    if(onGround || !everInLevel)
+    if(onGround || !everInLevel || key_is_down(SDLK_LCTRL))
     {
         if(key_is_down(KEY_FORWARD))
         {
@@ -385,11 +385,13 @@ void handle_keys(Context* context)
         }
     }
    
-    if(!everInLevel)
+    if(!everInLevel || key_is_down(SDLK_LCTRL))
     {
         X_Vec3_fp16x16 newPos = x_vec3_add(&context->cam->base.position, &context->cam->base.velocity);
         X_Vec3 point = x_vec3_fp16x16_to_vec3(&newPos);
-        everInLevel = x_engine_level_is_loaded(context->engineContext) && x_bsplevel_find_leaf_point_is_in(&context->engineContext->currentLevel, &point)->contents != X_BSPLEAF_SOLID;
+        everInLevel = x_engine_level_is_loaded(context->engineContext)
+            && x_bsplevel_find_leaf_point_is_in(&context->engineContext->currentLevel, &point)->contents != X_BSPLEAF_SOLID;
+            
         context->cam->base.position = newPos;
         x_cameraobject_update_view(context->cam);
         

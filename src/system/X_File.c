@@ -27,6 +27,7 @@
 #include "memory/X_String.h"
 #include "engine/X_config.h"
 #include "util/X_util.h"
+#include "math/X_Mat4x4.h"
 
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
@@ -383,6 +384,32 @@ void x_file_write_le_int16(X_File* file, int val)
     
     for(int i = 0; i < 2; ++i)
         fputc((val >> (i * 8)) & 0xFF, file->file);
+}
+
+void x_file_write_le_int32(X_File* file, int val)
+{
+    ASSERT_OPEN_FOR_WRITING(file);
+    
+    for(int i = 0; i < 4; ++i)
+        fputc((val >> (i * 8)) & 0xFF, file->file);
+}
+
+void x_file_write_vec3(X_File* file, X_Vec3* v)
+{
+    x_file_write_le_int32(file, v->x);
+    x_file_write_le_int32(file, v->y);
+    x_file_write_le_int32(file, v->z);
+}
+
+void x_file_write_mat4x4(X_File* file, X_Mat4x4* mat)
+{
+    for(int i = 0; i < 4; ++i)
+    {
+        for(int j = 0; j < 4; ++j)
+        {
+            x_file_write_le_int32(file, mat->elem[i][j]);
+        }
+    }
 }
 
 void x_file_write_buf(X_File* file, int bufSize, void* src)
