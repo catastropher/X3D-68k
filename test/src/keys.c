@@ -95,9 +95,9 @@ static void cmd_demo(X_EngineContext* context, int argc, char* argv[])
 
 static void cmd_playdemo(X_EngineContext* context, int argc, char* argv[])
 {
-    if(argc != 2)
+    if(argc < 2)
     {
-        x_console_print(&context->console, "Usage playdemo [filename] -> plays a demo\n");
+        x_console_print(&context->console, "Usage playdemo [filename] [opt base record filename] -> plays a demo\n");
         return;
     }
     
@@ -112,6 +112,14 @@ static void cmd_playdemo(X_EngineContext* context, int argc, char* argv[])
     
     x_keystate_reset_keys(&context->keystate);
     x_console_force_close(&context->console);
+    
+    if(argc != 3)
+        return;
+    
+    char recordCmd[X_FILENAME_MAX_LENGTH];
+    sprintf(recordCmd, "record %s 4", argv[2]);
+    
+    x_console_execute_cmd(&context->console, recordCmd);
 }
 
 void init_keys(Context* context)
@@ -356,13 +364,21 @@ void handle_keys(Context* context)
 {
     handle_key_events(context->engineContext);
     
+    _Bool wasPlaying = 0;
+    
     if(x_demoplayer_is_playing(&g_Context->demoPlayer))
     {
         x_demoplayer_play_frame(&g_Context->demoPlayer);
+        wasPlaying = 1;
     }
     else if(x_demorecorder_is_recording(&g_Context->demoRecorder))
     {
         x_demorecorder_save_frame(&g_Context->demoRecorder);
+    }
+    
+    if(wasPlaying && !x_demoplayer_is_playing(&g_Context->demoPlayer))
+    {
+        x_console_execute_cmd(&context->engineContext->console, "endrecord");
     }
     
     _Bool adjustCam = 0;
