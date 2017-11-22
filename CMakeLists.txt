@@ -39,6 +39,7 @@ set(X3D_SOURCES
     src/dev/X_AutoCompleter.c
     src/dev/X_conCommands.c
     src/dev/X_Console.c
+    src/dev/X_DemoPlayer.c
     src/dev/X_DemoRecorder.c
     src/dev/X_TokenLexer.c
 

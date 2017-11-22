@@ -70,10 +70,13 @@ static void build_key_map(void)
         x3dKeyMap[(int)symbols[i]] = symbols[i];
 }
 
-void init_keys()
+void init_keys(Context* context)
 {
     SDL_EnableUNICODE(SDL_ENABLE);
     build_key_map();
+    
+    x_demorecorder_init(&context->demoRecorder, context->cam, &context->engineContext->keystate);
+    x_demoplayer_init(&context->demoPlayer, context->cam, &context->engineContext->keystate);
 }
 
 static int convert_sdl_key_to_x3d_key(int sdlKey)

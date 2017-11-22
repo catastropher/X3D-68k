@@ -15,31 +15,30 @@
 
 #pragma once
 
-#include "system/X_File.h"
-#include "object/X_CameraObject.h"
-#include "system/X_Keys.h"
+#include "X_DemoRecorder.h"
 
-#define X_DEMO_CURRENT_VERSION 1
-#define X_KEY_BITARRAY_SIZE (X_TOTAL_KEYS + 7) / 8
-
-typedef struct X_DemoRecorder
+typedef struct X_DemoPlayerFrame
 {
-    X_File file;
+    unsigned char keyState[X_KEY_BITARRAY_SIZE];
+} X_DemoPlayerFrame;
+
+typedef struct X_DemoPlayer
+{
     X_CameraObject* cam;
     X_KeyState* keyState;
+    
     int totalFrames;
-    _Bool recording;
-} X_DemoRecorder;
+    X_DemoPlayerFrame* frames;
+    
+    int currentFrame;
+} X_DemoPlayer;
 
-static inline _Bool x_demorecorder_is_recording(X_DemoRecorder* recorder)
+void x_demoplayer_init(X_DemoPlayer* player, X_CameraObject* cam, X_KeyState* keyState);
+_Bool x_demoplayer_play(X_DemoPlayer* player, const char* fileName);
+void x_demoplayer_play_frame(X_DemoPlayer* player);
+
+static inline _Bool x_demoplayer_is_playing(const X_DemoPlayer* player)
 {
-    return recorder->recording;
+    return player->frames != NULL && player->currentFrame < player->totalFrames;
 }
-
-void x_demorecorder_init(X_DemoRecorder* recorder, X_CameraObject* cam, X_KeyState* keyState);
-_Bool x_demorecorder_record(X_DemoRecorder* recorder, const char* outputFileName);
-
-void x_demorecorder_cleanup(X_DemoRecorder* recorder);
-
-void x_demorecorder_save_frame(X_DemoRecorder* recorder);
 

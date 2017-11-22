@@ -22,6 +22,8 @@
 #include "geo/X_Vec3.h"
 #include "geo/X_Vec2.h"
 
+struct X_Mat4x4;
+
 // TODO: this should be used in place of magic numbers
 #define X_FILENAME_MAX_LENGTH 256
 
@@ -75,6 +77,7 @@ void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest);
 void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3_fp16x16* dest);
 
 void x_file_read_vec2(X_File* file, X_Vec2* dest);
+void x_file_read_mat4x4(X_File* file, struct X_Mat4x4* mat);
 
 _Bool x_file_open_writing(X_File* file, const char* fileName);
 _Bool x_file_open_writing_create_path(X_File* file, const char* fileName);
@@ -84,7 +87,6 @@ void x_file_write_buf(X_File* file, int bufSize, void* src);
 void x_file_write_le_int32(X_File* file, int val);
 void x_file_write_vec3(X_File* file, X_Vec3* v);
 
-struct X_Mat4x4;
 void x_file_write_mat4x4(X_File* file, struct X_Mat4x4* mat);
 
 void x_filepath_set_default_file_extension(char* filePath, const char* defaultExtension);

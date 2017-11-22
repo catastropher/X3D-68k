@@ -16,8 +16,6 @@
 #include "X_DemoRecorder.h"
 #include "error/X_log.h"
 
-#define CURRENT_DEMO_VERSION 1
-
 static void save_camera_start(X_DemoRecorder* recorder, X_CameraObject* cam)
 {
     x_file_write_mat4x4(&recorder->file, &cam->viewMatrix);
@@ -29,18 +27,22 @@ static void save_camera_start(X_DemoRecorder* recorder, X_CameraObject* cam)
     x_file_write_le_int32(&recorder->file, cam->angleY);
 }
 
-_Bool x_demorecorder_init(X_DemoRecorder* recorder, X_CameraObject* cam, X_KeyState* keyState, const char* outputFileName)
+void x_demorecorder_init(X_DemoRecorder* recorder, X_CameraObject* cam, X_KeyState* keyState)
 {
     recorder->cam = cam;
     recorder->keyState = keyState;
+}
+
+_Bool x_demorecorder_record(X_DemoRecorder* recorder, const char* outputFileName)
+{
     recorder->totalFrames = 0;
     
     if(!x_file_open_writing(&recorder->file, outputFileName))
         return 0;
     
-    x_file_write_le_int32(&recorder->file, CURRENT_DEMO_VERSION);
-    x_file_write_le_int32(&recorder->file, 0);  // Total number of frames
-    save_camera_start(recorder, cam);
+    x_file_write_le_int32(&recorder->file, X_DEMO_CURRENT_VERSION);
+    x_file_write_le_int32(&recorder->file, recorder->totalFrames);
+    save_camera_start(recorder, recorder->cam);
     
     return 1;
 }
@@ -56,15 +58,13 @@ void x_demorecorder_cleanup(X_DemoRecorder* recorder)
     }
 }
 
-#define KEY_SIZE (X_TOTAL_KEYS + 7) / 8
-
 void x_demorecorder_save_frame(X_DemoRecorder* recorder)
 {
-    unsigned char keyBytes[KEY_SIZE] = { 0 };
+    unsigned char keyBytes[X_KEY_BITARRAY_SIZE] = { 0 };
     
     for(int i = 0; i < X_TOTAL_KEYS; ++i)
         keyBytes[i / 8] |= (int)x_keystate_key_down(recorder->keyState, i) << (i % 8);
     
-    x_file_write_buf(&recorder->file, KEY_SIZE, keyBytes);
+    x_file_write_buf(&recorder->file, X_KEY_BITARRAY_SIZE, keyBytes);
 }
 

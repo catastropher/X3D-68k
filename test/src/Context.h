@@ -25,6 +25,9 @@ typedef struct Context
     X_CameraObject* cam;
     _Bool quit;
     
+    X_DemoRecorder demoRecorder;
+    X_DemoPlayer demoPlayer;
+    
     int nativeResolutionW;
     int nativeResolutionH;
 } Context;

@@ -17,7 +17,9 @@
 
 #include <X3D/X3D.h>
 
-void init_keys();
+struct Context;
+
+void init_keys(struct Context*);
 void handle_key_events(X_EngineContext* context);
 _Bool key_is_down(int sdlKey);
 void handle_keys(Context* context);
