@@ -39,6 +39,11 @@ void x_console_close(X_Console* console)
     console->openState = X_CONSOLE_STATE_CLOSING;
 }
 
+void x_console_force_close(X_Console* console)
+{
+    console->openState = X_CONSOLE_STATE_CLOSED;
+}
+
 static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig)
 {
     consoleVar->name = name;

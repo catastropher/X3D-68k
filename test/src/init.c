@@ -66,8 +66,8 @@ void init(Context* context, const char* programPath)
 {
     X_Vec2 resolution = determine_default_platform_resolution();
     init_x3d(context, resolution.x, resolution.y, programPath);
-    init_keys(context);
     init_camera(context);
+    init_keys(context);
     
     x_console_execute_cmd(&context->engineContext->console, "searchpath ..");
     x_console_execute_cmd(&context->engineContext->console, "exec engine.cfg");
@@ -92,6 +92,7 @@ static void cleanup_x3d(Context* context)
 
 void cleanup(Context* context)
 {
+    cleanup_keys(context);
     cleanup_sdl(context);
     cleanup_x3d(context);
 }

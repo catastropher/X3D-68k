@@ -102,6 +102,7 @@ typedef struct X_Console
 
 void x_console_open(X_Console* console);
 void x_console_close(X_Console* console);
+void x_console_force_close(X_Console* console);
 
 X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName);
 _Bool x_console_cmd_exists(X_Console* console, const char* cmdName);

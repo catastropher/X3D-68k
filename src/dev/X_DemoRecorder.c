@@ -31,11 +31,13 @@ void x_demorecorder_init(X_DemoRecorder* recorder, X_CameraObject* cam, X_KeySta
 {
     recorder->cam = cam;
     recorder->keyState = keyState;
+    recorder->recording = 0;
 }
 
 _Bool x_demorecorder_record(X_DemoRecorder* recorder, const char* outputFileName)
 {
     recorder->totalFrames = 0;
+    recorder->recording = 1;
     
     if(!x_file_open_writing(&recorder->file, outputFileName))
         return 0;
@@ -66,5 +68,6 @@ void x_demorecorder_save_frame(X_DemoRecorder* recorder)
         keyBytes[i / 8] |= (int)x_keystate_key_down(recorder->keyState, i) << (i % 8);
     
     x_file_write_buf(&recorder->file, X_KEY_BITARRAY_SIZE, keyBytes);
+    ++recorder->totalFrames;
 }
 

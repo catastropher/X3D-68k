@@ -36,6 +36,8 @@
 static _Bool sdlKeyState[TOTAL_SDL_KEYS];
 static int x3dKeyMap[TOTAL_SDL_KEYS];
 
+static Context* g_Context;
+
 static void build_key_map(void)
 {
     for(int i = 0; i < TOTAL_SDL_KEYS; ++i)
@@ -63,20 +65,73 @@ static void build_key_map(void)
     x3dKeyMap[SDLK_UP] = X_KEY_UP;
     x3dKeyMap[SDLK_DOWN] = X_KEY_DOWN;
     x3dKeyMap[SDLK_LEFT] = X_KEY_LEFT;
-    x3dKeyMap[X_KEY_RIGHT] = X_KEY_RIGHT;
+    x3dKeyMap[SDLK_RIGHT] = X_KEY_RIGHT;
 
     const char symbols[] = "!@#$%^&*()[]{}\\|:;'\",.<>/?-_=+";
     for(int i = 0; i < strlen(symbols); ++i)
         x3dKeyMap[(int)symbols[i]] = symbols[i];
 }
 
+static void cmd_demo(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage demo [filename] -> begins recording a demo\n");
+        return;
+    }
+    
+    if(x_demorecorder_is_recording(&g_Context->demoRecorder))
+    {
+        x_console_print(&context->console, "A demo is already recording\n");
+        return;
+    }
+    
+    if(!x_demorecorder_record(&g_Context->demoRecorder, argv[1]))
+        x_console_print(&context->console, "Failed to start recording demo");
+    
+    x_keystate_reset_keys(&context->keystate);
+    x_console_force_close(&context->console);
+}
+
+static void cmd_playdemo(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage playdemo [filename] -> plays a demo\n");
+        return;
+    }
+    
+    if(x_demorecorder_is_recording(&g_Context->demoRecorder))
+    {
+        x_console_print(&context->console, "A demo is being recorded\n");
+        return;
+    }
+    
+    if(!x_demoplayer_play(&g_Context->demoPlayer, argv[1]))
+        x_console_print(&context->console, "Failed to start playing demo");
+    
+    x_keystate_reset_keys(&context->keystate);
+    x_console_force_close(&context->console);
+}
+
 void init_keys(Context* context)
 {
+    g_Context = context;
+    
     SDL_EnableUNICODE(SDL_ENABLE);
     build_key_map();
     
     x_demorecorder_init(&context->demoRecorder, context->cam, &context->engineContext->keystate);
     x_demoplayer_init(&context->demoPlayer, context->cam, &context->engineContext->keystate);
+    
+    x_console_register_cmd(&context->engineContext->console, "demo", cmd_demo);
+    x_console_register_cmd(&context->engineContext->console, "playdemo", cmd_playdemo);
+}
+
+void cleanup_keys(Context* context)
+{
+    x_demorecorder_cleanup(&context->demoRecorder);
+    x_demoplayer_cleanup(&context->demoPlayer);
 }
 
 static int convert_sdl_key_to_x3d_key(int sdlKey)
@@ -301,6 +356,15 @@ void handle_keys(Context* context)
 {
     handle_key_events(context->engineContext);
     
+    if(x_demoplayer_is_playing(&g_Context->demoPlayer))
+    {
+        x_demoplayer_play_frame(&g_Context->demoPlayer);
+    }
+    else if(x_demorecorder_is_recording(&g_Context->demoRecorder))
+    {
+        x_demorecorder_save_frame(&g_Context->demoRecorder);
+    }
+    
     _Bool adjustCam = 0;
     
     if(key_is_down(SDLK_ESCAPE))
@@ -320,7 +384,9 @@ void handle_keys(Context* context)
         return;
     }
     
-    if(key_is_down(' '))
+    X_KeyState* keyState = &context->engineContext->keystate;
+    
+    if(x_keystate_key_down(keyState, ' '))
     {
         if(onGround)
         {
@@ -329,23 +395,23 @@ void handle_keys(Context* context)
         }
     }
 
-    if(key_is_down(SDLK_UP))
+    if(x_keystate_key_down(keyState, X_KEY_UP))
     {
         context->cam->angleX -= 2;
         adjustCam = 1;
     }
-    else if(key_is_down(SDLK_DOWN))
+    else if(x_keystate_key_down(keyState, X_KEY_DOWN))
     {
         context->cam->angleX += 2;
         adjustCam = 1;
     }
     
-    if(key_is_down(SDLK_LEFT))
+    if(x_keystate_key_down(keyState, X_KEY_LEFT))
     {
         context->cam->angleY += 2;
         adjustCam = 1;
     }
-    else if(key_is_down(SDLK_RIGHT))
+    else if(x_keystate_key_down(keyState, X_KEY_RIGHT))
     {
         context->cam->angleY -= 2;
         adjustCam = 1;
@@ -367,21 +433,21 @@ void handle_keys(Context* context)
     
     if(onGround || !everInLevel || key_is_down(SDLK_LCTRL))
     {
-        if(key_is_down(KEY_FORWARD))
+        if(x_keystate_key_down(keyState, KEY_FORWARD))
         {
             context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &forward, moveSpeed);
         }
-        else if(key_is_down(KEY_BACKWARD))
+        else if(x_keystate_key_down(keyState, KEY_BACKWARD))
         {
             context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &forward, -moveSpeed);
         }
         
-        if(key_is_down('d'))
+        if(x_keystate_key_down(keyState, 'd'))
         {
             context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &right, moveSpeed);
             adjustCam = 1;
         }
-        else if(key_is_down('a'))
+        else if(x_keystate_key_down(keyState, 'a'))
         {
             context->cam->base.velocity = x_vec3_add_scaled(&context->cam->base.velocity, &right, -moveSpeed);
             adjustCam = 1;

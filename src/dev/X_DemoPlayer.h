@@ -36,6 +36,7 @@ typedef struct X_DemoPlayer
 void x_demoplayer_init(X_DemoPlayer* player, X_CameraObject* cam, X_KeyState* keyState);
 _Bool x_demoplayer_play(X_DemoPlayer* player, const char* fileName);
 void x_demoplayer_play_frame(X_DemoPlayer* player);
+void x_demoplayer_cleanup(X_DemoPlayer* player);
 
 static inline _Bool x_demoplayer_is_playing(const X_DemoPlayer* player)
 {

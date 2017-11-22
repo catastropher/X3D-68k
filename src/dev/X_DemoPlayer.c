@@ -58,7 +58,7 @@ _Bool x_demoplayer_play(X_DemoPlayer* player, const char* fileName)
     if(!x_file_open_reading(&file, fileName))
         return 0;
     
-    int version = x_file_read_be_int32(&file);
+    int version = x_file_read_le_int32(&file);
     if(version != X_DEMO_CURRENT_VERSION)
     {
         x_log_error("Demo has bad version %d (expected %d)", version, X_DEMO_CURRENT_VERSION);
@@ -66,6 +66,7 @@ _Bool x_demoplayer_play(X_DemoPlayer* player, const char* fileName)
     }
     
     player->totalFrames = x_file_read_le_int32(&file);
+    printf("Total frames: %d\n", player->totalFrames);
     read_camera_start(player->cam, &file);
     read_frames(player, &file);
     
@@ -82,5 +83,10 @@ void x_demoplayer_play_frame(X_DemoPlayer* player)
     X_DemoPlayerFrame* frame = player->frames + player->currentFrame++;
     for(int i = 0; i < X_TOTAL_KEYS; ++i)
         player->keyState->keyDown[i] = frame->keyState[i / 8] & (1 << (i % 8));
+}
+
+void x_demoplayer_cleanup(X_DemoPlayer* player)
+{
+    x_free(player->frames);
 }
 
