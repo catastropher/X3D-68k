@@ -18,6 +18,7 @@
 #include "X_GameObject.h"
 #include "render/X_Viewport.h"
 #include "level/X_BspLevel.h"
+#include "physics/X_BoxCollider.h"
 
 struct X_EngineContext;
 struct X_RenderContext;
@@ -28,6 +29,7 @@ struct X_Screen;
 typedef struct X_CameraObject
 {
     X_GameObject base;
+    X_BoxCollider collider;
     X_Viewport viewport;
     X_Mat4x4 viewMatrix;
     x_angle256 angleX;
@@ -44,3 +46,12 @@ X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
 void x_cameraobject_update_view(X_CameraObject* cam);
 void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderContext);
 
+static inline X_Vec3_fp16x16 x_cameraobject_get_position(X_CameraObject* cam)
+{
+    return cam->collider.position;
+}
+
+static inline X_Vec3_fp16x16 x_cameraobject_get_velocity(X_CameraObject* cam)
+{
+    return cam->collider.velocity;
+}

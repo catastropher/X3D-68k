@@ -447,6 +447,8 @@ void handle_keys(Context* context)
     if(everInLevel && !key_is_down(SDLK_LCTRL))
         forward.y = 0;
     
+    context->cam->base.position = x_cameraobject_get_position(context->cam);
+        
     if(onGround || !everInLevel || key_is_down(SDLK_LCTRL))
     {
         if(x_keystate_key_down(keyState, KEY_FORWARD))
@@ -484,19 +486,12 @@ void handle_keys(Context* context)
     }
     else
     {
-        X_BspBoundBox box;
-        X_BoxCollider collider;
-        x_boxcollider_init(&collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+        context->cam->collider.velocity = context->cam->base.velocity;
+        x_boxcollider_update(&context->cam->collider, &context->engineContext->currentLevel);
         
-        collider.position = context->cam->base.position;
-        collider.velocity = context->cam->base.velocity;
+        context->cam->base.velocity = context->cam->collider.velocity;
         
-        x_boxcollider_update(&collider, &context->engineContext->currentLevel);
-        
-        context->cam->base.velocity = collider.velocity;
-        context->cam->base.position = collider.position;
-        
-        onGround = collider.flags & X_BOXCOLLIDER_ON_GROUND;
+        onGround = context->cam->collider.flags & X_BOXCOLLIDER_ON_GROUND;
         
         x_cameraobject_update_view(context->cam);
     }

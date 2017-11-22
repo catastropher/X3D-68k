@@ -30,8 +30,8 @@ static void read_camera_start(X_CameraObject* cam, X_File* file)
 {
     x_file_read_mat4x4(file, &cam->viewMatrix);
     
-    x_file_read_vec3(file, &cam->base.position);
-    x_file_read_vec3(file, &cam->base.velocity);
+    x_file_read_vec3(file, &cam->collider.position);
+    x_file_read_vec3(file, &cam->collider.velocity);
     
     cam->angleX = x_file_read_le_int32(file);
     cam->angleY = x_file_read_le_int32(file);
@@ -66,7 +66,7 @@ _Bool x_demoplayer_play(X_DemoPlayer* player, const char* fileName)
     }
     
     player->totalFrames = x_file_read_le_int32(&file);
-    printf("Total frames: %d\n", player->totalFrames);
+    x_log("Total frames: %d\n", player->totalFrames);
     read_camera_start(player->cam, &file);
     read_frames(player, &file);
     

@@ -30,6 +30,10 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     cam->screenResizeCallback = NULL;
     cam->base.velocity = x_vec3_origin();
     
+    // FIXME: need actual bound box
+    static X_BspBoundBox box;
+    x_boxcollider_init(&cam->collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+    
     return cam;
 }
 
@@ -45,20 +49,22 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     x_mat4x4_mul(&xRotation, &yRotation, &rotation);    
     
     X_Mat4x4 translation;
-    X_Vec3 negatedPosition = x_vec3_neg(&cam->base.position);
+    X_Vec3_fp16x16 position = x_cameraobject_get_position(cam);
+    X_Vec3_fp16x16 negatedPosition = x_vec3_neg(&position);
     x_mat4x4_load_translation(&translation, &negatedPosition);
     
     x_mat4x4_mul(&rotation, &translation, &cam->viewMatrix);
     
     X_Vec3 forward, up, right;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
-    x_viewport_update_frustum(&cam->viewport, &cam->base.position, &forward, &right, &up);
+    x_viewport_update_frustum(&cam->viewport, &position, &forward, &right, &up);
 }
 
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
-    X_Vec3 position = x_vec3_fp16x16_to_vec3(&cam->base.position);
-    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &position);
+    X_Vec3_fp16x16 position = x_cameraobject_get_position(cam);
+    X_Vec3_fp16x16 positionSmall = x_vec3_fp16x16_to_vec3(&position);
+    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &positionSmall);
 }
 
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -88,7 +94,8 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
     x_bsplevel_mark_visible_leaves_from_pvs(renderContext->level, cam->pvsForCurrentLeaf, currentFrame);
     
-    renderContext->camPos = x_vec3_fp16x16_to_vec3(&cam->base.position);
+    X_Vec3_fp16x16 camPos = x_cameraobject_get_position(cam);
+    renderContext->camPos = x_vec3_fp16x16_to_vec3(&camPos);
     renderContext->currentFrame = currentFrame;
     
     if(cam->currentLeaf != renderContext->level->leaves + 0 && !x_keystate_key_down(&renderContext->engineContext->keystate, 'p'))

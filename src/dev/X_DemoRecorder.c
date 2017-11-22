@@ -20,8 +20,8 @@ static void save_camera_start(X_DemoRecorder* recorder, X_CameraObject* cam)
 {
     x_file_write_mat4x4(&recorder->file, &cam->viewMatrix);
 
-    x_file_write_vec3(&recorder->file, &cam->base.position);
-    x_file_write_vec3(&recorder->file, &cam->base.velocity);
+    x_file_write_vec3(&recorder->file, &cam->collider.position);
+    x_file_write_vec3(&recorder->file, &cam->collider.velocity);
 
     x_file_write_le_int32(&recorder->file, cam->angleX);
     x_file_write_le_int32(&recorder->file, cam->angleY);
