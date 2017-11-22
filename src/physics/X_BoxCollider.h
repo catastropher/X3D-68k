@@ -41,5 +41,10 @@ typedef struct X_BoxCollider
 void x_boxcollider_init(X_BoxCollider* collider, X_BspBoundBox* boundBox, X_BoxColliderFlags flags);
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level);
 
+static inline _Bool x_boxcollider_is_on_ground(X_BoxCollider* collider)
+{
+    return collider->flags & X_BOXCOLLIDER_ON_GROUND;
+}
+
 //static inline void x_boxcollider_apply_velocity(X_BoxCollider* collider, X_Vec3_fp16x16*)
 
