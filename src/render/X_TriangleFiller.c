@@ -106,6 +106,50 @@ static void fill_textured_span(X_TriangleFiller* filler)
         
 }
 
+static void fill_transparent_span(X_TriangleFiller* filler)
+{
+    int y = filler->y;
+    X_TriangleFillerEdge* left = filler->leftEdge;
+    X_TriangleFillerEdge* right = filler->rightEdge;
+    X_RenderContext* renderContext = filler->renderContext;
+    
+    int leftX = x_fp16x16_to_int(left->x);
+    int rightX = x_fp16x16_to_int(right->x);
+    int dx = rightX - leftX;
+    
+    if(dx <= 0)
+        return;
+    
+    x_fp16x16 z = left->z;
+    x_fp16x16 dZ = (right->z - left->z) / dx;
+    
+    int screenW = x_screen_w(renderContext->screen);
+    int screenH = x_screen_h(renderContext->screen);
+    
+    x_fp0x16* zbuf = renderContext->screen->canvas.zbuf + y * screenW;
+    
+    if(leftX < 0 || rightX >= screenW)
+        return;
+    
+    if(y < 0 || y >= screenH)
+        return;
+    
+    X_Texture* canvasTex = &renderContext->screen->canvas.tex;
+    X_Color* scanline = canvasTex->texels + y * canvasTex->w;
+    
+    for(int i = leftX; i < rightX; ++i)
+    {
+        if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
+        {
+            scanline[i] = filler->transparentTable[scanline[i]];
+            zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
+        }
+        
+        z += dZ;
+    }
+        
+}
+
 static void draw_half(X_TriangleFiller* filler)
 {
     X_TriangleFillerEdge* leftEdge = filler->leftEdge;
@@ -269,6 +313,13 @@ void x_trianglefiller_fill_textured(X_TriangleFiller* filler, X_Texture* texture
 {
     filler->drawSpan = fill_textured_span;
     filler->fillTexture = texture;
+    fill_triangle(filler);
+}
+
+void x_trianglefiller_fill_transparent(X_TriangleFiller* filler, X_Color* transparentTable)
+{
+    filler->drawSpan = fill_transparent_span;
+    filler->transparentTable = transparentTable;
     fill_triangle(filler);
 }
 

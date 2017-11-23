@@ -134,6 +134,8 @@ void init_keys(Context* context)
     
     x_console_register_cmd(&context->engineContext->console, "demo", cmd_demo);
     x_console_register_cmd(&context->engineContext->console, "playdemo", cmd_playdemo);
+    
+    x_console_register_var(&context->engineContext->console, &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "3.0", 0);
 }
 
 void cleanup_keys(Context* context)
@@ -269,8 +271,7 @@ static X_Vec3_fp16x16 get_movement_key_vector(X_CameraObject* cam, X_KeyState* k
         return totalVelocity;
     
     x_vec3_fp16x16_normalize(&totalVelocity);
-    x_fp16x16 moveSpeed = 65536 * 3;
-    totalVelocity = x_vec3_fp16x16_scale(&totalVelocity, moveSpeed);
+    totalVelocity = x_vec3_fp16x16_scale(&totalVelocity, g_Context->moveSpeed);
     
     return totalVelocity;
 }

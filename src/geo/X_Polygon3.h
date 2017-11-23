@@ -36,6 +36,7 @@ _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Pl
 void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color);
 void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color);
 void x_polygon3_render_textured(X_Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, X_Vec2 textureCoords[3]);
+void x_polygon3_render_transparent(X_Polygon3* poly, X_RenderContext* renderContext, X_Color* transparentTable);
 
 void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest);
 

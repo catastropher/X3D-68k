@@ -66,8 +66,8 @@ static X_Vec2 determine_default_platform_resolution(void)
 void init(Context* context, const char* programPath)
 {
     X_Vec2 resolution = determine_default_platform_resolution();
-    init_x3d(context, resolution.x, resolution.y, programPath);
-    init_camera(context);
+    init_x3d(context, resolution.x, resolution.y, programPath);    
+    init_camera(context);    
     init_keys(context);
     
     x_console_execute_cmd(&context->engineContext->console, "searchpath ..");

@@ -30,4 +30,6 @@ typedef struct Context
     
     int nativeResolutionW;
     int nativeResolutionH;
+    
+    x_fp16x16 moveSpeed;
 } Context;

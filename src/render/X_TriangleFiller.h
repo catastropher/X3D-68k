@@ -58,6 +58,7 @@ typedef struct X_TriangleFiller
     
     X_Color fillColor;
     X_Texture* fillTexture;
+    X_Color* transparentTable;
     
     int y;
     int endY;
@@ -78,6 +79,8 @@ typedef struct X_TriangleFiller
 
 void x_trianglefiller_fill_flat_shaded(X_TriangleFiller* filler, X_Color color);
 void x_trianglefiller_fill_textured(X_TriangleFiller* filler, X_Texture* texture);
+void x_trianglefiller_fill_transparent(X_TriangleFiller* filler, X_Color* transparentTable);
+
 void x_trianglefiller_init(X_TriangleFiller* filler, X_RenderContext* renderContext);
 
 #define X_TRIANGLEFILLER_EXTRA_PRECISION 4

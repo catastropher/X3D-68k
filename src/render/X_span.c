@@ -157,10 +157,10 @@ static inline void setup_screen(X_AE_SurfaceRenderContext* context)
 }
 
 void x_ae_surfacerendercontext_setup_constants(X_AE_SurfaceRenderContext* context)
-{
-    setup_inv_z_step(context);
+{    
     setup_u_step(context);
     setup_v_step(context);
+    setup_inv_z_step(context);
     setup_surface(context);
     setup_recip_tab(context);
     setup_screen(context);
