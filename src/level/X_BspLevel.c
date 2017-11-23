@@ -357,5 +357,6 @@ void x_bsplevel_cleanup(X_BspLevel* level)
     x_free(level->textures);
     x_free(level->textureTexels);
     x_free(level->vertices);
+    x_free(level->clipNodes);
 }
 
