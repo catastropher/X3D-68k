@@ -184,7 +184,7 @@ typedef struct X_BspModel
     X_BspSurface* faces;
     int totalFaces;
     
-    X_Vec3 origin;
+    X_Vec3_fp16x16 origin;
 } X_BspModel;
 
 typedef struct X_BspClipNode

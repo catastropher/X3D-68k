@@ -55,6 +55,8 @@ typedef struct X_Renderer
 
     int mipLevel;
     x_fp16x16 mipDistances[X_BSPTEXTURE_MIP_LEVELS - 1];
+    
+    _Bool wireframe;
 } X_Renderer;
 
 #define X_COLORMAP_SHADES_PER_COLOR 64

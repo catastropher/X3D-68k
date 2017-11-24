@@ -68,20 +68,64 @@ X_BspBoundBoxFrustumFlags x_bspboundbox_determine_frustum_clip_flags(X_BspBoundB
     return newFlags;
 }
 
+static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext* renderContext, X_Color color, X_BspModel* model)
+{
+    if(x_bspnode_is_leaf(node))
+    {
+        X_BspLeaf* leaf = (X_BspLeaf*)node;
+        
+        for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
+        {
+            X_BspSurface* s = leaf->firstMarkSurface[i];
+            
+            for(int j = 0; j < s->totalEdges; ++j)
+            {
+                X_BspEdge* edge = level->edges + abs(level->surfaceEdgeIds[s->firstEdgeId + j]);
+                
+                X_Ray3 ray = x_ray3_make
+                (
+                    x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[0]].v),
+                    x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[1]].v)
+                );
+                
+                ray.v[0] = x_vec3_add(ray.v + 0, &model->origin);
+                ray.v[1] = x_vec3_add(ray.v + 1, &model->origin);
+                
+                x_ray3d_render(&ray, renderContext, color);
+            }
+        }
+        
+        return;
+    }
+    
+    render_recursive(level, node->frontChild, renderContext, color, model);
+    render_recursive(level, node->backChild, renderContext, color, model);
+}
+
+void x_bspmodel_render_wireframe(X_BspLevel* level, X_BspModel* model, X_RenderContext* renderContext, X_Color color)
+{
+    render_recursive(level, model->rootBspNode, renderContext, color, model);
+}
+
 void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
 {
-    for(int i = 0; i < level->totalEdges; ++i)
-    {
-        X_BspEdge* edge = level->edges + i;
-        
-        X_Ray3 ray = x_ray3_make
-        (
-            x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[0]].v),
-            x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[1]].v)
-        );
-        
-        x_ray3d_render(&ray, rcontext, color);
-    }
+    x_bspmodel_render_wireframe(level, level->models + 0, rcontext, color);
+    
+    for(int i = 1; i < level->totalModels; ++i)
+        x_bspmodel_render_wireframe(level, level->models + i, rcontext, 15);
+    
+//     for(int i = 0; i < level->totalEdges; ++i)
+//     {
+//         X_BspEdge* edge = level->edges + i;
+//         
+//         X_Ray3 ray = x_ray3_make
+//         (
+//             x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[0]].v),
+//             x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[1]].v)
+//         );
+//         
+//         x_ray3d_render(&ray, rcontext, color);
+//     }
 }
 
 X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)

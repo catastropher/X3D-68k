@@ -82,6 +82,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_assert(renderContext != NULL, "No render context");
     x_assert(renderContext->engineContext != NULL, "No engine context in render context");
     
+    // FIXME: why is this drawn here???
     if(!x_engine_level_is_loaded(renderContext->engineContext))
     {
         x_canvas_draw_str(renderContext->canvas, "No level loaded", &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
@@ -98,9 +99,8 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     renderContext->camPos = x_vec3_fp16x16_to_vec3(&camPos);
     renderContext->currentFrame = currentFrame;
     
-    if(cam->currentLeaf != renderContext->level->leaves + 0 && !x_keystate_key_down(&renderContext->engineContext->keystate, 'p'))
+    if(cam->currentLeaf != renderContext->level->leaves + 0 && !x_keystate_key_down(&renderContext->engineContext->keystate, 'p') && !renderContext->renderer->wireframe)
         x_bsplevel_render(renderContext->level, renderContext);
-        
     else
         x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
 }

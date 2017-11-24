@@ -38,6 +38,8 @@ static int x3dKeyMap[TOTAL_SDL_KEYS];
 
 static Context* g_Context;
 
+_Bool physics = 1;
+
 static void build_key_map(void)
 {
     for(int i = 0; i < TOTAL_SDL_KEYS; ++i)
@@ -136,6 +138,7 @@ void init_keys(Context* context)
     x_console_register_cmd(&context->engineContext->console, "playdemo", cmd_playdemo);
     
     x_console_register_var(&context->engineContext->console, &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "3.0", 0);
+    x_console_register_var(&context->engineContext->console, &physics, "physics", X_CONSOLEVAR_BOOL, "1", 0);
 }
 
 void cleanup_keys(Context* context)
@@ -352,7 +355,7 @@ _Bool handle_console(X_EngineContext* engineContext)
 
 _Bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* cam, X_KeyState* keyState)
 {
-    if(x_engine_level_is_loaded(engineContext))
+    if(x_engine_level_is_loaded(engineContext) && physics)
     {
         X_Vec3_fp16x16 camPos = x_cameraobject_get_position(cam);
         X_Vec3 posSmall = x_vec3_fp16x16_to_vec3(&camPos);
