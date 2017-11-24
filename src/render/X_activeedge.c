@@ -298,6 +298,62 @@ static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int cu
     return aeEdge;
 }
 
+static void project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, X_AE_Surface* surface, X_Vec2* dest)
+{
+     for(int i = 0; i < poly->totalVertices; ++i)
+    {
+        X_Vec3 transformed;
+        x_mat4x4_transform_vec3_fp16x16(viewMatrix, poly->vertices + i, &transformed);
+        poly->vertices[i] = transformed;
+        
+        surface->closestZ = X_MIN(surface->closestZ, transformed.z);
+     
+         if(surface->closestZ < x_fp16x16_from_float(16))
+            return;
+        
+        X_Vec3 temp = x_vec3_fp16x16_to_vec3(&transformed);
+        
+        x_viewport_project_vec3(viewport, &temp, dest + i);
+        x_viewport_clamp_vec2(viewport, dest + i);
+    }
+}
+
+static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspSurface)
+{
+    X_AE_Surface* surface = context->nextAvailableSurface++;
+    
+    surface->totalSpans = 0;
+    surface->bspKey = context->nextBspKey++;
+    surface->bspSurface = bspSurface;
+    surface->crossCount = 0;
+    surface->closestZ = 0x7FFFFFFF;    
+    
+    return surface;
+}
+
+static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2* v2d, int totalVertices, int* clippedEdgeIds)
+{
+    for(int i = 0; i < totalVertices; ++i)
+    {
+        int edgeId = abs(clippedEdgeIds[i]);
+        X_BspEdge* bspEdge = context->renderContext->level->edges + edgeId;
+        
+        if(edgeId != 0)
+        {
+            X_AE_Edge* cachedEdge = get_cached_edge(context, bspEdge, context->renderContext->currentFrame);
+            
+            if(cachedEdge != NULL)
+            {
+                x_ae_context_emit_cached_edge(cachedEdge, surface);
+                continue;
+            }
+        }
+        
+        int next = (i + 1 < totalVertices ? i + 1 : 0);
+        x_ae_context_add_edge(context, v2d + i, v2d + next, surface, bspEdge);
+    }
+}
+
 // TODO: check whether edgeIds is NULL
 void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags, int* edgeIds)
 {
@@ -321,66 +377,21 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
         return;
     }
     
-    X_AE_Surface* surface = context->nextAvailableSurface++;
+    X_AE_Surface* surface = create_ae_surface(context, bspSurface);
     
-    surface->totalSpans = 0;
-    surface->bspKey = context->nextBspKey++;
-    surface->bspSurface = bspSurface;
-    surface->crossCount = 0;
-    surface->closestZ = 0x7FFFFFFF;
     
-    X_Vec2 v2d[100];
-    for(int i = 0; i < clipped.totalVertices; ++i)
-    {
-        X_Vec3 transformed;
-        x_mat4x4_transform_vec3_fp16x16(context->renderContext->viewMatrix, clipped.vertices + i, &transformed);
-        clipped.vertices[i] = transformed;
-        
-        surface->closestZ = X_MIN(surface->closestZ, transformed.z);
-     
-         if(surface->closestZ < x_fp16x16_from_float(16))
-            return;
-        
-        X_Vec3 temp = x_vec3_fp16x16_to_vec3(&transformed);
-        
-        x_viewport_project_vec3(&context->renderContext->cam->viewport, &temp, v2d + i);
-        x_viewport_clamp_vec2(&context->renderContext->cam->viewport, v2d + i);
-    }
+    X_Vec2 v2d[X_POLYGON3_MAX_VERTS];
+    project_polygon3(&clipped, &context->renderContext->cam->viewMatrix, &context->renderContext->cam->viewport, surface, v2d);
     
     x_ae_surface_calculate_inverse_z_gradient(surface, &context->renderContext->camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
-    
     x_polygon3_fp16x16_to_polygon3(&clipped, &clipped);
-    
-    for(int i = 0; i < clipped.totalVertices; ++i)
-    {
-        int edgeId = abs(clippedEdgeIds[i]);
-        X_BspEdge* bspEdge = context->renderContext->level->edges + edgeId;
-        
-        if(edgeId != 0)
-        {
-            X_AE_Edge* cachedEdge = get_cached_edge(context, bspEdge, context->renderContext->currentFrame);
-            
-            if(cachedEdge != NULL)
-            {
-                x_ae_context_emit_cached_edge(cachedEdge, surface);
-                continue;
-            }
-        }
-        
-        int next = (i + 1 < clipped.totalVertices ? i + 1 : 0);
-        x_ae_context_add_edge(context, v2d + i, v2d + next, surface, bspEdge);
-    }
+    emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
 void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags)
 {
     if((context->renderContext->renderer->renderMode & 2) == 0)
         return;
-    
-#if 0
-    if(bspSurface->id != 4119 && bspSurface->id != 4020)
-        return;
-#endif
     
     x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
  
