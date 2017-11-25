@@ -229,7 +229,7 @@ void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* p
     }
 }
 
-static void x_bspleaf_mark_all_surfaces_in_leaf_as_visible(X_BspLeaf* leaf, int currentFrame)
+static void x_bspleaf_mark_all_surfaces_in_leaf_as_visible(X_BspLeaf* leaf, int currentFrame, int bspKey)
 {
     X_BspSurface** nextSurface = leaf->firstMarkSurface;
     
@@ -239,6 +239,8 @@ static void x_bspleaf_mark_all_surfaces_in_leaf_as_visible(X_BspLeaf* leaf, int 
         surface->lastVisibleFrame = currentFrame;
         ++nextSurface;
     }
+    
+    leaf->bspKey = bspKey;
 }
 
 static void x_bspnode_mark_surfaces_in_node_as_close_to_light(X_BspNode* node, const X_Light* light, int currentFrame)
@@ -330,7 +332,8 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
             level->surfaceEdgeIds + surface->firstEdgeId,
             surface->totalEdges,
             surface,
-            geoFlags
+            geoFlags,
+            x_bsplevel_current_bspkey(renderContext->level)
         );        
     }
 }
@@ -346,7 +349,9 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     
     if(x_bspnode_is_leaf(node))
     {
-        x_bspleaf_mark_all_surfaces_in_leaf_as_visible((X_BspLeaf*)node, renderContext->currentFrame);
+        x_bsplevel_next_bspkey(renderContext->level);
+        int leafBspKey = x_bsplevel_current_bspkey(renderContext->level);
+        x_bspleaf_mark_all_surfaces_in_leaf_as_visible((X_BspLeaf*)node, renderContext->currentFrame, leafBspKey);
         return;
     }
     
@@ -366,6 +371,8 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
 
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
+    x_bsplevel_reset_bspkeys(level);
+    
     X_BspBoundBoxFrustumFlags enableAllPlanes = (1 << renderContext->viewFrustum->totalPlanes) - 1;
     x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
 }

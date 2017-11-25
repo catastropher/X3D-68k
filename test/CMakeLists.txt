@@ -28,7 +28,7 @@ elseif(${XTARGET} STREQUAL "nspire")
     SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")       # Workaround for CMake wanting to add -rdynamic
     set(CMAKE_C_COMPILER nspire-gcc)
     add_definitions(-D__nspire__)
-    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2")
+    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O3")
 endif()
 
 include_directories(/usr/local/include/X3D)

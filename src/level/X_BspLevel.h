@@ -165,6 +165,7 @@ typedef struct X_BspLeaf
     // Unique elements for leaf
     X_BspSurface** firstMarkSurface;
     int totalMarkSurfaces;
+    int bspKey;
     
     unsigned char* compressedPvsData;
 } X_BspLeaf;
@@ -247,6 +248,8 @@ typedef struct X_BspLevel
     unsigned char* compressedPvsData;
     
     unsigned char* lightmapData;
+    
+    int nextBspKey;
 } X_BspLevel;
 
 void x_bsplevel_cleanup(X_BspLevel* level);
@@ -285,6 +288,21 @@ static inline X_BspModel* x_bsplevel_get_level_model(const X_BspLevel* level)
 static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
 {
     return x_bsplevel_get_level_model(level)->rootBspNode;
+}
+
+static inline void x_bsplevel_reset_bspkeys(X_BspLevel* level)
+{
+    level->nextBspKey = 1;
+}
+
+static inline void x_bsplevel_next_bspkey(X_BspLevel* level)
+{
+    ++level->nextBspKey;
+}
+
+static inline int x_bsplevel_current_bspkey(const X_BspLevel* level)
+{
+    return level->nextBspKey;
 }
 
 //======================== node ========================
