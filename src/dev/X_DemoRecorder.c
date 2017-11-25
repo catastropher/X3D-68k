@@ -51,7 +51,7 @@ _Bool x_demorecorder_record(X_DemoRecorder* recorder, const char* outputFileName
 
 void x_demorecorder_cleanup(X_DemoRecorder* recorder)
 {
-    if(x_file_is_open(&recorder->file))
+    if(recorder->recording)
     {
         const int TOTAL_FRAMES_OFFSET = 4;
         x_file_seek(&recorder->file, TOTAL_FRAMES_OFFSET);

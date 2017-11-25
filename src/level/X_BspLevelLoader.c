@@ -595,6 +595,7 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
         
         surface->faceTexture = level->faceTextures + face->texInfo;
         surface->lightmapData = level->lightmapData + face->lightmapOffset;
+        surface->lastVisibleFrame = -1;
         
         x_bspsurface_calculate_texture_extents(surface, level);
         

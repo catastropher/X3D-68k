@@ -23,7 +23,7 @@ endif()
 
 if(${XTARGET} STREQUAL "pc")
     set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
-    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O2")
+    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O1 -g")
 elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_C_COMPILER nspire-gcc)
     set(CMAKE_ASM_COMPILER nspire-as)

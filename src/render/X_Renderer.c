@@ -273,6 +273,8 @@ static void x_engine_begin_frame(X_EngineContext* context)
 
 static void mark_lights(X_EngineContext* context)
 {
+    return;
+    
     X_Light* lights = context->renderer.dynamicLights;
     for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
     {
