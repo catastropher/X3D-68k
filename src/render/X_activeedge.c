@@ -36,19 +36,18 @@ static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
 {
     context->leftEdge.x = x_fp16x16_from_float(-.5);
     context->leftEdge.xSlope = 0;
+    context->leftEdge.next = &context->rightEdge;
     
     context->rightEdge.x = x_fp16x16_from_int(x_screen_w(context->screen) + 10);
     context->rightEdge.endY = x_screen_h(context->screen);
     context->rightEdge.xSlope = 0;
+    context->rightEdge.prev = &context->leftEdge;
     context->rightEdge.next = NULL;
 }
 
 static void x_ae_context_init_edges(X_AE_Context* context, int maxActiveEdges, int edgePoolSize)
 {
     context->maxActiveEdges = maxActiveEdges;
-    
-    context->activeEdges = x_malloc(maxActiveEdges * sizeof(X_AE_Edge*));
-    context->oldActiveEdges = x_malloc(maxActiveEdges * sizeof(X_AE_Edge*));
     
     context->edgePool = x_malloc(edgePoolSize * sizeof(X_AE_Edge));
     context->edgePoolEnd = context->edgePool + edgePoolSize;
@@ -73,8 +72,6 @@ void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdg
 
 void x_ae_context_cleanup(X_AE_Context* context)
 {
-    x_free(context->activeEdges);
-    x_free(context->oldActiveEdges);
     x_free(context->edgePool);
     x_free(context->newEdges);
     x_free(context->surfacePool);
@@ -82,11 +79,11 @@ void x_ae_context_cleanup(X_AE_Context* context)
 
 static void x_ae_context_reset_active_edges(X_AE_Context* context)
 {
-    context->oldTotalActiveEdges = 0;
+    context->leftEdge.next = &context->rightEdge;
+    context->leftEdge.prev = NULL;
     
-    context->activeEdges[0] = &context->leftEdge;
-    context->activeEdges[1] = &context->rightEdge;
-    context->totalActiveEdges = 2;
+    context->rightEdge.prev = &context->leftEdge;
+    context->rightEdge.next = NULL;
 }
 
 static void x_ae_context_reset_background_surface(X_AE_Context* context)
@@ -114,10 +111,13 @@ static void x_ae_context_reset_pools(X_AE_Context* context)
 
 static void x_ae_context_reset_new_edges(X_AE_Context* context)
 {
+    context->newRightEdge.x = context->rightEdge.x;
+    context->newRightEdge.next = NULL;
+    
     // TODO: we can probably reset these as we sort in the new edges for each scanline
     for(int i = 0; i < x_screen_h(context->screen); ++i)
     {
-        context->newEdges[i].next = &context->rightEdge;
+        context->newEdges[i].next = (X_AE_Edge*)&context->newRightEdge;
         context->newEdges[i].x = x_fp16x16_from_float(-0.5);
     }
 }
@@ -147,6 +147,7 @@ static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_
     
     if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
         ++edgeX;
+    
     
     // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
     while(edge->next->x < edgeX)
@@ -516,21 +517,29 @@ enable:
 static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge* edge, int y) {
     x_ae_context_process_edge(context, edge, y);
     
+    // FIXME: remove using delete list
     if(edge->endY == y)
+    {
+        edge->prev->next = edge->next;
+        edge->next->prev = edge->prev;
         return;
-    
-    int pos = context->totalActiveEdges++;
+    }
     
     // Advance the edge
     edge->x += edge->xSlope;
     
     // Resort the edge, if it moved out of order
-    while(edge->x < context->activeEdges[pos - 1]->x) {
-        context->activeEdges[pos] = context->activeEdges[pos - 1];
-        --pos;
+    while(edge->x < edge->prev->x) {
+        X_AE_Edge* prev = edge->prev; 
+        prev->next = edge->next;
+        edge->next->prev = prev; 
+        
+        prev->prev->next = edge; 
+        edge->prev = prev->prev; 
+        
+        edge->next = prev; 
+        prev->prev = edge;
     }
-    
-    context->activeEdges[pos] = edge;
 }
 
 static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
@@ -538,35 +547,39 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
     context->backgroundSurface->xStart = 0;
     context->activeSurfaces[0] = 1;
     
-    X_SWAP(context->oldActiveEdges, context->activeEdges);
-    context->oldTotalActiveEdges = context->totalActiveEdges;
-    
-    context->totalActiveEdges = 1;
-    context->activeEdges[0] = &context->leftEdge;
-    
-    X_AE_Edge** oldActiveEdge = context->oldActiveEdges + 1;
+    X_AE_Edge* activeEdge = context->leftEdge.next;
     
     X_AE_Edge* newEdge = context->newEdges[y].next;
     
-    while(1) {
+    do
+    {
         X_AE_Edge* e;
         
-        if((*oldActiveEdge)->x < newEdge->x) {
-            e = *oldActiveEdge;
-            ++oldActiveEdge;
+        if(activeEdge->x <= newEdge->x)
+        {
+            e = activeEdge;
+            activeEdge = activeEdge->next;
         }
-        else {
+        else
+        {
+            X_AE_Edge* prev = activeEdge->prev;
+         
+            prev->next = newEdge;
+            newEdge->prev = prev;
+            
+            X_AE_Edge* newEdgeNext = newEdge->next;
+            newEdge->next = activeEdge;
+            activeEdge->prev = newEdge;
+            
             e = newEdge;
-            newEdge = newEdge->next;
+            newEdge = newEdgeNext;
         }
         
-        if(e == &context->rightEdge)
+        if(e->next == NULL)
             break;
         
         x_ae_context_add_active_edge(context, e, y);
-    }
-    
-    context->activeEdges[context->totalActiveEdges++] = &context->rightEdge;
+    } while(1);
 }
 
 #include "engine/X_EngineContext.h"

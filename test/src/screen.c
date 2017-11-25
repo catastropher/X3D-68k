@@ -43,9 +43,9 @@ void scale_screen(Context* context)
 
 static void update_screen_nspire(Context* context)
 {
-    if(context->engineContext->renderer.scaleScreen)
-        scale_screen(context);
-    else
+    //if(context->engineContext->renderer.scaleScreen)
+    //    scale_screen(context);
+    //else
         memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
 }
 

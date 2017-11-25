@@ -54,6 +54,7 @@ typedef struct X_AE_Edge
     // Attributes shared with X_AE_DummyEdge (do not reorder!)
     x_fp16x16 x;
     struct X_AE_Edge* next;
+    struct X_AE_Edge* prev;
     
     // Unique to X_AE_Edge
     x_fp16x16 xSlope;
@@ -86,13 +87,10 @@ typedef struct X_AE_Context
     
     int maxActiveEdges;
     
-    X_AE_Edge** activeEdges;
-    int totalActiveEdges;
-    
-    X_AE_Edge** oldActiveEdges;
-    int oldTotalActiveEdges;
+    X_AE_Edge* activeEdgeHead;
     
     X_AE_DummyEdge* newEdges;
+    X_AE_Edge newRightEdge;
     
     X_AE_Edge leftEdge;
     X_AE_Edge rightEdge;
