@@ -34,12 +34,11 @@ static _Bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b)
 
 static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
 {
-    context->leftEdge.x = x_fp16x16_from_float(-.5);
+    context->leftEdge.x = x_fp16x16_from_float(-100);
     context->leftEdge.xSlope = 0;
     context->leftEdge.next = &context->rightEdge;
     
-    context->rightEdge.x = x_fp16x16_from_int(x_screen_w(context->screen) + 10);
-    context->rightEdge.endY = x_screen_h(context->screen);
+    context->rightEdge.x = x_fp16x16_from_int(x_screen_w(context->screen) + 100);
     context->rightEdge.xSlope = 0;
     context->rightEdge.prev = &context->leftEdge;
     context->rightEdge.next = NULL;
@@ -51,6 +50,12 @@ static void x_ae_context_init_edges(X_AE_Context* context, int maxActiveEdges, i
     
     context->edgePool = x_malloc(edgePoolSize * sizeof(X_AE_Edge));
     context->edgePoolEnd = context->edgePool + edgePoolSize;
+    
+    for(int i = 0; i < edgePoolSize; ++i)
+    {
+        context->edgePool[i].bspEdge = NULL;
+        context->edgePool[i].frameCreated = -1;
+    }
     
     context->newEdges = x_malloc(x_screen_h(context->screen) * sizeof(X_AE_DummyEdge));
 }
@@ -83,7 +88,7 @@ static void x_ae_context_reset_active_edges(X_AE_Context* context)
     context->leftEdge.prev = NULL;
     
     context->rightEdge.prev = &context->leftEdge;
-    context->rightEdge.next = NULL;
+    context->rightEdge.next = &context->newRightEdge;
 }
 
 static void x_ae_context_reset_background_surface(X_AE_Context* context)
@@ -112,13 +117,14 @@ static void x_ae_context_reset_pools(X_AE_Context* context)
 static void x_ae_context_reset_new_edges(X_AE_Context* context)
 {
     context->newRightEdge.x = context->rightEdge.x;
-    context->newRightEdge.next = NULL;
+    context->newRightEdge.next = &context->newRightEdge;    // Loop back around
     
     // TODO: we can probably reset these as we sort in the new edges for each scanline
     for(int i = 0; i < x_screen_h(context->screen); ++i)
     {
         context->newEdges[i].next = (X_AE_Edge*)&context->newRightEdge;
         context->newEdges[i].x = x_fp16x16_from_float(-0.5);
+        context->newEdges[i].deleteHead = NULL;
     }
 }
 
@@ -136,18 +142,21 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     context->nextBspKey = 0;
 }
 
-static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY)
+static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY, int endY)
 {
     X_AE_Edge* edge = (X_AE_Edge*)&context->newEdges[startY];
     
+    // FIXME: why is this check here?
     if(!edge)
         return;
+    
+    newEdge->nextDelete = context->newEdges[endY].deleteHead;
+    context->newEdges[endY].deleteHead = newEdge;
     
     x_fp16x16 edgeX = newEdge->x;
     
     if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
         ++edgeX;
-    
     
     // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
     while(edge->next->x < edgeX)
@@ -174,7 +183,6 @@ static void x_ae_edge_init_position_variables(X_AE_Edge* edge, X_Vec2* top, X_Ve
 {
     edge->xSlope = x_int_div_as_fp16x16(bottom->x - top->x, bottom->y - top->y);
     edge->x = x_fp16x16_from_int(top->x) + x_fp16x16_from_float(0.5);
-    edge->endY = bottom->y - 1;
 }
 
 static X_AE_Edge* x_ae_context_allocate_edge(X_AE_Context* context)
@@ -209,7 +217,7 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_
     bspEdge->cachedEdgeOffset = (unsigned char*)edge - (unsigned char*)context->edgePool;
     
     x_ae_edge_init_position_variables(edge, a, b);
-    x_ae_context_add_edge_to_starting_scanline(context, edge, a->y);
+    x_ae_context_add_edge_to_starting_scanline(context, edge, a->y, b->y - 1);
     
     return edge;
 }
@@ -464,6 +472,8 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
     
     X_AE_Surface* topSurface = context->surfacePool + context->nextBspKey - currentTop - 1;
     
+    ++g_stackCount;
+    
     if(surfaceToDisable != NULL)
     {
         // Make sure the edges didn't cross
@@ -480,9 +490,6 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
             x_ae_context_emit_span(surfaceToDisable->xStart, x, y, surfaceToDisable);
             
             // Find who's the new top
-//             int group;
-//             for(group = currentTop / 32; context->activeSurfaces[group] == 0; --group) ;
-//             
             context->maxActiveSurface = bitset32_find_hightest_set(context->activeSurfaces, currentTop);
             
             currentTop = context->maxActiveSurface;
@@ -517,19 +524,12 @@ enable:
 static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge* edge, int y) {
     x_ae_context_process_edge(context, edge, y);
     
-    // FIXME: remove using delete list
-    if(edge->endY == y)
-    {
-        edge->prev->next = edge->next;
-        edge->next->prev = edge->prev;
-        return;
-    }
-    
     // Advance the edge
     edge->x += edge->xSlope;
     
     // Resort the edge, if it moved out of order
-    while(edge->x < edge->prev->x) {
+    while(edge->x < edge->prev->x)
+    {
         X_AE_Edge* prev = edge->prev; 
         prev->next = edge->next;
         edge->next->prev = prev; 
@@ -575,11 +575,21 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
             newEdge = newEdgeNext;
         }
         
-        if(e->next == NULL)
+        if(e->next == &context->newRightEdge)
             break;
         
         x_ae_context_add_active_edge(context, e, y);
     } while(1);
+    
+    X_AE_Edge* nextDelete = context->newEdges[y].deleteHead;
+    
+    while(nextDelete)
+    {
+        nextDelete->prev->next = nextDelete->next;
+        nextDelete->next->prev = nextDelete->prev;
+        
+        nextDelete = nextDelete->nextDelete;
+    }
 }
 
 #include "engine/X_EngineContext.h"
