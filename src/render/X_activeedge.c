@@ -641,9 +641,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         X_AE_SurfaceRenderContext surfaceRenderContext;
         x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, context->renderContext->renderer->mipLevel);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
-    }
-    
-    printf("Total edges: %d\n", (int)(context->nextAvailableEdge - context->edgePool));
+    }    
 }
 
 _Bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)

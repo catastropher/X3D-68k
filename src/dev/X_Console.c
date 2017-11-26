@@ -844,6 +844,29 @@ static _Bool x_console_input_try_set_variable(X_Console* console, char** tokens,
     return 1;
 }
 
+static int count_tokens_in_cmd(char** tokens, int totalTokens)
+{
+    for(int i = 0; i < totalTokens; ++i)
+    {
+        if(strcmp(tokens[i], ";") == 0)
+            return i;
+    }
+    
+    return totalTokens;
+}
+
+static _Bool try_run_command(X_Console* console, char** tokens, int totalTokens)
+{
+    if(x_console_input_try_execute_command(console, tokens, totalTokens))
+        return 1;
+    
+    if(x_console_input_try_set_variable(console, tokens, totalTokens))
+        return 1;
+    
+    x_console_printf(console, "Unknown command or var %s\n", tokens[0]);
+    return 0;
+}
+
 void x_console_execute_cmd(X_Console* console, const char* str)
 {
     const int MAX_TOKENS = 512;
@@ -859,12 +882,17 @@ void x_console_execute_cmd(X_Console* console, const char* str)
     if(!x_tokenlexer_is_valid_console_input(&lexer, tokens))
         return;
     
-    if(x_console_input_try_execute_command(console, tokens, lexer.totalTokens))
-        return;
+    char** tokenStart = tokens;
+    int tokensLeft = lexer.totalTokens;
     
-    if(x_console_input_try_set_variable(console, tokens, lexer.totalTokens))
-        return;
-    
-    x_console_printf(console, "Unknown command or var %s\n", tokens[0]);
+    do
+    {
+        int totalTokens = count_tokens_in_cmd(tokenStart, tokensLeft);
+        if(!try_run_command(console, tokenStart, totalTokens))
+            return;
+        
+        tokensLeft -= totalTokens + 1;
+        tokenStart += totalTokens + 1;
+    } while(tokensLeft > 0);
 }
 

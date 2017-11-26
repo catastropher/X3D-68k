@@ -35,11 +35,18 @@ static void x_tokenlexer_skip_whitespace(X_TokenLexer* lexer)
 
 static _Bool x_tokenlexer_at_end_of_token(const X_TokenLexer* lexer)
 {
-    return *lexer->inputStr == '\0' || *lexer->inputStr == ' ';
+    return *lexer->inputStr == '\0' || *lexer->inputStr == ' ' || *lexer->inputStr == ';';
 }
 
 _Bool x_tokenlexer_lex_token(X_TokenLexer* lexer)
 {
+    if(*lexer->inputStr == ';')
+    {
+        *lexer->tokenBuf++ = *lexer->inputStr++;
+        *lexer->tokenBuf++ = '\0';
+        return 1;
+    }
+    
     while(!x_tokenlexer_at_end_of_token(lexer))
     {
         if(lexer->tokenBuf == lexer->tokenBufEnd)
