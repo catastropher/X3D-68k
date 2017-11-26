@@ -17,7 +17,7 @@
 #include "X_Renderer.h"
 #include "X_Surface.h"
 
-#define X_LIGHTMAP_MAX_SIZE 34
+#define X_LIGHTMAP_MAX_SIZE 64
 
 typedef struct X_SurfaceBuilderBlock
 {
