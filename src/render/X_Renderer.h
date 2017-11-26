@@ -41,7 +41,7 @@ typedef struct X_Renderer
     
     int screenW;
     int screenH;
-    int fov;
+    x_fp16x16 fov;
     _Bool fullscreen;
     _Bool videoInitialized;
     _Bool frustumClip;              // debug

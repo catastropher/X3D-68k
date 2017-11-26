@@ -61,6 +61,26 @@ static void cmd_res(X_EngineContext* context, int argc, char* argv[])
     x_console_printf(&context->console, "Effect will take place on next vidrestart\n");
 }
 
+static void cmd_fov(X_EngineContext* context, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_print(&context->console, "Usage: fov [angle] -> changes field of view\n");
+        return;
+    }
+    
+    x_fp16x16 fov = x_fp16x16_from_float(atof(argv[1]) * 256.0 / 360.0);
+    
+    if(fov == 0)
+    {
+        x_console_print(&context->console, "Invalid angle\n");
+        return;
+    }
+    
+    context->renderer.fov = fov;
+    x_console_printf(&context->console, "Effect will take place on next vidrestart\n");
+}
+
 static void cmd_vidrestart(X_EngineContext* context, int argc, char* argv[])
 {
     x_enginecontext_restart_video(context);
@@ -218,7 +238,8 @@ static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
 
 static void x_renderer_console_cmds(X_Console* console)
 {
-    x_console_register_cmd(console, "res", cmd_res);    
+    x_console_register_cmd(console, "res", cmd_res);
+    x_console_register_cmd(console, "fov", cmd_fov);
     x_console_register_cmd(console, "vidrestart", cmd_vidrestart);    
     x_console_register_cmd(console, "fullscreen", cmd_fullscreen);    
     x_console_register_cmd(console, "surfid", cmd_surfid);    

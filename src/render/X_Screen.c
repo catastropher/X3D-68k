@@ -45,7 +45,7 @@ void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera)
     currentCam->nextInCameraList = currentCam->nextInCameraList->nextInCameraList;
 }
 
-void x_screen_restart_video(X_Screen* screen, int newW, int newH, int newFov)
+void x_screen_restart_video(X_Screen* screen, int newW, int newH, x_fp16x16 newFov)
 {
     x_canvas_cleanup(&screen->canvas);
     x_canvas_init(&screen->canvas, newW, newH);

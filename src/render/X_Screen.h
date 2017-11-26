@@ -42,7 +42,7 @@ typedef struct X_Screen
 void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera);
 void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera);
 
-void x_screen_restart_video(X_Screen* screen, int newW, int newH, int newFov);
+void x_screen_restart_video(X_Screen* screen, int newW, int newH, x_fp16x16 newFov);
 
 static inline void x_screen_init(X_Screen* screen, int w, int h, X_ScreenEventHandlers* handlers)
 {

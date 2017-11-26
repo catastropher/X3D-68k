@@ -19,9 +19,10 @@
 #include "screen.h"
 #include "keys.h"
 
-static void cam_screen_size_changed_callback(X_CameraObject* cam, X_Screen* screen, int fov)
+static void cam_screen_size_changed_callback(X_CameraObject* cam, X_Screen* screen, x_fp16x16 fov)
 {
     x_viewport_init(&cam->viewport, x_vec2_make(0, 0), x_screen_w(screen), x_screen_h(screen), fov);
+    x_cameraobject_update_view(cam);
 }
 
 static void init_camera(Context* context)

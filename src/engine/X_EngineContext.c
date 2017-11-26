@@ -112,7 +112,7 @@ void x_enginecontext_restart_video(X_EngineContext* context)
 {
     int newW = context->renderer.screenW;
     int newH = context->renderer.screenH;
-    int newFov = context->renderer.fov;
+    x_fp16x16 newFov = context->renderer.fov;
     
     if(context->screen.handlers.restartVideo == NULL)
         x_system_error("No restart video callback");
