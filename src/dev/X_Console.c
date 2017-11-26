@@ -676,13 +676,43 @@ static void handle_enter_key(X_Console* console)
     console->input[0] = '\0';
 }
 
+static char* find_start_of_current_cmd(char* str, int start, int* len)
+{
+    char* search = str + start;
+    
+    while(search > str)
+    {
+        if(*search == ';')
+        {
+            *len = start - (search - str + 1);
+            return search + 1;
+        }
+        
+        --search;
+    }
+    
+    *len = start;
+    return str;
+}
+
 static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
 {
     const int MAX_MATCHES = 100;
     const char* matches[MAX_MATCHES];
     
+    int cmdLength;
+    char* currentCmd = find_start_of_current_cmd(console->input, console->inputPos, &cmdLength);
+    
+    printf("CMD: ");
+    for(int i = 0; i < cmdLength; ++i)
+    {
+        printf("%c\n", currentCmd[i]);
+    }
+    
+    printf("\n");
+    
     X_AutoCompleter ac;
-    x_autocompleter_init(&ac, console->input, console->inputPos, matches, MAX_MATCHES);
+    x_autocompleter_init(&ac, currentCmd, cmdLength, matches, MAX_MATCHES);
     x_console_add_autcomplete_candidates(console, &ac);
     
     if(x_console_autocomplete(console, &ac) || lastKeyPressed != '\t')
