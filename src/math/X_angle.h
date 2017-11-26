@@ -15,11 +15,16 @@
 
 #pragma once
 
-/// An angle with 256 degrees in a circle instead of 360 (so they natually wrap
-///     back around due to integer overflow/underflow).
-typedef unsigned char x_angle256;
-
-/// A fixed point angle version of @ref x_angle256 that has 8 bits of fractional
-///     accuracy.
-typedef unsigned short x_angle256_8x8;
+/// Angle constants for base 256
+enum
+{
+    X_ANG_0 = 0,
+    X_ANG_30 = 1398101,
+    X_ANG_45 = 32 * 65536,
+    X_ANG_60 = 2796202,
+    X_ANG_90 = 64 * 65536,
+    X_ANG_180 = 128 * 65536,
+    X_ANG_270 = 192 * 65536,
+    X_ANG_360 = 25 * 655366
+};
 

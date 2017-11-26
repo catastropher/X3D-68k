@@ -30,7 +30,7 @@ void x_config_init(X_Config* config)
     config->programPath = NULL;
 }
 
-void x_config_set_screen_defaults(X_Config* config, int screenW, int screenH, int fov, _Bool fullscreen)
+void x_config_set_screen_defaults(X_Config* config, int screenW, int screenH, x_fp16x16 fov, _Bool fullscreen)
 {
     config->screenW = screenW;
     config->screenH = screenH;

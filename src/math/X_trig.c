@@ -14,20 +14,12 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_trig.h"
+#include "X_fix.h"
 
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the sine of an angle using a lookup table.
-///
-/// @param angle    - angle in base 256
-///
-/// @return sin(angle) as an x_fp16x16
-////////////////////////////////////////////////////////////////////////////////
-x_fp16x16 x_sin(x_angle256 angle)
+x_fp16x16 x_sin(x_fp16x16 angle)
 {
-    /// @todo This large table may cause a lot of cache misses. Need to
-    ///     see whether it's worth it to have a smaller table and additional
-    ///     branching.
-    x_fp16x16 sintab[] = {                                                                                                                                                                                                             
+    static const x_fp16x16 sintab[] =
+    {                                                                                                                                                                                                             
          0    ,  1608 ,  3215 ,  4821 ,  6423 ,  8022 ,  9616 ,  11204,                                                                                                                                                              
          12785,  14359,  15923,  17479,  19024,  20557,  22078,  23586,                                                                                                                                                              
          25079,  26557,  28020,  29465,  30893,  32302,  33692,  35061,                                                                                                                                                              
@@ -62,7 +54,11 @@ x_fp16x16 x_sin(x_angle256 angle)
         -12785, -11204, -9616 , -8022 , -6423 , -4821 , -3215 , -1608                                                                                                                                                                
     };
     
-    return sintab[(int)angle];
+    x_fp16x16 frac = angle & 0xFFFF;
+    int angleIndex = x_fp16x16_to_int(angle) & 0xFF;
+    int nextAngleIndex = (angleIndex + 1) & 0xFF;
+    
+    return x_fp16x16_lerp(sintab[angleIndex], sintab[nextAngleIndex], frac);
 }
 
 

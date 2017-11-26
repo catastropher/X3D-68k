@@ -17,7 +17,7 @@
 #include "math/X_trig.h"
 #include "util/X_util.h"
 
-static inline int calculate_distance_to_projection_plane(int w, x_angle256 fieldOfView)
+static inline int calculate_distance_to_projection_plane(int w, x_fp16x16 fieldOfView)
 {
     return x_fp16x16_from_int(w / 2) / x_tan(fieldOfView / 2);
 }
@@ -42,7 +42,7 @@ static void x_viewport_init_mip_distances(X_Viewport* viewport)
     // screen->w / z = 1.0
 }
 
-void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_angle256 fieldOfView)
+void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_fp16x16 fieldOfView)
 {
     viewport->screenPos = screenPos;
     viewport->w = w;

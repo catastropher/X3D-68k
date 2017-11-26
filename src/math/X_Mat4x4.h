@@ -25,9 +25,9 @@ typedef struct X_Mat4x4
 } X_Mat4x4;
 
 void x_mat4x4_load_identity(X_Mat4x4* mat);
-void x_mat4x4_load_x_rotation(X_Mat4x4* mat, x_angle256 angle);
-void x_mat4x4_load_y_rotation(X_Mat4x4* mat, x_angle256 angle);
-void x_mat4x4_load_z_rotation(X_Mat4x4* mat, x_angle256 angle);
+void x_mat4x4_load_x_rotation(X_Mat4x4* mat, x_fp16x16 angle);
+void x_mat4x4_load_y_rotation(X_Mat4x4* mat, x_fp16x16 angle);
+void x_mat4x4_load_z_rotation(X_Mat4x4* mat, x_fp16x16 angle);
 void x_mat4x4_load_translation(X_Mat4x4* mat, X_Vec3_fp16x16* translation);
 
 void x_mat4x4_add(X_Mat4x4* a, X_Mat4x4* b, X_Mat4x4* dest);
