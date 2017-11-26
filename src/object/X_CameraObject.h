@@ -32,8 +32,8 @@ typedef struct X_CameraObject
     X_BoxCollider collider;
     X_Viewport viewport;
     X_Mat4x4 viewMatrix;
-    x_angle256 angleX;
-    x_angle256 angleY;
+    x_fp16x16 angleX;
+    x_fp16x16 angleY;
     struct X_CameraObject* nextInCameraList;
     X_BspLeaf* currentLeaf;
     X_BspLeaf* lastLeaf;

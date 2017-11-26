@@ -21,6 +21,7 @@
 #include "geo/X_Polygon3.h"
 #include "X_span.h"
 #include "render/X_Renderer.h"
+#include "engine/X_EngineContext.h"
 
 float g_zbuf[480][640];
 
@@ -275,28 +276,6 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_V
     surface->zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z * scale, invDistTimesScale) -
         centerX * surface->zInverseXStep -
         centerY * surface->zInverseYStep;
-    
-    
-    
-//     int leadingZeros = __builtin_clz(distTimesScale > 0 ? distTimesScale : -distTimesScale);
-//     surface->zInverseShift = (30 - leadingZeros) - 1;
-//     
-//     int totalShift = surface->zInverseShift + 30;
-//     
-//     // This 64 bit division hurts...
-//     int invDistTimesScale = (long long)(1LL << totalShift) / distTimesScale;
-//     
-//     surface->zInverseXStep = ((long long)planeInViewSpace.normal.x * invDistTimesScale) >> 16;
-//     surface->zInverseYStep = ((long long)planeInViewSpace.normal.y * invDistTimesScale) >> 16;
-//     
-//     int shiftDown = totalShift - 30;
-//     
-//     surface->zInverseOrigin = 
-//     (
-//         (((long long)(planeInViewSpace.normal.z * scale) * invDistTimesScale) >> 16) -
-//         (long long)centerX * surface->zInverseXStep -
-//         (long long)centerY * surface->zInverseYStep
-//     ) >> shiftDown;
 }
 
 static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int currentFrame)
@@ -490,7 +469,8 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
         // Disable the current top
         bitset32_reset(context->activeSurfaces, surfaceToDisable->id);
         
-        if(surfaceToDisable == topSurface) {
+        if(surfaceToDisable == topSurface)
+        {
             // We were on top, so emit the span
             int x = (edge->x) >> 16;
             
@@ -507,7 +487,8 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
     
 enable:
     
-    if(surfaceToEnable != NULL) {        
+    if(surfaceToEnable != NULL)
+    {        
         // Make sure the edges didn't cross
         if(++surfaceToEnable->crossCount != 1)
             return;
@@ -516,7 +497,8 @@ enable:
         bitset32_set(context->activeSurfaces, surfaceToEnable->id);
                 
         // Are we the top surface now?
-        if(x_ae_surface_closer(surfaceToEnable, topSurface)) {
+        if(x_ae_surface_closer(surfaceToEnable, topSurface))
+        {
             // Yes, emit span for the current top
             int x = edge->x >> 16;
             
@@ -606,8 +588,6 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
     }
 }
 
-#include "engine/X_EngineContext.h"
-
 static void x_ae_context_invert_bsp_keys(X_AE_Context* context)
 {
     for(X_AE_Surface* surface = context->surfacePool; surface < context->nextAvailableSurface; ++surface)
@@ -641,10 +621,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
         for(int i = 0; i < x_screen_h(context->screen); ++i)
-        {
-//                for(X_AE_Surface* s = context->surfacePool; s != context->nextAvailableSurface; ++s)
-//                    s->crossCount = 0;
-             
+        {             
             x_ae_context_reset_active_surfaces(context);
             x_ae_context_process_edges(context, i);
         }
@@ -665,6 +642,8 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, context->renderContext->renderer->mipLevel);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
+    
+    printf("Total edges: %d\n", (int)(context->nextAvailableEdge - context->edgePool));
 }
 
 _Bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)

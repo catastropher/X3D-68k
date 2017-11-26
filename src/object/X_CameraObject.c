@@ -40,10 +40,10 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
 void x_cameraobject_update_view(X_CameraObject* cam)
 {
     X_Mat4x4 xRotation;
-    x_mat4x4_load_x_rotation(&xRotation, cam->angleX);
+    x_mat4x4_load_x_rotation(&xRotation, x_fp16x16_to_int(cam->angleX));
     
     X_Mat4x4 yRotation;
-    x_mat4x4_load_y_rotation(&yRotation, cam->angleY);
+    x_mat4x4_load_y_rotation(&yRotation, x_fp16x16_to_int(cam->angleY));
     
     X_Mat4x4 rotation;
     x_mat4x4_mul(&xRotation, &yRotation, &rotation);    

@@ -39,6 +39,7 @@ static int x3dKeyMap[TOTAL_SDL_KEYS];
 static Context* g_Context;
 
 _Bool physics = 1;
+_Bool mouseLook = 1;
 
 static void build_key_map(void)
 {
@@ -128,6 +129,9 @@ void init_keys(Context* context)
 {
     g_Context = context;
     
+    SDL_ShowCursor(0);
+    SDL_WarpMouse(context->engineContext->screen.canvas.tex.w / 2, context->engineContext->screen.canvas.tex.h / 2);
+    
     SDL_EnableUNICODE(SDL_ENABLE);
     build_key_map();
     
@@ -145,6 +149,7 @@ void cleanup_keys(Context* context)
 {
     x_demorecorder_cleanup(&context->demoRecorder);
     x_demoplayer_cleanup(&context->demoPlayer);
+    SDL_ShowCursor(1);
 }
 
 static int convert_sdl_key_to_x3d_key(int sdlKey)
@@ -321,8 +326,33 @@ void handle_demo(Context* context)
     }
 }
 
+void handle_mouse(X_CameraObject* cam)
+{
+    if(mouseLook)
+    {
+        int x, y;
+        SDL_GetMouseState(&x, &y);
+        
+        // FIXME: will not work if viewport not fullscreen and centered
+        int centerX = cam->viewport.w / 2;
+        int centerY = cam->viewport.h / 2;
+        
+        int dx = x - centerX;
+        int dy = y - centerY;
+        
+        x_fp16x16 angularVelocity = x_fp16x16_from_float(0.1);
+        
+        cam->angleY -= dx * angularVelocity;
+        cam->angleX -= dy * angularVelocity;
+        
+        SDL_WarpMouse(centerX, centerY);
+    }
+}
+
 void handle_angle_keys(X_CameraObject* cam, X_KeyState* keyState)
 {
+    handle_mouse(cam);
+    
     if(x_keystate_key_down(keyState, X_KEY_UP))
         cam->angleX -= 2;
     else if(x_keystate_key_down(keyState, X_KEY_DOWN))
