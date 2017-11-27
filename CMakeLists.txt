@@ -21,9 +21,17 @@ if(NOT DEFINED XTARGET)
     set(XTARGET "pc")
 endif()
 
+if(NOT DEFINED X_LIB_PATH)
+    set(X_LIB_PATH "/usr/local/lib")
+endif()
+
+if(NOT DEFINED X_HEADER_PATH)
+    set(X_HEADER_PATH "/usr/local/include")
+endif()
+
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
-    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O1 -g")
+    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
+    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O2")
 elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_C_COMPILER nspire-gcc)
     set(CMAKE_ASM_COMPILER nspire-as)
@@ -115,5 +123,5 @@ endif()
 
 add_library(X3D STATIC ${X3D_SOURCES})
 
-install(TARGETS X3D ARCHIVE DESTINATION /usr/local/lib)
-install(DIRECTORY src/ DESTINATION /usr/local/include/X3D FILES_MATCHING PATTERN "*.h")
+install(TARGETS X3D ARCHIVE DESTINATION ${X_LIB_PATH})
+install(DIRECTORY src/ DESTINATION ${X_HEADER_PATH}/X3D FILES_MATCHING PATTERN "*.h")
