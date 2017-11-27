@@ -37,6 +37,11 @@ static inline int x_fp16x16_to_int(x_fp16x16 val)
     return val >> 16;
 }
 
+static inline x_fp16x16 x_fp16x16_ceil(x_fp16x16 val)
+{
+    return (val & 0xFFFF0000) + ((val & 0x0000FFFF) != 0 ? X_FP16x16_ONE : 0);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Divides two @ref x_fp16x16 numbers.
 ///
@@ -90,7 +95,7 @@ static inline x_fp16x16 x_fp16x16_clamp(x_fp16x16 val, x_fp16x16 minValue, x_fp1
         val = minValue;
     else if(val > maxValue)
         val = maxValue;
-    
+
     return val;
 }
 
@@ -104,15 +109,14 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
 {
     int shiftUp = __builtin_clz(val) - 16;
     val <<= shiftUp;
-    
+
     const unsigned int ADD = (48 << 16) / 17;
-    
+
     unsigned int x = ADD - (val << 1);
-    
+
     x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
     x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
     x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
-    
+
     return x >> (16 - shiftUp);
 }
-

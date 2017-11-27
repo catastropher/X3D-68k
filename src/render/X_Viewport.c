@@ -30,7 +30,7 @@ static void x_viewport_init_mip_distances(X_Viewport* viewport)
         x_fp16x16_from_float(0.5 * 0.8),
         x_fp16x16_from_float(0.25 * 0.8)
     };
-    
+
     // TODO: this will need to take into account y scale once it's added
     x_fp16x16 xScale = x_fp16x16_from_int(viewport->distToNearPlane);
     for(int i = 0; i < 3; ++i)
@@ -38,7 +38,7 @@ static void x_viewport_init_mip_distances(X_Viewport* viewport)
         viewport->mipDistances[i] = x_fp16x16_div(xScale, mipScale[i]);
         printf("Mip Distance: %f\n", x_fp16x16_to_float(viewport->mipDistances[i]));
     }
-    
+
     // screen->w / z = 1.0
 }
 
@@ -48,11 +48,11 @@ void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_fp1
     viewport->w = w;
     viewport->h = h;
     viewport->distToNearPlane = calculate_distance_to_projection_plane(w, fieldOfView);
-    
+
     /// @todo If we add a far plane, this should be 6
     viewport->viewFrustum.totalPlanes = 5;
     viewport->viewFrustum.planes = viewport->viewFrustumPlanes;
-    
+
     x_viewport_init_mip_distances(viewport);
 }
 
@@ -78,10 +78,10 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3_fp16x16* camPo
 
     X_Vec3_fp16x16 rightTranslation = calculate_right_translation(viewport, right);
     X_Vec3_fp16x16 leftTranslation = x_vec3_neg(&rightTranslation);
-    
+
     X_Vec3_fp16x16 upTranslation = calculate_up_translation(viewport, up);
     X_Vec3_fp16x16 downTranslation = x_vec3_neg(&upTranslation);
-    
+
     X_Vec3_fp16x16 nearPlaneVertices[4] =
     {
         x_vec3_add_three(&nearPlaneCenter, &rightTranslation, &upTranslation),      // Top right
@@ -89,20 +89,20 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3_fp16x16* camPo
         x_vec3_add_three(&nearPlaneCenter, &leftTranslation, &downTranslation),     // Bottom left
         x_vec3_add_three(&nearPlaneCenter, &leftTranslation, &upTranslation)        // Top left
     };
-    
+
     // Top, bottom, left, and right planes
     for(int i = 0; i < 4; ++i)
     {
         int next = (i != 3 ? i + 1 : 0);
         x_plane_init_from_fp16x16(viewport->viewFrustumPlanes + i, nearPlaneVertices + i, camPos, nearPlaneVertices + next);
     }
-    
+
     // Near plane
     int distToNearPlane = 16;
     X_Vec3_fp16x16 translation = x_vec3_scale(forward, distToNearPlane);
     X_Vec3_fp16x16 pointOnNearPlane = x_vec3_add(&translation, camPos);
-    
-    x_plane_init_from_normal_and_point_fp16x16(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);    
+
+    x_plane_init_from_normal_and_point_fp16x16(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);
 }
 
 void x_viewport_project_vec3(const X_Viewport* viewport, const X_Vec3* src, X_Vec2* dest)
@@ -122,7 +122,7 @@ void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v)
 {
     v->x = X_MAX(v->x, viewport->screenPos.x);
     v->x = X_MIN(v->x, viewport->screenPos.x + viewport->w - 1);
-    
+
     v->y = X_MAX(v->y, viewport->screenPos.y);
     v->y = X_MIN(v->y, viewport->screenPos.y + viewport->h - 1);
 }
@@ -130,9 +130,8 @@ void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v)
 void x_viewport_clamp_vec2_fp16x16(const X_Viewport* viewport, X_Vec2_fp16x16* v)
 {
     v->x = X_MAX(v->x, x_fp16x16_from_int(viewport->screenPos.x));
-    v->x = X_MIN(v->x, x_fp16x16_from_int(viewport->screenPos.x + viewport->w - 1));
-    
-    v->y = X_MAX(v->y, x_fp16x16_from_int(viewport->screenPos.y));
-    v->y = X_MIN(v->y, x_fp16x16_from_int(viewport->screenPos.y + viewport->h - 1));
-}
+    v->x = X_MIN(v->x, x_fp16x16_from_int(viewport->screenPos.x + viewport->w) - X_FP16x16_ONE);
 
+    v->y = X_MAX(v->y, x_fp16x16_from_int(viewport->screenPos.y));
+    v->y = X_MIN(v->y, x_fp16x16_from_int(viewport->screenPos.y + viewport->h) - X_FP16x16_ONE);
+}

@@ -31,7 +31,7 @@ endif()
 
 if(${XTARGET} STREQUAL "pc")
     #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
-    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O2")
+    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O2 -g")
 elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_C_COMPILER nspire-gcc)
     set(CMAKE_ASM_COMPILER nspire-as)
@@ -55,11 +55,11 @@ set(X3D_SOURCES
     src/engine/X_engine.c
     src/engine/X_EngineContext.c
     src/engine/X_init.c
-    
+
     # error
     src/error/X_error.c
     src/error/X_log.c
-    
+
     # geo
     src/geo/X_Cube.c
     src/geo/X_Frustum.c
@@ -74,27 +74,27 @@ set(X3D_SOURCES
     src/level/X_EntityModel.c
     src/level/X_EntityModelLoader.c
     src/level/X_RayTracer.c
-    
+
     # math
     src/math/X_Mat4x4.c
     src/math/X_Quaternion.c
     src/math/X_sqrt.c
     src/math/X_trig.c
-    
+
     # memory
     src/memory/X_alloc.c
     src/memory/X_Cache.c
     src/memory/X_Factory.c
     src/memory/X_String.c
-    
+
     # object
     src/object/X_CameraObject.c
     src/object/X_CubeObject.c
     src/object/X_GameObject.c
-    
+
     # physics
     src/physics/X_BoxCollider.c
-    
+
     # render
     src/render/X_activeedge.c
     src/render/X_Canvas.c
@@ -107,12 +107,12 @@ set(X3D_SOURCES
     src/render/X_Texture.c
     src/render/X_TriangleFiller.c
     src/render/X_Viewport.c
-        
+
     # system
     src/system/X_File.c
     src/system/X_Keys.c
     src/system/X_PackFile.c
-    
+
     # util
     src/util/X_util.c
 )
