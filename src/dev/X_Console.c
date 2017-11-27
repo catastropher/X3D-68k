@@ -341,6 +341,8 @@ void x_console_printf(X_Console* console, const char* format, ...)
     vsnprintf(buf, sizeof(buf), format, list);
     
     x_console_print(console, buf);
+    
+    va_end(list);
 }
 
 static void x_console_handle_cursor_blinking(X_Console* console)

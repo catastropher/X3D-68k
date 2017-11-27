@@ -39,17 +39,21 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     strcpy(fileName, argv[1]);
     x_filepath_set_default_file_extension(fileName, ".bsp");
     
-    if(x_engine_level_is_loaded(context))
-    {
-        x_console_print(&context->console, "A map is already loaded\n");
-        return;
-    }
+    // FIXME: this doesn't belong here
+    x_cache_flush(&context->renderer.surfaceCache);
     
-    if(!x_bsplevel_load_from_bsp_file(x_engine_get_current_level(context), fileName))
+    X_BspLevel tempLevel;
+    
+    if(!x_bsplevel_load_from_bsp_file(&tempLevel, fileName))
     {
         x_console_printf(&context->console, "Failed to load map %s\n", fileName);
         return;
     }
+    
+    if(x_engine_level_is_loaded(context))
+        x_bsplevel_cleanup(&context->currentLevel);
+    
+    context->currentLevel = tempLevel;
     
     x_console_printf(&context->console, "Loaded map %s\n", fileName);
 }

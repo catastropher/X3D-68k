@@ -67,13 +67,17 @@ void x_log(const char* format, ...)
     printf("\n");
     
     if(!x_file_is_open(&logFile))
+    {
+        va_end(list);
         return;
+    }
     
     va_start(list, format);
     
     fprintf(logFile.file, "[INFO] ");
     vfprintf(logFile.file, format, list);
     fputc('\n', logFile.file);
+    va_end(list);
 }
 
 void x_log_error(const char* format, ...)
@@ -87,13 +91,19 @@ void x_log_error(const char* format, ...)
     printf("\n");
 
     if(!x_file_is_open(&logFile))
+    {
+        va_end(list);
         return;
+    }
     
     
+    va_end(list);
     va_start(list, format);
     
     fprintf(logFile.file, "[ERR ] ");
     vfprintf(logFile.file, format, list);
     fputc('\n', logFile.file);
+    
+    va_end(list);
 }
 

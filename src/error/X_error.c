@@ -33,7 +33,7 @@ void x_assert_function(_Bool condition, const char* file, int line, const char* 
     x_system_error("Assertion Failed (check log for more details)");
 }
 
-void x_system_error(const char* format, ...)
+void __attribute__((noreturn)) x_system_error(const char* format, ...)
 {
     char error[4096];
     
@@ -49,6 +49,7 @@ void x_system_error(const char* format, ...)
     fprintf(stderr, "Fatal system error: %s\n", error);
 #endif
     
+    va_end(list);
     exit(-1);
 }
 
