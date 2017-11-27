@@ -301,10 +301,11 @@ static _Bool project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport
          if(surface->closestZ < x_fp16x16_from_float(16))
             return 0;
         
-        X_Vec3 temp = x_vec3_fp16x16_to_vec3(&transformed);
+        x_viewport_project_vec3_fp16x16(viewport, &transformed, dest + i);
+        x_viewport_clamp_vec2_fp16x16(viewport, dest + i);
         
-        x_viewport_project_vec3(viewport, &temp, dest + i);
-        x_viewport_clamp_vec2(viewport, dest + i);
+        dest[i].x >>= 16;
+        dest[i].y >>= 16;
     }
     
     return 1;

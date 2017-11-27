@@ -111,6 +111,13 @@ void x_viewport_project_vec3(const X_Viewport* viewport, const X_Vec3* src, X_Ve
     dest->y = src->y * viewport->distToNearPlane / src->z + viewport->h / 2;
 }
 
+void x_viewport_project_vec3_fp16x16(const X_Viewport* viewport, const X_Vec3* src, X_Vec2_fp16x16* dest)
+{
+    // TODO: may be able to get away with multiplying by distToNearPlane / z
+    dest->x = x_fp16x16_div(src->x, src->z) * viewport->distToNearPlane + x_fp16x16_from_int(viewport->w) / 2;
+    dest->y = x_fp16x16_div(src->y, src->z) * viewport->distToNearPlane + x_fp16x16_from_int(viewport->h) / 2;;
+}
+
 void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v)
 {
     v->x = X_MAX(v->x, viewport->screenPos.x);
@@ -118,5 +125,14 @@ void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v)
     
     v->y = X_MAX(v->y, viewport->screenPos.y);
     v->y = X_MIN(v->y, viewport->screenPos.y + viewport->h - 1);
+}
+
+void x_viewport_clamp_vec2_fp16x16(const X_Viewport* viewport, X_Vec2_fp16x16* v)
+{
+    v->x = X_MAX(v->x, x_fp16x16_from_int(viewport->screenPos.x));
+    v->x = X_MIN(v->x, x_fp16x16_from_int(viewport->screenPos.x + viewport->w - 1));
+    
+    v->y = X_MAX(v->y, x_fp16x16_from_int(viewport->screenPos.y));
+    v->y = X_MIN(v->y, x_fp16x16_from_int(viewport->screenPos.y + viewport->h - 1));
 }
 
