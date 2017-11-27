@@ -423,7 +423,8 @@ void handle_keys(Context* context)
     
     X_KeyState* keyState = &context->engineContext->keystate;
 
-    handle_angle_keys(context->cam, keyState);
+    if(!x_demoplayer_is_playing(&g_Context->demoPlayer))
+      handle_angle_keys(context->cam, keyState);
     
     if(handle_no_collision_keys(context->engineContext, context->cam, keyState))
         return;
