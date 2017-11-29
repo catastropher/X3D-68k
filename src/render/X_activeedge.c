@@ -263,12 +263,12 @@ static _Bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest)
+static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3_fp16x16* camPos, X_Mat4x4* viewMatrix, X_Plane* dest)
 {
     X_Vec3_fp16x16 planeNormal = surface->plane->plane.normal;
 
     x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
-    dest->d = surface->plane->plane.d + x_vec3_dot(&planeNormal, camPos);
+    dest->d = surface->plane->plane.d + x_vec3_fp16x16_dot(&planeNormal, camPos);
 }
 
 static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3_fp16x16* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix)
@@ -276,23 +276,25 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_V
     X_Plane planeInViewSpace;
     x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace);
 
-    int dist = -x_fp16x16_to_int(planeInViewSpace.d);
+    int dist = -planeInViewSpace.d;
     int scale = viewport->distToNearPlane;
 
-    int distTimesScale = dist * scale;
-
-    if(distTimesScale == 0)
-        return;
-
-    x_fp16x16 invDistTimesScale = (1 << 26) / distTimesScale;
-
+    if(dist == 0 || scale == 0) return;
+    
+    //x_fp16x16 invDistTimesScale = //x_fp16x16_div(X_FP16x16_ONE << 10, distTimesScale) >> 6;
+    
+    x_fp16x16 invDist = x_fp16x16_div(X_FP16x16_ONE << 10, dist);
+    x_fp16x16 invScale = (1 << 26) / scale;
+    
+    x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
+    
     surface->zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x);
     surface->zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y);
 
     int centerX = viewport->screenPos.x + viewport->w / 2;
     int centerY = viewport->screenPos.y + viewport->h / 2;
 
-    surface->zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z * scale, invDistTimesScale) -
+    surface->zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z, invDist) -
         centerX * surface->zInverseXStep -
         centerY * surface->zInverseYStep;
 }
@@ -313,13 +315,14 @@ static _Bool project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport
     {
         X_Vec3 transformed;
         x_mat4x4_transform_vec3_fp16x16(viewMatrix, poly->vertices + i, &transformed);
+        
+        if(transformed.z < x_fp16x16_from_float(16.0))
+            transformed.z = x_fp16x16_from_float(16.0);
+        
         poly->vertices[i] = transformed;
-
+        
         surface->closestZ = X_MIN(surface->closestZ, transformed.z);
-
-         if(surface->closestZ < x_fp16x16_from_float(16))
-            return 0;
-
+        
         x_viewport_project_vec3_fp16x16(viewport, &transformed, dest + i);
         x_viewport_clamp_vec2_fp16x16(viewport, dest + i);
     }
@@ -394,7 +397,10 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     if(!project_polygon3(&clipped, &context->renderContext->cam->viewMatrix, &context->renderContext->cam->viewport, surface, v2d))
         return;
 
-    x_ae_surface_calculate_inverse_z_gradient(surface, &context->renderContext->camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
+    // FIXME: shouldn't be done this way
+    X_Vec3_fp16x16 camPos = x_cameraobject_get_position(context->renderContext->cam);
+    
+    x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
     x_polygon3_fp16x16_to_polygon3(&clipped, &clipped);
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }

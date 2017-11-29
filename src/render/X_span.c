@@ -51,13 +51,15 @@ static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureV
 static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, X_Vec3_fp16x16* orientationInEyeSpace, int minTexCoord, int texOffset)
 {
     X_Vec3 inverseModelPos = x_vec3_neg(&x_bsplevel_get_level_model(context->renderContext->level)->origin);
+    inverseModelPos = x_vec3_to_vec3_fp16x16(&inverseModelPos);
+    
     X_Vec3 inverseModelPosInEyeSpace;
-    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &inverseModelPos, &inverseModelPosInEyeSpace);
+    x_mat4x4_transform_vec3_fp16x16(context->renderContext->viewMatrix, &inverseModelPos, &inverseModelPosInEyeSpace);
     
     int mipLevel = context->mipLevel;
     inverseModelPosInEyeSpace = x_vec3_shift_right(&inverseModelPosInEyeSpace, mipLevel);
     
-    var->adjust = -x_vec3_dot(orientationInEyeSpace, &inverseModelPosInEyeSpace) -
+    var->adjust = -x_vec3_fp16x16_dot(orientationInEyeSpace, &inverseModelPosInEyeSpace) -
         mip_adjust(minTexCoord, mipLevel) +
         mip_adjust(texOffset, mipLevel);
 }

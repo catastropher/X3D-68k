@@ -30,8 +30,8 @@ if(NOT DEFINED X_HEADER_PATH)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan")
-    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -g")
+    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan")
+    #set(CMAKE_C_FLAGS "-std=gnu99 -Wall -g")
 elseif(${XTARGET} STREQUAL "nspire")
     SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")       # Workaround for CMake wanting to add -rdynamic
     set(CMAKE_C_COMPILER nspire-gcc)
