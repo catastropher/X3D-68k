@@ -147,14 +147,17 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     x_ae_context_reset_new_edges(context);
 }
 
-static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY, int endY)
+static _Bool x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY, int endY)
 {
     X_AE_Edge* edge = (X_AE_Edge*)&context->newEdges[startY];
 
     // FIXME: why is this check here?
     if(!edge)
-        return;
+        return 0;
 
+    if(endY < 0)
+        return 0;
+    
     newEdge->nextDelete = context->newEdges[endY].deleteHead;
     context->newEdges[endY].deleteHead = newEdge;
 
@@ -162,11 +165,6 @@ static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_
 
     if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
         ++edgeX;
-
-    if(newEdge->x < 0 || newEdge->x >= 639 << 16)
-    {
-        printf("Out of range (%f, %f)\n", x_fp16x16_to_float(newEdge->x), x_fp16x16_to_float(newEdge->xSlope));
-    }
 
     // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
     while(edge->next->x < edgeX)
@@ -177,6 +175,8 @@ static void x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_
 
     newEdge->next = edge->next;
     edge->next = newEdge;
+    
+    return 1;
 }
 
 static _Bool is_horizontal_edge(int height)
@@ -191,27 +191,12 @@ static _Bool is_leading_edge(int height)
 
 static void x_ae_edge_init_position_variables(X_AE_Edge* edge, X_Vec2_fp16x16* top, X_Vec2_fp16x16* bottom)
 {
-    edge->xSlope = x_int_div_as_fp16x16((bottom->x >> 16) - (top->x >> 16), (bottom->y >> 16) - (top->y >> 16));
-    edge->x = x_fp16x16_from_int(top->x >> 16) + x_fp16x16_from_float(0.5);
-
     edge->xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
 
-    x_fp16x16 topY = top->y & 0xFFFF0000;
+    x_fp16x16 topY = x_fp16x16_ceil(top->y);
     x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, edge->xSlope);
 
-    if(abs(edge->xSlope) > 100 << 16)
-    {
-        printf("Crazy slope: (%f, %f) -> (%f, %f) = %f\n",
-            x_fp16x16_to_float(top->x), x_fp16x16_to_float(top->y),
-            x_fp16x16_to_float(bottom->x),
-            x_fp16x16_to_float(bottom->y),
-            x_fp16x16_to_float(edge->xSlope));
-    }
-
-    edge->x = top->x - errorCorrection +  X_FP16x16_HALF;
-
-    //edge->xSlope = x_fp16x16_div(bottom->x - top->x, (bottom->y & 0xFFFF0000) - (top->y & 0xFFFF0000));
-    //edge->x = ((top->x >> 16) << 16) + X_FP16x16_HALF;
+    edge->x = top->x - errorCorrection;
 }
 
 static X_AE_Edge* x_ae_context_allocate_edge(X_AE_Context* context)
@@ -222,7 +207,10 @@ static X_AE_Edge* x_ae_context_allocate_edge(X_AE_Context* context)
 
 X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
 {
-    int height = (b->y >> 16) - (a->y >> 16);
+    int aY = x_fp16x16_ceil(a->y) >> 16;
+    int bY = x_fp16x16_ceil(b->y) >> 16;
+    
+    int height = bY - aY;
 
     if(is_horizontal_edge(height))
         return NULL;
@@ -247,9 +235,15 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2_fp16x16* a, X_Vec
     bspEdge->cachedEdgeOffset = (unsigned char*)edge - (unsigned char*)context->edgePool;
 
     x_ae_edge_init_position_variables(edge, a, b);
-    x_ae_context_add_edge_to_starting_scanline(context, edge, x_fp16x16_to_int(a->y), x_fp16x16_to_int(b->y) - 1);
+    _Bool success = x_ae_context_add_edge_to_starting_scanline
+    (
+        context,
+        edge,
+        x_fp16x16_to_int(x_fp16x16_ceil(a->y)),
+        x_fp16x16_to_int(x_fp16x16_ceil(b->y)) - 1
+    );
 
-    return edge;
+    return success ? edge : NULL;
 }
 
 void x_ae_context_emit_cached_edge(X_AE_Edge* cachedEdge, X_AE_Surface* surface)
@@ -555,7 +549,8 @@ static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge
     }
 }
 
-static inline void x_ae_context_process_edges(X_AE_Context* context, int y) {
+static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
+{
     context->backgroundSurface->crossCount = 1;
     context->backgroundSurface->xStart = 0;
     context->activeSurfaces[0] = 1;
