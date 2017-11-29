@@ -69,6 +69,9 @@
 // physics
 #include "physics/X_BoxCollider.h"
 
+// platform
+#include "platform/X_Platform.h"
+
 // render
 #include "render/X_activeedge.h"
 #include "render/X_Canvas.h"

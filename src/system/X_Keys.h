@@ -32,7 +32,8 @@ typedef enum X_Key
     X_KEY_UP,
     X_KEY_DOWN,
     X_KEY_LEFT,
-    X_KEY_RIGHT
+    X_KEY_RIGHT,
+    X_KEY_ESCAPE
 } X_Key;
 
 #define X_KEY_QUEUE_SIZE 32

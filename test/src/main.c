@@ -127,27 +127,27 @@ void gameloop(Context* context)
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         
         
-        if(key_is_down('k'))
-        {
-            X_Vec3 camPos = x_cameraobject_get_position(context->cam);
-            
-            X_Vec3 forward, up, right;
-            x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
-            
-            X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
-            
-            X_RayTracer trace;
-            x_raytracer_init(&trace, &context->engineContext->currentLevel, &camPos, &end, NULL);
-            trace.rootClipNode = 0;
-            
-            if(x_raytracer_trace(&trace))
-            {
-                plane_get_orientation(&trace.collisionPlane, &identity, context->cam);
-                
-                create_portal(&identity, trace.collisionPoint);
-            }
-            
-        }
+//         if(key_is_down('k'))
+//         {
+//             X_Vec3 camPos = x_cameraobject_get_position(context->cam);
+//             
+//             X_Vec3 forward, up, right;
+//             x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
+//             
+//             X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
+//             
+//             X_RayTracer trace;
+//             x_raytracer_init(&trace, &context->engineContext->currentLevel, &camPos, &end, NULL);
+//             trace.rootClipNode = 0;
+//             
+//             if(x_raytracer_trace(&trace))
+//             {
+//                 plane_get_orientation(&trace.collisionPlane, &identity, context->cam);
+//                 
+//                 create_portal(&identity, trace.collisionPoint);
+//             }
+//             
+//         }
         
         if(portalOnWall)
         {

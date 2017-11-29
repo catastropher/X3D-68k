@@ -18,9 +18,6 @@
 
 #include "Context.h"
 
-#define TOTAL_SDL_KEYS 322
-#define INVALID_KEY -1
-
 #ifdef __nspire__
 
 #define KEY_FORWARD '7'
@@ -33,47 +30,10 @@
 
 #endif
 
-static _Bool sdlKeyState[TOTAL_SDL_KEYS];
-static int x3dKeyMap[TOTAL_SDL_KEYS];
-
 static Context* g_Context;
 
 _Bool physics = 1;
 _Bool mouseLook = 1;
-
-static void build_key_map(void)
-{
-    for(int i = 0; i < TOTAL_SDL_KEYS; ++i)
-        x3dKeyMap[i] = INVALID_KEY;
-    
-    for(int i = 'a'; i <= 'z'; ++i)
-        x3dKeyMap[i] = i;
-    
-    for(int i = 'A'; i <= 'Z'; ++i)
-        x3dKeyMap[i] = i;
-    
-    for(int i = '0'; i <= '9'; ++i)
-        x3dKeyMap[i] = i;
-    
-    x3dKeyMap[SDLK_SPACE] = ' ';
-    
-    x3dKeyMap[SDLK_LSHIFT] = x3dKeyMap[SDLK_RSHIFT] = X_KEY_SHIFT;
-    x3dKeyMap[SDLK_RETURN] = '\n';
-    x3dKeyMap[SDLK_BACKSPACE] = '\b';
-    x3dKeyMap[SDLK_TAB] = '\t';
-    
-    const int AZERTY_SUPERSCRIPT_2 = 178;
-    x3dKeyMap[SDLK_BACKQUOTE] = x3dKeyMap['~'] = x3dKeyMap[AZERTY_SUPERSCRIPT_2] = x3dKeyMap['9'] = X_KEY_OPEN_CONSOLE;
-    
-    x3dKeyMap[SDLK_UP] = X_KEY_UP;
-    x3dKeyMap[SDLK_DOWN] = X_KEY_DOWN;
-    x3dKeyMap[SDLK_LEFT] = X_KEY_LEFT;
-    x3dKeyMap[SDLK_RIGHT] = X_KEY_RIGHT;
-
-    const char symbols[] = "!@#$%^&*()[]{}\\|:;'\",.<>/?-_=+";
-    for(int i = 0; i < strlen(symbols); ++i)
-        x3dKeyMap[(int)symbols[i]] = symbols[i];
-}
 
 static void cmd_demo(X_EngineContext* context, int argc, char* argv[])
 {
@@ -132,9 +92,6 @@ void init_keys(Context* context)
     SDL_ShowCursor(0);
     SDL_WarpMouse(context->engineContext->screen.canvas.tex.w / 2, context->engineContext->screen.canvas.tex.h / 2);
     
-    SDL_EnableUNICODE(SDL_ENABLE);
-    build_key_map();
-    
     x_demorecorder_init(&context->demoRecorder, context->cam, &context->engineContext->keystate);
     x_demoplayer_init(&context->demoPlayer, context->cam, &context->engineContext->keystate);
     
@@ -152,67 +109,55 @@ void cleanup_keys(Context* context)
     SDL_ShowCursor(1);
 }
 
-static int convert_sdl_key_to_x3d_key(int sdlKey)
-{
-    if(sdlKey < 0 || sdlKey > TOTAL_SDL_KEYS)
-        return INVALID_KEY;
-    
-    return x3dKeyMap[sdlKey];
-}
 
-void handle_key_events(X_EngineContext* context)
-{
-    SDL_Event ev;
-    while(SDL_PollEvent(&ev))
-    {
-        if(ev.type == SDL_KEYDOWN)
-        {
-            sdlKeyState[ev.key.keysym.sym] = 1;
-            
-            int sdlKey;
-            int unicodeSdlKey;
-            
-            int x3dKey;
-            int unicodeX3dKey;
-            
-#ifndef __nspire__
-            sdlKey = ev.key.keysym.sym;
-            unicodeSdlKey = ev.key.keysym.unicode;
-            
-            if(!isprint(sdlKey))
-                unicodeSdlKey = sdlKey;
-            
-            x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
-            unicodeX3dKey = convert_sdl_key_to_x3d_key(unicodeSdlKey);
-#else
-            sdlKey = ev.key.keysym.sym;
-            unicodeSdlKey = sdlKey;
-            x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
-            unicodeX3dKey = x3dKey;
-#endif
-            
-            if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_press(&context->keystate, x3dKey, unicodeX3dKey);
-        }
-        else if(ev.type == SDL_KEYUP)
-        {
-            sdlKeyState[ev.key.keysym.sym] = 0;
-            
-            int sdlKey = ev.key.keysym.sym;
-            int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
-            
-            if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_release(&context->keystate, x3dKey);
-        }
-    }
-    
-    x_keystate_handle_key_repeat(&context->keystate, x_enginecontext_get_time(context));
-}
-
-_Bool key_is_down(int sdlKey)
-{
-    return sdlKeyState[sdlKey];
-}
+// void handle_key_events(X_EngineContext* context)
+// {
+//     SDL_Event ev;
+//     while(SDL_PollEvent(&ev))
+//     {
+//         if(ev.type == SDL_KEYDOWN)
+//         {
+//             sdlKeyState[ev.key.keysym.sym] = 1;
+//             
+//             int sdlKey;
+//             int unicodeSdlKey;
+//             
+//             int x3dKey;
+//             int unicodeX3dKey;
+//             
+// #ifndef __nspire__
+//             sdlKey = ev.key.keysym.sym;
+//             unicodeSdlKey = ev.key.keysym.unicode;
+//             
+//             if(!isprint(sdlKey))
+//                 unicodeSdlKey = sdlKey;
+//             
+//             x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
+//             unicodeX3dKey = convert_sdl_key_to_x3d_key(unicodeSdlKey);
+// #else
+//             sdlKey = ev.key.keysym.sym;
+//             unicodeSdlKey = sdlKey;
+//             x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
+//             unicodeX3dKey = x3dKey;
+// #endif
+//             
+//             if(x3dKey != INVALID_KEY)
+//                 x_keystate_send_key_press(&context->keystate, x3dKey, unicodeX3dKey);
+//         }
+//         else if(ev.type == SDL_KEYUP)
+//         {
+//             sdlKeyState[ev.key.keysym.sym] = 0;
+//             
+//             int sdlKey = ev.key.keysym.sym;
+//             int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
+//             
+//             if(x3dKey != INVALID_KEY)
+//                 x_keystate_send_key_release(&context->keystate, x3dKey);
+//         }
+//     }
+//     
+//     x_keystate_handle_key_repeat(&context->keystate, x_enginecontext_get_time(context));
+// }
 
 void handle_console_keys(X_EngineContext* context)
 {
@@ -412,10 +357,11 @@ void handle_normal_movement(X_EngineContext* engineContext, X_CameraObject* cam)
 
 void handle_keys(Context* context)
 {
-    handle_key_events(context->engineContext);
+    x_platform_handle_keys(context->engineContext);
+    
     handle_demo(context);
     
-    if(key_is_down(SDLK_ESCAPE))
+    if(x_keystate_key_down(&context->engineContext->keystate, X_KEY_ESCAPE))
         context->quit = 1;
     
     if(handle_console(context->engineContext))

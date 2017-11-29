@@ -32,12 +32,16 @@ endif()
 if(${XTARGET} STREQUAL "pc")
     set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
     #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O0 -g")
+    
+    set(X_WITH_SDL "1")
 elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_C_COMPILER nspire-gcc)
     set(CMAKE_ASM_COMPILER nspire-as)
     set(CMAKE_LI)
     add_definitions(-D__nspire__)
     set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O3")
+    
+    set(X_WITH_SDL "1")
 endif()
 
 include_directories(src/)
@@ -117,8 +121,21 @@ set(X3D_SOURCES
     src/util/X_util.c
 )
 
+if(${XTARGET} STREQUAL "pc")
+    set(X3D_SOURCES ${X3D_SOURCES} src/platform/platform_pc.c)
+endif()
+
 if(${XTARGET} STREQUAL "nspire")
-    set(X3D_SOURCES ${X3D_SOURCES} src/render/X_span_arm.s)
+    set(X3D_SOURCES ${X3D_SOURCES} src/render/X_span_arm.s src/platform/platform_nspire.c)
+endif()
+
+
+
+if(DEFINED X_WITH_SDL)
+    find_package(SDL REQUIRED)
+    include_directories(SDL_INCLUDE_DIR)
+    
+    set(X3D_SOURCES ${X3D_SOURCES} src/platform/X_SDL.c)
 endif()
 
 add_library(X3D STATIC ${X3D_SOURCES})

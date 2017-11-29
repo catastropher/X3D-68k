@@ -19,6 +19,7 @@
 #include "error/X_log.h"
 #include "render/X_RenderContext.h"
 #include "geo/X_Polygon3.h"
+#include "platform/X_Platform.h"
 
 static _Bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -45,6 +46,8 @@ X_EngineContext* x_engine_init(X_Config* config)
     x_console_execute_cmd(&engineContext->console, "vidrestart");
     engineContext->renderer.videoInitialized = 1;
     
+    x_platform_init(engineContext, config);
+    
     g_engineInitialized = 1;
     
     return engineContext;
@@ -52,7 +55,10 @@ X_EngineContext* x_engine_init(X_Config* config)
 
 void x_engine_cleanup(void)
 {
-    x_enginecontext_cleanup(x_engine_get_context());
+    X_EngineContext* engineContext = x_engine_get_context();
+    
+    x_platform_cleanup(engineContext);
+    x_enginecontext_cleanup(engineContext);
     x_filesystem_cleanup();
     x_memory_free_all();
     x_log_cleanup();
