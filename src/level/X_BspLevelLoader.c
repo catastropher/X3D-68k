@@ -936,6 +936,10 @@ _Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
     x_bsplevel_init_from_bsplevel_loader(level, &loader);
     x_bsplevelloader_cleanup(&loader);
     
+    char mapName[X_FILENAME_MAX_LENGTH];
+    x_filepath_extract_filename(fileName, mapName);
+    x_strncpy(level->name, mapName, X_BSPLEVEL_MAX_NAME_LENGTH);
+    
     level->flags = X_BSPLEVEL_LOADED;
     
     return 1;

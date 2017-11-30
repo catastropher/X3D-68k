@@ -202,9 +202,12 @@ typedef struct X_BspCollisionHull
 
 #define X_BSPLEVEL_MAX_COLLISION_HULLS 4
 
+#define X_BSPLEVEL_MAX_NAME_LENGTH 32
+
 typedef struct X_BspLevel
 {
     X_BspLevelFlags flags;
+    char name[X_BSPLEVEL_MAX_NAME_LENGTH];
     
     X_BspVertex* vertices;
     int totalVertices;

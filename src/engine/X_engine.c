@@ -35,12 +35,13 @@ static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
     x_console_printf
     (
         &engineContext->console,
-        "%s %d.%d\nX3D version %d.%d",
+        "\"%s\" %d.%d\nX3D version %d.%d\nCurrent map: %s\n",
         x_game_name(),
         x_game_major_version(),
         x_game_minor_version(),
         X_MAJOR_VERSION,
-        X_MINOR_VERSION
+        X_MINOR_VERSION,
+        x_engine_level_is_loaded(engineContext) ? engineContext->currentLevel.name : "<no level loaded>"
     );
 }
 
