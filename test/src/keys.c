@@ -268,15 +268,17 @@ void handle_demo(Context* context)
 
 void handle_angle_keys(X_CameraObject* cam, X_KeyState* keyState)
 {    
+    x_fp16x16 dAngle = x_fp16x16_from_float(2.0);
+    
     if(x_keystate_key_down(keyState, X_KEY_UP))
-        cam->angleX -= 2;
+        cam->angleX -= dAngle;
     else if(x_keystate_key_down(keyState, X_KEY_DOWN))
-        cam->angleX += 2;
+        cam->angleX += dAngle;
     
     if(x_keystate_key_down(keyState, X_KEY_LEFT))
-        cam->angleY += 2;
+        cam->angleY += dAngle;
     else if(x_keystate_key_down(keyState, X_KEY_RIGHT))
-        cam->angleY -= 2;
+        cam->angleY -= dAngle;
 }
 
 _Bool handle_console(X_EngineContext* engineContext)
