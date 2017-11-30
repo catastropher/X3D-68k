@@ -686,8 +686,13 @@ static char* find_start_of_current_cmd(char* str, int start, int* len)
     {
         if(*search == ';')
         {
-            *len = start - (search - str + 1);
-            return search + 1;
+            do
+            {
+                ++search;
+            } while(*search == ' ');
+            
+            *len = start - (search - str);
+            return search;
         }
         
         --search;
