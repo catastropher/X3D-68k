@@ -40,6 +40,9 @@
 #include "error/X_error.h"
 #include "error/X_log.h"
 
+// game
+#include "game/X_Game.h"
+
 // level
 #include "level/X_BspLevel.h"
 #include "level/X_BspLevelLoader.h"

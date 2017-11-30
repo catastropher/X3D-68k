@@ -113,6 +113,21 @@ void mat4x4_visualize(X_Mat4x4* mat, X_RenderContext* renderContext)
 }
 
 
+const char* x_game_name(void)
+{
+    return "X3D Test";
+}
+
+int x_game_major_version(void)
+{
+    return 0;
+}
+
+int x_game_minor_version(void)
+{
+    return 1;
+}
+
 void gameloop(Context* context)
 {
     X_Mat4x4 identity;

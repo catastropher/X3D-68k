@@ -20,6 +20,7 @@
 #include "render/X_RenderContext.h"
 #include "geo/X_Polygon3.h"
 #include "platform/X_Platform.h"
+#include "game/X_Game.h"
 
 static _Bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -27,6 +28,20 @@ static X_EngineContext g_engineContext;
 static X_EngineContext* x_engine_get_context(void)
 {
     return &g_engineContext;
+}
+
+static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
+{
+    x_console_printf
+    (
+        &engineContext->console,
+        "%s %d.%d\nX3D version %d.%d",
+        x_game_name(),
+        x_game_major_version(),
+        x_game_minor_version(),
+        X_MAJOR_VERSION,
+        X_MINOR_VERSION
+    );
 }
 
 X_EngineContext* x_engine_init(X_Config* config)
@@ -47,6 +62,8 @@ X_EngineContext* x_engine_init(X_Config* config)
     x_console_execute_cmd(&engineContext->console, "vidrestart");
     engineContext->renderer.videoInitialized = 1;
     
+    x_console_register_cmd(&engineContext->console, "info", cmd_info);
+    
     g_engineInitialized = 1;
     
     return engineContext;
@@ -61,6 +78,8 @@ void x_engine_cleanup(void)
     x_filesystem_cleanup();
     x_memory_free_all();
     x_log_cleanup();
+    
+    g_engineInitialized = 0;
 }
 
 void x_engine_render_frame(X_EngineContext* engineContext)

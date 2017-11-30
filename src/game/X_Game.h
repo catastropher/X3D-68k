@@ -15,23 +15,9 @@
 
 #pragma once
 
-#include "X_EngineContext.h"
+#define X_GAME_REQUIRED
 
-#define X_MAJOR_VERSION 0
-#define X_MINOR_VERSION 1
-#define X_VERSION (X_MAJOR_VERSION * 1000 + X_MINOR_VERSION)
-
-X_EngineContext* x_engine_init(X_Config* config);
-void x_engine_cleanup(void);
-void x_engine_render_frame(X_EngineContext* engineContext);
-
-static inline _Bool x_engine_level_is_loaded(const X_EngineContext* context)
-{
-    return x_bsplevel_file_is_loaded(&context->currentLevel);
-}
-
-static inline X_BspLevel* x_engine_get_current_level(X_EngineContext* context)
-{
-    return &context->currentLevel;
-}
+X_GAME_REQUIRED const char* x_game_name(void);
+int x_game_major_version(void);
+int x_game_minor_version(void);
 
