@@ -23,6 +23,7 @@
 #include "level/X_BspLevel.h"
 #include "render/X_Renderer.h"
 #include "X_init.h"
+#include "system/X_Mouse.h"
 
 struct X_RenderContext;
 
@@ -36,6 +37,7 @@ typedef struct X_EngineContext
     X_Console console;
     X_Font mainFont;
     X_KeyState keystate;
+    X_MouseState mouseState;
     X_BspLevel currentLevel;
     X_Renderer renderer;
     

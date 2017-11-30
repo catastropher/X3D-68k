@@ -24,11 +24,17 @@ void x_platform_init(X_EngineContext* engineContext, X_Config* config)
 void x_platform_cleanup(X_EngineContext* engineContext)
 {
     x_sdl_cleanup_keys(engineContext);
+    x_sdl_mouse_show_cursor(1);
 }
 
 void x_platform_handle_keys(X_EngineContext* engineContext)
 {
     x_sdl_handle_keys(engineContext);
+}
+
+void x_platform_handle_mouse(X_EngineContext* engineContext)
+{
+    x_sdl_handle_mouse(engineContext);
 }
 
 void x_platform_sdl_extract_key_from_event(SDL_Event* ev, SDLKey* key, SDLKey* unicodeCharacter)
@@ -38,5 +44,15 @@ void x_platform_sdl_extract_key_from_event(SDL_Event* ev, SDLKey* key, SDLKey* u
     
     if(!isprint(*key))
         *unicodeCharacter = *key;
+}
+
+void x_platform_mouse_set_position(X_Vec2 pos)
+{
+    x_sdl_mouse_set_position(pos);
+}
+
+void x_platform_mouse_show_cursor(_Bool showCursor)
+{
+    x_sdl_mouse_show_cursor(showCursor);
 }
 

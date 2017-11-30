@@ -25,3 +25,7 @@ X_PLATFORM_REQUIRED void x_platform_cleanup(X_EngineContext* engineContext);
 
 X_PLATFORM_REQUIRED void x_platform_handle_keys(X_EngineContext* engineContext);
 
+X_PLATFORM_REQUIRED void x_platform_handle_mouse(X_EngineContext* engineContext);
+X_PLATFORM_REQUIRED void x_platform_mouse_set_position(X_Vec2 pos);
+X_PLATFORM_REQUIRED void x_platform_mouse_show_cursor(_Bool showCursor);
+

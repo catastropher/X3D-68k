@@ -109,3 +109,23 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
     }
 }
 
+void x_sdl_handle_mouse(X_EngineContext* engineContext)
+{
+    X_MouseState* state = &engineContext->mouseState;
+    
+    int x, y;
+    SDL_GetMouseState(&x, &y);
+    
+    x_mousestate_update_pos(state, x_vec2_make(x, y));
+}
+
+void x_sdl_mouse_set_position(X_Vec2 pos)
+{
+    SDL_WarpMouse(pos.x, pos.y);
+}
+
+void x_sdl_mouse_show_cursor(_Bool showCursor)
+{
+    SDL_ShowCursor(showCursor);
+}
+

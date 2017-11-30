@@ -115,6 +115,7 @@ set(X3D_SOURCES
     # system
     src/system/X_File.c
     src/system/X_Keys.c
+    src/system/X_Mouse.c
     src/system/X_PackFile.c
 
     # util

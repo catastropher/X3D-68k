@@ -39,3 +39,13 @@ static inline X_Vec2 x_vec2_make(int x, int y)
     return (X_Vec2) { x, y };
 }
 
+static inline X_Vec2 x_vec2_add(const X_Vec2* a, const X_Vec2* b)
+{
+    return x_vec2_make(a->x + b->x, a->y + b->y);
+}
+
+static inline X_Vec2 x_vec2_sub(const X_Vec2* a, const X_Vec2* b)
+{
+    return x_vec2_make(a->x - b->x, a->y - b->y);
+}
+

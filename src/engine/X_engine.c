@@ -40,13 +40,12 @@ X_EngineContext* x_engine_init(X_Config* config)
     x_filesystem_add_search_path("../assets");
     
     X_EngineContext* engineContext = x_engine_get_context();
+    x_platform_init(engineContext, config);
     x_enginecontext_init(engineContext, config);
     
     // Perform a vidrestart so that we call the client's screen initialization code
     x_console_execute_cmd(&engineContext->console, "vidrestart");
     engineContext->renderer.videoInitialized = 1;
-    
-    x_platform_init(engineContext, config);
     
     g_engineInitialized = 1;
     

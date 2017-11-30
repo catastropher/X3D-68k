@@ -103,6 +103,9 @@ void x_enginecontext_init(X_EngineContext* context, X_Config* config)
     init_main_font(context, "font.xtex", 8, 8);     // TODO: this should be configurable
     init_console(context);
     init_keystate(context);
+    
+    x_mousestate_init(&context->mouseState, &context->console, &context->screen);
+    
     init_level(context);
     
     x_renderer_init(&context->renderer, &context->console, &context->screen, config->fov);

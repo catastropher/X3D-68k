@@ -55,3 +55,11 @@ static inline X_Vec3_fp16x16 x_cameraobject_get_velocity(X_CameraObject* cam)
 {
     return cam->collider.velocity;
 }
+
+static inline void x_cameraobject_add_angle(X_CameraObject* cam, X_Vec2_fp16x16 angleOffset)
+{
+    cam->angleX += angleOffset.x;
+    cam->angleY += angleOffset.y;
+}
+
+

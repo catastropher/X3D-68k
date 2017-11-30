@@ -33,7 +33,6 @@
 static Context* g_Context;
 
 _Bool physics = 1;
-_Bool mouseLook = 1;
 
 static void cmd_demo(X_EngineContext* context, int argc, char* argv[])
 {
@@ -89,9 +88,6 @@ void init_keys(Context* context)
 {
     g_Context = context;
     
-    SDL_ShowCursor(0);
-    SDL_WarpMouse(context->engineContext->screen.canvas.tex.w / 2, context->engineContext->screen.canvas.tex.h / 2);
-    
     x_demorecorder_init(&context->demoRecorder, context->cam, &context->engineContext->keystate);
     x_demoplayer_init(&context->demoPlayer, context->cam, &context->engineContext->keystate);
     
@@ -106,7 +102,6 @@ void cleanup_keys(Context* context)
 {
     x_demorecorder_cleanup(&context->demoRecorder);
     x_demoplayer_cleanup(&context->demoPlayer);
-    SDL_ShowCursor(1);
 }
 
 
@@ -271,33 +266,8 @@ void handle_demo(Context* context)
     }
 }
 
-void handle_mouse(X_CameraObject* cam)
-{
-    if(mouseLook)
-    {
-        int x, y;
-        SDL_GetMouseState(&x, &y);
-        
-        // FIXME: will not work if viewport not fullscreen and centered
-        int centerX = cam->viewport.w / 2;
-        int centerY = cam->viewport.h / 2;
-        
-        int dx = x - centerX;
-        int dy = y - centerY;
-        
-        x_fp16x16 angularVelocity = x_fp16x16_from_float(0.1);
-        
-        cam->angleY -= dx * angularVelocity;
-        cam->angleX -= dy * angularVelocity;
-        
-        SDL_WarpMouse(centerX, centerY);
-    }
-}
-
 void handle_angle_keys(X_CameraObject* cam, X_KeyState* keyState)
-{
-    handle_mouse(cam);
-    
+{    
     if(x_keystate_key_down(keyState, X_KEY_UP))
         cam->angleX -= 2;
     else if(x_keystate_key_down(keyState, X_KEY_DOWN))
@@ -355,9 +325,16 @@ void handle_normal_movement(X_EngineContext* engineContext, X_CameraObject* cam)
     x_cameraobject_update_view(cam);
 }
 
+void handle_mouse(Context* context)
+{
+    X_MouseState* state = &context->engineContext->mouseState;
+    x_cameraobject_add_angle(context->cam, x_mousestate_get_mouselook_angle_change(state));
+}
+
 void handle_keys(Context* context)
 {
     x_platform_handle_keys(context->engineContext);
+    x_platform_handle_mouse(context->engineContext);
     
     handle_demo(context);
     
@@ -369,6 +346,9 @@ void handle_keys(Context* context)
     
     X_KeyState* keyState = &context->engineContext->keystate;
 
+    
+    handle_mouse(context);
+    
     if(!x_demoplayer_is_playing(&g_Context->demoPlayer))
       handle_angle_keys(context->cam, keyState);
     

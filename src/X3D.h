@@ -87,6 +87,7 @@
 // system
 #include "system/X_File.h"
 #include "system/X_Keys.h"
+#include "system/X_Mouse.h"
 #include "system/X_PackFile.h"
 #include "system/X_Time.h"
 

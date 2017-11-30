@@ -25,5 +25,9 @@ void x_sdl_init_keys(X_EngineContext* engineContext, _Bool enableUnicode);
 void x_sdl_cleanup_keys(X_EngineContext* engineContext);
 void x_sdl_handle_keys(X_EngineContext* engineContext);
 
+void x_sdl_handle_mouse(X_EngineContext* engineContext);
+void x_sdl_mouse_set_position(X_Vec2 pos);
+void x_sdl_mouse_show_cursor(_Bool showCursor);
+
 X_SDL_REQUIRED void x_platform_sdl_extract_key_from_event(SDL_Event* ev, SDLKey* key, SDLKey* unicodeCharacter);
 
