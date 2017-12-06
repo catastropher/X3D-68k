@@ -124,6 +124,10 @@ void x_enginecontext_restart_video(X_EngineContext* context)
     x_renderer_restart_video(&context->renderer, &context->screen);
     
     context->screen.handlers.restartVideo(context, context->screen.handlers.userData);
+    
+    // FIXME: this is a hack
+    if(context->mouseState.mouseLook)
+        x_console_execute_cmd(&context->console, "mouse.look 1");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
