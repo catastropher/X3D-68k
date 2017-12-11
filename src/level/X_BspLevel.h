@@ -271,6 +271,9 @@ void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X
 
 void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light* light, int currentFrame);
 
+struct X_BoundSphere;
+int x_bsplevel_find_nodes_intersecting_sphere(X_BspLevel* level, struct X_BoundSphere* sphere, X_BspNode** dest);
+
 //======================== level ========================
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)

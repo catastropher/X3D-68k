@@ -20,6 +20,7 @@
 #include "X_BspLevel.h"
 #include "X_BspLevelLoader.h"
 #include "error/X_error.h"
+#include "geo/X_BoundSphere.h"
 
 X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BspBoundBox* box, X_Plane* plane)
 {
@@ -410,4 +411,36 @@ void x_bsplevel_cleanup(X_BspLevel* level)
     x_free(level->vertices);
     x_free(level->clipNodes);
 }
+
+X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node, X_BoundSphere* sphere, X_BspNode** nextNodeDest)
+{
+    if(x_bspnode_is_leaf(node))
+        return nextNodeDest;
+    
+    x_fp16x16 dist = x_plane_point_distance_fp16x16(&node->plane->plane, &sphere->center);
+    _Bool exploreFront = 1;
+    _Bool exploreBack = 1;
+    
+    if(dist > sphere->radius)
+        exploreBack = 0;
+    else if(dist < -sphere->radius)
+        exploreFront = 0;
+    else
+        *nextNodeDest++ = node;
+    
+    if(exploreFront)
+        nextNodeDest = x_bsplevel_find_nodes_intersecting_sphere_recursive(node->frontChild, sphere, nextNodeDest);
+    
+    if(exploreBack)
+        nextNodeDest = x_bsplevel_find_nodes_intersecting_sphere_recursive(node->backChild, sphere, nextNodeDest);
+    
+    return nextNodeDest;
+}
+
+int x_bsplevel_find_nodes_intersecting_sphere(X_BspLevel* level, X_BoundSphere* sphere, X_BspNode** dest)
+{
+    return x_bsplevel_find_nodes_intersecting_sphere_recursive(x_bsplevel_get_root_node(level), sphere, dest) - dest;
+}
+
+
 

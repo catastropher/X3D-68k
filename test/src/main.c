@@ -141,6 +141,10 @@ void gameloop(Context* context)
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         
+        X_BoundSphere sphere = { x_cameraobject_get_position(context->cam), x_fp16x16_from_int(30) };
+        
+        X_BspNode* nodes[100];
+        printf("Near nodes: %d\n", x_bsplevel_find_nodes_intersecting_sphere(renderContext.level, &sphere, nodes + 0));
         
         if(x_keystate_key_down(&context->engineContext->keystate, 'k'))
         {
