@@ -385,7 +385,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
         clippedEdgeIds = edgeIds;
 
     }
-    else if(!x_polygon3_fp16x16_clip_to_frustum_edge_ids(polygon, context->renderContext->viewFrustum, &clipped, geoFlags, edgeIds, clippedEdgeIds))
+    else if(!x_polygon3_clip_to_frustum_edge_ids(polygon, context->renderContext->viewFrustum, &clipped, geoFlags, edgeIds, clippedEdgeIds))
     {
         return;
     }

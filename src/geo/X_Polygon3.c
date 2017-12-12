@@ -18,7 +18,7 @@
 #include "X_Ray3.h"
 #include "render/X_TriangleFiller.h"
 
-_Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest)
+_Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest)
 {
     dest->totalVertices = 0;
     
@@ -114,7 +114,7 @@ void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest)
     memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3));
 }
 
-_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags)
+_Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags)
 {
     X_Vec3_fp16x16 tempV[200];
     X_Polygon3 temp[2] = 
@@ -134,19 +134,19 @@ _Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3* poly, const X_Frustum
         if(!clipToPlane)
             continue;
         
-        if(!x_polygon3_fp16x16_clip_to_plane(polyToClip, frustum->planes + plane, &temp[currentTemp]))
+        if(!x_polygon3_clip_to_plane(polyToClip, frustum->planes + plane, &temp[currentTemp]))
             return 0;
         
         polyToClip = &temp[currentTemp];
         currentTemp ^= 1;
     }
     
-    return x_polygon3_fp16x16_clip_to_plane(polyToClip, frustum->planes + lastClipPlane, dest);
+    return x_polygon3_clip_to_plane(polyToClip, frustum->planes + lastClipPlane, dest);
 }
 
 // Clips a polygon to a frustum and keeps track of the id's of the edges
 // If a new edge is inserted, it will have an ID of 0
-_Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
+_Bool x_polygon3_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest)
 {
     X_Vec3_fp16x16 tempV[200];
