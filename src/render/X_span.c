@@ -155,7 +155,7 @@ static inline void setup_recip_tab(X_AE_SurfaceRenderContext* context)
 
 static inline void setup_screen(X_AE_SurfaceRenderContext* context)
 {
-    context->screen = context->renderContext->screen->canvas.tex.texels;
+    context->screen = context->renderContext->canvas->texels;
 }
 
 void x_ae_surfacerendercontext_setup_constants(X_AE_SurfaceRenderContext* context)
@@ -240,9 +240,9 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
 
 static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {    
-    X_Texture* screenTex = &context->renderContext->screen->canvas.tex;
+    X_Texture* screenTex = context->renderContext->canvas;
     X_Color* scanline = screenTex->texels + span->y * screenTex->w;
-    x_fp0x16* zbuf = context->renderContext->screen->canvas.zbuf + span->y * screenTex->w;
+    x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->w;
     
     x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, span->y) >> 10;
     x_fp16x16 dInvZ = context->surface->zInverseXStep >> 10;

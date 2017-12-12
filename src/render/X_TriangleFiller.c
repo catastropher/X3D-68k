@@ -35,7 +35,7 @@ static void fill_solid_span(X_TriangleFiller* filler)
     int screenW = x_screen_w(renderContext->screen);
     int screenH = x_screen_h(renderContext->screen);
     
-    x_fp0x16* zbuf = renderContext->screen->canvas.zbuf + y * screenW;
+    x_fp0x16* zbuf = renderContext->zbuf + y * screenW;
     
     if(leftX < 0 || rightX >= screenW)
         return;
@@ -47,7 +47,7 @@ static void fill_solid_span(X_TriangleFiller* filler)
     {
         if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
         {
-            x_texture_set_texel(&renderContext->screen->canvas.tex, i, y, filler->fillColor);
+            x_texture_set_texel(renderContext->canvas, i, y, filler->fillColor);
             zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
         }
         
@@ -82,7 +82,7 @@ static void fill_textured_span(X_TriangleFiller* filler)
     int screenW = x_screen_w(renderContext->screen);
     int screenH = x_screen_h(renderContext->screen);
     
-    x_fp0x16* zbuf = renderContext->screen->canvas.zbuf + y * screenW;
+    x_fp0x16* zbuf = renderContext->zbuf + y * screenW;
     
     if(leftX < 0 || rightX >= screenW)
         return;
@@ -95,7 +95,7 @@ static void fill_textured_span(X_TriangleFiller* filler)
         if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
         {
             X_Color texel = x_texture_get_texel(filler->fillTexture, u >> 16, v >> 16);
-            x_texture_set_texel(&renderContext->screen->canvas.tex, i, y, texel);
+            x_texture_set_texel(renderContext->canvas, i, y, texel);
             zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
         }
         
@@ -126,7 +126,7 @@ static void fill_transparent_span(X_TriangleFiller* filler)
     int screenW = x_screen_w(renderContext->screen);
     int screenH = x_screen_h(renderContext->screen);
     
-    x_fp0x16* zbuf = renderContext->screen->canvas.zbuf + y * screenW;
+    x_fp0x16* zbuf = renderContext->zbuf + y * screenW;
     
     if(leftX < 0 || rightX >= screenW)
         return;
@@ -134,7 +134,7 @@ static void fill_transparent_span(X_TriangleFiller* filler)
     if(y < 0 || y >= screenH)
         return;
     
-    X_Texture* canvasTex = &renderContext->screen->canvas.tex;
+    X_Texture* canvasTex = renderContext->canvas;
     X_Color* scanline = canvasTex->texels + y * canvasTex->w;
     
     for(int i = leftX; i < rightX; ++i)

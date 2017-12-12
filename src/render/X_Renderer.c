@@ -333,7 +333,7 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
 
 static void clear_zbuffer(X_EngineContext* engineContext)
 {
-    x_canvas_zbuf_clear(&engineContext->screen.canvas);
+    x_screen_zbuf_clear(&engineContext->screen);
 }
 
 void x_renderer_render_frame(X_EngineContext* engineContext)

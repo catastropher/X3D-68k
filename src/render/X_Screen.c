@@ -47,8 +47,11 @@ void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera)
 
 void x_screen_restart_video(X_Screen* screen, int newW, int newH, x_fp16x16 newFov)
 {
-    x_canvas_cleanup(&screen->canvas);
-    x_canvas_init(&screen->canvas, newW, newH);
+    x_texture_cleanup(&screen->canvas);
+    x_texture_init(&screen->canvas, newW, newH);
+    
+    x_free(screen->zbuf);
+    screen->zbuf = x_malloc(x_screen_zbuf_size(screen));
     
     // Broadcast to cameras the change so they can update their viewports
     for(X_CameraObject* cam = screen->cameraListHead; cam != NULL; cam = cam->nextInCameraList)

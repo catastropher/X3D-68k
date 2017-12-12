@@ -45,6 +45,7 @@ void x_texture_blit_texture(X_Texture* canvas, const X_Texture* tex, X_Vec2 pos)
 void x_texture_draw_char(X_Texture* canvas, unsigned char c, const struct X_Font* font, X_Vec2 pos);
 void x_texture_draw_str(X_Texture* canvas, const char* str, const struct X_Font* font, X_Vec2 pos);
 void x_texture_fill_rect(X_Texture* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color);
+void x_canvas_fill(X_Texture* canvas, X_Color fillColor);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the width of a texture.

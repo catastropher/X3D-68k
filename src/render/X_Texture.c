@@ -173,3 +173,8 @@ void x_texture_fill_rect(X_Texture* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, 
     }
 }
 
+void x_canvas_fill(X_Texture* canvas, X_Color fillColor)
+{
+    memset(canvas->texels, fillColor, x_texture_total_texels(canvas));
+}
+

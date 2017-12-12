@@ -29,8 +29,9 @@ typedef struct X_RenderContext
 {
     struct X_Renderer* renderer;
     X_CameraObject* cam;
-    X_Canvas* canvas;
     X_Screen* screen;
+    X_Texture* canvas;
+    x_fp0x16* zbuf;
     X_Frustum* viewFrustum;
     X_Mat4x4* viewMatrix;
     struct X_EngineContext* engineContext;

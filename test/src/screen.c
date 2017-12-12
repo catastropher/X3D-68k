@@ -104,7 +104,7 @@ void screen_update(Context* context)
     update_screen_nspire(context);
 #else
     
-    x_texture_to_sdl_surface(&context->engineContext->screen.canvas.tex, context->engineContext->screen.palette, context->screen);
+    x_texture_to_sdl_surface(&context->engineContext->screen.canvas, context->engineContext->screen.palette, context->screen);
     
     if(record && (x_enginecontext_get_frame(context->engineContext) % recordFrame) == 0) {
         char fileName[512];

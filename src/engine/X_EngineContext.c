@@ -167,6 +167,7 @@ void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext
     X_Vec3_fp16x16 camPos = x_cameraobject_get_position(cam);
     dest->camPos = x_vec3_fp16x16_to_vec3(&camPos);
     dest->canvas = &engineContext->screen.canvas;
+    dest->zbuf = engineContext->screen.zbuf;
     dest->currentFrame = x_enginecontext_get_frame(engineContext);
     dest->engineContext = engineContext;
     dest->level = &engineContext->currentLevel;

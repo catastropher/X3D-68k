@@ -402,7 +402,7 @@ static X_Screen* x_console_get_screen(X_Console* console)
     return &console->engineContext->screen;
 }
 
-static X_Canvas* x_console_get_canvas(X_Console* console)
+static X_Texture* x_console_get_canvas(X_Console* console)
 {
     return &x_console_get_screen(console)->canvas;
 }
@@ -423,9 +423,9 @@ static void x_console_render_input(X_Console* console)
     int inputLineY = x_console_line_y(console, x_console_get_next_empty_line(console));
     const int CHARS_IN_CURSOR = 2;
     
-    X_Canvas* canvas = x_console_get_canvas(console);
-    x_texture_draw_char(&canvas->tex, ']', console->font, x_vec2_make(0, inputLineY));
-    x_texture_draw_str(&canvas->tex, scrolledInput, console->font, x_vec2_make(console->font->charW * CHARS_IN_CURSOR, inputLineY));
+    X_Texture* canvas = x_console_get_canvas(console);
+    x_texture_draw_char(canvas, ']', console->font, x_vec2_make(0, inputLineY));
+    x_texture_draw_str(canvas, scrolledInput, console->font, x_vec2_make(console->font->charW * CHARS_IN_CURSOR, inputLineY));
     
     x_console_remove_cursor_from_input_buf(console);
 }
@@ -433,7 +433,7 @@ static void x_console_render_input(X_Console* console)
 void x_console_render_background(X_Console* console)
 {
     X_Screen* screen = x_console_get_screen(console);
-    X_Canvas* canvas = x_console_get_canvas(console);
+    X_Texture* canvas = x_console_get_canvas(console);
     const X_Palette* palette = x_console_get_palette(console);
     X_Color backgroundColor = palette->black;
     X_Color lineColor = palette->darkRed;
@@ -441,10 +441,10 @@ void x_console_render_background(X_Console* console)
     X_Vec2 topLeft = x_vec2_make(0, x_console_line_y(console, 0));
     X_Vec2 bottomRight = x_vec2_make(x_screen_w(screen) - 1, x_console_line_y(console, console->size.y));
     
-    x_texture_fill_rect(&canvas->tex, topLeft, bottomRight, backgroundColor);
+    x_texture_fill_rect(canvas, topLeft, bottomRight, backgroundColor);
     
     X_Vec2 bottomLeft = x_vec2_make(0, bottomRight.y);
-    x_texture_draw_line(&canvas->tex, bottomLeft, bottomRight, lineColor);
+    x_texture_draw_line(canvas, bottomLeft, bottomRight, lineColor);
 }
 
 static void x_console_handle_opening_animation(X_Console* console)
@@ -482,11 +482,11 @@ static void x_console_handle_open_state_animation(X_Console* console)
 
 static void x_console_render_text(X_Console* console)
 {
-    X_Canvas* canvas = x_console_get_canvas(console);
+    X_Texture* canvas = x_console_get_canvas(console);
     for(int i = 0; i < console->size.y; ++i)
     {
         const char* startOfLine = console->text + i * x_console_bytes_in_line(console);
-        x_texture_draw_str(&canvas->tex, startOfLine, console->font, x_vec2_make(0, x_console_line_y(console, i)));
+        x_texture_draw_str(canvas, startOfLine, console->font, x_vec2_make(0, x_console_line_y(console, i)));
     }
 }
 
