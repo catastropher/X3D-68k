@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "X_Canvas.h"
 #include "object/X_CameraObject.h"
 #include "X_Palette.h"
 

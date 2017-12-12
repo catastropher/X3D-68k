@@ -101,7 +101,6 @@ set(X3D_SOURCES
 
     # render
     src/render/X_activeedge.c
-    src/render/X_Canvas.c
     src/render/X_Font.c
     src/render/X_Palette.c
     src/render/X_Renderer.c
