@@ -31,7 +31,7 @@ static void draw_fps(X_EngineContext* context)
     sprintf(fpsStr, "%d", fps);
     
     X_Vec2 pos = x_vec2_make(x_screen_w(&context->screen) - x_font_str_width(&context->mainFont, fpsStr), 0);
-    x_canvas_draw_str(&context->screen.canvas, fpsStr, &context->mainFont, pos);
+    x_texture_draw_str(&context->screen.canvas.tex, fpsStr, &context->mainFont, pos);
 }
 
 static void draw_crosshair(X_EngineContext* engineContext)

@@ -159,3 +159,17 @@ void x_texture_draw_str(X_Texture* canvas, const char* str, const X_Font* font, 
     }
 }
 
+void x_texture_fill_rect(X_Texture* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color)
+{
+    x_texture_clamp_vec2(canvas, &topLeft);
+    x_texture_clamp_vec2(canvas, &bottomRight);
+    
+    for(int y = topLeft.y; y <= bottomRight.y; ++y)
+    {
+        for(int x = topLeft.x; x <= bottomRight.x; ++x)
+        {
+            x_texture_set_texel(canvas, x, y, color);
+        }
+    }
+}
+

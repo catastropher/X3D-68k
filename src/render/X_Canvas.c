@@ -16,17 +16,3 @@
 #include "X_Canvas.h"
 #include "util/X_util.h"
 
-void x_canvas_fill_rect(X_Canvas* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color)
-{
-    x_texture_clamp_vec2(&canvas->tex, &topLeft);
-    x_texture_clamp_vec2(&canvas->tex, &bottomRight);
-    
-    for(int y = topLeft.y; y <= bottomRight.y; ++y)
-    {
-        for(int x = topLeft.x; x <= bottomRight.x; ++x)
-        {
-            x_texture_set_texel(&canvas->tex, x, y, color);
-        }
-    }
-}
-

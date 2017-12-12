@@ -31,7 +31,6 @@ typedef struct X_Canvas
     x_fp0x16* zbuf;        ///< Z-buffer
 } X_Canvas;
 
-void x_canvas_fill_rect(X_Canvas* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the width of a canvas.

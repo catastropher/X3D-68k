@@ -441,7 +441,7 @@ void x_console_render_background(X_Console* console)
     X_Vec2 topLeft = x_vec2_make(0, x_console_line_y(console, 0));
     X_Vec2 bottomRight = x_vec2_make(x_screen_w(screen) - 1, x_console_line_y(console, console->size.y));
     
-    x_canvas_fill_rect(canvas, topLeft, bottomRight, backgroundColor);
+    x_texture_fill_rect(&canvas->tex, topLeft, bottomRight, backgroundColor);
     
     X_Vec2 bottomLeft = x_vec2_make(0, bottomRight.y);
     x_texture_draw_line(&canvas->tex, bottomLeft, bottomRight, lineColor);
