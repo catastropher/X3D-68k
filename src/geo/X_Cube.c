@@ -59,9 +59,9 @@ void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
         truncate_ray(&bottomRay);
         truncate_ray(&sideRay);
         
-        x_ray3d_render(&topRay, rcontext, color);
-        x_ray3d_render(&bottomRay, rcontext, color);
-        x_ray3d_render(&sideRay, rcontext, color);
+        x_ray3_render(&topRay, rcontext, color);
+        x_ray3_render(&bottomRay, rcontext, color);
+        x_ray3_render(&sideRay, rcontext, color);
     }
 }
 

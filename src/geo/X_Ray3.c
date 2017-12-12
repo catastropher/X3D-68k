@@ -69,7 +69,7 @@ _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const X_Frustum* frustum, X_Ray3
     return inside;
 }
 
-void x_ray3d_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
+void x_ray3_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
 {
     X_Ray3 clipped;
     if(!x_ray3_clip_to_frustum(ray, rcontext->viewFrustum, &clipped))

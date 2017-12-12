@@ -92,7 +92,7 @@ static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext
                 ray.v[0] = x_vec3_add(ray.v + 0, &model->origin);
                 ray.v[1] = x_vec3_add(ray.v + 1, &model->origin);
                 
-                x_ray3d_render(&ray, renderContext, color);
+                x_ray3_render(&ray, renderContext, color);
             }
         }
         
@@ -114,19 +114,6 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
     
     for(int i = 1; i < level->totalModels; ++i)
         x_bspmodel_render_wireframe(level, level->models + i, rcontext, 15);
-    
-//     for(int i = 0; i < level->totalEdges; ++i)
-//     {
-//         X_BspEdge* edge = level->edges + i;
-//         
-//         X_Ray3 ray = x_ray3_make
-//         (
-//             x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[0]].v),
-//             x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[1]].v)
-//         );
-//         
-//         x_ray3d_render(&ray, rcontext, color);
-//     }
 }
 
 X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)

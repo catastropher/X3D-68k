@@ -32,7 +32,7 @@ typedef X_Ray3 X_Ray3_fp16x16;
 
 _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const struct X_Plane* plane, X_Ray3* dest);
 _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const struct X_Frustum* frustum, X_Ray3* dest);
-void x_ray3d_render(const X_Ray3* ray, struct X_RenderContext* rcontext, X_Color color);
+void x_ray3_render(const X_Ray3* ray, struct X_RenderContext* rcontext, X_Color color);
 
 static inline X_Ray3 x_ray3_make(X_Vec3 start, X_Vec3 end)
 {

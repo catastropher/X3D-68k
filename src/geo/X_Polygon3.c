@@ -135,7 +135,7 @@ void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rconte
         int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
         X_Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
         
-        x_ray3d_render(&ray, rcontext, color);
+        x_ray3_render(&ray, rcontext, color);
     }
 }
 
