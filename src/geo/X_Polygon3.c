@@ -18,40 +18,6 @@
 #include "X_Ray3.h"
 #include "render/X_TriangleFiller.h"
 
-_Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest)
-{
-    dest->totalVertices = 0;
-    
-    x_fp16x16 dot = x_vec3_dot(&plane->normal, src->vertices + 0);
-    _Bool in = dot >= -plane->d;
-    
-    for(int i = 0; i < src->totalVertices; ++i)
-    {
-        int next = (i + 1 < src->totalVertices ? i + 1 : 0);
-        
-        if(in)
-            dest->vertices[dest->totalVertices++] = src->vertices[i];
-        
-        x_fp16x16 nextDot = x_vec3_dot(&plane->normal, src->vertices + next);
-        _Bool nextIn = nextDot >= -plane->d;
-        int dotDiff = (nextDot - dot) >> 16;
-        
-        if(in != nextIn && dotDiff != 0)
-        {
-            x_fp16x16 scale = (-plane->d - dot) / dotDiff;
-            X_Ray3 ray = x_ray3_make(src->vertices[i], src->vertices[next]);
-            x_ray3_lerp(&ray, scale, dest->vertices + dest->totalVertices);
-            
-            ++dest->totalVertices;
-        }
-        
-        dot = nextDot;
-        in = nextIn;
-    }
-    
-    return dest->totalVertices > 2;
-}
-
 _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest)
 {
     dest->totalVertices = 0;
@@ -148,30 +114,6 @@ void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest)
     memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3));
 }
 
-_Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest)
-{
-    X_Vec3 tempV[200];
-    X_Polygon3 temp[2] = 
-    {
-        x_polygon3_make(tempV, 100),
-        x_polygon3_make(tempV + 100, 100)
-    };
-    
-    int currentTemp = 0;
-    const X_Polygon3* polyToClip = poly;
-    
-    for(int i = 0; i < frustum->totalPlanes - 1; ++i)
-    {
-        if(!x_polygon3_clip_to_plane(polyToClip, frustum->planes + i, &temp[currentTemp]))
-            return 0;
-        
-        polyToClip = &temp[currentTemp];
-        currentTemp ^= 1;
-    }
-    
-    return x_polygon3_clip_to_plane(polyToClip, frustum->planes + frustum->totalPlanes - 1, dest);
-}
-
 _Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest, unsigned int clipFlags)
 {
     X_Vec3_fp16x16 tempV[200];
@@ -258,9 +200,11 @@ void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderCont
 {
     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
+   
+    // FIXME: this is broken
     
-    if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
-        return;
+//     if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
+//         return;
     
     if(clipped.totalVertices != 3)
         return;
@@ -292,9 +236,10 @@ void x_polygon3_render_textured(X_Polygon3* poly, X_RenderContext* renderContext
 {
     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
-    
-    if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
-        return;
+   
+    // FIXME: this is broken
+//     if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
+//         return;
     
     if(clipped.totalVertices != 3)
         return;
@@ -327,9 +272,11 @@ void x_polygon3_render_transparent(X_Polygon3* poly, X_RenderContext* renderCont
     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
     
-    if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
-        return;
+    // FIXME this is broken
     
+//     if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
+//         return;
+//     
     if(clipped.totalVertices != 3)
         return;
     
