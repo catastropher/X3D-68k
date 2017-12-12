@@ -180,22 +180,6 @@ _Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly
     return x_polygon3_fp16x16_clip_to_plane_edge_ids(polyToClip, frustum->planes + lastClipPlane, dest, polyEdgeIds, edgeIdsDest);
 }
 
-void x_polygon3_to_polygon3_fp16x16(const X_Polygon3* poly, X_Polygon3_fp16x16* dest)
-{
-    dest->totalVertices = poly->totalVertices;
-    
-    for(int i = 0; i < poly->totalVertices; ++i)
-        poly->vertices[i] = x_vec3_to_vec3_fp16x16(poly->vertices + i);
-}
-
-void x_polygon3_fp16x16_to_polygon3(const X_Polygon3_fp16x16* poly, X_Polygon3* dest)
-{
-    dest->totalVertices = poly->totalVertices;
-    
-    for(int i = 0; i < poly->totalVertices; ++i)
-        poly->vertices[i] = x_vec3_fp16x16_to_vec3(poly->vertices + i);
-}
-
 void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color)
 {
     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];

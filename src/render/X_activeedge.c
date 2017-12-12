@@ -401,7 +401,6 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3_fp16x16* polygon
     X_Vec3_fp16x16 camPos = x_cameraobject_get_position(context->renderContext->cam);
     
     x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
-    x_polygon3_fp16x16_to_polygon3(&clipped, &clipped);
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 

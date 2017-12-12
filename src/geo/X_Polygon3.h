@@ -43,9 +43,6 @@ _Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X
 _Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
 
-void x_polygon3_to_polygon3_fp16x16(const X_Polygon3* poly, X_Polygon3_fp16x16* dest);
-void x_polygon3_fp16x16_to_polygon3(const X_Polygon3_fp16x16* poly, X_Polygon3* dest);
-
 static inline X_Polygon3 x_polygon3_make(X_Vec3* vertices, int totalVertices)
 {
     return (X_Polygon3) { totalVertices, vertices };
