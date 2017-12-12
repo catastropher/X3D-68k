@@ -40,7 +40,7 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
         {
             x_fp16x16 scale = x_fp16x16_div(-plane->d - dot, dotDiff);
             X_Ray3_fp16x16 ray = x_ray3_make(src->vertices[i], src->vertices[next]);
-            x_ray3_fp16x16_lerp(&ray, scale, dest->vertices + dest->totalVertices);
+            x_ray3_lerp(&ray, scale, dest->vertices + dest->totalVertices);
             
             ++dest->totalVertices;
         }
@@ -77,7 +77,7 @@ _Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3* src, const X_P
         {
             x_fp16x16 scale = x_fp16x16_div(-plane->d - dot, dotDiff);
             X_Ray3_fp16x16 ray = x_ray3_make(src->vertices[i], src->vertices[next]);
-            x_ray3_fp16x16_lerp(&ray, scale, dest->vertices + dest->totalVertices);
+            x_ray3_lerp(&ray, scale, dest->vertices + dest->totalVertices);
             
             if(in)
                 *edgeIdsDest++ = 0;    // Create a new edge

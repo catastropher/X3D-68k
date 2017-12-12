@@ -85,8 +85,8 @@ static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext
                 
                 X_Ray3 ray = x_ray3_make
                 (
-                    x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[0]].v),
-                    x_vec3_fp16x16_to_vec3(&level->vertices[edge->v[1]].v)
+                    level->vertices[edge->v[0]].v,
+                    level->vertices[edge->v[1]].v
                 );
                 
                 ray.v[0] = x_vec3_add(ray.v + 0, &model->origin);

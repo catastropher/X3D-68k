@@ -39,12 +39,6 @@ void x_cube_translate(X_Cube* cube, X_Vec3_fp16x16 translation)
         cube->vertices[i] = x_vec3_add(cube->vertices + i, &translation);
 }
 
-static void truncate_ray(X_Ray3* ray)
-{
-    ray->v[0] = x_vec3_fp16x16_to_vec3(ray->v + 0);
-    ray->v[1] = x_vec3_fp16x16_to_vec3(ray->v + 1);
-}
-
 void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
 {    
     for(int i = 0; i < 4; ++i)
@@ -54,10 +48,6 @@ void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
         X_Ray3 topRay = x_ray3_make(cube->vertices[i], cube->vertices[nextVertex]);
         X_Ray3 bottomRay = x_ray3_make(cube->vertices[i + 4], cube->vertices[nextVertex + 4]);
         X_Ray3 sideRay = x_ray3_make(cube->vertices[i], cube->vertices[i + 4]);
-        
-        truncate_ray(&topRay);
-        truncate_ray(&bottomRay);
-        truncate_ray(&sideRay);
         
         x_ray3_render(&topRay, rcontext, color);
         x_ray3_render(&bottomRay, rcontext, color);

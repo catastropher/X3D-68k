@@ -86,7 +86,7 @@ static inline _Bool explore_both_sides_of_node(X_RayTracer* trace,
     X_Ray3_fp16x16 ray = x_ray3_make(*start, *end);
  
     X_Vec3_fp16x16 intersection;
-    x_ray3_fp16x16_lerp(&ray, intersectionT, &intersection);
+    x_ray3_lerp(&ray, intersectionT, &intersection);
     
     int startChildNode;
     int endChildNode;

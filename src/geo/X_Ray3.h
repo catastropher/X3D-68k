@@ -25,7 +25,7 @@ struct X_RenderContext;
 
 typedef struct X_Ray3
 {
-    X_Vec3 v[2];
+    X_Vec3_fp16x16 v[2];
 } X_Ray3;
 
 typedef X_Ray3 X_Ray3_fp16x16;
@@ -36,20 +36,10 @@ void x_ray3_render(const X_Ray3* ray, struct X_RenderContext* rcontext, X_Color 
 
 static inline X_Ray3 x_ray3_make(X_Vec3 start, X_Vec3 end)
 {
-    return (X_Ray3)
-    {
-        { start, end }
-    };
+    return (X_Ray3) { { start, end } };
 }
 
-static inline void x_ray3_lerp(const X_Ray3* ray, x_fp16x16 t, X_Vec3* dest)
-{
-    dest->x = x_int_lerp(ray->v[0].x, ray->v[1].x, t);
-    dest->y = x_int_lerp(ray->v[0].y, ray->v[1].y, t);
-    dest->z = x_int_lerp(ray->v[0].z, ray->v[1].z, t);
-}
-
-static inline void x_ray3_fp16x16_lerp(const X_Ray3_fp16x16* ray, x_fp16x16 t, X_Vec3_fp16x16* dest)
+static inline void x_ray3_lerp(const X_Ray3_fp16x16* ray, x_fp16x16 t, X_Vec3_fp16x16* dest)
 {
     dest->x = x_fp16x16_lerp(ray->v[0].x, ray->v[1].x, t);
     dest->y = x_fp16x16_lerp(ray->v[0].y, ray->v[1].y, t);

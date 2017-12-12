@@ -19,10 +19,10 @@
 
 _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest)
 {
-    int v0DistToPlane = x_plane_point_distance(plane, ray->v + 0) >> 16;
+    x_fp16x16 v0DistToPlane = x_plane_point_distance_fp16x16(plane, ray->v + 0);
     _Bool v0In = v0DistToPlane > 0;
     
-    int v1DistToPlane = x_plane_point_distance(plane, ray->v + 1) >> 16;
+    x_fp16x16 v1DistToPlane = x_plane_point_distance_fp16x16(plane, ray->v + 1);
     _Bool v1In = v1DistToPlane > 0;
     
     // Trivial case: both points inside
@@ -39,7 +39,7 @@ _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest
     // One inside and one outside, so need to clip
     if(v0In)
     {
-        x_fp16x16 t = (v0DistToPlane << 16) / (v0DistToPlane - v1DistToPlane);
+        x_fp16x16 t = x_fp16x16_div(v0DistToPlane, v0DistToPlane - v1DistToPlane);
         
         dest->v[0] = ray->v[0];
         x_ray3_lerp(ray, t, dest->v + 1);
@@ -47,7 +47,7 @@ _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest
         return 1;
     }
     
-    x_fp16x16 t = (v1DistToPlane << 16) / (v1DistToPlane - v0DistToPlane);
+    x_fp16x16 t = x_fp16x16_div(v1DistToPlane, v1DistToPlane - v0DistToPlane);
     
     dest->v[1] = ray->v[1];
     x_ray3_lerp(ray, X_FP16x16_ONE - t, dest->v + 0);
@@ -61,30 +61,33 @@ _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const X_Frustum* frustum, X_Ray3
     *dest = *ray;
     
     for(int i = 0; i < frustum->totalPlanes && inside; ++i)
-    {
         inside &= x_ray3_clip_to_plane(dest, frustum->planes + i, dest);
-        //printf("Fail by plane %d\n", i);
-    }
     
     return inside;
 }
 
 void x_ray3_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
 {
-    X_Ray3 clipped;
+    X_Ray3 clipped = *ray;
     if(!x_ray3_clip_to_frustum(ray, rcontext->viewFrustum, &clipped))
         return;
     
     X_Ray3 transformed;
     for(int i = 0; i < 2; ++i)
-        x_mat4x4_transform_vec3(rcontext->viewMatrix, clipped.v + i, transformed.v + i);
+        x_mat4x4_transform_vec3_fp16x16(rcontext->viewMatrix, clipped.v + i, transformed.v + i);
+    
+    if(transformed.v[0].z <= 0 || transformed.v[0].z <= 0) return;
     
     X_Vec2 projected[2];
     for(int i = 0; i < 2; ++i)
-        x_viewport_project_vec3(&rcontext->cam->viewport, transformed.v + i, projected + i);
+    {
+        x_viewport_project_vec3_fp16x16(&rcontext->cam->viewport, transformed.v + i, projected + i);
+        x_viewport_clamp_vec2_fp16x16(&rcontext->cam->viewport, projected + 0);
+        projected[i].x >>= 16;
+        projected[i].y >>= 16;
+    }
     
-    x_viewport_clamp_vec2(&rcontext->cam->viewport, projected + 0);
-    x_viewport_clamp_vec2(&rcontext->cam->viewport, projected + 1);
+    
     
     x_texture_draw_line(rcontext->canvas, projected[0], projected[1], color);
 }
