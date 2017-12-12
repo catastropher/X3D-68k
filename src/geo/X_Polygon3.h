@@ -25,12 +25,10 @@ struct X_Plane;
 typedef struct X_Polygon3
 {
     int totalVertices;
-    X_Vec3* vertices;
+    X_Vec3_fp16x16* vertices;
 } X_Polygon3;
 
-typedef X_Polygon3 X_Polygon3_fp16x16;
-
-_Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest);
+_Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest);
 
 void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color);
 void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color);
@@ -39,8 +37,8 @@ void x_polygon3_render_transparent(X_Polygon3* poly, X_RenderContext* renderCont
 
 void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest);
 
-_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest, unsigned int clipFlags);
-_Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest,
+_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags);
+_Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
 
 static inline X_Polygon3 x_polygon3_make(X_Vec3* vertices, int totalVertices)

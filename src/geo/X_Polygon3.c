@@ -18,7 +18,7 @@
 #include "X_Ray3.h"
 #include "render/X_TriangleFiller.h"
 
-_Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest)
+_Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest)
 {
     dest->totalVertices = 0;
     
@@ -52,7 +52,7 @@ _Bool x_polygon3_fp16x16_clip_to_plane(const X_Polygon3_fp16x16* src, const X_Pl
     return dest->totalVertices > 2;
 }
 
-_Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3_fp16x16* src, const X_Plane* plane, X_Polygon3_fp16x16* dest, int* edgeIds, int* edgeIdsDest)
+_Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest, int* edgeIds, int* edgeIdsDest)
 {
     dest->totalVertices = 0;
     
@@ -114,17 +114,17 @@ void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest)
     memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3));
 }
 
-_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest, unsigned int clipFlags)
+_Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags)
 {
     X_Vec3_fp16x16 tempV[200];
-    X_Polygon3_fp16x16 temp[2] = 
+    X_Polygon3 temp[2] = 
     {
         x_polygon3_make(tempV, 100),
         x_polygon3_make(tempV + 100, 100)
     };
     
     int currentTemp = 0;
-    const X_Polygon3_fp16x16* polyToClip = poly;
+    const X_Polygon3* polyToClip = poly;
     
     int lastClipPlane = 31 - __builtin_clz(clipFlags);
     
@@ -146,11 +146,11 @@ _Bool x_polygon3_fp16x16_clip_to_frustum(const X_Polygon3_fp16x16* poly, const X
 
 // Clips a polygon to a frustum and keeps track of the id's of the edges
 // If a new edge is inserted, it will have an ID of 0
-_Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly, const X_Frustum* frustum, X_Polygon3_fp16x16* dest,
+_Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest)
 {
     X_Vec3_fp16x16 tempV[200];
-    X_Polygon3_fp16x16 tempPoly[2] = 
+    X_Polygon3 tempPoly[2] = 
     {
         x_polygon3_make(tempV, 100),
         x_polygon3_make(tempV + 100, 100)
@@ -158,7 +158,7 @@ _Bool x_polygon3_fp16x16_clip_to_frustum_edge_ids(const X_Polygon3_fp16x16* poly
     int tempIds[2][100];
     
     int currentTemp = 0;
-    const X_Polygon3_fp16x16* polyToClip = poly;
+    const X_Polygon3* polyToClip = poly;
     int* polyEdgeIds = edgeIds;
     
     int lastClipPlane = 31 - __builtin_clz(clipFlags);
