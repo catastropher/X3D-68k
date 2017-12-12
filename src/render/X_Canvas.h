@@ -31,9 +31,6 @@ typedef struct X_Canvas
     x_fp0x16* zbuf;        ///< Z-buffer
 } X_Canvas;
 
-void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos);
-void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X_Vec2 pos);
-void x_canvas_draw_str(X_Canvas* canvas, const char* str, const X_Font* font, X_Vec2 pos);
 void x_canvas_fill_rect(X_Canvas* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color);
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -16,61 +16,6 @@
 #include "X_Canvas.h"
 #include "util/X_util.h"
 
-void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos)
-{
-    int endX = X_MIN(pos.x + x_texture_w(tex), x_canvas_w(canvas));
-    int endY = X_MIN(pos.y + x_texture_h(tex), x_canvas_h(canvas));
-    
-    for(int y = pos.y; y < endY; ++y)
-    {
-        for(int x = pos.x; x < endX; ++x)
-        {
-            x_texture_set_texel(&canvas->tex, x, y, x_texture_get_texel(tex, x - pos.x, y - pos.y));
-        }
-    }
-}
-
-void x_canvas_draw_char(X_Canvas* canvas, unsigned char c, const X_Font* font, X_Vec2 pos)
-{
-    const X_Color* charPixels = x_font_get_character_pixels(font, c);
-
-    X_Vec2 clippedTopLeft = x_vec2_make
-    (
-        X_MAX(0, pos.x) - pos.x,
-        X_MAX(0, pos.y) - pos.y
-    );
-    
-    X_Vec2 clippedBottomRight = x_vec2_make
-    (
-        X_MIN(x_canvas_w(canvas), pos.x + font->charW) - pos.x,
-        X_MIN(x_canvas_h(canvas), pos.y + font->charH) - pos.y
-    );
-    
-    for(int i = clippedTopLeft.y; i < clippedBottomRight.y; ++i)
-        for(int j = clippedTopLeft.x; j < clippedBottomRight.x; ++j)
-            x_texture_set_texel(&canvas->tex, pos.x + j, pos.y + i, *charPixels++);
-}
-
-void x_canvas_draw_str(X_Canvas* canvas, const char* str, const X_Font* font, X_Vec2 pos)
-{
-    X_Vec2 currentPos = pos;
-    
-    while(*str)
-    {
-        if(*str == '\n')
-        {
-            currentPos.x = pos.x;
-            currentPos.y += font->charH;
-        }
-        else {
-            x_canvas_draw_char(canvas, *str, font, currentPos);
-            currentPos.x += font->charW;
-        }
-        
-        ++str;
-    }
-}
-
 void x_canvas_fill_rect(X_Canvas* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color)
 {
     x_texture_clamp_vec2(&canvas->tex, &topLeft);

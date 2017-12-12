@@ -34,11 +34,16 @@ typedef struct X_Texture
     X_Color* texels;    ///< Texels
 } X_Texture;
 
+struct X_Font;
+
 _Bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName);
 _Bool x_texture_load_from_xtex_file(X_Texture* tex, const char* fileName);
 
 void x_texture_clamp_vec2(const X_Texture* tex, X_Vec2* v);
 void x_texture_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color);
+void x_texture_blit_texture(X_Texture* canvas, const X_Texture* tex, X_Vec2 pos);
+void x_texture_draw_char(X_Texture* canvas, unsigned char c, const struct X_Font* font, X_Vec2 pos);
+void x_texture_draw_str(X_Texture* canvas, const char* str, const struct X_Font* font, X_Vec2 pos);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the width of a texture.

@@ -424,8 +424,8 @@ static void x_console_render_input(X_Console* console)
     const int CHARS_IN_CURSOR = 2;
     
     X_Canvas* canvas = x_console_get_canvas(console);
-    x_canvas_draw_char(canvas, ']', console->font, x_vec2_make(0, inputLineY));
-    x_canvas_draw_str(canvas, scrolledInput, console->font, x_vec2_make(console->font->charW * CHARS_IN_CURSOR, inputLineY));
+    x_texture_draw_char(&canvas->tex, ']', console->font, x_vec2_make(0, inputLineY));
+    x_texture_draw_str(&canvas->tex, scrolledInput, console->font, x_vec2_make(console->font->charW * CHARS_IN_CURSOR, inputLineY));
     
     x_console_remove_cursor_from_input_buf(console);
 }
@@ -486,7 +486,7 @@ static void x_console_render_text(X_Console* console)
     for(int i = 0; i < console->size.y; ++i)
     {
         const char* startOfLine = console->text + i * x_console_bytes_in_line(console);
-        x_canvas_draw_str(canvas, startOfLine, console->font, x_vec2_make(0, x_console_line_y(console, i)));
+        x_texture_draw_str(&canvas->tex, startOfLine, console->font, x_vec2_make(0, x_console_line_y(console, i)));
     }
 }
 

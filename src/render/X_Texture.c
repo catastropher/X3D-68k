@@ -17,6 +17,7 @@
 #include "system/X_File.h"
 #include "error/X_log.h"
 #include "util/X_util.h"
+#include "X_Font.h"
 
 _Bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName)
 {
@@ -69,10 +70,6 @@ void x_texture_clamp_vec2(const X_Texture* tex, X_Vec2* v)
     v->y = X_MIN(v->y, tex->h - 1);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Draws a line of the given color into a canvas.
-/// @note This function ignores the z-buffer
-////////////////////////////////////////////////////////////////////////////////
 void x_texture_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color)
 {
     x_texture_clamp_vec2(tex, &start);
@@ -104,6 +101,61 @@ void x_texture_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color
             err += dx;
             pos.y += sy;
         }
+    }
+}
+
+void x_texture_blit_texture(X_Texture* canvas, const X_Texture* tex, X_Vec2 pos)
+{
+    int endX = X_MIN(pos.x + x_texture_w(tex), canvas->w);
+    int endY = X_MIN(pos.y + x_texture_h(tex), canvas->h);
+    
+    for(int y = pos.y; y < endY; ++y)
+    {
+        for(int x = pos.x; x < endX; ++x)
+        {
+            x_texture_set_texel(canvas, x, y, x_texture_get_texel(tex, x - pos.x, y - pos.y));
+        }
+    }
+}
+
+void x_texture_draw_char(X_Texture* canvas, unsigned char c, const X_Font* font, X_Vec2 pos)
+{
+    const X_Color* charPixels = x_font_get_character_pixels(font, c);
+
+    X_Vec2 clippedTopLeft = x_vec2_make
+    (
+        X_MAX(0, pos.x) - pos.x,
+        X_MAX(0, pos.y) - pos.y
+    );
+    
+    X_Vec2 clippedBottomRight = x_vec2_make
+    (
+        X_MIN(canvas->w, pos.x + font->charW) - pos.x,
+        X_MIN(canvas->h, pos.y + font->charH) - pos.y
+    );
+    
+    for(int i = clippedTopLeft.y; i < clippedBottomRight.y; ++i)
+        for(int j = clippedTopLeft.x; j < clippedBottomRight.x; ++j)
+            x_texture_set_texel(canvas, pos.x + j, pos.y + i, *charPixels++);
+}
+
+void x_texture_draw_str(X_Texture* canvas, const char* str, const X_Font* font, X_Vec2 pos)
+{
+    X_Vec2 currentPos = pos;
+    
+    while(*str)
+    {
+        if(*str == '\n')
+        {
+            currentPos.x = pos.x;
+            currentPos.y += font->charH;
+        }
+        else {
+            x_texture_draw_char(canvas, *str, font, currentPos);
+            currentPos.x += font->charW;
+        }
+        
+        ++str;
     }
 }
 
