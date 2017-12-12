@@ -38,6 +38,7 @@ _Bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName);
 _Bool x_texture_load_from_xtex_file(X_Texture* tex, const char* fileName);
 
 void x_texture_clamp_vec2(const X_Texture* tex, X_Vec2* v);
+void x_texture_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the width of a texture.

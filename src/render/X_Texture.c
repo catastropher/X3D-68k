@@ -69,3 +69,41 @@ void x_texture_clamp_vec2(const X_Texture* tex, X_Vec2* v)
     v->y = X_MIN(v->y, tex->h - 1);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+/// Draws a line of the given color into a canvas.
+/// @note This function ignores the z-buffer
+////////////////////////////////////////////////////////////////////////////////
+void x_texture_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color)
+{
+    x_texture_clamp_vec2(tex, &start);
+    x_texture_clamp_vec2(tex, &end);
+    
+    int dx = abs(end.x - start.x);
+    int sx = start.x < end.x ? 1 : -1;
+    int dy = abs(end.y - start.y);
+    int sy = start.y < end.y ? 1 : -1; 
+    int err = (dx > dy ? dx : -dy) / 2;
+    X_Vec2 pos = start;
+    
+    while(1)
+    {
+        x_texture_set_texel(tex, pos.x, pos.y, color);
+        
+        if(x_vec2_equal(&pos, &end))
+            break;
+        
+        int old_err = err;
+        if (old_err > -dx)
+        {
+            err -= dy;
+            pos.x += sx;
+        }
+        
+        if (old_err < dy)
+        {
+            err += dx;
+            pos.y += sy;
+        }
+    }
+}
+

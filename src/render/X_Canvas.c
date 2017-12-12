@@ -16,44 +16,6 @@
 #include "X_Canvas.h"
 #include "util/X_util.h"
 
-////////////////////////////////////////////////////////////////////////////////
-/// Draws a line of the given color into a canvas.
-/// @note This function ignores the z-buffer
-////////////////////////////////////////////////////////////////////////////////
-void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color)
-{
-    x_texture_clamp_vec2(&canvas->tex, &start);
-    x_texture_clamp_vec2(&canvas->tex, &end);
-    
-    int dx = abs(end.x - start.x);
-    int sx = start.x < end.x ? 1 : -1;
-    int dy = abs(end.y - start.y);
-    int sy = start.y < end.y ? 1 : -1; 
-    int err = (dx > dy ? dx : -dy) / 2;
-    X_Vec2 pos = start;
-    
-    while(1)
-    {
-        x_texture_set_texel(&canvas->tex, pos.x, pos.y, color);
-        
-        if(x_vec2_equal(&pos, &end))
-            break;
-        
-        int old_err = err;
-        if (old_err > -dx)
-        {
-            err -= dy;
-            pos.x += sx;
-        }
-        
-        if (old_err < dy)
-        {
-            err += dx;
-            pos.y += sy;
-        }
-    }
-}
-
 void x_canvas_blit_texture(X_Canvas* canvas, const X_Texture* tex, X_Vec2 pos)
 {
     int endX = X_MIN(pos.x + x_texture_w(tex), x_canvas_w(canvas));

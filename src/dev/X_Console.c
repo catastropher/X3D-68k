@@ -444,7 +444,7 @@ void x_console_render_background(X_Console* console)
     x_canvas_fill_rect(canvas, topLeft, bottomRight, backgroundColor);
     
     X_Vec2 bottomLeft = x_vec2_make(0, bottomRight.y);
-    x_canvas_draw_line(canvas, bottomLeft, bottomRight, lineColor);
+    x_texture_draw_line(&canvas->tex, bottomLeft, bottomRight, lineColor);
 }
 
 static void x_console_handle_opening_animation(X_Console* console)
