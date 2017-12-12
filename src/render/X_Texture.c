@@ -16,6 +16,7 @@
 #include "X_Texture.h"
 #include "system/X_File.h"
 #include "error/X_log.h"
+#include "util/X_util.h"
 
 _Bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName)
 {
@@ -57,5 +58,14 @@ _Bool x_texture_load_from_xtex_file(X_Texture* tex, const char* fileName)
     x_file_close(&file);
     
     return 1;
+}
+
+void x_texture_clamp_vec2(const X_Texture* tex, X_Vec2* v)
+{
+    v->x = X_MAX(v->x, 0);
+    v->x = X_MIN(v->x, tex->w - 1);
+    
+    v->y = X_MAX(v->y, 0);
+    v->y = X_MIN(v->y, tex->h - 1);
 }
 

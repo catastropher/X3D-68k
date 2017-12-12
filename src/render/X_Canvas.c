@@ -22,8 +22,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 void x_canvas_draw_line(X_Canvas* canvas, X_Vec2 start, X_Vec2 end, X_Color color)
 {
-    x_canvas_clamp_vec2(canvas, &start);
-    x_canvas_clamp_vec2(canvas, &end);
+    x_texture_clamp_vec2(&canvas->tex, &start);
+    x_texture_clamp_vec2(&canvas->tex, &end);
     
     int dx = abs(end.x - start.x);
     int sx = start.x < end.x ? 1 : -1;
@@ -109,19 +109,10 @@ void x_canvas_draw_str(X_Canvas* canvas, const char* str, const X_Font* font, X_
     }
 }
 
-void x_canvas_clamp_vec2(const X_Canvas* canvas, X_Vec2* v)
-{
-    v->x = X_MAX(v->x, 0);
-    v->x = X_MIN(v->x, x_canvas_w(canvas) - 1);
-    
-    v->y = X_MAX(v->y, 0);
-    v->y = X_MIN(v->y,x_canvas_h(canvas) - 1);
-}
-
 void x_canvas_fill_rect(X_Canvas* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color)
 {
-    x_canvas_clamp_vec2(canvas, &topLeft);
-    x_canvas_clamp_vec2(canvas, &bottomRight);
+    x_texture_clamp_vec2(&canvas->tex, &topLeft);
+    x_texture_clamp_vec2(&canvas->tex, &bottomRight);
     
     for(int y = topLeft.y; y <= bottomRight.y; ++y)
     {

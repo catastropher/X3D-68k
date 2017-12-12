@@ -144,7 +144,26 @@ void gameloop(Context* context)
         X_BoundSphere sphere = { x_cameraobject_get_position(context->cam), x_fp16x16_from_int(30) };
         
         X_BspNode* nodes[100];
-        printf("Near nodes: %d\n", x_bsplevel_find_nodes_intersecting_sphere(renderContext.level, &sphere, nodes + 0));
+        int total = x_bsplevel_find_nodes_intersecting_sphere(renderContext.level, &sphere, nodes + 0);
+        printf("Near nodes: %d\n", total);
+        
+        for(int i = 0; i < total; ++i)
+        {
+            X_BspNode* node = nodes[i];
+            
+            for(int j = 0; j < node->totalSurfaces; ++j) {
+                X_BspSurface* s = node->firstSurface + j;
+                
+                X_Texture tex;
+                
+                for(int k = 0; k < 4; ++k)
+                {
+                    x_bspsurface_get_surface_texture_for_mip_level(s, k, renderContext.renderer, &tex);
+                    
+                    memset(tex.texels, 255, tex.w * tex.h);
+                }
+            }
+        }
         
         if(x_keystate_key_down(&context->engineContext->keystate, 'k'))
         {
