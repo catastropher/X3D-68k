@@ -210,8 +210,8 @@ void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderCont
     X_Plane plane;
     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
     
-    if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
-        return;
+    //if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
+    //    return;
     
     x_trianglefiller_fill_flat_shaded(&filler, color);
 }
@@ -281,8 +281,8 @@ void x_polygon3_render_transparent(X_Polygon3* poly, X_RenderContext* renderCont
     X_Plane plane;
     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
     
-    if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
-        return;
+   // if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
+   //     return;
     
     x_trianglefiller_fill_transparent(&filler, transparentTable);
 }

@@ -203,7 +203,7 @@ static inline X_Vec3 x_vec3_fp16x16_cross(const X_Vec3* a, const X_Vec3* b)
 ////////////////////////////////////////////////////////////////////////////////
 static inline _Bool x_vec3_is_orthogonal_to(const X_Vec3* a, const X_Vec3* b)
 {
-    return x_vec3_dot(a, b) == 0;
+    return x_vec3_fp16x16_dot(a, b) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

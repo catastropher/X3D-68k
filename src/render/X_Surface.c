@@ -211,15 +211,15 @@ static void x_surfacebuilder_build_from_combined_lightmap(X_SurfaceBuilder* buil
     }
 }
 
-static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, X_Vec3* dest, int* distDest)
+static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, X_Vec3_fp16x16* dest, int* distDest)
 {
-    X_Vec3 lightPos = x_vec3_fp16x16_to_vec3(&builder->currentLight->position);
+    X_Vec3_fp16x16 lightPos = builder->currentLight->position;
     X_Plane* plane = &builder->bspSurface->plane->plane;
-    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &lightPos));
+    int dist = x_fp16x16_to_int(x_plane_point_distance_fp16x16(plane, &lightPos));
     
-    dest->x = lightPos.x - x_fp16x16_to_int(plane->normal.x * dist);
-    dest->y = lightPos.y - x_fp16x16_to_int(plane->normal.y * dist);
-    dest->z = lightPos.z - x_fp16x16_to_int(plane->normal.z * dist);
+    dest->x = lightPos.x - plane->normal.x * dist;
+    dest->y = lightPos.y - plane->normal.y * dist;
+    dest->z = lightPos.z - plane->normal.z * dist;
     
     *distDest = abs(dist);
 }
@@ -227,7 +227,7 @@ static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* bu
 static void x_surfacebuilder_apply_dynamic_light(X_SurfaceBuilder* builder)
 {
     int lightDistToPlane;
-    X_Vec3 closestPoint;
+    X_Vec3_fp16x16 closestPoint;
     x_surfacebuilder_surface_point_closest_to_light(builder, &closestPoint, &lightDistToPlane);
     
     // We use linear falloff
@@ -236,8 +236,8 @@ static void x_surfacebuilder_apply_dynamic_light(X_SurfaceBuilder* builder)
     X_BspFaceTexture* faceTexture = builder->bspSurface->faceTexture;
     X_Vec2 closestIn2D = x_vec2_make
     (
-        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->uOrientation) + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x),
-        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->vOrientation) + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y)
+        x_fp16x16_to_int(x_vec3_fp16x16_dot(&closestPoint, &faceTexture->uOrientation) + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x),
+        x_fp16x16_to_int(x_vec3_fp16x16_dot(&closestPoint, &faceTexture->vOrientation) + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y)
     );
     
     for(int i = 0; i < builder->lightmapSize.y; ++i)
