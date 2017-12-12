@@ -64,12 +64,12 @@ static inline void x_screen_cleanup(X_Screen* screen)
 
 static inline int x_screen_w(const X_Screen* screen)
 {
-    return x_canvas_w(&screen->canvas);
+    return screen->canvas.tex.w;
 }
 
 static inline int x_screen_h(const X_Screen* screen)
 {
-    return x_canvas_h(&screen->canvas);
+    return screen->canvas.tex.h;
 }
 
 static inline X_Vec2 x_screen_center(const X_Screen* screen)
