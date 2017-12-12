@@ -94,7 +94,7 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3_fp16x16* camPo
     for(int i = 0; i < 4; ++i)
     {
         int next = (i != 3 ? i + 1 : 0);
-        x_plane_init_from_fp16x16(viewport->viewFrustumPlanes + i, nearPlaneVertices + i, camPos, nearPlaneVertices + next);
+        x_plane_init_from_three_points(viewport->viewFrustumPlanes + i, nearPlaneVertices + i, camPos, nearPlaneVertices + next);
     }
 
     // Near plane

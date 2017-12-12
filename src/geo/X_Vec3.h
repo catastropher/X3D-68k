@@ -185,22 +185,6 @@ static inline x_fp16x16 x_vec3_fp16x16_dot(const X_Vec3* a, const X_Vec3* b)
     return x_fp16x16_mul(a->x, b->x) + x_fp16x16_mul(a->y, b->y) + x_fp16x16_mul(a->z, b->z);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the cross product of two 3D vectors, which is a vector that is
-///     orthogonal (perpendicular) to both a and b.
-///
-/// @return a cross b
-/// @note (a cross b) == -(b cross a)
-/// @note This does not normalize the resulting vector.
-////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_cross(const X_Vec3* a, const X_Vec3* b)
-{
-    return x_vec3_make(
-        (long long)a->y * b->z - (long long)b->y * a->z,
-        (long long)a->z * b->x - (long long)b->z * a->x,
-        (long long)a->x * b->y - (long long)b->x * a->y
-    );
-}
 
 static inline X_Vec3 x_vec3_fp16x16_cross(const X_Vec3* a, const X_Vec3* b)
 {
