@@ -67,7 +67,6 @@
 
 // object
 #include "object/X_CameraObject.h"
-#include "object/X_CubeObject.h"
 #include "object/X_GameObject.h"
 
 // physics

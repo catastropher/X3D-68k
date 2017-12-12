@@ -87,8 +87,6 @@ void x_ray3_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
         projected[i].y >>= 16;
     }
     
-    
-    
     x_texture_draw_line(rcontext->canvas, projected[0], projected[1], color);
 }
 
