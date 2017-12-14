@@ -311,7 +311,7 @@ void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest)
     dest->z = x_file_read_le_float32(file);
 }
 
-void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3* dest)
+void x_file_read_vec3_float_as_vec3(X_File* file, X_Vec3* dest)
 {
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);

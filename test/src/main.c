@@ -40,7 +40,7 @@ void plane_get_orientation(X_Plane* plane, X_Mat4x4* dest, X_CameraObject* cam)
     
     if(abs(plane->normal.y) != X_FP16x16_ONE)
     {
-        x_mat4x4_transform_vec3_fp16x16(&mat, &temp, &right);
+        x_mat4x4_transform_vec3(&mat, &temp, &right);
         x_vec3_normalize(&right);
         
         up = x_vec3_cross(&plane->normal, &right);

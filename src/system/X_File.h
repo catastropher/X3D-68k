@@ -74,7 +74,7 @@ void x_file_seek(X_File* file, size_t pos);
 void x_file_read_fixed_length_str(X_File* file, int strLength, char* dest);
 void x_file_read_vec3(X_File* file, X_Vec3* dest);
 void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest);
-void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3* dest);
+void x_file_read_vec3_float_as_vec3(X_File* file, X_Vec3* dest);
 
 void x_file_read_vec2(X_File* file, X_Vec2* dest);
 void x_file_read_mat4x4(X_File* file, struct X_Mat4x4* mat);

@@ -314,7 +314,7 @@ static _Bool project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport
     for(int i = 0; i < poly->totalVertices; ++i)
     {
         X_Vec3 transformed;
-        x_mat4x4_transform_vec3_fp16x16(viewMatrix, poly->vertices + i, &transformed);
+        x_mat4x4_transform_vec3(viewMatrix, poly->vertices + i, &transformed);
         
         if(transformed.z < x_fp16x16_from_float(16.0))
             transformed.z = x_fp16x16_from_float(16.0);
@@ -323,7 +323,7 @@ static _Bool project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport
         
         surface->closestZ = X_MIN(surface->closestZ, transformed.z);
         
-        x_viewport_project_vec3_fp16x16(viewport, &transformed, dest + i);
+        x_viewport_project_vec3(viewport, &transformed, dest + i);
         x_viewport_clamp_vec2_fp16x16(viewport, dest + i);
     }
 

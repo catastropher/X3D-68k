@@ -46,6 +46,6 @@ void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_fp1
 void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const X_Vec3* forward, const X_Vec3* right, const X_Vec3* up);
 void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v);
 
-void x_viewport_project_vec3_fp16x16(const X_Viewport* viewport, const X_Vec3* src, X_Vec2_fp16x16* dest);
+void x_viewport_project_vec3(const X_Viewport* viewport, const X_Vec3* src, X_Vec2_fp16x16* dest);
 void x_viewport_clamp_vec2_fp16x16(const X_Viewport* viewport, X_Vec2_fp16x16* v);
 

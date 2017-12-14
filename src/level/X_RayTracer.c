@@ -63,7 +63,7 @@ static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeI
         X_BspClipNode* clipNode = x_bsplevel_get_clip_node(level, clipNodeId);
         X_Plane* plane = &level->planes[clipNode->planeId].plane;
         
-        if(x_plane_point_distance_fp16x16(plane, v) >= 0)
+        if(x_plane_point_distance(plane, v) >= 0)
             clipNodeId = clipNode->frontChild;
         else
             clipNodeId = clipNode->backChild;
@@ -131,8 +131,8 @@ _Bool visit_node(X_RayTracer* trace, int clipNodeId, X_Vec3* start, x_fp16x16 st
     X_BspClipNode* node = x_bsplevel_get_clip_node(trace->level, clipNodeId);
     X_Plane* plane = &trace->level->planes[node->planeId].plane;
     
-    x_fp16x16 startDist = x_plane_point_distance_fp16x16(plane, start);
-    x_fp16x16 endDist = x_plane_point_distance_fp16x16(plane, end);
+    x_fp16x16 startDist = x_plane_point_distance(plane, start);
+    x_fp16x16 endDist = x_plane_point_distance(plane, end);
     
     if(both_points_on_front_side(startDist, endDist))
         return visit_node(trace, node->frontChild, start, startT, end, endT);

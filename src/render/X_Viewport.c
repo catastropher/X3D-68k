@@ -102,10 +102,10 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3* camPos, const
     X_Vec3 translation = x_vec3_scale_int(forward, distToNearPlane);
     X_Vec3 pointOnNearPlane = x_vec3_add(&translation, camPos);
 
-    x_plane_init_from_normal_and_point_fp16x16(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);
+    x_plane_init_from_normal_and_point(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);
 }
 
-void x_viewport_project_vec3_fp16x16(const X_Viewport* viewport, const X_Vec3* src, X_Vec2_fp16x16* dest)
+void x_viewport_project_vec3(const X_Viewport* viewport, const X_Vec3* src, X_Vec2_fp16x16* dest)
 {
     // TODO: may be able to get away with multiplying by distToNearPlane / z
     dest->x = x_fp16x16_div(src->x, src->z) * viewport->distToNearPlane + x_fp16x16_from_int(viewport->w) / 2;

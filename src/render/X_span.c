@@ -54,7 +54,7 @@ static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_Surfa
     inverseModelPos = x_vec3_int_to_vec3(&inverseModelPos);
     
     X_Vec3 inverseModelPosInEyeSpace;
-    x_mat4x4_transform_vec3_fp16x16(context->renderContext->viewMatrix, &inverseModelPos, &inverseModelPosInEyeSpace);
+    x_mat4x4_transform_vec3(context->renderContext->viewMatrix, &inverseModelPos, &inverseModelPosInEyeSpace);
     
     int mipLevel = context->mipLevel;
     inverseModelPosInEyeSpace = x_vec3_shift_right(&inverseModelPosInEyeSpace, mipLevel);

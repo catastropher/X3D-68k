@@ -44,13 +44,13 @@ static _Bool read_header(X_EntityModelLoader* loader)
         return 0;
     }
     
-    x_file_read_vec3_float_as_fp16x16(file, &header->scale);
+    x_file_read_vec3_float_as_vec3(file, &header->scale);
     
     // TODO convert coordinate system
-    x_file_read_vec3_float_as_fp16x16(file, &header->origin);
+    x_file_read_vec3_float_as_vec3(file, &header->origin);
     
     header->radius = x_file_read_le_float32_as_fp16x16(file);
-    x_file_read_vec3_float_as_fp16x16(file, &header->offsets);
+    x_file_read_vec3_float_as_vec3(file, &header->offsets);
     
     header->totalSkins = x_file_read_le_int32(file);
     header->skinWidth = x_file_read_le_int32(file);

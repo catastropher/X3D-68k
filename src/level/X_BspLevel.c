@@ -75,7 +75,7 @@ X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
  
     do
     {
-        node = x_plane_point_is_on_normal_facing_side_fp16x16(&node->plane->plane, point) ? node->frontChild : node->backChild;
+        node = x_plane_point_is_on_normal_facing_side(&node->plane->plane, point) ? node->frontChild : node->backChild;
     } while(!x_bspnode_is_leaf(node));
     
     return (X_BspLeaf*)node;
@@ -206,7 +206,7 @@ static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_L
         return;
     
     X_Plane* plane = &node->plane->plane;
-    int dist = x_fp16x16_to_int(x_plane_point_distance_fp16x16(plane, &light->position));
+    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &light->position));
     
     if(dist > light->intensity)
     {
@@ -234,7 +234,7 @@ void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light
 
 static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const X_Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
 {
-    _Bool onNormalSide = x_plane_point_is_on_normal_facing_side_fp16x16(&node->plane->plane, camPos);
+    _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);
     
     if(onNormalSide)
     {
@@ -259,7 +259,7 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
             continue;
         
-        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side_fp16x16(&surface->plane->plane, &renderContext->camPos);
+        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
         _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
         
         if((!onNormalSide) ^ planeFlipped)
@@ -356,7 +356,7 @@ X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node,
     if(x_bspnode_is_leaf(node))
         return nextNodeDest;
     
-    x_fp16x16 dist = x_plane_point_distance_fp16x16(&node->plane->plane, &sphere->center);
+    x_fp16x16 dist = x_plane_point_distance(&node->plane->plane, &sphere->center);
     _Bool exploreFront = 1;
     _Bool exploreBack = 1;
     
