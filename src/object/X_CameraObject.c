@@ -63,8 +63,7 @@ void x_cameraobject_update_view(X_CameraObject* cam)
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
     X_Vec3_fp16x16 position = x_cameraobject_get_position(cam);
-    X_Vec3_fp16x16 positionSmall = x_vec3_fp16x16_to_vec3(&position);
-    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &positionSmall);
+    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &position);
 }
 
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -95,8 +94,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
     x_bsplevel_mark_visible_leaves_from_pvs(renderContext->level, cam->pvsForCurrentLeaf, currentFrame);
     
-    X_Vec3_fp16x16 camPos = x_cameraobject_get_position(cam);
-    renderContext->camPos = x_vec3_fp16x16_to_vec3(&camPos);
+    renderContext->camPos = x_cameraobject_get_position(cam);
     renderContext->currentFrame = currentFrame;
     
     if(cam->currentLeaf != renderContext->level->leaves + 0 && !x_keystate_key_down(&renderContext->engineContext->keystate, 'p') && !renderContext->renderer->wireframe)

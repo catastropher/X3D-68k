@@ -105,7 +105,7 @@ void mat4x4_visualize(X_Mat4x4* mat, X_RenderContext* renderContext)
         
         X_Vec3 v3 = x_vec4_to_vec3(&v);
         
-        X_Vec3 end = x_vec3_scale(&v3, 50);
+        X_Vec3 end = x_vec3_scale_int(&v3, 50);
         
         X_Ray3 r = x_ray3_make(x_vec3_origin(), x_vec3_fp16x16_to_vec3(&end));
         x_ray3_render(&r, renderContext, color[i]);

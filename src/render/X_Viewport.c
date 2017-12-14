@@ -58,18 +58,18 @@ void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_fp1
 
 static inline X_Vec3_fp16x16 calculate_center_of_near_plane(const X_Viewport* viewport, const X_Vec3_fp16x16* camPos, const X_Vec3_fp16x16* forward)
 {
-    X_Vec3_fp16x16 translation = x_vec3_scale(forward, viewport->distToNearPlane);
+    X_Vec3_fp16x16 translation = x_vec3_scale_int(forward, viewport->distToNearPlane);
     return x_vec3_add(camPos, &translation);
 }
 
 static inline X_Vec3_fp16x16 calculate_right_translation(const X_Viewport* viewport, const X_Vec3_fp16x16* right)
 {
-    return x_vec3_scale(right, viewport->w / 2 + 10);
+    return x_vec3_scale_int(right, viewport->w / 2 + 10);
 }
 
 static inline X_Vec3_fp16x16 calculate_up_translation(const X_Viewport* viewport, const X_Vec3_fp16x16* up)
 {
-    return x_vec3_scale(up, viewport->h / 2 + 10);
+    return x_vec3_scale_int(up, viewport->h / 2 + 10);
 }
 
 void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3_fp16x16* camPos, const X_Vec3_fp16x16* forward, const X_Vec3_fp16x16* right, const X_Vec3_fp16x16* up)
@@ -99,7 +99,7 @@ void x_viewport_update_frustum(X_Viewport* viewport, const X_Vec3_fp16x16* camPo
 
     // Near plane
     int distToNearPlane = 16;
-    X_Vec3_fp16x16 translation = x_vec3_scale(forward, distToNearPlane);
+    X_Vec3_fp16x16 translation = x_vec3_scale_int(forward, distToNearPlane);
     X_Vec3_fp16x16 pointOnNearPlane = x_vec3_add(&translation, camPos);
 
     x_plane_init_from_normal_and_point_fp16x16(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);

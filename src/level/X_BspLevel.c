@@ -69,13 +69,13 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
         x_bspmodel_render_wireframe(level, level->models + i, rcontext, 15);
 }
 
-X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
+X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3_fp16x16* point)
 {
     X_BspNode* node = x_bsplevel_get_root_node(level);
  
     do
     {
-        node = x_plane_point_is_on_normal_facing_side(&node->plane->plane, point) ? node->frontChild : node->backChild;
+        node = x_plane_point_is_on_normal_facing_side_fp16x16(&node->plane->plane, point) ? node->frontChild : node->backChild;
     } while(!x_bspnode_is_leaf(node));
     
     return (X_BspLeaf*)node;
@@ -206,8 +206,7 @@ static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_L
         return;
     
     X_Plane* plane = &node->plane->plane;
-    X_Vec3 lightPos = x_vec3_fp16x16_to_vec3(&light->position);
-    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &lightPos));
+    int dist = x_fp16x16_to_int(x_plane_point_distance_fp16x16(plane, &light->position));
     
     if(dist > light->intensity)
     {
@@ -233,9 +232,9 @@ void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light
     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 }
 
-static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const X_Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
+static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const X_Vec3_fp16x16* camPos, X_BspNode** frontSide, X_BspNode** backSide)
 {
-    _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);
+    _Bool onNormalSide = x_plane_point_is_on_normal_facing_side_fp16x16(&node->plane->plane, camPos);
     
     if(onNormalSide)
     {
@@ -260,7 +259,7 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
             continue;
         
-        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
+        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side_fp16x16(&surface->plane->plane, &renderContext->camPos);
         _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
         
         if((!onNormalSide) ^ planeFlipped)

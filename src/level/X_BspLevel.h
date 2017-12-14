@@ -243,7 +243,7 @@ void x_bsplevel_cleanup(X_BspLevel* level);
 void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
 
 void x_bsplevel_init_empty(X_BspLevel* level);
-X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point);
+X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3_fp16x16* point);
 
 void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs);

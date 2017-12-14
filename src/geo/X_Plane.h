@@ -33,20 +33,10 @@ static inline void x_plane_init_from_normal_and_point_fp16x16(X_Plane* plane, co
     plane->d = -x_vec3_fp16x16_dot(normal, point);
 }
 
-static inline x_fp16x16 x_plane_point_distance(const X_Plane* plane, const X_Vec3* point)
-{
-    return x_vec3_dot(&plane->normal, point) + plane->d;
-}
-
 // TODO: needs a better name
 static inline x_fp16x16 x_plane_point_distance_fp16x16(const X_Plane* plane, const X_Vec3_fp16x16* point)
 {
     return x_vec3_fp16x16_dot(&plane->normal, point) + plane->d;
-}
-
-static inline _Bool x_plane_point_is_on_normal_facing_side(const X_Plane* plane, const X_Vec3* point)
-{
-    return x_plane_point_distance(plane, point) > 0;
 }
 
 static inline _Bool x_plane_point_is_on_normal_facing_side_fp16x16(const X_Plane* plane, const X_Vec3_fp16x16* point)

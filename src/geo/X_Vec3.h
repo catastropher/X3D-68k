@@ -128,27 +128,13 @@ static inline X_Vec3 x_vec3_sub(const X_Vec3* a, const X_Vec3* b)
 /// Scales a 3D vector by the integer @param scale.
 /// @return v * scale
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_scale(const X_Vec3* v, int scale)
+static inline X_Vec3 x_vec3_scale_int(const X_Vec3* v, int scale)
 {
     return x_vec3_make
     (
         v->x * scale,
         v->y * scale,
         v->z * scale
-    );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Divides a 3D vector by the integer @param divisor.
-/// @return v / divisor
-////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_div(const X_Vec3* v, int divisor)
-{
-    return x_vec3_make
-    (
-        v->x / divisor,
-        v->y / divisor,
-        v->z / divisor
     );
 }
 

@@ -164,8 +164,7 @@ X_Time x_enginecontext_get_time(const X_EngineContext* context)
 void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, X_CameraObject* cam, X_RenderContext* dest)
 {
     dest->cam = cam;
-    X_Vec3_fp16x16 camPos = x_cameraobject_get_position(cam);
-    dest->camPos = x_vec3_fp16x16_to_vec3(&camPos);
+    dest->camPos = x_cameraobject_get_position(cam);
     dest->canvas = &engineContext->screen.canvas;
     dest->zbuf = engineContext->screen.zbuf;
     dest->currentFrame = x_enginecontext_get_frame(engineContext);
