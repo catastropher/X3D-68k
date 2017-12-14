@@ -71,7 +71,7 @@ static void update_dynamic_lights(X_EngineContext* engineContext)
     
     if(down && !lastDown)
     {
-        X_Vec3_fp16x16 up, right, forward;
+        X_Vec3 up, right, forward;
         x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
         
         X_Light* light = add_light(&engineContext->renderer);

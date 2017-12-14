@@ -30,13 +30,13 @@ _Bool portalOnWall;
 
 void plane_get_orientation(X_Plane* plane, X_Mat4x4* dest, X_CameraObject* cam)
 {
-    X_Vec3_fp16x16 temp = plane->normal;
+    X_Vec3 temp = plane->normal;
     temp.y = 0;
     
     X_Mat4x4 mat;
     x_mat4x4_load_y_rotation(&mat, X_ANG_270);
     
-    X_Vec3_fp16x16 right, up;
+    X_Vec3 right, up;
     
     if(abs(plane->normal.y) != X_FP16x16_ONE)
     {
@@ -48,7 +48,7 @@ void plane_get_orientation(X_Plane* plane, X_Mat4x4* dest, X_CameraObject* cam)
     else
     {
         // Pick the vectors from the cam direction
-        X_Vec3_fp16x16 temp;
+        X_Vec3 temp;
         x_mat4x4_extract_view_vectors(&cam->viewMatrix, &up, &right, &temp);
         
         right.y = 0;
@@ -69,7 +69,7 @@ void plane_get_orientation(X_Plane* plane, X_Mat4x4* dest, X_CameraObject* cam)
     x_mat4x4_set_column(dest, 2, &forward4);
 }
 
-void create_portal(X_Mat4x4* mat, X_Vec3_fp16x16 center)
+void create_portal(X_Mat4x4* mat, X_Vec3 center)
 {
     int w = 50;
     int h = 50;
@@ -103,9 +103,9 @@ void mat4x4_visualize(X_Mat4x4* mat, X_RenderContext* renderContext)
         X_Vec4 v;
         x_mat4x4_get_column(mat, i, &v);
         
-        X_Vec3_fp16x16 v3 = x_vec4_to_vec3(&v);
+        X_Vec3 v3 = x_vec4_to_vec3(&v);
         
-        X_Vec3_fp16x16 end = x_vec3_scale_int(&v3, 50);
+        X_Vec3 end = x_vec3_scale_int(&v3, 50);
         
         X_Ray3 r = x_ray3_make(x_vec3_origin(), x_vec3_fp16x16_to_vec3(&end));
         x_ray3_render(&r, renderContext, color[i]);
@@ -166,12 +166,12 @@ void gameloop(Context* context)
         
         if(x_keystate_key_down(&context->engineContext->keystate, 'k'))
         {
-            X_Vec3_fp16x16 camPos = x_cameraobject_get_position(context->cam);
+            X_Vec3 camPos = x_cameraobject_get_position(context->cam);
             
-            X_Vec3_fp16x16 forward, up, right;
+            X_Vec3 forward, up, right;
             x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
             
-            X_Vec3_fp16x16 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
+            X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
             
             X_RayTracer trace;
             x_raytracer_init(&trace, &context->engineContext->currentLevel, &camPos, &end, NULL);

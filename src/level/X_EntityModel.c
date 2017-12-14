@@ -96,11 +96,11 @@ X_EntityFrame* x_entitymodel_get_animation_start_frame(X_EntityModel* model, con
     return x_entitymodel_get_frame(model, startFrameName);
 }
 
-void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3_fp16x16 pos, X_Color color, X_RenderContext* renderContext)
+void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3 pos, X_Color color, X_RenderContext* renderContext)
 {
     for(X_EntityTriangle* triangle = model->triangles; triangle < model->triangles + model->totalTriangles; ++triangle)
     {
-        X_Vec3_fp16x16 v[3];
+        X_Vec3 v[3];
         X_EntityVertex* vertices[3];
         
         for(int i = 0; i < 3; ++i)
@@ -111,8 +111,9 @@ void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* fra
         
         for(int i = 0; i < 3; ++i)
         {
-            X_Ray3_fp16x16 ray = x_ray3_make(x_vec3_fp16x16_to_vec3(&v[i]), x_vec3_fp16x16_to_vec3(&v[(i + 1) % 3]));
-            x_ray3_render(&ray, renderContext, color);
+            // FIXME: this is broken
+            //X_Ray3_fp16x16 ray = x_ray3_make(x_vec3_fp16x16_to_vec3(&v[i]), x_vec3_fp16x16_to_vec3(&v[(i + 1) % 3]));
+            //x_ray3_render(&ray, renderContext, color);
         }
     }
 }

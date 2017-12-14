@@ -83,7 +83,7 @@ typedef struct X_BspLoaderPlane
 
 typedef struct X_BspLoaderVertex
 {
-    X_Vec3_fp16x16 v;
+    X_Vec3 v;
 } X_BspLoaderVertex;
 
 typedef struct X_BspLoaderEdge
@@ -101,8 +101,8 @@ typedef struct X_BspLoaderTexture
 
 typedef struct X_BspLoaderFaceTexture
 {
-    X_Vec3_fp16x16 uOrientation;    // Orientation of texture in 3D space
-    X_Vec3_fp16x16 vOrientation;
+    X_Vec3 uOrientation;    // Orientation of texture in 3D space
+    X_Vec3 vOrientation;
     x_fp16x16 uOffset;
     x_fp16x16 vOffset;
     int textureId;

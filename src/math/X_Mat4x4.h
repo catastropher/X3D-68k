@@ -28,7 +28,7 @@ void x_mat4x4_load_identity(X_Mat4x4* mat);
 void x_mat4x4_load_x_rotation(X_Mat4x4* mat, x_fp16x16 angle);
 void x_mat4x4_load_y_rotation(X_Mat4x4* mat, x_fp16x16 angle);
 void x_mat4x4_load_z_rotation(X_Mat4x4* mat, x_fp16x16 angle);
-void x_mat4x4_load_translation(X_Mat4x4* mat, X_Vec3_fp16x16* translation);
+void x_mat4x4_load_translation(X_Mat4x4* mat, X_Vec3* translation);
 
 void x_mat4x4_add(X_Mat4x4* a, X_Mat4x4* b, X_Mat4x4* dest);
 void x_mat4x4_mul(const X_Mat4x4* a, const X_Mat4x4* b, X_Mat4x4* dest);
@@ -40,14 +40,14 @@ void x_mat4x4_get_row(const X_Mat4x4* mat, int row, X_Vec4* rowDest);
 void x_mat4x4_set_row(X_Mat4x4* mat, int row, const X_Vec4* rowSrc);
 
 void x_mat4x4_transform_vec4_fp16x16(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16x16* dest);
-void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* src, X_Vec3_fp16x16* dest);
+void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3* src, X_Vec3* dest);
 
-void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const X_Vec3_fp16x16* normal, X_Vec3_fp16x16* dest);
+void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const X_Vec3* normal, X_Vec3* dest);
 
 void x_mat4x4_print(const X_Mat4x4* mat);
 void x_mat4x4_print_machine_readable(const X_Mat4x4* mat);
 
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3_fp16x16* forwardDest, X_Vec3_fp16x16* rightDest, X_Vec3_fp16x16* upDest);
+void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest);
 void x_mat4x4_invert_diagonal(const X_Mat4x4* mat, X_Mat4x4* dest);
 void x_mat4x4_transpose_3x3(X_Mat4x4* mat);
 

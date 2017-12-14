@@ -18,7 +18,7 @@
 #include "X_Quaternion.h"
 #include "math/X_trig.h"
 
-void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3_fp16x16* axis, x_fp16x16 angle)
+void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3* axis, x_fp16x16 angle)
 {
     x_fp16x16 cosAngle = x_cos(angle / 2);
     x_fp16x16 sinAngle = x_sin(angle / 2);

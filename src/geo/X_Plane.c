@@ -18,10 +18,10 @@
 #include "X_Plane.h"
 #include "math/X_fix.h"
 
-void x_plane_init_from_three_points(X_Plane* plane, const X_Vec3_fp16x16* a, const X_Vec3_fp16x16* b, const X_Vec3_fp16x16* c)
+void x_plane_init_from_three_points(X_Plane* plane, const X_Vec3* a, const X_Vec3* b, const X_Vec3* c)
 {
-    X_Vec3_fp16x16 v1 = x_vec3_sub(a, b);
-    X_Vec3_fp16x16 v2 = x_vec3_sub(c, b);
+    X_Vec3 v1 = x_vec3_sub(a, b);
+    X_Vec3 v2 = x_vec3_sub(c, b);
 
     x_vec3_fp16x16_normalize(&v1);
     x_vec3_fp16x16_normalize(&v2);

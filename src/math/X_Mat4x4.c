@@ -85,7 +85,7 @@ void x_mat4x4_load_z_rotation(X_Mat4x4* mat, x_fp16x16 angle)
     *mat = zRotation;
 }
 
-void x_mat4x4_load_translation(X_Mat4x4* mat, X_Vec3_fp16x16* translation)
+void x_mat4x4_load_translation(X_Mat4x4* mat, X_Vec3* translation)
 {
     X_Mat4x4 translationMatrix = 
     {
@@ -186,7 +186,7 @@ void x_mat4x4_transform_vec4_fp16x16(const X_Mat4x4* mat, const X_Vec4* src, X_V
     *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
 }
 
-void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* src, X_Vec3_fp16x16* dest)
+void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3* src, X_Vec3* dest)
 {
     X_Vec4 vec4 = x_vec4_make(src->x, src->y, src->z, X_FP16x16_ONE);
     X_Vec4_fp16x16 res;
@@ -206,7 +206,7 @@ void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* 
     dest->z = res.z / res.w;
 }
 
-void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const X_Vec3_fp16x16* normal, X_Vec3_fp16x16* dest)
+void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const X_Vec3* normal, X_Vec3* dest)
 {
     dest->x = x_fp16x16_mul(normal->x, mat->elem[0][0]) + x_fp16x16_mul(normal->y, mat->elem[0][1]) + x_fp16x16_mul(normal->z, mat->elem[0][2]);
     dest->y = x_fp16x16_mul(normal->x, mat->elem[1][0]) + x_fp16x16_mul(normal->y, mat->elem[1][1]) + x_fp16x16_mul(normal->z, mat->elem[1][2]);
@@ -250,7 +250,7 @@ void x_mat4x4_print_machine_readable(const X_Mat4x4* mat)
     printf("}\n");
 }
 
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3_fp16x16* forwardDest, X_Vec3_fp16x16* rightDest, X_Vec3_fp16x16* upDest)
+void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
 {
     X_Vec4 right;
     x_mat4x4_get_row(mat, 0, &right);

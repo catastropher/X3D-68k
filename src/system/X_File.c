@@ -295,7 +295,7 @@ void x_file_read_buf(X_File* file, int bufSize, void* dest)
         x_system_error("Failed to write buf to file");
 }
 
-void x_file_read_vec3(X_File* file, X_Vec3_fp16x16* dest)
+void x_file_read_vec3(X_File* file, X_Vec3* dest)
 {
     ASSERT_OPEN_FOR_READING(file);
     dest->x = x_file_read_le_int32(file);
@@ -311,7 +311,7 @@ void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest)
     dest->z = x_file_read_le_float32(file);
 }
 
-void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3_fp16x16* dest)
+void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3* dest)
 {
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);
@@ -405,7 +405,7 @@ void x_file_write_le_int32(X_File* file, int val)
         fputc((val >> (i * 8)) & 0xFF, file->file);
 }
 
-void x_file_write_vec3(X_File* file, X_Vec3_fp16x16* v)
+void x_file_write_vec3(X_File* file, X_Vec3* v)
 {
     x_file_write_le_int32(file, v->x);
     x_file_write_le_int32(file, v->y);

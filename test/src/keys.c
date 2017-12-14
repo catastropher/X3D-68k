@@ -171,7 +171,7 @@ void handle_console_keys(X_EngineContext* context)
     }
 }
 
-static void keep_horizontal_component(X_Vec3_fp16x16* v)
+static void keep_horizontal_component(X_Vec3* v)
 {
     v->y = 0;
     x_vec3_fp16x16_normalize(v);
@@ -197,12 +197,12 @@ static x_fp16x16 get_straife_component(X_KeyState* keyState)
     return 0;
 }
 
-static X_Vec3_fp16x16 get_movement_key_vector(X_CameraObject* cam, X_KeyState* keyState, _Bool ignoreVerticalComponent)
+static X_Vec3 get_movement_key_vector(X_CameraObject* cam, X_KeyState* keyState, _Bool ignoreVerticalComponent)
 {
     x_fp16x16 forwardComponent = get_forward_component(keyState);
     x_fp16x16 rightComponent = get_straife_component(keyState);
     
-    X_Vec3_fp16x16 forward, right, up;
+    X_Vec3 forward, right, up;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
     
     if(ignoreVerticalComponent)
@@ -211,7 +211,7 @@ static X_Vec3_fp16x16 get_movement_key_vector(X_CameraObject* cam, X_KeyState* k
         keep_horizontal_component(&right);
     }
     
-    X_Vec3_fp16x16 totalVelocity = x_vec3_origin();
+    X_Vec3 totalVelocity = x_vec3_origin();
     totalVelocity = x_vec3_add_scaled(&totalVelocity, &forward, forwardComponent);
     totalVelocity = x_vec3_add_scaled(&totalVelocity, &right, rightComponent);
     
@@ -224,7 +224,7 @@ static X_Vec3_fp16x16 get_movement_key_vector(X_CameraObject* cam, X_KeyState* k
     return totalVelocity;
 }
 
-static X_Vec3_fp16x16 get_jump_vector(X_KeyState* keyState)
+static X_Vec3 get_jump_vector(X_KeyState* keyState)
 {
     if(!x_keystate_key_down(keyState, ' '))
         return x_vec3_origin();
@@ -233,15 +233,15 @@ static X_Vec3_fp16x16 get_jump_vector(X_KeyState* keyState)
     return x_vec3_make(0, jumpVelocity, 0);
 }
 
-static X_Vec3_fp16x16 get_movement_vector(X_EngineContext* context, X_CameraObject* cam)
+static X_Vec3 get_movement_vector(X_EngineContext* context, X_CameraObject* cam)
 {
     if(!x_boxcollider_is_on_ground(&cam->collider))
         return x_vec3_origin();
     
     X_KeyState* keyState = &context->keystate;
     
-    X_Vec3_fp16x16 moveVelocity = get_movement_key_vector(cam, keyState, 1);
-    X_Vec3_fp16x16 jumpVelocity = get_jump_vector(keyState);
+    X_Vec3 moveVelocity = get_movement_key_vector(cam, keyState, 1);
+    X_Vec3 jumpVelocity = get_jump_vector(keyState);
     
     return x_vec3_add(&moveVelocity, &jumpVelocity);
 }
@@ -304,14 +304,14 @@ _Bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* c
 {
     if(x_engine_level_is_loaded(engineContext) && physics)
     {
-        X_Vec3_fp16x16 camPos = x_cameraobject_get_position(cam);
+        X_Vec3 camPos = x_cameraobject_get_position(cam);
         X_Vec3_int posSmall = x_vec3_fp16x16_to_vec3(&camPos);
         
         if(x_bsplevel_find_leaf_point_is_in(&engineContext->currentLevel, &posSmall)->contents != X_BSPLEAF_SOLID)
             return 0;
     }
     
-    X_Vec3_fp16x16 movementVector = get_movement_key_vector(cam, keyState, 0);
+    X_Vec3 movementVector = get_movement_key_vector(cam, keyState, 0);
     cam->collider.position = x_vec3_add(&cam->collider.position, &movementVector);
     x_cameraobject_update_view(cam);
     
@@ -320,7 +320,7 @@ _Bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* c
 
 void handle_normal_movement(X_EngineContext* engineContext, X_CameraObject* cam)
 {
-    X_Vec3_fp16x16 movementVector = get_movement_vector(engineContext, cam);
+    X_Vec3 movementVector = get_movement_vector(engineContext, cam);
     cam->collider.velocity = x_vec3_add(&cam->collider.velocity, &movementVector);
     x_boxcollider_update(&cam->collider, &engineContext->currentLevel);
     

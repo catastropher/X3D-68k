@@ -263,15 +263,15 @@ static _Bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3_fp16x16* camPos, X_Mat4x4* viewMatrix, X_Plane* dest)
+static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest)
 {
-    X_Vec3_fp16x16 planeNormal = surface->plane->plane.normal;
+    X_Vec3 planeNormal = surface->plane->plane.normal;
 
     x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
     dest->d = surface->plane->plane.d + x_vec3_fp16x16_dot(&planeNormal, camPos);
 }
 
-static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3_fp16x16* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix)
+static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix)
 {
     X_Plane planeInViewSpace;
     x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace);
@@ -313,7 +313,7 @@ static _Bool project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport
 {
     for(int i = 0; i < poly->totalVertices; ++i)
     {
-        X_Vec3_fp16x16 transformed;
+        X_Vec3 transformed;
         x_mat4x4_transform_vec3_fp16x16(viewMatrix, poly->vertices + i, &transformed);
         
         if(transformed.z < x_fp16x16_from_float(16.0))
@@ -370,7 +370,7 @@ static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16
 // TODO: check whether edgeIds is NULL
 void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey)
 {
-    X_Vec3_fp16x16 clippedV[X_POLYGON3_MAX_VERTS];
+    X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
 
     ++context->renderContext->renderer->totalSurfacesRendered;
@@ -398,7 +398,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
         return;
 
     // FIXME: shouldn't be done this way
-    X_Vec3_fp16x16 camPos = x_cameraobject_get_position(context->renderContext->cam);
+    X_Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
     
     x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
@@ -411,7 +411,7 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
 
     x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
 
-    X_Vec3_fp16x16 v3d[X_POLYGON3_MAX_VERTS];
+    X_Vec3 v3d[X_POLYGON3_MAX_VERTS];
     X_Polygon3 polygon = x_polygon3_make(v3d, 100);
 
     polygon.totalVertices = 0;

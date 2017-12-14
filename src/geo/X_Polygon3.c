@@ -111,12 +111,12 @@ void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest)
         return;
     
     dest->totalVertices = src->totalVertices;
-    memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3_fp16x16));
+    memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3));
 }
 
 _Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags)
 {
-    X_Vec3_fp16x16 tempV[200];
+    X_Vec3 tempV[200];
     X_Polygon3 temp[2] = 
     {
         x_polygon3_make(tempV, 100),
@@ -149,7 +149,7 @@ _Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustu
 _Bool x_polygon3_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest)
 {
-    X_Vec3_fp16x16 tempV[200];
+    X_Vec3 tempV[200];
     X_Polygon3 tempPoly[2] = 
     {
         x_polygon3_make(tempV, 100),

@@ -33,7 +33,7 @@ void x_cube_init(X_Cube* cube, int width, int height, int depth)
         cube->vertices[i + 4] = x_vec3_make(cube->vertices[i].x, -cube->vertices[i].y, cube->vertices[i].z);
 }
 
-void x_cube_translate(X_Cube* cube, X_Vec3_fp16x16 translation)
+void x_cube_translate(X_Cube* cube, X_Vec3 translation)
 {
     for(int i = 0; i < 8; ++i)
         cube->vertices[i] = x_vec3_add(cube->vertices + i, &translation);

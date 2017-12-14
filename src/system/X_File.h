@@ -72,9 +72,9 @@ x_fp16x16 x_file_read_le_float32_as_fp16x16(X_File* file);
 
 void x_file_seek(X_File* file, size_t pos);
 void x_file_read_fixed_length_str(X_File* file, int strLength, char* dest);
-void x_file_read_vec3(X_File* file, X_Vec3_fp16x16* dest);
+void x_file_read_vec3(X_File* file, X_Vec3* dest);
 void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest);
-void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3_fp16x16* dest);
+void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3* dest);
 
 void x_file_read_vec2(X_File* file, X_Vec2* dest);
 void x_file_read_mat4x4(X_File* file, struct X_Mat4x4* mat);
@@ -85,7 +85,7 @@ _Bool x_file_open_writing_create_path(X_File* file, const char* fileName);
 void x_file_write_le_int16(X_File* file, int val);
 void x_file_write_buf(X_File* file, int bufSize, void* src);
 void x_file_write_le_int32(X_File* file, int val);
-void x_file_write_vec3(X_File* file, X_Vec3_fp16x16* v);
+void x_file_write_vec3(X_File* file, X_Vec3* v);
 
 void x_file_write_mat4x4(X_File* file, struct X_Mat4x4* mat);
 

@@ -29,8 +29,8 @@ typedef struct X_Light
 {
     int id;
     X_LightFlags flags;
-    X_Vec3_fp16x16 position;
-    X_Vec3_fp16x16 direction;
+    X_Vec3 position;
+    X_Vec3 direction;
     x_fp24x8 intensity;
 } X_Light;
 

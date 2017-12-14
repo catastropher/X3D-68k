@@ -44,7 +44,7 @@ typedef struct X_EntityTriangle
 
 typedef struct X_EntityVertex
 {
-    X_Vec3_fp16x16 v;
+    X_Vec3 v;
     int normalIndex;
 } X_EntityVertex;
 
@@ -98,6 +98,6 @@ X_EntityFrame* x_entitymodel_get_animation_start_frame(X_EntityModel* model, con
 
 struct X_RenderContext;
 
-void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3_fp16x16 pos, X_Color color, struct X_RenderContext* renderContext);
+void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3 pos, X_Color color, struct X_RenderContext* renderContext);
 void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, struct X_RenderContext* renderContext);
 

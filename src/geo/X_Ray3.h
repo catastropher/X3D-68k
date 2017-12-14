@@ -25,7 +25,7 @@ struct X_RenderContext;
 
 typedef struct X_Ray3
 {
-    X_Vec3_fp16x16 v[2];
+    X_Vec3 v[2];
 } X_Ray3;
 
 typedef X_Ray3 X_Ray3_fp16x16;
@@ -34,12 +34,12 @@ _Bool x_ray3_clip_to_plane(const X_Ray3* ray, const struct X_Plane* plane, X_Ray
 _Bool x_ray3_clip_to_frustum(const X_Ray3* ray, const struct X_Frustum* frustum, X_Ray3* dest);
 void x_ray3_render(const X_Ray3* ray, struct X_RenderContext* rcontext, X_Color color);
 
-static inline X_Ray3 x_ray3_make(X_Vec3_int start, X_Vec3_int end)
+static inline X_Ray3 x_ray3_make(X_Vec3 start, X_Vec3 end)
 {
     return (X_Ray3) { { start, end } };
 }
 
-static inline void x_ray3_lerp(const X_Ray3_fp16x16* ray, x_fp16x16 t, X_Vec3_fp16x16* dest)
+static inline void x_ray3_lerp(const X_Ray3_fp16x16* ray, x_fp16x16 t, X_Vec3* dest)
 {
     dest->x = x_fp16x16_lerp(ray->v[0].x, ray->v[1].x, t);
     dest->y = x_fp16x16_lerp(ray->v[0].y, ray->v[1].y, t);

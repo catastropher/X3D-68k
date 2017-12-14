@@ -38,8 +38,8 @@ typedef struct X_GameObjectType
 typedef struct X_GameObject
 {
     int id;    
-    X_Vec3_fp16x16 position;
-    X_Vec3_fp16x16 velocity;
+    X_Vec3 position;
+    X_Vec3 velocity;
     X_Quaternion orientation;
     X_GameObjectType* type;
 } X_GameObject;
@@ -47,5 +47,5 @@ typedef struct X_GameObject
 struct X_EngineContext;
 
 X_GameObject* x_gameobject_new(struct X_EngineContext* context, size_t objectSize);
-void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3_fp16x16* forwardDest, X_Vec3_fp16x16* rightDest, X_Vec3_fp16x16* upDest);
+void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest);
 
