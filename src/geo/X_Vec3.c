@@ -43,11 +43,6 @@ void x_vec3_fp16x16_normalize(X_Vec3_fp16x16* v)
     v->z = (v->z << 16) / len;
 }
 
-void x_vec3_print(const X_Vec3* v, const char* label)
-{
-    printf("%s: { %d, %d, %d }\n", label, v->x, v->y, v->z);
-}
-
 void x_vec3_fp16x16_print(const X_Vec3_fp16x16* v, const char* label)
 {
     printf("%s: { %f, %f, %f }\n", label, x_fp16x16_to_float(v->x), x_fp16x16_to_float(v->y), x_fp16x16_to_float(v->z));

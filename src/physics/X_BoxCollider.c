@@ -45,7 +45,7 @@ static void apply_friction(X_BoxCollider* collider)
     newSpeed = x_fp16x16_div(newSpeed, currentSpeed);
     
     // FIXME: write an actual scale vector function, this is hacky
-    X_Vec3 origin = x_vec3_origin();
+    X_Vec3_fp16x16 origin = x_vec3_origin();
     collider->velocity = x_vec3_add_scaled(&origin, &collider->velocity, newSpeed);
 }
 

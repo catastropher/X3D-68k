@@ -33,7 +33,7 @@ typedef enum X_BoundBoxFrustumFlags
 
 typedef struct X_BoundBox
 {
-    X_Vec3 v[2];
+    X_Vec3_fp16x16 v[2];
 } X_BoundBox;
 
 struct X_Plane;
@@ -59,7 +59,7 @@ static inline void x_boundbox_init(X_BoundBox* box)
     box->v[1].z = -0x7FFFFFFF;
 }
 
-static inline void x_boundbox_add_point(X_BoundBox* box, X_Vec3 point)
+static inline void x_boundbox_add_point(X_BoundBox* box, X_Vec3_fp16x16 point)
 {
     box->v[0].x = X_MIN(box->v[0].x, point.x);
     box->v[0].y = X_MIN(box->v[0].y, point.y);

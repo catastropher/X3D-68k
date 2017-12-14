@@ -31,7 +31,7 @@ static X_Vec3_float x_bsplevelloader_convert_coordinate_float(const X_Vec3_float
 }
 
 // TODO: replace with new version in X_Vec3.h
-static X_Vec3 x_bsplevelloader_convert_coordinate(const X_Vec3* v)
+static X_Vec3_fp16x16 x_bsplevelloader_convert_coordinate(const X_Vec3_fp16x16* v)
 {
     return x_vec3_make(v->y, -v->z, -v->x);
 }
@@ -532,7 +532,7 @@ static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* 
         level->vertices[i].v = loader->vertices[i].v;
 }
 
-static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, X_Vec3* v)
+static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, X_Vec3_fp16x16* v)
 {
     return x_vec2_make
     (

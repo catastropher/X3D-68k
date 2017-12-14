@@ -111,7 +111,7 @@ void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest)
         return;
     
     dest->totalVertices = src->totalVertices;
-    memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3));
+    memcpy(dest->vertices, src->vertices, src->totalVertices * sizeof(X_Vec3_fp16x16));
 }
 
 _Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags)

@@ -55,7 +55,7 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     
     x_mat4x4_mul(&rotation, &translation, &cam->viewMatrix);
     
-    X_Vec3 forward, up, right;
+    X_Vec3_fp16x16 forward, up, right;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
     x_viewport_update_frustum(&cam->viewport, &position, &forward, &right, &up);
 }

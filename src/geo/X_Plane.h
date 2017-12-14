@@ -20,7 +20,7 @@
 
 typedef struct X_Plane
 {
-    X_Vec3 normal;
+    X_Vec3_fp16x16 normal;
     x_fp16x16 d;
 } X_Plane;
 

@@ -186,7 +186,7 @@ void x_mat4x4_transform_vec4_fp16x16(const X_Mat4x4* mat, const X_Vec4* src, X_V
     *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
 }
 
-void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* src, X_Vec3* dest)
+void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* src, X_Vec3_fp16x16* dest)
 {
     X_Vec4 vec4 = x_vec4_make(src->x, src->y, src->z, X_FP16x16_ONE);
     X_Vec4_fp16x16 res;

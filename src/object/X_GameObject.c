@@ -25,7 +25,7 @@ X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
     return newObject;
 }
 
-void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
+void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3_fp16x16* forwardDest, X_Vec3_fp16x16* rightDest, X_Vec3_fp16x16* upDest)
 {
     X_Mat4x4 mat;
     x_quaternion_to_mat4x4(&obj->orientation, &mat);
