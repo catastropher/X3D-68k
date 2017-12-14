@@ -171,21 +171,6 @@ void x_mat4x4_set_row(X_Mat4x4* mat, int row, const X_Vec4* rowSrc)
     mat->elem[row][3] = rowSrc->w;
 }
 
-void x_mat4x4_transform_vec4(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16x16* dest)
-{
-    x_fp16x16 res[4] = { 0 };
-    const x_fp16x16* srcArray = &src->x;
-    
-    for(int i = 0; i < 4; ++i)
-    {
-        for(int j = 0; j < 4; ++j) {
-            res[i] += mat->elem[i][j] * srcArray[j];
-        }
-    }
-    
-    *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
-}
-
 void x_mat4x4_transform_vec4_fp16x16(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16x16* dest)
 {
     x_fp16x16 res[4] = { 0 };
@@ -199,17 +184,6 @@ void x_mat4x4_transform_vec4_fp16x16(const X_Mat4x4* mat, const X_Vec4* src, X_V
     }
     
     *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
-}
-
-void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const X_Vec3* src, X_Vec3* dest)
-{
-    X_Vec4 vec4 = x_vec4_make(src->x, src->y, src->z, 1);
-    X_Vec4_fp16x16 res;
-    x_mat4x4_transform_vec4(mat, &vec4, &res);
-    
-    dest->x = res.x / res.w;
-    dest->y = res.y / res.w;
-    dest->z = res.z / res.w;
 }
 
 void x_mat4x4_transform_vec3_fp16x16(const X_Mat4x4* mat, const X_Vec3_fp16x16* src, X_Vec3* dest)
@@ -276,7 +250,7 @@ void x_mat4x4_print_machine_readable(const X_Mat4x4* mat)
     printf("}\n");
 }
 
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
+void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3_fp16x16* forwardDest, X_Vec3_fp16x16* rightDest, X_Vec3_fp16x16* upDest)
 {
     X_Vec4 right;
     x_mat4x4_get_row(mat, 0, &right);

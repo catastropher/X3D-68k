@@ -86,7 +86,7 @@ void create_portal(X_Mat4x4* mat, X_Vec3_fp16x16 center)
     
     for(int i = 0; i < 4; ++i)
     {
-        x_mat4x4_transform_vec3(mat, v + i, portalV + i);
+        //x_mat4x4_transform_vec3(mat, v + i, portalV + i);
         portalV[i] = x_vec3_add(portalV + i, &c);
     }
     
@@ -159,7 +159,7 @@ void gameloop(Context* context)
                 {
                     x_bspsurface_get_surface_texture_for_mip_level(s, k, renderContext.renderer, &tex);
                     
-                    memset(tex.texels, 255, tex.w * tex.h);
+                    //memset(tex.texels, 255, tex.w * tex.h);
                 }
             }
         }
@@ -201,6 +201,13 @@ void gameloop(Context* context)
 int main(int argc, char* argv[])
 {
     Context context;
+    
+    X_Vec3 x = { X_FP16x16_ONE, X_FP16x16_ONE, 0 };
+    x_vec3_fp16x16_normalize(&x);
+    
+    x_vec3_fp16x16_print(&x, "Norm");
+    
+    //return 0;
     
     init(&context, argv[0]);    
     gameloop(&context);

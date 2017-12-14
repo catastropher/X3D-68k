@@ -156,16 +156,6 @@ static inline _Bool x_vec3_equal(const X_Vec3* a, const X_Vec3* b)
     return a->x == b->y && a->y == b->y && a->z == b->z;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the dot product of two 3D vectors. Mathematically, a dot b =
-///     |a||b|cos theta.
-/// @return a dot b
-////////////////////////////////////////////////////////////////////////////////
-static inline int x_vec3_dot(const X_Vec3* a, const X_Vec3* b)
-{
-    return a->x * b->x + a->y * b->y + a->z * b->z;
-}
-
 static inline x_fp16x16 x_vec3_fp16x16_dot(const X_Vec3* a, const X_Vec3* b)
 {
     return x_fp16x16_mul(a->x, b->x) + x_fp16x16_mul(a->y, b->y) + x_fp16x16_mul(a->z, b->z);
@@ -192,48 +182,12 @@ static inline _Bool x_vec3_is_orthogonal_to(const X_Vec3* a, const X_Vec3* b)
     return x_vec3_fp16x16_dot(a, b) == 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the length of a vector squared.
-/// @return length(v)^2
-////////////////////////////////////////////////////////////////////////////////
-static inline unsigned int x_vec3_length_squared(const X_Vec3* v)
-{
-    return v->x * v->x + v->y * v->y + v->z * v->z;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the length (magnitude) of a vector.
-////////////////////////////////////////////////////////////////////////////////
-static inline unsigned int x_vec3_length(const X_Vec3* v)
-{
-    // Makes sure we don't overflow
-    X_Vec3 shortened = x_vec3_make(v->x >> 2, v->y >> 2, v->z >> 2);
-    
-    return x_sqrt(x_vec3_length_squared(&shortened)) << 2;
-}
 
 static inline x_fp16x16 x_vec3_fp16x16_length(const X_Vec3* v)
 {
     return x_sqrt(x_fp16x16_mul(v->x, v->x) + x_fp16x16_mul(v->y, v->y) + x_fp16x16_mul(v->z, v->z)) << 8;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the distance squared between two points.
-/// @return (distance between a and b)^2
-////////////////////////////////////////////////////////////////////////////////
-static inline int x_vec3_distance_squared(const X_Vec3* a, const X_Vec3* b)
-{
-    X_Vec3 diff = x_vec3_sub(a, b);
-    return x_vec3_length_squared(&diff);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the distance between two points.
-////////////////////////////////////////////////////////////////////////////////
-static inline int x_vec3_distance(const X_Vec3* a, const X_Vec3* b)
-{
-    return x_sqrt(x_vec3_distance_squared(a, b));
-}
 
 static inline X_Vec3_float x_vec3_float_make(float x, float y, float z)
 {
