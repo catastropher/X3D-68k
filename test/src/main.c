@@ -24,7 +24,7 @@
 #include "init.h"
 #include "render.h"
 
-X_Vec3 portalV[4];
+X_Vec3_int portalV[4];
 X_Polygon3 p = { 4, portalV};
 _Bool portalOnWall;
 
@@ -74,7 +74,7 @@ void create_portal(X_Mat4x4* mat, X_Vec3_fp16x16 center)
     int w = 50;
     int h = 50;
     
-    X_Vec3 v[4] = 
+    X_Vec3_int v[4] = 
     {
         x_vec3_make(-w, -h, 0),
         x_vec3_make(-w, h, 0),
@@ -82,7 +82,7 @@ void create_portal(X_Mat4x4* mat, X_Vec3_fp16x16 center)
         x_vec3_make(w, -h, 0)
     };
 
-    X_Vec3 c = x_vec3_fp16x16_to_vec3(&center);
+    X_Vec3_int c = x_vec3_fp16x16_to_vec3(&center);
     
     for(int i = 0; i < 4; ++i)
     {
@@ -103,9 +103,9 @@ void mat4x4_visualize(X_Mat4x4* mat, X_RenderContext* renderContext)
         X_Vec4 v;
         x_mat4x4_get_column(mat, i, &v);
         
-        X_Vec3 v3 = x_vec4_to_vec3(&v);
+        X_Vec3_fp16x16 v3 = x_vec4_to_vec3(&v);
         
-        X_Vec3 end = x_vec3_scale_int(&v3, 50);
+        X_Vec3_fp16x16 end = x_vec3_scale_int(&v3, 50);
         
         X_Ray3 r = x_ray3_make(x_vec3_origin(), x_vec3_fp16x16_to_vec3(&end));
         x_ray3_render(&r, renderContext, color[i]);
@@ -166,12 +166,12 @@ void gameloop(Context* context)
         
         if(x_keystate_key_down(&context->engineContext->keystate, 'k'))
         {
-            X_Vec3 camPos = x_cameraobject_get_position(context->cam);
+            X_Vec3_fp16x16 camPos = x_cameraobject_get_position(context->cam);
             
-            X_Vec3 forward, up, right;
+            X_Vec3_fp16x16 forward, up, right;
             x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
             
-            X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
+            X_Vec3_fp16x16 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
             
             X_RayTracer trace;
             x_raytracer_init(&trace, &context->engineContext->currentLevel, &camPos, &end, NULL);
@@ -201,13 +201,6 @@ void gameloop(Context* context)
 int main(int argc, char* argv[])
 {
     Context context;
-    
-    X_Vec3 x = { X_FP16x16_ONE, X_FP16x16_ONE, 0 };
-    x_vec3_fp16x16_normalize(&x);
-    
-    x_vec3_fp16x16_print(&x, "Norm");
-    
-    //return 0;
     
     init(&context, argv[0]);    
     gameloop(&context);
