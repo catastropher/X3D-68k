@@ -29,6 +29,6 @@ typedef struct X_RayTracer
     x_fp16x16 collisionFrac;
 } X_RayTracer;
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_Vec3_fp16x16* start, X_Vec3_fp16x16* end, X_BspBoundBox* boundBox);
+void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_Vec3_fp16x16* start, X_Vec3_fp16x16* end, X_BoundBox* boundBox);
 _Bool x_raytracer_trace(X_RayTracer* trace);
 

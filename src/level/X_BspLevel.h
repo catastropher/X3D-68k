@@ -62,10 +62,10 @@ typedef enum X_BspBoundBoxFrustumFlags
     X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM = 0,
 } X_BspBoundBoxFrustumFlags;
 
-typedef struct X_BspBoundBox
+typedef struct X_BoundBox
 {
     X_Vec3 v[2];
-} X_BspBoundBox;
+} X_BoundBox;
 
 typedef struct X_BspBoundRect
 {
@@ -139,8 +139,8 @@ typedef struct X_BspNode
     // Common with X_BspLeaf - DO NOT REORDER
     X_BspLeafContents contents;
     int lastVisibleFrame;
-    X_BspBoundBox nodeBoundBox;
-    X_BspBoundBox geoBoundBox;
+    X_BoundBox nodeBoundBox;
+    X_BoundBox geoBoundBox;
     struct X_BspNode* parent;
     
     // Unique elements for node
@@ -158,8 +158,8 @@ typedef struct X_BspLeaf
     // Common with X_BspNode - DO NOT REOREDER
     X_BspLeafContents contents;
     int lastVisibleFrame;
-    X_BspBoundBox nodeBoundBox;
-    X_BspBoundBox geoBoundBox;
+    X_BoundBox nodeBoundBox;
+    X_BoundBox geoBoundBox;
     struct X_BspNode* parent;
     
     // Unique elements for leaf
@@ -177,7 +177,7 @@ typedef enum X_BspLevelFlags
 
 typedef struct X_BspModel
 {
-    X_BspBoundBox boundBox;
+    X_BoundBox boundBox;
     X_BspNode* rootBspNode;
     int totalBspLeaves;
     
@@ -365,7 +365,7 @@ static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, X_Vec2 point)
 //======================== boundbox ========================
 
 // TODO: these should not be static inline - move to separate source file
-static inline void x_bspboundbox_init(X_BspBoundBox* box)
+static inline void x_bspboundbox_init(X_BoundBox* box)
 {
     box->v[0].x = 32767;
     box->v[0].y = 32767;
@@ -376,7 +376,7 @@ static inline void x_bspboundbox_init(X_BspBoundBox* box)
     box->v[1].z = -32767;
 }
 
-static inline void x_bspboundbox_add_point(X_BspBoundBox* box, X_Vec3 point)
+static inline void x_bspboundbox_add_point(X_BoundBox* box, X_Vec3 point)
 {
     box->v[0].x = X_MIN(box->v[0].x, point.x);
     box->v[0].y = X_MIN(box->v[0].y, point.y);
@@ -387,7 +387,7 @@ static inline void x_bspboundbox_add_point(X_BspBoundBox* box, X_Vec3 point)
     box->v[1].z = X_MAX(box->v[1].z, point.z);
 }
 
-static inline void x_bspboundbox_merge(X_BspBoundBox* a, X_BspBoundBox* b, X_BspBoundBox* dest)
+static inline void x_bspboundbox_merge(X_BoundBox* a, X_BoundBox* b, X_BoundBox* dest)
 {
     dest->v[0].x = X_MIN(a->v[0].x, b->v[0].x);
     dest->v[0].y = X_MIN(a->v[0].y, b->v[0].y);
@@ -398,7 +398,7 @@ static inline void x_bspboundbox_merge(X_BspBoundBox* a, X_BspBoundBox* b, X_Bsp
     dest->v[1].z = X_MAX(a->v[1].z, b->v[1].z);
 }
 
-static inline void x_bspboundbox_print(X_BspBoundBox* box)
+static inline void x_bspboundbox_print(X_BoundBox* box)
 {
     x_vec3_print(box->v + 0, "Mins");
     x_vec3_print(box->v + 1, "Maxs");

@@ -22,7 +22,7 @@
 #include "error/X_error.h"
 #include "geo/X_BoundSphere.h"
 
-X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BspBoundBox* box, X_Plane* plane)
+X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BoundBox* box, X_Plane* plane)
 {
     int px = (plane->normal.x > 0 ? 1 : 0);
     int py = (plane->normal.y > 0 ? 1 : 0);
@@ -45,7 +45,7 @@ _Bool x_boundbox_clip_against_frustum_plane(X_BspBoundBoxFrustumFlags flags, int
 }
 
 // Based on an algorithm described at http://www.txutxi.com/?p=584
-X_BspBoundBoxFrustumFlags x_bspboundbox_determine_frustum_clip_flags(X_BspBoundBox* box, X_Frustum* frustum, X_BspBoundBoxFrustumFlags parentFlags)
+X_BspBoundBoxFrustumFlags x_bspboundbox_determine_frustum_clip_flags(X_BoundBox* box, X_Frustum* frustum, X_BspBoundBoxFrustumFlags parentFlags)
 {
     if(parentFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
         return X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM;

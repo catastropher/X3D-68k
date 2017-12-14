@@ -28,7 +28,7 @@ typedef enum X_BoxColliderFlags
 typedef struct X_BoxCollider
 {
     X_BoxColliderFlags flags;
-    X_BspBoundBox boundBox;
+    X_BoundBox boundBox;
     int levelCollisionHull;
     X_Vec3_fp16x16 position;
     X_Vec3_fp16x16 velocity;
@@ -38,7 +38,7 @@ typedef struct X_BoxCollider
     x_fp16x16 maxSpeed;
 } X_BoxCollider;
 
-void x_boxcollider_init(X_BoxCollider* collider, X_BspBoundBox* boundBox, X_BoxColliderFlags flags);
+void x_boxcollider_init(X_BoxCollider* collider, X_BoundBox* boundBox, X_BoxColliderFlags flags);
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level);
 
 static inline _Bool x_boxcollider_is_on_ground(X_BoxCollider* collider)

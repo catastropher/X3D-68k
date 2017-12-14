@@ -31,7 +31,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     cam->base.velocity = x_vec3_origin();
     
     // FIXME: need actual bound box
-    static X_BspBoundBox box;
+    static X_BoundBox box;
     x_boxcollider_init(&cam->collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
     
     return cam;

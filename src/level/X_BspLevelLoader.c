@@ -36,12 +36,12 @@ static X_Vec3 x_bsplevelloader_convert_coordinate(const X_Vec3* v)
     return x_vec3_make(v->y, -v->z, -v->x);
 }
 
-static void x_bspboundbox_convert_coordinate(X_BspBoundBox* box)
+static void x_bspboundbox_convert_coordinate(X_BoundBox* box)
 {
     box->v[0] = x_bsplevelloader_convert_coordinate(box->v + 0);
     box->v[1] = x_bsplevelloader_convert_coordinate(box->v + 1);
     
-    X_BspBoundBox temp;
+    X_BoundBox temp;
     
     temp.v[0].x = X_MIN(box->v[0].x, box->v[1].x);
     temp.v[0].y = X_MIN(box->v[0].y, box->v[1].y);
