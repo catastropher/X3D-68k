@@ -65,6 +65,7 @@ set(X3D_SOURCES
     src/error/X_log.c
 
     # geo
+    src/geo/X_BoundBox.c
     src/geo/X_Cube.c
     src/geo/X_Frustum.c
     src/geo/X_Plane.c

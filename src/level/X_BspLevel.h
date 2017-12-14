@@ -21,6 +21,7 @@
 #include "util/X_util.h"
 #include "memory/X_Cache.h"
 #include "render/X_Light.h"
+#include "geo/X_BoundBox.h"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -48,24 +49,6 @@ typedef struct X_BspFaceTexture
     X_BspTexture* texture;
     int flags;
 } X_BspFaceTexture;
-
-typedef enum X_BoundBoxPlaneFlags
-{
-    X_BOUNDBOX_OUTSIDE_PLANE = 0,
-    X_BOUNDBOX_INSIDE_PLANE = 1,
-    X_BOUNDBOX_INTERSECT_PLANE = 2
-} X_BoundBoxPlaneFlags;
-
-typedef enum X_BspBoundBoxFrustumFlags
-{
-    X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM = -1,
-    X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM = 0,
-} X_BspBoundBoxFrustumFlags;
-
-typedef struct X_BoundBox
-{
-    X_Vec3 v[2];
-} X_BoundBox;
 
 typedef struct X_BspBoundRect
 {
@@ -360,47 +343,5 @@ static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, X_Vec2 point)
     
     rect->v[1].x = X_MAX(rect->v[1].x, point.x);
     rect->v[1].y = X_MAX(rect->v[1].y, point.y);
-}
-
-//======================== boundbox ========================
-
-// TODO: these should not be static inline - move to separate source file
-static inline void x_bspboundbox_init(X_BoundBox* box)
-{
-    box->v[0].x = 32767;
-    box->v[0].y = 32767;
-    box->v[0].z = 32767;
-    
-    box->v[1].x = -32767;
-    box->v[1].y = -32767;
-    box->v[1].z = -32767;
-}
-
-static inline void x_bspboundbox_add_point(X_BoundBox* box, X_Vec3 point)
-{
-    box->v[0].x = X_MIN(box->v[0].x, point.x);
-    box->v[0].y = X_MIN(box->v[0].y, point.y);
-    box->v[0].z = X_MIN(box->v[0].z, point.z);
-    
-    box->v[1].x = X_MAX(box->v[1].x, point.x);
-    box->v[1].y = X_MAX(box->v[1].y, point.y);
-    box->v[1].z = X_MAX(box->v[1].z, point.z);
-}
-
-static inline void x_bspboundbox_merge(X_BoundBox* a, X_BoundBox* b, X_BoundBox* dest)
-{
-    dest->v[0].x = X_MIN(a->v[0].x, b->v[0].x);
-    dest->v[0].y = X_MIN(a->v[0].y, b->v[0].y);
-    dest->v[0].z = X_MIN(a->v[0].z, b->v[0].z);
-    
-    dest->v[1].x = X_MAX(a->v[1].x, b->v[1].x);
-    dest->v[1].y = X_MAX(a->v[1].y, b->v[1].y);
-    dest->v[1].z = X_MAX(a->v[1].z, b->v[1].z);
-}
-
-static inline void x_bspboundbox_print(X_BoundBox* box)
-{
-    x_vec3_print(box->v + 0, "Mins");
-    x_vec3_print(box->v + 1, "Maxs");
 }
 

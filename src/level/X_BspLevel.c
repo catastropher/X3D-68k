@@ -22,53 +22,6 @@
 #include "error/X_error.h"
 #include "geo/X_BoundSphere.h"
 
-X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BoundBox* box, X_Plane* plane)
-{
-    int px = (plane->normal.x > 0 ? 1 : 0);
-    int py = (plane->normal.y > 0 ? 1 : 0);
-    int pz = (plane->normal.z > 0 ? 1 : 0);
-    
-    X_Vec3 furthestPointAlongNormal = x_vec3_make(box->v[px].x, box->v[py].y, box->v[pz].z);
-    if(!x_plane_point_is_on_normal_facing_side_fp16x16(plane, &furthestPointAlongNormal))
-        return X_BOUNDBOX_OUTSIDE_PLANE;
-    
-    X_Vec3 closestPointAlongNormal = x_vec3_make(box->v[px ^ 1].x, box->v[py ^ 1].y, box->v[pz ^ 1].z);
-    if(x_plane_point_is_on_normal_facing_side_fp16x16(plane, &closestPointAlongNormal))
-        return X_BOUNDBOX_INSIDE_PLANE;
-    
-    return X_BOUNDBOX_INTERSECT_PLANE;
-}
-
-_Bool x_boundbox_clip_against_frustum_plane(X_BspBoundBoxFrustumFlags flags, int planeId)
-{
-    return flags & (1 << planeId);
-}
-
-// Based on an algorithm described at http://www.txutxi.com/?p=584
-X_BspBoundBoxFrustumFlags x_bspboundbox_determine_frustum_clip_flags(X_BoundBox* box, X_Frustum* frustum, X_BspBoundBoxFrustumFlags parentFlags)
-{
-    if(parentFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
-        return X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM;
-    
-    X_BspBoundBoxFrustumFlags newFlags = 0;
-    
-    for(int i = 0; i < frustum->totalPlanes; ++i)
-    {
-        if(!x_boundbox_clip_against_frustum_plane(parentFlags, i))
-            continue;
-        
-        X_BoundBoxPlaneFlags planeFlags = x_bspboundbox_determine_plane_clip_flags(box, frustum->planes + i);
-        
-        if(planeFlags == X_BOUNDBOX_OUTSIDE_PLANE)
-            return X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM;
-        
-        if(planeFlags == X_BOUNDBOX_INTERSECT_PLANE)
-            newFlags |= (1 << i);
-    }
-    
-    return newFlags;
-}
-
 static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext* renderContext, X_Color color, X_BspModel* model)
 {
     if(x_bspnode_is_leaf(node))

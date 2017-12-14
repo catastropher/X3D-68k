@@ -21,6 +21,7 @@
 #include "dev/X_DemoRecorder.h"
 
 // geo
+#include "geo/X_BoundBox.h"
 #include "geo/X_BoundSphere.h"
 #include "geo/X_Cube.h"
 #include "geo/X_Frustum.h"
