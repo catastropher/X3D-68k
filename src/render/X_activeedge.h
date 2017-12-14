@@ -126,7 +126,7 @@ void x_ae_context_add_level_polygon(X_AE_Context* context,
                                     int* edgeIds,
                                     int totalEdges,
                                     X_BspSurface* bspSurface,
-                                    X_BspBoundBoxFrustumFlags geoFlags,
+                                    X_BoundBoxFrustumFlags geoFlags,
                                     int bspKey
                                    );
 

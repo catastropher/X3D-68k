@@ -249,7 +249,7 @@ static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNod
     }
 }
 
-static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, X_BspBoundBoxFrustumFlags geoFlags)
+static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
 {
     X_BspLevel* level = renderContext->level;
     
@@ -279,12 +279,12 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
     }
 }
 
-void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BspBoundBoxFrustumFlags parentNodeFlags)
+void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags parentNodeFlags)
 {
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
         return;
     
-    X_BspBoundBoxFrustumFlags nodeFlags = x_bspboundbox_determine_frustum_clip_flags(&node->nodeBoundBox, renderContext->viewFrustum, parentNodeFlags);
+    X_BoundBoxFrustumFlags nodeFlags = x_boundbox_determine_frustum_clip_flags(&node->nodeBoundBox, renderContext->viewFrustum, parentNodeFlags);
     if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
         return;
     
@@ -300,7 +300,7 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     X_BspNode* backSide;
     x_bspnode_determine_children_sides_relative_to_camera(node, &renderContext->camPos, &frontSide, &backSide);
     
-    X_BspBoundBoxFrustumFlags geoFlags = x_bspboundbox_determine_frustum_clip_flags(&node->geoBoundBox, renderContext->viewFrustum, nodeFlags);
+    X_BoundBoxFrustumFlags geoFlags = x_boundbox_determine_frustum_clip_flags(&node->geoBoundBox, renderContext->viewFrustum, nodeFlags);
 
     x_bspnode_render_recursive(frontSide, renderContext, nodeFlags);
     
@@ -314,7 +314,7 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
     x_bsplevel_reset_bspkeys(level);
     
-    X_BspBoundBoxFrustumFlags enableAllPlanes = (1 << renderContext->viewFrustum->totalPlanes) - 1;
+    X_BoundBoxFrustumFlags enableAllPlanes = (1 << renderContext->viewFrustum->totalPlanes) - 1;
     x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
 }
 

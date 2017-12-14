@@ -36,7 +36,7 @@ static X_Vec3 x_bsplevelloader_convert_coordinate(const X_Vec3* v)
     return x_vec3_make(v->y, -v->z, -v->x);
 }
 
-static void x_bspboundbox_convert_coordinate(X_BoundBox* box)
+static void x_boundbox_convert_coordinate(X_BoundBox* box)
 {
     box->v[0] = x_bsplevelloader_convert_coordinate(box->v + 0);
     box->v[1] = x_bsplevelloader_convert_coordinate(box->v + 1);
@@ -643,7 +643,7 @@ static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* lo
         leaf->nodeBoundBox.v[1].y = loadLeaf->maxs[1];
         leaf->nodeBoundBox.v[1].z = loadLeaf->maxs[2];
         
-        x_bspboundbox_convert_coordinate(&leaf->nodeBoundBox);
+        x_boundbox_convert_coordinate(&leaf->nodeBoundBox);
     }
 }
 
@@ -708,7 +708,7 @@ static void x_bsplevel_init_nodes(X_BspLevel* level, const X_BspLevelLoader* loa
         node->nodeBoundBox.v[1].y = loadNode->maxs[1];
         node->nodeBoundBox.v[1].z = loadNode->maxs[2];
         
-        x_bspboundbox_convert_coordinate(&node->nodeBoundBox);
+        x_boundbox_convert_coordinate(&node->nodeBoundBox);
     }
 }
 
@@ -797,7 +797,7 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspS
         else
             v = level->vertices[level->edges[-edgeId].v[0]].v;
         
-        x_bspboundbox_add_point(&node->geoBoundBox, x_vec3_fp16x16_to_vec3(&v));
+        x_boundbox_add_point(&node->geoBoundBox, x_vec3_fp16x16_to_vec3(&v));
     }
 }
 
@@ -806,7 +806,7 @@ static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
     if(x_bspnode_is_leaf(node))
         return;
     
-    x_bspboundbox_init(&node->geoBoundBox);
+    x_boundbox_init(&node->geoBoundBox);
 
     for(int i = 0; i < node->totalSurfaces; ++i)
         x_bspnode_calculate_geo_boundbox_add_surface(node, node->firstSurface + i, level);
@@ -872,10 +872,10 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
     
     printf("Calculated:\n");
-    x_bspboundbox_print(&levelRootNode->frontChild->geoBoundBox);
+    x_boundbox_print(&levelRootNode->frontChild->geoBoundBox);
     
     printf("Real:\n");
-    x_bspboundbox_print(&levelRootNode->frontChild->nodeBoundBox);
+    x_boundbox_print(&levelRootNode->frontChild->nodeBoundBox);
 }
 
 static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)

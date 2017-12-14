@@ -17,7 +17,7 @@
 #include "X_Plane.h"
 #include "X_Frustum.h"
 
-X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BoundBox* box, X_Plane* plane)
+X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, X_Plane* plane)
 {
     int px = (plane->normal.x > 0 ? 1 : 0);
     int py = (plane->normal.y > 0 ? 1 : 0);
@@ -35,19 +35,19 @@ X_BoundBoxPlaneFlags x_bspboundbox_determine_plane_clip_flags(X_BoundBox* box, X
 }
 
 // Based on an algorithm described at http://www.txutxi.com/?p=584
-X_BspBoundBoxFrustumFlags x_bspboundbox_determine_frustum_clip_flags(X_BoundBox* box, X_Frustum* frustum, X_BspBoundBoxFrustumFlags parentFlags)
+X_BoundBoxFrustumFlags x_boundbox_determine_frustum_clip_flags(X_BoundBox* box, X_Frustum* frustum, X_BoundBoxFrustumFlags parentFlags)
 {
     if(parentFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
         return X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM;
     
-    X_BspBoundBoxFrustumFlags newFlags = 0;
+    X_BoundBoxFrustumFlags newFlags = 0;
     
     for(int i = 0; i < frustum->totalPlanes; ++i)
     {
         if(!x_boundbox_clip_against_frustum_plane(parentFlags, i))
             continue;
         
-        X_BoundBoxPlaneFlags planeFlags = x_bspboundbox_determine_plane_clip_flags(box, frustum->planes + i);
+        X_BoundBoxPlaneFlags planeFlags = x_boundbox_determine_plane_clip_flags(box, frustum->planes + i);
         
         if(planeFlags == X_BOUNDBOX_OUTSIDE_PLANE)
             return X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM;
@@ -59,7 +59,7 @@ X_BspBoundBoxFrustumFlags x_bspboundbox_determine_frustum_clip_flags(X_BoundBox*
     return newFlags;
 }
 
-void x_bspboundbox_print(X_BoundBox* box)
+void x_boundbox_print(X_BoundBox* box)
 {
     x_vec3_fp16x16_print(box->v + 0, "Mins");
     x_vec3_fp16x16_print(box->v + 1, "Maxs");

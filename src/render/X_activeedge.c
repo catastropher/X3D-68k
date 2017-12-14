@@ -368,7 +368,7 @@ static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16
 }
 
 // TODO: check whether edgeIds is NULL
-void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspSurface* bspSurface, X_BspBoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey)
+void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey)
 {
     X_Vec3 clippedV[100];
     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
@@ -404,14 +404,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
-void x_ae_context_add_level_polygon(X_AE_Context* context,
-                                    X_BspLevel* level,
-                                    int* edgeIds,
-                                    int totalEdges,
-                                    X_BspSurface* bspSurface,
-                                    X_BspBoundBoxFrustumFlags geoFlags,
-                                    int bspKey
-                                   )
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     if((context->renderContext->renderer->renderMode & 2) == 0)
         return;
