@@ -145,8 +145,7 @@ void gameloop(Context* context)
         
         X_BspNode* nodes[100];
         int total = x_bsplevel_find_nodes_intersecting_sphere(renderContext.level, &sphere, nodes + 0);
-        printf("Near nodes: %d\n", total);
-        
+
         for(int i = 0; i < total; ++i)
         {
             X_BspNode* node = nodes[i];

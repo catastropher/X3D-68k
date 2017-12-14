@@ -49,6 +49,12 @@ static inline _Bool x_plane_point_is_on_normal_facing_side(const X_Plane* plane,
     return x_plane_point_distance(plane, point) > 0;
 }
 
+static inline _Bool x_plane_point_is_on_normal_facing_side_fp16x16(const X_Plane* plane, const X_Vec3_fp16x16* point)
+{
+    return x_plane_point_distance_fp16x16(plane, point) > 0;
+}
+
+
 static inline void x_plane_flip_direction(X_Plane* plane)
 {
     plane->normal = x_vec3_neg(&plane->normal);

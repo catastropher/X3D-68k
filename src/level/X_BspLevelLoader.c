@@ -51,6 +51,9 @@ static void x_bspboundbox_convert_coordinate(X_BspBoundBox* box)
     temp.v[1].y = X_MAX(box->v[0].y, box->v[1].y);
     temp.v[1].z = X_MAX(box->v[0].z, box->v[1].z);
     
+    for(int i = 0; i < 2; ++i)
+        temp.v[i] = x_vec3_to_vec3_fp16x16(temp.v + i);
+    
     *box = temp;
 }
 
@@ -816,6 +819,9 @@ static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
     node->geoBoundBox.v[1].x = ceil(node->geoBoundBox.v[1].x / SNAP) * SNAP;
     node->geoBoundBox.v[1].y = ceil(node->geoBoundBox.v[1].y / SNAP) * SNAP;
     node->geoBoundBox.v[1].z = ceil(node->geoBoundBox.v[1].z / SNAP) * SNAP;
+    
+    for(int i = 0; i < 2; ++i)
+        node->geoBoundBox.v[i] = x_vec3_to_vec3_fp16x16(node->geoBoundBox.v + i);
     
     x_bspnode_calculate_geo_boundbox(node->frontChild, level);
     x_bspnode_calculate_geo_boundbox(node->backChild, level);
