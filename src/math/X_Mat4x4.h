@@ -51,3 +51,6 @@ void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_V
 void x_mat4x4_invert_diagonal(const X_Mat4x4* mat, X_Mat4x4* dest);
 void x_mat4x4_transpose_3x3(X_Mat4x4* mat);
 
+struct X_RenderContext;
+void x_mat4x4_visualize(X_Mat4x4* mat, X_Vec3 position, struct X_RenderContext* renderContext);
+

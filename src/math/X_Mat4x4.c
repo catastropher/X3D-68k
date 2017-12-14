@@ -18,6 +18,8 @@
 #include "X_Mat4x4.h"
 #include "util/X_util.h"
 #include "X_trig.h"
+#include "render/X_RenderContext.h"
+#include "geo/X_Ray3.h"
 
 void x_mat4x4_load_identity(X_Mat4x4* mat)
 {
@@ -284,6 +286,25 @@ void x_mat4x4_transpose_3x3(X_Mat4x4* mat)
         {
             X_SWAP(mat->elem[i][j], mat->elem[j][i]);
         }
+    }
+}
+
+void x_mat4x4_visualize(X_Mat4x4* mat, X_Vec3 position, X_RenderContext* renderContext)
+{
+    const X_Palette* p = x_palette_get_quake_palette();
+    X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
+    
+    for(int i = 0; i < 3; ++i)
+    {
+        X_Vec4 v;
+        x_mat4x4_get_column(mat, i, &v);
+        
+        X_Vec3 end = x_vec4_to_vec3(&v);
+        end = x_vec3_scale_int(&end, 50);
+        end = x_vec3_add(&end, &position);
+        
+        X_Ray3 r = x_ray3_make(position, end);
+        x_ray3_render(&r, renderContext, color[i]);
     }
 }
 

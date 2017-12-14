@@ -24,95 +24,6 @@
 #include "init.h"
 #include "render.h"
 
-X_Vec3_int portalV[4];
-X_Polygon3 p = { 4, portalV};
-_Bool portalOnWall;
-
-void plane_get_orientation(X_Plane* plane, X_Mat4x4* dest, X_CameraObject* cam)
-{
-    X_Vec3 temp = plane->normal;
-    temp.y = 0;
-    
-    X_Mat4x4 mat;
-    x_mat4x4_load_y_rotation(&mat, X_ANG_270);
-    
-    X_Vec3 right, up;
-    
-    if(abs(plane->normal.y) != X_FP16x16_ONE)
-    {
-        x_mat4x4_transform_vec3(&mat, &temp, &right);
-        x_vec3_normalize(&right);
-        
-        up = x_vec3_cross(&plane->normal, &right);
-    }
-    else
-    {
-        // Pick the vectors from the cam direction
-        X_Vec3 temp;
-        x_mat4x4_extract_view_vectors(&cam->viewMatrix, &up, &right, &temp);
-        
-        right.y = 0;
-        x_vec3_normalize(&right);
-        
-        up.y = 0;
-        x_vec3_normalize(&up);
-    }
-    
-    x_mat4x4_load_identity(dest);
-    
-    X_Vec4 up4 = x_vec4_from_vec3(&up);
-    X_Vec4 right4 = x_vec4_from_vec3(&right);
-    X_Vec4 forward4 = x_vec4_from_vec3(&plane->normal);
-    
-    x_mat4x4_set_column(dest, 0, &right4);
-    x_mat4x4_set_column(dest, 1, &up4);
-    x_mat4x4_set_column(dest, 2, &forward4);
-}
-
-void create_portal(X_Mat4x4* mat, X_Vec3 center)
-{
-    int w = 50;
-    int h = 50;
-    
-    X_Vec3_int v[4] = 
-    {
-        x_vec3_make(-w, -h, 0),
-        x_vec3_make(-w, h, 0),
-        x_vec3_make(w, h, 0),
-        x_vec3_make(w, -h, 0)
-    };
-
-    X_Vec3_int c = x_vec3_to_vec3_int(&center);
-    
-    for(int i = 0; i < 4; ++i)
-    {
-        //x_mat4x4_transform_vec3(mat, v + i, portalV + i);
-        portalV[i] = x_vec3_add(portalV + i, &c);
-    }
-    
-    portalOnWall = 1;
-}
-
-void mat4x4_visualize(X_Mat4x4* mat, X_RenderContext* renderContext)
-{
-    const X_Palette* p = x_palette_get_quake_palette();
-    X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
-    
-    for(int i = 0; i < 3; ++i)
-    {
-        X_Vec4 v;
-        x_mat4x4_get_column(mat, i, &v);
-        
-        X_Vec3 v3 = x_vec4_to_vec3(&v);
-        
-        X_Vec3 end = x_vec3_scale_int(&v3, 50);
-        
-        X_Ray3 r = x_ray3_make(x_vec3_origin(), x_vec3_to_vec3_int(&end));
-        x_ray3_render(&r, renderContext, color[i]);
-    }
-}
-
-
 const char* x_game_name(void)
 {
     return "X3D Test";
@@ -128,71 +39,85 @@ int x_game_minor_version(void)
     return 1;
 }
 
+// Only here for testing purposes
+typedef struct Portal
+{
+    X_Vec3 geometryVertices[4];
+    X_Polygon3 geometry;
+    _Bool portalOnWall;
+    X_Mat4x4 wallOrientation;
+} Portal;
+
+void portal_init(Portal* portal, X_Vec3 center, X_Mat4x4* wallOrientation)
+{
+    x_fp16x16 w = x_fp16x16_from_int(50);
+    x_fp16x16 h = x_fp16x16_from_int(50);
+    
+    X_Vec3 v[4] = 
+    {
+        x_vec3_make(-w, -h, 0),
+        x_vec3_make(-w, h, 0),
+        x_vec3_make(w, h, 0),
+        x_vec3_make(w, -h, 0)
+    };
+    
+    portal->geometry = x_polygon3_make(portal->geometryVertices, 4);
+    
+    for(int i = 0; i < 4; ++i)
+    {
+        x_mat4x4_transform_vec3(wallOrientation, v + i, portal->geometryVertices + i);
+        portal->geometryVertices[i] = x_vec3_add(portal->geometryVertices + i, &center);
+    }
+    
+    portal->portalOnWall = 1;
+    portal->wallOrientation = *wallOrientation;
+}
+
+static void shoot_portal(Portal* portal, X_EngineContext* engineContext, X_CameraObject* cam)
+{
+    X_Vec3 camPos = x_cameraobject_get_position(cam);
+        
+    X_Vec3 forward, up, right;
+    x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
+    
+    X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
+    
+    X_RayTracer trace;
+    x_raytracer_init(&trace, &engineContext->currentLevel, &camPos, &end, NULL);
+    trace.rootClipNode = 0;
+    
+    if(!x_raytracer_trace(&trace))
+        return;
+    
+    X_Mat4x4 wallOrientation;
+    x_plane_get_orientation(&trace.collisionPlane, cam, &wallOrientation);
+    portal_init(portal, trace.collisionPoint, &wallOrientation);
+}
+
+void handle_test_portal(Portal* portal, X_EngineContext* engineContext, X_CameraObject* cam)
+{
+    X_RenderContext renderContext;
+    x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+    
+    if(x_keystate_key_down(&engineContext->keystate, 'k'))
+        shoot_portal(portal, engineContext, cam);
+    
+    if(portal->portalOnWall)
+        x_polygon3_render_wireframe(&portal->geometry, &renderContext, 255);
+    
+    x_mat4x4_visualize(&portal->wallOrientation, x_vec3_origin(), &renderContext);
+}
+
 void gameloop(Context* context)
 {
-    X_Mat4x4 identity;
-    x_mat4x4_load_identity(&identity);
+    Portal portal;
+    portal.portalOnWall = 0;
+    x_mat4x4_load_identity(&portal.wallOrientation);
     
     while(!context->quit)
     {
         render(context);
-        
-
-        X_RenderContext renderContext;
-        x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
-        
-        X_BoundSphere sphere = { x_cameraobject_get_position(context->cam), x_fp16x16_from_int(30) };
-        
-        X_BspNode* nodes[100];
-        int total = x_bsplevel_find_nodes_intersecting_sphere(renderContext.level, &sphere, nodes + 0);
-
-        for(int i = 0; i < total; ++i)
-        {
-            X_BspNode* node = nodes[i];
-            
-            for(int j = 0; j < node->totalSurfaces; ++j) {
-                X_BspSurface* s = node->firstSurface + j;
-                
-                X_Texture tex;
-                
-                for(int k = 0; k < 4; ++k)
-                {
-                    x_bspsurface_get_surface_texture_for_mip_level(s, k, renderContext.renderer, &tex);
-                    
-                    //memset(tex.texels, 255, tex.w * tex.h);
-                }
-            }
-        }
-        
-        if(x_keystate_key_down(&context->engineContext->keystate, 'k'))
-        {
-            X_Vec3 camPos = x_cameraobject_get_position(context->cam);
-            
-            X_Vec3 forward, up, right;
-            x_mat4x4_extract_view_vectors(&context->cam->viewMatrix, &forward, &right, &up);
-            
-            X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
-            
-            X_RayTracer trace;
-            x_raytracer_init(&trace, &context->engineContext->currentLevel, &camPos, &end, NULL);
-            trace.rootClipNode = 0;
-            
-            if(x_raytracer_trace(&trace))
-            {
-                plane_get_orientation(&trace.collisionPlane, &identity, context->cam);
-                
-                create_portal(&identity, trace.collisionPoint);
-            }
-            
-        }
-        
-        if(portalOnWall)
-        {
-            x_polygon3_render_wireframe(&p, &renderContext, 255);
-        }
-        
-        mat4x4_visualize(&identity, &renderContext);
-        
+        handle_test_portal(&portal, context->engineContext, context->cam);
         handle_keys(context);
         screen_update(context);
     }    

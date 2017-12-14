@@ -17,6 +17,7 @@
 
 #include "X_Plane.h"
 #include "math/X_fix.h"
+#include "object/X_CameraObject.h"
 
 void x_plane_init_from_three_points(X_Plane* plane, const X_Vec3* a, const X_Vec3* b, const X_Vec3* c)
 {
@@ -38,5 +39,46 @@ void x_plane_print(const X_Plane* plane)
     float d = x_fp16x16_to_float(plane->d);
     
     printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, d);
+}
+
+void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest)
+{
+    X_Vec3 temp = plane->normal;
+    temp.y = 0;
+    
+    X_Mat4x4 mat;
+    x_mat4x4_load_y_rotation(&mat, X_ANG_270);
+    
+    X_Vec3 right, up;
+    
+    if(abs(plane->normal.y) != X_FP16x16_ONE)
+    {
+        x_mat4x4_transform_vec3(&mat, &temp, &right);
+        x_vec3_normalize(&right);
+        
+        up = x_vec3_cross(&plane->normal, &right);
+    }
+    else
+    {
+        // Pick the vectors from the cam direction
+        X_Vec3 temp;
+        x_mat4x4_extract_view_vectors(&cam->viewMatrix, &up, &right, &temp);
+        
+        right.y = 0;
+        x_vec3_normalize(&right);
+        
+        up.y = 0;
+        x_vec3_normalize(&up);
+    }
+    
+    x_mat4x4_load_identity(dest);
+    
+    X_Vec4 up4 = x_vec4_from_vec3(&up);
+    X_Vec4 right4 = x_vec4_from_vec3(&right);
+    X_Vec4 forward4 = x_vec4_from_vec3(&plane->normal);
+    
+    x_mat4x4_set_column(dest, 0, &right4);
+    x_mat4x4_set_column(dest, 1, &up4);
+    x_mat4x4_set_column(dest, 2, &forward4);
 }
 
