@@ -33,7 +33,7 @@ static inline void scale_components_to_less_than_one_half(X_Vec3* v)
     }
 }
 
-void x_vec3_fp16x16_normalize(X_Vec3* v)
+void x_vec3_normalize(X_Vec3* v)
 {
     scale_components_to_less_than_one_half(v);
     int len = x_sqrt(v->x * v->x + v->y * v->z + v->z * v->z);

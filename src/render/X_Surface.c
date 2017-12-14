@@ -236,8 +236,8 @@ static void x_surfacebuilder_apply_dynamic_light(X_SurfaceBuilder* builder)
     X_BspFaceTexture* faceTexture = builder->bspSurface->faceTexture;
     X_Vec2 closestIn2D = x_vec2_make
     (
-        x_fp16x16_to_int(x_vec3_fp16x16_dot(&closestPoint, &faceTexture->uOrientation) + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x),
-        x_fp16x16_to_int(x_vec3_fp16x16_dot(&closestPoint, &faceTexture->vOrientation) + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y)
+        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->uOrientation) + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x),
+        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->vOrientation) + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y)
     );
     
     for(int i = 0; i < builder->lightmapSize.y; ++i)

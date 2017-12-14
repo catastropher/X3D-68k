@@ -22,7 +22,7 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
 {
     dest->totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_fp16x16_dot(&plane->normal, src->vertices + 0);
+    x_fp16x16 dot = x_vec3_dot(&plane->normal, src->vertices + 0);
     _Bool in = dot >= -plane->d;
     
     for(int i = 0; i < src->totalVertices; ++i)
@@ -32,7 +32,7 @@ _Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Po
         if(in)
             dest->vertices[dest->totalVertices++] = src->vertices[i];
         
-        x_fp16x16 nextDot = x_vec3_fp16x16_dot(&plane->normal, src->vertices + next);
+        x_fp16x16 nextDot = x_vec3_dot(&plane->normal, src->vertices + next);
         _Bool nextIn = nextDot >= -plane->d;
         int dotDiff = nextDot - dot;
         
@@ -56,7 +56,7 @@ _Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3* src, const X_P
 {
     dest->totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_fp16x16_dot(&plane->normal, src->vertices + 0);
+    x_fp16x16 dot = x_vec3_dot(&plane->normal, src->vertices + 0);
     _Bool in = dot >= -plane->d;
     
     for(int i = 0; i < src->totalVertices; ++i)
@@ -69,7 +69,7 @@ _Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3* src, const X_P
             *edgeIdsDest++ = edgeIds[i];
         }
         
-        x_fp16x16 nextDot = x_vec3_fp16x16_dot(&plane->normal, src->vertices + next);
+        x_fp16x16 nextDot = x_vec3_dot(&plane->normal, src->vertices + next);
         _Bool nextIn = nextDot >= -plane->d;
         int dotDiff = nextDot - dot;
         

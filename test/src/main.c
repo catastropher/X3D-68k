@@ -41,9 +41,9 @@ void plane_get_orientation(X_Plane* plane, X_Mat4x4* dest, X_CameraObject* cam)
     if(abs(plane->normal.y) != X_FP16x16_ONE)
     {
         x_mat4x4_transform_vec3_fp16x16(&mat, &temp, &right);
-        x_vec3_fp16x16_normalize(&right);
+        x_vec3_normalize(&right);
         
-        up = x_vec3_fp16x16_cross(&plane->normal, &right);
+        up = x_vec3_cross(&plane->normal, &right);
     }
     else
     {
@@ -52,10 +52,10 @@ void plane_get_orientation(X_Plane* plane, X_Mat4x4* dest, X_CameraObject* cam)
         x_mat4x4_extract_view_vectors(&cam->viewMatrix, &up, &right, &temp);
         
         right.y = 0;
-        x_vec3_fp16x16_normalize(&right);
+        x_vec3_normalize(&right);
         
         up.y = 0;
-        x_vec3_fp16x16_normalize(&up);
+        x_vec3_normalize(&up);
     }
     
     x_mat4x4_load_identity(dest);
@@ -82,7 +82,7 @@ void create_portal(X_Mat4x4* mat, X_Vec3 center)
         x_vec3_make(w, -h, 0)
     };
 
-    X_Vec3_int c = x_vec3_fp16x16_to_vec3(&center);
+    X_Vec3_int c = x_vec3_to_vec3_int(&center);
     
     for(int i = 0; i < 4; ++i)
     {
@@ -107,7 +107,7 @@ void mat4x4_visualize(X_Mat4x4* mat, X_RenderContext* renderContext)
         
         X_Vec3 end = x_vec3_scale_int(&v3, 50);
         
-        X_Ray3 r = x_ray3_make(x_vec3_origin(), x_vec3_fp16x16_to_vec3(&end));
+        X_Ray3 r = x_ray3_make(x_vec3_origin(), x_vec3_to_vec3_int(&end));
         x_ray3_render(&r, renderContext, color[i]);
     }
 }

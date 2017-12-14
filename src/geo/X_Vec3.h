@@ -55,13 +55,13 @@ typedef struct X_Vec3_short
     short z;
 } X_Vec3_short;
 
-void x_vec3_fp16x16_normalize(X_Vec3* v);
+void x_vec3_normalize(X_Vec3* v);
 void x_vec3_fp16x16_print(const X_Vec3* v, const char* label);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns a 3D vector with the given coordinates.
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_make(int x, int y, int z)
+static inline X_Vec3 x_vec3_make(x_fp16x16 x, x_fp16x16 y, x_fp16x16 z)
 {
     return (X_Vec3) { x, y, z };
 }
@@ -163,13 +163,13 @@ static inline _Bool x_vec3_equal(const X_Vec3* a, const X_Vec3* b)
     return a->x == b->y && a->y == b->y && a->z == b->z;
 }
 
-static inline x_fp16x16 x_vec3_fp16x16_dot(const X_Vec3* a, const X_Vec3* b)
+static inline x_fp16x16 x_vec3_dot(const X_Vec3* a, const X_Vec3* b)
 {
     return x_fp16x16_mul(a->x, b->x) + x_fp16x16_mul(a->y, b->y) + x_fp16x16_mul(a->z, b->z);
 }
 
 
-static inline X_Vec3 x_vec3_fp16x16_cross(const X_Vec3* a, const X_Vec3* b)
+static inline X_Vec3 x_vec3_cross(const X_Vec3* a, const X_Vec3* b)
 {
     return x_vec3_make(
         x_fp16x16_mul(a->y, b->z) - x_fp16x16_mul(b->y, a->z),
@@ -186,11 +186,11 @@ static inline X_Vec3 x_vec3_fp16x16_cross(const X_Vec3* a, const X_Vec3* b)
 ////////////////////////////////////////////////////////////////////////////////
 static inline _Bool x_vec3_is_orthogonal_to(const X_Vec3* a, const X_Vec3* b)
 {
-    return x_vec3_fp16x16_dot(a, b) == 0;
+    return x_vec3_dot(a, b) == 0;
 }
 
 
-static inline x_fp16x16 x_vec3_fp16x16_length(const X_Vec3* v)
+static inline x_fp16x16 x_vec3_length(const X_Vec3* v)
 {
     return x_sqrt(x_fp16x16_mul(v->x, v->x) + x_fp16x16_mul(v->y, v->y) + x_fp16x16_mul(v->z, v->z)) << 8;
 }
@@ -201,22 +201,22 @@ static inline X_Vec3_float x_vec3_float_make(float x, float y, float z)
     return (X_Vec3_float) { x, y, z };
 }
 
-static inline X_Vec3_int x_vec3_fp16x16_to_vec3(const X_Vec3* src)
+static inline X_Vec3_int x_vec3_to_vec3_int(const X_Vec3* src)
 {
     return (X_Vec3_int) { src->x >> 16, src->y >> 16, src->z >> 16 };
 }
 
-static inline X_Vec3 x_vec3_to_vec3_fp16x16(const X_Vec3_int* src)
+static inline X_Vec3 x_vec3_int_to_vec3(const X_Vec3_int* src)
 {
     return x_vec3_make(src->x << 16, src->y << 16, src->z << 16);
 }
 
-static inline X_Vec3 x_vec3_float_to_vec3(const X_Vec3_float* v)
+static inline X_Vec3 x_vec3_float_to_vec3_int(const X_Vec3_float* v)
 {
-    return x_vec3_make(v->x, v->y, v->z);
+    return (X_Vec3_int) { v->x, v->y, v->z };
 }
 
-static inline X_Vec3 x_vec3_float_to_vec3_fp16x16(const X_Vec3_float* v)
+static inline X_Vec3 x_vec3_float_to_vec3(const X_Vec3_float* v)
 {
     return x_vec3_make(v->x * 65536, v->y * 65536, v->z * 65536);
 }

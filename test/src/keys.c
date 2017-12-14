@@ -174,7 +174,7 @@ void handle_console_keys(X_EngineContext* context)
 static void keep_horizontal_component(X_Vec3* v)
 {
     v->y = 0;
-    x_vec3_fp16x16_normalize(v);
+    x_vec3_normalize(v);
 }
 
 static x_fp16x16 get_forward_component(X_KeyState* keyState)
@@ -218,7 +218,7 @@ static X_Vec3 get_movement_key_vector(X_CameraObject* cam, X_KeyState* keyState,
     if(totalVelocity.x == 0 && totalVelocity.y == 0 && totalVelocity.z == 0)
         return totalVelocity;
     
-    x_vec3_fp16x16_normalize(&totalVelocity);
+    x_vec3_normalize(&totalVelocity);
     totalVelocity = x_vec3_fp16x16_scale(&totalVelocity, g_Context->moveSpeed);
     
     return totalVelocity;
@@ -305,7 +305,7 @@ _Bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* c
     if(x_engine_level_is_loaded(engineContext) && physics)
     {
         X_Vec3 camPos = x_cameraobject_get_position(cam);
-        X_Vec3_int posSmall = x_vec3_fp16x16_to_vec3(&camPos);
+        X_Vec3_int posSmall = x_vec3_to_vec3_int(&camPos);
         
         if(x_bsplevel_find_leaf_point_is_in(&engineContext->currentLevel, &posSmall)->contents != X_BSPLEAF_SOLID)
             return 0;

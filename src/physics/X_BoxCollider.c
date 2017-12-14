@@ -35,7 +35,7 @@ static void apply_gravity(X_BoxCollider* collider)
 
 static void apply_friction(X_BoxCollider* collider)
 {
-    x_fp16x16 currentSpeed = x_vec3_fp16x16_length(&collider->velocity);
+    x_fp16x16 currentSpeed = x_vec3_length(&collider->velocity);
     if(currentSpeed == 0)
         return;
     
@@ -84,7 +84,7 @@ typedef enum IterationFlags
 
 static void adjust_velocity_to_slide_along_wall(X_Vec3* velocity, X_Plane* plane, x_fp16x16 bounceCoefficient)
 {
-    x_fp16x16 dot = x_vec3_fp16x16_dot(&plane->normal, velocity);
+    x_fp16x16 dot = x_vec3_dot(&plane->normal, velocity);
     *velocity = x_vec3_add_scaled(velocity, &plane->normal, -x_fp16x16_mul(dot, bounceCoefficient));
 }
 

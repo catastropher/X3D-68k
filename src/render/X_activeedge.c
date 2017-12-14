@@ -268,7 +268,7 @@ static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* su
     X_Vec3 planeNormal = surface->plane->plane.normal;
 
     x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
-    dest->d = surface->plane->plane.d + x_vec3_fp16x16_dot(&planeNormal, camPos);
+    dest->d = surface->plane->plane.d + x_vec3_dot(&planeNormal, camPos);
 }
 
 static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix)

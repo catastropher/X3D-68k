@@ -52,7 +52,7 @@ static void x_boundbox_convert_coordinate(X_BoundBox* box)
     temp.v[1].z = X_MAX(box->v[0].z, box->v[1].z);
     
     for(int i = 0; i < 2; ++i)
-        temp.v[i] = x_vec3_to_vec3_fp16x16(temp.v + i);
+        temp.v[i] = x_vec3_int_to_vec3(temp.v + i);
     
     *box = temp;
 }
@@ -100,14 +100,14 @@ static void x_bsploaderfacetexture_read_from_file(X_BspLoaderFaceTexture* faceTe
     X_Vec3_float u;
     x_file_read_vec3_float(file, &u);
     u = x_bsplevelloader_convert_coordinate_float(&u);
-    faceTexture->uOrientation = x_vec3_float_to_vec3_fp16x16(&u);
+    faceTexture->uOrientation = x_vec3_float_to_vec3(&u);
     faceTexture->uOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
     
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);
     v = x_bsplevelloader_convert_coordinate_float(&v);
     
-    faceTexture->vOrientation = x_vec3_float_to_vec3_fp16x16(&v);
+    faceTexture->vOrientation = x_vec3_float_to_vec3(&v);
     faceTexture->vOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
     
     faceTexture->textureId = x_file_read_le_int32(file);
@@ -120,7 +120,7 @@ static void x_bsploaderplane_read_from_file(X_BspLoaderPlane* plane, X_File* fil
     x_file_read_vec3_float(file, &normal);
     normal = x_bsplevelloader_convert_coordinate_float(&normal);
     
-    plane->plane.normal = x_vec3_float_to_vec3_fp16x16(&normal);
+    plane->plane.normal = x_vec3_float_to_vec3(&normal);
     
     float dist = x_file_read_le_float32(file);
     plane->plane.d = -x_fp16x16_from_float(dist);
@@ -134,7 +134,7 @@ static void x_bsploadervertex_read_from_file(X_BspLoaderVertex* vertex, X_File* 
     x_file_read_vec3_float(file, &v);
     
     v = x_bsplevelloader_convert_coordinate_float(&v);
-    vertex->v = x_vec3_float_to_vec3_fp16x16(&v);
+    vertex->v = x_vec3_float_to_vec3(&v);
 }
 
 static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)
@@ -536,8 +536,8 @@ static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* 
 {
     return x_vec2_make
     (
-        x_vec3_fp16x16_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
-        x_vec3_fp16x16_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
+        x_vec3_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
+        x_vec3_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
      );
 }
 
@@ -797,7 +797,7 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspS
         else
             v = level->vertices[level->edges[-edgeId].v[0]].v;
         
-        x_boundbox_add_point(&node->geoBoundBox, x_vec3_fp16x16_to_vec3(&v));
+        x_boundbox_add_point(&node->geoBoundBox, x_vec3_to_vec3_int(&v));
     }
 }
 
@@ -821,7 +821,7 @@ static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
     node->geoBoundBox.v[1].z = ceil(node->geoBoundBox.v[1].z / SNAP) * SNAP;
     
     for(int i = 0; i < 2; ++i)
-        node->geoBoundBox.v[i] = x_vec3_to_vec3_fp16x16(node->geoBoundBox.v + i);
+        node->geoBoundBox.v[i] = x_vec3_int_to_vec3(node->geoBoundBox.v + i);
     
     x_bspnode_calculate_geo_boundbox(node->frontChild, level);
     x_bspnode_calculate_geo_boundbox(node->backChild, level);

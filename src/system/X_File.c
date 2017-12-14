@@ -315,7 +315,7 @@ void x_file_read_vec3_float_as_fp16x16(X_File* file, X_Vec3* dest)
 {
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);
-    *dest = x_vec3_float_to_vec3_fp16x16(&v);
+    *dest = x_vec3_float_to_vec3(&v);
 }
 
 void x_file_read_vec2(X_File* file, X_Vec2* dest)

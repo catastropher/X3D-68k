@@ -129,7 +129,7 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
         
         for(int j = 0; j < 3; ++j)
         {
-            v[j] = x_vec3_fp16x16_to_vec3(&frame->vertices[tri->vertexIds[j]].v);
+            v[j] = x_vec3_to_vec3_int(&frame->vertices[tri->vertexIds[j]].v);
             
             X_EntityTextureCoord* coord = model->textureCoords + tri->vertexIds[j];
             

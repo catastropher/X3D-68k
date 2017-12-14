@@ -23,11 +23,11 @@ void x_plane_init_from_three_points(X_Plane* plane, const X_Vec3* a, const X_Vec
     X_Vec3 v1 = x_vec3_sub(a, b);
     X_Vec3 v2 = x_vec3_sub(c, b);
 
-    x_vec3_fp16x16_normalize(&v1);
-    x_vec3_fp16x16_normalize(&v2);
+    x_vec3_normalize(&v1);
+    x_vec3_normalize(&v2);
     
-    plane->normal = x_vec3_fp16x16_cross(&v1, &v2);
-    plane->d = -x_vec3_fp16x16_dot(&plane->normal, a);
+    plane->normal = x_vec3_cross(&v1, &v2);
+    plane->d = -x_vec3_dot(&plane->normal, a);
 }
 
 void x_plane_print(const X_Plane* plane)
