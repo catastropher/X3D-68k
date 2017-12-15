@@ -145,6 +145,16 @@ static inline X_Vec3 x_vec3_scale_int(const X_Vec3* v, int scale)
     );
 }
 
+static inline X_Vec3 x_vec3_scale(const X_Vec3* v, x_fp16x16 scale)
+{
+    return x_vec3_make
+    (
+        x_fp16x16_mul(v->x, scale),
+        x_fp16x16_mul(v->y, scale),
+        x_fp16x16_mul(v->z, scale)
+    );
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Negates a 3D vector (flips its direction).
 /// @return -v

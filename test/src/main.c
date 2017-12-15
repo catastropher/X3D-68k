@@ -108,6 +108,54 @@ void handle_test_portal(Portal* portal, X_EngineContext* engineContext, X_Camera
     x_mat4x4_visualize(&portal->wallOrientation, x_vec3_origin(), &renderContext);
 }
 
+X_Texture paint;
+
+void apply_paint_to_surface(X_BspSurface* surface, X_Vec3* pos, X_EngineContext* engineContext)
+{
+    X_Vec3* normal = &surface->plane->plane.normal;
+    X_Vec3 offset = x_vec3_scale(normal, x_plane_point_distance(&surface->plane->plane, pos));
+    X_Vec3 pointOnPlane = x_vec3_sub(pos, &offset);
+    
+    X_BspFaceTexture* tex = surface->faceTexture;
+    int u = x_fp16x16_to_int(x_vec3_dot(&pointOnPlane, &tex->uOrientation) + tex->uOffset - surface->textureMinCoord.x);
+    int v = x_fp16x16_to_int(x_vec3_dot(&pointOnPlane, &tex->vOrientation) + tex->vOffset - surface->textureMinCoord.y);
+    
+    
+    for(int i = 0; i < 4; ++i)
+    {
+        X_Vec2_fp16x16 uOrientation = x_vec2_make(X_FP16x16_ONE >> i, 0);
+        X_Vec2_fp16x16 vOrientation = x_vec2_make(0, X_FP16x16_ONE >> i);
+        
+        X_Texture surfaceTex;
+        x_bspsurface_get_surface_texture_for_mip_level(surface, 0, &engineContext->renderer, &surfaceTex);
+        
+        x_texture_draw_decal(&surfaceTex, &paint, x_vec2_make(u, v), &uOrientation, &vOrientation, 255);
+    }
+}
+
+void apply_paint_to_node(X_BspNode* node, X_Vec3* pos, X_EngineContext* engineContext)
+{
+    
+    for(int i = 0; i < node->totalSurfaces; ++i)
+    {
+        apply_paint_to_surface(node->firstSurface + i, pos, engineContext);
+    }
+}
+
+void apply_paint(X_EngineContext* engineContext, X_CameraObject* cam)
+{
+    X_BoundSphere sphere;
+    sphere.center = x_cameraobject_get_position(cam);
+    sphere.radius = x_fp16x16_from_int(32);
+    
+    X_BspNode* nodes[100];
+    
+    int totalNodes = x_bsplevel_find_nodes_intersecting_sphere(&engineContext->currentLevel, &sphere, nodes);
+    
+    for(int i = 0; i < totalNodes; ++i)
+        apply_paint_to_node(nodes[i], &sphere.center, engineContext);
+}
+
 void gameloop(Context* context)
 {
     Portal portal;
@@ -118,6 +166,9 @@ void gameloop(Context* context)
     x_bsplevel_get_texture(&context->engineContext->currentLevel, 0, 0, &tex);
     
     int angle = 0;
+    
+    x_texture_init(&paint, 32, 32);
+    x_texture_fill(&paint, 255);
     
     while(!context->quit)
     {
@@ -134,9 +185,9 @@ void gameloop(Context* context)
         v.x *= scale;
         v.y *= scale;
         
-        x_texture_draw_decal(&context->engineContext->screen.canvas, &tex, x_vec2_make(640 / 2, 480 / 2), &u, &v, 255);
-        
         angle += X_FP16x16_ONE / 4;
+        
+        apply_paint(context->engineContext, context->cam);
         
         handle_keys(context);
         screen_update(context);
