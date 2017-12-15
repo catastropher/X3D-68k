@@ -234,13 +234,35 @@ static void init_slope_with_error_correction(x_fp16x16 x0, x_fp16x16 y0, x_fp16x
     *x = x0 - errorCorrection;
 }
 
-static _Bool x_decaledge_init(X_DecalEdge* edge, X_Vec2_fp16x16* v, X_Vec2_fp16x16* texCoords, int aIndex, int bIndex)
+static void clip_edge(X_DecalEdge* edge, x_fp16x16 canvasHeight)
+{
+    if(edge->endY >= x_fp16x16_to_int(canvasHeight))
+        edge->endY = x_fp16x16_to_int(canvasHeight - X_FP16x16_ONE);
+    
+    if(edge->startY < 0)
+    {
+        int dY = -edge->startY;
+        edge->x += edge->xSlope * dY;
+        edge->u += edge->uSlope * dY;
+        edge->v += edge->vSlope * dY;
+        edge->startY = 0;
+    }
+        
+}
+
+static _Bool x_decaledge_init(X_DecalEdge* edge, X_Vec2_fp16x16* v, X_Vec2_fp16x16* texCoords, int aIndex, int bIndex, x_fp16x16 canvasHeight)
 {
     x_fp16x16 aY = x_fp16x16_ceil(v[aIndex].y);
     x_fp16x16 bY = x_fp16x16_ceil(v[bIndex].y);
     
     x_fp16x16 height = bY - aY;
     if(height == 0)
+        return 0;
+    
+    if(aY < 0 && bY < 0)
+        return 0;
+    
+    if(aY >= canvasHeight && bY >= canvasHeight)
         return 0;
     
     edge->isLeadingEdge = (height < 0);
@@ -254,6 +276,8 @@ static _Bool x_decaledge_init(X_DecalEdge* edge, X_Vec2_fp16x16* v, X_Vec2_fp16x
     
     edge->startY = x_fp16x16_to_int(x_fp16x16_ceil(v[aIndex].y));
     edge->endY = x_fp16x16_to_int(x_fp16x16_ceil(v[bIndex].y)) - 1;
+    
+    clip_edge(edge, canvasHeight);
     
     return 1;
 }
@@ -276,12 +300,12 @@ void insert_edge(X_DecalEdge* head, X_DecalEdge* edge)
     head->next = edge;
 }
 
-static void add_edges(X_DecalEdge* edges, X_Vec2_fp16x16* v, X_Vec2_fp16x16* texCoords, X_DecalEdge* leftHead, X_DecalEdge* rightHead)
+static void add_edges(X_DecalEdge* edges, X_Vec2_fp16x16* v, X_Vec2_fp16x16* texCoords, X_DecalEdge* leftHead, X_DecalEdge* rightHead, x_fp16x16 canvasHeight)
 {    
     for(int i = 0; i < 4; ++i)
     {
         int next = (i + 1 < 4 ? i + 1 : 0);
-        if(!x_decaledge_init(edges + i, v, texCoords, i, next))
+        if(!x_decaledge_init(edges + i, v, texCoords, i, next, canvasHeight))
             continue;
      
         if(edges[i].isLeadingEdge)
@@ -296,13 +320,22 @@ static void draw_span(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_
     int xLeft = x_fp16x16_to_int(left->x);
     int xRight = x_fp16x16_to_int(right->x);
     
-    int dx = X_MAX(xRight - xLeft, 1);
+    int dX = X_MAX(xRight - xLeft, 1);
     
     x_fp16x16 u = left->u;
-    x_fp16x16 dU = (right->u - left->u) / dx;
+    x_fp16x16 dU = (right->u - left->u) / dX;
     
     x_fp16x16 v = left->v;
-    x_fp16x16 dV = (right->v - left->v) / dx;
+    x_fp16x16 dV = (right->v - left->v) / dX;
+    
+    if(xLeft < 0)
+    {
+        u -= xLeft * dU;
+        v -= xLeft * dV;
+        xLeft = 0;
+    }
+    
+    xRight = X_MIN(xRight, canvas->w - 1);
     
     for(int i = xLeft; i <= xRight; ++i)
     {
@@ -358,8 +391,9 @@ void x_texture_draw_decal(X_Texture* canvas, X_Texture* decal, X_Vec2 pos, X_Vec
     calculate_texture_coordinates(texCoords, decal);
     
     X_DecalEdge edges[4];
-    add_edges(edges, v, texCoords, &leftHead, &rightHead);
+    add_edges(edges, v, texCoords, &leftHead, &rightHead, x_fp16x16_from_int(canvas->h));
     
-    scan_edges(canvas, decal,leftHead.next, rightHead.next);
+    if(leftHead.next != &leftTail)
+        scan_edges(canvas, decal,leftHead.next, rightHead.next);
 }
 

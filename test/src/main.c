@@ -127,7 +127,7 @@ void gameloop(Context* context)
         X_Vec2_fp16x16 u = { x_cos(angle), x_sin(angle) };
         X_Vec2_fp16x16 v = { -x_sin(angle), x_cos(angle) };
         
-        int scale = 4;
+        int scale = 20;
         u.x *= scale;
         u.y *= scale;
         
