@@ -114,10 +114,30 @@ void gameloop(Context* context)
     portal.portalOnWall = 0;
     x_mat4x4_load_identity(&portal.wallOrientation);
     
+    X_Texture tex;
+    x_bsplevel_get_texture(&context->engineContext->currentLevel, 0, 0, &tex);
+    
+    int angle = 0;
+    
     while(!context->quit)
     {
         render(context);
         handle_test_portal(&portal, context->engineContext, context->cam);
+        
+        X_Vec2_fp16x16 u = { x_cos(angle), x_sin(angle) };
+        X_Vec2_fp16x16 v = { -x_sin(angle), x_cos(angle) };
+        
+        int scale = 4;
+        u.x *= scale;
+        u.y *= scale;
+        
+        v.x *= scale;
+        v.y *= scale;
+        
+        x_texture_draw_decal(&context->engineContext->screen.canvas, &tex, x_vec2_make(640 / 2, 480 / 2), &u, &v, 255);
+        
+        angle += X_FP16x16_ONE / 4;
+        
         handle_keys(context);
         screen_update(context);
     }    

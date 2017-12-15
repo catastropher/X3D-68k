@@ -309,7 +309,7 @@ static void mark_lights(X_EngineContext* context)
 static void fill_with_background_color(X_EngineContext* engineContext)
 {
     if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
-       x_canvas_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+       x_texture_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
 }
 
 static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engineContext)
