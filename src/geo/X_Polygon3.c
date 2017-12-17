@@ -94,6 +94,62 @@ _Bool x_polygon3_fp16x16_clip_to_plane_edge_ids(const X_Polygon3* src, const X_P
     return dest->totalVertices > 2;
 }
 
+void x_polygon3_split_along_plane(X_Polygon3* src, const X_Plane* plane, int* edgeIds, X_Polygon3* frontSide, int* frontEdgeIds, X_Polygon3* backSide, int* backEdgeIds)
+{
+    frontSide->totalVertices = 0;
+    backSide->totalVertices = 0;
+    
+    x_fp16x16 dot = x_vec3_dot(&plane->normal, src->vertices + 0);
+    _Bool in = dot >= -plane->d;
+    
+    for(int i = 0; i < src->totalVertices; ++i)
+    {
+        int next = (i + 1 < src->totalVertices ? i + 1 : 0);
+        
+        if(in)
+        {
+            frontSide->vertices[frontSide->totalVertices++] = src->vertices[i];
+            *frontEdgeIds++ = 0;//edgeIds[i];
+        }
+        else
+        {
+            backSide->vertices[backSide->totalVertices++] = src->vertices[i];
+            *backEdgeIds++ = 0;//edgeIds[i];
+        }
+        
+        x_fp16x16 nextDot = x_vec3_dot(&plane->normal, src->vertices + next);
+        _Bool nextIn = nextDot >= -plane->d;
+        int dotDiff = nextDot - dot;
+        
+        if(in != nextIn && dotDiff != 0)
+        {
+            x_fp16x16 scale = x_fp16x16_div(-plane->d - dot, dotDiff);
+            X_Ray3_fp16x16 ray = x_ray3_make(src->vertices[i], src->vertices[next]);
+            
+            x_ray3_lerp(&ray, scale, frontSide->vertices + frontSide->totalVertices);
+            backSide->vertices[backSide->totalVertices] = frontSide->vertices[frontSide->totalVertices];
+            
+            
+            if(in)
+            {
+                *frontEdgeIds++ = 0;    // Create a new edge
+                *backEdgeIds++ = 0;
+            }
+            else
+            {
+                *frontEdgeIds++ = 0;// edgeIds[i];
+                *backEdgeIds++ = 0;//edgeIds[i];
+            }
+            
+            ++frontSide->totalVertices;
+            ++backSide->totalVertices;
+        }
+        
+        dot = nextDot;
+        in = nextIn;        
+    }
+}
+
 void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color)
 {
     for(int i = 0; i < poly->totalVertices; ++i)

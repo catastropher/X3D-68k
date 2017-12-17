@@ -404,6 +404,19 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
+static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, X_Polygon3* dest)
+{
+    dest->totalVertices = 0;
+    
+    for(int i = 0; i < totalEdges; ++i)
+    {
+        if(!edge_is_flipped(edgeIds[i]))
+            dest->vertices[dest->totalVertices++] = level->vertices[level->edges[edgeIds[i]].v[0]].v;
+        else
+            dest->vertices[dest->totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
+    }
+}
+
 void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     if((context->renderContext->renderer->renderMode & 2) == 0)
@@ -422,15 +435,44 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
         geoFlags = (1 << context->renderContext->viewFrustum->totalPlanes) - 1;
     }
 
-    for(int i = 0; i < totalEdges; ++i)
-    {
-        if(!edge_is_flipped(edgeIds[i]))
-            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[edgeIds[i]].v[0]].v;
-        else
-            polygon.vertices[polygon.totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
-    }
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon);
 
     x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags, edgeIds, bspKey);
+}
+
+static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, X_Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
+{
+    if(poly->totalVertices < 3)
+        return;
+    
+    if(x_bspnode_is_leaf(node))
+    {
+        x_ae_context_add_polygon(context, poly, bspSurface, geoFlags, edgeIds, bspKey);
+        return;
+    }
+    
+    X_Vec3 frontVertices[32];
+    X_Vec3 backVertices[32];
+    int frontEdges[32];
+    int backEdges[32];
+    
+    X_Polygon3 front = x_polygon3_make(frontVertices, 32);
+    X_Polygon3 back = x_polygon3_make(backVertices, 32);
+    
+    x_polygon3_split_along_plane(poly, &node->plane->plane, edgeIds, &front, frontEdges, &back, backEdges);
+    
+    x_ae_context_add_submodel_polygon_recursive(context, &front, node->frontChild, frontEdges, bspSurface, geoFlags, bspKey);
+    x_ae_context_add_submodel_polygon_recursive(context, &back, node->backChild, backEdges, bspSurface, geoFlags, bspKey);
+}
+
+void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
+{
+    X_Vec3 v3d[X_POLYGON3_MAX_VERTS];
+    
+    X_Polygon3 poly = x_polygon3_make(v3d, X_POLYGON3_MAX_VERTS);
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly);
+    
+    x_ae_context_add_submodel_polygon_recursive(context, &poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
 }
 
 static void x_ae_context_emit_span(int left, int right, int y, X_AE_Surface* surface)

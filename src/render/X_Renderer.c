@@ -266,7 +266,7 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_renderer_set_default_values(renderer, screen, fov);
     
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
-    x_cache_init(&renderer->surfaceCache, 3000000, "surfacecache");     // TODO: this size should be configurable
+    x_cache_init(&renderer->surfaceCache, 3000000 * 2, "surfacecache");     // TODO: this size should be configurable
     
     x_renderer_init_colormap(renderer, screen->palette);
     x_renderer_init_dynamic_lights(renderer);

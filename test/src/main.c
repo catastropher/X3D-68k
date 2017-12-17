@@ -117,19 +117,20 @@ void apply_paint_to_surface(X_BspSurface* surface, X_Vec3* pos, X_EngineContext*
     X_Vec3 pointOnPlane = x_vec3_sub(pos, &offset);
     
     X_BspFaceTexture* tex = surface->faceTexture;
-    int u = x_fp16x16_to_int(x_vec3_dot(&pointOnPlane, &tex->uOrientation) + tex->uOffset - surface->textureMinCoord.x);
-    int v = x_fp16x16_to_int(x_vec3_dot(&pointOnPlane, &tex->vOrientation) + tex->vOffset - surface->textureMinCoord.y);
     
     
     for(int i = 0; i < 4; ++i)
     {
+        int u = x_fp16x16_to_int(x_vec3_dot(&pointOnPlane, &tex->uOrientation) + tex->uOffset - surface->textureMinCoord.x);
+        int v = x_fp16x16_to_int(x_vec3_dot(&pointOnPlane, &tex->vOrientation) + tex->vOffset - surface->textureMinCoord.y);
+        
         X_Vec2_fp16x16 uOrientation = x_vec2_make(X_FP16x16_ONE >> i, 0);
         X_Vec2_fp16x16 vOrientation = x_vec2_make(0, X_FP16x16_ONE >> i);
         
         X_Texture surfaceTex;
-        x_bspsurface_get_surface_texture_for_mip_level(surface, 0, &engineContext->renderer, &surfaceTex);
+        x_bspsurface_get_surface_texture_for_mip_level(surface, i, &engineContext->renderer, &surfaceTex);
         
-        x_texture_draw_decal(&surfaceTex, &paint, x_vec2_make(u, v), &uOrientation, &vOrientation, 255);
+        x_texture_draw_decal(&surfaceTex, &paint, x_vec2_make(u >> i, v >> i), &uOrientation, &vOrientation, x_palette_get_quake_palette()->lightBlue);
     }
 }
 
@@ -156,6 +157,84 @@ void apply_paint(X_EngineContext* engineContext, X_CameraObject* cam)
         apply_paint_to_node(nodes[i], &sphere.center, engineContext);
 }
 
+void fill_with_checkerboard(X_Texture* tex)
+{
+    int size = 8;
+    
+    for(int i = 0; i < tex->h; ++i)
+    {
+        for(int j = 0; j < tex->w; ++j)
+        {
+            int x = j / size;
+            int y = i / size;
+            X_Color color;
+            
+            if((x % 2) == (y % 2))
+                color = x_palette_get_quake_palette()->white;
+            else
+                color = x_palette_get_quake_palette()->black;
+            
+            x_texture_set_texel(tex, j, i, color);
+        }
+    }
+}
+
+void fill_circle(X_Texture* tex, X_Color color, X_Color background)
+{    
+    int r = X_MIN(tex->w, tex->h) / 2;
+    
+    for(int i = 0; i < tex->h; ++i)
+    {
+        for(int j = 0; j < tex->w; ++j)
+        {
+            int dx = j - r;
+            int dy = i - r;
+            
+            if(dx * dx + dy * dy < r * r)
+                x_texture_set_texel(tex, j, i, color);
+            else
+                x_texture_set_texel(tex, j, i, background);
+        }
+    }
+}
+
+void add_count(X_Texture* tex, int x, int y, int* r, int* g, int* b, int* total)
+{
+    if(x < 0 || x >= tex->w || y < 0 || y >= tex->h)
+        return;
+    
+    unsigned char rr, gg, bb;
+    x_palette_get_rgb(x_palette_get_quake_palette(), x_texture_get_texel(tex, x, y), &rr, &gg, &bb);
+    
+    *r += rr;
+    *g += gg;
+    *b += bb;
+    *total += 1;
+}
+
+void shrink_antialias(X_Texture* tex, X_Texture* dest)
+{
+    int scale = tex->w / dest->w;
+    
+    for(int i = 0; i < dest->h; ++i)
+    {
+        for(int j = 0; j < dest->w; ++j)
+        {
+            int r = 0, g = 0, b = 0, total = 0;
+            
+            for(int k = -scale / 2; k <= scale / 2; ++k)
+            {
+                for(int d = -scale / 2; d <= scale / 2; ++d)
+                {
+                    add_count(tex, j * scale + d, i * scale + k, &r, &g, &b, &total);
+                }
+            }
+            
+            x_texture_set_texel(dest, j, i, x_palette_get_closest_color_from_rgb(x_palette_get_quake_palette(), r / total, g / total, b / total));
+        }
+    }
+}
+
 void gameloop(Context* context)
 {
     Portal portal;
@@ -168,26 +247,18 @@ void gameloop(Context* context)
     int angle = 0;
     
     x_texture_init(&paint, 32, 32);
-    x_texture_fill(&paint, 255);
+    fill_circle(&paint, x_palette_get_quake_palette()->darkBlue, x_palette_get_quake_palette()->lightBlue);
+
+    //fill_with_checkerboard(&paint);
     
     while(!context->quit)
     {
         render(context);
         handle_test_portal(&portal, context->engineContext, context->cam);
         
-        X_Vec2_fp16x16 u = { x_cos(angle), x_sin(angle) };
-        X_Vec2_fp16x16 v = { -x_sin(angle), x_cos(angle) };
-        
-        int scale = 20;
-        u.x *= scale;
-        u.y *= scale;
-        
-        v.x *= scale;
-        v.y *= scale;
-        
-        angle += X_FP16x16_ONE / 4;
-        
         apply_paint(context->engineContext, context->cam);
+        
+        x_texture_blit_texture(&context->engineContext->screen.canvas, &paint, x_vec2_make(0, 0));
         
         handle_keys(context);
         screen_update(context);

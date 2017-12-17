@@ -315,7 +315,7 @@ static void add_edges(X_DecalEdge* edges, X_Vec2_fp16x16* v, X_Vec2_fp16x16* tex
     }
 }
 
-static void draw_span(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_DecalEdge* right, int y)
+static void draw_span(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_DecalEdge* right, int y, X_Color transparency)
 {
     int xLeft = x_fp16x16_to_int(left->x);
     int xRight = x_fp16x16_to_int(right->x);
@@ -338,9 +338,11 @@ static void draw_span(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_
     xRight = X_MIN(xRight, canvas->w - 1);
     
     for(int i = xLeft; i <= xRight; ++i)
-    {
+    {        
         X_Color texel = x_texture_get_texel(decal, x_fp16x16_to_int(u), x_fp16x16_to_int(v));
-        x_texture_set_texel(canvas, i, y, texel);
+        
+        if(texel != transparency)
+            x_texture_set_texel(canvas, i, y, texel);
         
         u += dU;
         v += dV;
@@ -354,7 +356,7 @@ static void advance_edge(X_DecalEdge* edge)
     edge->v += edge->vSlope;
 }
 
-static void scan_edges(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_DecalEdge* right)
+static void scan_edges(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_DecalEdge* right, X_Color transparency)
 {
     int y = left->startY;
     X_DecalEdge** nextAdvance;
@@ -366,7 +368,7 @@ static void scan_edges(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X
         
         do
         {
-            draw_span(canvas, decal, left, right, y);
+            draw_span(canvas, decal, left, right, y, transparency);
             advance_edge(left);
             advance_edge(right);
             ++y;
@@ -394,6 +396,6 @@ void x_texture_draw_decal(X_Texture* canvas, X_Texture* decal, X_Vec2 pos, X_Vec
     add_edges(edges, v, texCoords, &leftHead, &rightHead, x_fp16x16_from_int(canvas->h));
     
     if(leftHead.next != &leftTail)
-        scan_edges(canvas, decal,leftHead.next, rightHead.next);
+        scan_edges(canvas, decal,leftHead.next, rightHead.next, transparency);
 }
 
