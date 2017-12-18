@@ -305,9 +305,8 @@ _Bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* c
     if(x_engine_level_is_loaded(engineContext) && physics)
     {
         X_Vec3 camPos = x_cameraobject_get_position(cam);
-        X_Vec3_int posSmall = x_vec3_to_vec3_int(&camPos);
         
-        if(x_bsplevel_find_leaf_point_is_in(&engineContext->currentLevel, &posSmall)->contents != X_BSPLEAF_SOLID)
+        if(x_bsplevel_find_leaf_point_is_in(&engineContext->currentLevel, &camPos)->contents != X_BSPLEAF_SOLID)
             return 0;
     }
     

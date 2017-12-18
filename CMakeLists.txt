@@ -95,6 +95,7 @@ set(X3D_SOURCES
     # object
     src/object/X_CameraObject.c
     src/object/X_GameObject.c
+    src/object/X_GameObjectLoader.c
 
     # physics
     src/physics/X_BoxCollider.c

@@ -235,6 +235,8 @@ typedef struct X_BspLevel
     
     unsigned char* lightmapData;
     
+    char* entityDictionary;
+    
     int nextBspKey;
 } X_BspLevel;
 

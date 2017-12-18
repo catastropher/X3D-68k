@@ -248,11 +248,13 @@ void gameloop(Context* context)
     X_Texture tex;
     x_bsplevel_get_texture(&context->engineContext->currentLevel, 0, 0, &tex);
     
+    x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
+    
     int angle = 0;
     
     x_texture_init(&paint, 32, 32);
     fill_circle(&paint, x_palette_get_quake_palette()->darkBlue, x_palette_get_quake_palette()->lightBlue);
-
+    
     //fill_with_checkerboard(&paint);
     
     while(!context->quit)

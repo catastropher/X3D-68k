@@ -69,6 +69,7 @@
 // object
 #include "object/X_CameraObject.h"
 #include "object/X_GameObject.h"
+#include "object/X_GameObjectLoader.h"
 
 // physics
 #include "physics/X_BoxCollider.h"

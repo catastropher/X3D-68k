@@ -398,6 +398,18 @@ static void x_bsplevelloader_load_surfaceedgeids(X_BspLevelLoader* loader)
         loader->surfaceEdgeIds[i] = x_file_read_le_int32(&loader->file);
 }
 
+static void x_bsplevelloader_load_entity_dictionary(X_BspLevelLoader* loader)
+{
+    X_BspLoaderLump* entityDictionaryLump = loader->header.lumps + X_LUMP_ENTITIES;
+    
+    loader->entityDictionary = x_malloc(entityDictionaryLump->length + 1);
+    
+    x_file_seek(&loader->file, entityDictionaryLump->fileOffset);
+    x_file_read_buf(&loader->file, entityDictionaryLump->length, loader->entityDictionary);
+    
+    loader->entityDictionary[entityDictionaryLump->length] = '\0';
+}
+
 static int x_bsploadertexture_calculate_needed_texels_for_mipmaps(X_BspLoaderTexture* tex)
 {
     // w * h + (w / 2) * (h / 2) + (w / 4) * (h / 4) + (w / 8) * (h / 8)
@@ -847,10 +859,17 @@ static void x_bsplevel_init_collision_hulls(X_BspLevel* level, X_BspLevelLoader*
         level->collisionHulls[i] = loader->collisionHulls[i];
 }
 
+static void x_bsplevel_init_entity_dictionary(X_BspLevel* level, X_BspLevelLoader* loader)
+{
+    level->entityDictionary = loader->entityDictionary;
+    loader->entityDictionary = NULL;
+}
+
 static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLoader* loader)
 {
     x_bsplevel_allocate_memory(level, loader);
     
+    x_bsplevel_init_entity_dictionary(level, loader);
     x_bsplevel_init_pvs(level, loader);
     x_bsplevel_init_lightmap_data(level, loader);
     x_bsplevel_init_vertices(level, loader);
@@ -892,6 +911,7 @@ static _Bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char
     if(loader->header.bspVersion != 29)
         return 0;
     
+    x_bsplevelloader_load_entity_dictionary(loader);
     x_bsplevelloader_load_compressed_pvs(loader);
     x_bsplevelloader_load_lightmap_data(loader);
     x_bsplevelloader_load_planes(loader);
@@ -929,6 +949,7 @@ static void x_bsplevelloader_cleanup(X_BspLevelLoader* level)
     x_free(level->textureTexels);
     x_free(level->vertices);
     x_free(level->clipNodes);
+    x_free(level->entityDictionary);
     
     x_file_close(&level->file);
 }
