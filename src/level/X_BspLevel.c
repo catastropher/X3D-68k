@@ -265,16 +265,16 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if((!onNormalSide) ^ planeFlipped)
             continue;
         
-//         x_ae_context_add_level_polygon
-//         (
-//             &renderContext->renderer->activeEdgeContext,
-//             renderContext->level,
-//             level->surfaceEdgeIds + surface->firstEdgeId,
-//             surface->totalEdges,
-//             surface,
-//             geoFlags,
-//             x_bsplevel_current_bspkey(renderContext->level)
-//         );        
+        x_ae_context_add_level_polygon
+        (
+            &renderContext->renderer->activeEdgeContext,
+            renderContext->level,
+            level->surfaceEdgeIds + surface->firstEdgeId,
+            surface->totalEdges,
+            surface,
+            geoFlags,
+            x_bsplevel_current_bspkey(renderContext->level)
+        );        
     }
 }
 
@@ -284,11 +284,11 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
     {
         X_BspSurface* surface = submodel->faces + i;
         
-        //_Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
-        //_Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
+        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
+        _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
         
-        //if((!onNormalSide) ^ planeFlipped)
-        //    continue;
+        if((!onNormalSide) ^ planeFlipped)
+           continue;
         
         x_ae_context_add_submodel_polygon
         (
@@ -334,15 +334,26 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     x_bspnode_render_recursive(backSide, renderContext, nodeFlags);
 }
 
+#include "engine/X_EngineContext.h"
+
+void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderContext)
+{
+    X_BoundBoxFrustumFlags enableAllPlanes = (1 << renderContext->viewFrustum->totalPlanes) - 1;
+    
+    for(int i = 1; i < level->totalModels; ++i)
+        x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
+}
+
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
     x_bsplevel_reset_bspkeys(level);
     
     X_BoundBoxFrustumFlags enableAllPlanes = (1 << renderContext->viewFrustum->totalPlanes) - 1;
-    //x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
     
-    for(int i = 1; i < level->totalModels; ++i)
-        x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
+     if(!x_keystate_key_down(&renderContext->engineContext->keystate, 'g'))
+        x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
+    
+    x_bsplevel_render_submodels(level, renderContext);
 }
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)

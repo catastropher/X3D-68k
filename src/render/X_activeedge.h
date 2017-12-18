@@ -44,7 +44,11 @@ typedef struct X_AE_Surface
     
     x_fp16x16 closestZ;
     
-    _Bool wasDeleted;    
+    _Bool wasDeleted;
+    _Bool inSubmodel;
+    
+    struct X_AE_Surface* next;
+    struct X_AE_Surface* prev;
 } X_AE_Surface;
 
 #define X_AE_EDGE_LEFT_SURFACE 0

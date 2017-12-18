@@ -257,6 +257,8 @@ void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light
 struct X_BoundSphere;
 int x_bsplevel_find_nodes_intersecting_sphere(X_BspLevel* level, struct X_BoundSphere* sphere, X_BspNode** dest);
 
+void x_bsplevel_render_submodels(X_BspLevel* level, struct X_RenderContext* renderContext);
+
 //======================== level ========================
 
 static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)

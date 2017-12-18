@@ -148,6 +148,8 @@ void x_polygon3_split_along_plane(X_Polygon3* src, const X_Plane* plane, int* ed
         dot = nextDot;
         in = nextIn;        
     }
+    
+    //x_polygon3_reverse(backSide);
 }
 
 void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color)
@@ -234,6 +236,12 @@ _Bool x_polygon3_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustu
     }
     
     return x_polygon3_fp16x16_clip_to_plane_edge_ids(polyToClip, frustum->planes + lastClipPlane, dest, polyEdgeIds, edgeIdsDest);
+}
+
+void x_polygon3_reverse(X_Polygon3* poly)
+{
+    for(int i = 0; i < poly->totalVertices / 2; ++i)
+        X_SWAP(poly->vertices[i], poly->vertices[poly->totalVertices - i - 1]);
 }
 
 void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color)

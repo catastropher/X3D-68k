@@ -41,6 +41,8 @@ _Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustu
 _Bool x_polygon3_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
 
+void x_polygon3_reverse(X_Polygon3* poly);
+
 void x_polygon3_split_along_plane(X_Polygon3* src, const X_Plane* plane, int* edgeIds, X_Polygon3* frontSide, int* frontEdgeIds, X_Polygon3* backSide, int* backEdgeIds);
 
 static inline X_Polygon3 x_polygon3_make(X_Vec3* vertices, int totalVertices)

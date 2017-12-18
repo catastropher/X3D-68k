@@ -99,6 +99,10 @@ void handle_test_portal(Portal* portal, X_EngineContext* engineContext, X_Camera
     X_RenderContext renderContext;
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
     
+    --renderContext.currentFrame;
+    
+    //x_bsplevel_render_submodels(&engineContext->currentLevel, &renderContext);
+    
     if(x_keystate_key_down(&engineContext->keystate, 'k'))
         shoot_portal(portal, engineContext, cam);
     
@@ -257,8 +261,6 @@ void gameloop(Context* context)
         handle_test_portal(&portal, context->engineContext, context->cam);
         
         apply_paint(context->engineContext, context->cam);
-        
-        x_texture_blit_texture(&context->engineContext->screen.canvas, &paint, x_vec2_make(0, 0));
         
         handle_keys(context);
         screen_update(context);
