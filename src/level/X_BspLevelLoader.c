@@ -691,6 +691,10 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         model->rootBspNode = x_bsplevel_get_node_from_id(level, loadModel->rootBspNode);
         model->totalBspLeaves = loadModel->totalBspLeaves;
         
+        model->clipNodeRoots[0] = loadModel->rootClipNode;
+        model->clipNodeRoots[1] = loadModel->secondRootClipNode;
+        model->clipNodeRoots[2] = loadModel->thirdRootClipNode;
+        
         model->origin = x_vec3_float_to_vec3(&loadModel->origin);
         
         x_bspnode_assign_parent(model->rootBspNode, NULL);

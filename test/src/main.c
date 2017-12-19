@@ -83,7 +83,7 @@ static void shoot_portal(Portal* portal, X_EngineContext* engineContext, X_Camer
     X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
     
     X_RayTracer trace;
-    x_raytracer_init(&trace, &engineContext->currentLevel, &camPos, &end, NULL);
+    x_raytracer_init(&trace, &engineContext->currentLevel, x_bsplevel_get_level_model(&engineContext->currentLevel), &camPos, &end, NULL);
     trace.rootClipNode = 0;
     
     if(!x_raytracer_trace(&trace))

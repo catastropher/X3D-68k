@@ -145,16 +145,23 @@ _Bool visit_node(X_RayTracer* trace, int clipNodeId, X_Vec3* start, x_fp16x16 st
     return explore_both_sides_of_node(trace, node, start, startT, end, endT, plane, intersectionT, startDist);
 }
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_Vec3* start, X_Vec3* end, X_BoundBox* boundBox)
+void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, X_Vec3* start, X_Vec3* end, X_BoundBox* boundBox)
 {
+    trace->modelOrigin = &model->origin;
     trace->level = level;
-    trace->ray.v[0] = *start;
-    trace->ray.v[1] = *end;
-    trace->rootClipNode = level->collisionHulls[1].rootNode;
+    trace->ray.v[0] = x_vec3_sub(start, trace->modelOrigin);
+    trace->ray.v[1] = x_vec3_sub(end, trace->modelOrigin);
+    trace->rootClipNode = model->clipNodeRoots[0];
 }
 
 _Bool x_raytracer_trace(X_RayTracer* trace)
 {
-    return !visit_node(trace, trace->rootClipNode, trace->ray.v + 0, 0, trace->ray.v + 1, X_FP16x16_ONE);
+    _Bool success = !visit_node(trace, trace->rootClipNode, trace->ray.v + 0, 0, trace->ray.v + 1, X_FP16x16_ONE);
+    
+    // Move the plane relative to the origin of the object
+    trace->collisionPoint = x_vec3_add(&trace->collisionPoint, trace->modelOrigin);
+    trace->collisionPlane.d = -x_vec3_dot(&trace->collisionPlane.normal, &trace->collisionPoint);
+    
+    return success;
 }
 

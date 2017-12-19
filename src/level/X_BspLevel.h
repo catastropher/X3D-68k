@@ -158,25 +158,26 @@ typedef enum X_BspLevelFlags
     X_BSPLEVEL_LOADED = 1
 } X_BspLevelFlags;
 
-typedef struct X_BspModel
-{
-    X_BoundBox boundBox;
-    X_BspNode* rootBspNode;
-    int totalBspLeaves;
-    
-    // TODO: add clip node
-    X_BspSurface* faces;
-    int totalFaces;
-    
-    X_Vec3 origin;
-} X_BspModel;
-
 typedef struct X_BspClipNode
 {
     int planeId;
     short frontChild;
     short backChild;
 } X_BspClipNode;
+
+typedef struct X_BspModel
+{
+    X_BoundBox boundBox;
+    X_BspNode* rootBspNode;
+    int clipNodeRoots[3];
+    
+    int totalBspLeaves;
+    
+    X_BspSurface* faces;
+    int totalFaces;
+    
+    X_Vec3 origin;
+} X_BspModel;
 
 typedef struct X_BspCollisionHull
 {

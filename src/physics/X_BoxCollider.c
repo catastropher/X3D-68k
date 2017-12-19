@@ -52,7 +52,7 @@ static void apply_friction(X_BoxCollider* collider)
 static _Bool try_push_into_ground(X_BoxCollider* collider, X_BspLevel* level, x_fp16x16 distance, X_RayTracer* trace)
 {
     X_Vec3 end = x_vec3_make(collider->position.x, collider->position.y + distance, collider->position.z);
-    x_raytracer_init(trace, level, &collider->position, &end, &collider->boundBox);
+    x_raytracer_init(trace, level, x_bsplevel_get_level_model(level), &collider->position, &end, &collider->boundBox);
     return x_raytracer_trace(trace);
 }
 
@@ -90,7 +90,7 @@ static void adjust_velocity_to_slide_along_wall(X_Vec3* velocity, X_Plane* plane
 
 static IterationFlags move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, X_RayTracer* trace, X_Vec3* newVelocity, X_Vec3* newPos)
 {
-    x_raytracer_init(trace, level, &collider->position, newPos, &collider->boundBox);
+    x_raytracer_init(trace, level, x_bsplevel_get_level_model(level), &collider->position, newPos, &collider->boundBox);
     
     if(!x_raytracer_trace(trace))
         return IT_MOVE_SUCCESS;
