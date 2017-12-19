@@ -33,6 +33,8 @@ struct X_RenderContext;
 typedef struct X_EngineContext
 {
     X_Factory gameObjectFactory;        ///< Factory for creating new game objects
+    X_GameObject activeObjectHead;
+    X_GameObject activeObjectTail;
     X_Screen screen;                    ///< Virtual screen
     X_Console console;
     X_Font mainFont;

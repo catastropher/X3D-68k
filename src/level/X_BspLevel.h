@@ -298,6 +298,11 @@ static inline int x_bsplevel_current_bspkey(const X_BspLevel* level)
     return level->nextBspKey;
 }
 
+static inline X_BspModel* x_bsplevel_get_model(X_BspLevel* level, int modelId)
+{
+    return level->models + modelId;
+}
+
 //======================== node ========================
 
 static inline _Bool x_bspnode_is_leaf(const X_BspNode* node)

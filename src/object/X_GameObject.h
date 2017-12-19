@@ -25,7 +25,7 @@ struct X_EngineContext;
 
 typedef struct X_GameObjectEventHandlers
 {
-    void (*onStep)(struct X_EngineContext* context, struct X_GameObject* obj, x_fp16x16 deltaTime);
+    void (*update)(struct X_GameObject* obj, x_fp16x16 deltaTime);
 } X_GameObjectEventHandlers;
 
 typedef struct X_GameObjectType
@@ -42,10 +42,17 @@ typedef struct X_GameObject
     X_Vec3 velocity;
     X_Quaternion orientation;
     X_GameObjectType* type;
+    
+    struct X_GameObject* nextActive;
+    struct X_GameObject* prevActive;
+    
+    struct X_EngineContext* engineContext;
 } X_GameObject;
 
 struct X_EngineContext;
 
 X_GameObject* x_gameobject_new(struct X_EngineContext* context, size_t objectSize);
 void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest);
+
+void x_gameobject_activate(X_GameObject* obj);
 

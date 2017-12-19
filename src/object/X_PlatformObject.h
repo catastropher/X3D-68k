@@ -15,24 +15,29 @@
 
 #pragma once
 
-#include "X_EngineContext.h"
+#include "X_GameObjectLoader.h"
+#include "X_GameObject.h"
+#include "engine/X_EngineContext.h"
 
-#define X_MAJOR_VERSION 0
-#define X_MINOR_VERSION 1
-#define X_VERSION (X_MAJOR_VERSION * 1000 + X_MINOR_VERSION)
-
-X_EngineContext* x_engine_init(X_Config* config);
-void x_engine_cleanup(void);
-void x_engine_render_frame(X_EngineContext* engineContext);
-void x_engine_update_objects(X_EngineContext* engineContext);
-
-static inline _Bool x_engine_level_is_loaded(const X_EngineContext* context)
+typedef enum X_PlatformObjectState
 {
-    return x_bsplevel_file_is_loaded(&context->currentLevel);
-}
+    X_PLATFORMOBJECT_DOWN,
+    X_PLATFORMOBJECT_RAISING,
+    X_PLATFORMOBJECT_UP,
+    X_PLATFORMOBJECT_LOWERING
+} X_PlatformObjectState;
 
-static inline X_BspLevel* x_engine_get_current_level(X_EngineContext* context)
+typedef struct X_PlatformObject
 {
-    return &context->currentLevel;
-}
+    X_GameObject base;
+    X_BspModel* model;
+    x_fp16x16 raiseHeight;
+    x_fp16x16 speed;
+    X_Time nextTransition;
+    X_Time transitionStart;
+    X_Time waitTime;
+    X_PlatformObjectState state;
+} X_PlatformObject;
+
+X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edict);
 

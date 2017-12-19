@@ -47,6 +47,8 @@ typedef struct X_AE_Surface
     _Bool wasDeleted;
     _Bool inSubmodel;
     
+    X_Vec3* modelOrigin;
+    
     struct X_AE_Surface* next;
     struct X_AE_Surface* prev;
 } X_AE_Surface;
@@ -117,6 +119,8 @@ typedef struct X_AE_Context
 
     int lastSurface;
     int nextSurfaceId;
+    
+    X_BspModel* currentModel;
 } X_AE_Context;
 
 void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdges, int edgePoolSize, int surfacePoolSize);
@@ -149,3 +153,9 @@ static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X
 
     //return temp + surface->zInverseOrigin;
 }
+
+static inline void x_ae_context_set_current_model(X_AE_Context* context, X_BspModel* model)
+{
+    context->currentModel = model;
+}
+

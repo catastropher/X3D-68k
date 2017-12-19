@@ -86,5 +86,19 @@ void x_engine_cleanup(void)
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_renderer_render_frame(engineContext);
+    x_engine_update_objects(engineContext);     // FIXME: should not be done here
+}
+
+void x_engine_update_objects(X_EngineContext* engineContext)
+{
+    X_GameObject* obj = engineContext->activeObjectHead.nextActive;
+    
+    while(obj != &engineContext->activeObjectTail)
+    {
+        if(obj->type->handlers.update)
+            obj->type->handlers.update(obj, 0);
+        
+        obj = obj->nextActive;
+    }
 }
 

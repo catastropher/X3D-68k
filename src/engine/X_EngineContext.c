@@ -28,6 +28,12 @@
 static inline void init_object_factory(X_EngineContext* context)
 {
     x_factory_init(&context->gameObjectFactory, 5, 10);
+    
+    context->activeObjectHead.nextActive = &context->activeObjectTail;
+    context->activeObjectHead.prevActive = NULL;
+    
+    context->activeObjectTail.nextActive = NULL;
+    context->activeObjectTail.prevActive = &context->activeObjectHead;
 }
 
 static inline void init_screen(X_EngineContext* context, X_Config* config)

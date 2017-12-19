@@ -18,6 +18,16 @@
 #include "render/X_RenderContext.h"
 #include "error/X_error.h"
 
+static X_GameObjectType g_cameraObjectType = 
+{
+    .typeId = 0,
+    .name = "camera",
+    .handlers = 
+    {
+        .update = NULL
+    }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Creates a new camera object.
 /// @todo Determine how to best initialize a camera
@@ -29,6 +39,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     cam->lastLeaf = NULL;
     cam->screenResizeCallback = NULL;
     cam->base.velocity = x_vec3_origin();
+    cam->base.type = &g_cameraObjectType;
     
     // FIXME: need actual bound box
     static X_BoundBox box;

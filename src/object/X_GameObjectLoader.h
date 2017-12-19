@@ -41,4 +41,6 @@ X_EdictAttribute* x_edict_get_attribute(X_Edict* edict, const char* name);
 _Bool x_edict_has_attribute(X_Edict* edict, const char* name);
 _Bool x_edict_get_int(X_Edict* edict, const char* name, int defaultValue, int* dest);
 _Bool x_edict_get_vec3(X_Edict* edict, const char* name, X_Vec3 defaultValue, X_Vec3* dest);
+int x_edict_get_model_id(X_Edict* edict, const char* name);
+_Bool x_edict_get_fp16x16(X_Edict* edict, const char* name, x_fp16x16 defaultValue, x_fp16x16* dest);
 

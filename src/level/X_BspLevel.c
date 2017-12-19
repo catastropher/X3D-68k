@@ -280,6 +280,28 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
 
 static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
 {
+    x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
+    
+    X_CameraObject cam = *renderContext->cam;
+    X_RenderContext temp = *renderContext;
+    
+    // FIXME: this is beyond a hack
+    // Need proper setting of new render context from perspective of submodel
+    
+    temp.cam = &cam;
+    cam.collider.position = x_vec3_sub(&cam.collider.position, &submodel->origin);
+    
+    cam.viewport.viewFrustum.planes = cam.viewport.viewFrustumPlanes;
+    temp.viewFrustum = &cam.viewport.viewFrustum;
+    
+    x_cameraobject_update_view(&cam);
+    
+    temp.camPos = cam.collider.position;
+    
+    X_RenderContext* save = renderContext->renderer->activeEdgeContext.renderContext;
+    
+    renderContext->renderer->activeEdgeContext.renderContext = &temp;
+    
     for(int i = 0; i < submodel->totalFaces; ++i)
     {
         X_BspSurface* surface = submodel->faces + i;
@@ -301,6 +323,8 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
             x_bsplevel_current_bspkey(renderContext->level)
         );        
     }
+    
+    renderContext->renderer->activeEdgeContext.renderContext = save;
 }
 
 void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags parentNodeFlags)
@@ -347,6 +371,7 @@ void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderConte
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
     x_bsplevel_reset_bspkeys(level);
+    x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, x_bsplevel_get_level_model(level));
     
     X_BoundBoxFrustumFlags enableAllPlanes = (1 << renderContext->viewFrustum->totalPlanes) - 1;
     

@@ -19,6 +19,7 @@
 
 #include "X_GameObjectLoader.h"
 #include "error/X_error.h"
+#include "X_PlatformObject.h"
 
 X_EdictAttribute* x_edict_get_attribute(X_Edict* edict, const char* name)
 {
@@ -66,6 +67,29 @@ _Bool x_edict_get_vec3(X_Edict* edict, const char* name, X_Vec3 defaultValue, X_
     dest->z = x_fp16x16_from_float(z);
     
     *dest = x_vec3_convert_quake_coord_to_x3d_coord(dest);
+    return 1;
+}
+
+int x_edict_get_model_id(X_Edict* edict, const char* name)
+{
+    X_EdictAttribute* att = x_edict_get_attribute(edict, name);
+    if(!att)
+        x_system_error("Entity %s missing model id", x_edict_get_attribute(edict, "classname")->name);
+    
+    // Not sure why, but model starts with '*'
+    return atoi(att->value + 1);
+}
+
+_Bool x_edict_get_fp16x16(X_Edict* edict, const char* name, x_fp16x16 defaultValue, x_fp16x16* dest)
+{
+    X_EdictAttribute* att = x_edict_get_attribute(edict, name);
+    if(!att)
+    {
+        *dest = defaultValue;
+        return 0;
+    }
+    
+    *dest = x_fp16x16_from_float(atof(att->value));
     return 1;
 }
 
@@ -119,7 +143,16 @@ void x_gameobjectloader_load_objects(X_EngineContext* engineContext, const char*
         X_EdictAttribute* att = x_edict_get_attribute(&edict, "classname");
         if(att)
         {
-            printf("Loaded object of type %s\n", att->value);
+            printf("Loaded object of type '%s'\n", att->value);
+            for(int i = 0; i < edict.totalAttributes; ++i)
+            {
+                printf("\t%s -> %s\n", edict.attributes[i].name, edict.attributes[i].value);
+            }
+            
+            if(strcmp(att->value, "func_plat") == 0)
+            {
+                x_platformobject_new(engineContext, &edict);
+            }
         }
     }
 }

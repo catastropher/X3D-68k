@@ -21,6 +21,7 @@ X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
     int objectHandle;
     X_GameObject* newObject = x_factory_alloc(&context->gameObjectFactory, objectSize, &objectHandle);
     newObject->id = objectHandle;
+    newObject->engineContext = context;
     
     return newObject;
 }
@@ -30,5 +31,16 @@ void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardD
     X_Mat4x4 mat;
     x_quaternion_to_mat4x4(&obj->orientation, &mat);
     x_mat4x4_extract_view_vectors(&mat, forwardDest, rightDest, upDest);
+}
+
+void x_gameobject_activate(X_GameObject* obj)
+{
+    X_GameObject* head = &obj->engineContext->activeObjectHead;
+    
+    obj->nextActive = head->nextActive;
+    obj->prevActive = head;
+    
+    head->nextActive->prevActive = obj;
+    head->nextActive = obj;
 }
 

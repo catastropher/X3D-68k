@@ -350,6 +350,7 @@ static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspS
     surface->bspSurface = bspSurface;
     surface->crossCount = 0;
     surface->closestZ = 0x7FFFFFFF;
+    surface->modelOrigin = &context->currentModel->origin;
 
     return surface;
 }
@@ -415,16 +416,22 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
-static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, X_Polygon3* dest)
+static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, X_Polygon3* dest, X_Vec3* origin)
 {
     dest->totalVertices = 0;
     
     for(int i = 0; i < totalEdges; ++i)
     {
+        X_Vec3 v;
+        
         if(!edge_is_flipped(edgeIds[i]))
-            dest->vertices[dest->totalVertices++] = level->vertices[level->edges[edgeIds[i]].v[0]].v;
+            v = level->vertices[level->edges[edgeIds[i]].v[0]].v;
         else
-            dest->vertices[dest->totalVertices++] = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
+            v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
+        
+        
+        dest->vertices[dest->totalVertices++] = v;
+        //dest->vertices[dest->totalVertices++] = x_vec3_add(&v, origin);
     }
 }
 
@@ -447,7 +454,7 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
         geoFlags = (1 << context->renderContext->viewFrustum->totalPlanes) - 1;
     }
 
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon);
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon, &context->currentModel->origin);
 
     x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
@@ -492,7 +499,7 @@ void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level,
     X_Vec3 v3d[X_POLYGON3_MAX_VERTS];
     
     X_Polygon3 poly = x_polygon3_make(v3d, X_POLYGON3_MAX_VERTS);
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly);
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly, &context->currentModel->origin);
     
     x_ae_context_add_submodel_polygon_recursive(context, &poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
 }
