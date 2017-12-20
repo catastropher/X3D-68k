@@ -21,6 +21,7 @@
 #include "X_BspLevelLoader.h"
 #include "error/X_error.h"
 #include "geo/X_BoundSphere.h"
+#include "engine/X_EngineContext.h"
 
 static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext* renderContext, X_Color color, X_BspModel* model)
 {
@@ -339,8 +340,6 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     
     x_bspnode_render_recursive(backSide, renderContext, nodeFlags);
 }
-
-#include "engine/X_EngineContext.h"
 
 void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderContext)
 {

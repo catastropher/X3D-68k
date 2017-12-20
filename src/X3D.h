@@ -64,12 +64,14 @@
 #include "memory/X_alloc.h"
 #include "memory/X_Cache.h"
 #include "memory/X_Factory.h"
+#include "memory/X_Link.h"
 #include "memory/X_String.h"
 
 // object
 #include "object/X_CameraObject.h"
 #include "object/X_GameObject.h"
 #include "object/X_GameObjectLoader.h"
+#include "object/X_ObjectFactory.h"
 #include "object/X_PlatformObject.h"
 
 // physics

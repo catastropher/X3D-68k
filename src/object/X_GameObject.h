@@ -22,17 +22,21 @@
 
 struct X_GameObject;
 struct X_EngineContext;
+struct X_Edict;
 
 typedef struct X_GameObjectEventHandlers
 {
     void (*update)(struct X_GameObject* obj, x_fp16x16 deltaTime);
+    struct X_GameObject* (*createNew)(struct X_EngineContext* engineContext, struct X_Edict* edict);
 } X_GameObjectEventHandlers;
 
 typedef struct X_GameObjectType
 {
     int typeId;
-    char name[16];
+    char name[32];
     X_GameObjectEventHandlers handlers;
+    
+    struct X_GameObjectType* next;
 } X_GameObjectType;
 
 typedef struct X_GameObject
