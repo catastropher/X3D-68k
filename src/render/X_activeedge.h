@@ -36,15 +36,12 @@ typedef struct X_AE_Surface
     X_AE_Span spans[X_AE_SURFACE_MAX_SPANS];
     int totalSpans;
     
-    int zInverseShift;          // Number of places we need to shift down zInverseXStep and zInverseYStep to make them an x_fp0x30
-    
-    int zInverseXStep;          // Fixed point number with a decimal point that is shifted
-    int zInverseYStep;
-    x_fp2x30 zInverseOrigin;
+    x_fp16x16 zInverseXStep;          // Fixed point number with a decimal point that is shifted
+    x_fp16x16 zInverseYStep;
+    x_fp16x16 zInverseOrigin;
     
     x_fp16x16 closestZ;
     
-    _Bool wasDeleted;
     _Bool inSubmodel;
     
     X_Vec3* modelOrigin;
@@ -96,10 +93,6 @@ typedef struct X_AE_Context
     X_AE_Surface* surfacePoolEnd;
     X_AE_Surface* nextAvailableSurface;
     
-    int maxActiveEdges;
-    
-    X_AE_Edge* activeEdgeHead;
-    
     X_AE_DummyEdge* newEdges;
     X_AE_Edge newRightEdge;
     
@@ -108,17 +101,9 @@ typedef struct X_AE_Context
     
     X_AE_Surface background;
     X_BspSurface backgroundBspSurface;
-    X_AE_Surface* backgroundSurface;
     
     X_RenderContext* renderContext;
     X_Screen* screen;
-    
-    int maxActiveSurface;
-    unsigned int activeSurfaces[X_ACTIVE_SURFACES_SIZE];
-    int totalActiveSurfaceGroups;
-
-    int lastSurface;
-    int nextSurfaceId;
     
     X_BspModel* currentModel;
 } X_AE_Context;
@@ -148,10 +133,6 @@ int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X
 static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {
     return x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin;
-    
-    //x_fp2x30 temp = ((long long)x * surface->zInverseXStep + (long long)y * surface->zInverseYStep) >> surface->zInverseShift;
-
-    //return temp + surface->zInverseOrigin;
 }
 
 static inline void x_ae_context_set_current_model(X_AE_Context* context, X_BspModel* model)

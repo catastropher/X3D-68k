@@ -58,8 +58,6 @@ static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
 
 static void x_ae_context_init_edges(X_AE_Context* context, int maxActiveEdges, int edgePoolSize)
 {
-    context->maxActiveEdges = maxActiveEdges;
-
     context->edgePool = x_malloc(edgePoolSize * sizeof(X_AE_Edge));
     context->edgePoolEnd = context->edgePool + edgePoolSize;
 
@@ -114,10 +112,6 @@ static void x_ae_context_reset_background_surface(X_AE_Context* context)
     context->rightEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = &context->background;
     context->rightEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
 
-    context->nextAvailableSurface->bspSurface = &context->backgroundBspSurface;
-
-    context->lastSurface = (context->nextAvailableSurface - context->surfacePool) - 1;
-    
     context->background.next = &context->background;
     context->background.prev = &context->background;
     context->background.bspKey = 0x7FFFFFFF;
@@ -128,7 +122,6 @@ static void x_ae_context_reset_pools(X_AE_Context* context)
 {
     context->nextAvailableEdge = context->edgePool;
     context->nextAvailableSurface = context->surfacePool;
-    context->nextSurfaceId = 0;
 }
 
 static void x_ae_context_reset_new_edges(X_AE_Context* context)
@@ -346,7 +339,6 @@ static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspS
 {
     X_AE_Surface* surface = context->nextAvailableSurface++;
 
-    surface->id = context->nextSurfaceId++;
     surface->totalSpans = 0;
     surface->bspKey = bspKey;
     surface->bspSurface = bspSurface;
@@ -432,9 +424,7 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
             v = level->vertices[level->edges[edgeIds[i]].v[0]].v;
         else
             v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
-        
-        
-        //dest->vertices[dest->totalVertices++] = v;
+                
         dest->vertices[dest->totalVertices++] = x_vec3_add(&v, origin);
     }
 }
@@ -521,25 +511,6 @@ static void x_ae_context_emit_span(int left, int right, int y, X_AE_Surface* sur
 
     if(surface->totalSpans + 1 < X_AE_SURFACE_MAX_SPANS)
         ++surface->totalSpans;
-}
-
-static inline void bitset32_set(unsigned int* bitset, int bit)
-{
-    bitset[bit >> 5] |= 1 << (bit & 31);
-}
-
-static inline void bitset32_reset(unsigned int* bitset, int bit)
-{
-    bitset[bit >> 5] &= ~(1 << (bit & 31));
-}
-
-static inline int bitset32_find_hightest_set(unsigned int* bitset, int startBit)
-{
-    int group;
-    for(group = startBit / 32; bitset[group] == 0; --group)
-        ;
-
-    return group * 32 + (31 - __builtin_clz(bitset[group]));
 }
 
 static void remove_from_surface_stack(X_AE_Surface* surface)
@@ -641,7 +612,6 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
 {
     context->background.crossCount = 1;
     context->background.xStart = 0;
-    context->activeSurfaces[0] = 1;
     context->background.next = &context->background;
     context->background.prev = &context->background;
 
@@ -696,20 +666,6 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
     }
 }
 
-static void x_ae_context_invert_bsp_keys(X_AE_Context* context)
-{
-    for(X_AE_Surface* surface = context->surfacePool; surface < context->nextAvailableSurface; ++surface)
-        surface->id = context->lastSurface - surface->id;
-}
-
-static void x_ae_context_reset_active_surfaces(X_AE_Context* context)
-{
-    for(int i = 0; i < context->totalActiveSurfaceGroups; ++i)
-        context->activeSurfaces[i] = 0;
-
-    context->maxActiveSurface = 0;
-}
-
 void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 {
     static _Bool initialized = 0;
@@ -721,10 +677,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         initialized = 1;
     }
 
-    context->totalActiveSurfaceGroups = (context->lastSurface + 1 + 31) / 32;
-
     x_ae_context_reset_background_surface(context);
-    //x_ae_context_invert_bsp_keys(context);
 
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
@@ -735,7 +688,6 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
                 context->surfacePool[j].crossCount = 0;
             }
             
-            x_ae_context_reset_active_surfaces(context);
             x_ae_context_process_edges(context, i);
         }
     }
@@ -745,9 +697,6 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
     {
-        if(context->surfacePool + i == context->backgroundSurface)
-            continue;
-
         if(context->surfacePool[i].totalSpans == 0)
             continue;
 
