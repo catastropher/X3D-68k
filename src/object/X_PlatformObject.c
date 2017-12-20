@@ -35,9 +35,9 @@ static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
     x_fp16x16 offset = x_fp16x16_from_int(x_fp16x16_mul(time - platform->transitionStart, platform->speed) / 1000);
     
     if(platform->state == X_PLATFORMOBJECT_LOWERING)
-        pos = platform->raiseHeight - offset;
-    else
         pos = offset;
+    else
+        pos = platform->raiseHeight - offset;
     
     if(pos < 0 || pos >= platform->raiseHeight)
     {
@@ -46,7 +46,7 @@ static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
         platform->nextTransition = time + platform->waitTime;
     }
     
-    platform->model->origin.y = -pos;
+    platform->model->origin.y = pos;
     
 }
 
@@ -68,13 +68,18 @@ X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edic
     
     int modelId = x_edict_get_model_id(edict, "model");
     obj->model = x_bsplevel_get_model(&engineContext->currentLevel, modelId);
+    
+    x_fp16x16 modelHeight = x_bspmodel_height(obj->model);
+    
+    printf("Height: %d\n", modelHeight);
+    
     obj->base.type = &g_platformObjectType;
     obj->speed = x_fp16x16_from_int(64);
     obj->waitTime = 1000 * 2;
     obj->state = X_PLATFORMOBJECT_DOWN;
     obj->nextTransition = x_enginecontext_get_time(engineContext) + obj->waitTime;
     
-    x_edict_get_fp16x16(edict, "height", x_fp16x16_from_int(200), &obj->raiseHeight);
+    x_edict_get_fp16x16(edict, "height", modelHeight, &obj->raiseHeight);
     
     //obj->model->origin.y = -obj->raiseHeight;
     

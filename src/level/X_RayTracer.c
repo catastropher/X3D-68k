@@ -149,18 +149,46 @@ void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, 
 {
     trace->modelOrigin = &model->origin;
     trace->level = level;
-    trace->ray.v[0] = x_vec3_sub(start, trace->modelOrigin);
-    trace->ray.v[1] = x_vec3_sub(end, trace->modelOrigin);
+    trace->ray.v[0] = *start;
+    trace->ray.v[1] = *end;
     trace->rootClipNode = model->clipNodeRoots[0];
 }
 
-_Bool x_raytracer_trace(X_RayTracer* trace)
+static _Bool trace_model(X_RayTracer* trace, X_BspModel* model)
 {
-    _Bool success = !visit_node(trace, trace->rootClipNode, trace->ray.v + 0, 0, trace->ray.v + 1, X_FP16x16_ONE);
+    X_Vec3 start = x_vec3_sub(trace->ray.v + 0, &model->origin);
+    X_Vec3 end = x_vec3_sub(trace->ray.v + 1, &model->origin);
+    
+    _Bool success = !visit_node(trace, model->clipNodeRoots[0], &start, 0, &end, X_FP16x16_ONE);
     
     // Move the plane relative to the origin of the object
     trace->collisionPoint = x_vec3_add(&trace->collisionPoint, trace->modelOrigin);
     trace->collisionPlane.d = -x_vec3_dot(&trace->collisionPlane.normal, &trace->collisionPoint);
+    
+    return success;
+}
+
+_Bool x_raytracer_trace(X_RayTracer* trace)
+{
+    X_RayTracer best = *trace;
+    
+    best.collisionFrac = X_FP16x16_ONE;
+    
+    _Bool success = 0;
+    for(int i = 0; i < trace->level->totalModels; ++i)
+    {
+        if(trace_model(trace, trace->level->models + i))
+        {
+            success = 1;
+            
+            if(trace->collisionFrac < best.collisionFrac)
+            {
+                best = *trace;
+            }
+        }
+    }
+    
+    *trace = best;
     
     return success;
 }

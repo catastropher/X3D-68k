@@ -697,6 +697,17 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         
         model->origin = x_vec3_float_to_vec3(&loadModel->origin);
         
+        model->boundBox.v[0].x = x_fp16x16_from_float(loadModel->mins[0]);
+        model->boundBox.v[0].y = x_fp16x16_from_float(loadModel->mins[1]);
+        model->boundBox.v[0].z = x_fp16x16_from_float(loadModel->mins[2]);
+        
+        model->boundBox.v[1].x = x_fp16x16_from_float(loadModel->maxs[0]);
+        model->boundBox.v[1].y = x_fp16x16_from_float(loadModel->maxs[1]);
+        model->boundBox.v[1].z = x_fp16x16_from_float(loadModel->maxs[2]);
+        
+        for(int i = 0; i < 2; ++i)
+            model->boundBox.v[i] = x_vec3_convert_quake_coord_to_x3d_coord(model->boundBox.v + i);
+        
         x_bspnode_assign_parent(model->rootBspNode, NULL);
     }
 }

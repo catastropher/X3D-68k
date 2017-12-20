@@ -85,6 +85,8 @@ void x_demoplayer_play_frame(X_DemoPlayer* player)
     X_DemoPlayerFrame* frame = player->frames + player->currentFrame++;
     for(int i = 0; i < X_TOTAL_KEYS; ++i)
         player->keyState->keyDown[i] = frame->keyState[i / 8] & (1 << (i % 8));
+    
+    player->keyState->keyDown[X_KEY_ESCAPE] = 0;
 }
 
 void x_demoplayer_cleanup(X_DemoPlayer* player)

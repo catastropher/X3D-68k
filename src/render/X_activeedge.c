@@ -273,18 +273,23 @@ static _Bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest)
+static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest, X_Vec3* pointOnSurface)
 {
     X_Vec3 planeNormal = surface->plane->plane.normal;
 
     x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
-    dest->d = surface->plane->plane.d + x_vec3_dot(&planeNormal, camPos);
+    x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
+    
+    //if(surface->flags & X_BSPSURFACE_FLIPPED)
+    //    d = -d;
+    
+    dest->d = d + x_vec3_dot(&planeNormal, camPos);
 }
 
-static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix)
+static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, X_Vec3* pointOnSurface)
 {
     X_Plane planeInViewSpace;
-    x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace);
+    x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace, pointOnSurface);
 
     int dist = -planeInViewSpace.d;
     int scale = viewport->distToNearPlane;
@@ -384,6 +389,8 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
 
+    X_Vec3 firstVertex = polygon->vertices[0];
+    
     ++context->renderContext->renderer->totalSurfacesRendered;
 
     int tempEdgeIds[X_POLYGON3_MAX_VERTS] = { 0 };
@@ -412,7 +419,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     // FIXME: shouldn't be done this way
     X_Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
     
-    x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix);
+    x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
@@ -430,8 +437,8 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
             v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
         
         
-        dest->vertices[dest->totalVertices++] = v;
-        //dest->vertices[dest->totalVertices++] = x_vec3_add(&v, origin);
+        //dest->vertices[dest->totalVertices++] = v;
+        dest->vertices[dest->totalVertices++] = x_vec3_add(&v, origin);
     }
 }
 
@@ -469,7 +476,7 @@ static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, X
     
     if(x_bspnode_is_leaf(node))
     {
-        if(node->contents == X_BSPLEAF_SOLID)
+        if(node->contents != X_BSPLEAF_REGULAR)
             return;
         
         X_BspLeaf* leaf = (X_BspLeaf*)node;

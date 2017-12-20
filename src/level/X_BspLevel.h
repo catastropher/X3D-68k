@@ -355,3 +355,10 @@ static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, X_Vec2 point)
     rect->v[1].y = X_MAX(rect->v[1].y, point.y);
 }
 
+//======================== model ========================
+
+static inline x_fp16x16 x_bspmodel_height(X_BspModel* model)
+{
+    return model->boundBox.v[0].y - model->boundBox.v[1].y;
+}
+

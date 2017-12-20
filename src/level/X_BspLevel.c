@@ -288,29 +288,29 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
     // FIXME: this is beyond a hack
     // Need proper setting of new render context from perspective of submodel
     
-    temp.cam = &cam;
-    cam.collider.position = x_vec3_sub(&cam.collider.position, &submodel->origin);
-    
-    cam.viewport.viewFrustum.planes = cam.viewport.viewFrustumPlanes;
-    temp.viewFrustum = &cam.viewport.viewFrustum;
-    
-    x_cameraobject_update_view(&cam);
-    
-    temp.camPos = cam.collider.position;
-    
-    X_RenderContext* save = renderContext->renderer->activeEdgeContext.renderContext;
-    
-    renderContext->renderer->activeEdgeContext.renderContext = &temp;
+//     temp.cam = &cam;
+//     cam.collider.position = x_vec3_sub(&cam.collider.position, &submodel->origin);
+//     
+//     cam.viewport.viewFrustum.planes = cam.viewport.viewFrustumPlanes;
+//     temp.viewFrustum = &cam.viewport.viewFrustum;
+//     
+//     x_cameraobject_update_view(&cam);
+//     
+//     temp.camPos = cam.collider.position;
+//     
+//     X_RenderContext* save = renderContext->renderer->activeEdgeContext.renderContext;
+//     
+    //renderContext->renderer->activeEdgeContext.renderContext = &temp;
     
     for(int i = 0; i < submodel->totalFaces; ++i)
     {
         X_BspSurface* surface = submodel->faces + i;
         
-        _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
-        _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
-        
-        if((!onNormalSide) ^ planeFlipped)
-           continue;
+//         _Bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
+//         _Bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
+//         
+//         if((!onNormalSide) ^ planeFlipped)
+//            continue;
         
         x_ae_context_add_submodel_polygon
         (
@@ -323,8 +323,8 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
             x_bsplevel_current_bspkey(renderContext->level)
         );        
     }
-    
-    renderContext->renderer->activeEdgeContext.renderContext = save;
+/*    
+    renderContext->renderer->activeEdgeContext.renderContext = save;*/
 }
 
 void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags parentNodeFlags)
