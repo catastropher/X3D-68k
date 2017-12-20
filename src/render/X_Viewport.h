@@ -33,7 +33,6 @@ typedef struct X_Viewport
 
 static inline int x_viewport_get_miplevel_for_closest_z(X_Viewport* viewport, x_fp16x16 z)
 {
-    return 0;
     for(int i = 0; i < 3; ++i)
     {
         if(z < viewport->mipDistances[i])

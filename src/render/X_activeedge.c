@@ -280,9 +280,6 @@ static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* su
     x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
     x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
     
-    //if(surface->flags & X_BSPSURFACE_FLIPPED)
-    //    d = -d;
-    
     dest->d = d + x_vec3_dot(&planeNormal, camPos);
 }
 
@@ -476,7 +473,7 @@ static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, X
     
     if(x_bspnode_is_leaf(node))
     {
-        if(node->contents != X_BSPLEAF_REGULAR)
+        if(node->contents == X_BSPLEAF_SOLID)
             return;
         
         X_BspLeaf* leaf = (X_BspLeaf*)node;

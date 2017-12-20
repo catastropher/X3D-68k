@@ -162,7 +162,7 @@ static _Bool trace_model(X_RayTracer* trace, X_BspModel* model)
     _Bool success = !visit_node(trace, model->clipNodeRoots[0], &start, 0, &end, X_FP16x16_ONE);
     
     // Move the plane relative to the origin of the object
-    trace->collisionPoint = x_vec3_add(&trace->collisionPoint, trace->modelOrigin);
+    trace->collisionPoint = x_vec3_add(&trace->collisionPoint, &model->origin);
     trace->collisionPlane.d = -x_vec3_dot(&trace->collisionPlane.normal, &trace->collisionPoint);
     
     return success;
