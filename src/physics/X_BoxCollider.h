@@ -17,6 +17,7 @@
 
 #include "geo/X_Vec3.h"
 #include "level/X_BspLevel.h"
+#include "memory/X_Link.h"
 
 typedef enum X_BoxColliderFlags
 {
@@ -36,6 +37,8 @@ typedef struct X_BoxCollider
     x_fp16x16 bounceCoefficient;
     x_fp16x16 frictionCoefficient;
     x_fp16x16 maxSpeed;
+    
+    X_Link objectsOnModel;
 } X_BoxCollider;
 
 void x_boxcollider_init(X_BoxCollider* collider, X_BoundBox* boundBox, X_BoxColliderFlags flags);

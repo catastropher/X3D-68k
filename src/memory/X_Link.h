@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #define x_link_to_struct(link_, type_) ((type*)(link_))
 
 typedef struct X_Link
@@ -43,10 +45,26 @@ static inline void x_link_clear(X_Link* link)
     link->prev = NULL;
 }
 
+static inline void x_link_init(X_Link* head, X_Link* tail)
+{
+    head->next = tail;
+    head->prev = NULL;
+    
+    tail->next = NULL;
+    tail->prev = head;
+}
+
+static inline void x_link_init_self(X_Link* link)
+{
+    link->next = link;
+    link->prev = link;
+}
+
 static inline void x_link_unlink(X_Link* link)
 {
     link->prev->next = link->next;
     link->next->prev = link->prev;
-    x_link_clear(link);
+    
+    x_link_init_self(link);
 }
 

@@ -19,6 +19,7 @@
 
 #include "geo/X_Vec3.h"
 #include "math/X_Quaternion.h"
+#include "memory/X_Link.h"
 
 struct X_GameObject;
 struct X_EngineContext;

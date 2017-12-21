@@ -14,12 +14,12 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_PlatformObject.h"
+#include "error/X_error.h"
 
-static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
+void move_platform(X_PlatformObject* platform)
 {
-    X_PlatformObject* platform = (X_PlatformObject*)obj;
-    X_Time time = x_enginecontext_get_time(obj->engineContext);
- 
+    X_Time time = x_enginecontext_get_time(platform->base.engineContext);
+    
     if(platform->state == X_PLATFORMOBJECT_DOWN || platform->state == X_PLATFORMOBJECT_UP)
     {
         if(time >= platform->nextTransition)
@@ -47,7 +47,32 @@ static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
     }
     
     platform->model->origin.y = pos;
+}
+
+#include <stddef.h>
+
+static void move_objects_on_platform(X_PlatformObject* platform, x_fp16x16 dY)
+{
+    X_BspModel* model = platform->model;
+    for(X_Link* link = model->objectsOnModelHead.next; link != &model->objectsOnModelTail; link = link->next)
+    {
+        X_BoxCollider* collider = (X_BoxCollider*)((unsigned char*)link - offsetof(X_BoxCollider, objectsOnModel));
+        
+        collider->position.y += dY;
+        
+        x_assert(link->next != link, "Bad link");
+        
+        break;
+    }
+}
+
+static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
+{
+    X_PlatformObject* platform = (X_PlatformObject*)obj;
     
+    x_fp16x16 oldY = platform->model->origin.y;
+    move_platform(platform);
+    move_objects_on_platform(platform, platform->model->origin.y - oldY);
 }
 
 static X_GameObjectType g_platformObjectType = 

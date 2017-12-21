@@ -159,6 +159,11 @@ static _Bool try_and_move_up_step(X_BoxCollider* collider, X_BspLevel* level, X_
     return 1;
 }
 
+static void link_to_model_standing_on(X_BoxCollider* collider, X_BspModel* model)
+{
+    x_link_insert_after(&collider->objectsOnModel, &model->objectsOnModelHead);
+}
+
 IterationFlags stick_to_floor(X_BoxCollider* collider, X_BspLevel* level)
 {
     X_RayTracer floor;
@@ -167,6 +172,7 @@ IterationFlags stick_to_floor(X_BoxCollider* collider, X_BspLevel* level)
     
     collider->position = floor.collisionPoint;
     adjust_velocity_to_slide_along_wall(&collider->velocity, &floor.collisionPlane, collider->bounceCoefficient);
+    link_to_model_standing_on(collider, floor.hitModel);
     
     return IT_ON_FLOOR;
 }
@@ -217,10 +223,18 @@ void x_boxcollider_init(X_BoxCollider* collider, X_BoundBox* boundBox, X_BoxColl
     collider->frictionCoefficient = x_fp16x16_from_float(4.0);
     collider->maxSpeed = x_fp16x16_from_float(20.0);
     collider->bounceCoefficient = X_FP16x16_ONE;
+    
+    x_link_init_self(&collider->objectsOnModel);
+}
+
+static void unlink_from_model_standing_on(X_BoxCollider* collider)
+{
+    x_link_unlink(&collider->objectsOnModel);
 }
 
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level)
 {
+    unlink_from_model_standing_on(collider);
     apply_gravity(collider);
     try_move(collider, level);
 }

@@ -174,6 +174,7 @@ _Bool x_raytracer_trace(X_RayTracer* trace)
     
     best.collisionFrac = X_FP16x16_ONE;
     
+    // FIXME: this is not a good way to handle this
     _Bool success = 0;
     for(int i = 0; i < trace->level->totalModels; ++i)
     {
@@ -184,6 +185,7 @@ _Bool x_raytracer_trace(X_RayTracer* trace)
             if(trace->collisionFrac < best.collisionFrac)
             {
                 best = *trace;
+                best.hitModel = trace->level->models + i;
             }
         }
     }

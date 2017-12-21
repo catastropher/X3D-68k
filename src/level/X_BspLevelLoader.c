@@ -705,6 +705,8 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         model->boundBox.v[1].y = x_fp16x16_from_float(loadModel->maxs[1]);
         model->boundBox.v[1].z = x_fp16x16_from_float(loadModel->maxs[2]);
         
+        x_link_init(&model->objectsOnModelHead, &model->objectsOnModelTail);
+        
         for(int i = 0; i < 2; ++i)
             model->boundBox.v[i] = x_vec3_convert_quake_coord_to_x3d_coord(model->boundBox.v + i);
         

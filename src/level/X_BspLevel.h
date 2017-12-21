@@ -22,6 +22,7 @@
 #include "memory/X_Cache.h"
 #include "render/X_Light.h"
 #include "geo/X_BoundBox.h"
+#include "memory/X_Link.h"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -177,6 +178,9 @@ typedef struct X_BspModel
     int totalFaces;
     
     X_Vec3 origin;
+    
+    X_Link objectsOnModelHead;
+    X_Link objectsOnModelTail;
 } X_BspModel;
 
 typedef struct X_BspCollisionHull
