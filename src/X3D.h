@@ -68,6 +68,7 @@
 #include "memory/X_String.h"
 
 // object
+#include "object/X_ButtonObject.h"
 #include "object/X_CameraObject.h"
 #include "object/X_GameObject.h"
 #include "object/X_GameObjectLoader.h"

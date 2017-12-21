@@ -250,8 +250,6 @@ void gameloop(Context* context)
     
     x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
     
-    int angle = 0;
-    
     x_texture_init(&paint, 32, 32);
     fill_circle(&paint, x_palette_get_quake_palette()->darkBlue, x_palette_get_quake_palette()->lightBlue);
     
@@ -262,7 +260,7 @@ void gameloop(Context* context)
         render(context);
         handle_test_portal(&portal, context->engineContext, context->cam);
         
-        apply_paint(context->engineContext, context->cam);
+        //apply_paint(context->engineContext, context->cam);
         
         handle_keys(context);
         screen_update(context);

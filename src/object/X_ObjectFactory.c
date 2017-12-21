@@ -21,7 +21,7 @@
 
 void x_objectfactory_init(X_ObjectFactory* factory, X_EngineContext* engineContext)
 {
-    x_factory_init(&factory->objectFactory, 10, 5);
+    x_factory_init(&factory->objectFactory, 20, 5);
     
     factory->engineContext = engineContext;
     factory->typeHead = NULL;

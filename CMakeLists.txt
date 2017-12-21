@@ -93,6 +93,7 @@ set(X3D_SOURCES
     src/memory/X_String.c
 
     # object
+    src/object/X_ButtonObject.c
     src/object/X_CameraObject.c
     src/object/X_GameObject.c
     src/object/X_GameObjectLoader.c

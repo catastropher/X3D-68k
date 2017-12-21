@@ -25,10 +25,17 @@ struct X_GameObject;
 struct X_EngineContext;
 struct X_Edict;
 
+typedef enum X_GameObjectTriggerType
+{
+    X_GAMEOBJECT_TRIGGER_ACTIVATE,
+    X_GAMEOBJECT_TRIGGER_DEACTIVATE
+} X_GameObjectTriggerType;
+
 typedef struct X_GameObjectEventHandlers
 {
     void (*update)(struct X_GameObject* obj, x_fp16x16 deltaTime);
     struct X_GameObject* (*createNew)(struct X_EngineContext* engineContext, struct X_Edict* edict);
+    void (*trigger)(struct X_GameObject* obj, struct X_GameObject* trigger, X_GameObjectTriggerType type);
 } X_GameObjectEventHandlers;
 
 typedef struct X_GameObjectType
