@@ -141,7 +141,7 @@ void x_gameobjectloader_load_objects(X_EngineContext* engineContext, const char*
     while((nextEntry = load_next_edict(nextEntry, valueData, &edict)) != NULL)
     {
         X_EdictAttribute* att = x_edict_get_attribute(&edict, "classname");
-        if(att && strcmp(att->value, "func_plat") == 0)
+        if(att)
         {
             printf("Loaded object of type '%s'\n", att->value);
             for(int i = 0; i < edict.totalAttributes; ++i)

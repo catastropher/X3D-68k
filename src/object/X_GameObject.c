@@ -16,6 +16,7 @@
 #include "X_GameObject.h"
 #include "engine/X_EngineContext.h"
 #include "X_PlatformObject.h"
+#include "X_WorldObject.h"
 
 X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
 {
@@ -48,5 +49,6 @@ void x_gameobject_activate(X_GameObject* obj)
 void x_gameobject_register_default_types(X_ObjectFactory* factory)
 {
     x_platformobject_register_type(factory);
+    x_worldobject_register_type(factory);
 }
 

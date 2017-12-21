@@ -73,6 +73,7 @@
 #include "object/X_GameObjectLoader.h"
 #include "object/X_ObjectFactory.h"
 #include "object/X_PlatformObject.h"
+#include "object/X_WorldObject.h"
 
 // physics
 #include "physics/X_BoxCollider.h"

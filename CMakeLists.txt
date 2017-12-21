@@ -98,6 +98,7 @@ set(X3D_SOURCES
     src/object/X_GameObjectLoader.c
     src/object/X_ObjectFactory.c
     src/object/X_PlatformObject.c
+    src/object/X_WorldObject.c
 
     # physics
     src/physics/X_BoxCollider.c
