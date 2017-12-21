@@ -149,10 +149,7 @@ void x_gameobjectloader_load_objects(X_EngineContext* engineContext, const char*
                 printf("\t%s -> %s\n", edict.attributes[i].name, edict.attributes[i].value);
             }
             
-            if(strcmp(att->value, "func_plat") == 0)
-            {
-                x_platformobject_new(engineContext, &edict);
-            }
+            x_objectfactory_create_object_from_edict(&engineContext->gameObjectFactory, &edict);
         }
     }
 }

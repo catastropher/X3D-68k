@@ -53,12 +53,18 @@ static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
 static X_GameObjectType g_platformObjectType = 
 {
     .typeId = 1,
-    .name = "platform",
+    .name = "func_plat",
     .handlers = 
     {
-        .update = x_platformobject_update
+        .update = x_platformobject_update,
+        .createNew = x_platformobject_new
     }
 };
+
+void x_platformobject_register_type(X_ObjectFactory* factory)
+{
+    x_objectfactory_register_type(factory, &g_platformObjectType);
+}
 
 X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edict)
 {
@@ -70,8 +76,6 @@ X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edic
     obj->model = x_bsplevel_get_model(&engineContext->currentLevel, modelId);
     
     x_fp16x16 modelHeight = x_bspmodel_height(obj->model);
-    
-    printf("Height: %d\n", modelHeight);
     
     obj->base.type = &g_platformObjectType;
     obj->speed = x_fp16x16_from_int(64);

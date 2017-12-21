@@ -24,6 +24,7 @@
 #include "render/X_Renderer.h"
 #include "X_init.h"
 #include "system/X_Mouse.h"
+#include "object/X_ObjectFactory.h"
 
 struct X_RenderContext;
 
@@ -32,7 +33,7 @@ struct X_RenderContext;
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct X_EngineContext
 {
-    X_Factory gameObjectFactory;        ///< Factory for creating new game objects
+    X_ObjectFactory gameObjectFactory;
     X_GameObject activeObjectHead;
     X_GameObject activeObjectTail;
     X_Screen screen;                    ///< Virtual screen

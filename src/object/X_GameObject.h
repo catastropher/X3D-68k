@@ -54,6 +54,9 @@ typedef struct X_GameObject
 } X_GameObject;
 
 struct X_EngineContext;
+struct X_ObjectFactory;
+
+void x_gameobject_register_default_types(struct X_ObjectFactory* factory);
 
 X_GameObject* x_gameobject_new(struct X_EngineContext* context, size_t objectSize);
 void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest);

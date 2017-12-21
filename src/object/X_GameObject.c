@@ -15,11 +15,12 @@
 
 #include "X_GameObject.h"
 #include "engine/X_EngineContext.h"
+#include "X_PlatformObject.h"
 
 X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
 {
     int objectHandle;
-    X_GameObject* newObject = x_factory_alloc(&context->gameObjectFactory, objectSize, &objectHandle);
+    X_GameObject* newObject = x_factory_alloc(&context->gameObjectFactory.objectFactory, objectSize, &objectHandle);
     newObject->id = objectHandle;
     newObject->engineContext = context;
     
@@ -42,5 +43,10 @@ void x_gameobject_activate(X_GameObject* obj)
     
     head->nextActive->prevActive = obj;
     head->nextActive = obj;
+}
+
+void x_gameobject_register_default_types(X_ObjectFactory* factory)
+{
+    x_platformobject_register_type(factory);
 }
 

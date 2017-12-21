@@ -35,7 +35,7 @@ void x_objectfactory_cleanup(X_ObjectFactory* factory)
 void x_objectfactory_register_type(X_ObjectFactory* factory, X_GameObjectType* type)
 {
     type->next = factory->typeHead;
-    factory->typeHead = type->next;
+    factory->typeHead = type;
 }
 
 X_GameObjectType* x_objectfactory_get_type_by_name(X_ObjectFactory* factory, const char* name)
