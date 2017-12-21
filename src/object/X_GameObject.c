@@ -54,3 +54,16 @@ void x_gameobject_register_default_types(X_ObjectFactory* factory)
     x_buttonobject_register_type(factory);
 }
 
+void x_gameobject_trigger(X_GameObject* triggerSource, const char* name, X_GameObjectTriggerType type)
+{
+    if(name[0] == '\0')
+        return;
+    
+    X_EngineContext* engineContext = triggerSource->engineContext;
+    for(X_GameObject* obj = engineContext->activeObjectHead.nextActive; obj != &engineContext->activeObjectTail; obj = obj->nextActive)
+    {
+        if(strcmp(obj->triggerName, name) == 0 && obj->type->handlers.trigger)
+            obj->type->handlers.trigger(obj, triggerSource, type);
+    }
+}
+

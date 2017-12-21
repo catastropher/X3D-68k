@@ -76,6 +76,18 @@ X_GameObject* x_objectfactory_create_object_from_edict(X_ObjectFactory* factory,
     if(!type->handlers.createNew)
         x_system_error("Object type %s is missing createNew()", classname->value);
     
-    return type->handlers.createNew(factory->engineContext, edict);
+    X_GameObject* obj = type->handlers.createNew(factory->engineContext, edict);
+    if(!obj)
+    {
+        x_log_error("Couldn't create object of type %s\n", classname->value);
+        return NULL;
+    }
+    
+    X_EdictAttribute* name = x_edict_get_attribute(edict, "targetname");
+    if(!name)
+        return obj;
+    
+    strcpy(obj->triggerName, name->value);
+    return obj;
 }
 

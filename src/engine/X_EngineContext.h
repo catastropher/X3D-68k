@@ -62,3 +62,8 @@ static inline int x_enginecontext_get_frame(const X_EngineContext* context)
     return context->frameCount;
 }
 
+static inline x_fp16x16 x_enginecontext_get_time_delta(X_EngineContext* engineContext)
+{
+    return x_fp16x16_from_int(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
+}
+

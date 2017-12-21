@@ -91,12 +91,13 @@ void x_engine_render_frame(X_EngineContext* engineContext)
 
 void x_engine_update_objects(X_EngineContext* engineContext)
 {
+    x_fp16x16 deltaTime = x_enginecontext_get_time_delta(engineContext);
     X_GameObject* obj = engineContext->activeObjectHead.nextActive;
     
     while(obj != &engineContext->activeObjectTail)
     {
         if(obj->type->handlers.update)
-            obj->type->handlers.update(obj, 0);
+            obj->type->handlers.update(obj, deltaTime);
         
         obj = obj->nextActive;
     }

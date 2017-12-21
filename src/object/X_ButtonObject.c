@@ -29,25 +29,38 @@ static X_GameObjectType g_buttonObjectType =
     }
 };
 
+static _Bool is_down(X_ButtonObject* button)
+{
+    return button->model->origin.y == button->modelHeight;
+}
+
 static void x_buttonobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
 {
     X_ButtonObject* button = (X_ButtonObject*)obj;
+    x_fp16x16 moveOffset = x_fp16x16_mul(button->speed, deltaTime);
     
     _Bool hasObjectOnButton = button->model->objectsOnModelHead.next != &button->model->objectsOnModelTail;
+    
+    _Bool wasDown = is_down(button);
+    
     if(!hasObjectOnButton)
     {
-        button->model->origin.y -= button->speed;
+        button->model->origin.y -= moveOffset;
         
         if(button->model->origin.y < 0)
         {
             button->model->origin.y = 0;
         }
-        
-        return;
     }
+    else if(button->model->origin.y < button->modelHeight)
+        button->model->origin.y = X_MIN(button->model->origin.y + moveOffset, button->modelHeight);
     
-    if(button->model->origin.y < button->modelHeight)
-        button->model->origin.y += button->speed;
+    _Bool isDown = is_down(button);
+    
+    if(wasDown && !isDown)
+        x_gameobject_trigger(obj, button->trigger, X_GAMEOBJECT_TRIGGER_DEACTIVATE);
+    else if(!wasDown && isDown)
+        x_gameobject_trigger(obj, button->trigger, X_GAMEOBJECT_TRIGGER_ACTIVATE);
 }
 
 X_GameObject* x_buttonobject_new(X_EngineContext* engineContext, X_Edict* edict)
@@ -59,9 +72,13 @@ X_GameObject* x_buttonobject_new(X_EngineContext* engineContext, X_Edict* edict)
     obj->modelHeight = x_bspmodel_height(obj->model);
     obj->base.type = &g_buttonObjectType;
     
-    obj->speed = X_FP16x16_ONE;
+    obj->speed = x_fp16x16_from_int(32);
+    
+    x_edict_get_str(edict, "target", "", obj->trigger);
     
     x_gameobject_activate(&obj->base);
+    
+    printf("Trigger: %s\n", obj->trigger);
     
     return (X_GameObject*)obj;
 }

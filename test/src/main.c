@@ -239,6 +239,30 @@ void shrink_antialias(X_Texture* tex, X_Texture* dest)
     }
 }
 
+X_BoxCollider cube;
+
+void init_cube()
+{
+    static X_BoundBox box;
+    x_boxcollider_init(&cube, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+    cube.position = x_vec3_origin();
+    cube.position.y -= x_fp16x16_from_int(100);
+    cube.velocity = x_vec3_origin();
+}
+
+void update_cube(X_BspLevel* level)
+{
+    x_boxcollider_update(&cube, level);
+}
+
+void draw_cube(X_RenderContext* renderContext)
+{
+    X_Cube geo;
+    x_cube_init(&geo, 32, 32, 32);
+    x_cube_translate(&geo, cube.position);
+    x_cube_render(&geo, renderContext, 255);
+}
+
 void gameloop(Context* context)
 {
     Portal portal;
@@ -255,12 +279,25 @@ void gameloop(Context* context)
     
     //fill_with_checkerboard(&paint);
     
+    init_cube();
+    
     while(!context->quit)
     {
+        X_RenderContext renderContext;
+        x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
+        
         render(context);
         handle_test_portal(&portal, context->engineContext, context->cam);
         
         //apply_paint(context->engineContext, context->cam);
+        
+        if(x_keystate_key_down(&context->engineContext->keystate, '\n'))
+        {
+            cube.position = x_cameraobject_get_position(context->cam);
+        }
+        
+        update_cube(renderContext.level);
+        draw_cube(&renderContext);
         
         handle_keys(context);
         screen_update(context);

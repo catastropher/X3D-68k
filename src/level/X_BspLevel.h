@@ -366,3 +366,8 @@ static inline x_fp16x16 x_bspmodel_height(X_BspModel* model)
     return model->boundBox.v[0].y - model->boundBox.v[1].y;
 }
 
+static inline _Bool x_bspmodel_has_objects_standing_on(X_BspModel* model)
+{
+    return model->objectsOnModelHead.next != &model->objectsOnModelTail;
+}
+

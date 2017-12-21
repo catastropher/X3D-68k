@@ -24,8 +24,16 @@ typedef enum X_PlatformObjectState
     X_PLATFORMOBJECT_DOWN,
     X_PLATFORMOBJECT_RAISING,
     X_PLATFORMOBJECT_UP,
-    X_PLATFORMOBJECT_LOWERING
+    X_PLATFORMOBJECT_LOWERING,
+    X_PLATFORMOBJECT_WAITING
 } X_PlatformObjectState;
+
+typedef enum X_PlatformObjectMode
+{
+    X_PLATFORMOBJECT_CYCLE = 0,
+    X_PLATFORMOBJECT_TRIGGER = 1,
+    X_PLATFORMOBJECT_TRIGGER_ONLY = 2
+} X_PlatformObjectMode;
 
 typedef struct X_PlatformObject
 {
@@ -34,9 +42,9 @@ typedef struct X_PlatformObject
     x_fp16x16 raiseHeight;
     x_fp16x16 speed;
     X_Time nextTransition;
-    X_Time transitionStart;
     X_Time waitTime;
     X_PlatformObjectState state;
+    X_PlatformObjectMode mode;
 } X_PlatformObject;
 
 X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edict);

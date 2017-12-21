@@ -16,28 +16,52 @@
 #include "X_PlatformObject.h"
 #include "error/X_error.h"
 
-void move_platform(X_PlatformObject* platform)
+static void transition_next_state(X_PlatformObject* platform)
+{
+    platform->state = (platform->state + 1) % 4;
+}
+
+static void set_state(X_PlatformObject* platform, X_PlatformObjectState state)
+{
+    platform->state = state;
+}
+
+void move_platform(X_PlatformObject* platform, x_fp16x16 deltaTime)
 {
     X_Time time = x_enginecontext_get_time(platform->base.engineContext);
+    x_fp16x16 offset = x_fp16x16_mul(platform->speed, deltaTime);
     
-    if(platform->state == X_PLATFORMOBJECT_DOWN || platform->state == X_PLATFORMOBJECT_UP)
+    if(platform->state == X_PLATFORMOBJECT_DOWN)
     {
-        if(time >= platform->nextTransition)
-        {
-            platform->state = (platform->state + 1) % 4;
-            platform->transitionStart = time;
-        }
+        _Bool activate = 0;
+        if(platform->mode == X_PLATFORMOBJECT_CYCLE && time >= platform->nextTransition)
+            activate = 1;
+        else if(platform->mode == X_PLATFORMOBJECT_TRIGGER && x_bspmodel_has_objects_standing_on(platform->model))
+            activate = 1;
+        
+        if(activate)
+            transition_next_state(platform);
         
         return;
     }
     
-    x_fp16x16 pos;
-    x_fp16x16 offset = x_fp16x16_from_int(x_fp16x16_mul(time - platform->transitionStart, platform->speed) / 1000);
+    if(platform->state == X_PLATFORMOBJECT_UP)
+    {
+        if(platform->mode == X_PLATFORMOBJECT_TRIGGER_ONLY)
+            return;
+        
+        if(time >= platform->nextTransition)
+            transition_next_state(platform);
+        
+        return;
+    }
+    
+    x_fp16x16 pos = platform->model->origin.y;
     
     if(platform->state == X_PLATFORMOBJECT_LOWERING)
-        pos = offset;
+        pos += offset;
     else
-        pos = platform->raiseHeight - offset;
+        pos -= offset;
     
     if(pos < 0 || pos >= platform->raiseHeight)
     {
@@ -71,8 +95,27 @@ static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
     X_PlatformObject* platform = (X_PlatformObject*)obj;
     
     x_fp16x16 oldY = platform->model->origin.y;
-    move_platform(platform);
+    move_platform(platform, deltaTime);
     move_objects_on_platform(platform, platform->model->origin.y - oldY);
+}
+
+static void x_platform_trigger(X_GameObject* obj, X_GameObject* trigger, X_GameObjectTriggerType type)
+{
+    X_PlatformObject* platform = (X_PlatformObject*)obj;
+    
+    if(type == X_GAMEOBJECT_TRIGGER_ACTIVATE)
+    {
+        set_state(platform, X_PLATFORMOBJECT_RAISING);
+        return;
+    }
+    
+    if(type == X_GAMEOBJECT_TRIGGER_DEACTIVATE)
+    {
+        if(platform->mode != X_PLATFORMOBJECT_TRIGGER_ONLY)
+            return;
+        
+        set_state(platform, X_PLATFORMOBJECT_LOWERING);
+    }
 }
 
 static X_GameObjectType g_platformObjectType = 
@@ -82,7 +125,8 @@ static X_GameObjectType g_platformObjectType =
     .handlers = 
     {
         .update = x_platformobject_update,
-        .createNew = x_platformobject_new
+        .createNew = x_platformobject_new,
+        .trigger = x_platform_trigger
     }
 };
 
@@ -108,9 +152,12 @@ X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edic
     obj->state = X_PLATFORMOBJECT_DOWN;
     obj->nextTransition = x_enginecontext_get_time(engineContext) + obj->waitTime;
     
-    x_edict_get_fp16x16(edict, "height", modelHeight, &obj->raiseHeight);
+    int mode;
+    x_edict_get_int(edict, "mode", X_PLATFORMOBJECT_TRIGGER, &mode);
+    obj->mode = mode;
     
-    //obj->model->origin.y = -obj->raiseHeight;
+    x_edict_get_fp16x16(edict, "height", modelHeight, &obj->raiseHeight);
+    obj->model->origin.y = obj->raiseHeight;
     
     x_gameobject_activate(&obj->base);
     

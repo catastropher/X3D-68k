@@ -93,6 +93,19 @@ _Bool x_edict_get_fp16x16(X_Edict* edict, const char* name, x_fp16x16 defaultVal
     return 1;
 }
 
+_Bool x_edict_get_str(X_Edict* edict, const char* name, const char* defaultValue, char* dest)
+{
+    X_EdictAttribute* att = x_edict_get_attribute(edict, name);
+    if(!att)
+    {
+        strcpy(dest, defaultValue);
+        return 0;
+    }
+    
+    strcpy(dest, att->value);
+    return 1;
+}
+
 static const char* load_next_edict(const char* nextEntry, char* valueData, X_Edict* dest)
 {
     if(*nextEntry != '{')

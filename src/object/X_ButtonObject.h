@@ -39,6 +39,7 @@ typedef struct X_ButtonObject
     x_fp16x16 speed;
     X_ButtonObjectState state;
     X_Time lastTransiitonTime;
+    char trigger[32];
 } X_ButtonObject;
 
 void x_buttonobject_register_type(X_ObjectFactory* factory);
