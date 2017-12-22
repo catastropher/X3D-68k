@@ -82,11 +82,7 @@ static void move_objects_on_platform(X_PlatformObject* platform, x_fp16x16 dY)
     {
         X_BoxCollider* collider = (X_BoxCollider*)((unsigned char*)link - offsetof(X_BoxCollider, objectsOnModel));
         
-        collider->position.y += dY;
-        
-        x_assert(link->next != link, "Bad link");
-        
-        break;
+        collider->position.y += dY;        
     }
 }
 

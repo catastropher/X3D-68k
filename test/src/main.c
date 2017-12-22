@@ -297,8 +297,18 @@ X_GameObject* cube_new(X_EngineContext* engineContext, X_Edict* edict)
     return (X_GameObject*)cube;
 }
 
+static void cmd_trigger(X_EngineContext* engineContext, int argc, char* argv[])
+{
+    if(argc != 3)
+        return;
+    
+    x_gameobject_trigger(&engineContext->screen.cameraListHead->base, argv[1], atoi(argv[2]));
+}
+
 void gameloop(Context* context)
 {
+    x_console_register_cmd(&context->engineContext->console, "trigger", cmd_trigger);
+    
     Portal portal;
     portal.portalOnWall = 0;
     x_mat4x4_load_identity(&portal.wallOrientation);
