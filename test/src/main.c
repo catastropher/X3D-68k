@@ -239,28 +239,62 @@ void shrink_antialias(X_Texture* tex, X_Texture* dest)
     }
 }
 
-X_BoxCollider cube;
-
-void init_cube()
+typedef struct CubeObject
 {
+    X_GameObject base;
+    X_BoxCollider collider;
+    X_BspModel* model;
+    X_Vec3 center;
+} CubeObject;
+
+void cube_update(X_GameObject* obj, x_fp16x16 deltaTime)
+{
+    CubeObject* cube = (CubeObject*)obj;
+    x_boxcollider_update(&cube->collider, &obj->engineContext->currentLevel);
+    
+    cube->model->origin = x_vec3_sub(&cube->collider.position, &cube->center);
+    cube->model->origin.y += x_fp16x16_from_int(8);
+    
+    if(x_keystate_key_down(&obj->engineContext->keystate, '/'))
+    {
+        cube->collider.position = x_cameraobject_get_position(obj->engineContext->screen.cameraListHead);
+    }
+        
+}
+
+X_GameObject* cube_new(X_EngineContext* engineContext, X_Edict* edict);
+
+static X_GameObjectType g_cubeType = 
+{
+    .typeId = 1,
+    .name = "cube",
+    .handlers = 
+    {
+        .createNew = cube_new,
+        .update = cube_update
+    }
+};
+
+
+X_GameObject* cube_new(X_EngineContext* engineContext, X_Edict* edict)
+{
+    CubeObject* cube = (CubeObject*)x_gameobject_new(engineContext, sizeof(CubeObject));
+    
+    cube->model = engineContext->currentLevel.models + x_edict_get_model_id(edict, "model");
+    
     static X_BoundBox box;
-    x_boxcollider_init(&cube, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
-    cube.position = x_vec3_origin();
-    cube.position.y -= x_fp16x16_from_int(100);
-    cube.velocity = x_vec3_origin();
-}
-
-void update_cube(X_BspLevel* level)
-{
-    x_boxcollider_update(&cube, level);
-}
-
-void draw_cube(X_RenderContext* renderContext)
-{
-    X_Cube geo;
-    x_cube_init(&geo, 32, 32, 32);
-    x_cube_translate(&geo, cube.position);
-    x_cube_render(&geo, renderContext, 255);
+    x_boxcollider_init(&cube->collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+    
+    cube->center.x = (cube->model->boundBox.v[1].x + cube->model->boundBox.v[0].x) / 2;
+    cube->center.y = (cube->model->boundBox.v[1].y + cube->model->boundBox.v[0].y) / 2;
+    cube->center.z = (cube->model->boundBox.v[1].z + cube->model->boundBox.v[0].z) / 2;
+    
+    x_gameobject_activate((X_GameObject*)cube);
+    cube->base.type = &g_cubeType;
+    
+    cube->collider.position = cube->center;
+    
+    return (X_GameObject*)cube;
 }
 
 void gameloop(Context* context)
@@ -269,17 +303,15 @@ void gameloop(Context* context)
     portal.portalOnWall = 0;
     x_mat4x4_load_identity(&portal.wallOrientation);
     
-    X_Texture tex;
-    x_bsplevel_get_texture(&context->engineContext->currentLevel, 0, 0, &tex);
-    
-    x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
-    
     x_texture_init(&paint, 32, 32);
     fill_circle(&paint, x_palette_get_quake_palette()->darkBlue, x_palette_get_quake_palette()->lightBlue);
     
     //fill_with_checkerboard(&paint);
     
-    init_cube();
+    x_objectfactory_register_type(&context->engineContext->gameObjectFactory, &g_cubeType);
+    
+    x_console_execute_cmd(&context->engineContext->console, "map portal2");
+    x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
     
     while(!context->quit)
     {
@@ -291,13 +323,6 @@ void gameloop(Context* context)
         
         //apply_paint(context->engineContext, context->cam);
         
-        if(x_keystate_key_down(&context->engineContext->keystate, '/'))
-        {
-            cube.position = x_cameraobject_get_position(context->cam);
-        }
-        
-        update_cube(renderContext.level);
-        draw_cube(&renderContext);
         
         handle_keys(context);
         screen_update(context);
