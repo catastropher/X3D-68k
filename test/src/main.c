@@ -291,7 +291,7 @@ void gameloop(Context* context)
         
         //apply_paint(context->engineContext, context->cam);
         
-        if(x_keystate_key_down(&context->engineContext->keystate, '\n'))
+        if(x_keystate_key_down(&context->engineContext->keystate, '/'))
         {
             cube.position = x_cameraobject_get_position(context->cam);
         }

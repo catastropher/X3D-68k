@@ -15,8 +15,9 @@
 
 #include "X_DemoRecorder.h"
 #include "error/X_log.h"
+#include "engine/X_EngineContext.h"
 
-static void save_camera_start(X_DemoRecorder* recorder, X_CameraObject* cam)
+static void save_camera_state(X_DemoRecorder* recorder, X_CameraObject* cam)
 {
     x_file_write_mat4x4(&recorder->file, &cam->viewMatrix);
 
@@ -25,6 +26,13 @@ static void save_camera_start(X_DemoRecorder* recorder, X_CameraObject* cam)
 
     x_file_write_le_int32(&recorder->file, cam->angleX);
     x_file_write_le_int32(&recorder->file, cam->angleY);
+}
+
+static void save_brush_models(X_DemoRecorder* recorder)
+{
+    X_BspLevel* level = &recorder->cam->base.engineContext->currentLevel;
+    for(int i = 0; i < level->totalModels; ++i)
+        x_file_write_vec3(&recorder->file, &level->models[i].origin);
 }
 
 void x_demorecorder_init(X_DemoRecorder* recorder, X_CameraObject* cam, X_KeyState* keyState)
@@ -44,7 +52,6 @@ _Bool x_demorecorder_record(X_DemoRecorder* recorder, const char* outputFileName
     
     x_file_write_le_int32(&recorder->file, X_DEMO_CURRENT_VERSION);
     x_file_write_le_int32(&recorder->file, recorder->totalFrames);
-    save_camera_start(recorder, recorder->cam);
     
     return 1;
 }
@@ -62,12 +69,8 @@ void x_demorecorder_cleanup(X_DemoRecorder* recorder)
 
 void x_demorecorder_save_frame(X_DemoRecorder* recorder)
 {
-    unsigned char keyBytes[X_KEY_BITARRAY_SIZE] = { 0 };
-    
-    for(int i = 0; i < X_TOTAL_KEYS; ++i)
-        keyBytes[i / 8] |= (int)x_keystate_key_down(recorder->keyState, i) << (i % 8);
-    
-    x_file_write_buf(&recorder->file, X_KEY_BITARRAY_SIZE, keyBytes);
+    save_camera_state(recorder, recorder->cam);
+    save_brush_models(recorder);
     ++recorder->totalFrames;
 }
 

@@ -17,20 +17,15 @@
 
 #include "X_DemoRecorder.h"
 
-typedef struct X_DemoPlayerFrame
-{
-    unsigned char keyState[X_KEY_BITARRAY_SIZE];
-} X_DemoPlayerFrame;
-
 typedef struct X_DemoPlayer
 {
     X_CameraObject* cam;
     X_KeyState* keyState;
     
     int totalFrames;
-    X_DemoPlayerFrame* frames;
-    
+    X_File file;
     int currentFrame;
+    _Bool playing;
 } X_DemoPlayer;
 
 void x_demoplayer_init(X_DemoPlayer* player, X_CameraObject* cam, X_KeyState* keyState);
@@ -40,6 +35,6 @@ void x_demoplayer_cleanup(X_DemoPlayer* player);
 
 static inline _Bool x_demoplayer_is_playing(const X_DemoPlayer* player)
 {
-    return player->frames != NULL && player->currentFrame < player->totalFrames;
+    return x_file_is_open(&player->file) && player->currentFrame < player->totalFrames;
 }
 

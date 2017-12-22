@@ -19,7 +19,7 @@
 #include "object/X_CameraObject.h"
 #include "system/X_Keys.h"
 
-#define X_DEMO_CURRENT_VERSION 1
+#define X_DEMO_CURRENT_VERSION 2
 #define X_KEY_BITARRAY_SIZE (X_TOTAL_KEYS + 7) / 8
 
 typedef struct X_DemoRecorder
