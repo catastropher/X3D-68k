@@ -116,6 +116,7 @@ static void x_ae_context_reset_background_surface(X_AE_Context* context)
     context->background.prev = &context->background;
     context->background.bspKey = 0x7FFFFFFF;
     context->background.bspSurface = &context->backgroundBspSurface;
+    context->background.parent = &context->background;
 }
 
 static void x_ae_context_reset_pools(X_AE_Context* context)
@@ -345,6 +346,11 @@ static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspS
     surface->crossCount = 0;
     surface->closestZ = 0x7FFFFFFF;
     surface->modelOrigin = &context->currentModel->origin;
+    
+    if(context->currentParent == NULL)
+        context->currentParent = surface;
+    
+    surface->parent = context->currentParent;
 
     return surface;
 }
@@ -430,8 +436,9 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
 }
 
 void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
-{    
-
+{
+    x_ae_surface_reset_current_parent(context);
+    
     if((context->renderContext->renderer->renderMode & 2) == 0)
         return;
 
@@ -487,8 +494,7 @@ static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, X
 
 void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
 {
-    //if(bspSurface->id != 5069 && bspSurface->id != 5080)
-    //    return;
+    x_ae_surface_reset_current_parent(context);
     
     X_Vec3 v3d[X_POLYGON3_MAX_VERTS];
     
@@ -502,9 +508,22 @@ static void x_ae_context_emit_span(int left, int right, int y, X_AE_Surface* sur
 {
     if(left == right)
         return;
+    
+    surface = surface->parent;
 
     X_AE_Span* span = surface->spans + surface->totalSpans;
 
+    X_AE_Span* prev = surface->spans + surface->totalSpans - 1;
+    
+    // Faster way to check: (prev->y == y && prev->x2 == left)
+    _Bool extendSpan = ((prev->y ^ y) | (prev->x2 ^ left)) == 0;
+    
+    if(extendSpan)
+    {
+        prev->x2 = right;
+        return;
+    }
+    
     span->x1 = left;
     span->x2 = right;
     span->y = y;

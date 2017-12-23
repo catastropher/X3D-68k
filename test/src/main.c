@@ -325,6 +325,11 @@ void gameloop(Context* context)
     
     while(!context->quit)
     {
+        if(x_keystate_key_down(&context->engineContext->keystate, 'o'))
+        {
+            sleep(1);
+        }
+        
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         

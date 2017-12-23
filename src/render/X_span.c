@@ -249,6 +249,8 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     x_fp16x16 u, v;
     calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
     
+    int color = span->x1;
+    
     int x = span->x1;
     while(x < span->x2 - 16)
     {
@@ -260,7 +262,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         
         for(int i = 0; i < 16; ++i)
         {
-            scanline[x] = get_texel(context, u, v);
+            scanline[x] = color;//get_texel(context, u, v);
             zbuf[x] = invZ;
             
             invZ += dInvZ;
@@ -283,7 +285,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     
     while(x < span->x2)
     {
-        scanline[x] = get_texel(context, u, v);
+        scanline[x] = color; //get_texel(context, u, v);
         zbuf[x] = invZ;
         
         invZ += dInvZ;

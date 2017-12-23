@@ -36,7 +36,7 @@ typedef struct X_AE_Surface
     X_AE_Span spans[X_AE_SURFACE_MAX_SPANS];
     int totalSpans;
     
-    x_fp16x16 zInverseXStep;          // Fixed point number with a decimal point that is shifted
+    x_fp16x16 zInverseXStep;
     x_fp16x16 zInverseYStep;
     x_fp16x16 zInverseOrigin;
     
@@ -48,6 +48,8 @@ typedef struct X_AE_Surface
     
     struct X_AE_Surface* next;
     struct X_AE_Surface* prev;
+    
+    struct X_AE_Surface* parent;    
 } X_AE_Surface;
 
 #define X_AE_EDGE_LEFT_SURFACE 0
@@ -106,6 +108,7 @@ typedef struct X_AE_Context
     X_Screen* screen;
     
     X_BspModel* currentModel;
+    X_AE_Surface* currentParent;
 } X_AE_Context;
 
 void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdges, int edgePoolSize, int surfacePoolSize);
@@ -138,5 +141,10 @@ static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X
 static inline void x_ae_context_set_current_model(X_AE_Context* context, X_BspModel* model)
 {
     context->currentModel = model;
+}
+
+static inline void x_ae_surface_reset_current_parent(X_AE_Context* context)
+{
+    context->currentParent = NULL;
 }
 
