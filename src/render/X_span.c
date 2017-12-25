@@ -297,12 +297,37 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
 
 void draw_surface_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span);
 
+static void merge_adjacent_spans(X_AE_Span* head)
+{
+    X_AE_Span* prev = head;
+    X_AE_Span* span = head->next;
+    
+    while(span)
+    {
+        // Faster way to check: (prev->y == y && prev->x2 == left)
+        _Bool extendSpan = ((prev->y ^ span->y) | (prev->x2 ^ span->x1)) == 0;
+        
+        if(extendSpan)
+        {
+            prev->x2 = span->x2;
+            prev->next = span->next;
+        }
+        else
+            prev = span;
+        
+        span = span->next;
+    }
+}
+
 void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context)
 {
     if(((context->renderContext->renderer->renderMode) & 1) == 0)
         return;
     
     context->surface->last->next = NULL;
+    
+    if(context->surface->inSubmodel)
+        merge_adjacent_spans(context->surface->spanHead.next);
     
     for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
     {

@@ -520,16 +520,6 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
         return;
     
     surface = surface->parent;
-    X_AE_Span* prev = surface->last;
-    
-    // Faster way to check: (prev->y == y && prev->x2 == left)
-    _Bool extendSpan = ((prev->y ^ y) | (prev->x2 ^ left)) == 0;
-    
-    if(extendSpan)
-    {
-        prev->x2 = right;
-        return;
-    }
     
     if(context->nextAvailableSpan == context->spanPoolEnd)
         return;
@@ -540,7 +530,7 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
     span->x2 = right;
     span->y = y;
     
-    prev->next = span;
+    surface->last->next = span;
     surface->last = span;
 }
 
