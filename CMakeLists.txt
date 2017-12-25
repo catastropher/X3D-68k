@@ -39,7 +39,7 @@ elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_ASM_COMPILER nspire-as)
     set(CMAKE_LI)
     add_definitions(-D__nspire__)
-    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O3")
+    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O2")
     
     set(X_WITH_SDL "1")
 endif()

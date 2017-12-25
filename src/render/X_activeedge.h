@@ -22,7 +22,7 @@
 #include "level/X_BspLevel.h"
 #include "X_span.h"
 
-#define X_AE_SURFACE_MAX_SPANS 1024
+#define X_AE_SURFACE_MAX_SPANS 332
 
 typedef struct X_AE_Surface
 {

@@ -37,6 +37,8 @@ typedef struct X_Palette
     
     X_Color black;
     X_Color white;
+    
+    unsigned int grayscaleTable[256];
 } X_Palette;
 
 X_Color x_palette_get_closest_color_from_rgb(const X_Palette* palette, unsigned char r, unsigned char g, unsigned char b);

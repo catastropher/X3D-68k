@@ -327,9 +327,27 @@ static X_Palette quakeColorPalette =
     }
 };
 
+static void init_grayscale_table(X_Palette* palette)
+{
+    for(int i = 0; i < 256; ++i)
+    {
+        unsigned char r, g, b;
+        x_palette_get_rgb(palette, i, &r, &g, &b);
+        
+        x_fp16x16 rScale = x_fp16x16_from_float(0.2126);
+        x_fp16x16 gScale = x_fp16x16_from_float(0.7152);
+        x_fp16x16 bScale = x_fp16x16_from_float(0.0722);
+        
+        x_fp16x16 grayscale = r * rScale + b * bScale + g * gScale;
+        
+        palette->grayscaleTable[i] = X_MIN(x_fp16x16_to_int(grayscale / 16), 15);
+    }
+}
+
 const X_Palette* x_palette_get_quake_palette(void)
 {
     x_palette_set_palette_color_constants(&quakeColorPalette);
+    init_grayscale_table(&quakeColorPalette);
     return &quakeColorPalette;
 }
 

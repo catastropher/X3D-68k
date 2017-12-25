@@ -338,7 +338,10 @@ static _Bool project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport
 
 static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspSurface, int bspKey)
 {
-    X_AE_Surface* surface = context->nextAvailableSurface++;
+    X_AE_Surface* surface = context->nextAvailableSurface;
+    
+    if(context->nextAvailableSurface + 1 < context->surfacePoolEnd)
+        ++context->nextAvailableSurface;
 
     surface->totalSpans = 0;
     surface->bspKey = bspKey;

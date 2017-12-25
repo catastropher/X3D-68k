@@ -54,6 +54,8 @@ int main(int argc, char* argv[])
     nio_console csl;
     nio_init(&csl, NIO_MAX_COLS, NIO_MAX_ROWS, 0, 0, NIO_COLOR_WHITE, NIO_COLOR_BLACK, true);
     
+    nio_fputs("log:\n", &csl);
+    
     int c;
     while((c = fgetc(file)) != EOF)
     {

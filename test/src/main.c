@@ -334,7 +334,7 @@ void gameloop(Context* context)
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         
         render(context);
-        handle_test_portal(&portal, context->engineContext, context->cam);
+        //handle_test_portal(&portal, context->engineContext, context->cam);
         
         //apply_paint(context->engineContext, context->cam);
         

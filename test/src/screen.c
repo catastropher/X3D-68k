@@ -24,7 +24,7 @@ static unsigned short oldColorPalette[256];
 
 void scale_screen(Context* context)
 {
-    unsigned char* texels = context->engineContext->screen.canvas.tex.texels;
+    unsigned char* texels = context->engineContext->screen.canvas.texels;
     
     unsigned short* screen = REAL_SCREEN_BASE_ADDRESS;
     
@@ -46,7 +46,7 @@ static void update_screen_nspire(Context* context)
     //if(context->engineContext->renderer.scaleScreen)
     //    scale_screen(context);
     //else
-        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.tex.texels, 320 * 240);
+        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.texels, 320 * 240);
 }
 
 static unsigned short map_rgb_to_nspire_color(const unsigned char color[3])
@@ -91,6 +91,31 @@ static void set_palette(const X_Palette* palette)
     }
 }
 
+static unsigned int color_to_4bit(X_Palette* palette, X_Color color)
+{
+    return palette->grayscaleTable[color];
+}
+
+static unsigned int pack_color(X_Palette* palette, X_Color* color)
+{
+    return (color_to_4bit(palette, color[7]) << 28) +
+    (color_to_4bit(palette, color[6]) << 24) +
+    (color_to_4bit(palette, color[5]) << 20) +
+    (color_to_4bit(palette, color[4]) << 16) +
+    (color_to_4bit(palette, color[3]) << 12) +
+    (color_to_4bit(palette, color[2]) << 8) +
+    (color_to_4bit(palette, color[1]) << 4) +
+    (color_to_4bit(palette, color[0]) << 0);
+}
+
+static void pack_screen(X_Palette* palette, X_Color* screen)
+{
+    unsigned int* lcd = (unsigned int*)REAL_SCREEN_BASE_ADDRESS;
+    
+    for(int i = 0; i < 320 * 240; i += 8)
+        *lcd++ = pack_color(palette, screen + i);
+}
+
 #endif
 
 static _Bool record = 0;
@@ -101,7 +126,12 @@ static int frameId;
 void screen_update(Context* context)
 {
 #ifdef __nspire__
-    update_screen_nspire(context);
+    int type = lcd_type();
+    
+    if(type != SCR_320x240_4)
+        update_screen_nspire(context);
+    else
+        pack_screen(context->engineContext->screen.palette, context->engineContext->screen.canvas.texels);
 #else
     
     x_texture_to_sdl_surface(&context->engineContext->screen.canvas, context->engineContext->screen.palette, context->screen);
@@ -176,10 +206,15 @@ static void video_restart_callback(X_EngineContext* engineContext, void* userDat
         context->nativeResolutionH = info->current_h;
         
 #ifdef __nspire__
-        lcd_init(SCR_320x240_8);
-        memset(REAL_SCREEN_BASE_ADDRESS, 0, 320 * 240);     // Prevent the screen from flashing when we switch palettes
-        save_old_palette();
-        set_palette(engineContext->screen.palette);
+        int type = lcd_type();
+        
+        if(type != SCR_320x240_4)
+        {
+            lcd_init(SCR_320x240_8);
+            memset(REAL_SCREEN_BASE_ADDRESS, 0, 320 * 240);     // Prevent the screen from flashing when we switch palettes
+            save_old_palette();
+            set_palette(engineContext->screen.palette);
+        }
 #endif
     }
 

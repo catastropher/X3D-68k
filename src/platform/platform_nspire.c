@@ -58,9 +58,7 @@ void x_platform_handle_mouse(X_EngineContext* engineContext)
     pos.y = pos.y * scale / info->height;
     
     pos = x_vec2_add(&center, &pos);
-    
-    x_console_printf(&engineContext->console, "Pos: %d %d", pos.x, pos.y);
-    
+        
     x_mousestate_update_pos(state, pos);
 }
 
