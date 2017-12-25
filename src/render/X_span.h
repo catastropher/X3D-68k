@@ -28,6 +28,7 @@ typedef struct X_AE_Span
     int x1;
     int x2;
     int y;
+    struct X_AE_Span* next;
 } X_AE_Span;
 
 typedef struct X_AE_TextureVar

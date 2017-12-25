@@ -68,6 +68,10 @@ static void x_ae_context_init_edges(X_AE_Context* context, int maxActiveEdges, i
     }
 
     context->newEdges = x_malloc(x_screen_h(context->screen) * sizeof(X_AE_DummyEdge));
+    
+    int totalSpans = 5000;
+    context->spanPool = x_malloc(sizeof(X_AE_Span) * totalSpans);
+    context->spanPoolEnd = context->spanPool + totalSpans;
 }
 
 static void x_ae_context_init_surfaces(X_AE_Context* context, int surfacePoolSize)
@@ -93,6 +97,7 @@ void x_ae_context_cleanup(X_AE_Context* context)
     x_free(context->edgePool);
     x_free(context->newEdges);
     x_free(context->surfacePool);
+    x_free(context->spanPool);
 }
 
 static void x_ae_context_reset_active_edges(X_AE_Context* context)
@@ -117,12 +122,14 @@ static void x_ae_context_reset_background_surface(X_AE_Context* context)
     context->background.bspKey = 0x7FFFFFFF;
     context->background.bspSurface = &context->backgroundBspSurface;
     context->background.parent = &context->background;
+    context->background.last = &context->background.spanHead;
 }
 
 static void x_ae_context_reset_pools(X_AE_Context* context)
 {
     context->nextAvailableEdge = context->edgePool;
     context->nextAvailableSurface = context->surfacePool;
+    context->nextAvailableSpan = context->spanPool;
 }
 
 static void x_ae_context_reset_new_edges(X_AE_Context* context)
@@ -343,7 +350,7 @@ static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspS
     if(context->nextAvailableSurface + 1 < context->surfacePoolEnd)
         ++context->nextAvailableSurface;
 
-    surface->totalSpans = 0;
+    surface->last = &surface->spanHead;
     surface->bspKey = bspKey;
     surface->bspSurface = bspSurface;
     surface->crossCount = 0;
@@ -507,16 +514,13 @@ void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level,
     x_ae_context_add_submodel_polygon_recursive(context, &poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
 }
 
-static void x_ae_context_emit_span(int left, int right, int y, X_AE_Surface* surface)
+static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
 {
     if(left == right)
         return;
     
     surface = surface->parent;
-
-    X_AE_Span* span = surface->spans + surface->totalSpans;
-
-    X_AE_Span* prev = surface->spans + surface->totalSpans - 1;
+    X_AE_Span* prev = surface->last;
     
     // Faster way to check: (prev->y == y && prev->x2 == left)
     _Bool extendSpan = ((prev->y ^ y) | (prev->x2 ^ left)) == 0;
@@ -527,12 +531,17 @@ static void x_ae_context_emit_span(int left, int right, int y, X_AE_Surface* sur
         return;
     }
     
+    if(context->nextAvailableSpan == context->spanPoolEnd)
+        return;
+
+    X_AE_Span* span = context->nextAvailableSpan++;
+    
     span->x1 = left;
     span->x2 = right;
     span->y = y;
-
-    if(surface->totalSpans + 1 < X_AE_SURFACE_MAX_SPANS)
-        ++surface->totalSpans;
+    
+    prev->next = span;
+    surface->last = span;
 }
 
 static void remove_from_surface_stack(X_AE_Surface* surface)
@@ -560,7 +569,7 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
             // We were on top, so emit the span
             int x = (edge->x) >> 16;
 
-            x_ae_context_emit_span(surfaceToDisable->xStart, x, y, surfaceToDisable);
+            x_ae_context_emit_span(context, surfaceToDisable->xStart, x, y, surfaceToDisable);
             
             topSurface->next->xStart = x;
         }
@@ -583,7 +592,7 @@ enable:
             // Yes, emit span for the current top
             int x = edge->x >> 16;
 
-            x_ae_context_emit_span(topSurface->xStart, x, y, topSurface);
+            x_ae_context_emit_span(context, topSurface->xStart, x, y, topSurface);
 
             surfaceToEnable->xStart = x;
             
@@ -719,7 +728,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
     {
-        if(context->surfacePool[i].totalSpans == 0)
+        if(context->surfacePool[i].last == &context->surfacePool[i].spanHead)
             continue;
 
         X_AE_SurfaceRenderContext surfaceRenderContext;
@@ -730,12 +739,12 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
 _Bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)
 {
-    for(int i = 0; i < surface->totalSpans; ++i)
-    {
-        X_AE_Span* span = surface->spans + i;
-        if(span->y == y && x >= span->x1 && x < span->x2)
-            return 1;
-    }
+//     for(int i = 0; i < surface->totalSpans; ++i)
+//     {
+//         X_AE_Span* span = surface->spans + i;
+//         if(span->y == y && x >= span->x1 && x < span->x2)
+//             return 1;
+//     }
 
     return 0;
 }

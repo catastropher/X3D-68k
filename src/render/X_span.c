@@ -302,12 +302,14 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
     if(((context->renderContext->renderer->renderMode) & 1) == 0)
         return;
     
-    for(int i = 0; i < context->surface->totalSpans; ++i)
+    context->surface->last->next = NULL;
+    
+    for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
     {
 #ifdef __nspire__
-        draw_surface_span(context, context->surface->spans + i);
+        draw_surface_span(context, span);
 #else
-        x_ae_surfacerendercontext_render_span(context, context->surface->spans + i);
+        x_ae_surfacerendercontext_render_span(context, span);
 #endif
     }
 }

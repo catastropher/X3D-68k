@@ -32,9 +32,8 @@ typedef struct X_AE_Surface
     int xStart;
     
     X_BspSurface* bspSurface;
-
-    X_AE_Span spans[X_AE_SURFACE_MAX_SPANS];
-    int totalSpans;
+    X_AE_Span spanHead;
+    X_AE_Span* last;
     
     x_fp16x16 zInverseXStep;
     x_fp16x16 zInverseYStep;
@@ -94,6 +93,10 @@ typedef struct X_AE_Context
     X_AE_Surface* surfacePool;
     X_AE_Surface* surfacePoolEnd;
     X_AE_Surface* nextAvailableSurface;
+    
+    X_AE_Span* spanPool;
+    X_AE_Span* spanPoolEnd;
+    X_AE_Span* nextAvailableSpan;
     
     X_AE_DummyEdge* newEdges;
     X_AE_Edge newRightEdge;

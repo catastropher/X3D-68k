@@ -103,23 +103,23 @@ static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
 
 static void cmd_spanProfile(X_EngineContext* context, int argc, char* argv[])
 {
-    int count[640] = { 0 };
-    
-    for(int j = 0; j < context->renderer.activeEdgeContext.nextAvailableSurface - context->renderer.activeEdgeContext.surfacePool; ++j)
-    {
-        X_AE_Surface* surface = context->renderer.activeEdgeContext.surfacePool + j;
-        
-        for(int i = 0; i < surface->totalSpans; ++i)
-        {
-            X_AE_Span* span = surface->spans + i;
-            ++count[span->x2 - span->x1];
-        }
-    }
-    
-    for(int i = 0; i < x_screen_w(&context->screen); ++i)
-    {
-        x_log("%d:   %d", i, count[i]);
-    }
+//     int count[640] = { 0 };
+//     
+//     for(int j = 0; j < context->renderer.activeEdgeContext.nextAvailableSurface - context->renderer.activeEdgeContext.surfacePool; ++j)
+//     {
+//         X_AE_Surface* surface = context->renderer.activeEdgeContext.surfacePool + j;
+//         
+//         for(int i = 0; i < surface->totalSpans; ++i)
+//         {
+//             X_AE_Span* span = surface->spans + i;
+//             ++count[span->x2 - span->x1];
+//         }
+//     }
+//     
+//     for(int i = 0; i < x_screen_w(&context->screen); ++i)
+//     {
+//         x_log("%d:   %d", i, count[i]);
+//     }
 }    
 
 // Prints the ID of the surface we're currently looking at
