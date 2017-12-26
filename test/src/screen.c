@@ -41,12 +41,17 @@ void scale_screen(Context* context)
     }
 }
 
+void copy_screen(unsigned char* dest, unsigned char* src);
+
 static void update_screen_nspire(Context* context)
 {
     //if(context->engineContext->renderer.scaleScreen)
     //    scale_screen(context);
     //else
-        memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.texels, 320 * 240);
+    
+    copy_screen(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.texels);
+    
+    //memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.texels, 320 * 240);
 }
 
 static unsigned short map_rgb_to_nspire_color(const unsigned char color[3])

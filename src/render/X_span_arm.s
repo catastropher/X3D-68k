@@ -18,6 +18,8 @@
 
 .global draw_span_solid
 .global draw_surface_span
+.global draw_surface
+.global copy_screen
 
 
 # Calculates the reciprocal of r0
@@ -226,11 +228,17 @@ draw_span_solid_loop:
     adjust_and_clamp_u \u, \scratch
     adjust_and_clamp_v \v, \scratch
 .endm
+
+# r0 -> context
+# r1 -> span
+draw_surface:
+    push { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
     
 # r0 -> context
 # r1 -> span
 draw_surface_span:
-    push { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    push { r0, r1 }
+
     # Load left, right, and y
     ldm r1, { r2, r3, r4 }
     
@@ -435,6 +443,11 @@ write_texel_unroll_end:
     strb r11, [r3], #-1
     
 done:
+    pop { r0, r1}
+    ldr r1, [r1, #12]
+    cmp r1, #0
+    bne draw_surface_span
+
     pop { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
     bx lr
     
@@ -446,4 +459,152 @@ nspire_scale_screen:
 #     ldrb r2, [r0], #1
 #     orr r2, r2, r2, lsl #8
 #     strsh r2, [r1]
-#     strsh 
+#     strsh
+
+
+# r0 -> dest
+# r1 -> src
+copy_screen:
+    push { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    
+    mov r2, #25
+    
+copy_screen_loop:
+    push { r2 }
+    
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    ldm r1!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    stm r0!, { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    pop { r2 }
+    
+    subs r2, r2, #1
+    cmp r2, #0
+    bne copy_screen_loop
+    
+    pop { r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, lr }
+    bx lr

@@ -296,6 +296,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
 }
 
 void draw_surface_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span);
+void draw_surface(X_AE_SurfaceRenderContext* context, X_AE_Span* span);
 
 static void merge_adjacent_spans(X_AE_Span* head)
 {
@@ -328,6 +329,11 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
     
     if(context->surface->inSubmodel)
         merge_adjacent_spans(context->surface->spanHead.next);
+    
+#ifdef __nspire__
+    draw_surface(context, context->surface->spanHead.next);
+    return;
+#endif
     
     for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
     {
