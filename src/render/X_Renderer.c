@@ -185,7 +185,7 @@ static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
     x_viewport_init(&cam->viewport, x_vec2_make(0, 0), w, h, X_ANG_60);
 }
 
-#define MAX_SURFACES 150
+#define MAX_SURFACES 300
 #define MAX_EDGES 1000
 #define MAX_ACTIVE_EDGES 5000
 
@@ -266,7 +266,7 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_renderer_set_default_values(renderer, screen, fov);
     
     x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
-    x_cache_init(&renderer->surfaceCache, 500000 * 2, "surfacecache");     // TODO: this size should be configurable
+    x_cache_init(&renderer->surfaceCache, 500000 * 4, "surfacecache");     // TODO: this size should be configurable
     x_renderer_init_colormap(renderer, screen->palette);
     x_renderer_init_dynamic_lights(renderer);
 }

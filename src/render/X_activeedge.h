@@ -107,6 +107,8 @@ typedef struct X_AE_Context
     X_AE_Surface background;
     X_BspSurface backgroundBspSurface;
     
+    X_AE_Surface foreground;
+    
     X_RenderContext* renderContext;
     X_Screen* screen;
     

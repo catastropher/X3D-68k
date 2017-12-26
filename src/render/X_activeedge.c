@@ -69,7 +69,7 @@ static void x_ae_context_init_edges(X_AE_Context* context, int maxActiveEdges, i
 
     context->newEdges = x_malloc(x_screen_h(context->screen) * sizeof(X_AE_DummyEdge));
     
-    int totalSpans = 5000;
+    int totalSpans = 10000;
     context->spanPool = x_malloc(sizeof(X_AE_Span) * totalSpans);
     context->spanPoolEnd = context->spanPool + totalSpans;
 }
@@ -117,8 +117,15 @@ static void x_ae_context_reset_background_surface(X_AE_Context* context)
     context->rightEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = &context->background;
     context->rightEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
 
-    context->background.next = &context->background;
-    context->background.prev = &context->background;
+    context->foreground.next = &context->background;
+    context->foreground.prev = NULL;
+    context->foreground.bspKey = -0x7FFFFFFF;
+    context->foreground.bspSurface = &context->backgroundBspSurface;
+    context->foreground.parent = &context->foreground;
+    context->foreground.last = &context->foreground.spanHead;
+    
+    context->background.next = NULL;
+    context->background.prev = &context->foreground;
     context->background.bspKey = 0x7FFFFFFF;
     context->background.bspSurface = &context->backgroundBspSurface;
     context->background.parent = &context->background;
@@ -522,7 +529,10 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
     surface = surface->parent;
     
     if(context->nextAvailableSpan == context->spanPoolEnd)
+    {
+        printf("Out of spans\n");
         return;
+    }
 
     X_AE_Span* span = context->nextAvailableSpan++;
     
@@ -540,18 +550,40 @@ static void remove_from_surface_stack(X_AE_Surface* surface)
     surface->next->prev = surface->prev;
 }
 
+// void validate_stack(X_AE_Context* c, const char* msg)
+// {
+//     return;
+//     printf("=============%s\n", msg);
+//     
+//     x_assert(c->foreground.prev == NULL, "Bad f prev");
+//     x_assert(c->background.next == NULL, "Bad b prev");
+//     
+//     X_AE_Surface* prev = NULL;
+//     
+//     for(X_AE_Surface* s = &c->foreground; s != NULL; s = s->next)
+//     {
+//         //printf("Check %d\n", s->id);
+//         
+//         x_assert(s->prev == prev, "Bad prev");
+//         prev = s;
+//     }
+// }
+
 static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* edge, int y)
 {
     X_AE_Surface* surfaceToEnable = edge->surfaces[X_AE_EDGE_RIGHT_SURFACE];
     X_AE_Surface* surfaceToDisable = edge->surfaces[X_AE_EDGE_LEFT_SURFACE];
 
-    X_AE_Surface* topSurface = context->background.next;
-
+    X_AE_Surface* topSurface = context->foreground.next;
+    
     if(surfaceToDisable != NULL)
     {
         // Make sure the edges didn't cross
         if(--surfaceToDisable->crossCount != 0)
+        {
+            surfaceToDisable = NULL;
             goto enable;
+        }
 
         
         if(surfaceToDisable == topSurface)
@@ -570,40 +602,52 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
 enable:
     if(surfaceToEnable != NULL)
     {
-        topSurface = context->background.next;
+        topSurface = context->foreground.next;
         
         // Make sure the edges didn't cross
         if(++surfaceToEnable->crossCount != 1)
             return;
-
-        // Are we the top surface now?
-        if(x_ae_surface_closer(surfaceToEnable, topSurface, edge->x, y, edge->xSlope))
+        
+        X_AE_Surface* search;
+        if(surfaceToDisable != NULL)
+            search = surfaceToDisable->prev;
+        else
+            search = topSurface;
+        
+        if(x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope))
         {
-            // Yes, emit span for the current top
-            int x = edge->x >> 16;
-
-            x_ae_context_emit_span(context, topSurface->xStart, x, y, topSurface);
-
-            surfaceToEnable->xStart = x;
+            do
+            {
+                search = search->prev;
+            } while(x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope));
             
-            surfaceToEnable->next = topSurface;
-            surfaceToEnable->prev = &context->background;
             
-            topSurface->prev = surfaceToEnable;
-            context->background.next = surfaceToEnable;
+            search = search->next;
         }
         else
         {
             do
             {
-                topSurface = topSurface->next;
-            } while(!x_ae_surface_closer(surfaceToEnable, topSurface, edge->x, y, edge->xSlope));
-            
-            surfaceToEnable->next = topSurface;
-            surfaceToEnable->prev = topSurface->prev;
-            topSurface->prev->next = surfaceToEnable;
-            topSurface->prev = surfaceToEnable;
+                search = search->next;
+            } while(!x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope));            
         }
+        
+        surfaceToEnable->next = search;
+        surfaceToEnable->prev = search->prev;
+        search->prev->next = surfaceToEnable;
+        search->prev = surfaceToEnable;
+
+        // Are we the top surface now?
+        if(context->foreground.next == surfaceToEnable)
+        {
+            // Yes, emit span for the old top
+            int x = edge->x >> 16;
+
+            x_ae_context_emit_span(context, topSurface->xStart, x, y, topSurface);
+
+            surfaceToEnable->xStart = x;
+            //context->foreground.next = surfaceToEnable;
+        }        
     }
 }
 
@@ -633,8 +677,11 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
 {
     context->background.crossCount = 1;
     context->background.xStart = 0;
-    context->background.next = &context->background;
-    context->background.prev = &context->background;
+    context->foreground.next = &context->background;
+    context->foreground.prev = NULL;
+    
+    context->background.next = NULL;
+    context->background.prev = &context->foreground;
 
     X_AE_Edge* activeEdge = context->leftEdge.next;
 

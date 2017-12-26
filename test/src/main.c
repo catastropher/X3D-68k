@@ -320,7 +320,7 @@ void gameloop(Context* context)
     
     x_objectfactory_register_type(&context->engineContext->gameObjectFactory, &g_cubeType);
     
-    x_console_execute_cmd(&context->engineContext->console, "map portal2");
+    x_console_execute_cmd(&context->engineContext->console, "map e1m1");
     x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
     
     while(!context->quit)
