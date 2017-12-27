@@ -71,7 +71,6 @@ typedef struct X_AE_Edge
     int frameCreated;
     
     struct X_AE_Edge* nextDelete;
-    struct X_AE_Edge* skipAhead;
 } X_AE_Edge;
 
 typedef struct X_AE_DummyEdge
@@ -79,6 +78,7 @@ typedef struct X_AE_DummyEdge
     // Attributes shared with X_AE_Edge (do not reorder!)
     x_fp16x16 x;
     struct X_AE_Edge* next;
+    
     struct X_AE_Edge* deleteHead;
 } X_AE_DummyEdge;
 

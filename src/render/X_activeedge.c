@@ -657,8 +657,7 @@ static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge
 
     // Advance the edge
     edge->x += edge->xSlope;
-
-    // Resort the edge, if it moved out of order
+    
     while(edge->x < edge->prev->x)
     {
         X_AE_Edge* prev = edge->prev;
@@ -687,41 +686,31 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
 
     X_AE_Edge* newEdge = context->newEdges[y].next;
 
-    int total = 0;
-
-    do
+    
+    while(newEdge != &context->newRightEdge)
     {
-        X_AE_Edge* e;
-
-        if(activeEdge->x <= newEdge->x)
-        {
-            e = activeEdge;
+        while(activeEdge->x <= newEdge->x)
             activeEdge = activeEdge->next;
-        }
-        else
-        {
-            X_AE_Edge* prev = activeEdge->prev;
+        
+        X_AE_Edge* newEdgeNext = newEdge->next;
+        X_AE_Edge* prev = activeEdge->prev;
+        prev->next = newEdge;
+        newEdge->prev = prev;
+        
+        newEdge->next = activeEdge;
+        activeEdge->prev = newEdge;
+        
+        newEdge = newEdgeNext;
+    }
+    
 
-            prev->next = newEdge;
-            newEdge->prev = prev;
+    for(X_AE_Edge* edge = context->leftEdge.next; edge != &context->rightEdge; )
+    {
+        X_AE_Edge* next = edge->next;
+        x_ae_context_add_active_edge(context, edge, y);
+        edge = next;
+    }
 
-            X_AE_Edge* newEdgeNext = newEdge->next;
-            newEdge->next = activeEdge;
-            activeEdge->prev = newEdge;
-
-            e = newEdge;
-            newEdge = newEdgeNext;
-        }
-
-        ++total;
-
-        if(e->next == &context->newRightEdge)
-            break;
-
-        x_ae_context_add_active_edge(context, e, y);
-    } while(1);
-
-    g_stackCount = X_MAX(g_stackCount, total);
 
     X_AE_Edge* nextDelete = context->newEdges[y].deleteHead;
 
@@ -747,15 +736,13 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     x_ae_context_reset_background_surface(context);
 
+    // Don't bother removing the edges from the last scanline
+    context->newEdges[x_screen_h(context->screen) - 1].deleteHead = NULL;
+    
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
         for(int i = 0; i < x_screen_h(context->screen); ++i)
         {
-            for(int j = 0; j < context->nextAvailableSurface - context->surfacePool; ++j)
-            {
-                context->surfacePool[j].crossCount = 0;
-            }
-            
             x_ae_context_process_edges(context, i);
         }
     }
