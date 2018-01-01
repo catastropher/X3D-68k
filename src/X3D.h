@@ -67,6 +67,9 @@
 #include "memory/X_Link.h"
 #include "memory/X_String.h"
 
+// net
+#include "net/X_net.h"
+
 // object
 #include "object/X_ButtonObject.h"
 #include "object/X_CameraObject.h"

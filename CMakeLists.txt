@@ -92,6 +92,9 @@ set(X3D_SOURCES
     src/memory/X_Factory.c
     src/memory/X_String.c
 
+    # net
+    src/net/X_net.c
+    
     # object
     src/object/X_ButtonObject.c
     src/object/X_CameraObject.c
