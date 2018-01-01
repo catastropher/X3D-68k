@@ -130,11 +130,24 @@ set(X3D_SOURCES
 )
 
 if(${XTARGET} STREQUAL "pc")
-    set(X3D_SOURCES ${X3D_SOURCES} src/platform/platform_pc.c)
+    set(X3D_SOURCES ${X3D_SOURCES}
+        src/platform/platform_pc.c
+        src/platform/socket_pc_to_nspire.c
+    )
+    
+    find_package(PkgConfig REQUIRED)
+    
+    include_directories(/usr/local/include/tilp2)
+    pkg_check_modules(GLIB2 REQUIRED glib-2.0)
+    include_directories(${GLIB2_INCLUDE_DIRS})
 endif()
 
 if(${XTARGET} STREQUAL "nspire")
-    set(X3D_SOURCES ${X3D_SOURCES} src/render/X_span_arm.s src/platform/platform_nspire.c)
+    set(X3D_SOURCES ${X3D_SOURCES}
+        src/render/X_span_arm.s
+        src/platform/platform_nspire.c
+        src/platform/socket_nspire.c
+    )
 endif()
 
 

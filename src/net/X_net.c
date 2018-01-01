@@ -15,7 +15,7 @@
 
 #include "X_net.h"
 
-void x_socket_open(X_Socket* socket, const char* address)
+_Bool x_socket_open(X_Socket* socket, const char* address)
 {
     
 }

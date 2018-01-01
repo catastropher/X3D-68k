@@ -305,6 +305,8 @@ static void cmd_trigger(X_EngineContext* engineContext, int argc, char* argv[])
     x_gameobject_trigger(&engineContext->screen.cameraListHead->base, argv[1], atoi(argv[2]));
 }
 
+void test_socket();
+
 void gameloop(Context* context)
 {
     x_console_register_cmd(&context->engineContext->console, "trigger", cmd_trigger);
@@ -348,8 +350,10 @@ int main(int argc, char* argv[])
 {
     Context context;
     
-    init(&context, argv[0]);    
-    gameloop(&context);
+    init(&context, argv[0]);
+    
+    test_socket();
+    //gameloop(&context);
     cleanup(&context);
 }
 

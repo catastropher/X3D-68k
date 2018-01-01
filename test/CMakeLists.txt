@@ -54,3 +54,23 @@ find_package(SDL REQUIRED)
 
 find_library(X3D_LIBRARY X3D ${X_LIB_PATH})
 target_link_libraries(xtest ${X3D_LIBRARY} SDL m)
+
+
+if(${XTARGET} STREQUAL "pc")
+    find_package(PkgConfig REQUIRED)
+    
+    include_directories(/usr/local/include/tilp2)
+    pkg_check_modules(GLIB2 REQUIRED glib-2.0)
+    include_directories(${GLIB2_INCLUDE_DIRS})
+    
+    link_directories(${GLIB2_LIBRARY_DIRS})
+    add_definitions(${GLIB2_CFLAGS_OTHER})
+    
+    link_directories(/usr/lib/tilp2)
+    
+    find_library(TICABLES ticables2)
+    find_library(TICALCS ticalcs2)
+        
+    target_link_libraries(xtest ${GLIB2_LIBRARIES} ${TICALCS} ${TICABLES})
+endif()
+    
