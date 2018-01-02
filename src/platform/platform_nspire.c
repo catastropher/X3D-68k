@@ -17,10 +17,17 @@
 
 #include "X_Platform.h"
 #include "X_SDL.h"
+#include "socket_nspire.h"
+
+static void init_net()
+{
+    x_socket_nspire_register_interface();
+}
 
 void x_platform_init(X_EngineContext* engineContext, X_Config* config)
 {
     x_sdl_init_keys(engineContext, 0);
+    init_net();
 }
 
 void x_platform_cleanup(X_EngineContext* engineContext)

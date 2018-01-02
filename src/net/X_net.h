@@ -46,7 +46,9 @@ typedef struct X_SocketInterface
     _Bool (*openSocket)(struct X_Socket* socket, const char* address);
     void (*closeSocket)(struct X_Socket* socket);
     _Bool (*sendPacket)(struct X_Socket* socket, X_Packet* packet);
-    struct X_Socket (*dequeuePacket)(struct X_Socket* socket);
+    X_Packet* (*dequeuePacket)(struct X_Socket* socket);
+    
+    struct X_SocketInterface* next;
 } X_SocketInterface;
 
 typedef enum X_SocketError
@@ -57,7 +59,9 @@ typedef enum X_SocketError
     X_SOCKETERROR_OUT_OF_PACKETS = 3,
     X_SOCKETERROR_READ_FAILED = 4,
     X_SOCKETERROR_NOT_OPENED = 5,
-    X_SOCKETERROR_SERVER_REJECTED = 6
+    X_SOCKETERROR_SERVER_REJECTED = 6,
+    X_SOCKETERROR_BAD_ADDRESS = 7,
+    X_SOCKETERROR_CLOSED = 8
 } X_SocketError;
 
 typedef struct X_Socket
@@ -77,10 +81,24 @@ typedef struct X_Socket
     struct timeval lastPacketRead;
 } X_Socket;
 
+void x_net_init();
+void x_net_register_socket_interface(X_SocketInterface* interface);
+
+_Bool x_socket_open(X_Socket* socket, const char* address);
+void x_socket_close(X_Socket* socket);
+_Bool x_socket_send_packet(X_Socket* socket, X_Packet* packet);
+_Bool x_socket_connection_is_valid(X_Socket* socket);
+
+
 static inline void x_packet_init(X_Packet* packet, X_PacketType type, unsigned char* buf, int size)
 {
     packet->type = type;
     packet->data = buf;
     packet->size = size;
+}
+
+static inline X_SocketError x_socket_get_error(X_Socket* socket)
+{
+    return socket->error;
 }
 

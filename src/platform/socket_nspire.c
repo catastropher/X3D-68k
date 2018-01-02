@@ -20,8 +20,6 @@
 #include "error/X_log.h"
 #include "memory/X_alloc.h"
 
-// The Nspire can have at most one connection through the linkport
-
 #define SERVICE_ID 32767
 
 typedef struct Connection
@@ -72,7 +70,7 @@ static void socket_callback(nn_ch_t handle, void* userData)
     socket->queueTail = nextPacket;
 }
 
-static void* probe_for_device()
+static nn_nh_t* probe_for_device()
 {
     nn_oh_t handle = TI_NN_CreateOperationHandle();
     if(!handle)
@@ -101,7 +99,11 @@ static void* probe_for_device()
 
 static void socket_close(X_Socket* socket)
 {
+    socket->error = X_SOCKETERROR_CLOSED;
     TI_NN_StopService(SERVICE_ID);
+    
+    x_free(socket->packets);
+    x_free(socket->packetData);
 }
 
 static _Bool send_packet(X_Socket* socket, X_Packet* packet)
@@ -140,6 +142,12 @@ static _Bool socket_open(X_Socket* socket, const char* address)
 {
     x_log("Attemping to open socket...");
     socket->error = X_SOCKETERROR_NOT_OPENED;
+    
+    if(g_Connection.socket)
+    {
+        x_log("USB Port already in use");
+        return 0;
+    }
     
     nn_nh_t device = probe_for_device();
     if(!device)
@@ -228,69 +236,51 @@ static X_Packet* dequeue_packet(X_Socket* socket)
     return packet;
 }
 
-static void process_connect_acknowledge(X_Socket* socket, X_Packet* packet)
+static _Bool match_address(const char* address)
 {
-    
+    return 1;
 }
 
-static void send_connect_acknowledge(X_Socket* socket, _Bool success)
+static X_SocketInterface g_socketInterface = 
 {
-    X_Packet packet;
-    unsigned char buf[1] = { success };
-    
-    x_packet_init(&packet, X_PACKET_CONNECT_ACKNOWLEDGE, buf, 1);
-    send_packet(socket, &packet);
-}
+    .matchAddress = match_address,
+    .openSocket = socket_open,
+    .closeSocket = socket_close,
+    .sendPacket = send_packet,
+    .dequeuePacket = dequeue_packet
+};
 
-static X_Packet* get_packet(X_Socket* socket)
+void x_socket_nspire_register_interface(void)
 {
-    X_Packet* packet;
-    while(packet = dequeue_packet(socket))
-    {
-        switch(packet->type)
-        {
-            case X_PACKET_CONNECT_ACKNOWLEDGE:
-                process_connect_acknowledge(socket, packet);
-                break;
-                
-            case X_PACKET_CONNECT:
-                send_connect_acknowledge(socket, X_NET_ERROR);
-                break;
-                
-            default:
-                return packet;
-        }
-    }
-    
-    return NULL;
+    x_net_register_socket_interface(&g_socketInterface);
 }
 
 void test_socket()
 {
-    X_Socket socket;
-    
-    //if(!socket_open(&socket))
-    //    return;
-    
-    do
-    {
-        X_Packet* packet = dequeue_packet(&socket);
-        
-        if(!packet)
-            continue;
-        
-        show_msgbox("Message", packet->data);
-        
-        char buf[32];
-        sprintf(buf, "%d", packet->size);
-        show_msgbox("Size", buf);
-                
-    } while(socket.error == X_SOCKETERROR_NONE);
-    
-    char buf[32];
-    sprintf(buf, "%d", socket.error);
-    show_msgbox("Disconnect", buf);
-    
-    socket_close(&socket);
+//     X_Socket socket;
+//     
+//     //if(!socket_open(&socket))
+//     //    return;
+//     
+//     do
+//     {
+//         X_Packet* packet = dequeue_packet(&socket);
+//         
+//         if(!packet)
+//             continue;
+//         
+//         show_msgbox("Message", packet->data);
+//         
+//         char buf[32];
+//         sprintf(buf, "%d", packet->size);
+//         show_msgbox("Size", buf);
+//                 
+//     } while(socket.error == X_SOCKETERROR_NONE);
+//     
+//     char buf[32];
+//     sprintf(buf, "%d", socket.error);
+//     show_msgbox("Disconnect", buf);
+//     
+//     socket_close(&socket);
 }
 
