@@ -17,36 +17,23 @@
 
 _Bool x_socket_open(X_Socket* socket, const char* address)
 {
-    
+    return socket->interface->openSocket(socket, address);
 }
 
 void x_socket_close(X_Socket* socket)
 {
-    
+    socket->interface->closeSocket(socket);
 }
 
-void x_socket_send_packet(X_Socket* socket, X_Packet* packet)
+_Bool x_socket_send_packet(X_Socket* socket, X_Packet* packet)
 {
-    
-}
-
-void x_socket_recv_packet(X_Socket* socket, X_Packet* dest)
-{
-    
-}
-
-X_Packet* x_socket_alloc_packet(X_Socket* socket)
-{
-    
-}
-
-void x_socket_free_packet(X_Socket* socket, X_Packet* packet)
-{
-    
+    return socket->interface->sendPacket(socket, packet);
 }
 
 _Bool x_socket_connection_is_valid(X_Socket* socket)
 {
-    
+    return socket->error == X_SOCKETERROR_NONE;
 }
+
+
 

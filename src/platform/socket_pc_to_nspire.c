@@ -33,6 +33,7 @@ typedef struct Connection
     CableHandle* cable;
     CalcHandle* calc;
     _Bool connected;
+    X_Socket* socket;
 } Connection;
 
 Connection connections[MAX_CONNECTIONS];
@@ -47,6 +48,7 @@ static void init()
         connections[i].cable = NULL;
         connections[i].calc = NULL;
         connections[i].connected = 0;
+        connections[i].socket = NULL;
     }
 }
 
@@ -106,6 +108,9 @@ static _Bool socket_open(X_Socket* socket, int port)
     
     Connection* con = get_connection(port);
 
+    socket->socketInterfaceData = con;
+    con->socket = socket;
+    
     if(!con->connected)
     {
         x_log_error("Attemped to open ");
@@ -119,13 +124,13 @@ static _Bool socket_open(X_Socket* socket, int port)
 //         return -1;
 //     }
     
-    x_log("Attempting handshake...");
-    
-    if(!perform_connection_handshake(con))
-    {
-        x_log_error("Handshake failed");
-        return 0;
-    }
+//     x_log("Attempting handshake...");
+//     
+//     if(!perform_connection_handshake(con))
+//     {
+//         x_log_error("Handshake failed");
+//         return 0;
+//     }
     
     x_log("Successfully connected to calc on port %d", port);
     
@@ -203,16 +208,35 @@ static void send_packet(X_Socket* socket, X_Packet* packet)
     x_system_error("Packet too big");
 }
 
-static void recv_packet(Connection* con)
+static void recv_packet(X_Socket* socket)
 {
     int size;
-    unsigned char* buf = recv_data(con, &size);
+    unsigned char* buf = recv_data(connection_from_socket(socket), &size);
     
     if(!buf || size < 1)
         return;
     
     if(buf[0] == X_PACKET_CONNECT)
+    {
         x_log("Received connect packed!\n");
+        
+        X_Packet pack;
+        char str[] = "Hello";
+        
+        pack.data = str;
+        pack.size = sizeof(str);
+        pack.type = 4;
+        
+        send_packet(socket, &pack);
+        
+        char str2[] = "World!!!!!";
+        
+        pack.data = str2;
+        pack.size = sizeof(str2);
+        pack.type = 4;
+        
+        send_packet(socket, &pack);
+    }
 }
 
 
@@ -223,6 +247,8 @@ void test_socket()
     
     g_setenv("G_MESSAGES_DEBUG", "all", /* overwrite = */ 0);
     
+    X_Socket socket;
+    
     while(1)//for(int i = 0; i < 50; ++i)
     {
         auto_connect_to_devices();
@@ -230,7 +256,14 @@ void test_socket()
         for(int j = 0; j < 4; ++j)
         {
             if(connections[j].connected)
-                recv_packet(connections + j);
+            {
+                if(!connections[j].socket)
+                {
+                    socket_open(&socket, j);
+                }
+                
+                recv_packet(connections[j].socket);
+            }
         }
         
         //usleep( * 1000);

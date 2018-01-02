@@ -18,6 +18,7 @@
 
 #include "net/X_net.h"
 #include "error/X_log.h"
+#include "memory/X_alloc.h"
 
 // The Nspire can have at most one connection through the linkport
 
@@ -31,16 +32,13 @@ typedef struct Connection
 
 static Connection g_Connection;
 
-static int recv_data(Connection* con, unsigned char* buf, int bufSize)
-{
-    unsigned int size;
-    int ret = TI_NN_Read(con->handle, 0, buf, bufSize, (uint32_t)&size);
+static int recv_data(nn_ch_t handle, unsigned char* buf, int bufSize)
+{    
+    uint32_t size;
+    int ret = TI_NN_Read(handle, 10, buf, bufSize, (uint32_t)&size);
     
     if(ret < 0)
-    {
-        con->socket->error = X_SOCKETERROR_TIMED_OUT;
         return 0;
-    }
     
     return size;
 }
@@ -52,39 +50,26 @@ static _Bool send_data(X_Socket* socket, unsigned char* data, int size)
 
 static void socket_callback(nn_ch_t handle, void* userData)
 {
-//     Connection* con = (Connection*)handle;
-//     unsigned char buf[512];
-//     
-//     int size = recv_data(con, buf, 512);
-//     
-//     if(size == 0)
-//         return;
-//     
-//     X_Socket* socket = con->socket;
-//     X_Packet* packet = socket->freeListHead;
-//     
-//     if(!packet)
-//     {
-//         socket->error = X_SOCKETERROR_OUT_OF_PACKETS;
-//         return;
-//     }
-//     
-//     socket->freeListHead = socket->freeListHead->next;
-//     
-//     packet->type = buf[0];
-//     packet->size = buf[1];
-//     
-//    memcpy(packet->data, buf + 2, packet->size);
-}
+    Connection* con = (Connection*)userData;
+    X_Socket* socket = con->socket;
+    
+    int nextPacket = (socket->queueTail + 1) % socket->totalPackets;
+    
+    if(nextPacket == socket->queueTail)
+        socket->error = X_SOCKETERROR_OUT_OF_PACKETS;
+    
+    if(socket->error != X_SOCKETERROR_NONE)
+        return;
+    
+    X_Packet* packet = socket->packets + socket->queueTail;
+    
+    int size = recv_data(handle, packet->internalData, 256);
+    
+    packet->type = packet->data[0];
+    packet->size = size;
+    packet->data = packet->internalData + 2;
 
-static void enable_interrupts()
-{
-    asm("mrs r1, cpsr \n\t"
-        "bic r1, r1, #0x80 \n\t"
-        "msr cpsr, r1"
-        :
-        :
-    : "r1");
+    socket->queueTail = nextPacket;
 }
 
 static void* probe_for_device()
@@ -116,7 +101,7 @@ static void* probe_for_device()
 
 static void socket_close(X_Socket* socket)
 {
-    TI_NN_StopService(32767);
+    TI_NN_StopService(SERVICE_ID);
 }
 
 static _Bool send_packet(X_Socket* socket, X_Packet* packet)
@@ -128,7 +113,9 @@ static _Bool send_packet(X_Socket* socket, X_Packet* packet)
         buf[1] = packet->type;
         buf[2] = packet->size;
         memcpy(buf + 3, packet->data, packet->size);
-        return send_data(socket, buf, packet->size + 3);
+        
+        _Bool status = send_data(socket, buf, packet->size + 3);
+        return status;
     }
     
     x_system_error("Packet too big");
@@ -149,9 +136,10 @@ static _Bool perform_connection_handshake(X_Socket* socket)
     return 1;
 }
 
-static _Bool socket_open(X_Socket* socket)
+static _Bool socket_open(X_Socket* socket, const char* address)
 {
     x_log("Attemping to open socket...");
+    socket->error = X_SOCKETERROR_NOT_OPENED;
     
     nn_nh_t device = probe_for_device();
     if(!device)
@@ -160,8 +148,21 @@ static _Bool socket_open(X_Socket* socket)
         return 0;
     }
     
-    TI_NN_StopService(32767);
-    int ret = TI_NN_StartService(32767, &g_Connection, socket_callback);
+    int totalPackets = 32;
+    const int MAX_PACKET_SIZE = 256;
+    
+    socket->packets = x_malloc(totalPackets * sizeof(X_Packet));
+    socket->packetData = x_malloc(totalPackets * MAX_PACKET_SIZE);
+    
+    for(int i = 0; i < totalPackets; ++i)
+        socket->packets[i].internalData = socket->packetData + i * MAX_PACKET_SIZE;
+    
+    socket->queueHead = 0;
+    socket->queueTail = 0;
+    socket->totalPackets = totalPackets;
+    
+    TI_NN_StopService(SERVICE_ID);
+    int ret = TI_NN_StartService(SERVICE_ID, &g_Connection, socket_callback);
     if(ret < 0)
     {
         x_log_error("Failed to start service (error code %d)", ret);
@@ -169,7 +170,7 @@ static _Bool socket_open(X_Socket* socket)
     }
     
     nn_ch_t handle;
-    if(TI_NN_Connect(device, SERVICE_ID, &handle) < 0)
+    if(TI_NN_Connect(device, SERVICE_ID, &handle) < 0 || !handle)
     {
         x_log_error("Failed to connect to handle");
         return 0;
@@ -178,9 +179,17 @@ static _Bool socket_open(X_Socket* socket)
     g_Connection.socket = socket;
     g_Connection.handle = handle;
     
+    x_log("Connect handle: %d", (int)handle);
+    x_log("Address: %X", (unsigned int)&g_Connection);
+    
     x_log("Opened connection");
     
-    enable_interrupts();
+    asm("mrs r1, cpsr \n\t"
+        "bic r1, r1, #0x80 \n\t"
+        "msr cpsr, r1"
+        :
+        :
+    : "r1");
     
     if(!perform_connection_handshake(socket))
     {
@@ -188,13 +197,100 @@ static _Bool socket_open(X_Socket* socket)
         return 0;
     }
     
+    socket->error = X_SOCKETERROR_NONE;
+    gettimeofday(&socket->lastPacketRead, NULL);
+    
     return 1;
+}
+
+static X_Packet* dequeue_packet(X_Socket* socket)
+{
+    if(socket->error != X_SOCKETERROR_NONE)
+        return NULL;
+    
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+    
+    if(socket->queueHead == socket->queueTail)
+    {
+        if(currentTime.tv_sec - socket->lastPacketRead.tv_sec > 10)
+            socket->error = X_SOCKETERROR_TIMED_OUT;
+        
+        return NULL;
+    }
+    
+    int nextPacket = (socket->queueHead + 1) % socket->totalPackets;
+    X_Packet* packet = socket->packets + socket->queueHead;
+    socket->lastPacketRead = currentTime;
+    
+    socket->queueHead = nextPacket;
+    
+    return packet;
+}
+
+static void process_connect_acknowledge(X_Socket* socket, X_Packet* packet)
+{
+    
+}
+
+static void send_connect_acknowledge(X_Socket* socket, _Bool success)
+{
+    X_Packet packet;
+    unsigned char buf[1] = { success };
+    
+    x_packet_init(&packet, X_PACKET_CONNECT_ACKNOWLEDGE, buf, 1);
+    send_packet(socket, &packet);
+}
+
+static X_Packet* get_packet(X_Socket* socket)
+{
+    X_Packet* packet;
+    while(packet = dequeue_packet(socket))
+    {
+        switch(packet->type)
+        {
+            case X_PACKET_CONNECT_ACKNOWLEDGE:
+                process_connect_acknowledge(socket, packet);
+                break;
+                
+            case X_PACKET_CONNECT:
+                send_connect_acknowledge(socket, X_NET_ERROR);
+                break;
+                
+            default:
+                return packet;
+        }
+    }
+    
+    return NULL;
 }
 
 void test_socket()
 {
     X_Socket socket;
-    socket_open(&socket);
+    
+    //if(!socket_open(&socket))
+    //    return;
+    
+    do
+    {
+        X_Packet* packet = dequeue_packet(&socket);
+        
+        if(!packet)
+            continue;
+        
+        show_msgbox("Message", packet->data);
+        
+        char buf[32];
+        sprintf(buf, "%d", packet->size);
+        show_msgbox("Size", buf);
+                
+    } while(socket.error == X_SOCKETERROR_NONE);
+    
+    char buf[32];
+    sprintf(buf, "%d", socket.error);
+    show_msgbox("Disconnect", buf);
+    
     socket_close(&socket);
 }
 
