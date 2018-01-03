@@ -30,6 +30,17 @@ void x_net_register_socket_interface(X_SocketInterface* interface)
     g_interfaceHead = interface;
 }
 
+_Bool x_net_get_connect_request(X_ConnectRequest* dest)
+{
+    for(X_SocketInterface* interface = g_interfaceHead; interface != NULL; interface = interface->next)
+    {
+        if(interface->getConnectRequest(dest))
+            return 1;
+    }
+    
+    return 0;
+}
+
 static X_SocketInterface* get_socket_interface_from_address(const char* address)
 {
     for(X_SocketInterface* interface = g_interfaceHead; interface != NULL; interface = interface->next)
@@ -73,7 +84,7 @@ static void process_connect_acknowledge(X_Socket* socket, X_Packet* packet)
 static void send_connect_acknowledge(X_Socket* socket, _Bool success)
 {
     X_Packet packet;
-    unsigned char buf[1] = { success };
+    char buf[1] = { success };
     
     x_packet_init(&packet, X_PACKET_CONNECT_ACKNOWLEDGE, buf, 1);
     x_socket_send_packet(socket, &packet);

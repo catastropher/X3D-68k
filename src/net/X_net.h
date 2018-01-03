@@ -31,12 +31,19 @@ typedef struct X_Packet
     unsigned int srcId;
     unsigned int destId;
     int size;
-    unsigned char* data;
+    char* data;
     unsigned int id;
     
     X_PacketType type;
-    unsigned char* internalData;
+    char* internalData;
 } X_Packet;
+
+#define X_CONNECTIONREQUEST_ADDR_SIZE 64
+
+typedef struct X_ConnectRequest
+{
+    char address[X_CONNECTIONREQUEST_ADDR_SIZE];
+} X_ConnectRequest;
 
 struct X_Socket;
 
@@ -47,6 +54,7 @@ typedef struct X_SocketInterface
     void (*closeSocket)(struct X_Socket* socket);
     _Bool (*sendPacket)(struct X_Socket* socket, X_Packet* packet);
     X_Packet* (*dequeuePacket)(struct X_Socket* socket);
+    _Bool (*getConnectRequest)(X_ConnectRequest* dest);
     
     struct X_SocketInterface* next;
 } X_SocketInterface;
@@ -83,6 +91,7 @@ typedef struct X_Socket
 
 void x_net_init();
 void x_net_register_socket_interface(X_SocketInterface* interface);
+_Bool x_net_get_connect_request(X_ConnectRequest* dest);
 
 _Bool x_socket_open(X_Socket* socket, const char* address);
 void x_socket_close(X_Socket* socket);
@@ -90,7 +99,7 @@ _Bool x_socket_send_packet(X_Socket* socket, X_Packet* packet);
 _Bool x_socket_connection_is_valid(X_Socket* socket);
 
 
-static inline void x_packet_init(X_Packet* packet, X_PacketType type, unsigned char* buf, int size)
+static inline void x_packet_init(X_Packet* packet, X_PacketType type, char* buf, int size)
 {
     packet->type = type;
     packet->data = buf;

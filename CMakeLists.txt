@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with X3D. If not, see <http:#www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.1)
 
 project(X3D C ASM)
 
@@ -134,6 +134,10 @@ if(${XTARGET} STREQUAL "pc")
         src/platform/platform_pc.c
         src/platform/socket_pc_to_nspire.c
     )
+    
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+    link_libraries(Threads::Threads)
     
     find_package(PkgConfig REQUIRED)
     
