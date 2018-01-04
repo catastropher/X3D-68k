@@ -455,44 +455,46 @@ void test_socket()
     
     //g_setenv("G_MESSAGES_DEBUG", "all", /* overwrite = */ 0);
     
+    return;
+    
     x_net_register_socket_interface(&g_socketInterface);
     
-    do
-    {
-        X_ConnectRequest request;
-        if(x_net_get_connect_request(&request))
-        {
-            x_log("Connect request from %s", request.address);
-            
-            X_Socket socket;
-            socket_open(&socket, request.address);
-            
-            if(!x_socket_connection_is_valid(&socket))
-            {
-                x_log_error("Failed to open socket: %s", x_socket_get_error_msg(&socket));
-                
-                exit(-1);
-                
-            }
-            
-            X_Packet packet;
-            char data[64] = "Hello world!";
-            
-            packet.data = data;
-            packet.type = X_PACKET_DATA;
-            packet.size = strlen(data) + 1;
-            
-            send_packet(&socket, &packet);
-            send_packet(&socket, &packet);
-            send_packet(&socket, &packet);
-            
-            break;
-        }
-        
-    } while(1);
-    
-    for(int i = 0; i < MAX_CONNECTIONS; ++i)
-        pthread_join(connections[i].thread, NULL);
+//     do
+//     {
+//         X_ConnectRequest request;
+//         if(x_net_get_connect_request(&request))
+//         {
+//             x_log("Connect request from %s", request.address);
+//             
+//             X_Socket socket;
+//             socket_open(&socket, request.address);
+//             
+//             if(!x_socket_connection_is_valid(&socket))
+//             {
+//                 x_log_error("Failed to open socket: %s", x_socket_get_error_msg(&socket));
+//                 
+//                 exit(-1);
+//                 
+//             }
+//             
+//             X_Packet packet;
+//             char data[64] = "Hello world!";
+//             
+//             packet.data = data;
+//             packet.type = X_PACKET_DATA;
+//             packet.size = strlen(data) + 1;
+//             
+//             send_packet(&socket, &packet);
+//             send_packet(&socket, &packet);
+//             send_packet(&socket, &packet);
+//             
+//             break;
+//         }
+//         
+//     } while(1);
+//     
+//     for(int i = 0; i < MAX_CONNECTIONS; ++i)
+//         pthread_join(connections[i].thread, NULL);
 
 }
 

@@ -40,20 +40,38 @@
 #endif
 
 static X_File logFile;
+static _Bool enableSafeLogging;
 
 void x_log_cleanup(void)
 {
     x_file_close(&logFile);
 }
 
+static void get_log_file_name(char* dest)
+{
+    strcpy(dest, x_filesystem_get_program_path());
+    strcat(dest, "/engine.log");
+}
+
 void x_log_init(void)
 {
-    char logFileName[256];
-    strcpy(logFileName, x_filesystem_get_program_path());
-    strcat(logFileName, "/engine.log");
+    char logFileName[X_FILENAME_MAX_LENGTH];
+    get_log_file_name(logFileName);
     
     if(!x_file_open_writing(&logFile, logFileName))
         x_system_error("Failed to open log file");
+    
+    enableSafeLogging = 0;
+}
+
+static void flush_log_to_file(void)
+{
+    x_file_close(&logFile);
+    
+    char logFileName[X_FILENAME_MAX_LENGTH];
+    get_log_file_name(logFileName);
+    
+    x_file_open_append(&logFile, logFileName);
 }
 
 void x_log(const char* format, ...)

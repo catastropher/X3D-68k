@@ -343,11 +343,29 @@ _Bool x_file_open_writing(X_File* file, const char* fileName)
     
     if(!file->file)
     {
-        x_log_error("Failed to open file '%s' for reading", fileName);
+        x_log_error("Failed to open file '%s' for writing", fileName);
         return 0;
     }
     
     x_log("Opened file '%s' for writing", fileName);
+    file->flags = X_FILE_OPEN_FOR_WRITING;
+    
+    return 1;
+}
+
+_Bool x_file_open_append(X_File* file, const char* fileName)
+{
+    file->file = fopen(fileName, "w+");
+    file->flags = 0;
+    file->size = 0;
+    
+    if(!file->file)
+    {
+        x_log_error("Failed to open file '%s' for appending", fileName);
+        return 0;
+    }
+    
+    x_log("Opened file '%s' for appending", fileName);
     file->flags = X_FILE_OPEN_FOR_WRITING;
     
     return 1;

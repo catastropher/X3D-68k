@@ -30,8 +30,8 @@ if(NOT DEFINED X_HEADER_PATH)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
-    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O0 -g")
+    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
+    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O0 -g")
     
     set(X_WITH_SDL "1")
 elseif(${XTARGET} STREQUAL "nspire")

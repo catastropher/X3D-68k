@@ -207,6 +207,7 @@ static void video_restart_callback(X_EngineContext* engineContext, void* userDat
         
         // Grab the native desktop resolution
         const SDL_VideoInfo* info = SDL_GetVideoInfo();
+        
         context->nativeResolutionW = info->current_w;
         context->nativeResolutionH = info->current_h;
         

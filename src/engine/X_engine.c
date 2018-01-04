@@ -62,7 +62,7 @@ X_EngineContext* x_engine_init(X_Config* config)
     // Perform a vidrestart so that we call the client's screen initialization code
     x_console_execute_cmd(&engineContext->console, "vidrestart");
     engineContext->renderer.videoInitialized = 1;
-    
+
     x_console_register_cmd(&engineContext->console, "info", cmd_info);
     
     g_engineInitialized = 1;

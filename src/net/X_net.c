@@ -92,36 +92,9 @@ static void send_connect_acknowledge(X_Socket* socket, _Bool success)
     x_socket_send_packet(socket, &packet);
 }
 
-static _Bool process_system_packet(X_Socket* socket, X_Packet* packet)
-{
-    switch(packet->type)
-    {
-        case X_PACKET_CONNECT_ACKNOWLEDGE:
-            process_connect_acknowledge(socket, packet);
-            return 1;
-            
-        case X_PACKET_CONNECT:
-            send_connect_acknowledge(socket, X_NET_ERROR);
-            return 1;
-            
-        default:
-            return 0;
-    }
-}
-
 X_Packet* x_socket_receive_packet(X_Socket* socket)
 {
-    do
-    {
-        X_Packet* packet = socket->interface->dequeuePacket(socket);
-        if(!packet)
-            return NULL;
-     
-        if(!process_system_packet(socket, packet))
-            return packet;
-    } while(x_socket_connection_is_valid(socket));
-    
-    return NULL;
+    return socket->interface->dequeuePacket(socket);    
 }
 
 _Bool x_socket_connection_is_valid(X_Socket* socket)

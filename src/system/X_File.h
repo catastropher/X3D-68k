@@ -81,6 +81,7 @@ void x_file_read_mat4x4(X_File* file, struct X_Mat4x4* mat);
 
 _Bool x_file_open_writing(X_File* file, const char* fileName);
 _Bool x_file_open_writing_create_path(X_File* file, const char* fileName);
+_Bool x_file_open_append(X_File* file, const char* fileName);
 
 void x_file_write_le_int16(X_File* file, int val);
 void x_file_write_buf(X_File* file, int bufSize, void* src);

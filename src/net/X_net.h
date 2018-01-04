@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include <sys/time.h>
 
 typedef enum X_PacketType
@@ -36,6 +38,8 @@ typedef struct X_Packet
     
     X_PacketType type;
     char* internalData;
+    
+    int readPos;
 } X_Packet;
 
 #define X_NET_ADDRESS_MAX_LENGTH 64
@@ -99,6 +103,7 @@ _Bool x_net_extract_address_and_port(const char* address, char* addressDest, int
 _Bool x_socket_open(X_Socket* socket, const char* address);
 void x_socket_close(X_Socket* socket);
 _Bool x_socket_send_packet(X_Socket* socket, X_Packet* packet);
+X_Packet* x_socket_receive_packet(X_Socket* socket);
 _Bool x_socket_connection_is_valid(X_Socket* socket);
 const char* x_socket_get_error_msg(X_Socket* socket);
 
@@ -108,6 +113,31 @@ static inline void x_packet_init(X_Packet* packet, X_PacketType type, char* buf,
     packet->type = type;
     packet->data = buf;
     packet->size = size;
+}
+
+static inline void x_packet_write_byte(X_Packet* packet, char byte)
+{
+    packet->data[packet->size++] = byte;
+}
+
+static inline void x_packet_write_short(X_Packet* packet, unsigned short s)
+{
+    packet->data[packet->size++] = s & 0xFF;
+    packet->data[packet->size++] = s >> 8;
+}
+
+static inline char x_packet_read_byte(X_Packet* packet)
+{
+    return packet->data[packet->readPos++];
+}
+
+static inline unsigned short x_packet_read_short(X_Packet* packet)
+{
+    unsigned short val = packet->data[packet->readPos] |
+        ((unsigned short)packet->data[packet->readPos + 1] << 8);
+        
+    packet->readPos += 2;
+    return val;
 }
 
 static inline X_SocketError x_socket_get_error(X_Socket* socket)

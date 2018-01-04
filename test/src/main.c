@@ -307,6 +307,60 @@ static void cmd_trigger(X_EngineContext* engineContext, int argc, char* argv[])
 
 void test_socket();
 
+X_Socket socket;
+_Bool connected = 0;
+
+void send_update_packet(Context* context)
+{
+    char buf[240];
+    X_Packet packet;
+    x_packet_init(&packet, X_PACKET_DATA, buf, 0);
+    
+    X_CameraObject* cam = context->cam;
+    X_Vec3 pos = x_cameraobject_get_position(cam);
+    
+    x_packet_write_short(&packet, x_fp16x16_to_int(pos.x));
+    x_packet_write_short(&packet, x_fp16x16_to_int(pos.y));
+    x_packet_write_short(&packet, x_fp16x16_to_int(pos.z));
+    
+    x_socket_send_packet(&socket, &packet);
+    
+}
+
+void recv_update_packet(Context* context)
+{
+    X_Packet* packet = x_socket_receive_packet(&socket);
+    if(!packet)
+        return;
+}
+
+void handle_net_nspire(Context* context)
+{
+    X_ConnectRequest request;
+    if(x_net_get_connect_request(&request))
+    {
+        connected = x_socket_open(&socket, request.address);
+    }
+    
+    
+}
+
+
+void handle_net_pc(Context* context)
+{
+    recv_update_packet(context);
+}
+
+void handle_net(Context* context)
+{
+#ifdef __pc__
+    handle_net_pc(context);
+#else
+    handle_net_nspire(context);
+#endif
+}
+
+
 void gameloop(Context* context)
 {
     x_console_register_cmd(&context->engineContext->console, "trigger", cmd_trigger);
@@ -327,18 +381,11 @@ void gameloop(Context* context)
     
     while(!context->quit)
     {
-        if(x_keystate_key_down(&context->engineContext->keystate, 'o'))
-        {
-            sleep(1);
-        }
-        
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         
         render(context);
-        //handle_test_portal(&portal, context->engineContext, context->cam);
-        
-        //apply_paint(context->engineContext, context->cam);
+
         
         
         handle_keys(context);
@@ -350,10 +397,12 @@ int main(int argc, char* argv[])
 {
     Context context;
     
-    init(&context, argv[0]);
+    SDL_Init(SDL_INIT_EVERYTHING);
     
-    test_socket();
+    //init(&context, argv[0]);
+    
+    //test_socket();
     //gameloop(&context);
-    cleanup(&context);
+    //cleanup(&context);
 }
 
