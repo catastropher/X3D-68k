@@ -38,11 +38,11 @@ typedef struct X_Packet
     char* internalData;
 } X_Packet;
 
-#define X_CONNECTIONREQUEST_ADDR_SIZE 64
+#define X_NET_ADDRESS_MAX_LENGTH 64
 
 typedef struct X_ConnectRequest
 {
-    char address[X_CONNECTIONREQUEST_ADDR_SIZE];
+    char address[X_NET_ADDRESS_MAX_LENGTH];
 } X_ConnectRequest;
 
 struct X_Socket;
@@ -69,7 +69,9 @@ typedef enum X_SocketError
     X_SOCKETERROR_NOT_OPENED = 5,
     X_SOCKETERROR_SERVER_REJECTED = 6,
     X_SOCKETERROR_BAD_ADDRESS = 7,
-    X_SOCKETERROR_CLOSED = 8
+    X_SOCKETERROR_CLOSED = 8,
+    X_SOCKETERROR_ALREADY_OPENED = 9,
+    X_SOCKETERROR_CONNECTION_FAILED = 10
 } X_SocketError;
 
 typedef struct X_Socket
@@ -92,11 +94,13 @@ typedef struct X_Socket
 void x_net_init();
 void x_net_register_socket_interface(X_SocketInterface* interface);
 _Bool x_net_get_connect_request(X_ConnectRequest* dest);
+_Bool x_net_extract_address_and_port(const char* address, char* addressDest, int* portDest);
 
 _Bool x_socket_open(X_Socket* socket, const char* address);
 void x_socket_close(X_Socket* socket);
 _Bool x_socket_send_packet(X_Socket* socket, X_Packet* packet);
 _Bool x_socket_connection_is_valid(X_Socket* socket);
+const char* x_socket_get_error_msg(X_Socket* socket);
 
 
 static inline void x_packet_init(X_Packet* packet, X_PacketType type, char* buf, int size)

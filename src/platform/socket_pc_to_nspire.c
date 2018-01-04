@@ -44,7 +44,8 @@ typedef enum ConnectionState
     CONNECTION_ACTIVE,
     CONNECTION_WAITING_CONNECT,
     CONNECTION_REQUEST_CONNECT,
-    CONNECTION_INITIALIZING
+    CONNECTION_INITIALIZING,
+    CONNECTION_ERROR
 } ConnectionState;
 
 typedef struct Connection
@@ -71,9 +72,9 @@ typedef struct Connection
 } Connection;
 
 static Connection connections[MAX_CONNECTIONS];
-static 
 
-Connection* get_connection(int connectionId)
+
+static Connection* get_connection(int connectionId)
 {
     return connections + connectionId;
 }
@@ -96,45 +97,63 @@ static char* recv_data(Connection* con, int* size)
     return (char*)data;
 }
 
-static _Bool perform_connection_handshake(Connection* con)
+static _Bool connection_is_ready(Connection* con)
 {
-    char msg[] = "connect";
-    if(!send_data(con, msg, sizeof(msg), 0))
-    {
-        x_log_error("   Couldn't send success message");
-        return 0;
-    }
-    
-    int size;
-    char* data = recv_data(con, &size);
-    if(!data)
-    {
-        x_log_error("   Couldn't receive success message");
-        return 0;
-    }
-    
-    if(strcmp(data, "success") != 0)
-    {
-        x_log_error("   Client did not return 'success' -> returned '%s'", data + 1);
-        return 0;
-    }
-    
-    return 1;
+    return con->state == CONNECTION_REQUEST_CONNECT;
 }
 
 static _Bool socket_open(X_Socket* socket, const char* address)
 {
-//     if(port < 0 || port >= PORT_MAX)
-//         return 0;
-//     
-//     Connection* con = get_connection(port);
-// 
-//     socket->socketInterfaceData = con;
-//     con->socket = socket;
-//     
-//     
-//     
-//     x_log("Successfully connected to calc on port %d", port);
+    x_log("Attempting to connect to %s", address);
+    
+    socket->error = X_SOCKETERROR_NOT_OPENED;
+    
+    if(strlen(address) >= X_NET_ADDRESS_MAX_LENGTH)
+    {
+        socket->error = X_SOCKETERROR_BAD_ADDRESS;
+        return 0;
+    }
+    
+    char addr[X_NET_ADDRESS_MAX_LENGTH];
+    int port;
+    
+    if(!x_net_extract_address_and_port(address, addr, &port) || strcmp(addr, "calc") != 0 || port < 0 || port > MAX_CONNECTIONS)
+    {
+        socket->error = X_SOCKETERROR_BAD_ADDRESS;
+        return 0;
+    }
+    
+    Connection* con = get_connection(port);
+    
+    pthread_mutex_lock(&con->recvLock);
+    pthread_mutex_lock(&con->sendLock);
+    
+    if(con->state == CONNECTION_ACTIVE)
+    {
+        socket->error = X_SOCKETERROR_ALREADY_OPENED;
+        
+        pthread_mutex_unlock(&con->recvLock);
+        pthread_mutex_unlock(&con->sendLock);
+        
+        return 0;
+    }
+    
+    if(!connection_is_ready(con))
+    {
+        socket->error = X_SOCKETERROR_CONNECTION_FAILED;
+        pthread_mutex_unlock(&con->recvLock);
+        pthread_mutex_unlock(&con->sendLock);
+        return 0;
+    }
+    
+    socket->error = X_SOCKETERROR_NONE;
+    socket->socketInterfaceData = con;
+    
+    con->socket = socket;
+    con->state = CONNECTION_ACTIVE;
+    
+    pthread_mutex_unlock(&con->recvLock);
+    pthread_mutex_unlock(&con->sendLock);
     
     return 1;
 }
@@ -150,7 +169,7 @@ static _Bool open_connection(Connection* con, int port)
     }
     
     con->calc = ticalcs_handle_new(CALC_NSPIRE);
-    ticables_options_set_timeout(con->cable, 50);
+    ticables_options_set_timeout(con->cable, 1);
     
     if(!con->calc)
     {
@@ -180,14 +199,14 @@ static Connection* connection_from_socket(X_Socket* socket)
 
 static _Bool send_packet(X_Socket* socket, X_Packet* packet)
 {
-     if(packet->size < 240)
+     if(packet->size >= 240)
          x_system_error("Packet too big");
     
     Connection* con = (Connection*)socket->socketInterfaceData;
     
     pthread_mutex_lock(&con->sendLock);
     
-    SendPacket* sendPacket = malloc(sizeof(sendPacket));
+    SendPacket* sendPacket = malloc(sizeof(SendPacket));
     
     sendPacket->size = packet->size + 1;
     sendPacket->data = malloc(sendPacket->size);
@@ -209,6 +228,8 @@ static _Bool send_packet(X_Socket* socket, X_Packet* packet)
     }
     
     pthread_mutex_unlock(&con->sendLock);
+    
+    x_log("Packet has been queued\n");
     
     return 1;
     
@@ -254,10 +275,13 @@ static void close_connection(Connection* con)
 
 static void send_queued_packet(Connection* con)
 {
+    x_log("Before lock");
     pthread_mutex_lock(&con->sendLock);
+    x_log("After lock");
     
     if(con->sendHead)
     {
+        x_log("Has data to send!");
         SendPacket* packet = con->sendHead;
         con->sendHead = con->sendHead->next;
         
@@ -276,6 +300,8 @@ static _Bool wait_for_connect_packet(Connection* con)
     
     while(1)
     {
+        pthread_mutex_lock(&con->recvLock);
+        
         int size;
         char* buf = recv_data(con, &size);
         
@@ -285,14 +311,24 @@ static _Bool wait_for_connect_packet(Connection* con)
             {
                 x_log("Received connect packet!\n");
                 con->state = CONNECTION_REQUEST_CONNECT;
+                
+                pthread_mutex_unlock(&con->recvLock);
+                
                 return 1;
             }
         }
+        
+        pthread_mutex_unlock(&con->recvLock);
         
         usleep(1000 * 1000);
     }
     
     return 0;
+}
+
+int connection_get_state(volatile Connection* con)
+{
+    return con->state;
 }
 
 static void* connection_thread(void* data)
@@ -308,7 +344,9 @@ static void* connection_thread(void* data)
     
     while(1)
     {
-        if(con->state == CONNECTION_ACTIVE)
+        volatile ConnectionState state = connection_get_state(con);
+        
+        if(state == CONNECTION_ACTIVE)
         {
             recv_packet(con->socket);
             send_queued_packet(con);
@@ -424,8 +462,31 @@ void test_socket()
         X_ConnectRequest request;
         if(x_net_get_connect_request(&request))
         {
-            x_log("Connect request from %s\n", request.address);
-            exit(0);
+            x_log("Connect request from %s", request.address);
+            
+            X_Socket socket;
+            socket_open(&socket, request.address);
+            
+            if(!x_socket_connection_is_valid(&socket))
+            {
+                x_log_error("Failed to open socket: %s", x_socket_get_error_msg(&socket));
+                
+                exit(-1);
+                
+            }
+            
+            X_Packet packet;
+            char data[64] = "Hello world!";
+            
+            packet.data = data;
+            packet.type = X_PACKET_DATA;
+            packet.size = strlen(data) + 1;
+            
+            send_packet(&socket, &packet);
+            send_packet(&socket, &packet);
+            send_packet(&socket, &packet);
+            
+            break;
         }
         
     } while(1);
@@ -433,5 +494,5 @@ void test_socket()
     for(int i = 0; i < MAX_CONNECTIONS; ++i)
         pthread_join(connections[i].thread, NULL);
 
-    X_Socket socket;
 }
+

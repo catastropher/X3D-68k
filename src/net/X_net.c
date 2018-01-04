@@ -14,6 +14,8 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <stddef.h>
+#include <ctype.h>
+#include <stdlib.h>
 
 #include "X_net.h"
 
@@ -125,5 +127,58 @@ X_Packet* x_socket_receive_packet(X_Socket* socket)
 _Bool x_socket_connection_is_valid(X_Socket* socket)
 {
     return socket->error == X_SOCKETERROR_NONE;
+}
+
+_Bool x_net_extract_address_and_port(const char* address, char* addressDest, int* portDest)
+{
+    char* t = addressDest;
+    while(*address && *address != ':')
+        *addressDest++ = *address++;
+    
+    *addressDest = '\0';
+    
+    if(*address == '\0')
+    {
+        *portDest = '\0';
+        return 0;
+    }
+    
+    ++address;      // Skip ':'
+    
+    char port[X_NET_ADDRESS_MAX_LENGTH];
+    char* portPos = port + 0;
+    
+    while(*address)
+    {
+        if(!isdigit(*address))
+            return 0;
+        
+        *portPos++ = *address++;
+    }
+    
+    *portPos = '\0';
+    *portDest = atoi(port);
+    
+    return 1;
+}
+
+const char* x_socket_get_error_msg(X_Socket* socket)
+{
+    switch(socket->error)
+    {
+        case X_SOCKETERROR_NONE:                return "No error";
+        case X_SOCKETERROR_CLOSED:              return "Socket closed";
+        case X_SOCKETERROR_OUT_OF_PACKETS:      return "Out of packets";
+        case X_SOCKETERROR_READ_FAILED:         return "Read failed";
+        case X_SOCKETERROR_BAD_ADDRESS:         return "Bad address";
+        case X_SOCKETERROR_NOT_OPENED:          return "Not opened";
+        case X_SOCKETERROR_SEND_FAILED:         return "Send failed";
+        case X_SOCKETERROR_SERVER_REJECTED:     return "Connection rejected by server";
+        case X_SOCKETERROR_TIMED_OUT:           return "Connection timed out";
+        case X_SOCKETERROR_ALREADY_OPENED:      return "Already opened";
+        case X_SOCKETERROR_CONNECTION_FAILED:   return "Connection failed";
+        
+        default:                            return "Unknown error";
+    }
 }
 
