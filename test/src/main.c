@@ -307,8 +307,8 @@ static void cmd_trigger(X_EngineContext* engineContext, int argc, char* argv[])
 
 void test_socket();
 
-X_Socket socket;
-_Bool connected = 0;
+X_Socket serverSocket;
+_Bool isConnected = 0;
 
 void send_update_packet(Context* context)
 {
@@ -323,42 +323,42 @@ void send_update_packet(Context* context)
     x_packet_write_short(&packet, x_fp16x16_to_int(pos.y));
     x_packet_write_short(&packet, x_fp16x16_to_int(pos.z));
     
-    x_socket_send_packet(&socket, &packet);
+    x_socket_send_packet(&serverSocket, &packet);
     
 }
 
-void recv_update_packet(Context* context)
-{
-    X_Packet* packet = x_socket_receive_packet(&socket);
-    if(!packet)
-        return;
-}
-
-void handle_net_nspire(Context* context)
-{
-    X_ConnectRequest request;
-    if(x_net_get_connect_request(&request))
-    {
-        connected = x_socket_open(&socket, request.address);
-    }
-    
-    
-}
-
-
-void handle_net_pc(Context* context)
-{
-    recv_update_packet(context);
-}
-
-void handle_net(Context* context)
-{
-#ifdef __pc__
-    handle_net_pc(context);
-#else
-    handle_net_nspire(context);
-#endif
-}
+// void recv_update_packet(Context* context)
+// {
+//     X_Packet* packet = x_socket_receive_packet(&socket);
+//     if(!packet)
+//         return;
+// }
+// 
+// void handle_net_nspire(Context* context)
+// {
+//     X_ConnectRequest request;
+//     if(x_net_get_connect_request(&request))
+//     {
+//         connected = x_socket_open(&socket, request.address);
+//     }
+//     
+//     
+// }
+// 
+// 
+// void handle_net_pc(Context* context)
+// {
+//     recv_update_packet(context);
+// }
+// 
+// void handle_net(Context* context)
+// {
+// #ifdef __pc__
+//     handle_net_pc(context);
+// #else
+//     handle_net_nspire(context);
+// #endif
+// }
 
 
 void gameloop(Context* context)
@@ -397,12 +397,10 @@ int main(int argc, char* argv[])
 {
     Context context;
     
-    SDL_Init(SDL_INIT_EVERYTHING);
+    init(&context, argv[0]);
     
-    //init(&context, argv[0]);
-    
-    //test_socket();
-    //gameloop(&context);
-    //cleanup(&context);
+    test_socket();
+    gameloop(&context);
+    cleanup(&context);
 }
 

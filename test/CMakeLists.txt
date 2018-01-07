@@ -13,7 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with X3D. If not, see <http:#www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 2.6)
+# Options:
+#   - XTARGET - system to build for ("pc" or "nspire")
+#   - X_LIB_PATH - location to install library (default /usr/local/lib)
+#   - X_HEADER_PATH - location to install header files (default /usr/local/include)
+#   - USE_TILIBS - link in tilibs for multiplayer connections to the calc
+
+cmake_minimum_required(VERSION 3.1)
 
 project(xtest C)
 
@@ -27,6 +33,10 @@ endif()
 
 if(NOT DEFINED X_HEADER_PATH)
     set(X_HEADER_PATH /usr/local/include)
+endif()
+
+if(NOT DEFINED USE_TILIBS)
+    set(USE_TILIBS "0")
 endif()
 
 if(${XTARGET} STREQUAL "pc")
@@ -53,24 +63,26 @@ add_executable(xtest
 find_package(SDL REQUIRED)
 
 find_library(X3D_LIBRARY X3D ${X_LIB_PATH})
-target_link_libraries(xtest ${X3D_LIBRARY} SDL m)
-
+target_link_libraries(xtest ${X3D_LIBRARY} ${SDL_LIBRARY} m)
 
 if(${XTARGET} STREQUAL "pc")
-    find_package(PkgConfig REQUIRED)
+    if(${USE_TILIBS} STREQUAL "1")
+        message("Building with tilibs")
     
-    include_directories(/usr/local/include/tilp2)
-    pkg_check_modules(GLIB2 REQUIRED glib-2.0)
-    include_directories(${GLIB2_INCLUDE_DIRS})
-    
-    link_directories(${GLIB2_LIBRARY_DIRS})
-    add_definitions(${GLIB2_CFLAGS_OTHER})
-    
-    link_directories(/usr/lib/tilp2)
-    
-    find_library(TICABLES ticables2)
-    find_library(TICALCS ticalcs2)
+        find_package(PkgConfig REQUIRED)
         
-    target_link_libraries(xtest ${GLIB2_LIBRARIES} ${TICALCS} ${TICABLES})
+        include_directories(/usr/local/include/tilp2)
+        pkg_check_modules(GLIB2 REQUIRED glib-2.0)
+        include_directories(${GLIB2_INCLUDE_DIRS})
+        
+        link_directories(${GLIB2_LIBRARY_DIRS})
+        add_definitions(${GLIB2_CFLAGS_OTHER})
+        
+        link_directories(/usr/lib/tilp2)
+        
+        find_library(TICABLES ticables2 REQUIRED)
+        find_library(TICALCS ticalcs2 REQUIRED)
+            
+        target_link_libraries(xtest ${GLIB2_LIBRARIES} ${TICALCS} ${TICABLES})
+    endif()
 endif()
-    

@@ -13,6 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with X3D. If not, see <http:#www.gnu.org/licenses/>.
 
+# Options:
+#   - XTARGET - system to build for ("pc" or "nspire")
+#   - X_LIB_PATH - location to install library (default /usr/local/lib)
+#   - X_HEADER_PATH - location to install header files (default /usr/local/include)
+#   - X_WITH_SDL - whether to use SDL as the video backend (automatically set for nspire and pc)
+#   - USE_TILIBS - link in tilibs for multiplayer connections to the calc
+
 cmake_minimum_required(VERSION 3.1)
 
 project(X3D C ASM)
@@ -27,6 +34,10 @@ endif()
 
 if(NOT DEFINED X_HEADER_PATH)
     set(X_HEADER_PATH "/usr/local/include")
+endif()
+
+if(NOT DEFINED USE_TILIBS)
+    set(USE_TILIBS "0")
 endif()
 
 if(${XTARGET} STREQUAL "pc")
@@ -46,7 +57,7 @@ endif()
 
 include_directories(src/)
 
-set(X3D_SOURCES
+set(X_SOURCES
     # dev
     src/dev/X_AutoCompleter.c
     src/dev/X_conCommands.c
@@ -130,24 +141,31 @@ set(X3D_SOURCES
 )
 
 if(${XTARGET} STREQUAL "pc")
-    set(X3D_SOURCES ${X3D_SOURCES}
+    set(X_SOURCES ${X_SOURCES}
         src/platform/platform_pc.c
-        src/platform/socket_pc_to_nspire.c
     )
     
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads REQUIRED)
-    link_libraries(Threads::Threads)
-    
-    find_package(PkgConfig REQUIRED)
-    
-    include_directories(/usr/local/include/tilp2)
-    pkg_check_modules(GLIB2 REQUIRED glib-2.0)
-    include_directories(${GLIB2_INCLUDE_DIRS})
+    if(${USE_TILIBS} STREQUAL "1")
+        message("Building with tilibs")
+        
+        set(THREADS_PREFER_PTHREAD_FLAG ON)
+        find_package(Threads REQUIRED)
+        link_libraries(Threads::Threads)
+        
+        find_package(PkgConfig REQUIRED)
+        
+        include_directories(/usr/include/tilp2)
+        pkg_check_modules(GLIB2 REQUIRED glib-2.0)
+        include_directories(${GLIB2_INCLUDE_DIRS})
+        
+        set(X_SOURCES ${X_SOURCES}
+            src/platform/socket_pc_to_nspire.c
+        )
+    endif()
 endif()
 
 if(${XTARGET} STREQUAL "nspire")
-    set(X3D_SOURCES ${X3D_SOURCES}
+    set(X_SOURCES ${X_SOURCES}
         src/render/X_span_arm.s
         src/platform/platform_nspire.c
         src/platform/socket_nspire.c
@@ -160,10 +178,10 @@ if(DEFINED X_WITH_SDL)
     find_package(SDL REQUIRED)
     include_directories(SDL_INCLUDE_DIR)
     
-    set(X3D_SOURCES ${X3D_SOURCES} src/platform/X_SDL.c)
+    set(X_SOURCES ${X_SOURCES} src/platform/X_SDL.c)
 endif()
 
-add_library(X3D STATIC ${X3D_SOURCES})
+add_library(X3D STATIC ${X_SOURCES})
 
 install(TARGETS X3D ARCHIVE DESTINATION ${X_LIB_PATH})
 install(DIRECTORY src/ DESTINATION ${X_HEADER_PATH}/X3D FILES_MATCHING PATTERN "*.h")
