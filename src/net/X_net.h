@@ -115,7 +115,7 @@ static inline void x_packet_init(X_Packet* packet, X_PacketType type, char* buf,
     packet->size = size;
 }
 
-static inline void x_packet_write_byte(X_Packet* packet, char byte)
+static inline void x_packet_write_byte(X_Packet* packet, unsigned char byte)
 {
     packet->data[packet->size++] = byte;
 }
@@ -126,15 +126,17 @@ static inline void x_packet_write_short(X_Packet* packet, unsigned short s)
     packet->data[packet->size++] = s >> 8;
 }
 
-static inline char x_packet_read_byte(X_Packet* packet)
+static inline unsigned char x_packet_read_byte(X_Packet* packet)
 {
     return packet->data[packet->readPos++];
 }
 
 static inline unsigned short x_packet_read_short(X_Packet* packet)
 {
-    unsigned short val = packet->data[packet->readPos] |
-        ((unsigned short)packet->data[packet->readPos + 1] << 8);
+    unsigned char* data = (unsigned char*)packet->data;
+    
+    unsigned short val = data[packet->readPos] |
+        ((unsigned short)data[packet->readPos + 1] << 8);
         
     packet->readPos += 2;
     return val;

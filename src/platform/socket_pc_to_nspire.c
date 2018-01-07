@@ -22,6 +22,7 @@
 #include "net/X_net.h"
 #include "error/X_log.h"
 #include "error/X_error.h"
+#include "memory/X_alloc.h"
 
 #include "nsp_vpkt.h"
 #include "nsp_cmd.h"
@@ -149,8 +150,23 @@ static _Bool socket_open(X_Socket* socket, const char* address)
     socket->error = X_SOCKETERROR_NONE;
     socket->socketInterfaceData = con;
     
+    int totalPackets = 512;
+    const int MAX_PACKET_SIZE = 256;
+    
+    socket->packets = x_malloc(totalPackets * sizeof(X_Packet));
+    socket->packetData = x_malloc(totalPackets * MAX_PACKET_SIZE);
+    
+    for(int i = 0; i < totalPackets; ++i)
+        socket->packets[i].internalData = socket->packetData + i * MAX_PACKET_SIZE;
+    
+    socket->queueHead = 0;
+    socket->queueTail = 0;
+    socket->totalPackets = totalPackets;
+    
     con->socket = socket;
     con->state = CONNECTION_ACTIVE;
+    
+    gettimeofday(&socket->lastPacketRead, NULL);
     
     pthread_mutex_unlock(&con->recvLock);
     pthread_mutex_unlock(&con->sendLock);
@@ -237,18 +253,18 @@ static _Bool send_packet(X_Socket* socket, X_Packet* packet)
 
 static void recv_packet(X_Socket* socket)
 {
-    Connection* con = (Connection*)socket->socketInterfaceData;
+    if(socket->error != X_SOCKETERROR_NONE)
+        return;
     
-    pthread_mutex_lock(&con->recvLock);
+    Connection* con = (Connection*)socket->socketInterfaceData;
     
     int size;
     char* buf = recv_data(connection_from_socket(socket), &size);
     
-    if(!buf || size < 1)
-    {
-        pthread_mutex_unlock(&con->recvLock);
+    if(!buf || size < 2)
         return;
-    }
+    
+    pthread_mutex_lock(&con->recvLock);
     
     int nextPacket = (socket->queueTail + 1) % socket->totalPackets;
     if(nextPacket == socket->queueHead)
@@ -259,9 +275,13 @@ static void recv_packet(X_Socket* socket)
     }
     
     X_Packet* packet = socket->packets + socket->queueTail;
-    packet->data = packet->internalData;
     
-    memcpy(packet->data, buf, size);
+    
+    packet->data = packet->internalData;
+    packet->size = size - 2;
+    packet->type = buf[0];
+    
+    memcpy(packet->data, buf + 2, size - 2);
     
     socket->queueTail = nextPacket;
     
@@ -275,16 +295,14 @@ static void close_connection(Connection* con)
 
 static void send_queued_packet(Connection* con)
 {
-    x_log("Before lock");
     pthread_mutex_lock(&con->sendLock);
-    x_log("After lock");
     
     if(con->sendHead)
     {
-        x_log("Has data to send!");
         SendPacket* packet = con->sendHead;
         con->sendHead = con->sendHead->next;
         
+        x_log("Sending packet...");
         send_data(con, packet->data, packet->size, packet->type);
         
         free(packet->data);
@@ -388,7 +406,34 @@ static _Bool match_address(const char* address)
 
 static X_Packet* dequeue_packet(X_Socket* socket)
 {
-    return NULL;
+    Connection* con = (Connection*)socket->socketInterfaceData;
+    
+    if(socket->error != X_SOCKETERROR_NONE)
+        return NULL;
+    
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+    
+    pthread_mutex_lock(&con->recvLock);
+    
+    if(socket->queueHead == socket->queueTail)
+    {
+//         if(currentTime.tv_sec - socket->lastPacketRead.tv_sec > 10)
+//             socket->error = X_SOCKETERROR_TIMED_OUT;
+        
+        pthread_mutex_unlock(&con->recvLock);
+        return NULL;
+    }
+    
+    int nextPacket = (socket->queueHead + 1) % socket->totalPackets;
+    X_Packet* packet = socket->packets + socket->queueHead;
+    socket->lastPacketRead = currentTime;
+    
+    socket->queueHead = nextPacket;
+    
+    pthread_mutex_unlock(&con->recvLock);
+    
+    return packet;
 }
 
 static void socket_close(X_Socket* socket)
@@ -451,13 +496,13 @@ void test_socket()
 {
     init();
     
+    x_net_register_socket_interface(&g_socketInterface);
+    
     pthread_create(&g_listenForConnectionsThread, NULL, listen_for_connections_thread, NULL);
     
     //g_setenv("G_MESSAGES_DEBUG", "all", /* overwrite = */ 0);
     
     return;
-    
-    x_net_register_socket_interface(&g_socketInterface);
     
 //     do
 //     {

@@ -63,9 +63,9 @@ static void socket_callback(nn_ch_t handle, void* userData)
     
     int size = recv_data(handle, packet->internalData, 256);
     
+    packet->data = packet->internalData + 2;
     packet->type = packet->data[0];
     packet->size = size;
-    packet->data = packet->internalData + 2;
 
     socket->queueTail = nextPacket;
 }
@@ -221,8 +221,8 @@ static X_Packet* dequeue_packet(X_Socket* socket)
     
     if(socket->queueHead == socket->queueTail)
     {
-        if(currentTime.tv_sec - socket->lastPacketRead.tv_sec > 10)
-            socket->error = X_SOCKETERROR_TIMED_OUT;
+//         if(currentTime.tv_sec - socket->lastPacketRead.tv_sec > 10)
+//             socket->error = X_SOCKETERROR_TIMED_OUT;
         
         return NULL;
     }

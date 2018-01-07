@@ -40,7 +40,7 @@
 #endif
 
 static X_File logFile;
-static _Bool enableSafeLogging;
+static _Bool enableSafeLogging = 1;
 
 void x_log_cleanup(void)
 {
@@ -96,6 +96,9 @@ void x_log(const char* format, ...)
     vfprintf(logFile.file, format, list);
     fputc('\n', logFile.file);
     va_end(list);
+    
+    if(enableSafeLogging)
+        flush_log_to_file();
 }
 
 void x_log_error(const char* format, ...)
@@ -123,5 +126,8 @@ void x_log_error(const char* format, ...)
     fputc('\n', logFile.file);
     
     va_end(list);
+    
+    if(enableSafeLogging)
+        flush_log_to_file();
 }
 
