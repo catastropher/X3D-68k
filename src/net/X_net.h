@@ -22,7 +22,8 @@ typedef enum X_PacketType
     X_PACKET_DATA = 0,
     X_PACKET_LARGE = 1,
     X_PACKET_CONNECT = 2,
-    X_PACKET_CONNECT_ACKNOWLEDGE = 3
+    X_PACKET_CONNECT_ACKNOWLEDGE = 3,
+    X_PACKET_ECHO = 4,
 } X_PacketType;
 
 #define X_NET_ERROR 0

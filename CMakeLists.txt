@@ -129,6 +129,9 @@ set(X_SOURCES
     src/render/X_Texture.c
     src/render/X_TriangleFiller.c
     src/render/X_Viewport.c
+    
+    # server
+    src/server/X_Server.c
 
     # system
     src/system/X_File.c
