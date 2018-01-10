@@ -127,6 +127,18 @@ static inline void x_packet_write_short(X_Packet* packet, unsigned short s)
     packet->data[packet->size++] = s >> 8;
 }
 
+static inline void x_packet_write_int(X_Packet* packet, unsigned int val)
+{
+    for(int i = 0; i < 8 * 4; i += 8)
+        packet->data[packet->size++] = (val >> i) & 0xFF;
+}
+
+static inline void x_packet_write_int64(X_Packet* packet, unsigned long long val)
+{
+    for(int i = 0; i < 8 * 8; i += 8)
+        packet->data[packet->size++] = (val >> i) & 0xFF;
+}
+
 static inline unsigned char x_packet_read_byte(X_Packet* packet)
 {
     return packet->data[packet->readPos++];
@@ -141,6 +153,24 @@ static inline unsigned short x_packet_read_short(X_Packet* packet)
         
     packet->readPos += 2;
     return val;
+}
+
+static inline unsigned int x_packet_read_int(X_Packet* packet)
+{
+    unsigned int res = 0;
+    for(int i = 0; i < 8 * 4; i += 8)
+        res |= ((unsigned int)packet->data[packet->readPos++]) << i;
+    
+    return res;
+}
+
+static inline unsigned long long x_packet_read_int64(X_Packet* packet)
+{
+    unsigned long long res = 0;
+    for(int i = 0; i < 8 * 8; i += 8)
+        res |= ((unsigned long long)packet->data[packet->readPos++]) << i;
+    
+    return res;
 }
 
 static inline X_SocketError x_socket_get_error(X_Socket* socket)
