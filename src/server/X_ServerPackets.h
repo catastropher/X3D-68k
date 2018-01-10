@@ -19,3 +19,5 @@
 
 #include "X_Server.h"
 
+void x_server_handle_packets_for_player(X_Server* server, X_Player* player);
+

@@ -14,12 +14,19 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_Server.h"
+#include "X_ServerPackets.h"
 #include "net/X_net.h"
 #include "error/X_error.h"
 
 void x_server_init(X_Server* server)
 {
-    
+    for(int i = 0; i < X_SERVER_MAX_PLAYERS; ++i)
+    {
+        X_Player* player = server->players + i;
+        
+        player->inUse = 0;
+        player->currentTransfer.flags = 0;      // FIXME: need a way to default init file
+    }
 }
 
 void x_server_cleanup(X_Server* server)
@@ -80,3 +87,16 @@ static void handle_network(X_Server* server)
     handle_connect_requests(server);
     remove_disconnected_players(server);
 }
+
+void x_server_update(X_Server* server)
+{
+    for(int i = 0; i < X_SERVER_MAX_PLAYERS; ++i)
+    {
+        X_Player* player = server->players + i;
+        if(!player->inUse)
+            continue;
+        
+        x_server_handle_packets_for_player(server, player);
+    }
+}
+

@@ -24,6 +24,9 @@ typedef enum X_PacketType
     X_PACKET_CONNECT = 2,
     X_PACKET_CONNECT_ACKNOWLEDGE = 3,
     X_PACKET_ECHO = 4,
+    X_PACKET_REQUEST_FILE = 5,
+    X_PACKET_REQUEST_FILE_RESPONSE = 6,
+    X_PACKET_FILE_CHUNK = 7
 } X_PacketType;
 
 #define X_NET_ERROR 0
@@ -114,6 +117,13 @@ static inline void x_packet_init(X_Packet* packet, X_PacketType type, char* buf,
     packet->type = type;
     packet->data = buf;
     packet->size = size;
+}
+
+static inline void x_packet_init_empty(X_Packet* packet, X_PacketType type, char* buf)
+{
+    packet->type = type;
+    packet->data = buf;
+    packet->size = 0;
 }
 
 static inline void x_packet_write_byte(X_Packet* packet, unsigned char byte)

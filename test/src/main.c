@@ -441,22 +441,20 @@ int main(int argc, char* argv[])
     init(&context, argv[0]);
     
     x_console_register_cmd(&context.engineContext->console, "packet", cmd_packet);
-   
-    gameloop(&context);
     
-//     test_socket();
-//     
-// #ifdef __nspire__
-//     if(x_socket_open(&serverSocket, "calc:0"))
-//     {
-//         isConnected = 1;
-//         gameloop(&context);
-//     }
-//     
-// #else
-//     gameloop(&context);
-// #endif
-//     
+    test_socket();
+    
+#ifdef __nspire__
+    if(x_socket_open(&serverSocket, "calc:0"))
+    {
+        isConnected = 1;
+        gameloop(&context);
+    }
+    
+#else
+    gameloop(&context);
+#endif
+    
     cleanup(&context);
 }
 

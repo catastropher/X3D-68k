@@ -16,6 +16,7 @@
 #pragma once
 
 #include "net/X_net.h"
+#include "system/X_File.h"
 
 #define X_SERVER_MAX_PLAYERS 8
 
@@ -23,6 +24,7 @@ typedef struct X_Player
 {
     X_Socket socket;
     _Bool inUse;
+    X_File currentTransfer;
 } X_Player;
 
 typedef struct X_Server
@@ -30,3 +32,5 @@ typedef struct X_Server
     X_Player players[X_SERVER_MAX_PLAYERS];
 } X_Server;
 
+
+void x_server_update(X_Server* server);
