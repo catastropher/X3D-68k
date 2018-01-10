@@ -402,11 +402,6 @@ void handle_net(Context* context)
 #endif
 }
 
-void test_socket()
-{
-    
-}
-
 void gameloop(Context* context)
 {
     x_console_register_cmd(&context->engineContext->console, "trigger", cmd_trigger);

@@ -6,8 +6,8 @@ GXX = nspire-g++
 LD  = nspire-ld
 GENZEHN = genzehn
 
-GCCFLAGS = -Wall -W -marm -I/usr/local/include -I/usr/local/include/X3D -D__nspire__
-LDFLAGS = -L /usr/local/lib -lX3D
+GCCFLAGS = -Wall -W -marm  -D__nspire__ -I"/home/michael/code/Ndless/ndless-sdk/include/X3D"
+LDFLAGS = -lX3D
 ZEHNFLAGS = --name "xtest"
 
 ifeq ($(DEBUG),FALSE)
