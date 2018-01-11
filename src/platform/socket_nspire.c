@@ -64,8 +64,8 @@ static void socket_callback(nn_ch_t handle, void* userData)
     int size = recv_data(handle, packet->internalData, 256);
     
     packet->data = packet->internalData + 2;
-    packet->type = packet->data[0];
-    packet->size = size;
+    packet->type = packet->internalData[0];
+    packet->size = size - 2;
 
     socket->queueTail = nextPacket;
 }
@@ -232,6 +232,8 @@ static X_Packet* dequeue_packet(X_Socket* socket)
     socket->lastPacketRead = currentTime;
     
     socket->queueHead = nextPacket;
+    
+    packet->readPos = 0;
     
     return packet;
 }

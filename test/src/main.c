@@ -305,101 +305,38 @@ static void cmd_trigger(X_EngineContext* engineContext, int argc, char* argv[])
     x_gameobject_trigger(&engineContext->screen.cameraListHead->base, argv[1], atoi(argv[2]));
 }
 
-void test_socket();
-
-X_Socket serverSocket;
-_Bool isConnected = 0;
-
-_Bool sendPacket;
-
-void cmd_packet(X_EngineContext* context, int argc, char* argv[])
+static void cmd_server(X_EngineContext* engineContext, int argc, char* argv[])
 {
-    sendPacket = 1;
+    Context* context = engineContext->userData;
+    
+    context->netMode |= NET_SERVER;
+    
+    x_server_init(&context->server);
+    x_console_print(&engineContext->console, "Server initialized\n");
+    
+    test_socket();
 }
 
-void send_update_packet(Context* context)
+static void cmd_connect(X_EngineContext* engineContext, int argc, char* argv[])
 {
-//     if(!sendPacket)
-//         return;
-//     
-//     sendPacket = 0;
-    
-    char buf[240];
-    X_Packet packet;
-    x_packet_init(&packet, X_PACKET_DATA, buf, 0);
-    
-    X_CameraObject* cam = context->cam;
-    X_Vec3 pos = x_cameraobject_get_position(cam);
-    
-    x_packet_write_short(&packet, x_fp16x16_to_int(pos.x));
-    x_packet_write_short(&packet, x_fp16x16_to_int(pos.y));
-    x_packet_write_short(&packet, x_fp16x16_to_int(pos.z));
-    
-    x_packet_write_byte(&packet, x_fp16x16_to_int(cam->angleX));
-    x_packet_write_byte(&packet, x_fp16x16_to_int(cam->angleY));
-    
-    x_socket_send_packet(&serverSocket, &packet);
-    
-#ifdef __pc__
-    usleep(100 * 1000);
-#endif
-}
-
-_Bool recv_update_packet(Context* context)
-{
-    //x_log("Recv... %d", serverSocket.queueHead);
-    X_Packet* packet = x_socket_receive_packet(&serverSocket);
-    if(!packet)
-        return 0;
-    
-    packet->readPos = 0;
-    
-    X_CameraObject* cam = context->cam;
-    
-    cam->collider.position.x = (int)x_packet_read_short(packet) << 16;
-    cam->collider.position.y = (int)x_packet_read_short(packet) << 16;
-    cam->collider.position.z = (int)x_packet_read_short(packet) << 16;
-    
-    cam->angleX = (int)x_packet_read_byte(packet) << 16;
-    cam->angleY = (int)x_packet_read_byte(packet) << 16;
-    
-    //x_vec3_fp16x16_print(&cam->collider.position, "\tRecv pos");
-    
-    x_cameraobject_update_view(cam);
-    return 1;
-}
-
-void handle_net_nspire(Context* context)
-{
-    if(!isConnected)
+    if(argc != 2)
         return;
     
-    while(recv_update_packet(context)) ;
+    Context* context = engineContext->userData;
+    
+    if(x_client_connect(&context->client, argv[1]))
+        x_console_print(&engineContext->console, "Connected to server\n");
+    else
+        x_console_printf(&engineContext->console, "Failed to open socket\n");
 }
 
-
-void handle_net_pc(Context* context)
+static void cmd_download(X_EngineContext* engineContext, int argc, char* argv[])
 {
-    X_ConnectRequest request;
-    if(x_net_get_connect_request(&request))
-    {
-        x_log("Has request!");
-        isConnected = x_socket_open(&serverSocket, request.address);
-    }
-    
-    if(!isConnected)
+    if(argc != 2)
         return;
     
-    send_update_packet(context);
-}
-
-void handle_net(Context* context)
-{
-#ifdef __pc__
-    handle_net_pc(context);
-#else
-    handle_net_nspire(context);
-#endif
+    Context* context = engineContext->userData;
+    x_client_request_file(&context->client, argv[1]);
 }
 
 void gameloop(Context* context)
@@ -413,8 +350,6 @@ void gameloop(Context* context)
     x_texture_init(&paint, 32, 32);
     fill_circle(&paint, x_palette_get_quake_palette()->darkBlue, x_palette_get_quake_palette()->lightBlue);
     
-    //fill_with_checkerboard(&paint);
-    
     x_objectfactory_register_type(&context->engineContext->gameObjectFactory, &g_cubeType);
     
     x_console_execute_cmd(&context->engineContext->console, "map portal2");
@@ -422,13 +357,17 @@ void gameloop(Context* context)
     
     while(!context->quit)
     {
+        if(context->netMode & NET_SERVER)
+            x_server_update(&context->server);
+        
+        if(context->netMode & NET_CLIENT)
+            x_client_update(&context->client);
+        
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         
         render(context);
 
-        handle_net(context);
-        
         handle_keys(context);
         screen_update(context);
     }    
@@ -440,21 +379,13 @@ int main(int argc, char* argv[])
     
     init(&context, argv[0]);
     
-    x_console_register_cmd(&context.engineContext->console, "packet", cmd_packet);
+    x_client_init(&context.client);
     
-    test_socket();
+    x_console_register_cmd(&context.engineContext->console, "server", cmd_server);
+    x_console_register_cmd(&context.engineContext->console, "connect", cmd_connect);
+    x_console_register_cmd(&context.engineContext->console, "download", cmd_download);
     
-#ifdef __nspire__
-    if(x_socket_open(&serverSocket, "calc:0"))
-    {
-        isConnected = 1;
-        gameloop(&context);
-    }
-    
-#else
     gameloop(&context);
-#endif
-    
     cleanup(&context);
 }
 

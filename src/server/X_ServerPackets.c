@@ -15,6 +15,7 @@
 
 #include "X_ServerPackets.h"
 #include "util/X_util.h"
+#include "engine/X_Engine.h"
 
 static void send_echo_packet(X_Socket* socket)
 {
@@ -22,7 +23,7 @@ static void send_echo_packet(X_Socket* socket)
     gettimeofday(&currentTime, NULL);
 }
 
-static void send_file_request_response(X_Socket* socket, _Bool success, int fileSize)
+static void send_file_request_response(X_Socket* socket, _Bool success, int fileSize, const char* fileName)
 {
     char packetBuf[256];
     X_Packet responsePacket;
@@ -31,18 +32,60 @@ static void send_file_request_response(X_Socket* socket, _Bool success, int file
     x_packet_write_byte(&responsePacket, success);
     x_packet_write_int(&responsePacket, fileSize);
     
+    char strippedFileName[X_PACKET_MAX_SIZE];
+    x_filepath_extract_filename(fileName, strippedFileName);
+    x_packet_write_str(&responsePacket, strippedFileName);
+    
     x_socket_send_packet(socket, &responsePacket);
 }
 
 static void handle_file_request(X_Server* server, X_Player* player, X_Packet* fileRequestPacket)
-{
-    char filename[X_FILENAME_MAX_LENGTH];
-    x_strncpy(filename, fileRequestPacket->data, X_FILENAME_MAX_LENGTH);
+{    
+    char fileName[X_FILENAME_MAX_LENGTH];
+    x_strncpy(fileName, fileRequestPacket->data, X_FILENAME_MAX_LENGTH);
+    
+    x_console_printf(x_engine_get_console(), "Received file request for file %s\n", fileName);
+    
+    if(strcmp(fileName, "update") == 0)
+        strcpy(fileName, "../src/xtest.tns");
     
     _Bool success = !x_file_is_open(&player->currentTransfer) &&
-        x_file_open_reading(&player->currentTransfer, filename);
+        x_file_open_reading(&player->currentTransfer, fileName);
         
-    send_file_request_response(&player->socket, success, player->currentTransfer.size);
+    
+    x_log("Success: %d\n", (int)success);
+    
+    send_file_request_response(&player->socket, success, player->currentTransfer.size, fileName);
+}
+
+static _Bool transfer_is_active(X_Player* player)
+{
+    return x_file_is_open(&player->currentTransfer);
+}
+
+static void send_chunk_of_transfer_file(X_Player* player)
+{
+    x_log("Enter transfer");
+    char buf[X_PACKET_MAX_SIZE];
+    
+    int amountToSend = X_MIN(X_PACKET_MAX_SIZE, player->currentTransfer.size - ftell(player->currentTransfer.file));
+    
+    x_log("Amount to send: %d\n", amountToSend);
+    
+    int size = fread(buf, 1, amountToSend, player->currentTransfer.file);
+    
+    if(size == 0)
+    {
+        x_log("Size is 0");
+        x_file_close(&player->currentTransfer);
+        return;
+    }
+    
+    x_log("Sending packet with file data");
+    
+    X_Packet packet;
+    x_packet_init(&packet, X_PACKET_FILE_CHUNK, buf, size);
+    x_socket_send_packet(&player->socket, &packet);
 }
 
 void x_server_handle_packets_for_player(X_Server* server, X_Player* player)
@@ -60,5 +103,8 @@ void x_server_handle_packets_for_player(X_Server* server, X_Player* player)
                 break;
         }
     }
+    
+    if(transfer_is_active(player))
+        send_chunk_of_transfer_file(player);
 }
 

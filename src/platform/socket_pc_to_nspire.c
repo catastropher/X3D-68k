@@ -185,7 +185,7 @@ static _Bool open_connection(Connection* con, int port)
     }
     
     con->calc = ticalcs_handle_new(CALC_NSPIRE);
-    ticables_options_set_timeout(con->cable, 1);
+    ticables_options_set_timeout(con->cable, 0);
     
     if(!con->calc)
     {
@@ -430,6 +430,7 @@ static X_Packet* dequeue_packet(X_Socket* socket)
     socket->lastPacketRead = currentTime;
     
     socket->queueHead = nextPacket;
+    packet->readPos = 0;
     
     pthread_mutex_unlock(&con->recvLock);
     

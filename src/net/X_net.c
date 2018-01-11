@@ -137,21 +137,27 @@ _Bool x_net_extract_address_and_port(const char* address, char* addressDest, int
 
 const char* x_socket_get_error_msg(X_Socket* socket)
 {
-    switch(socket->error)
+    static const char* errorMessages[] = 
     {
-        case X_SOCKETERROR_NONE:                return "No error";
-        case X_SOCKETERROR_CLOSED:              return "Socket closed";
-        case X_SOCKETERROR_OUT_OF_PACKETS:      return "Out of packets";
-        case X_SOCKETERROR_READ_FAILED:         return "Read failed";
-        case X_SOCKETERROR_BAD_ADDRESS:         return "Bad address";
-        case X_SOCKETERROR_NOT_OPENED:          return "Not opened";
-        case X_SOCKETERROR_SEND_FAILED:         return "Send failed";
-        case X_SOCKETERROR_SERVER_REJECTED:     return "Connection rejected by server";
-        case X_SOCKETERROR_TIMED_OUT:           return "Connection timed out";
-        case X_SOCKETERROR_ALREADY_OPENED:      return "Already opened";
-        case X_SOCKETERROR_CONNECTION_FAILED:   return "Connection failed";
-        
-        default:                            return "Unknown error";
-    }
+        "No error",
+        "Connection timed out",
+        "Send failed",
+        "Out of packets",
+        "Read failed",
+        "Not opened",
+        "Connection rejected by server",
+        "Bad address",
+        "Closed",
+        "Already opened",
+        "Connection failed"
+    };
+    
+    int error = (int)socket->error;
+    
+    if(error >= 0 && error < X_SOCKET_TOTAL_ERRORS)
+        return errorMessages[socket->error];
+    
+    static const char unknownError[] = "Unknown error";
+    return unknownError;
 }
 

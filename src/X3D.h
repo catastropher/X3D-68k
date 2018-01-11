@@ -15,6 +15,9 @@
 
 #pragma once
 
+// client
+#include "client/X_Client.h"
+
 // dev
 #include "dev/X_Console.h"
 #include "dev/X_DemoPlayer.h"
@@ -95,6 +98,9 @@
 #include "render/X_span.h"
 #include "render/X_Texture.h"
 #include "render/X_Viewport.h"
+
+// server
+#include "server/X_Server.h"
 
 // system
 #include "system/X_File.h"

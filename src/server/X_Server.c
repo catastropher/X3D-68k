@@ -78,6 +78,8 @@ static void handle_connect_requests(X_Server* server)
         if(!x_socket_open(&player->socket, request.address))
             return;
         
+        x_log("Player has joined!");
+        
         player->inUse = 1;
     }
 }
@@ -90,6 +92,8 @@ static void handle_network(X_Server* server)
 
 void x_server_update(X_Server* server)
 {
+    handle_network(server);
+    
     for(int i = 0; i < X_SERVER_MAX_PLAYERS; ++i)
     {
         X_Player* player = server->players + i;

@@ -18,21 +18,18 @@
 #include "net/X_net.h"
 #include "system/X_File.h"
 
-#define X_SERVER_MAX_PLAYERS 8
-
-typedef struct X_Player
+typedef struct X_Client
 {
     X_Socket socket;
-    _Bool inUse;
+    _Bool connectedToServer;
+    
     X_File currentTransfer;
-} X_Player;
+    int transferSize;
+    int transferTotalReceived;
+} X_Client;
 
-typedef struct X_Server
-{
-    X_Player players[X_SERVER_MAX_PLAYERS];
-} X_Server;
-
-
-void x_server_init(X_Server* server);
-void x_server_update(X_Server* server);
+void x_client_init(X_Client* client);
+_Bool x_client_connect(X_Client* client, const char* address);
+void x_client_request_file(X_Client* client, const char* name);
+void x_client_update(X_Client* client);
 

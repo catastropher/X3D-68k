@@ -58,6 +58,9 @@ endif()
 include_directories(src/)
 
 set(X_SOURCES
+    # client
+    src/client/X_Client.c
+
     # dev
     src/dev/X_AutoCompleter.c
     src/dev/X_conCommands.c
@@ -132,6 +135,7 @@ set(X_SOURCES
     
     # server
     src/server/X_Server.c
+    src/server/X_ServerPackets.c
 
     # system
     src/system/X_File.c

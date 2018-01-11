@@ -26,6 +26,8 @@ void x_engine_cleanup(void);
 void x_engine_render_frame(X_EngineContext* engineContext);
 void x_engine_update_objects(X_EngineContext* engineContext);
 
+X_Console* x_engine_get_console(void);
+
 static inline _Bool x_engine_level_is_loaded(const X_EngineContext* context)
 {
     return x_bsplevel_file_is_loaded(&context->currentLevel);

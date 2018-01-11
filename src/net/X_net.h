@@ -16,6 +16,7 @@
 #pragma once
 
 #include <sys/time.h>
+#include <string.h>
 
 typedef enum X_PacketType
 {
@@ -31,6 +32,8 @@ typedef enum X_PacketType
 
 #define X_NET_ERROR 0
 #define X_NET_SUCCESS 1
+
+#define X_PACKET_MAX_SIZE 238
 
 typedef struct X_Packet
 {
@@ -79,7 +82,8 @@ typedef enum X_SocketError
     X_SOCKETERROR_BAD_ADDRESS = 7,
     X_SOCKETERROR_CLOSED = 8,
     X_SOCKETERROR_ALREADY_OPENED = 9,
-    X_SOCKETERROR_CONNECTION_FAILED = 10
+    X_SOCKETERROR_CONNECTION_FAILED = 10,
+    X_SOCKET_TOTAL_ERRORS
 } X_SocketError;
 
 typedef struct X_Socket
@@ -149,6 +153,13 @@ static inline void x_packet_write_int64(X_Packet* packet, unsigned long long val
         packet->data[packet->size++] = (val >> i) & 0xFF;
 }
 
+static inline void x_packet_write_str(X_Packet* packet, const char* str)
+{
+    // TODO: add bounds checking
+    strcpy((char*)packet->data + packet->size, str);
+    packet->size += strlen(str) + 1;
+}
+
 static inline unsigned char x_packet_read_byte(X_Packet* packet)
 {
     return packet->data[packet->readPos++];
@@ -181,6 +192,15 @@ static inline unsigned long long x_packet_read_int64(X_Packet* packet)
         res |= ((unsigned long long)packet->data[packet->readPos++]) << i;
     
     return res;
+}
+
+static inline void x_packet_read_str(X_Packet* packet, char* dest)
+{
+    while(packet->data[packet->readPos])
+        *dest++ = packet->data[packet->readPos++];
+    
+    ++packet->readPos;
+    *dest = '\0';
 }
 
 static inline X_SocketError x_socket_get_error(X_Socket* socket)

@@ -53,6 +53,7 @@ static void init_x3d(Context* context, int screenW, int screenH, const char* pro
     x_config_screen_set_palette(&config, x_palette_get_quake_palette());
     
     context->engineContext = x_engine_init(&config);
+    context->engineContext->userData = context;
 }
 
 static X_Vec2 determine_default_platform_resolution(void)
@@ -77,6 +78,7 @@ void init(Context* context, const char* programPath)
     screen_init_console_vars(&context->engineContext->console);
     
     context->quit = 0;
+    context->netMode = NET_CLIENT;
 }
 
 static void cleanup_sdl(Context* context)
