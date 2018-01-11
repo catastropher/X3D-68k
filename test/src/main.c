@@ -373,11 +373,23 @@ void gameloop(Context* context)
     }    
 }
 
+void test_pc_socket();
+
+void test()
+{
+    test_pc_socket();
+}
+
 int main(int argc, char* argv[])
 {
     Context context;
     
     init(&context, argv[0]);
+    
+    test_pc_socket();
+    
+    cleanup(&context);
+    return 0;
     
     x_client_init(&context.client);
     

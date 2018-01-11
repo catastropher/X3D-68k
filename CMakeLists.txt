@@ -150,6 +150,7 @@ set(X_SOURCES
 if(${XTARGET} STREQUAL "pc")
     set(X_SOURCES ${X_SOURCES}
         src/platform/platform_pc.c
+        src/platform/socket_pc.c
     )
     
     if(${USE_TILIBS} STREQUAL "1")
