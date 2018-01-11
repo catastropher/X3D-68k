@@ -23,6 +23,8 @@
 #include "net/X_net.h"
 #include "error/X_log.h"
 #include "error/X_error.h"
+#include "memory/X_Link.h"
+#include "memory/X_alloc.h"
 
 typedef struct ConnectionAddress
 {
@@ -30,17 +32,47 @@ typedef struct ConnectionAddress
     unsigned short port;
 } ConnectionAddress;
 
-typedef struct Connection
+typedef struct ConnectionRequest
 {
-    X_Socket* x3dSocket;
     ConnectionAddress address;
-} Connection;
+    
+    struct ConnectionRequest* next;
+} ConnectionRequest;
 
 typedef struct PcSocket
 {
+    X_Link connectionHead;
+    X_Link connectionTail;
+    
     int socketFd;
     struct sockaddr_in socketAddress;
+    
+    ConnectionRequest* connectRequestHead;
 } PcSocket;
+
+typedef struct Connection
+{
+    X_Link link;
+    
+    X_Socket* x3dSocket;
+    ConnectionAddress recvAddress;
+    ConnectionAddress sendAddress;
+    
+    PcSocket* pcSocket;
+} Connection;
+
+static PcSocket* get_pcsocket(void)
+{
+    static PcSocket socket;
+    return &socket;
+}
+
+static void connectionaddress_to_inet_addr(ConnectionAddress* src, struct sockaddr_in* dest)
+{
+    dest->sin_family = AF_INET;
+    dest->sin_addr.s_addr = src->ipAddress;
+    dest->sin_port = src->port;
+}
 
 static void pcsocket_setup_address(PcSocket* sock, unsigned short port)
 {
@@ -89,6 +121,9 @@ static _Bool pcsocket_disable_blocking(PcSocket* sock)
 
 static _Bool pcsocket_init(PcSocket* sock, unsigned short port)
 {
+    x_link_init(&sock->connectionHead, &sock->connectionTail);
+    sock->connectRequestHead = NULL;
+    
     pcsocket_setup_address(sock, port);
     
     _Bool success = pcsocket_create_socket(sock) &&
@@ -112,6 +147,41 @@ static void pcsocket_cleanup(PcSocket* sock)
     close(sock->socketFd);
 }
 
+static void enqueue_packet(X_Socket* socket, unsigned char* data, int dataSize)
+{
+    X_Packet* packet = socket->packets + socket->queueTail;
+    
+    packet->type = data[0];
+    packet->data = packet->internalData;
+    memcpy(packet->data, data + 1, dataSize - 1);
+    
+    socket->queueTail = (socket->queueTail + 1) % socket->totalPackets;
+}
+
+static void forward_data_to_x3d_socket(PcSocket* sock, unsigned char* data, int dataSize, ConnectionAddress* address)
+{
+    for(X_Link* link = sock->connectionHead.next; link != &sock->connectionTail; link = link->next)
+    {
+        Connection* con = (Connection*)link;
+        
+        if(con->recvAddress.ipAddress == address->ipAddress && con->recvAddress.port == address->port)
+        {
+            enqueue_packet(con->x3dSocket, data, dataSize);
+            return;
+        }
+    }
+}
+
+static void handle_connect_packet(PcSocket* sock, ConnectionAddress* address)
+{
+    // TODO: check whether the requested connection is already active
+    ConnectionRequest* request = x_malloc(sizeof(ConnectionRequest));
+    
+    request->address = *address;
+    request->next = sock->connectRequestHead;
+    sock->connectRequestHead = request;
+}
+
 static _Bool pcsocket_receive_packet(PcSocket* sock)
 {
     struct sockaddr_in sourceAddress;
@@ -120,15 +190,156 @@ static _Bool pcsocket_receive_packet(PcSocket* sock)
     
     int size = recvfrom(sock->socketFd, buf, sizeof(buf), 0, (struct sockaddr *)&sourceAddress, &addressLength);
     if(size < 0)
-    {
         x_system_error("Error in receiving packet");    // FIXME: need a better way to handle this
-    }
     
     if(size == 0)
         return 0;
     
+    ConnectionAddress address;
+    address.ipAddress = sourceAddress.sin_addr.s_addr;
+    address.port = sourceAddress.sin_port;
+    
+    X_PacketType type = buf[0];
+    
+    if(type == X_PACKET_CONNECT)
+        handle_connect_packet(sock, &address);
+    else
+        forward_data_to_x3d_socket(sock, buf, size, &address);
+    
     return 1;
 }
+
+static _Bool extract_address(const char* addressString, ConnectionAddress* dest)
+{
+    char address[X_NET_ADDRESS_MAX_LENGTH];
+    int port;
+    
+    if(!x_net_extract_address_and_port(addressString, address, &port))
+        return 0;
+    
+    int ipAddress = inet_addr(address);
+    if(ipAddress == (in_addr_t)-1)
+        return 0;
+    
+    dest->ipAddress = ipAddress;
+    dest->port = port;
+    
+    return 1;
+}
+
+static _Bool socket_open(X_Socket* socket, const char* addressString)
+{
+    ConnectionAddress address;
+    if(!extract_address(addressString, &address))
+    {
+        socket->error = X_SOCKETERROR_BAD_ADDRESS;
+        return 0;
+    }
+    
+    Connection* con = x_malloc(sizeof(Connection*));
+    con->sendAddress = address;
+    con->x3dSocket = socket;
+    
+    socket->socketInterfaceData = con;
+    
+    PcSocket* pcSocket = get_pcsocket();
+    x_link_insert_after(&pcSocket->connectionHead, &con->link);
+    x_socket_internal_init(socket, 512);
+    
+    con->pcSocket = pcSocket;
+    
+    return 1;
+}
+
+static void socket_close(X_Socket* socket)
+{
+    if(!socket->socketInterfaceData)
+        return;
+    
+    Connection* con = socket->socketInterfaceData;
+    x_link_unlink(&con->link);
+    
+    socket->socketInterfaceData = NULL;
+    
+    free(con);
+}
+
+static X_Packet* socket_dequeue_packet(X_Socket* socket)
+{
+    // TODO: is the right place for this?
+    PcSocket* pcSocket = get_pcsocket();
+    while(pcsocket_receive_packet(pcSocket)) ;
+    
+    return x_socket_internal_dequeue(socket);
+}
+
+static _Bool socket_match_address(const char* address)
+{
+    ConnectionAddress address;
+    return extract_address(address, &address);
+}
+
+static _Bool socket_send_packet(X_Socket* socket, X_Packet* packet)
+{
+    if(packet->size > X_PACKET_MAX_SIZE)
+        x_system_error("Bad packet size");
+    
+    char buf[256];
+    buf[0] = packet->type;
+    
+    memcpy(buf + 1, packet->data, packet->size);
+    
+    struct sockaddr_in destAddress;
+    unsigned int addressLength = sizeof(struct sockaddr_in);
+    
+    Connection* con = socket->socketInterfaceData;
+    destAddress.sin_family = AF_INET;
+    destAddress.sin_addr.s_addr = con->sendAddress.ipAddress;
+    destAddress.sin_port = con->sendAddress.port;
+    
+    PcSocket* pcSocket = con->pcSocket;
+    
+    int totalSize = packet->size + 1;
+    int sizeSent = sendto(pcSocket->socketFd, buf, totalSize, 0, (struct sockaddr *)&destAddress, &addressLength);
+    
+    if(sizeSent != totalSize)
+    {
+        socket->error = X_SOCKETERROR_SEND_FAILED;
+        return 0;
+    }
+    
+    return 1;
+}
+
+static _Bool get_connect_request(X_ConnectRequest* dest)
+{
+    PcSocket* socket = get_pcsocket();
+    if(!socket->connectRequestHead)
+        return 0;
+    
+    ConnectionRequest* request = socket->connectRequestHead;
+    socket->connectRequestHead = socket->connectRequestHead->next;
+    
+    struct sockaddr_in address;
+    connectionaddress_to_inet_addr(&request->address, &address);
+    
+    const char* ipAddress = inet_ntoa(address.sin_addr);
+    
+    sprintf(dest->address, "%s:%d", ipAddress, request->address.port);
+    
+    x_free(request);
+    return 1;
+}
+
+static X_SocketInterface g_socketInterface = 
+{
+    .matchAddress = socket_match_address,
+    .openSocket = socket_open,
+    .closeSocket = socket_close,
+    .sendPacket = socket_send_packet,
+    .dequeuePacket = socket_dequeue_packet,
+    .getConnectRequest = get_connect_request
+};
 
 void test_pc_socket()
 {

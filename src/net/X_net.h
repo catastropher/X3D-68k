@@ -115,6 +115,9 @@ X_Packet* x_socket_receive_packet(X_Socket* socket);
 _Bool x_socket_connection_is_valid(X_Socket* socket);
 const char* x_socket_get_error_msg(X_Socket* socket);
 
+void x_socket_internal_init(X_Socket* socket, int totalPackets);
+X_Packet* x_socket_internal_dequeue(X_Socket* socket);
+
 
 static inline void x_packet_init(X_Packet* packet, X_PacketType type, char* buf, int size)
 {

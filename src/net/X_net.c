@@ -18,6 +18,7 @@
 #include <stdlib.h>
 
 #include "X_net.h"
+#include "memory/X_alloc.h"
 
 static X_SocketInterface* g_interfaceHead;
 
@@ -159,5 +160,47 @@ const char* x_socket_get_error_msg(X_Socket* socket)
     
     static const char unknownError[] = "Unknown error";
     return unknownError;
+}
+
+void x_socket_internal_init(X_Socket* socket, int totalPackets)
+{
+    const int MAX_PACKET_SIZE = 256;
+    
+    socket->packets = x_malloc(totalPackets * sizeof(X_Packet));
+    socket->packetData = x_malloc(totalPackets * MAX_PACKET_SIZE);
+    
+    for(int i = 0; i < totalPackets; ++i)
+        socket->packets[i].internalData = socket->packetData + i * MAX_PACKET_SIZE;
+    
+    socket->queueHead = 0;
+    socket->queueTail = 0;
+    socket->totalPackets = totalPackets;
+    
+    gettimeofday(&socket->lastPacketRead, NULL);
+}
+
+X_Packet* x_socket_internal_dequeue(X_Socket* socket)
+{
+    if(socket->error != X_SOCKETERROR_NONE)
+        return NULL;
+    
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+    
+    if(socket->queueHead == socket->queueTail)
+    {
+        //         if(currentTime.tv_sec - socket->lastPacketRead.tv_sec > 10)
+        //             socket->error = X_SOCKETERROR_TIMED_OUT;
+        return NULL;
+    }
+    
+    int nextPacket = (socket->queueHead + 1) % socket->totalPackets;
+    X_Packet* packet = socket->packets + socket->queueHead;
+    socket->lastPacketRead = currentTime;
+    
+    socket->queueHead = nextPacket;
+    packet->readPos = 0;
+    
+    return packet;
 }
 

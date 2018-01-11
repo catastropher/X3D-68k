@@ -150,23 +150,10 @@ static _Bool socket_open(X_Socket* socket, const char* address)
     socket->error = X_SOCKETERROR_NONE;
     socket->socketInterfaceData = con;
     
-    int totalPackets = 512;
-    const int MAX_PACKET_SIZE = 256;
-    
-    socket->packets = x_malloc(totalPackets * sizeof(X_Packet));
-    socket->packetData = x_malloc(totalPackets * MAX_PACKET_SIZE);
-    
-    for(int i = 0; i < totalPackets; ++i)
-        socket->packets[i].internalData = socket->packetData + i * MAX_PACKET_SIZE;
-    
-    socket->queueHead = 0;
-    socket->queueTail = 0;
-    socket->totalPackets = totalPackets;
+    x_socket_internal_init(socket, 512);
     
     con->socket = socket;
     con->state = CONNECTION_ACTIVE;
-    
-    gettimeofday(&socket->lastPacketRead, NULL);
     
     pthread_mutex_unlock(&con->recvLock);
     pthread_mutex_unlock(&con->sendLock);
@@ -408,30 +395,8 @@ static X_Packet* dequeue_packet(X_Socket* socket)
 {
     Connection* con = (Connection*)socket->socketInterfaceData;
     
-    if(socket->error != X_SOCKETERROR_NONE)
-        return NULL;
-    
-    struct timeval currentTime;
-    gettimeofday(&currentTime, NULL);
-    
     pthread_mutex_lock(&con->recvLock);
-    
-    if(socket->queueHead == socket->queueTail)
-    {
-//         if(currentTime.tv_sec - socket->lastPacketRead.tv_sec > 10)
-//             socket->error = X_SOCKETERROR_TIMED_OUT;
-        
-        pthread_mutex_unlock(&con->recvLock);
-        return NULL;
-    }
-    
-    int nextPacket = (socket->queueHead + 1) % socket->totalPackets;
-    X_Packet* packet = socket->packets + socket->queueHead;
-    socket->lastPacketRead = currentTime;
-    
-    socket->queueHead = nextPacket;
-    packet->readPos = 0;
-    
+    X_Packet* packet = x_socket_internal_dequeue(socket);
     pthread_mutex_unlock(&con->recvLock);
     
     return packet;
@@ -439,7 +404,6 @@ static X_Packet* dequeue_packet(X_Socket* socket)
 
 static void socket_close(X_Socket* socket)
 {
-    
 }
 
 static _Bool get_connect_request(X_ConnectRequest* request)
