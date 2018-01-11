@@ -18,15 +18,22 @@
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "net/X_net.h"
 #include "error/X_log.h"
+#include "error/X_error.h"
+
+typedef struct ConnectionAddress
+{
+    unsigned int ipAddress;
+    unsigned short port;
+} ConnectionAddress;
 
 typedef struct Connection
 {
     X_Socket* x3dSocket;
-    unsigned int ipAddress;
-    unsigned short port;
+    ConnectionAddress address;
 } Connection;
 
 typedef struct PcSocket
@@ -65,14 +72,30 @@ static _Bool pcsocket_bind(PcSocket* sock)
     return 1;
 }
 
+static _Bool pcsocket_disable_blocking(PcSocket* sock)
+{
+    struct timeval timeout;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 0;
+    
+    if(setsockopt(sock->socketFd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
+    {
+        x_log_error("Failed to disable socket blocking");
+        return 0;
+    }
+    
+    return 1;
+}
+
 static _Bool pcsocket_init(PcSocket* sock, unsigned short port)
 {
     pcsocket_setup_address(sock, port);
     
-    if(!pcsocket_create_socket(sock))
-        return 0;
-    
-    if(!pcsocket_bind(sock))
+    _Bool success = pcsocket_create_socket(sock) &&
+        pcsocket_bind(sock) &&
+        pcsocket_disable_blocking(sock);
+        
+    if(!success)
         return 0;
     
     x_log("Initialized socket on port %d", port);
@@ -87,6 +110,24 @@ static void pcsocket_cleanup(PcSocket* sock)
     
     x_log("Closing socket...");
     close(sock->socketFd);
+}
+
+static _Bool pcsocket_receive_packet(PcSocket* sock)
+{
+    struct sockaddr_in sourceAddress;
+    unsigned int addressLength = sizeof(struct sockaddr_in);
+    unsigned char buf[256];
+    
+    int size = recvfrom(sock->socketFd, buf, sizeof(buf), 0, (struct sockaddr *)&sourceAddress, &addressLength);
+    if(size < 0)
+    {
+        x_system_error("Error in receiving packet");    // FIXME: need a better way to handle this
+    }
+    
+    if(size == 0)
+        return 0;
+    
+    return 1;
 }
 
 void test_pc_socket()
