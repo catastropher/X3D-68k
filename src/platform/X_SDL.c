@@ -49,7 +49,7 @@ static void build_key_map(void)
     keyMap[SDLK_TAB] = '\t';
     
     const int AZERTY_SUPERSCRIPT_2 = 178;
-    keyMap[SDLK_BACKQUOTE] = keyMap['~'] = keyMap[AZERTY_SUPERSCRIPT_2] = keyMap['9'] = X_KEY_OPEN_CONSOLE;
+    keyMap[SDLK_BACKQUOTE] = keyMap['~'] = keyMap[AZERTY_SUPERSCRIPT_2] = X_KEY_OPEN_CONSOLE;
     
     keyMap[SDLK_UP] = X_KEY_UP;
     keyMap[SDLK_DOWN] = X_KEY_DOWN;
@@ -93,7 +93,7 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
             x_platform_sdl_extract_key_from_event(&ev, &key, &unicodeCharacter);
             
             int x3dKey = translate_sdl_key_to_x3d_key(key);
-            int x3dUnicodeCharacter = translate_sdl_key_to_x3d_key(key);
+            int x3dUnicodeCharacter = translate_sdl_key_to_x3d_key(unicodeCharacter);
             
             if(x3dKey != INVALID_KEY)
                 x_keystate_send_key_press(&engineContext->keystate, x3dKey, x3dUnicodeCharacter);

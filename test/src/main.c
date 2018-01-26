@@ -305,6 +305,8 @@ static void cmd_trigger(X_EngineContext* engineContext, int argc, char* argv[])
     x_gameobject_trigger(&engineContext->screen.cameraListHead->base, argv[1], atoi(argv[2]));
 }
 
+void test_pc_socket(int port);
+
 static void cmd_server(X_EngineContext* engineContext, int argc, char* argv[])
 {
     Context* context = engineContext->userData;
@@ -312,9 +314,13 @@ static void cmd_server(X_EngineContext* engineContext, int argc, char* argv[])
     context->netMode |= NET_SERVER;
     
     x_server_init(&context->server);
+    
+    test_pc_socket(8000);
+    
     x_console_print(&engineContext->console, "Server initialized\n");
     
-    test_socket();
+    //test_socket();
+    
 }
 
 static void cmd_connect(X_EngineContext* engineContext, int argc, char* argv[])
@@ -323,6 +329,8 @@ static void cmd_connect(X_EngineContext* engineContext, int argc, char* argv[])
         return;
     
     Context* context = engineContext->userData;
+    
+    test_pc_socket(0);
     
     if(x_client_connect(&context->client, argv[1]))
         x_console_print(&engineContext->console, "Connected to server\n");
@@ -338,6 +346,8 @@ static void cmd_download(X_EngineContext* engineContext, int argc, char* argv[])
     Context* context = engineContext->userData;
     x_client_request_file(&context->client, argv[1]);
 }
+
+void net_update();
 
 void gameloop(Context* context)
 {
@@ -358,7 +368,10 @@ void gameloop(Context* context)
     while(!context->quit)
     {
         if(context->netMode & NET_SERVER)
+        {
+            net_update();
             x_server_update(&context->server);
+        }
         
         if(context->netMode & NET_CLIENT)
             x_client_update(&context->client);
@@ -373,23 +386,15 @@ void gameloop(Context* context)
     }    
 }
 
-void test_pc_socket();
-
-void test()
-{
-    test_pc_socket();
-}
+void x_socket_pc_register_interface(void);
 
 int main(int argc, char* argv[])
 {
     Context context;
     
     init(&context, argv[0]);
-    
-    test_pc_socket();
-    
-    cleanup(&context);
-    return 0;
+ 
+    x_socket_pc_register_interface();
     
     x_client_init(&context.client);
     

@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <errno.h>
 
 #include "net/X_net.h"
 #include "error/X_log.h"
@@ -108,7 +109,7 @@ static _Bool pcsocket_disable_blocking(PcSocket* sock)
 {
     struct timeval timeout;
     timeout.tv_sec = 0;
-    timeout.tv_usec = 0;
+    timeout.tv_usec = 1;
     
     if(setsockopt(sock->socketFd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(struct timeval)) < 0)
     {
@@ -189,11 +190,15 @@ static _Bool pcsocket_receive_packet(PcSocket* sock)
     unsigned char buf[256];
     
     int size = recvfrom(sock->socketFd, buf, sizeof(buf), 0, (struct sockaddr *)&sourceAddress, &addressLength);
-    if(size < 0)
-        x_system_error("Error in receiving packet");    // FIXME: need a better way to handle this
+    if(size == -1)
+    {
+        if(errno != ETIMEDOUT && errno != EAGAIN)
+            x_system_error("Error in receiving packet");    // FIXME: need a better way to handle this
+        else
+            return 0;
+    }
     
-    if(size == 0)
-        return 0;
+    x_log("Has packet!");
     
     ConnectionAddress address;
     address.ipAddress = sourceAddress.sin_addr.s_addr;
@@ -236,14 +241,14 @@ static _Bool socket_open(X_Socket* socket, const char* addressString)
         return 0;
     }
     
-    Connection* con = x_malloc(sizeof(Connection*));
+    Connection* con = x_malloc(sizeof(Connection));
     con->sendAddress = address;
     con->x3dSocket = socket;
     
     socket->socketInterfaceData = con;
     
     PcSocket* pcSocket = get_pcsocket();
-    x_link_insert_after(&pcSocket->connectionHead, &con->link);
+    x_link_insert_after(&con->link, &pcSocket->connectionHead);
     x_socket_internal_init(socket, 512);
     
     con->pcSocket = pcSocket;
@@ -275,8 +280,8 @@ static X_Packet* socket_dequeue_packet(X_Socket* socket)
 
 static _Bool socket_match_address(const char* address)
 {
-    ConnectionAddress address;
-    return extract_address(address, &address);
+    ConnectionAddress addr;
+    return extract_address(address, &addr);
 }
 
 static _Bool socket_send_packet(X_Socket* socket, X_Packet* packet)
@@ -300,13 +305,15 @@ static _Bool socket_send_packet(X_Socket* socket, X_Packet* packet)
     PcSocket* pcSocket = con->pcSocket;
     
     int totalSize = packet->size + 1;
-    int sizeSent = sendto(pcSocket->socketFd, buf, totalSize, 0, (struct sockaddr *)&destAddress, &addressLength);
+    int sizeSent = sendto(pcSocket->socketFd, buf, totalSize, 0, (struct sockaddr *)&destAddress, addressLength);
     
     if(sizeSent != totalSize)
     {
         socket->error = X_SOCKETERROR_SEND_FAILED;
         return 0;
     }
+    
+    x_log("Packet sent");
     
     return 1;
 }
@@ -341,10 +348,21 @@ static X_SocketInterface g_socketInterface =
     .getConnectRequest = get_connect_request
 };
 
-void test_pc_socket()
+void x_socket_pc_register_interface(void)
 {
-    PcSocket sock;
-    pcsocket_init(&sock, 8000);
-    pcsocket_cleanup(&sock);
+    x_net_register_socket_interface(&g_socketInterface);
 }
+
+void test_pc_socket(int port)
+{
+    PcSocket* socket = get_pcsocket();
+    pcsocket_init(socket, port);
+}
+
+void net_update()
+{
+    PcSocket* sock = get_pcsocket();
+    pcsocket_receive_packet(sock);
+}
+
 

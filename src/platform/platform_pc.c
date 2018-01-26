@@ -42,8 +42,11 @@ void x_platform_sdl_extract_key_from_event(SDL_Event* ev, SDLKey* key, SDLKey* u
     *key = ev->key.keysym.sym;
     *unicodeCharacter = ev->key.keysym.unicode;
     
+    // FIXME: unicode is being initialized before SDL!
+    SDL_EnableUNICODE(SDL_ENABLE);
+    
     if(!isprint(*key))
-        *unicodeCharacter = *key;
+        *unicodeCharacter = *key;    
 }
 
 void x_platform_mouse_set_position(X_Vec2 pos)

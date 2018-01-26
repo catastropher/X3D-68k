@@ -23,9 +23,21 @@ void x_client_init(X_Client* client)
     client->currentTransfer.flags = 0;
 }
 
+static void send_connect_request(X_Socket* socket)
+{
+    X_Packet packet;
+    char buf[1];
+    x_packet_init(&packet, X_PACKET_CONNECT, buf, 0);
+    x_socket_send_packet(socket, &packet);
+}
+
 _Bool x_client_connect(X_Client* client, const char* address)
 {
     client->connectedToServer = x_socket_open(&client->socket, address);
+    
+    if(client->connectedToServer)
+        send_connect_request(&client->socket);
+    
     return client->connectedToServer;
 }
 
