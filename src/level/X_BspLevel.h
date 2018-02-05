@@ -268,7 +268,7 @@ void x_bsplevel_render_submodels(X_BspLevel* level, struct X_RenderContext* rend
 
 //======================== level ========================
 
-static inline _Bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
+static inline bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
 {
     return (level->flags & X_BSPLEVEL_LOADED) != 0;
 }
@@ -310,24 +310,24 @@ static inline X_BspModel* x_bsplevel_get_model(X_BspLevel* level, int modelId)
 
 //======================== node ========================
 
-static inline _Bool x_bspnode_is_leaf(const X_BspNode* node)
+static inline bool x_bspnode_is_leaf(const X_BspNode* node)
 {
     return node->contents < 0;
 }
 
-static inline _Bool x_bspnode_is_visible_this_frame(const X_BspNode* node, int currentFrame)
+static inline bool x_bspnode_is_visible_this_frame(const X_BspNode* node, int currentFrame)
 {
     return node->lastVisibleFrame == currentFrame;
 }
 
 //======================== surface ========================
 
-static inline _Bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
+static inline bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
 {
     return surface->lastVisibleFrame == currentFrame;
 }
 
-static inline _Bool x_bspsurface_plane_is_flipped(const X_BspSurface* surface)
+static inline bool x_bspsurface_plane_is_flipped(const X_BspSurface* surface)
 {
     return surface->flags & X_BSPSURFACE_FLIPPED;
 }
@@ -366,7 +366,7 @@ static inline x_fp16x16 x_bspmodel_height(X_BspModel* model)
     return model->boundBox.v[0].y - model->boundBox.v[1].y;
 }
 
-static inline _Bool x_bspmodel_has_objects_standing_on(X_BspModel* model)
+static inline bool x_bspmodel_has_objects_standing_on(X_BspModel* model)
 {
     return model->objectsOnModelHead.next != &model->objectsOnModelTail;
 }

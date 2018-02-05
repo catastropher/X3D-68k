@@ -60,7 +60,7 @@ void* x_cache_get_cached_data(X_Cache* cache, X_CacheEntry* entry);
 
 void x_cache_flush(X_Cache* cache);
 
-static inline _Bool x_cachentry_is_in_cache(const X_CacheEntry* entry)
+static inline bool x_cachentry_is_in_cache(const X_CacheEntry* entry)
 {
     return entry->cacheData != NULL;
 }

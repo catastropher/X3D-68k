@@ -28,16 +28,16 @@ typedef struct X_DemoRecorder
     X_CameraObject* cam;
     X_KeyState* keyState;
     int totalFrames;
-    _Bool recording;
+    bool recording;
 } X_DemoRecorder;
 
-static inline _Bool x_demorecorder_is_recording(X_DemoRecorder* recorder)
+static inline bool x_demorecorder_is_recording(X_DemoRecorder* recorder)
 {
     return recorder->recording;
 }
 
 void x_demorecorder_init(X_DemoRecorder* recorder, X_CameraObject* cam, X_KeyState* keyState);
-_Bool x_demorecorder_record(X_DemoRecorder* recorder, const char* outputFileName);
+bool x_demorecorder_record(X_DemoRecorder* recorder, const char* outputFileName);
 
 void x_demorecorder_cleanup(X_DemoRecorder* recorder);
 

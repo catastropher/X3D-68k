@@ -33,13 +33,13 @@ typedef struct X_EntitySkin
 typedef struct X_EntityTextureCoord
 {
     X_Vec2 coord;
-    _Bool onSeam;
+    bool onSeam;
 } X_EntityTextureCoord;
 
 typedef struct X_EntityTriangle
 {
     int vertexIds[3];
-    _Bool facesFront;
+    bool facesFront;
 } X_EntityTriangle;
 
 typedef struct X_EntityVertex
@@ -89,7 +89,7 @@ typedef struct X_EntityModel
     X_EntityFrameGroup* frameGroups;
 } X_EntityModel;
 
-_Bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);
+bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);
 void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest);
 void x_entitymodel_cleanup(X_EntityModel* model);
 

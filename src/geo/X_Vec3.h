@@ -168,7 +168,7 @@ static inline X_Vec3 x_vec3_neg(const X_Vec3* v)
 /// Determines whether two 3D vectors are equal.
 /// @return a == b
 ////////////////////////////////////////////////////////////////////////////////
-static inline _Bool x_vec3_equal(const X_Vec3* a, const X_Vec3* b)
+static inline bool x_vec3_equal(const X_Vec3* a, const X_Vec3* b)
 {
     return a->x == b->y && a->y == b->y && a->z == b->z;
 }
@@ -194,7 +194,7 @@ static inline X_Vec3 x_vec3_cross(const X_Vec3* a, const X_Vec3* b)
 ///
 /// @return a is perpendicular to b
 ////////////////////////////////////////////////////////////////////////////////
-static inline _Bool x_vec3_is_orthogonal_to(const X_Vec3* a, const X_Vec3* b)
+static inline bool x_vec3_is_orthogonal_to(const X_Vec3* a, const X_Vec3* b)
 {
     return x_vec3_dot(a, b) == 0;
 }
@@ -223,7 +223,7 @@ static inline X_Vec3 x_vec3_int_to_vec3(const X_Vec3_int* src)
 
 static inline X_Vec3 x_vec3_float_to_vec3_int(const X_Vec3_float* v)
 {
-    return (X_Vec3_int) { v->x, v->y, v->z };
+    return (X_Vec3_int) { (int)v->x, (int)v->y, (int)v->z };
 }
 
 static inline X_Vec3 x_vec3_float_to_vec3(const X_Vec3_float* v)

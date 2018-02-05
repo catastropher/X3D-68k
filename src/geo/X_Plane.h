@@ -43,7 +43,7 @@ static inline x_fp16x16 x_plane_point_distance(const X_Plane* plane, const X_Vec
     return x_vec3_dot(&plane->normal, point) + plane->d;
 }
 
-static inline _Bool x_plane_point_is_on_normal_facing_side(const X_Plane* plane, const X_Vec3* point)
+static inline bool x_plane_point_is_on_normal_facing_side(const X_Plane* plane, const X_Vec3* point)
 {
     return x_plane_point_distance(plane, point) > 0;
 }

@@ -25,17 +25,17 @@ typedef struct X_Config
     int screenW;
     int screenH;
     x_fp16x16 fov;
-    _Bool fullscreen;
+    bool fullscreen;
     
     const char* programPath;
 } X_Config;
 
 void x_config_init(X_Config* config);
 
-void x_config_set_screen_defaults(X_Config* config, int screenW, int screenH, x_fp16x16 fov, _Bool fullscreen);
+void x_config_set_screen_defaults(X_Config* config, int screenW, int screenH, x_fp16x16 fov, bool fullscreen);
 void x_config_set_screen_display_frame_callback(X_Config* config, void (*displayFrameCallback)(struct X_Screen* screen, void* userData));
 void x_config_set_screen_restart_video_callback(X_Config* config, void (*restartVideoCallback)(struct X_EngineContext* context, void* userData));
-void x_config_set_screen_is_valid_resolution_callback(X_Config* config, _Bool (*isValidResolutionCallback)(int w, int h));
+void x_config_set_screen_is_valid_resolution_callback(X_Config* config, bool (*isValidResolutionCallback)(int w, int h));
 void x_config_set_screen_user_data(X_Config* config, void* userData);
 void x_config_set_screen_cleanup_video_callback(X_Config* config, void (*cleanupVideoCallback)(struct X_EngineContext* context, void* userData));
 

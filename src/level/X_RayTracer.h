@@ -32,5 +32,5 @@ typedef struct X_RayTracer
 } X_RayTracer;
 
 void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, X_Vec3* start, X_Vec3* end, X_BoundBox* boundBox);
-_Bool x_raytracer_trace(X_RayTracer* trace);
+bool x_raytracer_trace(X_RayTracer* trace);
 

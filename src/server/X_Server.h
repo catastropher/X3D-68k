@@ -23,7 +23,7 @@
 typedef struct X_Player
 {
     X_Socket socket;
-    _Bool inUse;
+    bool inUse;
     X_File currentTransfer;
 } X_Player;
 

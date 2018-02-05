@@ -29,7 +29,7 @@ typedef struct X_ScreenEventHandlers
     void (*displayFrame)(struct X_Screen* screen, void* userData);
     void (*restartVideo)(struct X_EngineContext* context, void* userData);
     void (*cleanupVideo)(struct X_EngineContext* context, void* userData);
-    _Bool (*isValidResolution)(int w, int h);
+    bool (*isValidResolution)(int w, int h);
 } X_ScreenEventHandlers;
 
 typedef struct X_Screen
@@ -55,7 +55,7 @@ static inline size_t x_screen_zbuf_size(const X_Screen* screen)
 static inline void x_screen_init(X_Screen* screen, int w, int h, X_ScreenEventHandlers* handlers)
 {
     x_texture_init(&screen->canvas, w, h);
-    screen->zbuf = x_malloc(x_screen_zbuf_size(screen));
+    screen->zbuf = (x_fp0x16*)x_malloc(x_screen_zbuf_size(screen));
     
     screen->cameraListHead = NULL;
     screen->handlers = *handlers;

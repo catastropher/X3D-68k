@@ -40,9 +40,9 @@ typedef enum X_Key
 
 typedef struct X_KeyState
 {
-    _Bool keyDown[X_TOTAL_KEYS];
+    bool keyDown[X_TOTAL_KEYS];
     
-    _Bool textInputMode;
+    bool textInputMode;
     unsigned char keyQueue[X_KEY_QUEUE_SIZE];
     int keyQueueHead;
     int keyQueueTail;
@@ -56,13 +56,13 @@ typedef struct X_KeyState
 
 void x_keystate_init(X_KeyState* state);
 void x_keystate_reset_keys(X_KeyState* state);
-_Bool x_keystate_queue_empty(const X_KeyState* state);
-_Bool x_keystate_dequeue(X_KeyState* state, X_Key* dest);
+bool x_keystate_queue_empty(const X_KeyState* state);
+bool x_keystate_dequeue(X_KeyState* state, X_Key* dest);
 void x_keystate_send_key_press(X_KeyState* state, X_Key key, X_Key unicodeKey);
 void x_keystate_send_key_release(X_KeyState* state, X_Key key);
 void x_keystate_handle_key_repeat(X_KeyState* state, X_Time currentTime);
 
-static inline _Bool x_keystate_key_down(const X_KeyState* keystate, X_Key key)
+static inline bool x_keystate_key_down(const X_KeyState* keystate, X_Key key)
 {
     return keystate->keyDown[key];
 }

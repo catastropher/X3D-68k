@@ -20,6 +20,6 @@
 
 #define x_assert(_cond, message...) x_assert_function(_cond, __FILE__, __LINE__, message)
 
-void x_assert_function(_Bool condition, const char* file, int line, const char* messageFormat, ...);
+void x_assert_function(bool condition, const char* file, int line, const char* messageFormat, ...);
 __attribute__((noreturn)) void x_system_error(const char* format, ...);
 

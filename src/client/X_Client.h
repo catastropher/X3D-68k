@@ -21,7 +21,7 @@
 typedef struct X_Client
 {
     X_Socket socket;
-    _Bool connectedToServer;
+    bool connectedToServer;
     
     X_File currentTransfer;
     int transferSize;
@@ -29,7 +29,7 @@ typedef struct X_Client
 } X_Client;
 
 void x_client_init(X_Client* client);
-_Bool x_client_connect(X_Client* client, const char* address);
+bool x_client_connect(X_Client* client, const char* address);
 void x_client_request_file(X_Client* client, const char* name);
 void x_client_update(X_Client* client);
 

@@ -30,10 +30,10 @@ typedef struct X_AutoCompleter
 
 void x_autocompleter_init(X_AutoCompleter* ac, char* strToMatch, int strToMatchLength, const char** matches, int maxMatches);
 void x_autocompleter_add_match_candidate(X_AutoCompleter* ac, const char* candidate);
-_Bool x_autocompleter_complete_partial_match(X_AutoCompleter* ac);
+bool x_autocompleter_complete_partial_match(X_AutoCompleter* ac);
 void x_autocompleter_sort_matches(X_AutoCompleter* ac);
 
-static inline _Bool x_autocompleter_has_exact_match(const X_AutoCompleter* ac)
+static inline bool x_autocompleter_has_exact_match(const X_AutoCompleter* ac)
 {
     return ac->minMatchLength == strlen(ac->minMatchStr);
 }

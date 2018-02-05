@@ -216,5 +216,5 @@ typedef struct X_BspLevelLoader
     char* entityDictionary;
 } X_BspLevelLoader;
 
-_Bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
+bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
 

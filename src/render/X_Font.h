@@ -29,7 +29,7 @@ typedef struct X_Font
     X_Color* pixels;
 } X_Font;
 
-_Bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidth, int fontHeight);
+bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidth, int fontHeight);
 void x_font_cleanup(X_Font* font);
 
 static inline const X_Color* x_font_get_character_pixels(const X_Font* font, int charId)

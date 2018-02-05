@@ -37,17 +37,17 @@ typedef struct X_Renderer
     int currentFrame;
     
     int fillColor;
-    _Bool showFps;
+    bool showFps;
     
     int screenW;
     int screenH;
     x_fp16x16 fov;
-    _Bool fullscreen;
-    _Bool videoInitialized;
-    _Bool frustumClip;              // debug
-    _Bool enableLighting;
+    bool fullscreen;
+    bool videoInitialized;
+    bool frustumClip;              // debug
+    bool enableLighting;
     
-    _Bool scaleScreen;
+    bool scaleScreen;
     
     int renderMode;
     
@@ -56,7 +56,7 @@ typedef struct X_Renderer
     int mipLevel;
     x_fp16x16 mipDistances[X_BSPTEXTURE_MIP_LEVELS - 1];
     
-    _Bool wireframe;
+    bool wireframe;
 } X_Renderer;
 
 #define X_COLORMAP_SHADES_PER_COLOR 64

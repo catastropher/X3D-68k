@@ -28,7 +28,7 @@ typedef struct X_Polygon3
     X_Vec3* vertices;
 } X_Polygon3;
 
-_Bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest);
+bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest);
 
 void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color);
 void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color);
@@ -37,8 +37,8 @@ void x_polygon3_render_transparent(X_Polygon3* poly, X_RenderContext* renderCont
 
 void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest);
 
-_Bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags);
-_Bool x_polygon3_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
+bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags);
+bool x_polygon3_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
                                                   unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
 
 void x_polygon3_reverse(X_Polygon3* poly);

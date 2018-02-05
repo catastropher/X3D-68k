@@ -43,7 +43,7 @@ X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, stru
 X_BoundBoxFrustumFlags x_boundbox_determine_frustum_clip_flags(X_BoundBox* box, struct X_Frustum* frustum, X_BoundBoxFrustumFlags parentFlags);
 void x_boundbox_print(X_BoundBox* box);
 
-static inline _Bool x_boundbox_clip_against_frustum_plane(X_BoundBoxFrustumFlags flags, int planeId)
+static inline bool x_boundbox_clip_against_frustum_plane(X_BoundBoxFrustumFlags flags, int planeId)
 {
     return flags & (1 << planeId);
 }

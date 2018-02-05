@@ -21,7 +21,7 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-project(xtest C)
+project(xtest CXX)
 
 if(NOT DEFINED XTARGET)
     set(XTARGET "pc")
@@ -40,7 +40,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan")
+    set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan -D_Bool=bool")
     #set(CMAKE_C_FLAGS "-std=gnu99 -Wall -g")
     add_definitions(-D__pc__)
 elseif(${XTARGET} STREQUAL "nspire")
@@ -54,11 +54,11 @@ include_directories(${X_HEADER_PATH}/X3D)
 include_directories(${X_HEADER_PATH})
 
 add_executable(xtest
-    src/init.c
-    src/keys.c
-    src/main.c
-    src/render.c
-    src/screen.c
+    src/init.cpp
+    src/keys.cpp
+    src/main.cpp
+    src/render.cpp
+    src/screen.cpp
 )
 
 find_package(SDL REQUIRED)

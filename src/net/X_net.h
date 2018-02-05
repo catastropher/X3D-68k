@@ -60,12 +60,12 @@ struct X_Socket;
 
 typedef struct X_SocketInterface
 {
-    _Bool (*matchAddress)(const char* address);
-    _Bool (*openSocket)(struct X_Socket* socket, const char* address);
+    bool (*matchAddress)(const char* address);
+    bool (*openSocket)(struct X_Socket* socket, const char* address);
     void (*closeSocket)(struct X_Socket* socket);
-    _Bool (*sendPacket)(struct X_Socket* socket, X_Packet* packet);
+    bool (*sendPacket)(struct X_Socket* socket, X_Packet* packet);
     X_Packet* (*dequeuePacket)(struct X_Socket* socket);
-    _Bool (*getConnectRequest)(X_ConnectRequest* dest);
+    bool (*getConnectRequest)(X_ConnectRequest* dest);
     
     struct X_SocketInterface* next;
 } X_SocketInterface;
@@ -105,14 +105,14 @@ typedef struct X_Socket
 
 void x_net_init();
 void x_net_register_socket_interface(X_SocketInterface* interface);
-_Bool x_net_get_connect_request(X_ConnectRequest* dest);
-_Bool x_net_extract_address_and_port(const char* address, char* addressDest, int* portDest);
+bool x_net_get_connect_request(X_ConnectRequest* dest);
+bool x_net_extract_address_and_port(const char* address, char* addressDest, int* portDest);
 
-_Bool x_socket_open(X_Socket* socket, const char* address);
+bool x_socket_open(X_Socket* socket, const char* address);
 void x_socket_close(X_Socket* socket);
-_Bool x_socket_send_packet(X_Socket* socket, X_Packet* packet);
+bool x_socket_send_packet(X_Socket* socket, X_Packet* packet);
 X_Packet* x_socket_receive_packet(X_Socket* socket);
-_Bool x_socket_connection_is_valid(X_Socket* socket);
+bool x_socket_connection_is_valid(X_Socket* socket);
 const char* x_socket_get_error_msg(X_Socket* socket);
 
 void x_socket_internal_init(X_Socket* socket, int totalPackets);

@@ -34,12 +34,12 @@ typedef struct X_Light
     x_fp24x8 intensity;
 } X_Light;
 
-static inline _Bool x_light_is_free(X_Light* light)
+static inline bool x_light_is_free(X_Light* light)
 {
     return light->flags & X_LIGHT_FREE;
 }
 
-static inline _Bool x_light_is_enabled(X_Light* light)
+static inline bool x_light_is_enabled(X_Light* light)
 {
     return light->flags & X_LIGHT_ENABLED;
 }

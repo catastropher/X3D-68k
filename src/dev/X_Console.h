@@ -40,13 +40,13 @@ typedef struct X_ConsoleVar
 {
     const char* name;
     X_ConsoleVarType type;
-    _Bool saveToConfig;
+    bool saveToConfig;
     
     union {
         int* intPtr;
         float* floatPtr;
         x_fp16x16* fp16x16Ptr;
-        _Bool* boolPtr;
+        bool* boolPtr;
         X_String* stringPtr;
         void* voidPtr;
     };    
@@ -91,7 +91,7 @@ typedef struct X_Console
     int commandHistorySize;
     int commandHistoryPos;
     
-    _Bool showCursor;
+    bool showCursor;
     X_Time lastCursorBlink;
     X_Key lastKeyPressed;
     
@@ -105,17 +105,17 @@ void x_console_close(X_Console* console);
 void x_console_force_close(X_Console* console);
 
 X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName);
-_Bool x_console_cmd_exists(X_Console* console, const char* cmdName);
+bool x_console_cmd_exists(X_Console* console, const char* cmdName);
 void x_console_register_cmd(X_Console* console, const char* name, X_ConsoleCmdHandler handler);
 
-void x_console_register_var(X_Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, _Bool saveToConfig);
+void x_console_register_var(X_Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
 void x_console_init(X_Console* console, struct X_EngineContext* engineContext, X_Font* font);
 void x_console_cleanup(X_Console* console);
 
 void x_console_clear(X_Console* console);
-_Bool x_console_var_exists(X_Console* console, const char* name);
+bool x_console_var_exists(X_Console* console, const char* name);
 void x_console_print(X_Console* console, const char* str);
 void x_console_printf(X_Console* console, const char* format, ...);
 void x_console_render(X_Console* console);
@@ -124,7 +124,7 @@ void x_console_send_key(X_Console* console, X_Key key);
 
 void x_console_execute_cmd(X_Console* console, const char* str);
 
-static inline _Bool x_console_is_open(const X_Console* console)
+static inline bool x_console_is_open(const X_Console* console)
 {
     return console->openState != X_CONSOLE_STATE_CLOSED;
 }

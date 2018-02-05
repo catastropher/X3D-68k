@@ -31,21 +31,21 @@ typedef struct X_MouseState
     X_Screen* screen;
     X_Vec2 offset;
     
-    _Bool buttonDown[2];
-    _Bool buttonPressed[2];
+    bool buttonDown[2];
+    bool buttonPressed[2];
     
-    _Bool mouseLook;
+    bool mouseLook;
     x_fp16x16 xSpeed;
     x_fp16x16 ySpeed;
     
-    _Bool invert;
+    bool invert;
 } X_MouseState;
 
 struct X_Console;
 
 void x_mousestate_init(X_MouseState* state, struct X_Console* console, X_Screen* screen);
 void x_mousestate_set_pos(X_MouseState* state, X_Vec2 pos);
-void x_mousestate_show_cursor(X_MouseState* state, _Bool showCursor);
+void x_mousestate_show_cursor(X_MouseState* state, bool showCursor);
 void x_mousestate_update_pos(X_MouseState* state, X_Vec2 pos);
 X_Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(X_MouseState* state);
 
@@ -60,14 +60,14 @@ static inline void x_mousestate_send_button_release(X_MouseState* state, X_Mouse
     state->buttonDown[button] = 0;
 }
 
-static inline _Bool x_mousestate_button_down(X_MouseState* state, X_MouseButton button)
+static inline bool x_mousestate_button_down(X_MouseState* state, X_MouseButton button)
 {
     return state->buttonDown[button];
 }
 
-static inline _Bool x_mousestate_button_pressed(X_MouseState* state, X_MouseButton button)
+static inline bool x_mousestate_button_pressed(X_MouseState* state, X_MouseButton button)
 {
-    _Bool wasPressed = state->buttonPressed[button];
+    bool wasPressed = state->buttonPressed[button];
     state->buttonPressed[button] = 0;
     return wasPressed;
 }

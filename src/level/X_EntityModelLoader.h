@@ -46,5 +46,5 @@ typedef struct X_EntityModelLoader
     struct X_EntityModel* modelDest;
 } X_EntityModelLoader;
 
-_Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName, struct X_EntityModel* dest);
+bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName, struct X_EntityModel* dest);
 
