@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 typedef int x_fp16x16;
 typedef int x_fp24x8;
 typedef long long int x_fp32x32;
@@ -23,6 +25,133 @@ typedef short x_fp0x16;
 
 #define X_FP16x16_ONE 0x10000
 #define X_FP16x16_HALF (X_FP16x16_ONE / 2)
+
+struct fp
+{
+    fp(int val_) : val(val_) { }
+    
+    int toInt() const
+    {
+        return val >> 16;
+    }
+    
+    float toFloat() const
+    {
+        return val / 65536.0;
+    }
+    
+    int internalValue()
+    {
+        return val;
+    }
+    
+    static fp fromInt(int value)
+    {
+        return fp(value << 16);
+    }
+    
+    static fp fromFloat(float value)
+    {
+        return fp(value * 65536.0);
+    }
+    
+    int val;
+};
+
+// Addition
+static inline fp operator+(fp a, fp b)
+{
+    return fp(a.val + b.val);
+}
+
+static inline fp operator+(fp a, int b)
+{
+    return a + fp::fromInt(b);
+}
+
+static inline fp operator+(int a, fp b)
+{
+    return fp::fromInt(a) + b;
+}
+
+// Subtraction
+static inline fp operator-(fp a, fp b)
+{
+    return fp(a.val - b.val);
+}
+
+static inline fp operator-(fp a, int b)
+{
+    return a - fp::fromInt(b);
+}
+
+static inline fp operator-(int a, fp b)
+{
+    return fp::fromInt(a) - b;
+}
+
+static inline fp operator-(fp f)
+{
+    return fp(-f.val);
+}
+
+// Multiplication
+static inline fp operator*(int a, const fp b)
+{
+    return fp(a * b.val);
+}
+
+static inline fp operator*(const fp a, int b)
+{
+    return fp(a.val * b);
+}
+
+static inline fp operator*(const fp a, const fp b)
+{
+    return fp(((int64_t)a.val * b.val) >> 16);
+}
+
+// Division
+static inline fp operator/(const fp a, const fp b)
+{
+    return fp(((int64_t)a.val << 16) / b.val);
+}
+
+static inline fp operator/(const fp a, int b)
+{
+    return fp(a.val / b);
+}
+
+// Comparision
+static inline bool operator<(fp a, fp b)
+{
+    return a.val < b.val;
+}
+
+static inline bool operator<=(fp a, fp b)
+{
+    return a.val <= b.val;
+}
+
+static inline bool operator>(fp a, fp b)
+{
+    return a.val > b.val;
+}
+
+static inline bool operator>=(fp a, fp b)
+{
+    return a.val >= b.val;
+}
+
+static inline bool operator==(fp a, fp b)
+{
+    return a.val == b.val;
+}
+
+static inline bool operator!=(fp a, fp b)
+{
+    return a.val != b.val;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Creates an @ref x_fp16x16 from a whole number.
