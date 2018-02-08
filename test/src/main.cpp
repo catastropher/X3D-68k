@@ -43,7 +43,7 @@ int x_game_minor_version(void)
 typedef struct Portal
 {
     X_Vec3 geometryVertices[4];
-    X_Polygon3 geometry;
+    InternalPolygon3 geometry;
     _Bool portalOnWall;
     X_Mat4x4 wallOrientation;
 } Portal;
@@ -60,8 +60,6 @@ void portal_init(Portal* portal, X_Vec3 center, X_Mat4x4* wallOrientation)
         x_vec3_make(w, h, 0),
         x_vec3_make(w, -h, 0)
     };
-    
-    portal->geometry = x_polygon3_make(portal->geometryVertices, 4);
     
     for(int i = 0; i < 4; ++i)
     {

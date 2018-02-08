@@ -22,31 +22,36 @@ struct X_Plane;
 
 #define X_POLYGON3_MAX_VERTS 100
 
-typedef struct X_Polygon3
+struct Polygon3
 {
-    int totalVertices;
+    Polygon3(X_Vec3* vertices_, int totalVertices_) :
+        vertices(vertices_),
+        totalVertices(totalVertices_) { }
+        
+    bool clipToPlane(const X_Plane& plane, Polygon3& dest) const;
+    bool clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const;
+    void splitAlongPlane(const X_Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const;
+    void clone(Polygon3& dest) const;
+    bool clipToFrustum(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags) const;
+    bool clipToFrustumPreserveEdgeIds(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
+    void reverse();
+    
     X_Vec3* vertices;
-} X_Polygon3;
+    int totalVertices;
+};
 
-bool x_polygon3_clip_to_plane(const X_Polygon3* src, const X_Plane* plane, X_Polygon3* dest);
-
-void x_polygon3_render_wireframe(const X_Polygon3* poly, X_RenderContext* rcontext, X_Color color);
-void x_polygon3_render_flat_shaded(X_Polygon3* poly, X_RenderContext* renderContext, X_Color color);
-void x_polygon3_render_textured(X_Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, X_Vec2 textureCoords[3]);
-void x_polygon3_render_transparent(X_Polygon3* poly, X_RenderContext* renderContext, X_Color* transparentTable);
-
-void x_polygon3d_copy(const X_Polygon3* src, X_Polygon3* dest);
-
-bool x_polygon3_clip_to_frustum(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest, unsigned int clipFlags);
-bool x_polygon3_clip_to_frustum_edge_ids(const X_Polygon3* poly, const X_Frustum* frustum, X_Polygon3* dest,
-                                                  unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
-
-void x_polygon3_reverse(X_Polygon3* poly);
-
-void x_polygon3_split_along_plane(X_Polygon3* src, const X_Plane* plane, int* edgeIds, X_Polygon3* frontSide, int* frontEdgeIds, X_Polygon3* backSide, int* backEdgeIds);
-
-static inline X_Polygon3 x_polygon3_make(X_Vec3* vertices, int totalVertices)
+class InternalPolygon3 : public Polygon3
 {
-    return (X_Polygon3) { totalVertices, vertices };
-}
+public:
+    InternalPolygon3(int totalVertices_) : Polygon3(internalVertices, totalVertices_) { }
+    InternalPolygon3() : Polygon3(internalVertices, X_POLYGON3_MAX_VERTS) { }
+    
+private:
+    X_Vec3 internalVertices[X_POLYGON3_MAX_VERTS];
+};
+
+void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color);
+void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color);
+void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, X_Vec2 textureCoords[3]);
+void x_polygon3_render_transparent(Polygon3* poly, X_RenderContext* renderContext, X_Color* transparentTable);
 

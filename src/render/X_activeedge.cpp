@@ -329,7 +329,7 @@ static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int cu
     return aeEdge;
 }
 
-static bool project_polygon3(X_Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, X_AE_Surface* surface, X_Vec2* dest)
+static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, X_AE_Surface* surface, X_Vec2* dest)
 {
     for(int i = 0; i < poly->totalVertices; ++i)
     {
@@ -396,10 +396,9 @@ static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16
 }
 
 // TODO: check whether edgeIds is NULL
-void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
+void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
-    X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
-    X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
+    InternalPolygon3 clipped;
 
     X_Vec3 firstVertex = polygon->vertices[0];
     
@@ -411,11 +410,12 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     if(geoFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
     {
         // Don't bother clipping if fully inside the frustum
-        clipped = *polygon;
+        clipped.vertices = polygon->vertices;
+        clipped.totalVertices = polygon->totalVertices;
+        
         clippedEdgeIds = edgeIds;
-
     }
-    else if(!x_polygon3_clip_to_frustum_edge_ids(polygon, context->renderContext->viewFrustum, &clipped, geoFlags, edgeIds, clippedEdgeIds))
+    else if(!polygon->clipToFrustumPreserveEdgeIds(*context->renderContext->viewFrustum, clipped, geoFlags, edgeIds, clippedEdgeIds))
     {
         return;
     }
@@ -435,7 +435,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, X_Polygon3* polygon, X_BspS
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
-static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, X_Polygon3* dest, X_Vec3* origin)
+static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, X_Vec3* origin)
 {
     dest->totalVertices = 0;
     
@@ -461,23 +461,17 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
 
     x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
 
-    X_Vec3 v3d[X_POLYGON3_MAX_VERTS];
-    X_Polygon3 polygon = x_polygon3_make(v3d, 100);
+    InternalPolygon3 polygon;
 
+    // FIXME: why is this here?
     polygon.totalVertices = 0;
-
-    if(!context->renderContext->renderer->frustumClip)
-    {
-        // Enable all clipping planes
-        //geoFlags = (1 << context->renderContext->viewFrustum->totalPlanes) - 1;
-    }
 
     get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon, &context->currentModel->origin);
 
     x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
 
-static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, X_Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
+static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     if(!x_bspnode_is_visible_this_frame(node, context->renderContext->currentFrame))
         return;
@@ -495,15 +489,13 @@ static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, X
         return;
     }
     
-    X_Vec3 frontVertices[32];
-    X_Vec3 backVertices[32];
     int frontEdges[32] = { 0 };
     int backEdges[32] = { 0 };
     
-    X_Polygon3 front = x_polygon3_make(frontVertices, 32);
-    X_Polygon3 back = x_polygon3_make(backVertices, 32);
+    InternalPolygon3 front;
+    InternalPolygon3 back;
     
-    x_polygon3_split_along_plane(poly, &node->plane->plane, edgeIds, &front, frontEdges, &back, backEdges);
+    poly->splitAlongPlane(node->plane->plane, edgeIds, front, frontEdges, back, backEdges);
     
     x_ae_context_add_submodel_polygon_recursive(context, &front, node->frontChild, frontEdges, bspSurface, geoFlags, bspKey);
     x_ae_context_add_submodel_polygon_recursive(context, &back, node->backChild, backEdges, bspSurface, geoFlags, bspKey);
@@ -513,9 +505,7 @@ void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level,
 {
     x_ae_surface_reset_current_parent(context);
     
-    X_Vec3 v3d[X_POLYGON3_MAX_VERTS];
-    
-    X_Polygon3 poly = x_polygon3_make(v3d, X_POLYGON3_MAX_VERTS);
+    InternalPolygon3 poly;
     get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly, &context->currentModel->origin);
     
     x_ae_context_add_submodel_polygon_recursive(context, &poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);

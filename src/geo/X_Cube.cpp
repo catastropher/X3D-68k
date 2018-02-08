@@ -63,7 +63,7 @@ void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat)
     }
 }
 
-void x_cube_get_face(const X_Cube* cube, int faceId, X_Polygon3* dest)
+void x_cube_get_face(const X_Cube* cube, int faceId, Polygon3* dest)
 {
     dest->totalVertices = 4;
     

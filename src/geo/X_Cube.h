@@ -19,7 +19,7 @@
 #include "render/X_RenderContext.h"
 #include "math/X_Mat4x4.h"
 
-struct X_Polygon3;
+struct Polygon3;
 
 typedef struct X_Cube
 {
@@ -30,6 +30,6 @@ void x_cube_init(X_Cube* cube, int width, int height, int depth);
 void x_cube_translate(X_Cube* cube, X_Vec3 translation);
 void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color);
 void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat);
-void x_cube_get_face(const X_Cube* cube, int faceId, struct X_Polygon3* dest);
+void x_cube_get_face(const X_Cube* cube, int faceId, struct Polygon3* dest);
 void x_cube_get_faces_containing_vertex(const X_Cube* cube, int vertexId, int faceDest[3]);
 
