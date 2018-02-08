@@ -21,7 +21,7 @@
 /// Approximation for the slope of a vertical line (infinity).
 #define X_VERTICAL_LINE_SLOPE 0x7FFFFFFF
 
-x_fp16x16 x_sin(x_fp16x16 angle);
+fp x_sin(fp angle);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculates the cosine of an angle using a lookup table.
@@ -30,9 +30,10 @@ x_fp16x16 x_sin(x_fp16x16 angle);
 ///
 /// @return cos(angle) as an x_fp16x16
 ////////////////////////////////////////////////////////////////////////////////
-static inline x_fp16x16 x_cos(x_fp16x16 angle)
+static inline fp x_cos(fp angle)
 {
-    return x_sin(X_ANG_90 - angle);
+    // FIXME: this will break once the angle constants are converted
+    return x_sin(fp(X_ANG_90 - angle.internalValue()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -45,12 +46,12 @@ static inline x_fp16x16 x_cos(x_fp16x16 angle)
 /// @note This will return @ref X_VERTICAL_LINE_SLOPE if angle == X_ANG_90 ||
 ///     angle == X_ANG_270.
 ////////////////////////////////////////////////////////////////////////////////
-static inline x_fp16x16 x_tan(x_fp16x16 angle)
+static inline fp x_tan(fp angle)
 {
     // Prevent division by 0
-    if(angle == X_ANG_90 || angle == X_ANG_270)
+    if(angle == fp(X_ANG_90) || angle == fp(X_ANG_270))
         return X_VERTICAL_LINE_SLOPE;
 
-    return x_fp16x16_div(x_sin(angle), x_cos(angle));
+    return x_sin(angle) / x_cos(angle);
 }
 

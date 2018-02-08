@@ -36,10 +36,10 @@ void x_mat4x4_load_identity(X_Mat4x4* mat)
     *mat = identity;
 }
 
-void x_mat4x4_load_x_rotation(X_Mat4x4* mat, x_fp16x16 angle) 
+void x_mat4x4_load_x_rotation(X_Mat4x4* mat, fp angle) 
 {
-    x_fp16x16 cosAngle = x_cos(angle);
-    x_fp16x16 sinAngle = x_sin(angle);
+    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
+    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
     X_Mat4x4 xRotation = {
         {
@@ -53,10 +53,10 @@ void x_mat4x4_load_x_rotation(X_Mat4x4* mat, x_fp16x16 angle)
     *mat = xRotation;
 }
 
-void x_mat4x4_load_y_rotation(X_Mat4x4* mat, x_fp16x16 angle) 
+void x_mat4x4_load_y_rotation(X_Mat4x4* mat, fp angle) 
 {
-    x_fp16x16 cosAngle = x_cos(angle);
-    x_fp16x16 sinAngle = x_sin(angle);
+    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
+    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
     X_Mat4x4 yRotation = {
         {
@@ -70,10 +70,10 @@ void x_mat4x4_load_y_rotation(X_Mat4x4* mat, x_fp16x16 angle)
     *mat = yRotation;
 }
 
-void x_mat4x4_load_z_rotation(X_Mat4x4* mat, x_fp16x16 angle) 
+void x_mat4x4_load_z_rotation(X_Mat4x4* mat, fp angle) 
 {
-    x_fp16x16 cosAngle = x_cos(angle);
-    x_fp16x16 sinAngle = x_sin(angle);
+    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
+    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
     X_Mat4x4 zRotation = {
         {

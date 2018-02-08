@@ -30,6 +30,39 @@ struct fp
 {
     fp(int val_) : val(val_) { }
     
+    friend fp operator+(fp a, fp b);
+    friend fp operator+(fp a, int b);
+    friend fp operator+(int a, fp b);
+    
+    friend fp operator-(fp a, fp b);
+    friend fp operator-(fp a, int b);
+    friend fp operator-(int a, fp b);
+    friend fp operator-(fp f);
+    
+    friend fp operator*(int a, const fp b);
+    friend fp operator*(const fp a, int b);
+    friend fp operator*(const fp a, const fp b);
+    
+    friend fp operator/(const fp a, const fp b);
+    friend fp operator/(const fp a, int b);
+    
+    friend bool operator<(fp a, fp b);
+    friend bool operator<=(fp a, fp b);
+    friend bool operator>(fp a, fp b);
+    friend bool operator>=(fp a, fp b);
+    friend bool operator==(fp a, fp b);
+    friend bool operator!=(fp a, fp b);
+    
+    fp whole()
+    {
+        return val & 0x7FFF0000;
+    }
+    
+    fp frac()
+    {
+        return val & 0x0000FFFF;
+    }
+    
     int toInt() const
     {
         return val >> 16;
@@ -40,9 +73,19 @@ struct fp
         return val / 65536.0;
     }
     
+    x_fp16x16 toFp16x16() const
+    {
+        return val;
+    }
+    
     int internalValue()
     {
         return val;
+    }
+    
+    static fp lerp(fp x0, fp x1, fp t)
+    {
+        return x0 + (x1 - x0) * t;
     }
     
     static fp fromInt(int value)
@@ -59,96 +102,96 @@ struct fp
 };
 
 // Addition
-static inline fp operator+(fp a, fp b)
+fp operator+(fp a, fp b)
 {
     return fp(a.val + b.val);
 }
 
-static inline fp operator+(fp a, int b)
+fp operator+(fp a, int b)
 {
     return a + fp::fromInt(b);
 }
 
-static inline fp operator+(int a, fp b)
+fp operator+(int a, fp b)
 {
     return fp::fromInt(a) + b;
 }
 
 // Subtraction
-static inline fp operator-(fp a, fp b)
+fp operator-(fp a, fp b)
 {
     return fp(a.val - b.val);
 }
 
-static inline fp operator-(fp a, int b)
+fp operator-(fp a, int b)
 {
     return a - fp::fromInt(b);
 }
 
-static inline fp operator-(int a, fp b)
+fp operator-(int a, fp b)
 {
     return fp::fromInt(a) - b;
 }
 
-static inline fp operator-(fp f)
+fp operator-(fp f)
 {
     return fp(-f.val);
 }
 
 // Multiplication
-static inline fp operator*(int a, const fp b)
+fp operator*(int a, const fp b)
 {
     return fp(a * b.val);
 }
 
-static inline fp operator*(const fp a, int b)
+fp operator*(const fp a, int b)
 {
     return fp(a.val * b);
 }
 
-static inline fp operator*(const fp a, const fp b)
+fp operator*(const fp a, const fp b)
 {
     return fp(((int64_t)a.val * b.val) >> 16);
 }
 
 // Division
-static inline fp operator/(const fp a, const fp b)
+fp operator/(const fp a, const fp b)
 {
     return fp(((int64_t)a.val << 16) / b.val);
 }
 
-static inline fp operator/(const fp a, int b)
+fp operator/(const fp a, int b)
 {
     return fp(a.val / b);
 }
 
 // Comparision
-static inline bool operator<(fp a, fp b)
+bool operator<(fp a, fp b)
 {
     return a.val < b.val;
 }
 
-static inline bool operator<=(fp a, fp b)
+bool operator<=(fp a, fp b)
 {
     return a.val <= b.val;
 }
 
-static inline bool operator>(fp a, fp b)
+bool operator>(fp a, fp b)
 {
     return a.val > b.val;
 }
 
-static inline bool operator>=(fp a, fp b)
+bool operator>=(fp a, fp b)
 {
     return a.val >= b.val;
 }
 
-static inline bool operator==(fp a, fp b)
+bool operator==(fp a, fp b)
 {
     return a.val == b.val;
 }
 
-static inline bool operator!=(fp a, fp b)
+bool operator!=(fp a, fp b)
 {
     return a.val != b.val;
 }

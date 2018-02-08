@@ -42,23 +42,23 @@ int x_game_minor_version(void)
 // Only here for testing purposes
 typedef struct Portal
 {
-    X_Vec3 geometryVertices[4];
+    Vec3 geometryVertices[4];
     InternalPolygon3 geometry;
     _Bool portalOnWall;
     X_Mat4x4 wallOrientation;
 } Portal;
 
-void portal_init(Portal* portal, X_Vec3 center, X_Mat4x4* wallOrientation)
+void portal_init(Portal* portal, Vec3 center, X_Mat4x4* wallOrientation)
 {
     x_fp16x16 w = x_fp16x16_from_int(50);
     x_fp16x16 h = x_fp16x16_from_int(50);
     
-    X_Vec3 v[4] = 
+    Vec3 v[4] = 
     {
-        X_Vec3(-w, -h, 0),
-        X_Vec3(-w, h, 0),
-        X_Vec3(w, h, 0),
-        X_Vec3(w, -h, 0)
+        Vec3(-w, -h, 0),
+        Vec3(-w, h, 0),
+        Vec3(w, h, 0),
+        Vec3(w, -h, 0)
     };
     
     for(int i = 0; i < 4; ++i)
@@ -73,12 +73,12 @@ void portal_init(Portal* portal, X_Vec3 center, X_Mat4x4* wallOrientation)
 
 static void shoot_portal(Portal* portal, X_EngineContext* engineContext, X_CameraObject* cam)
 {
-    X_Vec3 camPos = x_cameraobject_get_position(cam);
+    Vec3 camPos = x_cameraobject_get_position(cam);
         
-    X_Vec3 forward, up, right;
+    Vec3 forward, up, right;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
     
-    X_Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
+    Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
     
     X_RayTracer trace;
     x_raytracer_init(&trace, &engineContext->currentLevel, x_bsplevel_get_level_model(&engineContext->currentLevel), &camPos, &end, NULL);
@@ -112,11 +112,11 @@ void handle_test_portal(Portal* portal, X_EngineContext* engineContext, X_Camera
 
 X_Texture paint;
 
-void apply_paint_to_surface(X_BspSurface* surface, X_Vec3* pos, X_EngineContext* engineContext)
+void apply_paint_to_surface(X_BspSurface* surface, Vec3* pos, X_EngineContext* engineContext)
 {
-//     X_Vec3* normal = &surface->plane->plane.normal;
-//     X_Vec3 offset = x_vec3_scale(normal, x_plane_point_distance(&surface->plane->plane, pos));
-//     X_Vec3 pointOnPlane = x_vec3_sub(pos, &offset);
+//     Vec3* normal = &surface->plane->plane.normal;
+//     Vec3 offset = x_vec3_scale(normal, x_plane_point_distance(&surface->plane->plane, pos));
+//     Vec3 pointOnPlane = x_vec3_sub(pos, &offset);
 //     
 //     X_BspFaceTexture* tex = surface->faceTexture;
 //     
@@ -136,7 +136,7 @@ void apply_paint_to_surface(X_BspSurface* surface, X_Vec3* pos, X_EngineContext*
 //     }
 }
 
-void apply_paint_to_node(X_BspNode* node, X_Vec3* pos, X_EngineContext* engineContext)
+void apply_paint_to_node(X_BspNode* node, Vec3* pos, X_EngineContext* engineContext)
 {
     
     for(int i = 0; i < node->totalSurfaces; ++i)
@@ -242,7 +242,7 @@ typedef struct CubeObject
     X_GameObject base;
     X_BoxCollider collider;
     X_BspModel* model;
-    X_Vec3 center;
+    Vec3 center;
 } CubeObject;
 
 void cube_update(X_GameObject* obj, x_fp16x16 deltaTime)
@@ -250,7 +250,7 @@ void cube_update(X_GameObject* obj, x_fp16x16 deltaTime)
     CubeObject* cube = (CubeObject*)obj;
     x_boxcollider_update(&cube->collider, &obj->engineContext->currentLevel);
     
-    cube->model->origin = x_vec3_sub(&cube->collider.position, &cube->center);
+    cube->model->origin = cube->collider.position - cube->center;
     cube->model->origin.y += x_fp16x16_from_int(8);
     
     if(x_keystate_key_down(&obj->engineContext->keystate, (X_Key)'/'))

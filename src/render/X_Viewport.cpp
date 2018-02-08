@@ -19,7 +19,7 @@
 
 static inline int calculate_distance_to_projection_plane(int w, x_fp16x16 fieldOfView)
 {
-    return x_fp16x16_from_int(w / 2) / x_tan(fieldOfView / 2);
+    return x_fp16x16_from_int(w / 2) / x_tan(fp(fieldOfView) / 2).toFp16x16();
 }
 
 static void x_viewport_init_mip_distances(X_Viewport* viewport)

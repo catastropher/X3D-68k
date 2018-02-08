@@ -16,9 +16,9 @@
 #include "X_trig.h"
 #include "X_fix.h"
 
-x_fp16x16 x_sin(x_fp16x16 angle)
+fp x_sin(fp angle)
 {
-    static const x_fp16x16 sintab[] =
+    static const int sintab[] =
     {                                                                                                                                                                                                             
          0    ,  1608 ,  3215 ,  4821 ,  6423 ,  8022 ,  9616 ,  11204,                                                                                                                                                              
          12785,  14359,  15923,  17479,  19024,  20557,  22078,  23586,                                                                                                                                                              
@@ -54,11 +54,14 @@ x_fp16x16 x_sin(x_fp16x16 angle)
         -12785, -11204, -9616 , -8022 , -6423 , -4821 , -3215 , -1608                                                                                                                                                                
     };
     
-    x_fp16x16 frac = angle & 0xFFFF;
-    int angleIndex = x_fp16x16_to_int(angle) & 0xFF;
+    fp frac = angle.frac();
+    int angleIndex = angle.toInt() & 0xFF;
     int nextAngleIndex = (angleIndex + 1) & 0xFF;
     
-    return x_fp16x16_lerp(sintab[angleIndex], sintab[nextAngleIndex], frac);
+    fp a(sintab[angleIndex]);
+    fp b(sintab[nextAngleIndex]);
+    
+    return fp::lerp(a, b, frac).toFp16x16();
 }
 
 

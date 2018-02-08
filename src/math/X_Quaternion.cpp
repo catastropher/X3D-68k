@@ -18,10 +18,10 @@
 #include "X_Quaternion.h"
 #include "math/X_trig.h"
 
-void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const Vec3* axis, x_fp16x16 angle)
+void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const Vec3* axis, fp angle)
 {
-    x_fp16x16 cosAngle = x_cos(angle / 2);
-    x_fp16x16 sinAngle = x_sin(angle / 2);
+    x_fp16x16 cosAngle = x_cos(angle / 2).toFp16x16();
+    x_fp16x16 sinAngle = x_sin(angle / 2).toFp16x16();
     
     quat->x = x_fp16x16_mul(axis->x, sinAngle);
     quat->y = x_fp16x16_mul(axis->y, sinAngle);
@@ -72,17 +72,17 @@ void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest)
     dest->elem[3][3] = X_FP16x16_ONE;
 }
 
-void x_quaternion_init_from_euler_angles(X_Quaternion* quat, x_fp16x16 x, x_fp16x16 y, x_fp16x16 z)
+void x_quaternion_init_from_euler_angles(X_Quaternion* quat, fp x, fp y, fp z)
 {
     y = X_ANG_180 - y;
     z = X_ANG_180 - z;
     
-    x_fp16x16 t0 = x_cos(x / 2);
-    x_fp16x16 t1 = x_sin(x / 2);
-    x_fp16x16 t2 = x_cos(z / 2);
-    x_fp16x16 t3 = x_sin(z / 2);
-    x_fp16x16 t4 = x_cos(y / 2);
-    x_fp16x16 t5 = x_sin(y / 2);
+    x_fp16x16 t0 = x_cos(x / 2).toFp16x16();
+    x_fp16x16 t1 = x_sin(x / 2).toFp16x16();
+    x_fp16x16 t2 = x_cos(z / 2).toFp16x16();
+    x_fp16x16 t3 = x_sin(z / 2).toFp16x16();
+    x_fp16x16 t4 = x_cos(y / 2).toFp16x16();
+    x_fp16x16 t5 = x_sin(y / 2).toFp16x16();
     
     quat->x = x_fp16x16_mul_three(t0, t2, t4) + x_fp16x16_mul_three(t1, t3, t5);
     quat->y = x_fp16x16_mul_three(t0, t3, t4) - x_fp16x16_mul_three(t1, t2, t5);
