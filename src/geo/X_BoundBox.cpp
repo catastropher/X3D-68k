@@ -23,11 +23,11 @@ X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, X_Pl
     int py = (plane->normal.y > 0 ? 1 : 0);
     int pz = (plane->normal.z > 0 ? 1 : 0);
     
-    X_Vec3 furthestPointAlongNormal = x_vec3_make(box->v[px].x, box->v[py].y, box->v[pz].z);
+    Vec3 furthestPointAlongNormal = Vec3(box->v[px].x, box->v[py].y, box->v[pz].z);
     if(!x_plane_point_is_on_normal_facing_side(plane, &furthestPointAlongNormal))
         return X_BOUNDBOX_OUTSIDE_PLANE;
     
-    X_Vec3 closestPointAlongNormal = x_vec3_make(box->v[px ^ 1].x, box->v[py ^ 1].y, box->v[pz ^ 1].z);
+    Vec3 closestPointAlongNormal = Vec3(box->v[px ^ 1].x, box->v[py ^ 1].y, box->v[pz ^ 1].z);
     if(x_plane_point_is_on_normal_facing_side(plane, &closestPointAlongNormal))
         return X_BOUNDBOX_INSIDE_PLANE;
     

@@ -36,7 +36,7 @@ static void init_camera(Context* context)
     
     context->cam->angleX = 0;
     context->cam->angleY = 0;
-    context->cam->collider.position = x_vec3_make(0, -50 * 65536, -800 * 65536);
+    context->cam->collider.position = Vec3(0, -50 * 65536, -800 * 65536);
     context->cam->collider.velocity = x_vec3_origin();
     
     x_cameraobject_update_view(context->cam);

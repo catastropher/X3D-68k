@@ -24,7 +24,7 @@ struct X_Plane;
 
 struct Polygon3
 {
-    Polygon3(X_Vec3* vertices_, int totalVertices_) :
+    Polygon3(Vec3* vertices_, int totalVertices_) :
         vertices(vertices_),
         totalVertices(totalVertices_) { }
         
@@ -36,7 +36,7 @@ struct Polygon3
     bool clipToFrustumPreserveEdgeIds(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
     void reverse();
     
-    X_Vec3* vertices;
+    Vec3* vertices;
     int totalVertices;
 };
 
@@ -47,7 +47,7 @@ public:
     InternalPolygon3() : Polygon3(internalVertices, X_POLYGON3_MAX_VERTS) { }
     
 private:
-    X_Vec3 internalVertices[X_POLYGON3_MAX_VERTS];
+    Vec3 internalVertices[X_POLYGON3_MAX_VERTS];
 };
 
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color);

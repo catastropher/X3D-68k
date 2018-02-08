@@ -96,17 +96,17 @@ X_EntityFrame* x_entitymodel_get_animation_start_frame(X_EntityModel* model, con
     return x_entitymodel_get_frame(model, startFrameName);
 }
 
-void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3 pos, X_Color color, X_RenderContext* renderContext)
+void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, Vec3 pos, X_Color color, X_RenderContext* renderContext)
 {
     for(X_EntityTriangle* triangle = model->triangles; triangle < model->triangles + model->totalTriangles; ++triangle)
     {
-        X_Vec3 v[3];
+        Vec3 v[3];
         X_EntityVertex* vertices[3];
         
         for(int i = 0; i < 3; ++i)
         {
             vertices[i] = frame->vertices + triangle->vertexIds[i];
-            v[i] = x_vec3_add(&vertices[i]->v, &pos);
+            v[i] = vertices[i]->v + pos;
         }
         
         for(int i = 0; i < 3; ++i)

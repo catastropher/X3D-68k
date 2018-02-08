@@ -211,9 +211,9 @@ static void x_surfacebuilder_build_from_combined_lightmap(X_SurfaceBuilder* buil
     }
 }
 
-static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, X_Vec3* dest, int* distDest)
+static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, Vec3* dest, int* distDest)
 {
-    X_Vec3 lightPos = builder->currentLight->position;
+    Vec3 lightPos = builder->currentLight->position;
     X_Plane* plane = &builder->bspSurface->plane->plane;
     int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &lightPos));
     
@@ -227,7 +227,7 @@ static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* bu
 static void x_surfacebuilder_apply_dynamic_light(X_SurfaceBuilder* builder)
 {
     int lightDistToPlane;
-    X_Vec3 closestPoint;
+    Vec3 closestPoint;
     x_surfacebuilder_surface_point_closest_to_light(builder, &closestPoint, &lightDistToPlane);
     
     // We use linear falloff

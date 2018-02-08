@@ -31,9 +31,9 @@ typedef struct X_BoxCollider
     int flags;
     X_BoundBox boundBox;
     int levelCollisionHull;
-    X_Vec3 position;
-    X_Vec3 velocity;
-    X_Vec3* gravity;
+    Vec3 position;
+    Vec3 velocity;
+    Vec3* gravity;
     x_fp16x16 bounceCoefficient;
     x_fp16x16 frictionCoefficient;
     x_fp16x16 maxSpeed;

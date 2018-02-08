@@ -149,7 +149,7 @@ static void read_triangles(X_EntityModelLoader* loader)
     }
 }
 
-static void read_vertex(X_File* file, X_EntityVertex* vertex, X_Vec3 scale, X_Vec3 translation)
+static void read_vertex(X_File* file, X_EntityVertex* vertex, Vec3 scale, Vec3 translation)
 {
     vertex->v.x = x_fp16x16_from_int(x_file_read_char(file));
     vertex->v.y = x_fp16x16_from_int(x_file_read_char(file));
@@ -164,7 +164,7 @@ static void read_vertex(X_File* file, X_EntityVertex* vertex, X_Vec3 scale, X_Ve
     vertex->normalIndex = x_file_read_char(file);
 }
 
-static void read_boundbox(X_File* file, X_EntityBoundBox* boundBox, X_Vec3 scale, X_Vec3 translation)
+static void read_boundbox(X_File* file, X_EntityBoundBox* boundBox, Vec3 scale, Vec3 translation)
 {
     read_vertex(file, &boundBox->min, scale, translation);
     read_vertex(file, &boundBox->max, scale, translation);

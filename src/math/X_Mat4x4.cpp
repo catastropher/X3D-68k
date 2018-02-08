@@ -87,7 +87,7 @@ void x_mat4x4_load_z_rotation(X_Mat4x4* mat, x_fp16x16 angle)
     *mat = zRotation;
 }
 
-void x_mat4x4_load_translation(X_Mat4x4* mat, X_Vec3* translation)
+void x_mat4x4_load_translation(X_Mat4x4* mat, Vec3* translation)
 {
     X_Mat4x4 translationMatrix = 
     {
@@ -188,7 +188,7 @@ void x_mat4x4_transform_vec4(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16
     *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
 }
 
-void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const X_Vec3* src, X_Vec3* dest)
+void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const Vec3* src, Vec3* dest)
 {
     X_Vec4 vec4 = x_vec4_make(src->x, src->y, src->z, X_FP16x16_ONE);
     X_Vec4_fp16x16 res;
@@ -208,7 +208,7 @@ void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const X_Vec3* src, X_Vec3* des
     dest->z = res.z / res.w;
 }
 
-void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const X_Vec3* normal, X_Vec3* dest)
+void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const Vec3* normal, Vec3* dest)
 {
     dest->x = x_fp16x16_mul(normal->x, mat->elem[0][0]) + x_fp16x16_mul(normal->y, mat->elem[0][1]) + x_fp16x16_mul(normal->z, mat->elem[0][2]);
     dest->y = x_fp16x16_mul(normal->x, mat->elem[1][0]) + x_fp16x16_mul(normal->y, mat->elem[1][1]) + x_fp16x16_mul(normal->z, mat->elem[1][2]);
@@ -252,7 +252,7 @@ void x_mat4x4_print_machine_readable(const X_Mat4x4* mat)
     printf("}\n");
 }
 
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest)
+void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest)
 {
     X_Vec4 right;
     x_mat4x4_get_row(mat, 0, &right);
@@ -289,7 +289,7 @@ void x_mat4x4_transpose_3x3(X_Mat4x4* mat)
     }
 }
 
-void x_mat4x4_visualize(X_Mat4x4* mat, X_Vec3 position, X_RenderContext* renderContext)
+void x_mat4x4_visualize(X_Mat4x4* mat, Vec3 position, X_RenderContext* renderContext)
 {
     const X_Palette* p = x_palette_get_quake_palette();
     X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
@@ -299,9 +299,9 @@ void x_mat4x4_visualize(X_Mat4x4* mat, X_Vec3 position, X_RenderContext* renderC
         X_Vec4 v;
         x_mat4x4_get_column(mat, i, &v);
         
-        X_Vec3 end = x_vec4_to_vec3(&v);
+        Vec3 end = x_vec4_to_vec3(&v);
         end = x_vec3_scale_int(&end, 50);
-        end = x_vec3_add(&end, &position);
+        end += position;
         
         X_Ray3 r = x_ray3_make(position, end);
         x_ray3_render(&r, renderContext, color[i]);

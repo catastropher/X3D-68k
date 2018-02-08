@@ -169,7 +169,7 @@ void Polygon3::clone(Polygon3& dest) const
         return;
     
     dest.totalVertices = totalVertices;
-    memcpy(dest.vertices, vertices, totalVertices * sizeof(X_Vec3));
+    memcpy(dest.vertices, vertices, totalVertices * sizeof(Vec3));
 }
 
 bool Polygon3::clipToFrustum(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags) const

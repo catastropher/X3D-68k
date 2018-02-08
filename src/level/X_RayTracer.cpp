@@ -54,9 +54,9 @@ static inline x_fp16x16 calculate_intersection_t(x_fp16x16 startDist, x_fp16x16 
     return x_fp16x16_clamp(t, 0, X_FP16x16_ONE);
 }
 
-bool visit_node(X_RayTracer* trace, int clipNodeId, X_Vec3* start, x_fp16x16 startT, X_Vec3* end, x_fp16x16 endT);
+bool visit_node(X_RayTracer* trace, int clipNodeId, Vec3* start, x_fp16x16 startT, Vec3* end, x_fp16x16 endT);
 
-static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeId, X_Vec3* v)
+static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeId, Vec3* v)
 {
     while(!is_leaf_node(clipNodeId))
     {
@@ -74,9 +74,9 @@ static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeI
 
 static inline bool explore_both_sides_of_node(X_RayTracer* trace,
                                                X_BspClipNode* node,
-                                               X_Vec3* start,
+                                               Vec3* start,
                                                x_fp16x16 startT,
-                                               X_Vec3* end,
+                                               Vec3* end,
                                                x_fp16x16 endT,
                                                X_Plane* plane,
                                                x_fp16x16 intersectionT,
@@ -85,7 +85,7 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
 {
     X_Ray3_fp16x16 ray = x_ray3_make(*start, *end);
  
-    X_Vec3 intersection;
+    Vec3 intersection;
     x_ray3_lerp(&ray, intersectionT, &intersection);
     
     int startChildNode;
@@ -123,7 +123,7 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
     return 0;
 }
 
-bool visit_node(X_RayTracer* trace, int clipNodeId, X_Vec3* start, x_fp16x16 startT, X_Vec3* end, x_fp16x16 endT)
+bool visit_node(X_RayTracer* trace, int clipNodeId, Vec3* start, x_fp16x16 startT, Vec3* end, x_fp16x16 endT)
 {
     if(is_leaf_node(clipNodeId))
         return 1;
@@ -145,7 +145,7 @@ bool visit_node(X_RayTracer* trace, int clipNodeId, X_Vec3* start, x_fp16x16 sta
     return explore_both_sides_of_node(trace, node, start, startT, end, endT, plane, intersectionT, startDist);
 }
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, X_Vec3* start, X_Vec3* end, X_BoundBox* boundBox)
+void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, X_BoundBox* boundBox)
 {
     trace->modelOrigin = &model->origin;
     trace->level = level;
@@ -156,13 +156,13 @@ void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, 
 
 static bool trace_model(X_RayTracer* trace, X_BspModel* model)
 {
-    X_Vec3 start = x_vec3_sub(trace->ray.v + 0, &model->origin);
-    X_Vec3 end = x_vec3_sub(trace->ray.v + 1, &model->origin);
+    Vec3 start = x_vec3_sub(trace->ray.v + 0, &model->origin);
+    Vec3 end = x_vec3_sub(trace->ray.v + 1, &model->origin);
     
     bool success = !visit_node(trace, model->clipNodeRoots[0], &start, 0, &end, X_FP16x16_ONE);
     
     // Move the plane relative to the origin of the object
-    trace->collisionPoint = x_vec3_add(&trace->collisionPoint, &model->origin);
+    trace->collisionPoint = trace->collisionPoint + model->origin;
     trace->collisionPlane.d = -x_vec3_dot(&trace->collisionPlane.normal, &trace->collisionPoint);
     
     return success;

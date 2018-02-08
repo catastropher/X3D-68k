@@ -20,7 +20,7 @@
 #include "util/X_util.h"
 #include "math/X_fix.h"
 
-static inline void scale_components_to_less_than_one_half(X_Vec3* v)
+static inline void scale_components_to_less_than_one_half(Vec3* v)
 {
     x_fp16x16 maxValue = X_MAX(abs(v->x), X_MAX(abs(v->y), abs(v->z)));
     
@@ -33,7 +33,7 @@ static inline void scale_components_to_less_than_one_half(X_Vec3* v)
     }
 }
 
-void x_vec3_normalize(X_Vec3* v)
+void x_vec3_normalize(Vec3* v)
 {
     scale_components_to_less_than_one_half(v);
     int len = x_sqrt(v->x * v->x + v->y * v->z + v->z * v->z);
@@ -43,7 +43,7 @@ void x_vec3_normalize(X_Vec3* v)
     v->z = (v->z << 16) / len;
 }
 
-void x_vec3_fp16x16_print(const X_Vec3* v, const char* label)
+void x_vec3_fp16x16_print(const Vec3* v, const char* label)
 {
     printf("%s: { %f, %f, %f }\n", label, x_fp16x16_to_float(v->x), x_fp16x16_to_float(v->y), x_fp16x16_to_float(v->z));
 }

@@ -281,9 +281,9 @@ static bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, X_Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest, X_Vec3* pointOnSurface)
+static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest, Vec3* pointOnSurface)
 {
-    X_Vec3 planeNormal = surface->plane->plane.normal;
+    Vec3 planeNormal = surface->plane->plane.normal;
 
     x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
     x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
@@ -291,7 +291,7 @@ static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* su
     dest->d = d + x_vec3_dot(&planeNormal, camPos);
 }
 
-static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, X_Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, X_Vec3* pointOnSurface)
+static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, Vec3* pointOnSurface)
 {
     X_Plane planeInViewSpace;
     x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace, pointOnSurface);
@@ -333,7 +333,7 @@ static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* v
 {
     for(int i = 0; i < poly->totalVertices; ++i)
     {
-        X_Vec3 transformed;
+        Vec3 transformed;
         x_mat4x4_transform_vec3(viewMatrix, poly->vertices + i, &transformed);
         
         if(transformed.z < x_fp16x16_from_float(16.0))
@@ -400,7 +400,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSur
 {
     InternalPolygon3 clipped;
 
-    X_Vec3 firstVertex = polygon->vertices[0];
+    Vec3 firstVertex = polygon->vertices[0];
     
     ++context->renderContext->renderer->totalSurfacesRendered;
 
@@ -429,26 +429,26 @@ void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSur
         return;
 
     // FIXME: shouldn't be done this way
-    X_Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
+    Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
     
     x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
-static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, X_Vec3* origin)
+static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3* origin)
 {
     dest->totalVertices = 0;
     
     for(int i = 0; i < totalEdges; ++i)
     {
-        X_Vec3 v;
+        Vec3 v;
         
         if(!edge_is_flipped(edgeIds[i]))
             v = level->vertices[level->edges[edgeIds[i]].v[0]].v;
         else
             v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
                 
-        dest->vertices[dest->totalVertices++] = x_vec3_add(&v, origin);
+        dest->vertices[dest->totalVertices++] = v + *origin;
     }
 }
 

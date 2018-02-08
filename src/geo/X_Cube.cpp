@@ -24,19 +24,19 @@ void x_cube_init(X_Cube* cube, int width, int height, int depth)
     height <<= 16;
     depth <<= 16;
     
-    cube->vertices[0] = x_vec3_make(width, -height, -depth);
-    cube->vertices[1] = x_vec3_make(width, -height, depth);
-    cube->vertices[2] = x_vec3_make(-width, -height, depth);
-    cube->vertices[3] = x_vec3_make(-width, -height, -depth);
+    cube->vertices[0] = Vec3(width, -height, -depth);
+    cube->vertices[1] = Vec3(width, -height, depth);
+    cube->vertices[2] = Vec3(-width, -height, depth);
+    cube->vertices[3] = Vec3(-width, -height, -depth);
     
     for(int i = 0; i < 4; ++i)
-        cube->vertices[i + 4] = x_vec3_make(cube->vertices[i].x, -cube->vertices[i].y, cube->vertices[i].z);
+        cube->vertices[i + 4] = Vec3(cube->vertices[i].x, -cube->vertices[i].y, cube->vertices[i].z);
 }
 
-void x_cube_translate(X_Cube* cube, X_Vec3 translation)
+void x_cube_translate(X_Cube* cube, Vec3 translation)
 {
     for(int i = 0; i < 8; ++i)
-        cube->vertices[i] = x_vec3_add(cube->vertices + i, &translation);
+        cube->vertices[i] += translation;
 }
 
 void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)

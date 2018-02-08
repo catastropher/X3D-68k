@@ -59,20 +59,20 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     x_mat4x4_mul(&xRotation, &yRotation, &rotation);    
     
     X_Mat4x4 translation;
-    X_Vec3 position = x_cameraobject_get_position(cam);
-    X_Vec3 negatedPosition = x_vec3_neg(&position);
+    Vec3 position = x_cameraobject_get_position(cam);
+    Vec3 negatedPosition = x_vec3_neg(&position);
     x_mat4x4_load_translation(&translation, &negatedPosition);
     
     x_mat4x4_mul(&rotation, &translation, &cam->viewMatrix);
     
-    X_Vec3 forward, up, right;
+    Vec3 forward, up, right;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
     x_viewport_update_frustum(&cam->viewport, &position, &forward, &right, &up);
 }
 
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
-    X_Vec3 position = x_cameraobject_get_position(cam);
+    Vec3 position = x_cameraobject_get_position(cam);
     cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &position);
 }
 

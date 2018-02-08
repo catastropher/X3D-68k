@@ -50,7 +50,7 @@ bool x_edict_get_int(X_Edict* edict, const char* name, int defaultValue, int* de
     return 1;
 }
 
-bool x_edict_get_vec3(X_Edict* edict, const char* name, X_Vec3 defaultValue, X_Vec3* dest)
+bool x_edict_get_vec3(X_Edict* edict, const char* name, Vec3 defaultValue, Vec3* dest)
 {
     X_EdictAttribute* att = x_edict_get_attribute(edict, name);
     if(!att)

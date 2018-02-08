@@ -33,9 +33,9 @@ static inline X_Vec4 x_vec4_make(int x, int y, int z, int w)
     return (X_Vec4) { x, y, z, w };
 }
 
-static inline X_Vec3 x_vec4_to_vec3(const X_Vec4* v)
+static inline Vec3 x_vec4_to_vec3(const X_Vec4* v)
 {
-    return x_vec3_make(v->x, v->y, v->z);
+    return Vec3(v->x, v->y, v->z);
 }
 
 static inline X_Vec4 x_vec4_from_vec3(X_Vec3_int* v)

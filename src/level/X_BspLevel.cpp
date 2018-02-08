@@ -43,8 +43,8 @@ static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext
                     level->vertices[edge->v[1]].v
                 );
                 
-                ray.v[0] = x_vec3_add(ray.v + 0, &model->origin);
-                ray.v[1] = x_vec3_add(ray.v + 1, &model->origin);
+                ray.v[0] += model->origin;
+                ray.v[1] += model->origin;
                 
                 x_ray3_render(&ray, renderContext, color);
             }
@@ -70,7 +70,7 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
         x_bspmodel_render_wireframe(level, level->models + i, rcontext, 15);
 }
 
-X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, X_Vec3* point)
+X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, Vec3* point)
 {
     X_BspNode* node = x_bsplevel_get_root_node(level);
  
@@ -233,7 +233,7 @@ void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light
     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 }
 
-static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const X_Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
+static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
 {
     bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);
     

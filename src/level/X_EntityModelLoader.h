@@ -22,10 +22,10 @@ typedef struct X_EntityModelHeader
 {
     int id;
     int version;
-    X_Vec3 scale;
-    X_Vec3 origin;
+    Vec3 scale;
+    Vec3 origin;
     x_fp16x16 radius;
-    X_Vec3 offsets;
+    Vec3 offsets;
     int totalSkins;
     int skinWidth;
     int skinHeight;

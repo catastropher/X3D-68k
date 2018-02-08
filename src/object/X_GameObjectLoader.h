@@ -40,7 +40,7 @@ void x_gameobjectloader_load_objects(X_EngineContext* engineContext, const char*
 X_EdictAttribute* x_edict_get_attribute(X_Edict* edict, const char* name);
 bool x_edict_has_attribute(X_Edict* edict, const char* name);
 bool x_edict_get_int(X_Edict* edict, const char* name, int defaultValue, int* dest);
-bool x_edict_get_vec3(X_Edict* edict, const char* name, X_Vec3 defaultValue, X_Vec3* dest);
+bool x_edict_get_vec3(X_Edict* edict, const char* name, Vec3 defaultValue, Vec3* dest);
 int x_edict_get_model_id(X_Edict* edict, const char* name);
 bool x_edict_get_fp16x16(X_Edict* edict, const char* name, x_fp16x16 defaultValue, x_fp16x16* dest);
 bool x_edict_get_str(X_Edict* edict, const char* name, const char* defaultValue, char* dest);

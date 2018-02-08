@@ -43,7 +43,7 @@ typedef struct X_AE_Surface
     
     bool inSubmodel;
     
-    X_Vec3* modelOrigin;
+    Vec3* modelOrigin;
     
     struct X_AE_Surface* next;
     struct X_AE_Surface* prev;

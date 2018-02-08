@@ -55,16 +55,16 @@ void portal_init(Portal* portal, X_Vec3 center, X_Mat4x4* wallOrientation)
     
     X_Vec3 v[4] = 
     {
-        x_vec3_make(-w, -h, 0),
-        x_vec3_make(-w, h, 0),
-        x_vec3_make(w, h, 0),
-        x_vec3_make(w, -h, 0)
+        X_Vec3(-w, -h, 0),
+        X_Vec3(-w, h, 0),
+        X_Vec3(w, h, 0),
+        X_Vec3(w, -h, 0)
     };
     
     for(int i = 0; i < 4; ++i)
     {
         x_mat4x4_transform_vec3(wallOrientation, v + i, portal->geometryVertices + i);
-        portal->geometryVertices[i] = x_vec3_add(portal->geometryVertices + i, &center);
+        portal->geometryVertices[i] = portal->geometryVertices[i] + center;
     }
     
     portal->portalOnWall = 1;

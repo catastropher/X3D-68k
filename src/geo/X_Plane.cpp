@@ -19,10 +19,10 @@
 #include "math/X_fix.h"
 #include "object/X_CameraObject.h"
 
-void x_plane_init_from_three_points(X_Plane* plane, const X_Vec3* a, const X_Vec3* b, const X_Vec3* c)
+void x_plane_init_from_three_points(X_Plane* plane, const Vec3* a, const Vec3* b, const Vec3* c)
 {
-    X_Vec3 v1 = x_vec3_sub(a, b);
-    X_Vec3 v2 = x_vec3_sub(c, b);
+    Vec3 v1 = x_vec3_sub(a, b);
+    Vec3 v2 = x_vec3_sub(c, b);
 
     x_vec3_normalize(&v1);
     x_vec3_normalize(&v2);
@@ -43,13 +43,13 @@ void x_plane_print(const X_Plane* plane)
 
 void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest)
 {
-    X_Vec3 temp = plane->normal;
+    Vec3 temp = plane->normal;
     temp.y = 0;
     
     X_Mat4x4 mat;
     x_mat4x4_load_y_rotation(&mat, X_ANG_270);
     
-    X_Vec3 right, up;
+    Vec3 right, up;
     
     if(abs(plane->normal.y) != X_FP16x16_ONE)
     {
@@ -61,7 +61,7 @@ void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest
     else
     {
         // Pick the vectors from the cam direction
-        X_Vec3 temp;
+        Vec3 temp;
         x_mat4x4_extract_view_vectors(&cam->viewMatrix, &up, &right, &temp);
         
         right.y = 0;
