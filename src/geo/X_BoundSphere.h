@@ -19,7 +19,7 @@
 
 typedef struct X_BoundSphere
 {
-    X_Vec3 center;
+    Vec3 center;
     x_fp16x16 radius;
 } X_BoundSphere;
 

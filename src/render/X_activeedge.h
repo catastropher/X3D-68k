@@ -41,9 +41,9 @@ typedef struct X_AE_Surface
     
     x_fp16x16 closestZ;
     
-    _Bool inSubmodel;
+    bool inSubmodel;
     
-    X_Vec3* modelOrigin;
+    Vec3* modelOrigin;
     
     struct X_AE_Surface* next;
     struct X_AE_Surface* prev;
@@ -65,7 +65,7 @@ typedef struct X_AE_Edge
     
     x_fp16x16 xSlope;
     X_AE_Surface* surfaces[2];
-    _Bool isLeadingEdge;
+    bool isLeadingEdge;
     
     X_BspEdge* bspEdge;
     int frameCreated;

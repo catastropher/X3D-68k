@@ -29,7 +29,7 @@ typedef X_Vec2 X_Vec2_fp16x16;
 ////////////////////////////////////////////////////////////////////////////////
 /// Determines whether two 2D vectors are equal.
 ////////////////////////////////////////////////////////////////////////////////
-static inline _Bool x_vec2_equal(const X_Vec2* a, const X_Vec2* b)
+static inline bool x_vec2_equal(const X_Vec2* a, const X_Vec2* b)
 {
     return a->x == b->x && a->y == b->y;
 }

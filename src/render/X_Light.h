@@ -29,17 +29,17 @@ typedef struct X_Light
 {
     int id;
     X_LightFlags flags;
-    X_Vec3 position;
-    X_Vec3 direction;
+    Vec3 position;
+    Vec3 direction;
     x_fp24x8 intensity;
 } X_Light;
 
-static inline _Bool x_light_is_free(X_Light* light)
+static inline bool x_light_is_free(X_Light* light)
 {
     return light->flags & X_LIGHT_FREE;
 }
 
-static inline _Bool x_light_is_enabled(X_Light* light)
+static inline bool x_light_is_enabled(X_Light* light)
 {
     return light->flags & X_LIGHT_ENABLED;
 }

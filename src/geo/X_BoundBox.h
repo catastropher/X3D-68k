@@ -33,7 +33,7 @@ typedef enum X_BoundBoxFrustumFlags
 
 typedef struct X_BoundBox
 {
-    X_Vec3 v[2];
+    Vec3 v[2];
 } X_BoundBox;
 
 struct X_Plane;
@@ -43,7 +43,7 @@ X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, stru
 X_BoundBoxFrustumFlags x_boundbox_determine_frustum_clip_flags(X_BoundBox* box, struct X_Frustum* frustum, X_BoundBoxFrustumFlags parentFlags);
 void x_boundbox_print(X_BoundBox* box);
 
-static inline _Bool x_boundbox_clip_against_frustum_plane(X_BoundBoxFrustumFlags flags, int planeId)
+static inline bool x_boundbox_clip_against_frustum_plane(X_BoundBoxFrustumFlags flags, int planeId)
 {
     return flags & (1 << planeId);
 }
@@ -59,7 +59,7 @@ static inline void x_boundbox_init(X_BoundBox* box)
     box->v[1].z = -0x7FFFFFFF;
 }
 
-static inline void x_boundbox_add_point(X_BoundBox* box, X_Vec3 point)
+static inline void x_boundbox_add_point(X_BoundBox* box, Vec3 point)
 {
     box->v[0].x = X_MIN(box->v[0].x, point.x);
     box->v[0].y = X_MIN(box->v[0].y, point.y);

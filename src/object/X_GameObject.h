@@ -51,8 +51,8 @@ typedef struct X_GameObject
 {
     char triggerName[32];
     int id;    
-    X_Vec3 position;
-    X_Vec3 velocity;
+    Vec3 position;
+    Vec3 velocity;
     X_Quaternion orientation;
     X_GameObjectType* type;
     
@@ -68,7 +68,7 @@ struct X_ObjectFactory;
 void x_gameobject_register_default_types(struct X_ObjectFactory* factory);
 
 X_GameObject* x_gameobject_new(struct X_EngineContext* context, size_t objectSize);
-void x_gameobject_extract_view_vectors(const X_GameObject* obj, X_Vec3* forwardDest, X_Vec3* rightDest, X_Vec3* upDest);
+void x_gameobject_extract_view_vectors(const X_GameObject* obj, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest);
 
 void x_gameobject_activate(X_GameObject* obj);
 void x_gameobject_trigger(X_GameObject* triggerSource, const char* name, X_GameObjectTriggerType type);

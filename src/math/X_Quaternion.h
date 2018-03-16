@@ -22,10 +22,10 @@
 
 typedef X_Vec4_fp16x16 X_Quaternion;
 
-void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const X_Vec3* axis, x_fp16x16 angle);
+void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const Vec3* axis, fp angle);
 void x_quaternion_mul(const X_Quaternion* a, const X_Quaternion* b, X_Quaternion* dest);
 void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest);
-void x_quaternion_init_from_euler_angles(X_Quaternion* quat, x_fp16x16 x, x_fp16x16 y, x_fp16x16 z);
+void x_quaternion_init_from_euler_angles(X_Quaternion* quat, fp x, fp y, fp z);
 void x_quaternion_normalize(X_Quaternion* quat);
 
 static inline X_Quaternion x_quaternion_make(x_fp16x16 x, x_fp16x16 y, x_fp16x16 z, x_fp16x16 w)

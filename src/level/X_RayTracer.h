@@ -25,12 +25,12 @@ typedef struct X_RayTracer
     X_Ray3_fp16x16 ray;
     int rootClipNode;
     X_Plane collisionPlane;
-    X_Vec3 collisionPoint;
+    Vec3 collisionPoint;
     x_fp16x16 collisionFrac;
-    X_Vec3* modelOrigin;
+    Vec3* modelOrigin;
     X_BspModel* hitModel;
 } X_RayTracer;
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, X_Vec3* start, X_Vec3* end, X_BoundBox* boundBox);
-_Bool x_raytracer_trace(X_RayTracer* trace);
+void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, X_BoundBox* boundBox);
+bool x_raytracer_trace(X_RayTracer* trace);
 

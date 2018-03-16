@@ -33,18 +33,18 @@ typedef struct X_EntitySkin
 typedef struct X_EntityTextureCoord
 {
     X_Vec2 coord;
-    _Bool onSeam;
+    bool onSeam;
 } X_EntityTextureCoord;
 
 typedef struct X_EntityTriangle
 {
     int vertexIds[3];
-    _Bool facesFront;
+    bool facesFront;
 } X_EntityTriangle;
 
 typedef struct X_EntityVertex
 {
-    X_Vec3 v;
+    Vec3 v;
     int normalIndex;
 } X_EntityVertex;
 
@@ -89,7 +89,7 @@ typedef struct X_EntityModel
     X_EntityFrameGroup* frameGroups;
 } X_EntityModel;
 
-_Bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);
+bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);
 void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest);
 void x_entitymodel_cleanup(X_EntityModel* model);
 
@@ -98,6 +98,6 @@ X_EntityFrame* x_entitymodel_get_animation_start_frame(X_EntityModel* model, con
 
 struct X_RenderContext;
 
-void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, X_Vec3 pos, X_Color color, struct X_RenderContext* renderContext);
+void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, Vec3 pos, X_Color color, struct X_RenderContext* renderContext);
 void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, struct X_RenderContext* renderContext);
 

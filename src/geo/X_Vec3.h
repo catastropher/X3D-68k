@@ -28,14 +28,33 @@
 //     int z;
 // } X_Vec3_int;
 
-typedef struct X_Vec3
+struct Vec3
 {
+    Vec3(x_fp16x16 x_, x_fp16x16 y_, x_fp16x16 z_) : x(x_), y(y_), z(z_) { }
+    Vec3() : x(0), y(0), z(0) { }
+    
+    Vec3 operator+(const Vec3& v) const
+    {
+        return Vec3(x + v.x, y + v.y, z + v.z);
+    }
+    
+    Vec3 operator-(const Vec3& v) const
+    {
+        return Vec3(x - v.x, y - v.y, z - v.z);
+    }
+    
+    Vec3 operator+=(const Vec3& v)
+    {
+        *this = *this + v;
+        return *this;
+    }
+    
     x_fp16x16 x;
     x_fp16x16 y;
     x_fp16x16 z;
-} X_Vec3;
+};
 
-typedef X_Vec3 X_Vec3_int;
+typedef Vec3 X_Vec3_int;
 
 /// A 3D vertex or vector with fp16x16 components.
 
@@ -55,37 +74,21 @@ typedef struct X_Vec3_short
     short z;
 } X_Vec3_short;
 
-void x_vec3_normalize(X_Vec3* v);
-void x_vec3_fp16x16_print(const X_Vec3* v, const char* label);
+void x_vec3_normalize(Vec3* v);
+void x_vec3_fp16x16_print(const Vec3* v, const char* label);
 
-////////////////////////////////////////////////////////////////////////////////
-/// Returns a 3D vector with the given coordinates.
-////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_make(x_fp16x16 x, x_fp16x16 y, x_fp16x16 z)
-{
-    return (X_Vec3) { x, y, z };
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Returns the 3D origin.
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_origin(void)
+static inline Vec3 x_vec3_origin(void)
 {
-    return x_vec3_make(0, 0, 0);
+    return Vec3();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Adds two 3D vectors.
-/// @return a + b
-////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_add(const X_Vec3* a, const X_Vec3* b)
+static inline Vec3 x_vec3_add_scaled(const Vec3* a, const Vec3* vecToScale, x_fp16x16 scale)
 {
-    return x_vec3_make(a->x + b->x, a->y + b->y, a->z + b->z);
-}
-
-static inline X_Vec3 x_vec3_add_scaled(const X_Vec3* a, const X_Vec3* vecToScale, x_fp16x16 scale)
-{
-    return x_vec3_make
+    return Vec3
     (
         a->x + x_fp16x16_mul(vecToScale->x, scale),
         a->y + x_fp16x16_mul(vecToScale->y, scale),
@@ -93,9 +96,9 @@ static inline X_Vec3 x_vec3_add_scaled(const X_Vec3* a, const X_Vec3* vecToScale
     );
 }
 
-static inline X_Vec3 x_vec3_fp16x16_scale(const X_Vec3* v, x_fp16x16 scale)
+static inline Vec3 x_vec3_fp16x16_scale(const Vec3* v, x_fp16x16 scale)
 {
-    return x_vec3_make
+    return Vec3
     (
         x_fp16x16_mul(v->x, scale),
         x_fp16x16_mul(v->y, scale),
@@ -103,18 +106,18 @@ static inline X_Vec3 x_vec3_fp16x16_scale(const X_Vec3* v, x_fp16x16 scale)
     );
 }
 
-static inline X_Vec3 x_vec3_shift_right(X_Vec3* v, int shift)
+static inline Vec3 x_vec3_shift_right(Vec3* v, int shift)
 {
-    return x_vec3_make(v->x >> shift, v->y >> shift, v->z >> shift);
+    return Vec3(v->x >> shift, v->y >> shift, v->z >> shift);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Adds three 3D vectors.
 /// @return a + b + c
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_add_three(const X_Vec3* a, const X_Vec3* b, const X_Vec3* c)
+static inline Vec3 x_vec3_add_three(const Vec3* a, const Vec3* b, const Vec3* c)
 {
-    return x_vec3_make
+    return Vec3
     (
         a->x + b->x + c->x,
         a->y + b->y + c->y,
@@ -126,18 +129,18 @@ static inline X_Vec3 x_vec3_add_three(const X_Vec3* a, const X_Vec3* b, const X_
 /// Subtracts two 3D vectors.
 /// @return a - b
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_sub(const X_Vec3* a, const X_Vec3* b)
+static inline Vec3 x_vec3_sub(const Vec3* a, const Vec3* b)
 {
-    return x_vec3_make(a->x - b->x, a->y - b->y, a->z - b->z);
+    return Vec3(a->x - b->x, a->y - b->y, a->z - b->z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Scales a 3D vector by the integer @param scale.
 /// @return v * scale
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_scale_int(const X_Vec3* v, int scale)
+static inline Vec3 x_vec3_scale_int(const Vec3* v, int scale)
 {
-    return x_vec3_make
+    return Vec3
     (
         v->x * scale,
         v->y * scale,
@@ -145,9 +148,9 @@ static inline X_Vec3 x_vec3_scale_int(const X_Vec3* v, int scale)
     );
 }
 
-static inline X_Vec3 x_vec3_scale(const X_Vec3* v, x_fp16x16 scale)
+static inline Vec3 x_vec3_scale(const Vec3* v, x_fp16x16 scale)
 {
-    return x_vec3_make
+    return Vec3
     (
         x_fp16x16_mul(v->x, scale),
         x_fp16x16_mul(v->y, scale),
@@ -159,29 +162,29 @@ static inline X_Vec3 x_vec3_scale(const X_Vec3* v, x_fp16x16 scale)
 /// Negates a 3D vector (flips its direction).
 /// @return -v
 ////////////////////////////////////////////////////////////////////////////////
-static inline X_Vec3 x_vec3_neg(const X_Vec3* v)
+static inline Vec3 x_vec3_neg(const Vec3* v)
 {
-    return x_vec3_make(-v->x, -v->y, -v->z);
+    return Vec3(-v->x, -v->y, -v->z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Determines whether two 3D vectors are equal.
 /// @return a == b
 ////////////////////////////////////////////////////////////////////////////////
-static inline _Bool x_vec3_equal(const X_Vec3* a, const X_Vec3* b)
+static inline bool x_vec3_equal(const Vec3* a, const Vec3* b)
 {
     return a->x == b->y && a->y == b->y && a->z == b->z;
 }
 
-static inline x_fp16x16 x_vec3_dot(const X_Vec3* a, const X_Vec3* b)
+static inline x_fp16x16 x_vec3_dot(const Vec3* a, const Vec3* b)
 {
     return x_fp16x16_mul(a->x, b->x) + x_fp16x16_mul(a->y, b->y) + x_fp16x16_mul(a->z, b->z);
 }
 
 
-static inline X_Vec3 x_vec3_cross(const X_Vec3* a, const X_Vec3* b)
+static inline Vec3 x_vec3_cross(const Vec3* a, const Vec3* b)
 {
-    return x_vec3_make(
+    return Vec3(
         x_fp16x16_mul(a->y, b->z) - x_fp16x16_mul(b->y, a->z),
         x_fp16x16_mul(a->z, b->x) - x_fp16x16_mul(b->z, a->x),
         x_fp16x16_mul(a->x, b->y) - x_fp16x16_mul(b->x, a->y)
@@ -194,13 +197,13 @@ static inline X_Vec3 x_vec3_cross(const X_Vec3* a, const X_Vec3* b)
 ///
 /// @return a is perpendicular to b
 ////////////////////////////////////////////////////////////////////////////////
-static inline _Bool x_vec3_is_orthogonal_to(const X_Vec3* a, const X_Vec3* b)
+static inline bool x_vec3_is_orthogonal_to(const Vec3* a, const Vec3* b)
 {
     return x_vec3_dot(a, b) == 0;
 }
 
 
-static inline x_fp16x16 x_vec3_length(const X_Vec3* v)
+static inline x_fp16x16 x_vec3_length(const Vec3* v)
 {
     return x_sqrt(x_fp16x16_mul(v->x, v->x) + x_fp16x16_mul(v->y, v->y) + x_fp16x16_mul(v->z, v->z)) << 8;
 }
@@ -211,29 +214,29 @@ static inline X_Vec3_float x_vec3_float_make(float x, float y, float z)
     return (X_Vec3_float) { x, y, z };
 }
 
-static inline X_Vec3_int x_vec3_to_vec3_int(const X_Vec3* src)
+static inline X_Vec3_int x_vec3_to_vec3_int(const Vec3* src)
 {
     return (X_Vec3_int) { src->x >> 16, src->y >> 16, src->z >> 16 };
 }
 
-static inline X_Vec3 x_vec3_int_to_vec3(const X_Vec3_int* src)
+static inline Vec3 x_vec3_int_to_vec3(const X_Vec3_int* src)
 {
-    return x_vec3_make(src->x << 16, src->y << 16, src->z << 16);
+    return Vec3(src->x << 16, src->y << 16, src->z << 16);
 }
 
-static inline X_Vec3 x_vec3_float_to_vec3_int(const X_Vec3_float* v)
+static inline Vec3 x_vec3_float_to_vec3_int(const X_Vec3_float* v)
 {
-    return (X_Vec3_int) { v->x, v->y, v->z };
+    return (X_Vec3_int) { (int)v->x, (int)v->y, (int)v->z };
 }
 
-static inline X_Vec3 x_vec3_float_to_vec3(const X_Vec3_float* v)
+static inline Vec3 x_vec3_float_to_vec3(const X_Vec3_float* v)
 {
-    return x_vec3_make(v->x * 65536, v->y * 65536, v->z * 65536);
+    return Vec3(v->x * 65536, v->y * 65536, v->z * 65536);
 }
 
-static inline X_Vec3 x_vec3_convert_quake_coord_to_x3d_coord(const X_Vec3* v)
+static inline Vec3 x_vec3_convert_quake_coord_to_x3d_coord(const Vec3* v)
 {
-    return x_vec3_make(v->y, -v->z, -v->x);
+    return Vec3(v->y, -v->z, -v->x);
 }
 
 

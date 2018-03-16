@@ -36,8 +36,8 @@ typedef struct X_Texture
 
 struct X_Font;
 
-_Bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName);
-_Bool x_texture_load_from_xtex_file(X_Texture* tex, const char* fileName);
+bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName);
+bool x_texture_load_from_xtex_file(X_Texture* tex, const char* fileName);
 
 void x_texture_clamp_vec2(const X_Texture* tex, X_Vec2* v);
 void x_texture_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color);
@@ -96,7 +96,7 @@ static inline void x_texture_init(X_Texture* tex, int w, int h)
 {
     tex->w = w;
     tex->h = h;
-    tex->texels = x_malloc(x_texture_texels_size(tex));
+    tex->texels = (X_Color*)x_malloc(x_texture_texels_size(tex));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

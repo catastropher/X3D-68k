@@ -46,12 +46,12 @@ X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
 void x_cameraobject_update_view(X_CameraObject* cam);
 void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderContext);
 
-static inline X_Vec3 x_cameraobject_get_position(X_CameraObject* cam)
+static inline Vec3 x_cameraobject_get_position(X_CameraObject* cam)
 {
     return cam->collider.position;
 }
 
-static inline X_Vec3 x_cameraobject_get_velocity(X_CameraObject* cam)
+static inline Vec3 x_cameraobject_get_velocity(X_CameraObject* cam)
 {
     return cam->collider.velocity;
 }

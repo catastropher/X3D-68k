@@ -18,6 +18,12 @@
 #include <SDL/SDL.h>
 #include <X3D/X3D.h>
 
+typedef enum NetMode
+{
+    NET_SERVER = 1,
+    NET_CLIENT = 2
+} NetMode;
+
 typedef struct Context
 {
     SDL_Surface* screen;
@@ -32,4 +38,8 @@ typedef struct Context
     int nativeResolutionH;
     
     x_fp16x16 moveSpeed;
+    
+    NetMode netMode;
+    X_Server server;
+    X_Client client;
 } Context;

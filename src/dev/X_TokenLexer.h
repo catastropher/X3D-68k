@@ -25,7 +25,7 @@ typedef struct X_TokenLexer
     char* tokenBufEnd;
     char** tokens;
     char** tokensEnd;
-    _Bool errorOccured;
+    bool errorOccured;
     int totalTokens;
 } X_TokenLexer;
 

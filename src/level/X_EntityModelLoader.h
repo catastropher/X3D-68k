@@ -22,10 +22,10 @@ typedef struct X_EntityModelHeader
 {
     int id;
     int version;
-    X_Vec3 scale;
-    X_Vec3 origin;
+    Vec3 scale;
+    Vec3 origin;
     x_fp16x16 radius;
-    X_Vec3 offsets;
+    Vec3 offsets;
     int totalSkins;
     int skinWidth;
     int skinHeight;
@@ -46,5 +46,5 @@ typedef struct X_EntityModelLoader
     struct X_EntityModel* modelDest;
 } X_EntityModelLoader;
 
-_Bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName, struct X_EntityModel* dest);
+bool x_entitymodelloader_load_model_from_file(X_EntityModelLoader* loader, const char* fileName, struct X_EntityModel* dest);
 

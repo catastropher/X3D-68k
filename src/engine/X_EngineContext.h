@@ -47,6 +47,8 @@ typedef struct X_EngineContext
     int frameCount;     // TODO Where should this go?
     X_Time frameStart;
     X_Time lastFrameStart;
+    
+    void* userData;
 } X_EngineContext;
 
 void x_enginecontext_init(X_EngineContext* context, X_Config* config);

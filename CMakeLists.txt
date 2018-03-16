@@ -22,7 +22,7 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-project(X3D C ASM)
+project(X3D CXX ASM)
 
 if(NOT DEFINED XTARGET)
     set(XTARGET "pc")
@@ -41,7 +41,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
     #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O0 -g")
     
     set(X_WITH_SDL "1")
@@ -58,91 +58,99 @@ endif()
 include_directories(src/)
 
 set(X_SOURCES
+    # client
+    src/client/X_Client.cpp
+
     # dev
-    src/dev/X_AutoCompleter.c
-    src/dev/X_conCommands.c
-    src/dev/X_Console.c
-    src/dev/X_DemoPlayer.c
-    src/dev/X_DemoRecorder.c
-    src/dev/X_TokenLexer.c
+    src/dev/X_AutoCompleter.cpp
+    src/dev/X_conCommands.cpp
+    src/dev/X_Console.cpp
+    src/dev/X_DemoPlayer.cpp
+    src/dev/X_DemoRecorder.cpp
+    src/dev/X_TokenLexer.cpp
 
     # engine
-    src/engine/X_engine.c
-    src/engine/X_EngineContext.c
-    src/engine/X_init.c
+    src/engine/X_engine.cpp
+    src/engine/X_EngineContext.cpp
+    src/engine/X_init.cpp
 
     # error
-    src/error/X_error.c
-    src/error/X_log.c
+    src/error/X_error.cpp
+    src/error/X_log.cpp
 
     # geo
-    src/geo/X_BoundBox.c
-    src/geo/X_Cube.c
-    src/geo/X_Frustum.c
-    src/geo/X_Plane.c
-    src/geo/X_Polygon3.c
-    src/geo/X_Ray3.c
-    src/geo/X_Vec3.c
+    src/geo/X_BoundBox.cpp
+    src/geo/X_Cube.cpp
+    src/geo/X_Frustum.cpp
+    src/geo/X_Plane.cpp
+    src/geo/X_Polygon3.cpp
+    src/geo/X_Ray3.cpp
+    src/geo/X_Vec3.cpp
 
     # level
-    src/level/X_BspLevel.c
-    src/level/X_BspLevelLoader.c
-    src/level/X_EntityModel.c
-    src/level/X_EntityModelLoader.c
-    src/level/X_RayTracer.c
+    src/level/X_BspLevel.cpp
+    src/level/X_BspLevelLoader.cpp
+    src/level/X_EntityModel.cpp
+    src/level/X_EntityModelLoader.cpp
+    src/level/X_RayTracer.cpp
 
     # math
-    src/math/X_Mat4x4.c
-    src/math/X_Quaternion.c
-    src/math/X_sqrt.c
-    src/math/X_trig.c
+    src/math/X_Mat4x4.cpp
+    src/math/X_Quaternion.cpp
+    src/math/X_sqrt.cpp
+    src/math/X_trig.cpp
 
     # memory
-    src/memory/X_alloc.c
-    src/memory/X_Cache.c
-    src/memory/X_Factory.c
-    src/memory/X_String.c
+    src/memory/X_alloc.cpp
+    src/memory/X_Cache.cpp
+    src/memory/X_Factory.cpp
+    src/memory/X_String.cpp
 
     # net
-    src/net/X_net.c
+    src/net/X_net.cpp
     
     # object
-    src/object/X_ButtonObject.c
-    src/object/X_CameraObject.c
-    src/object/X_GameObject.c
-    src/object/X_GameObjectLoader.c
-    src/object/X_ObjectFactory.c
-    src/object/X_PlatformObject.c
-    src/object/X_WorldObject.c
+    src/object/X_ButtonObject.cpp
+    src/object/X_CameraObject.cpp
+    src/object/X_GameObject.cpp
+    src/object/X_GameObjectLoader.cpp
+    src/object/X_ObjectFactory.cpp
+    src/object/X_PlatformObject.cpp
+    src/object/X_WorldObject.cpp
 
     # physics
-    src/physics/X_BoxCollider.c
+    src/physics/X_BoxCollider.cpp
 
     # render
-    src/render/X_activeedge.c
-    src/render/X_Font.c
-    src/render/X_Palette.c
-    src/render/X_Renderer.c
-    src/render/X_Screen.c
-    src/render/X_span.c
-    src/render/X_Surface.c
-    src/render/X_Texture.c
-    src/render/X_TriangleFiller.c
-    src/render/X_Viewport.c
+    src/render/X_activeedge.cpp
+    src/render/X_Font.cpp
+    src/render/X_Palette.cpp
+    src/render/X_Renderer.cpp
+    src/render/X_Screen.cpp
+    src/render/X_span.cpp
+    src/render/X_Surface.cpp
+    src/render/X_Texture.cpp
+    src/render/X_TriangleFiller.cpp
+    src/render/X_Viewport.cpp
+    
+    # server
+    src/server/X_Server.cpp
+    src/server/X_ServerPackets.cpp
 
     # system
-    src/system/X_File.c
-    src/system/X_Keys.c
-    src/system/X_Mouse.c
-    src/system/X_PackFile.c
+    src/system/X_File.cpp
+    src/system/X_Keys.cpp
+    src/system/X_Mouse.cpp
+    src/system/X_PackFile.cpp
 
     # util
-    src/util/X_util.c
+    src/util/X_util.cpp
 )
 
 if(${XTARGET} STREQUAL "pc")
     set(X_SOURCES ${X_SOURCES}
-        src/platform/platform_pc.c
+        src/platform/platform_pc.cpp
+        src/platform/socket_pc.cpp
     )
     
     if(${USE_TILIBS} STREQUAL "1")
@@ -159,7 +167,7 @@ if(${XTARGET} STREQUAL "pc")
         include_directories(${GLIB2_INCLUDE_DIRS})
         
         set(X_SOURCES ${X_SOURCES}
-            src/platform/socket_pc_to_nspire.c
+            src/platform/socket_pc_to_nspire.cpp
         )
     endif()
 endif()
@@ -167,8 +175,8 @@ endif()
 if(${XTARGET} STREQUAL "nspire")
     set(X_SOURCES ${X_SOURCES}
         src/render/X_span_arm.s
-        src/platform/platform_nspire.c
-        src/platform/socket_nspire.c
+        src/platform/platform_nspire.cpp
+        src/platform/socket_nspire.cpp
     )
 endif()
 
@@ -178,7 +186,7 @@ if(DEFINED X_WITH_SDL)
     find_package(SDL REQUIRED)
     include_directories(SDL_INCLUDE_DIR)
     
-    set(X_SOURCES ${X_SOURCES} src/platform/X_SDL.c)
+    set(X_SOURCES ${X_SOURCES} src/platform/X_SDL.cpp)
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})
