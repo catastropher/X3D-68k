@@ -102,96 +102,96 @@ struct fp
 };
 
 // Addition
-fp operator+(fp a, fp b)
+inline fp operator+(fp a, fp b)
 {
     return fp(a.val + b.val);
 }
 
-fp operator+(fp a, int b)
+inline fp operator+(fp a, int b)
 {
     return a + fp::fromInt(b);
 }
 
-fp operator+(int a, fp b)
+inline fp operator+(int a, fp b)
 {
     return fp::fromInt(a) + b;
 }
 
 // Subtraction
-fp operator-(fp a, fp b)
+inline fp operator-(fp a, fp b)
 {
     return fp(a.val - b.val);
 }
 
-fp operator-(fp a, int b)
+inline fp operator-(fp a, int b)
 {
     return a - fp::fromInt(b);
 }
 
-fp operator-(int a, fp b)
+inline fp operator-(int a, fp b)
 {
     return fp::fromInt(a) - b;
 }
 
-fp operator-(fp f)
+inline fp operator-(fp f)
 {
     return fp(-f.val);
 }
 
 // Multiplication
-fp operator*(int a, const fp b)
+inline fp operator*(int a, const fp b)
 {
     return fp(a * b.val);
 }
 
-fp operator*(const fp a, int b)
+inline fp operator*(const fp a, int b)
 {
     return fp(a.val * b);
 }
 
-fp operator*(const fp a, const fp b)
+inline fp operator*(const fp a, const fp b)
 {
     return fp(((int64_t)a.val * b.val) >> 16);
 }
 
 // Division
-fp operator/(const fp a, const fp b)
+inline fp operator/(const fp a, const fp b)
 {
     return fp(((int64_t)a.val << 16) / b.val);
 }
 
-fp operator/(const fp a, int b)
+inline fp operator/(const fp a, int b)
 {
     return fp(a.val / b);
 }
 
 // Comparision
-bool operator<(fp a, fp b)
+inline bool operator<(fp a, fp b)
 {
     return a.val < b.val;
 }
 
-bool operator<=(fp a, fp b)
+inline bool operator<=(fp a, fp b)
 {
     return a.val <= b.val;
 }
 
-bool operator>(fp a, fp b)
+inline bool operator>(fp a, fp b)
 {
     return a.val > b.val;
 }
 
-bool operator>=(fp a, fp b)
+inline bool operator>=(fp a, fp b)
 {
     return a.val >= b.val;
 }
 
-bool operator==(fp a, fp b)
+inline bool operator==(fp a, fp b)
 {
     return a.val == b.val;
 }
 
-bool operator!=(fp a, fp b)
+inline bool operator!=(fp a, fp b)
 {
     return a.val != b.val;
 }
