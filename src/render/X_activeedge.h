@@ -22,10 +22,28 @@
 #include "level/X_BspLevel.h"
 #include "X_span.h"
 
+#include "memory/X_ArenaAllocator.hpp"
+
 #define X_AE_SURFACE_MAX_SPANS 332
 
-typedef struct X_AE_Surface
+struct X_AE_Surface
 {
+    x_fp16x16 inverseZAtScreenPoint(x_fp16x16 x, int y) const
+    {
+        return x_fp16x16_mul(x, zInverseXStep) + y * zInverseYStep + zInverseOrigin;
+    }
+    
+    bool isCloserThan(const X_AE_Surface* surface, x_fp16x16 x, int y) const
+    {
+        if(bspKey != surface->bspKey)
+            return bspKey < surface->bspKey;
+        
+        if(inSubmodel ^ surface->inSubmodel)
+            return inSubmodel;
+        
+        return inverseZAtScreenPoint(x + X_FP16x16_ONE * 7, y) >= surface->inverseZAtScreenPoint(x + X_FP16x16_ONE * 7 , y);
+    }
+    
     int bspKey;
     int id;
     int crossCount;
@@ -49,7 +67,7 @@ typedef struct X_AE_Surface
     struct X_AE_Surface* prev;
     
     struct X_AE_Surface* parent;    
-} X_AE_Surface;
+};
 
 #define X_AE_EDGE_LEFT_SURFACE 0
 #define X_AE_EDGE_RIGHT_SURFACE 1
@@ -84,19 +102,27 @@ typedef struct X_AE_DummyEdge
 
 #define X_ACTIVE_SURFACES_SIZE 32
 
-typedef struct X_AE_Context
+struct X_AE_Context
 {
-    X_AE_Edge* edgePool;
-    X_AE_Edge* edgePoolEnd;
-    X_AE_Edge* nextAvailableEdge;
+    X_AE_Context(int maxEdges, int maxSurfaces, int maxSpans, X_Screen* screen_)
+        : edges(maxEdges, "EdgeArena"),
+        surfaces(maxSurfaces, "SurfaceArena"),
+        spans(maxSpans, "SpanArena"),
+        screen(screen_)
+    {
+        initSentinalEdges();
+        initEdges();
+        initSurfaces();
+    }
     
-    X_AE_Surface* surfacePool;
-    X_AE_Surface* surfacePoolEnd;
-    X_AE_Surface* nextAvailableSurface;
+    ~X_AE_Context()
+    {
+        x_free(newEdges);
+    }
     
-    X_AE_Span* spanPool;
-    X_AE_Span* spanPoolEnd;
-    X_AE_Span* nextAvailableSpan;
+    ArenaAllocator<X_AE_Edge> edges;
+    ArenaAllocator<X_AE_Surface> surfaces;
+    ArenaAllocator<X_AE_Span> spans;
     
     X_AE_DummyEdge* newEdges;
     X_AE_Edge newRightEdge;
@@ -114,10 +140,98 @@ typedef struct X_AE_Context
     
     X_BspModel* currentModel;
     X_AE_Surface* currentParent;
-} X_AE_Context;
+    
+private:
+    void initSentinalEdges()
+    {
+        leftEdge.x = -0x7FFFFFFF;
+        leftEdge.xSlope = 0;
+        leftEdge.next = &rightEdge;
+        
+        rightEdge.x = 0x7FFFFFFF;
+        rightEdge.xSlope = 0;
+        rightEdge.prev = &leftEdge;
+        rightEdge.next = NULL;
+    }
+    
+    void initEdges()
+    {
+        for(X_AE_Edge* edge = edges.begin(); edge != edges.allocationEnd(); ++edge)
+        {
+            edge->bspEdge = NULL;
+            edge->frameCreated = -1;
+        }
+        
+        // FIXME: screen is not getting initalized before calling this;
+        
+        //newEdges = (X_AE_DummyEdge*)x_malloc(x_screen_h(screen) * sizeof(X_AE_DummyEdge));
+        newEdges = (X_AE_DummyEdge*)x_malloc(640 * sizeof(X_AE_DummyEdge));
+    }
+    
+    void initSurfaces()
+    {
+        for(X_AE_Surface* surface = surfaces.begin(); surface != surfaces.allocationEnd(); ++surface)
+            surface->id = surface - surfaces.begin();
+    }
+    
+    void resetActiveEdges()
+    {
+        leftEdge.next = &rightEdge;
+        leftEdge.prev = NULL;
+        
+        rightEdge.prev = &leftEdge;
+        rightEdge.next = &newRightEdge;
+    }
+    
+    void resetBackgroundSurface()
+    {
+        leftEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = &background;
+        leftEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = NULL;
+        
+        rightEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = &background;
+        rightEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
+        
+        foreground.next = &background;
+        foreground.prev = NULL;
+        foreground.bspKey = -0x7FFFFFFF;
+        foreground.bspSurface = &backgroundBspSurface;
+        foreground.parent = &foreground;
+        foreground.last = &foreground.spanHead;
+        
+        background.next = NULL;
+        background.prev = &foreground;
+        background.bspKey = 0x7FFFFFFF;
+        background.bspSurface = &backgroundBspSurface;
+        background.parent = &background;
+        background.last = &background.spanHead;
+    }
+    
+    void resetArenas()
+    {
+        edges.freeAll();
+        spans.freeAll();
+        surfaces.freeAll();
+    }
+    
+    void resetNewEdges()
+    {
+        newRightEdge.x = rightEdge.x;
+        newRightEdge.next = &newRightEdge;    // Loop back around
+        
+        // TODO: we can probably reset these as we sort in the new edges for each scanline
+        for(int i = 0; i < x_screen_h(screen); ++i)
+        {
+            newEdges[i].next = (X_AE_Edge*)&newRightEdge;
+            newEdges[i].x = x_fp16x16_from_float(-1000);
+            newEdges[i].deleteHead = NULL;
+        }
+    }
+    
+    // FIXME
+    friend void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
+    friend void x_ae_context_scan_edges(X_AE_Context* context);
+};
 
-void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdges, int edgePoolSize, int surfacePoolSize);
-void x_ae_context_cleanup(X_AE_Context* context);
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
 X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface, X_BspEdge* bspEdge);

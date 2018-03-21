@@ -23,135 +23,8 @@
 #include "render/X_Renderer.h"
 #include "engine/X_EngineContext.h"
 
-float g_zbuf[480][640];
-
 int g_sortCount;
 int g_stackCount;
-
-static x_fp16x16 calculate_inverse_z(X_AE_Surface* s, x_fp16x16 x, int y)
-{
-    return x_fp16x16_mul(x, s->zInverseXStep) + y * s->zInverseYStep + s->zInverseOrigin;
-}
-
-static bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b, x_fp16x16 x, int y, x_fp16x16 slope)
-{
-    if(a->bspKey != b->bspKey)
-        return a->bspKey < b->bspKey;
-    
-    if(a->inSubmodel ^ b->inSubmodel)
-        return a->inSubmodel ? 1 : 0;
-    
-    return calculate_inverse_z(a, x + X_FP16x16_ONE * 7, y) >= calculate_inverse_z(b, x + X_FP16x16_ONE * 7 , y);
-}
-
-static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
-{
-    context->leftEdge.x = -0x7FFFFFFF;
-    context->leftEdge.xSlope = 0;
-    context->leftEdge.next = &context->rightEdge;
-
-    context->rightEdge.x = 0x7FFFFFFF;
-    context->rightEdge.xSlope = 0;
-    context->rightEdge.prev = &context->leftEdge;
-    context->rightEdge.next = NULL;
-}
-
-static void x_ae_context_init_edges(X_AE_Context* context, int maxActiveEdges, int edgePoolSize)
-{
-    context->edgePool = (X_AE_Edge*)x_malloc(edgePoolSize * sizeof(X_AE_Edge));
-    context->edgePoolEnd = context->edgePool + edgePoolSize;
-
-    for(int i = 0; i < edgePoolSize; ++i)
-    {
-        context->edgePool[i].bspEdge = NULL;
-        context->edgePool[i].frameCreated = -1;
-    }
-
-    context->newEdges = (X_AE_DummyEdge*)x_malloc(x_screen_h(context->screen) * sizeof(X_AE_DummyEdge));
-    
-    int totalSpans = 10000;
-    context->spanPool = (X_AE_Span*)x_malloc(sizeof(X_AE_Span) * totalSpans);
-    context->spanPoolEnd = context->spanPool + totalSpans;
-}
-
-static void x_ae_context_init_surfaces(X_AE_Context* context, int surfacePoolSize)
-{
-    context->surfacePool = (X_AE_Surface*)x_malloc(surfacePoolSize * sizeof(X_AE_Surface));
-    context->surfacePoolEnd = context->surfacePool + surfacePoolSize;
-
-    for(int i = 0; i < surfacePoolSize; ++i)
-        context->surfacePool[i].id = i;
-}
-
-void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdges, int edgePoolSize, int surfacePoolSize)
-{
-    context->screen = screen;
-
-    x_ae_context_init_sentinal_edges(context);
-    x_ae_context_init_edges(context, maxActiveEdges, edgePoolSize);
-    x_ae_context_init_surfaces(context, surfacePoolSize);
-}
-
-void x_ae_context_cleanup(X_AE_Context* context)
-{
-    x_free(context->edgePool);
-    x_free(context->newEdges);
-    x_free(context->surfacePool);
-    x_free(context->spanPool);
-}
-
-static void x_ae_context_reset_active_edges(X_AE_Context* context)
-{
-    context->leftEdge.next = &context->rightEdge;
-    context->leftEdge.prev = NULL;
-
-    context->rightEdge.prev = &context->leftEdge;
-    context->rightEdge.next = &context->newRightEdge;
-}
-
-static void x_ae_context_reset_background_surface(X_AE_Context* context)
-{
-    context->leftEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = &context->background;
-    context->leftEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = NULL;
-
-    context->rightEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = &context->background;
-    context->rightEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
-
-    context->foreground.next = &context->background;
-    context->foreground.prev = NULL;
-    context->foreground.bspKey = -0x7FFFFFFF;
-    context->foreground.bspSurface = &context->backgroundBspSurface;
-    context->foreground.parent = &context->foreground;
-    context->foreground.last = &context->foreground.spanHead;
-    
-    context->background.next = NULL;
-    context->background.prev = &context->foreground;
-    context->background.bspKey = 0x7FFFFFFF;
-    context->background.bspSurface = &context->backgroundBspSurface;
-    context->background.parent = &context->background;
-    context->background.last = &context->background.spanHead;
-}
-
-static void x_ae_context_reset_pools(X_AE_Context* context)
-{
-    context->nextAvailableEdge = context->edgePool;
-    context->nextAvailableSurface = context->surfacePool;
-    context->nextAvailableSpan = context->spanPool;
-}
-
-static void x_ae_context_reset_new_edges(X_AE_Context* context)
-{
-    context->newRightEdge.x = context->rightEdge.x;
-    context->newRightEdge.next = &context->newRightEdge;    // Loop back around
-
-    // TODO: we can probably reset these as we sort in the new edges for each scanline
-    for(int i = 0; i < x_screen_h(context->screen); ++i)
-    {
-        context->newEdges[i].next = (X_AE_Edge*)&context->newRightEdge;
-        context->newEdges[i].x = x_fp16x16_from_float(-1000);
-        context->newEdges[i].deleteHead = NULL;
-    }
-}
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext)
 {
@@ -159,10 +32,10 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     g_stackCount = 0;
 
     context->renderContext = renderContext;
-
-    x_ae_context_reset_active_edges(context);
-    x_ae_context_reset_pools(context);
-    x_ae_context_reset_new_edges(context);
+    
+    context->resetActiveEdges();
+    context->resetArenas();
+    context->resetNewEdges();
 }
 
 static bool x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY, int endY)
@@ -217,12 +90,6 @@ static void x_ae_edge_init_position_variables(X_AE_Edge* edge, X_Vec2_fp16x16* t
     edge->x = top->x - errorCorrection;
 }
 
-static X_AE_Edge* x_ae_context_allocate_edge(X_AE_Context* context)
-{
-    x_assert(context->nextAvailableEdge < context->edgePoolEnd, "AE out of edges");
-    return context->nextAvailableEdge++;
-}
-
 X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
 {
     int aY = x_fp16x16_ceil(a->y) >> 16;
@@ -233,7 +100,7 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2_fp16x16* a, X_Vec
     if(is_horizontal_edge(height))
         return NULL;
 
-    X_AE_Edge* edge = x_ae_context_allocate_edge(context);
+    X_AE_Edge* edge = context->edges.alloc();
     edge->isLeadingEdge = is_leading_edge(height);
 
     if(edge->isLeadingEdge)
@@ -250,7 +117,7 @@ X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2_fp16x16* a, X_Vec
     edge->frameCreated = context->renderContext->currentFrame;
     edge->bspEdge = bspEdge;
 
-    bspEdge->cachedEdgeOffset = (unsigned char*)edge - (unsigned char*)context->edgePool;
+    bspEdge->cachedEdgeOffset = (unsigned char*)edge - (unsigned char*)context->edges.begin();
 
     x_ae_edge_init_position_variables(edge, a, b);
     bool success = x_ae_context_add_edge_to_starting_scanline
@@ -321,7 +188,7 @@ static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, Vec
 
 static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int currentFrame)
 {
-    X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)context->edgePool + edge->cachedEdgeOffset);
+    X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)context->edges.begin() + edge->cachedEdgeOffset);
 
     if(aeEdge->frameCreated != currentFrame || aeEdge->bspEdge != edge)
         return NULL;
@@ -352,10 +219,7 @@ static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* v
 
 static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspSurface, int bspKey)
 {
-    X_AE_Surface* surface = context->nextAvailableSurface;
-    
-    if(context->nextAvailableSurface + 1 < context->surfacePoolEnd)
-        ++context->nextAvailableSurface;
+    X_AE_Surface* surface = context->surfaces.alloc();
 
     surface->last = &surface->spanHead;
     surface->bspKey = bspKey;
@@ -456,11 +320,6 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
 {
     x_ae_surface_reset_current_parent(context);
     
-    if((context->renderContext->renderer->renderMode & 2) == 0)
-        return;
-
-    x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
-
     InternalPolygon3 polygon;
 
     // FIXME: why is this here?
@@ -517,14 +376,8 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
         return;
     
     surface = surface->parent;
-    
-    if(context->nextAvailableSpan == context->spanPoolEnd)
-    {
-        printf("Out of spans\n");
-        return;
-    }
 
-    X_AE_Span* span = context->nextAvailableSpan++;
+    X_AE_Span* span = context->spans.alloc();
     
     span->x1 = left;
     span->x2 = right;
@@ -604,12 +457,12 @@ enable:
         else
             search = topSurface;
         
-        if(x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope))
+        if(surfaceToEnable->isCloserThan(search, edge->x, y))
         {
             do
             {
                 search = search->prev;
-            } while(x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope));
+            } while(surfaceToEnable->isCloserThan(search, edge->x, y));
             
             
             search = search->next;
@@ -619,7 +472,7 @@ enable:
             do
             {
                 search = search->next;
-            } while(!x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope));            
+            } while(!surfaceToEnable->isCloserThan(search, edge->x, y));            
         }
         
         surfaceToEnable->next = search;
@@ -724,7 +577,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         initialized = 1;
     }
 
-    x_ae_context_reset_background_surface(context);
+    context->resetBackgroundSurface();
 
     // Don't bother removing the edges from the last scanline
     context->newEdges[x_screen_h(context->screen) - 1].deleteHead = NULL;
@@ -740,13 +593,13 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
     if((context->renderContext->renderer->renderMode & 1) == 0)
         return;
 
-    for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
+    for(X_AE_Surface* surface = context->surfaces.begin(); surface != context->surfaces.end(); ++surface)
     {
-        if(context->surfacePool[i].last == &context->surfacePool[i].spanHead)
+        if(surface->last == &surface->spanHead)
             continue;
 
         X_AE_SurfaceRenderContext surfaceRenderContext;
-        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, context->renderContext->renderer->mipLevel);
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, surface, context->renderContext, context->renderContext->renderer->mipLevel);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
 }
@@ -765,11 +618,13 @@ bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)
 
 int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level)
 {
-    for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
-    {
-        if(x_ae_surface_point_is_in_surface_spans(context->surfacePool + i, x, y))
-            return context->surfacePool[i].bspSurface - level->surfaces;
-    }
-
     return -1;
+    
+//     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
+//     {
+//         if(x_ae_surface_point_is_in_surface_spans(context->surfacePool + i, x, y))
+//             return context->surfacePool[i].bspSurface - level->surfaces;
+//     }
+// 
+//     return -1;
 }

@@ -265,7 +265,6 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_renderer_init_console_vars(renderer, console);
     x_renderer_set_default_values(renderer, screen, fov);
     
-    x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
     x_cache_init(&renderer->surfaceCache, 500000 * 4, "surfacecache");     // TODO: this size should be configurable
     x_renderer_init_colormap(renderer, screen->palette);
     x_renderer_init_dynamic_lights(renderer);
@@ -273,7 +272,6 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
 
 void x_renderer_cleanup(X_Renderer* renderer)
 {
-    x_ae_context_cleanup(&renderer->activeEdgeContext);
     x_cache_cleanup(&renderer->surfaceCache);
     
     x_free(renderer->colorMap);
@@ -281,8 +279,10 @@ void x_renderer_cleanup(X_Renderer* renderer)
 
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
 {
-    x_ae_context_cleanup(&renderer->activeEdgeContext);
-    x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
+    // FIXME: need to reconstruct object
+    
+    //x_ae_context_cleanup(&renderer->activeEdgeContext);
+    //x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
 }
 
 static void x_engine_begin_frame(X_EngineContext* context)
