@@ -72,6 +72,7 @@ struct LevelPolygon2 : Polygon2
     int* edgeIds;
 };
 
+// TODO: no need to project vertices if can just reuse the cached edge
 static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, Polygon2* dest, x_fp16x16* closestZ)
 {
     *closestZ = 0x7FFFFFFF;
@@ -148,12 +149,12 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
     {
         clipped.vertices = poly->vertices;
         clipped.totalVertices = poly->totalVertices;
+        clipped.edgeIds = poly->edgeIds;
     }
     else if(!poly->clipToFrustumPreserveEdgeIds(*renderContext->viewFrustum, clipped, clipFlags, poly->edgeIds, dest->edgeIds))
     {
         return false;
     }
-    else { return false; }
     
     return project_polygon3(&clipped, renderContext->viewMatrix, &renderContext->cam->viewport, dest, closestZ);
 }
@@ -161,8 +162,6 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
 // TODO: check whether edgeIds is NULL
 void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
-    InternalPolygon3 clipped;
-
     Vec3 firstVertex = polygon->vertices[0];
     
     ++context->renderContext->renderer->totalSurfacesRendered;
@@ -187,7 +186,7 @@ void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSur
     Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
     
     surface->calculateInverseZGradient(&camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
-    emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
+    emit_edges(context, surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 
 static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3* origin)
