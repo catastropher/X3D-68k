@@ -46,6 +46,34 @@ struct X_AE_Surface
         return inverseZAtScreenPoint(x + X_FP16x16_ONE * 7, y) >= surface->inverseZAtScreenPoint(x + X_FP16x16_ONE * 7 , y);
     }
     
+    void calculateInverseZGradient(Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, Vec3* pointOnSurface)
+    {
+        X_Plane planeInViewSpace;
+        bspSurface->calculatePlaneInViewSpace(camPos, viewMatrix, pointOnSurface, &planeInViewSpace);
+        
+        int dist = -planeInViewSpace.d;
+        int scale = viewport->distToNearPlane;
+        
+        if(dist == 0 || scale == 0) return;
+        
+        //x_fp16x16 invDistTimesScale = //x_fp16x16_div(X_FP16x16_ONE << 10, distTimesScale) >> 6;
+        
+        x_fp16x16 invDist = x_fp16x16_div(X_FP16x16_ONE << 10, dist);
+        x_fp16x16 invScale = (1 << 26) / scale;
+        
+        x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
+        
+        zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x);
+        zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y);
+        
+        int centerX = viewport->screenPos.x + viewport->w / 2;
+        int centerY = viewport->screenPos.y + viewport->h / 2;
+        
+        zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z, invDist) -
+            centerX * zInverseXStep -
+            centerY * zInverseYStep;
+    }
+    
     int bspKey;
     int id;
     int crossCount;
@@ -121,6 +149,19 @@ typedef struct X_AE_Edge
         x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, xSlope);
         
         x = top->x - errorCorrection;
+    }
+    
+    void emitCachedEdge(X_AE_Surface* surface)
+    {
+        if(surfaces[X_AE_EDGE_LEFT_SURFACE] == NULL)
+            surfaces[X_AE_EDGE_LEFT_SURFACE] = surface;
+        else if(surfaces[X_AE_EDGE_RIGHT_SURFACE] == NULL)
+            surfaces[X_AE_EDGE_RIGHT_SURFACE] = surface;
+        else
+        {
+            // Should never happen
+            printf("Trying to emit full edge\n");
+        }
     }
     
     // Attributes shared with X_AE_DummyEdge (do not reorder!)

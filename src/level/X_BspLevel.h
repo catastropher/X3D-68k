@@ -23,6 +23,7 @@
 #include "render/X_Light.h"
 #include "geo/X_BoundBox.h"
 #include "memory/X_Link.h"
+#include "math/X_Mat4x4.h"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -73,8 +74,18 @@ typedef enum X_BspSurfaceFlags
 
 #define X_BSPSURFACE_MAX_LIGHTMAPS 4
 
-typedef struct X_BspSurface
+struct X_BspSurface
 {
+    void calculatePlaneInViewSpace(Vec3* camPos, X_Mat4x4* viewMatrix, Vec3* pointOnSurface, X_Plane* dest)
+    {
+        Vec3 planeNormal = plane->plane.normal;
+        
+        x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
+        x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
+        
+        dest->d = d + x_vec3_dot(&planeNormal, camPos);
+    }
+    
     int id;     // Just for debugging
     int lastVisibleFrame;
     X_BspPlane* plane;
@@ -97,7 +108,7 @@ typedef struct X_BspSurface
     int lastLightUpdateFrame;
     
     X_CacheEntry cachedSurfaces[X_BSPTEXTURE_MIP_LEVELS];   // Cached surface for each mipmap level
-} X_BspSurface;
+};
 
 typedef struct X_BspEdge
 {

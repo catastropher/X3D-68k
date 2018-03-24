@@ -19,6 +19,7 @@
 #include "X_activeedge.h"
 #include "level/X_BspLevel.h"
 #include "geo/X_Polygon3.h"
+#include "geo/X_Polygon2.hpp"
 #include "X_span.h"
 #include "render/X_Renderer.h"
 #include "engine/X_EngineContext.h"
@@ -38,59 +39,9 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     context->resetNewEdges();
 }
 
-void x_ae_context_emit_cached_edge(X_AE_Edge* cachedEdge, X_AE_Surface* surface)
-{
-    if(cachedEdge->surfaces[X_AE_EDGE_LEFT_SURFACE] == NULL)
-        cachedEdge->surfaces[X_AE_EDGE_LEFT_SURFACE] = surface;
-    else if(cachedEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] == NULL)
-        cachedEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] = surface;
-    else
-    {
-        printf("Trying to emit full edge\n");
-    }
-}
-
 static bool edge_is_flipped(int edgeId)
 {
     return edgeId < 0;
-}
-
-static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest, Vec3* pointOnSurface)
-{
-    Vec3 planeNormal = surface->plane->plane.normal;
-
-    x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
-    x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
-    
-    dest->d = d + x_vec3_dot(&planeNormal, camPos);
-}
-
-static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, Vec3* pointOnSurface)
-{
-    X_Plane planeInViewSpace;
-    x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace, pointOnSurface);
-
-    int dist = -planeInViewSpace.d;
-    int scale = viewport->distToNearPlane;
-
-    if(dist == 0 || scale == 0) return;
-    
-    //x_fp16x16 invDistTimesScale = //x_fp16x16_div(X_FP16x16_ONE << 10, distTimesScale) >> 6;
-    
-    x_fp16x16 invDist = x_fp16x16_div(X_FP16x16_ONE << 10, dist);
-    x_fp16x16 invScale = (1 << 26) / scale;
-    
-    x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
-    
-    surface->zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x);
-    surface->zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y);
-
-    int centerX = viewport->screenPos.x + viewport->w / 2;
-    int centerY = viewport->screenPos.y + viewport->h / 2;
-
-    surface->zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z, invDist) -
-        centerX * surface->zInverseXStep -
-        centerY * surface->zInverseYStep;
 }
 
 static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int currentFrame)
@@ -103,8 +54,28 @@ static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int cu
     return aeEdge;
 }
 
-static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, X_AE_Surface* surface, X_Vec2* dest)
+struct LevelPolygon3 : Polygon3
 {
+    LevelPolygon3(Vec3* vertices_, int totalVertices_, int* edgeIds_)
+        : Polygon3(vertices_, totalVertices_),
+        edgeIds(edgeIds_) { }
+    
+    int* edgeIds;
+};
+
+struct LevelPolygon2 : Polygon2
+{
+    LevelPolygon2(X_Vec2* vertices_, int totalVertices_, int* edgeIds_)
+        : Polygon2(vertices_, totalVertices_),
+        edgeIds(edgeIds_) { }
+    
+    int* edgeIds;
+};
+
+static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, Polygon2* dest, x_fp16x16* closestZ)
+{
+    *closestZ = 0x7FFFFFFF;
+    
     for(int i = 0; i < poly->totalVertices; ++i)
     {
         Vec3 transformed;
@@ -115,11 +86,13 @@ static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* v
         
         poly->vertices[i] = transformed;
         
-        surface->closestZ = X_MIN(surface->closestZ, transformed.z);
+        *closestZ = X_MIN(*closestZ, transformed.z);
         
-        x_viewport_project_vec3(viewport, &transformed, dest + i);
-        x_viewport_clamp_vec2_fp16x16(viewport, dest + i);
+        x_viewport_project_vec3(viewport, &transformed, dest->vertices + i);
+        x_viewport_clamp_vec2_fp16x16(viewport, dest->vertices + i);
     }
+    
+    dest->totalVertices = poly->totalVertices;
 
     return 1;
 }
@@ -156,7 +129,7 @@ void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2
 
             if(cachedEdge != NULL)
             {
-                x_ae_context_emit_cached_edge(cachedEdge, surface);
+                cachedEdge->emitCachedEdge(surface);
                 continue;
             }
         }
@@ -164,6 +137,25 @@ void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2
         int next = (i + 1 < totalVertices ? i + 1 : 0);
         context->addEdge(v2d + i, v2d + next, surface, bspEdge);
     }
+}
+
+bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ)
+{
+    Vec3 clippedV[X_POLYGON3_MAX_VERTS];
+    LevelPolygon3 clipped(clippedV, X_POLYGON3_MAX_VERTS, dest->edgeIds);
+    
+    if(clipFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
+    {
+        clipped.vertices = poly->vertices;
+        clipped.totalVertices = poly->totalVertices;
+    }
+    else if(!poly->clipToFrustumPreserveEdgeIds(*renderContext->viewFrustum, clipped, clipFlags, poly->edgeIds, dest->edgeIds))
+    {
+        return false;
+    }
+    else { return false; }
+    
+    return project_polygon3(&clipped, renderContext->viewMatrix, &renderContext->cam->viewport, dest, closestZ);
 }
 
 // TODO: check whether edgeIds is NULL
@@ -175,34 +167,26 @@ void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSur
     
     ++context->renderContext->renderer->totalSurfacesRendered;
 
-    int tempEdgeIds[X_POLYGON3_MAX_VERTS] = { 0 };
-    int* clippedEdgeIds = tempEdgeIds;
+    int clippedEdgeIds[X_POLYGON3_MAX_VERTS] = { 0 };
+    
+    LevelPolygon3 levelPoly(polygon->vertices, polygon->totalVertices, edgeIds);
 
-    if(geoFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
-    {
-        // Don't bother clipping if fully inside the frustum
-        clipped.vertices = polygon->vertices;
-        clipped.totalVertices = polygon->totalVertices;
-        
-        clippedEdgeIds = edgeIds;
-    }
-    else if(!polygon->clipToFrustumPreserveEdgeIds(*context->renderContext->viewFrustum, clipped, geoFlags, edgeIds, clippedEdgeIds))
-    {
+    X_Vec2_fp16x16 v2d[X_POLYGON3_MAX_VERTS];
+    LevelPolygon2 poly2d(v2d, X_POLYGON3_MAX_VERTS, clippedEdgeIds);
+    
+    x_fp16x16 closestZ;
+    if(!projectAndClipBspPolygon(&levelPoly, context->renderContext, geoFlags, &poly2d, &closestZ))
         return;
-    }
-
+    
     X_AE_Surface* surface = create_ae_surface(context, bspSurface, bspKey);
 
     surface->inSubmodel = inSubmodel;
-
-    X_Vec2_fp16x16 v2d[X_POLYGON3_MAX_VERTS];
-    if(!project_polygon3(&clipped, &context->renderContext->cam->viewMatrix, &context->renderContext->cam->viewport, surface, v2d))
-        return;
+    surface->closestZ = closestZ;
 
     // FIXME: shouldn't be done this way
     Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
     
-    x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
+    surface->calculateInverseZGradient(&camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
     emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
 }
 
