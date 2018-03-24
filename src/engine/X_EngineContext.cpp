@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_config.h"
+#include "object/X_CameraObject.h"
 
 #include <time.h>
 

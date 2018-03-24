@@ -23,6 +23,7 @@
 #include "X_span.h"
 #include "render/X_Renderer.h"
 #include "engine/X_EngineContext.h"
+#include "object/X_CameraObject.h"
 
 int g_sortCount;
 int g_stackCount;
@@ -53,24 +54,6 @@ static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int cu
 
     return aeEdge;
 }
-
-struct LevelPolygon3 : Polygon3
-{
-    LevelPolygon3(Vec3* vertices_, int totalVertices_, int* edgeIds_)
-        : Polygon3(vertices_, totalVertices_),
-        edgeIds(edgeIds_) { }
-    
-    int* edgeIds;
-};
-
-struct LevelPolygon2 : Polygon2
-{
-    LevelPolygon2(X_Vec2* vertices_, int totalVertices_, int* edgeIds_)
-        : Polygon2(vertices_, totalVertices_),
-        edgeIds(edgeIds_) { }
-    
-    int* edgeIds;
-};
 
 // TODO: no need to project vertices if can just reuse the cached edge
 static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, Polygon2* dest, x_fp16x16* closestZ)

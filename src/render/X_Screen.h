@@ -15,13 +15,14 @@
 
 #pragma once
 
-#include "object/X_CameraObject.h"
 #include "X_Palette.h"
+#include "math/X_fix.h"
 
 #define X_ZBUF_FURTHEST_VALUE 0
 
 struct X_Screen;
 struct X_EngineContext;
+struct X_CameraObject;
 
 typedef struct X_ScreenEventHandlers
 {
@@ -37,7 +38,7 @@ typedef struct X_Screen
     X_Texture canvas;
     x_fp0x16* zbuf;
     
-    X_CameraObject* cameraListHead;
+    struct X_CameraObject* cameraListHead;
     const X_Palette* palette;
     X_ScreenEventHandlers handlers;
 } X_Screen;

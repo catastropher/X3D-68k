@@ -17,12 +17,12 @@
 
 #include "X_GameObject.h"
 #include "render/X_Viewport.h"
-#include "level/X_BspLevel.h"
 #include "physics/X_BoxCollider.h"
 
 struct X_EngineContext;
 struct X_RenderContext;
 struct X_Screen;
+struct X_BspLeaf;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// 
@@ -35,8 +35,8 @@ typedef struct X_CameraObject
     x_fp16x16 angleX;
     x_fp16x16 angleY;
     struct X_CameraObject* nextInCameraList;
-    X_BspLeaf* currentLeaf;
-    X_BspLeaf* lastLeaf;
+    struct X_BspLeaf* currentLeaf;
+    struct X_BspLeaf* lastLeaf;
     unsigned char pvsForCurrentLeaf[256];//X_BSPFILE_PVS_SIZE];
     
     void (*screenResizeCallback)(struct X_CameraObject* cam, struct X_Screen* screen, x_fp16x16 fov);

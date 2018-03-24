@@ -18,6 +18,7 @@
 #include "X_Vec3.h"
 #include "render/X_RenderContext.h"
 #include "math/X_Mat4x4.h"
+#include "render/X_Screen.h"
 
 struct Polygon3;
 

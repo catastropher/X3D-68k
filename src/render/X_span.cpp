@@ -20,6 +20,7 @@
 #include "X_activeedge.h"
 #include "X_Renderer.h"
 #include "X_Surface.h"
+#include "object/X_CameraObject.h"
 
 // Scales a value down based on the current mip map level
 static inline int mip_adjust(int val, int mipLevel)

@@ -22,6 +22,7 @@
 #include "error/X_error.h"
 #include "engine/X_Engine.h"
 #include "system/X_File.h"
+#include "object/X_CameraObject.h"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {

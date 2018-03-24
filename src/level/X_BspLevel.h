@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "geo/X_Polygon3.h"
+#include "geo/X_Polygon2.hpp"
 #include "geo/X_Vec3.h"
 #include "render/X_Texture.h"
 #include "geo/X_Plane.h"
@@ -205,6 +207,27 @@ typedef struct X_BspCollisionHull
 
 typedef struct X_BspLevel
 {
+    void getLevelPolygon(X_BspSurface* surface, Vec3* modelOrigin, LevelPolygon3* dest)
+    {
+        dest->edgeIds = surfaceEdgeIds + surface->firstEdgeId;
+        dest->totalVertices = surface->totalEdges;
+        
+        for(int i = 0; i < surface->totalEdges; ++i)
+        {   
+            Vec3 v;
+            
+            int edgeId = dest->edgeIds[i];
+            bool edgeIsFlipped = (edgeId < 0);
+            
+            if(edgeIsFlipped)
+                v = vertices[edges[edgeId].v[0]].v;
+            else
+                v = vertices[edges[-edgeId].v[1]].v;
+            
+            dest->vertices[i] = v + *modelOrigin;
+        }
+    }
+    
     X_BspLevelFlags flags;
     char name[X_BSPLEVEL_MAX_NAME_LENGTH];
     

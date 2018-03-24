@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_Screen.h"
+#include "object/X_CameraObject.h"
 
 void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera)
 {

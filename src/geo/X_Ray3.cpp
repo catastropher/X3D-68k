@@ -16,6 +16,9 @@
 #include "X_Ray3.h"
 #include "X_Plane.h"
 #include "render/X_RenderContext.h"
+#include "X_Frustum.h"
+#include "math/X_Mat4x4.h"
+#include "object/X_CameraObject.h"
 
 bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest)
 {

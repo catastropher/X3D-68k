@@ -23,6 +23,7 @@
 #include "X_Screen.h"
 #include "level/X_BspLevel.h"
 #include "X_span.h"
+#include "X_Viewport.h"
 
 #include "memory/X_ArenaAllocator.hpp"
 

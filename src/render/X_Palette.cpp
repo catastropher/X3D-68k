@@ -15,6 +15,7 @@
 
 #include "X_Palette.h"
 #include "X_Screen.h"
+#include "util/X_util.h"
 
 static void x_palette_set_palette_color_constants(X_Palette* palette)
 {
