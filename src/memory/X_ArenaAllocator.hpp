@@ -43,6 +43,11 @@ public:
         nextAlloc = arenaStart;
     }
     
+    void freeLast()
+    {
+        --nextAlloc;
+    }
+    
     T* begin() const
     {
         return arenaStart;

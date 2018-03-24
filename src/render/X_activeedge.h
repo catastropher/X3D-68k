@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <new>
+
 #include "math/X_fix.h"
 #include "render/X_Texture.h"
 #include "render/X_RenderContext.h"
@@ -74,6 +76,53 @@ struct X_AE_Surface
 
 typedef struct X_AE_Edge
 {
+    X_AE_Edge() { }
+    
+    X_AE_Edge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge_, int currentFrame, X_AE_Edge* edgeStart)
+    {
+        int aY = x_fp16x16_ceil(a->y) >> 16;
+        int bY = x_fp16x16_ceil(b->y) >> 16;
+        
+        int height = bY - aY;
+        
+        isHorizontal = (height == 0);
+        if(isHorizontal)
+            return;
+        
+        isLeadingEdge = (height < 0);
+        
+        if(isLeadingEdge)
+            X_SWAP(a, b);
+        
+        surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
+        surfaces[X_AE_EDGE_LEFT_SURFACE] = NULL;
+        
+        if(isLeadingEdge)
+            surfaces[X_AE_EDGE_RIGHT_SURFACE] = surface;
+        else
+            surfaces[X_AE_EDGE_LEFT_SURFACE] = surface;
+        
+        frameCreated = currentFrame;
+        bspEdge = bspEdge_;
+        
+        bspEdge->cachedEdgeOffset = (unsigned char*)this - (unsigned char*)edgeStart;
+        
+        initDeltas(a, b);
+        
+        startY = x_fp16x16_to_int(x_fp16x16_ceil(a->y));
+        endY = x_fp16x16_to_int(x_fp16x16_ceil(b->y)) - 1;
+    }
+    
+    void initDeltas(X_Vec2_fp16x16* top, X_Vec2_fp16x16* bottom)
+    {
+        xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
+        
+        x_fp16x16 topY = x_fp16x16_ceil(top->y);
+        x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, xSlope);
+        
+        x = top->x - errorCorrection;
+    }
+    
     // Attributes shared with X_AE_DummyEdge (do not reorder!)
     x_fp16x16 x;
     struct X_AE_Edge* next;
@@ -84,11 +133,15 @@ typedef struct X_AE_Edge
     x_fp16x16 xSlope;
     X_AE_Surface* surfaces[2];
     bool isLeadingEdge;
+    bool isHorizontal;
     
     X_BspEdge* bspEdge;
     int frameCreated;
     
     struct X_AE_Edge* nextDelete;
+    
+    short startY;
+    short endY;
 } X_AE_Edge;
 
 typedef struct X_AE_DummyEdge
@@ -227,14 +280,61 @@ private:
         }
     }
     
+    bool addEdgeToStartingScanline(X_AE_Edge* newEdge)
+    {
+        X_AE_Edge* edge = (X_AE_Edge*)&newEdges[newEdge->startY];
+        
+        // FIXME: why is this check here?
+        if(!edge)
+            return false;
+        
+        if(newEdge->endY < 0)
+            return false;
+        
+        newEdge->nextDelete = newEdges[newEdge->endY].deleteHead;
+        newEdges[newEdge->endY].deleteHead = newEdge;
+        
+        x_fp16x16 edgeX = newEdge->x;
+        
+        if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
+            ++edgeX;
+        
+        // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
+        while(edge->next->x < edgeX)
+        {
+            edge = edge->next;
+        }
+        
+        newEdge->next = edge->next;
+        edge->next = newEdge;
+        
+        return true;
+    }
+    
+    void addEdge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
+    {
+        X_AE_Edge* edge = edges.alloc();
+        
+        new (edge) X_AE_Edge(a, b, surface, bspEdge, renderContext->currentFrame, edges.begin());
+        
+        if(edge->isHorizontal)
+        {
+            edges.freeLast();
+        }
+        else
+        {
+            addEdgeToStartingScanline(edge);
+        }
+    }
+    
     // FIXME
     friend void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
     friend void x_ae_context_scan_edges(X_AE_Context* context);
+    friend void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
 };
 
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
-X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2* a, X_Vec2* b, X_AE_Surface* surface, X_BspEdge* bspEdge);
 
 void x_ae_context_add_level_polygon(X_AE_Context* context,
                                     X_BspLevel* level,

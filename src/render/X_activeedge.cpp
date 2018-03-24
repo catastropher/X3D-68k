@@ -38,99 +38,6 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     context->resetNewEdges();
 }
 
-static bool x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY, int endY)
-{
-    X_AE_Edge* edge = (X_AE_Edge*)&context->newEdges[startY];
-
-    // FIXME: why is this check here?
-    if(!edge)
-        return 0;
-
-    if(endY < 0)
-        return 0;
-    
-    newEdge->nextDelete = context->newEdges[endY].deleteHead;
-    context->newEdges[endY].deleteHead = newEdge;
-
-    x_fp16x16 edgeX = newEdge->x;
-
-    if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
-        ++edgeX;
-
-    // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
-    while(edge->next->x < edgeX)
-    {
-        edge = edge->next;
-        ++g_sortCount;
-    }
-
-    newEdge->next = edge->next;
-    edge->next = newEdge;
-    
-    return 1;
-}
-
-static bool is_horizontal_edge(int height)
-{
-    return height == 0;
-}
-
-static bool is_leading_edge(int height)
-{
-    return height < 0;
-}
-
-static void x_ae_edge_init_position_variables(X_AE_Edge* edge, X_Vec2_fp16x16* top, X_Vec2_fp16x16* bottom)
-{
-    edge->xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
-
-    x_fp16x16 topY = x_fp16x16_ceil(top->y);
-    x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, edge->xSlope);
-
-    edge->x = top->x - errorCorrection;
-}
-
-X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
-{
-    int aY = x_fp16x16_ceil(a->y) >> 16;
-    int bY = x_fp16x16_ceil(b->y) >> 16;
-    
-    int height = bY - aY;
-
-    if(is_horizontal_edge(height))
-        return NULL;
-
-    X_AE_Edge* edge = context->edges.alloc();
-    edge->isLeadingEdge = is_leading_edge(height);
-
-    if(edge->isLeadingEdge)
-        X_SWAP(a, b);
-
-    edge->surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
-    edge->surfaces[X_AE_EDGE_LEFT_SURFACE] = NULL;
-    
-    if(edge->isLeadingEdge)
-        edge->surfaces[X_AE_EDGE_RIGHT_SURFACE] = surface;
-    else
-        edge->surfaces[X_AE_EDGE_LEFT_SURFACE] = surface;
-
-    edge->frameCreated = context->renderContext->currentFrame;
-    edge->bspEdge = bspEdge;
-
-    bspEdge->cachedEdgeOffset = (unsigned char*)edge - (unsigned char*)context->edges.begin();
-
-    x_ae_edge_init_position_variables(edge, a, b);
-    bool success = x_ae_context_add_edge_to_starting_scanline
-    (
-        context,
-        edge,
-        x_fp16x16_to_int(x_fp16x16_ceil(a->y)),
-        x_fp16x16_to_int(x_fp16x16_ceil(b->y)) - 1
-    );
-
-    return success ? edge : NULL;
-}
-
 void x_ae_context_emit_cached_edge(X_AE_Edge* cachedEdge, X_AE_Surface* surface)
 {
     if(cachedEdge->surfaces[X_AE_EDGE_LEFT_SURFACE] == NULL)
@@ -236,7 +143,7 @@ static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspS
     return surface;
 }
 
-static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
+void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
 {
     for(int i = 0; i < totalVertices; ++i)
     {
@@ -255,7 +162,7 @@ static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16
         }
 
         int next = (i + 1 < totalVertices ? i + 1 : 0);
-        x_ae_context_add_edge(context, v2d + i, v2d + next, surface, bspEdge);
+        context->addEdge(v2d + i, v2d + next, surface, bspEdge);
     }
 }
 
