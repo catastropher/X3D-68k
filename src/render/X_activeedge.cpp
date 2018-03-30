@@ -479,25 +479,26 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
 bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)
 {
-//     for(int i = 0; i < surface->totalSpans; ++i)
-//     {
-//         X_AE_Span* span = surface->spans + i;
-//         if(span->y == y && x >= span->x1 && x < span->x2)
-//             return 1;
-//     }
+    X_AE_Span* span = surface->spanHead.next;
+    
+    while(span)
+    {
+        if(span->y == y && x >= span->x1 && x < span->x2)
+            return true;
+        
+        span = span->next;
+    }
 
-    return 0;
+    return false;
 }
 
 int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level)
 {
+    for(X_AE_Surface* s = context->surfaces.begin(); s != context->surfaces.end(); ++s)
+    {
+        if(x_ae_surface_point_is_in_surface_spans(s, x, y))
+            return s->bspSurface - level->surfaces;
+    }
+
     return -1;
-    
-//     for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
-//     {
-//         if(x_ae_surface_point_is_in_surface_spans(context->surfacePool + i, x, y))
-//             return context->surfacePool[i].bspSurface - level->surfaces;
-//     }
-// 
-//     return -1;
 }

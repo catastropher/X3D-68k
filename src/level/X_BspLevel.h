@@ -219,7 +219,7 @@ typedef struct X_BspLevel
             int edgeId = dest->edgeIds[i];
             bool edgeIsFlipped = (edgeId < 0);
             
-            if(edgeIsFlipped)
+            if(!edgeIsFlipped)
                 v = vertices[edges[edgeId].v[0]].v;
             else
                 v = vertices[edges[-edgeId].v[1]].v;

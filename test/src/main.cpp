@@ -346,6 +346,8 @@ static void cmd_download(X_EngineContext* engineContext, int argc, char* argv[])
 
 void net_update();
 
+void testNewRenderer(X_RenderContext* renderContext);
+
 void gameloop(Context* context)
 {
     x_console_register_cmd(&context->engineContext->console, "trigger", cmd_trigger);
@@ -359,7 +361,7 @@ void gameloop(Context* context)
     
     x_objectfactory_register_type(&context->engineContext->gameObjectFactory, &g_cubeType);
     
-    x_console_execute_cmd(&context->engineContext->console, "map portal2");
+    x_console_execute_cmd(&context->engineContext->console, "map e1m1");
     x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
     
     while(!context->quit)
@@ -377,6 +379,8 @@ void gameloop(Context* context)
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         
         render(context);
+        
+        testNewRenderer(&renderContext);
 
         handle_keys(context);
         screen_update(context);

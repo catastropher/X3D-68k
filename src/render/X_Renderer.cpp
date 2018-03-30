@@ -237,6 +237,8 @@ static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
     renderer->dynamicLightsNeedingUpdated = 0;
 }
 
+void cmd_draw(X_EngineContext* context, int argc, char* argv[]);
+
 static void x_renderer_console_cmds(X_Console* console)
 {
     x_console_register_cmd(console, "res", cmd_res);
@@ -247,6 +249,7 @@ static void x_renderer_console_cmds(X_Console* console)
     x_console_register_cmd(console, "lighting", cmd_lighting);
     x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
     x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
+    x_console_register_cmd(console, "draw", cmd_draw);
 }
 
 static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen, int fov)
