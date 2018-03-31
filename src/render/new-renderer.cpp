@@ -24,11 +24,14 @@
 
 static ArenaAllocator<X_AE_Edge> edgePool(100, "NewEdgePool");
 
+#define SCREEN_W 640
+#define SCREEN_H 480
+
 bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ);
 
 void drawSpan(int x1, int x2, int y, X_Screen* screen, X_Color color)
 {
-    for(int i = x1; i < x2; ++i)
+    for(int i = x1; i <= x2; ++i)
     {
         x_texture_set_texel(&screen->canvas, i, y, color);
     }
@@ -46,7 +49,7 @@ void emitSpan(int x1, int x2, int y)
     spans.push_back(span);
 }
 
-void renderLevelPolygon(LevelPolygon3* poly, X_BspSurface* surface, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags)
+void renderLevelPolygon(LevelPolygon3* poly, X_BspSurface* surface, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, x_fp16x16* minZ)
 {
     edgePool.freeAll();
     spans.clear();
@@ -59,6 +62,8 @@ void renderLevelPolygon(LevelPolygon3* poly, X_BspSurface* surface, X_RenderCont
     
     if(!projectAndClipBspPolygon(poly, renderContext, clipFlags, &poly2d, &closestZ))
         return;
+    
+    *minZ = closestZ;
     
     X_BspEdge dummyEdge;
     X_AE_Surface aeSurface;
@@ -101,8 +106,6 @@ void renderLevelPolygon(LevelPolygon3* poly, X_BspSurface* surface, X_RenderCont
         // Add new edges
         while(nextNewEdge < edgePool.end() && nextNewEdge->startY == y)
         {
-            printf("New edge at %d\n", y);
-            
             activeEdges.push_back(nextNewEdge);
             
             x_fp16x16 sortX = nextNewEdge->x;
@@ -148,6 +151,8 @@ void renderLevelPolygon(LevelPolygon3* poly, X_BspSurface* surface, X_RenderCont
 
 void testNewRenderer(X_RenderContext* renderContext)
 {
+    return;
+    
     for(auto s : spans)
     {
         drawSpan(s.x1, s.x2, s.y, renderContext->screen, renderContext->screen->palette->brightRed);
@@ -155,6 +160,7 @@ void testNewRenderer(X_RenderContext* renderContext)
 }
 
 #include "engine/X_EngineContext.h"
+#include <object/X_CameraObject.h>
 
 void cmd_draw(X_EngineContext* context, int argc, char* argv[])
 {
@@ -179,7 +185,170 @@ void cmd_draw(X_EngineContext* context, int argc, char* argv[])
     x_enginecontext_get_rendercontext_for_camera(context, context->screen.cameraListHead, &renderContext);
     
     
-    renderLevelPolygon(&poly, s, &renderContext, (X_BoundBoxFrustumFlags)((1 << renderContext.viewFrustum->totalPlanes) - 1));
+    //renderLevelPolygon(&poly, s, &renderContext, (X_BoundBoxFrustumFlags)((1 << renderContext.viewFrustum->totalPlanes) - 1));
+}
+
+std::vector<int> surfacesToRender;
+int currentFrame;
+
+void scheduleSurfaceToRender(X_RenderContext* renderContext, int surface)
+{
+    if(renderContext->currentFrame != currentFrame)
+    {
+        surfacesToRender.clear();
+        currentFrame = renderContext->currentFrame;
+    }
+    
+    surfacesToRender.push_back(surface);
+}
+
+unsigned int cbuffer[SCREEN_H * SCREEN_W / 32];
+
+void clipSpan(int left, int right, int y, std::vector<X_AE_Span>& spans)
+{    
+    int leftBit = left & 31;
+    int rightBit = right & 31;
+
+    int leftWord = left / 32;
+    int rightWord = right / 32;
+
+    uint leftMask = 0xFFFFFFFF >> leftBit;
+    uint rightMask = 0xFFFFFFFF << (31 - rightBit);
+
+    uint spanMask = (leftWord == rightWord ? leftMask & rightMask : leftMask);
+
+    int word = leftWord;
+    int offset = leftWord * 32;
+
+    bool hasSpan = false;
+    
+    unsigned int* cbuf = cbuffer + y * SCREEN_W / 32;
+
+    while(word <= rightWord)
+    {
+        uint mask = spanMask & (~cbuf[word]);
+        bool extendLastSpan = (mask & 1) != 0;
+
+        cbuf[word] |= spanMask;     // This could also be mask
+
+        while(mask != 0)
+        {
+            int start = __builtin_clz(mask);
+            int end = __builtin_clz((~mask) & (0xFFFFFFFF >> start)) - 1;
+
+            if(end == 30 && extendLastSpan)
+                ++end;
+
+            if(hasSpan && spans[spans.size() - 1].x2 == offset + start - 1)
+            {
+                spans[spans.size() - 1].x2 = end + offset;
+            }
+            else
+            {
+                X_AE_Span span;
+                span.x1 = start + offset;
+                span.x2 = end + offset;
+                span.y = y;
+                spans.push_back(span);
+                
+                //emitSpan(start + offset, end + offset);
+                hasSpan = true;
+            }
+
+            mask &= 0b01111111111111111111111111111111 >> end;
+        }
+
+        ++word;
+
+        if(word == rightWord)
+            spanMask = rightMask;
+        else
+            spanMask = 0xFFFFFFFF;
+
+        offset += 32;
+    }
+}
+
+void stitchSpans(std::vector<X_AE_Span>& spans)
+{
+    for(int i = 0; i < spans.size() - 1; ++i)
+    {
+        spans[i].next = &spans[i + 1];
+        ++spans[i].x2;
+    }
+    
+    spans[spans.size() - 1].next = NULL;
+}
+
+void renderSurface(X_RenderContext* renderContext, int surfaceId)
+{
+    X_AE_Surface aeSurface;
+    
+    
+    X_BspSurface* s = renderContext->level->surfaces + surfaceId;
+    Vec3 v[X_POLYGON3_MAX_VERTS];
+    int edgeIds[X_POLYGON3_MAX_VERTS];
+    
+    LevelPolygon3 poly(v, X_POLYGON3_MAX_VERTS, edgeIds);
+    Vec3 origin(0, 0, 0);
+    renderContext->level->getLevelPolygon(s, &origin, &poly);
+    
+    
+    Vec3 firstVertex = poly.vertices[0];
+    Vec3 camPos = x_cameraobject_get_position(renderContext->cam);
+    
+    aeSurface.bspKey = -1;
+    aeSurface.bspSurface = s;
+    aeSurface.crossCount = 0;
+    aeSurface.closestZ = 0x7FFFFFFF;
+    
+    
+    aeSurface.modelOrigin = &origin;//&context->currentModel->origin;
+    
+    aeSurface.parent = &aeSurface;
+    aeSurface.inSubmodel = false;
+    
+    renderLevelPolygon(&poly, s, renderContext, (X_BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1), &aeSurface.closestZ);
+    
+    std::vector<X_AE_Span> clippedSpans;
+    
+    for(auto span : spans)
+    {
+        span.x1 = std::max(0, span.x1);
+        span.x2 = std::min(SCREEN_W - 1, span.x2);
+        
+        clipSpan(span.x1, span.x2, span.y, clippedSpans);
+    }
+    
+    if(clippedSpans.size() == 0)
+        return;
+    
+    stitchSpans(clippedSpans);
+    aeSurface.spanHead.next = &clippedSpans[0];
+    aeSurface.last = &clippedSpans[clippedSpans.size() - 1];
+    
+    aeSurface.calculateInverseZGradient(&camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
+    
+    X_AE_SurfaceRenderContext surfaceRenderContext;
+    x_ae_surfacerendercontext_init(&surfaceRenderContext, &aeSurface, renderContext, 0);
+    x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
+    
+    
+    for(auto span : clippedSpans)
+    {
+        //drawSpan(span.x1, span.x2, span.y, renderContext->screen, surfaceId % 256);
+    }
+}
+
+void renderSurfaces(X_RenderContext* renderContext)
+{
+    //std::reverse(surfacesToRender.begin(), surfacesToRender.end());
+    memset(cbuffer, 0, sizeof(cbuffer));
+    
+    for(int s : surfacesToRender)
+    {
+        renderSurface(renderContext, s);
+    }
 }
 
 

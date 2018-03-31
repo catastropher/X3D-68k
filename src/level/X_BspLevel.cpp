@@ -249,6 +249,8 @@ static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNod
     }
 }
 
+void scheduleSurfaceToRender(X_RenderContext* renderContext, int surface);
+
 static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
 {
     X_BspLevel* level = renderContext->level;
@@ -266,7 +268,9 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if((!onNormalSide) ^ planeFlipped)
             continue;
         
-        x_ae_context_add_level_polygon
+        scheduleSurfaceToRender(renderContext, surface->id);
+        
+/*        x_ae_context_add_level_polygon
         (
             &renderContext->renderer->activeEdgeContext,
             renderContext->level,
@@ -275,12 +279,15 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
             surface,
             geoFlags,
             x_bsplevel_current_bspkey(renderContext->level)
-        );        
+        );   */     
     }
 }
 
 static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
 {
+    // Submodels disabled for now
+    return;
+    
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
     
     for(int i = 0; i < submodel->totalFaces; ++i)
@@ -349,6 +356,9 @@ void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderConte
         x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
 }
 
+
+void renderSurfaces(X_RenderContext* renderContext);
+
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
     x_bsplevel_reset_bspkeys(level);
@@ -360,6 +370,8 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
         x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
     
     x_bsplevel_render_submodels(level, renderContext);
+    
+    renderSurfaces(renderContext);
 }
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
