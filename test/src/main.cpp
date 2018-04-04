@@ -312,7 +312,7 @@ static void cmd_server(X_EngineContext* engineContext, int argc, char* argv[])
     
     x_server_init(&context->server);
     
-    test_pc_socket(8000);
+    //test_pc_socket(8000);
     
     x_console_print(&engineContext->console, "Server initialized\n");
     
@@ -327,7 +327,7 @@ static void cmd_connect(X_EngineContext* engineContext, int argc, char* argv[])
     
     Context* context = (Context*)engineContext->userData;
     
-    test_pc_socket(0);
+    //test_pc_socket(0);
     
     if(x_client_connect(&context->client, argv[1]))
         x_console_print(&engineContext->console, "Connected to server\n");
@@ -362,18 +362,18 @@ void gameloop(Context* context)
     x_objectfactory_register_type(&context->engineContext->gameObjectFactory, &g_cubeType);
     
     x_console_execute_cmd(&context->engineContext->console, "map e1m1");
-    x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
+    //x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
     
     while(!context->quit)
     {
-        if(context->netMode & NET_SERVER)
-        {
-            net_update();
-            x_server_update(&context->server);
-        }
-        
-        if(context->netMode & NET_CLIENT)
-            x_client_update(&context->client);
+//         if(context->netMode & NET_SERVER)
+//         {
+//             net_update();
+//             x_server_update(&context->server);
+//         }
+//         
+//         if(context->netMode & NET_CLIENT)
+//             x_client_update(&context->client);
         
         X_RenderContext renderContext;
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
@@ -395,9 +395,9 @@ int main(int argc, char* argv[])
     
     init(&context, argv[0]);
  
-    x_socket_pc_register_interface();
+    //x_socket_pc_register_interface();
     
-    x_client_init(&context.client);
+    //x_client_init(&context.client);
     
     x_console_register_cmd(&context.engineContext->console, "server", cmd_server);
     x_console_register_cmd(&context.engineContext->console, "connect", cmd_connect);

@@ -268,9 +268,9 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if((!onNormalSide) ^ planeFlipped)
             continue;
         
-        scheduleSurfaceToRender(renderContext, surface->id);
+//        scheduleSurfaceToRender(renderContext, surface->id);
         
-/*        x_ae_context_add_level_polygon
+        x_ae_context_add_level_polygon
         (
             &renderContext->renderer->activeEdgeContext,
             renderContext->level,
@@ -279,7 +279,7 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
             surface,
             geoFlags,
             x_bsplevel_current_bspkey(renderContext->level)
-        );   */     
+        );        
     }
 }
 

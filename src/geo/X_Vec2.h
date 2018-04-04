@@ -18,11 +18,19 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// A 2D vector or vertex.
 ////////////////////////////////////////////////////////////////////////////////
-typedef struct X_Vec2
+struct X_Vec2
 {
+    X_Vec2(int x_, int y_) : x(x_), y(y_) { }
+    X_Vec2() { }
+    
+    X_Vec2 operator-(const X_Vec2& v) const
+    {
+        return X_Vec2(x - v.x, y - v.y);
+    }
+    
     int x;
     int y;
-} X_Vec2;
+};
 
 typedef X_Vec2 X_Vec2_fp16x16;
 

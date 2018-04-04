@@ -239,32 +239,42 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
 
 
 static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
-{    
+{
+    int y = span->y;
+    
+    span->y *= 2;
+    
     X_Texture* screenTex = context->renderContext->canvas;
     X_Color* scanline = screenTex->texels + span->y * screenTex->w;
     x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->w;
     
-    x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, span->y) >> 10;
+    x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y) >> 10;
     x_fp16x16 dInvZ = context->surface->zInverseXStep >> 10;
     
     x_fp16x16 u, v;
-    calculate_u_and_v_at_screen_point(context, span->x1, span->y, &u, &v);
+    calculate_u_and_v_at_screen_point(context, span->x1, y, &u, &v);
     
     int x = span->x1;
     while(x < span->x2 - 16)
     {
         x_fp16x16 nextU, nextV;
-        calculate_u_and_v_at_screen_point(context, x + 16, span->y, &nextU, &nextV);
+        calculate_u_and_v_at_screen_point(context, x + 16, y, &nextU, &nextV);
         
         x_fp16x16 dU = (nextU - u) >> 4;
         x_fp16x16 dV = (nextV - v) >> 4;
         
         for(int i = 0; i < 16; ++i)
         {
-            scanline[x] = get_texel(context, u, v);
-            zbuf[x] = invZ;
+            X_Color texel = get_texel(context, u, v);
             
-            invZ += dInvZ;
+            scanline[x * 2] = texel;
+            scanline[x * 2 + 1] = texel;
+            scanline[x * 2 + screenTex->w] = texel;
+            scanline[x * 2 + screenTex->w + 1] = texel;
+            
+            //zbuf[x] = invZ;
+            
+            //invZ += dInvZ;
             u += dU;
             v += dV;
             
@@ -276,7 +286,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         return;
     
     x_fp16x16 nextU, nextV;
-    calculate_u_and_v_at_screen_point(context, span->x2, span->y, &nextU, &nextV);
+    calculate_u_and_v_at_screen_point(context, span->x2, y, &nextU, &nextV);
     
     int dX = span->x2 - x;
     x_fp16x16 dU = (nextU - u) / dX;
@@ -284,8 +294,15 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     
     while(x < span->x2)
     {
-        scanline[x] = get_texel(context, u, v);
-        zbuf[x] = invZ;
+        //scanline[x] = get_texel(context, u, v);
+        //zbuf[x] = invZ;
+        
+        X_Color texel = get_texel(context, u, v);
+        
+        scanline[x * 2] = texel;
+        scanline[x * 2 + 1] = texel;
+        scanline[x * 2 + screenTex->w] = texel;
+        scanline[x * 2 + screenTex->w + 1] = texel;
         
         invZ += dInvZ;
         u += dU;
@@ -293,11 +310,15 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         
         ++x;
     }
-    
 }
+
+extern "C"
+{
 
 void draw_surface_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span);
 void draw_surface(X_AE_SurfaceRenderContext* context, X_AE_Span* span);
+
+}
 
 static void merge_adjacent_spans(X_AE_Span* head)
 {
@@ -331,11 +352,11 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
     if(context->surface->inSubmodel)
         merge_adjacent_spans(context->surface->spanHead.next);
     
-#ifdef __nspire__
+ #ifdef __nspire__
     draw_surface(context, context->surface->spanHead.next);
     return;
-#endif
-    
+ #endif
+     
     for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
     {
 #ifdef __nspire__

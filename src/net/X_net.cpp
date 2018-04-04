@@ -176,7 +176,7 @@ void x_socket_internal_init(X_Socket* socket, int totalPackets)
     socket->queueTail = 0;
     socket->totalPackets = totalPackets;
     
-    gettimeofday(&socket->lastPacketRead, NULL);
+    //gettimeofday(&socket->lastPacketRead, NULL);
 }
 
 X_Packet* x_socket_internal_dequeue(X_Socket* socket)
@@ -185,7 +185,7 @@ X_Packet* x_socket_internal_dequeue(X_Socket* socket)
         return NULL;
     
     struct timeval currentTime;
-    gettimeofday(&currentTime, NULL);
+    //gettimeofday(&currentTime, NULL);
     
     if(socket->queueHead == socket->queueTail)
     {

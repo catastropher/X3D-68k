@@ -327,8 +327,8 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
     X_RenderContext renderContext;
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
     
-    if((renderer->renderMode & 2) != 0)
-        x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
+    //if((renderer->renderMode & 2) != 0)
+    x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
     
     x_cameraobject_render(cam, &renderContext);
     x_ae_context_scan_edges(&renderer->activeEdgeContext);

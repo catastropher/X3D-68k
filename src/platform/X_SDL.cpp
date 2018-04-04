@@ -49,7 +49,7 @@ static void build_key_map(void)
     keyMap[SDLK_TAB] = '\t';
     
     const int AZERTY_SUPERSCRIPT_2 = 178;
-    keyMap[SDLK_BACKQUOTE] = keyMap['~'] = keyMap[AZERTY_SUPERSCRIPT_2] = X_KEY_OPEN_CONSOLE;
+    keyMap[SDLK_BACKQUOTE] = keyMap['9'] = keyMap['~'] = keyMap[AZERTY_SUPERSCRIPT_2] = X_KEY_OPEN_CONSOLE;
     
     keyMap[SDLK_UP] = X_KEY_UP;
     keyMap[SDLK_DOWN] = X_KEY_DOWN;

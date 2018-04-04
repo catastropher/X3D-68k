@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#if 0
+
 #include <string.h>
 #include <os.h>
 
@@ -286,3 +288,4 @@ void test_socket()
 //     socket_close(&socket);
 }
 
+#endif
