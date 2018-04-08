@@ -67,6 +67,7 @@ typedef struct X_BspPlane
 typedef struct X_BspVertex
 {
     Vec3 v;
+    int cacheOffset;
 } X_BspVertex;
 
 typedef enum X_BspSurfaceFlags

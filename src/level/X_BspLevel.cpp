@@ -286,7 +286,6 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
 static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
 {
     // Submodels disabled for now
-    return;
     
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
     

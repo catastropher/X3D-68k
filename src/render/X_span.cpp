@@ -242,7 +242,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
 {
     int y = span->y;
     
-    span->y *= 2;
+    //span->y *= 2;
     
     X_Texture* screenTex = context->renderContext->canvas;
     X_Color* scanline = screenTex->texels + span->y * screenTex->w;
@@ -267,10 +267,11 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         {
             X_Color texel = get_texel(context, u, v);
             
-            scanline[x * 2] = texel;
-            scanline[x * 2 + 1] = texel;
-            scanline[x * 2 + screenTex->w] = texel;
-            scanline[x * 2 + screenTex->w + 1] = texel;
+            scanline[x] = texel;
+//             scanline[x * 2] = texel;
+//             scanline[x * 2 + 1] = texel;
+//             scanline[x * 2 + screenTex->w] = texel;
+//             scanline[x * 2 + screenTex->w + 1] = texel;
             
             //zbuf[x] = invZ;
             
@@ -298,12 +299,13 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         //zbuf[x] = invZ;
         
         X_Color texel = get_texel(context, u, v);
-        
-        scanline[x * 2] = texel;
-        scanline[x * 2 + 1] = texel;
-        scanline[x * 2 + screenTex->w] = texel;
-        scanline[x * 2 + screenTex->w + 1] = texel;
-        
+   
+        scanline[x] = texel;
+//         scanline[x * 2] = texel;
+//         scanline[x * 2 + 1] = texel;
+//         scanline[x * 2 + screenTex->w] = texel;
+//         scanline[x * 2 + screenTex->w + 1] = texel;
+//         
         invZ += dInvZ;
         u += dU;
         v += dV;
