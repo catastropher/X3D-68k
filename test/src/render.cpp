@@ -30,7 +30,7 @@ static void draw_fps(X_EngineContext* context)
     char fpsStr[20];
     sprintf(fpsStr, "%d", fps);
     
-    X_Vec2 pos = x_vec2_make(x_screen_w(&context->screen) - x_font_str_width(&context->mainFont, fpsStr), 0);
+    X_Vec2 pos = x_vec2_make(x_screen_w(&context->screen) - context->mainFont.calcWidthOfStr(fpsStr), 0);
     context->screen.canvas.drawStr(fpsStr, context->mainFont, pos);
 }
 

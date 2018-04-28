@@ -161,8 +161,8 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
 {
     console->openState = X_CONSOLE_STATE_CLOSED;
     console->cursor = x_vec2_make(0, 0);
-    console->size.x = x_screen_w(&engineContext->screen) / font->charW;
-    console->size.y = x_screen_h(&engineContext->screen) / font->charH / 2;
+    console->size.x = x_screen_w(&engineContext->screen) / font->getW();
+    console->size.y = x_screen_h(&engineContext->screen) / font->getH() / 2;
     console->font = font;
     console->engineContext = engineContext;
     console->renderYOffset = 0;
@@ -358,7 +358,7 @@ static void x_console_handle_cursor_blinking(X_Console* console)
 
 static int x_console_line_y(X_Console* console, int lineNumber)
 {
-    return lineNumber * console->font->charH + console->renderYOffset;
+    return lineNumber * console->font->getH() + console->renderYOffset;
 }
 
 static void x_console_add_cursor_to_input_buf(X_Console* console)
@@ -394,7 +394,7 @@ static int x_console_get_next_empty_line(X_Console* console)
 
 static int x_console_h(const X_Console* console)
 {
-    return console->size.y * console->font->charH;
+    return console->size.y * console->font->getH();
 }
 
 static X_Screen* x_console_get_screen(X_Console* console)
@@ -425,7 +425,7 @@ static void x_console_render_input(X_Console* console)
     
     X_Texture* canvas = x_console_get_canvas(console);
     canvas->drawChar(']', *console->font, { 0, inputLineY });
-    canvas->drawStr(scrolledInput, *console->font, { console->font->charW * CHARS_IN_CURSOR, inputLineY });
+    canvas->drawStr(scrolledInput, *console->font, { console->font->getW() * CHARS_IN_CURSOR, inputLineY });
     
     x_console_remove_cursor_from_input_buf(console);
 }

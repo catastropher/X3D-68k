@@ -122,7 +122,7 @@ void X_Texture::blit(const X_Texture& tex, X_Vec2i pos)
 
 void X_Texture::drawChar(int c, const X_Font& font, X_Vec2i pos)
 {
-    const X_Color* charPixels = x_font_get_character_pixels(&font, c);
+    const X_Color* charPixels = font.getCharacterPixels(c);
 
     X_Vec2 clippedTopLeft
     {
@@ -132,8 +132,8 @@ void X_Texture::drawChar(int c, const X_Font& font, X_Vec2i pos)
 
     X_Vec2 clippedBottomRight
     {
-        std::min(w, pos.x + font.charW) - pos.x,
-        std::min(h, pos.y + font.charH) - pos.y
+        std::min(w, pos.x + font.getW()) - pos.x,
+        std::min(h, pos.y + font.getH()) - pos.y
     };
     
     for(int i = clippedTopLeft.y; i < clippedBottomRight.y; ++i)
@@ -154,12 +154,12 @@ void X_Texture::drawStr(const char* str, const X_Font& font, X_Vec2i pos)
         if(*str == '\n')
         {
             currentPos.x = pos.x;
-            currentPos.y += font.charH;
+            currentPos.y += font.getH();
         }
         else
         {
             drawChar(*str, font, currentPos);
-            currentPos.x += font.charW;
+            currentPos.x += font.getW();
         }
         
         ++str;

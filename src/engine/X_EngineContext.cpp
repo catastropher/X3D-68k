@@ -46,10 +46,8 @@ static inline void init_screen(X_EngineContext* context, X_Config* config)
 }
 
 static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
-{
-    bool fontLoaded = x_font_load_from_xtex_file(&context->mainFont, fontFileName, fontW, fontH);
-    
-    if(!fontLoaded)
+{  
+    if(!context->mainFont.loadFromFile(fontFileName))
         x_system_error("Failed to load font");
 }
 
@@ -81,10 +79,6 @@ static inline void cleanup_screen(X_EngineContext* context)
     x_screen_cleanup(&context->screen);
 }
 
-static inline void cleanup_main_font(X_EngineContext* context)
-{
-    x_font_cleanup(&context->mainFont);
-}
 
 static inline void cleanup_console(X_EngineContext* context)
 {
@@ -146,7 +140,6 @@ void x_enginecontext_cleanup(X_EngineContext* context)
 {
     cleanup_object_factory(context);
     cleanup_screen(context);
-    cleanup_main_font(context);
     cleanup_console(context);
     x_bsplevel_cleanup(&context->currentLevel);
     x_renderer_cleanup(&context->renderer);
