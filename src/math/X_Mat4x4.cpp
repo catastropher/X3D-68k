@@ -20,6 +20,7 @@
 #include "X_trig.h"
 #include "render/X_RenderContext.h"
 #include "geo/X_Ray3.h"
+#include "render/X_Palette.h"
 
 void x_mat4x4_load_identity(X_Mat4x4* mat)
 {

@@ -18,38 +18,27 @@
 #include "error/X_error.h"
 #include "memory/X_alloc.h"
 
-static size_t calculate_character_size(const X_Font* font)
+void X_Font::loadCharacter(const X_Texture& fontTex, int charRow, int charCol, X_Color* characterPixelsDest)
 {
-    return font->charW * font->charH * sizeof(X_Color);
+    int startX = charCol * charW;
+    int startY = charRow * charH;
+    
+    for(int i = 0; i < charH; ++i)
+    {
+        for(int j = 0; j < charW; ++j)
+        {
+            *characterPixelsDest++ = fontTex.getTexel({ startX + j, startY + i });
+        }
+    }
 }
 
-static size_t calculate_font_pixels_size(const X_Font* font)
+void X_Font::loadCharacters(const X_Texture& fontTex)
 {
-    return X_FONT_TOTAL_CHARS * font->charSize;
-}
-
-static void load_character(X_Font* font, const X_Texture* fontTex, int charRow, int charCol, X_Color* characterPixelsDest)
-{
-    int startX = charCol * font->charW;
-    int startY = charRow * font->charH;
-    
-    for(int i = 0; i < font->charH; ++i)
-        for(int j = 0; j < font->charW; ++j)
-            *characterPixelsDest++ = x_texture_get_texel(fontTex, startX + j, startY + i);
-}
-
-static void load_characters(X_Font* font, const X_Texture* fontTex)
-{
-    int charsPerRow = x_texture_w(fontTex) / font->charW;
-    
-    x_assert(x_texture_w(fontTex) % font->charW == 0, "Font texture width not multiple of font width");
-    x_assert(x_texture_h(fontTex) % font->charH == 0, "Font texture height not multiple of font height");
-    
-    int totalRows = x_texture_h(fontTex) / font->charH;
-    x_assert(totalRows * charsPerRow == X_FONT_TOTAL_CHARS, "Wrong number of chars in font");
+    const int charsPerRow = 16;
+    const int totalRows = 16;
     
     // Start at char 1 because 0 is the null terminator
-    X_Color* nextCharacterPixels = font->pixels + font->charSize;
+    X_Color* nextCharacterPixels = pixels + charSize;
     
     for(int i = 0; i < totalRows; ++i)
     {
@@ -60,38 +49,31 @@ static void load_characters(X_Font* font, const X_Texture* fontTex)
             if(charId == charsPerRow * totalRows - 1)
                 break;
             
-            load_character(font, fontTex, i, j, nextCharacterPixels);
-            nextCharacterPixels += font->charSize;
+            loadCharacter(fontTex, i, j, nextCharacterPixels);
+            nextCharacterPixels += charSize;
         }
     }
     
 }
 
-bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidth, int fontHeight)
-{
-    font->charW = fontWidth;
-    font->charH = fontHeight;
-    
+bool X_Font::loadFromFile(const char* fileName)
+{   
     X_Texture fontTex;
-    if(!x_texture_load_from_xtex_file(&fontTex, fileName))
+    if(!fontTex.loadFromFile(fileName))
     {
         x_log_error("Failed to load font %s", fileName);
         return 0;
     }
-    
-    font->charSize = calculate_character_size(font);
-    font->pixels = (X_Color*)x_malloc(calculate_font_pixels_size(font));
-    load_characters(font, &fontTex);
-    x_texture_cleanup(&fontTex);
+
+    charW = fontTex.getW() / 16;
+    charH = fontTex.getH() / 16;
+    charSize = charW * charH;
+
+    pixels = xalloc<X_Color>(fontTex.totalTexels());
+    loadCharacters(fontTex);
     
     x_log("Loaded font %s", fileName);
     
     return 1;
-}
-
-void x_font_cleanup(X_Font* font)
-{
-    x_free(font->pixels);
-    font->pixels = NULL;
 }
 

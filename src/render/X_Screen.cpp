@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_Screen.h"
+#include "object/X_CameraObject.h"
 
 void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera)
 {
@@ -47,8 +48,7 @@ void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera)
 
 void x_screen_restart_video(X_Screen* screen, int newW, int newH, x_fp16x16 newFov)
 {
-    x_texture_cleanup(&screen->canvas);
-    x_texture_init(&screen->canvas, newW, newH);
+    screen->canvas.resize(newW, newH);
     
     x_free(screen->zbuf);
     screen->zbuf = (x_fp0x16*)x_malloc(x_screen_zbuf_size(screen));

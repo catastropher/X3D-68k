@@ -15,6 +15,7 @@
 
 #include "X_PlatformObject.h"
 #include "error/X_error.h"
+#include "physics/X_BoxCollider.h"
 
 static void transition_next_state(X_PlatformObject* platform)
 {

@@ -15,22 +15,24 @@
 
 #pragma once
 
-#include "X_Vec3.h"
-#include "render/X_RenderContext.h"
-#include "math/X_Mat4x4.h"
-#include "render/X_Screen.h"
+#include "X_Vec2.h"
 
-struct Polygon3;
-
-typedef struct X_Cube
+struct Polygon2
 {
-    Vec3 vertices[8];
-} X_Cube;
+    Polygon2(X_Vec2* vertices_, int totalVertices_) :
+        vertices(vertices_),
+        totalVertices(totalVertices_) { }
+    
+    X_Vec2* vertices;
+    int totalVertices;
+};
 
-void x_cube_init(X_Cube* cube, int width, int height, int depth);
-void x_cube_translate(X_Cube* cube, Vec3 translation);
-void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color);
-void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat);
-void x_cube_get_face(const X_Cube* cube, int faceId, struct Polygon3* dest);
-void x_cube_get_faces_containing_vertex(const X_Cube* cube, int vertexId, int faceDest[3]);
+struct LevelPolygon2 : Polygon2
+{
+    LevelPolygon2(X_Vec2* vertices_, int totalVertices_, int* edgeIds_)
+    : Polygon2(vertices_, totalVertices_),
+    edgeIds(edgeIds_) { }
+    
+    int* edgeIds;
+};
 

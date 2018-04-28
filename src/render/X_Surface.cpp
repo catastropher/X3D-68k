@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <new>
+
 #include "level/X_BspLevel.h"
 #include "X_Renderer.h"
 #include "X_Surface.h"
@@ -88,8 +90,8 @@ static void x_surfacebuilder_calculate_texture_offset(X_SurfaceBuilder* builder)
     // Guarantee a positive coordinate by adding 64k x the size of the texture
     builder->textureOffset = x_vec2_make
     (
-        ((builder->bspSurface->textureMinCoord.x >> (16 + builder->mipLevel)) + (builder->texture.w << 16)) % builder->texture.w,
-        ((builder->bspSurface->textureMinCoord.y >> (16 + builder->mipLevel)) + (builder->texture.h << 16)) % builder->texture.h
+        ((builder->bspSurface->textureMinCoord.x >> (16 + builder->mipLevel)) + (builder->texture.getW() << 16)) % builder->texture.getW(),
+        ((builder->bspSurface->textureMinCoord.y >> (16 + builder->mipLevel)) + (builder->texture.getH() << 16)) % builder->texture.getH()
     );
 }
 
@@ -97,15 +99,15 @@ static X_Vec2 x_texture_get_repeat_mask(X_Texture* texture)
 {
     return x_vec2_make
     (
-        is_power_of_2(texture->w) ? texture->w - 1 : 255, 
-        is_power_of_2(texture->h) ? texture->h - 1 : 255
+        is_power_of_2(texture->getW()) ? texture->getW() - 1 : 255, 
+        is_power_of_2(texture->getH()) ? texture->getH() - 1 : 255
     );
 }
 
 static void x_surfacebuilder_calculate_surface_size(X_SurfaceBuilder* builder)
 {
-    builder->surface.w = builder->bspSurface->textureExtent.x >> (builder->mipLevel + 16);
-    builder->surface.h = builder->bspSurface->textureExtent.y >> (builder->mipLevel + 16);
+    builder->surface.setDimensions(builder->bspSurface->textureExtent.x >> (builder->mipLevel + 16),
+        builder->bspSurface->textureExtent.y >> (builder->mipLevel + 16));
 }
 
 static void x_surfacebuilder_calculate_lightmap_size(X_SurfaceBuilder* builder)
@@ -124,25 +126,25 @@ static X_Color x_surfacebuilder_get_texture_texel(X_SurfaceBuilder* builder, int
     int textureX = ((surfaceX ) + builder->textureOffset.x) & builder->textureMask.x;
     int textureY = ((surfaceY ) + builder->textureOffset.y) & builder->textureMask.y;
  
-    if(textureX >= builder->texture.w || textureY >= builder->texture.h)
+    if(textureX >= builder->texture.getW() || textureY >= builder->texture.getH())
     {
         if(builder->bspSurface->id == 27)
         {
-            printf("%d %d -> %d %d\n", builder->texture.w, builder->texture.h, textureX, textureY);
+            printf("%d %d -> %d %d\n", builder->texture.getW(), builder->texture.getH(), textureX, textureY);
             printf("Offset: %d %d\n", builder->textureOffset.x, builder->textureOffset.y);
         }
     }
     
-    return x_texture_get_texel(&builder->texture, textureX, textureY);
+    return builder->texture.getTexel({ textureX, textureY });
 }
 
 static void x_surfacebuilder_build_without_lighting(X_SurfaceBuilder* builder)
 {
-    for(int i = 0; i < builder->surface.h; ++i)
+    for(int i = 0; i < builder->surface.getH(); ++i)
     {
-        for(int j = 0; j < builder->surface.w; ++j)
+        for(int j = 0; j < builder->surface.getW(); ++j)
         {
-            builder->surface.texels[i * builder->surface.w + j] = x_surfacebuilder_get_texture_texel(builder, j, i);
+            builder->surface.getTexels()[i * builder->surface.getW() + j] = x_surfacebuilder_get_texture_texel(builder, j, i);
         }
     }
 }
@@ -177,7 +179,7 @@ static void x_surfacebuilder_build_16x16_block(X_SurfaceBuilder* builder)
             X_Color texel = x_surfacebuilder_get_texture_texel(builder, x, y);
             x_fp16x16 intensity = x_surfacebuilderblock_get_intensity_at_offset(block, j, i, builder->mipLevel);
             
-            builder->surface.texels[y * builder->surface.w + x] = x_renderer_get_shaded_color(builder->renderer, texel, intensity >> (16 + 2));
+            builder->surface.getTexels()[y * builder->surface.getW() + x] = x_renderer_get_shaded_color(builder->renderer, texel, intensity >> (16 + 2));
         }
     }
 }
@@ -294,19 +296,19 @@ static void x_surfacebuilder_init(X_SurfaceBuilder* builder, X_BspSurface* surfa
     x_surfacebuilder_calculate_surface_size(builder);
     x_surfacebuilder_calculate_lightmap_size(builder);
     
-    int totalTexels = builder->surface.w * builder->surface.h;
+    int totalTexels = builder->surface.getW() * builder->surface.getH();
     
     if(!x_cachentry_is_in_cache(surface->cachedSurfaces + mipLevel))
     {
         x_cache_alloc(&renderer->surfaceCache, totalTexels, surface->cachedSurfaces + mipLevel);
     }
     
-    builder->surface.texels = (X_Color*)x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel);
+    builder->surface.setTexels((X_Color*)x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel));
 
     X_BspTexture* faceTex = surface->faceTexture->texture;
-    builder->texture.texels = faceTex->mipTexels[mipLevel];
-    builder->texture.w = faceTex->w >> mipLevel;
-    builder->texture.h = faceTex->h >> mipLevel;
+
+    new (&builder->texture) X_Texture(faceTex->w >> mipLevel, faceTex->h >> mipLevel, faceTex->mipTexels[mipLevel]);
+
     builder->textureMask = x_texture_get_repeat_mask(&builder->texture);
     
     x_surfacebuilder_calculate_texture_offset(builder);
@@ -334,8 +336,8 @@ void x_bspsurface_get_surface_texture_for_mip_level(X_BspSurface* surface, int m
     if(!x_cachentry_is_in_cache(surface->cachedSurfaces + mipLevel) || x_bspsurface_need_to_rebuild_because_lights_changed(surface, renderer))
         x_bspsurface_rebuild(surface, mipLevel, renderer);
     
-    dest->w = surface->textureExtent.x >> (mipLevel + 16);
-    dest->h = surface->textureExtent.y >> (mipLevel + 16);
-    dest->texels = (X_Color*)x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel);
+    new (dest) X_Texture(surface->textureExtent.x >> (mipLevel + 16),
+        surface->textureExtent.y >> (mipLevel + 16),
+        (X_Color*)x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel));
 }
 

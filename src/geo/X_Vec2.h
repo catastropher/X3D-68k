@@ -18,13 +18,26 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// A 2D vector or vertex.
 ////////////////////////////////////////////////////////////////////////////////
-typedef struct X_Vec2
+template<typename T>
+struct X_Vec2Generic
 {
-    int x;
-    int y;
-} X_Vec2;
+    X_Vec2Generic(T x_, T y_) : x(x_), y(y_) { }
+    X_Vec2Generic() { }
+    
+    X_Vec2Generic operator-(const X_Vec2Generic& v) const
+    {
+        return X_Vec2Generic(x - v.x, y - v.y);
+    }
+    
+    T x;
+    T y;
+};
 
-typedef X_Vec2 X_Vec2_fp16x16;
+using X_Vec2_fp16x16 = X_Vec2Generic<int>;
+using X_Vec2 = X_Vec2Generic<int>;
+using X_Vec2i = X_Vec2Generic<int>;
+using X_Vec2fp = X_Vec2Generic<int>;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Determines whether two 2D vectors are equal.

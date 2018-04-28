@@ -21,7 +21,7 @@
 static void send_echo_packet(X_Socket* socket)
 {
     struct timeval currentTime;
-    gettimeofday(&currentTime, NULL);
+    //gettimeofday(&currentTime, NULL);
 }
 
 static void send_file_request_response(X_Socket* socket, bool success, int fileSize, const char* fileName)

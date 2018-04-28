@@ -16,6 +16,9 @@
 #include "X_Ray3.h"
 #include "X_Plane.h"
 #include "render/X_RenderContext.h"
+#include "X_Frustum.h"
+#include "math/X_Mat4x4.h"
+#include "object/X_CameraObject.h"
 
 bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest)
 {
@@ -87,6 +90,6 @@ void x_ray3_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
         projected[i].y >>= 16;
     }
     
-    x_texture_draw_line(rcontext->canvas, projected[0], projected[1], color);
+    rcontext->canvas->drawLine(projected[0], projected[1], color);
 }
 

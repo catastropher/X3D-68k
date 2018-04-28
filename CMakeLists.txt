@@ -47,10 +47,11 @@ if(${XTARGET} STREQUAL "pc")
     set(X_WITH_SDL "1")
 elseif(${XTARGET} STREQUAL "nspire")
     set(CMAKE_C_COMPILER nspire-gcc)
+    set(CMAKE_CXX_COMPILER nspire-gcc)
     set(CMAKE_ASM_COMPILER nspire-as)
     set(CMAKE_LI)
     add_definitions(-D__nspire__)
-    set(CMAKE_C_FLAGS "-std=gnu99 -Wall -O3")
+    set(CMAKE_CXX_FLAGS "-Wall -O3")
     
     set(X_WITH_SDL "1")
 endif()
@@ -122,6 +123,7 @@ set(X_SOURCES
     src/physics/X_BoxCollider.cpp
 
     # render
+    src/render/new-renderer.cpp
     src/render/X_activeedge.cpp
     src/render/X_Font.cpp
     src/render/X_Palette.cpp
@@ -193,3 +195,4 @@ add_library(X3D STATIC ${X_SOURCES})
 
 install(TARGETS X3D ARCHIVE DESTINATION ${X_LIB_PATH})
 install(DIRECTORY src/ DESTINATION ${X_HEADER_PATH}/X3D FILES_MATCHING PATTERN "*.h")
+install(DIRECTORY src/ DESTINATION ${X_HEADER_PATH}/X3D FILES_MATCHING PATTERN "*.hpp")

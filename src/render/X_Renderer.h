@@ -26,6 +26,8 @@
 
 typedef struct X_Renderer
 {
+    X_Renderer(X_Screen* screen) : activeEdgeContext(2000, 600, 20000, screen) { }
+    
     X_AE_Context activeEdgeContext;
     X_Cache surfaceCache;
     

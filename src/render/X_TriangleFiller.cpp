@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_TriangleFiller.h"
+#include "object/X_CameraObject.h"
 
 static void fill_solid_span(X_TriangleFiller* filler)
 {
@@ -47,7 +48,7 @@ static void fill_solid_span(X_TriangleFiller* filler)
     {
         if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
         {
-            x_texture_set_texel(renderContext->canvas, i, y, filler->fillColor);
+            renderContext->canvas->setTexel({ i, y }, filler->fillColor);
             zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
         }
         
@@ -94,8 +95,8 @@ static void fill_textured_span(X_TriangleFiller* filler)
     {
         if(z >= zbuf[i] << X_TRIANGLEFILLER_EXTRA_PRECISION)
         {
-            X_Color texel = x_texture_get_texel(filler->fillTexture, u >> 16, v >> 16);
-            x_texture_set_texel(renderContext->canvas, i, y, texel);
+            X_Color texel = filler->fillTexture->getTexel({ u >> 16, v >> 16 });
+            renderContext->canvas->setTexel({ i, y }, texel);
             zbuf[i] = z >> X_TRIANGLEFILLER_EXTRA_PRECISION;
         }
         
@@ -135,7 +136,7 @@ static void fill_transparent_span(X_TriangleFiller* filler)
         return;
     
     X_Texture* canvasTex = renderContext->canvas;
-    X_Color* scanline = canvasTex->texels + y * canvasTex->w;
+    X_Color* scanline = canvasTex->getRow(y);
     
     for(int i = leftX; i < rightX; ++i)
     {

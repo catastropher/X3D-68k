@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "geo/X_Polygon3.h"
+#include "geo/X_Polygon2.hpp"
 #include "geo/X_Vec3.h"
 #include "render/X_Texture.h"
 #include "geo/X_Plane.h"
@@ -23,6 +25,7 @@
 #include "render/X_Light.h"
 #include "geo/X_BoundBox.h"
 #include "memory/X_Link.h"
+#include "math/X_Mat4x4.h"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -64,6 +67,7 @@ typedef struct X_BspPlane
 typedef struct X_BspVertex
 {
     Vec3 v;
+    int cacheOffset;
 } X_BspVertex;
 
 typedef enum X_BspSurfaceFlags
@@ -73,8 +77,18 @@ typedef enum X_BspSurfaceFlags
 
 #define X_BSPSURFACE_MAX_LIGHTMAPS 4
 
-typedef struct X_BspSurface
+struct X_BspSurface
 {
+    void calculatePlaneInViewSpace(Vec3* camPos, X_Mat4x4* viewMatrix, Vec3* pointOnSurface, X_Plane* dest)
+    {
+        Vec3 planeNormal = plane->plane.normal;
+        
+        x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
+        x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
+        
+        dest->d = d + x_vec3_dot(&planeNormal, camPos);
+    }
+    
     int id;     // Just for debugging
     int lastVisibleFrame;
     X_BspPlane* plane;
@@ -97,7 +111,7 @@ typedef struct X_BspSurface
     int lastLightUpdateFrame;
     
     X_CacheEntry cachedSurfaces[X_BSPTEXTURE_MIP_LEVELS];   // Cached surface for each mipmap level
-} X_BspSurface;
+};
 
 typedef struct X_BspEdge
 {
@@ -194,6 +208,27 @@ typedef struct X_BspCollisionHull
 
 typedef struct X_BspLevel
 {
+    void getLevelPolygon(X_BspSurface* surface, Vec3* modelOrigin, LevelPolygon3* dest)
+    {
+        dest->edgeIds = surfaceEdgeIds + surface->firstEdgeId;
+        dest->totalVertices = surface->totalEdges;
+        
+        for(int i = 0; i < surface->totalEdges; ++i)
+        {   
+            Vec3 v;
+            
+            int edgeId = dest->edgeIds[i];
+            bool edgeIsFlipped = (edgeId < 0);
+            
+            if(!edgeIsFlipped)
+                v = vertices[edges[edgeId].v[0]].v;
+            else
+                v = vertices[edges[-edgeId].v[1]].v;
+            
+            dest->vertices[i] = v + *modelOrigin;
+        }
+    }
+    
     X_BspLevelFlags flags;
     char name[X_BSPLEVEL_MAX_NAME_LENGTH];
     

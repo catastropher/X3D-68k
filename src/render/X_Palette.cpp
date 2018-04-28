@@ -15,6 +15,7 @@
 
 #include "X_Palette.h"
 #include "X_Screen.h"
+#include "util/X_util.h"
 
 static void x_palette_set_palette_color_constants(X_Palette* palette)
 {
@@ -366,7 +367,7 @@ void x_palette_visualize(X_Screen* screen)
             {
                 for(int d = 0; d < 8; ++d)
                 {
-                    x_texture_set_texel(&screen->canvas, x + d, y + k, color);
+                    screen->canvas.setTexel({ x + d, y + k }, color);
                 }
             }
         }

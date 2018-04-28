@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+// FIXME: allocator are currently disabled because of initialization issues
+
 #include "X_alloc.h"
 #include "error/X_log.h"
 #include "error/X_error.h"
@@ -56,6 +58,8 @@ void x_memory_init(void)
 ////////////////////////////////////////////////////////////////////////////////
 void* x_malloc_function(size_t size, const char* fileName, const char* functionName, int lineNumber)
 {
+    return malloc(size);
+    
     unsigned char* mem = (unsigned char*)malloc(size + sizeof(X_MemoryAlloc));
     
     if(!mem)
@@ -89,6 +93,9 @@ void* x_malloc_function(size_t size, const char* fileName, const char* functionN
 ////////////////////////////////////////////////////////////////////////////////
 void x_free(void* mem)
 {
+    free(mem);
+    return;
+    
     if(!mem)
         return;
     
@@ -114,6 +121,8 @@ void x_free(void* mem)
 ////////////////////////////////////////////////////////////////////////////////
 void* x_realloc_function(void* ptr, size_t newSize, const char* fileName, const char* function, int lineNumber)
 {
+    return realloc(ptr, newSize);
+    
     if(ptr == NULL)
         return x_malloc_function(newSize, fileName, function, lineNumber);
     
@@ -141,6 +150,8 @@ void* x_realloc_function(void* ptr, size_t newSize, const char* fileName, const 
 
 void x_memory_free_all(void)
 {
+    return;
+    
     X_MemoryAlloc* alloc = allocHead.next;
     
     x_log("Max memory usage during runtime: %d bytes (%d kb)", (int)maxMemoryUsage, (int)(maxMemoryUsage + 1023) / 1024);

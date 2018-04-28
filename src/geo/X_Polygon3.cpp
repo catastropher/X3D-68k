@@ -19,6 +19,7 @@
 #include "X_Plane.h"
 #include "X_Ray3.h"
 #include "render/X_TriangleFiller.h"
+#include "X_Frustum.h"
 
 bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
 {

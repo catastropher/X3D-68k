@@ -33,6 +33,8 @@ struct X_RenderContext;
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct X_EngineContext
 {
+    X_EngineContext() : renderer(&screen) { }
+    
     X_ObjectFactory gameObjectFactory;
     X_GameObject activeObjectHead;
     X_GameObject activeObjectTail;

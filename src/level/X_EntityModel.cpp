@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <new>
+
 #include "X_EntityModel.h"
 #include "X_EntityModelLoader.h"
 #include "error/X_log.h"
@@ -40,9 +42,8 @@ bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
 void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest)
 {
     x_assert(skinId < model->totalSkins && textureId < model->skins[skinId].totalTextures, "Bad skin/texture id");
-    dest->texels = model->skins[skinId].textures[textureId].texels;
-    dest->w = model->skinWidth;
-    dest->h = model->skinHeight;
+
+    new (dest) X_Texture(model->skinWidth, model->skinHeight, model->skins[skinId].textures[textureId].texels);
 }
 
 void x_entitymodel_cleanup(X_EntityModel* model)

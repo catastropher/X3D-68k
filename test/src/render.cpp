@@ -30,8 +30,8 @@ static void draw_fps(X_EngineContext* context)
     char fpsStr[20];
     sprintf(fpsStr, "%d", fps);
     
-    X_Vec2 pos = x_vec2_make(x_screen_w(&context->screen) - x_font_str_width(&context->mainFont, fpsStr), 0);
-    x_texture_draw_str(&context->screen.canvas, fpsStr, &context->mainFont, pos);
+    X_Vec2 pos = x_vec2_make(x_screen_w(&context->screen) - context->mainFont.calcWidthOfStr(fpsStr), 0);
+    context->screen.canvas.drawStr(fpsStr, context->mainFont, pos);
 }
 
 static void draw_crosshair(X_EngineContext* engineContext)
@@ -39,13 +39,13 @@ static void draw_crosshair(X_EngineContext* engineContext)
     X_Color white = engineContext->screen.palette->white;
     X_Texture* tex = &engineContext->screen.canvas;
     
-    int centerX = tex->w / 2;
-    int centerY = tex->h / 2;
+    int centerX = tex->getW() / 2;
+    int centerY = tex->getH() / 2;
     
-    x_texture_set_texel(tex, centerX - 1, centerY, white);
-    x_texture_set_texel(tex, centerX + 1, centerY, white);
-    x_texture_set_texel(tex, centerX, centerY - 1, white);
-    x_texture_set_texel(tex, centerX, centerY + 1, white);
+    tex->setTexel({ centerX - 1, centerY }, white);
+    tex->setTexel({ centerX + 1, centerY }, white);
+    tex->setTexel({ centerX, centerY - 1 }, white);
+    tex->setTexel({ centerX, centerY + 1 }, white);
 }
 
 X_Light* add_light(X_Renderer* renderer)

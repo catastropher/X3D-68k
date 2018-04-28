@@ -26,7 +26,7 @@ void scale_screen(Context* context)
 {
     unsigned char* texels = context->engineContext->screen.canvas.texels;
     
-    unsigned short* screen = REAL_SCREEN_BASE_ADDRESS;
+    unsigned short* screen = (unsigned short*)REAL_SCREEN_BASE_ADDRESS;
     
     for(int i = 0; i < 240 / 2; ++i)
     {
@@ -41,7 +41,12 @@ void scale_screen(Context* context)
     }
 }
 
+extern "C"
+{
+
 void copy_screen(unsigned char* dest, unsigned char* src);
+
+}
 
 static void update_screen_nspire(Context* context)
 {
@@ -49,7 +54,7 @@ static void update_screen_nspire(Context* context)
     //    scale_screen(context);
     //else
     
-    copy_screen(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.texels);
+    copy_screen((unsigned char*)REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.texels);
     
     //memcpy(REAL_SCREEN_BASE_ADDRESS, context->engineContext->screen.canvas.texels, 320 * 240);
 }
@@ -96,12 +101,12 @@ static void set_palette(const X_Palette* palette)
     }
 }
 
-static unsigned int color_to_4bit(X_Palette* palette, X_Color color)
+static unsigned int color_to_4bit(const X_Palette* palette, X_Color color)
 {
     return palette->grayscaleTable[color];
 }
 
-static unsigned int pack_color(X_Palette* palette, X_Color* color)
+static unsigned int pack_color(const X_Palette* palette, X_Color* color)
 {
     return (color_to_4bit(palette, color[7]) << 28) +
     (color_to_4bit(palette, color[6]) << 24) +
@@ -113,7 +118,7 @@ static unsigned int pack_color(X_Palette* palette, X_Color* color)
     (color_to_4bit(palette, color[0]) << 0);
 }
 
-static void pack_screen(X_Palette* palette, X_Color* screen)
+static void pack_screen(const X_Palette* palette, X_Color* screen)
 {
     unsigned int* lcd = (unsigned int*)REAL_SCREEN_BASE_ADDRESS;
     

@@ -15,13 +15,15 @@
 
 #pragma once
 
-#include "object/X_CameraObject.h"
 #include "X_Palette.h"
+#include "math/X_fix.h"
+#include "X_Texture.h"
 
 #define X_ZBUF_FURTHEST_VALUE 0
 
 struct X_Screen;
 struct X_EngineContext;
+struct X_CameraObject;
 
 typedef struct X_ScreenEventHandlers
 {
@@ -37,7 +39,7 @@ typedef struct X_Screen
     X_Texture canvas;
     x_fp0x16* zbuf;
     
-    X_CameraObject* cameraListHead;
+    struct X_CameraObject* cameraListHead;
     const X_Palette* palette;
     X_ScreenEventHandlers handlers;
 } X_Screen;
@@ -49,12 +51,12 @@ void x_screen_restart_video(X_Screen* screen, int newW, int newH, x_fp16x16 newF
 
 static inline size_t x_screen_zbuf_size(const X_Screen* screen)
 {
-    return x_texture_texels_size(&screen->canvas) * sizeof(short);
+    return screen->canvas.totalTexels() * sizeof(short);
 }
 
 static inline void x_screen_init(X_Screen* screen, int w, int h, X_ScreenEventHandlers* handlers)
 {
-    x_texture_init(&screen->canvas, w, h);
+    screen->canvas.resize(w, h);
     screen->zbuf = (x_fp0x16*)x_malloc(x_screen_zbuf_size(screen));
     
     screen->cameraListHead = NULL;
@@ -68,7 +70,6 @@ static inline void x_screen_set_palette(X_Screen* screen, const X_Palette* palet
 
 static inline void x_screen_cleanup(X_Screen* screen)
 {
-    x_texture_cleanup(&screen->canvas);
     x_free(screen->zbuf);
     
     /// @todo Should we detach all of the attached cameras?
@@ -76,12 +77,12 @@ static inline void x_screen_cleanup(X_Screen* screen)
 
 static inline int x_screen_w(const X_Screen* screen)
 {
-    return x_texture_w(&screen->canvas);
+    return screen->canvas.getW();
 }
 
 static inline int x_screen_h(const X_Screen* screen)
 {
-    return x_texture_h(&screen->canvas);
+    return screen->canvas.getH();
 }
 
 static inline X_Vec2 x_screen_center(const X_Screen* screen)

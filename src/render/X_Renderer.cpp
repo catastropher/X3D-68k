@@ -22,6 +22,7 @@
 #include "error/X_error.h"
 #include "engine/X_Engine.h"
 #include "system/X_File.h"
+#include "object/X_CameraObject.h"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
@@ -236,6 +237,8 @@ static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
     renderer->dynamicLightsNeedingUpdated = 0;
 }
 
+void cmd_draw(X_EngineContext* context, int argc, char* argv[]);
+
 static void x_renderer_console_cmds(X_Console* console)
 {
     x_console_register_cmd(console, "res", cmd_res);
@@ -246,6 +249,7 @@ static void x_renderer_console_cmds(X_Console* console)
     x_console_register_cmd(console, "lighting", cmd_lighting);
     x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
     x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
+    x_console_register_cmd(console, "draw", cmd_draw);
 }
 
 static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen, int fov)
@@ -265,7 +269,6 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
     x_renderer_init_console_vars(renderer, console);
     x_renderer_set_default_values(renderer, screen, fov);
     
-    x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
     x_cache_init(&renderer->surfaceCache, 500000 * 4, "surfacecache");     // TODO: this size should be configurable
     x_renderer_init_colormap(renderer, screen->palette);
     x_renderer_init_dynamic_lights(renderer);
@@ -273,7 +276,6 @@ void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen,
 
 void x_renderer_cleanup(X_Renderer* renderer)
 {
-    x_ae_context_cleanup(&renderer->activeEdgeContext);
     x_cache_cleanup(&renderer->surfaceCache);
     
     x_free(renderer->colorMap);
@@ -281,8 +283,10 @@ void x_renderer_cleanup(X_Renderer* renderer)
 
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
 {
-    x_ae_context_cleanup(&renderer->activeEdgeContext);
-    x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
+    // FIXME: need to reconstruct object
+    
+    //x_ae_context_cleanup(&renderer->activeEdgeContext);
+    //x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
 }
 
 static void x_engine_begin_frame(X_EngineContext* context)
@@ -308,7 +312,7 @@ static void mark_lights(X_EngineContext* context)
 static void fill_with_background_color(X_EngineContext* engineContext)
 {
     if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
-       x_texture_fill(&engineContext->screen.canvas, engineContext->renderer.fillColor);
+        engineContext->screen.canvas.fill(engineContext->renderer.fillColor);
 }
 
 static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engineContext)
@@ -323,8 +327,8 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
     X_RenderContext renderContext;
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
     
-    if((renderer->renderMode & 2) != 0)
-        x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
+    //if((renderer->renderMode & 2) != 0)
+    x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
     
     x_cameraobject_render(cam, &renderContext);
     x_ae_context_scan_edges(&renderer->activeEdgeContext);

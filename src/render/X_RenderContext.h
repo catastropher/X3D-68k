@@ -15,26 +15,28 @@
 
 #pragma once
 
-#include "X_Viewport.h"
-#include "object/X_CameraObject.h"
-#include "math/X_Mat4x4.h"
-#include "X_Screen.h"
-#include "level/X_BspLevel.h"
+#include "geo/X_Vec3.h"
+
 
 struct X_EngineContext;
 struct X_Renderer;
+struct X_CameraObject;
+struct X_Frustum;
+struct X_Texture;
+struct X_Mat4x4;
+struct X_BspLevel;
 
 typedef struct X_RenderContext
 {
     struct X_Renderer* renderer;
-    X_CameraObject* cam;
-    X_Screen* screen;
-    X_Texture* canvas;
+    struct X_CameraObject* cam;
+    struct X_Screen* screen;
+    struct X_Texture* canvas;
     x_fp0x16* zbuf;
-    X_Frustum* viewFrustum;
-    X_Mat4x4* viewMatrix;
+    struct X_Frustum* viewFrustum;
+    struct X_Mat4x4* viewMatrix;
     struct X_EngineContext* engineContext;
-    X_BspLevel* level;
+    struct X_BspLevel* level;
     int currentFrame;
     Vec3 camPos;
 } X_RenderContext;

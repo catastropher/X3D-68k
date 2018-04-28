@@ -19,139 +19,14 @@
 #include "X_activeedge.h"
 #include "level/X_BspLevel.h"
 #include "geo/X_Polygon3.h"
+#include "geo/X_Polygon2.hpp"
 #include "X_span.h"
 #include "render/X_Renderer.h"
 #include "engine/X_EngineContext.h"
-
-float g_zbuf[480][640];
+#include "object/X_CameraObject.h"
 
 int g_sortCount;
 int g_stackCount;
-
-static x_fp16x16 calculate_inverse_z(X_AE_Surface* s, x_fp16x16 x, int y)
-{
-    return x_fp16x16_mul(x, s->zInverseXStep) + y * s->zInverseYStep + s->zInverseOrigin;
-}
-
-static bool x_ae_surface_closer(X_AE_Surface* a, X_AE_Surface* b, x_fp16x16 x, int y, x_fp16x16 slope)
-{
-    if(a->bspKey != b->bspKey)
-        return a->bspKey < b->bspKey;
-    
-    if(a->inSubmodel ^ b->inSubmodel)
-        return a->inSubmodel ? 1 : 0;
-    
-    return calculate_inverse_z(a, x + X_FP16x16_ONE * 7, y) >= calculate_inverse_z(b, x + X_FP16x16_ONE * 7 , y);
-}
-
-static void x_ae_context_init_sentinal_edges(X_AE_Context* context)
-{
-    context->leftEdge.x = -0x7FFFFFFF;
-    context->leftEdge.xSlope = 0;
-    context->leftEdge.next = &context->rightEdge;
-
-    context->rightEdge.x = 0x7FFFFFFF;
-    context->rightEdge.xSlope = 0;
-    context->rightEdge.prev = &context->leftEdge;
-    context->rightEdge.next = NULL;
-}
-
-static void x_ae_context_init_edges(X_AE_Context* context, int maxActiveEdges, int edgePoolSize)
-{
-    context->edgePool = (X_AE_Edge*)x_malloc(edgePoolSize * sizeof(X_AE_Edge));
-    context->edgePoolEnd = context->edgePool + edgePoolSize;
-
-    for(int i = 0; i < edgePoolSize; ++i)
-    {
-        context->edgePool[i].bspEdge = NULL;
-        context->edgePool[i].frameCreated = -1;
-    }
-
-    context->newEdges = (X_AE_DummyEdge*)x_malloc(x_screen_h(context->screen) * sizeof(X_AE_DummyEdge));
-    
-    int totalSpans = 10000;
-    context->spanPool = (X_AE_Span*)x_malloc(sizeof(X_AE_Span) * totalSpans);
-    context->spanPoolEnd = context->spanPool + totalSpans;
-}
-
-static void x_ae_context_init_surfaces(X_AE_Context* context, int surfacePoolSize)
-{
-    context->surfacePool = (X_AE_Surface*)x_malloc(surfacePoolSize * sizeof(X_AE_Surface));
-    context->surfacePoolEnd = context->surfacePool + surfacePoolSize;
-
-    for(int i = 0; i < surfacePoolSize; ++i)
-        context->surfacePool[i].id = i;
-}
-
-void x_ae_context_init(X_AE_Context* context, X_Screen* screen, int maxActiveEdges, int edgePoolSize, int surfacePoolSize)
-{
-    context->screen = screen;
-
-    x_ae_context_init_sentinal_edges(context);
-    x_ae_context_init_edges(context, maxActiveEdges, edgePoolSize);
-    x_ae_context_init_surfaces(context, surfacePoolSize);
-}
-
-void x_ae_context_cleanup(X_AE_Context* context)
-{
-    x_free(context->edgePool);
-    x_free(context->newEdges);
-    x_free(context->surfacePool);
-    x_free(context->spanPool);
-}
-
-static void x_ae_context_reset_active_edges(X_AE_Context* context)
-{
-    context->leftEdge.next = &context->rightEdge;
-    context->leftEdge.prev = NULL;
-
-    context->rightEdge.prev = &context->leftEdge;
-    context->rightEdge.next = &context->newRightEdge;
-}
-
-static void x_ae_context_reset_background_surface(X_AE_Context* context)
-{
-    context->leftEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = &context->background;
-    context->leftEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = NULL;
-
-    context->rightEdge.surfaces[X_AE_EDGE_LEFT_SURFACE] = &context->background;
-    context->rightEdge.surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
-
-    context->foreground.next = &context->background;
-    context->foreground.prev = NULL;
-    context->foreground.bspKey = -0x7FFFFFFF;
-    context->foreground.bspSurface = &context->backgroundBspSurface;
-    context->foreground.parent = &context->foreground;
-    context->foreground.last = &context->foreground.spanHead;
-    
-    context->background.next = NULL;
-    context->background.prev = &context->foreground;
-    context->background.bspKey = 0x7FFFFFFF;
-    context->background.bspSurface = &context->backgroundBspSurface;
-    context->background.parent = &context->background;
-    context->background.last = &context->background.spanHead;
-}
-
-static void x_ae_context_reset_pools(X_AE_Context* context)
-{
-    context->nextAvailableEdge = context->edgePool;
-    context->nextAvailableSurface = context->surfacePool;
-    context->nextAvailableSpan = context->spanPool;
-}
-
-static void x_ae_context_reset_new_edges(X_AE_Context* context)
-{
-    context->newRightEdge.x = context->rightEdge.x;
-    context->newRightEdge.next = &context->newRightEdge;    // Loop back around
-
-    // TODO: we can probably reset these as we sort in the new edges for each scanline
-    for(int i = 0; i < x_screen_h(context->screen); ++i)
-    {
-        context->newEdges[i].next = (X_AE_Edge*)&context->newRightEdge;
-        context->newEdges[i].x = x_fp16x16_from_float(-1000);
-        context->newEdges[i].deleteHead = NULL;
-    }
-}
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext)
 {
@@ -159,121 +34,10 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     g_stackCount = 0;
 
     context->renderContext = renderContext;
-
-    x_ae_context_reset_active_edges(context);
-    x_ae_context_reset_pools(context);
-    x_ae_context_reset_new_edges(context);
-}
-
-static bool x_ae_context_add_edge_to_starting_scanline(X_AE_Context* context, X_AE_Edge* newEdge, int startY, int endY)
-{
-    X_AE_Edge* edge = (X_AE_Edge*)&context->newEdges[startY];
-
-    // FIXME: why is this check here?
-    if(!edge)
-        return 0;
-
-    if(endY < 0)
-        return 0;
     
-    newEdge->nextDelete = context->newEdges[endY].deleteHead;
-    context->newEdges[endY].deleteHead = newEdge;
-
-    x_fp16x16 edgeX = newEdge->x;
-
-    if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
-        ++edgeX;
-
-    // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
-    while(edge->next->x < edgeX)
-    {
-        edge = edge->next;
-        ++g_sortCount;
-    }
-
-    newEdge->next = edge->next;
-    edge->next = newEdge;
-    
-    return 1;
-}
-
-static bool is_horizontal_edge(int height)
-{
-    return height == 0;
-}
-
-static bool is_leading_edge(int height)
-{
-    return height < 0;
-}
-
-static void x_ae_edge_init_position_variables(X_AE_Edge* edge, X_Vec2_fp16x16* top, X_Vec2_fp16x16* bottom)
-{
-    edge->xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
-
-    x_fp16x16 topY = x_fp16x16_ceil(top->y);
-    x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, edge->xSlope);
-
-    edge->x = top->x - errorCorrection;
-}
-
-static X_AE_Edge* x_ae_context_allocate_edge(X_AE_Context* context)
-{
-    x_assert(context->nextAvailableEdge < context->edgePoolEnd, "AE out of edges");
-    return context->nextAvailableEdge++;
-}
-
-X_AE_Edge* x_ae_context_add_edge(X_AE_Context* context, X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
-{
-    int aY = x_fp16x16_ceil(a->y) >> 16;
-    int bY = x_fp16x16_ceil(b->y) >> 16;
-    
-    int height = bY - aY;
-
-    if(is_horizontal_edge(height))
-        return NULL;
-
-    X_AE_Edge* edge = x_ae_context_allocate_edge(context);
-    edge->isLeadingEdge = is_leading_edge(height);
-
-    if(edge->isLeadingEdge)
-        X_SWAP(a, b);
-
-    edge->surfaces[X_AE_EDGE_RIGHT_SURFACE] = NULL;
-    edge->surfaces[X_AE_EDGE_LEFT_SURFACE] = NULL;
-    
-    if(edge->isLeadingEdge)
-        edge->surfaces[X_AE_EDGE_RIGHT_SURFACE] = surface;
-    else
-        edge->surfaces[X_AE_EDGE_LEFT_SURFACE] = surface;
-
-    edge->frameCreated = context->renderContext->currentFrame;
-    edge->bspEdge = bspEdge;
-
-    bspEdge->cachedEdgeOffset = (unsigned char*)edge - (unsigned char*)context->edgePool;
-
-    x_ae_edge_init_position_variables(edge, a, b);
-    bool success = x_ae_context_add_edge_to_starting_scanline
-    (
-        context,
-        edge,
-        x_fp16x16_to_int(x_fp16x16_ceil(a->y)),
-        x_fp16x16_to_int(x_fp16x16_ceil(b->y)) - 1
-    );
-
-    return success ? edge : NULL;
-}
-
-void x_ae_context_emit_cached_edge(X_AE_Edge* cachedEdge, X_AE_Surface* surface)
-{
-    if(cachedEdge->surfaces[X_AE_EDGE_LEFT_SURFACE] == NULL)
-        cachedEdge->surfaces[X_AE_EDGE_LEFT_SURFACE] = surface;
-    else if(cachedEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] == NULL)
-        cachedEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] = surface;
-    else
-    {
-        printf("Trying to emit full edge\n");
-    }
+    context->resetActiveEdges();
+    context->resetArenas();
+    context->resetNewEdges();
 }
 
 static bool edge_is_flipped(int edgeId)
@@ -281,47 +45,9 @@ static bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static void x_bspsurface_calculate_plane_equation_in_view_space(X_BspSurface* surface, Vec3* camPos, X_Mat4x4* viewMatrix, X_Plane* dest, Vec3* pointOnSurface)
-{
-    Vec3 planeNormal = surface->plane->plane.normal;
-
-    x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &dest->normal);
-    x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
-    
-    dest->d = d + x_vec3_dot(&planeNormal, camPos);
-}
-
-static void x_ae_surface_calculate_inverse_z_gradient(X_AE_Surface* surface, Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, Vec3* pointOnSurface)
-{
-    X_Plane planeInViewSpace;
-    x_bspsurface_calculate_plane_equation_in_view_space(surface->bspSurface, camPos, viewMatrix, &planeInViewSpace, pointOnSurface);
-
-    int dist = -planeInViewSpace.d;
-    int scale = viewport->distToNearPlane;
-
-    if(dist == 0 || scale == 0) return;
-    
-    //x_fp16x16 invDistTimesScale = //x_fp16x16_div(X_FP16x16_ONE << 10, distTimesScale) >> 6;
-    
-    x_fp16x16 invDist = x_fp16x16_div(X_FP16x16_ONE << 10, dist);
-    x_fp16x16 invScale = (1 << 26) / scale;
-    
-    x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
-    
-    surface->zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x);
-    surface->zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y);
-
-    int centerX = viewport->screenPos.x + viewport->w / 2;
-    int centerY = viewport->screenPos.y + viewport->h / 2;
-
-    surface->zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z, invDist) -
-        centerX * surface->zInverseXStep -
-        centerY * surface->zInverseYStep;
-}
-
 static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int currentFrame)
 {
-    X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)context->edgePool + edge->cachedEdgeOffset);
+    X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)context->edges.begin() + edge->cachedEdgeOffset);
 
     if(aeEdge->frameCreated != currentFrame || aeEdge->bspEdge != edge)
         return NULL;
@@ -329,8 +55,11 @@ static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int cu
     return aeEdge;
 }
 
-static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, X_AE_Surface* surface, X_Vec2* dest)
+// TODO: no need to project vertices if can just reuse the cached edge
+static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* viewport, Polygon2* dest, x_fp16x16* closestZ)
 {
+    *closestZ = 0x7FFFFFFF;
+    
     for(int i = 0; i < poly->totalVertices; ++i)
     {
         Vec3 transformed;
@@ -341,21 +70,20 @@ static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* v
         
         poly->vertices[i] = transformed;
         
-        surface->closestZ = X_MIN(surface->closestZ, transformed.z);
+        *closestZ = X_MIN(*closestZ, transformed.z);
         
-        x_viewport_project_vec3(viewport, &transformed, dest + i);
-        x_viewport_clamp_vec2_fp16x16(viewport, dest + i);
+        x_viewport_project_vec3(viewport, &transformed, dest->vertices + i);
+        x_viewport_clamp_vec2_fp16x16(viewport, dest->vertices + i);
     }
+    
+    dest->totalVertices = poly->totalVertices;
 
     return 1;
 }
 
 static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspSurface, int bspKey)
 {
-    X_AE_Surface* surface = context->nextAvailableSurface;
-    
-    if(context->nextAvailableSurface + 1 < context->surfacePoolEnd)
-        ++context->nextAvailableSurface;
+    X_AE_Surface* surface = context->surfaces.alloc();
 
     surface->last = &surface->spanHead;
     surface->bspKey = bspKey;
@@ -372,7 +100,7 @@ static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspS
     return surface;
 }
 
-static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
+void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
 {
     for(int i = 0; i < totalVertices; ++i)
     {
@@ -385,54 +113,63 @@ static void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16
 
             if(cachedEdge != NULL)
             {
-                x_ae_context_emit_cached_edge(cachedEdge, surface);
+                cachedEdge->emitCachedEdge(surface);
                 continue;
             }
         }
 
         int next = (i + 1 < totalVertices ? i + 1 : 0);
-        x_ae_context_add_edge(context, v2d + i, v2d + next, surface, bspEdge);
+        context->addEdge(v2d + i, v2d + next, surface, bspEdge);
     }
+}
+
+bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ)
+{
+    Vec3 clippedV[X_POLYGON3_MAX_VERTS];
+    LevelPolygon3 clipped(clippedV, X_POLYGON3_MAX_VERTS, dest->edgeIds);
+    
+    if(clipFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
+    {
+        clipped.vertices = poly->vertices;
+        clipped.totalVertices = poly->totalVertices;
+        dest->edgeIds = poly->edgeIds;
+    }
+    else if(!poly->clipToFrustumPreserveEdgeIds(*renderContext->viewFrustum, clipped, clipFlags, poly->edgeIds, dest->edgeIds))
+    {
+        return false;
+    }
+    
+    return project_polygon3(&clipped, renderContext->viewMatrix, &renderContext->cam->viewport, dest, closestZ);
 }
 
 // TODO: check whether edgeIds is NULL
 void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
-    InternalPolygon3 clipped;
-
     Vec3 firstVertex = polygon->vertices[0];
     
     ++context->renderContext->renderer->totalSurfacesRendered;
 
-    int tempEdgeIds[X_POLYGON3_MAX_VERTS] = { 0 };
-    int* clippedEdgeIds = tempEdgeIds;
+    int clippedEdgeIds[X_POLYGON3_MAX_VERTS] = { 0 };
+    
+    LevelPolygon3 levelPoly(polygon->vertices, polygon->totalVertices, edgeIds);
 
-    if(geoFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
-    {
-        // Don't bother clipping if fully inside the frustum
-        clipped.vertices = polygon->vertices;
-        clipped.totalVertices = polygon->totalVertices;
-        
-        clippedEdgeIds = edgeIds;
-    }
-    else if(!polygon->clipToFrustumPreserveEdgeIds(*context->renderContext->viewFrustum, clipped, geoFlags, edgeIds, clippedEdgeIds))
-    {
+    X_Vec2_fp16x16 v2d[X_POLYGON3_MAX_VERTS];
+    LevelPolygon2 poly2d(v2d, X_POLYGON3_MAX_VERTS, clippedEdgeIds);
+    
+    x_fp16x16 closestZ;
+    if(!projectAndClipBspPolygon(&levelPoly, context->renderContext, geoFlags, &poly2d, &closestZ))
         return;
-    }
-
+    
     X_AE_Surface* surface = create_ae_surface(context, bspSurface, bspKey);
 
     surface->inSubmodel = inSubmodel;
-
-    X_Vec2_fp16x16 v2d[X_POLYGON3_MAX_VERTS];
-    if(!project_polygon3(&clipped, &context->renderContext->cam->viewMatrix, &context->renderContext->cam->viewport, surface, v2d))
-        return;
+    surface->closestZ = closestZ;
 
     // FIXME: shouldn't be done this way
     Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
     
-    x_ae_surface_calculate_inverse_z_gradient(surface, &camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
-    emit_edges(context, surface, v2d, clipped.totalVertices, clippedEdgeIds);
+    surface->calculateInverseZGradient(&camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
+    emit_edges(context, surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 
 static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3* origin)
@@ -456,11 +193,6 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
 {
     x_ae_surface_reset_current_parent(context);
     
-    if((context->renderContext->renderer->renderMode & 2) == 0)
-        return;
-
-    x_assert(context->nextAvailableSurface < context->surfacePoolEnd, "AE out of surfaces");
-
     InternalPolygon3 polygon;
 
     // FIXME: why is this here?
@@ -517,14 +249,8 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
         return;
     
     surface = surface->parent;
-    
-    if(context->nextAvailableSpan == context->spanPoolEnd)
-    {
-        printf("Out of spans\n");
-        return;
-    }
 
-    X_AE_Span* span = context->nextAvailableSpan++;
+    X_AE_Span* span = context->spans.alloc();
     
     span->x1 = left;
     span->x2 = right;
@@ -604,12 +330,12 @@ enable:
         else
             search = topSurface;
         
-        if(x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope))
+        if(surfaceToEnable->isCloserThan(search, edge->x, y))
         {
             do
             {
                 search = search->prev;
-            } while(x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope));
+            } while(surfaceToEnable->isCloserThan(search, edge->x, y));
             
             
             search = search->next;
@@ -619,7 +345,7 @@ enable:
             do
             {
                 search = search->next;
-            } while(!x_ae_surface_closer(surfaceToEnable, search, edge->x, y, edge->xSlope));            
+            } while(!surfaceToEnable->isCloserThan(search, edge->x, y));            
         }
         
         surfaceToEnable->next = search;
@@ -715,6 +441,26 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
 
 void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 {
+    // for(X_AE_Edge* edge = context->edges.begin(); edge != context->edges.end(); ++edge)
+    // {
+    //     if((edge->surfaces[0] == NULL) ^ (edge->surfaces[1] == NULL))
+    //     {
+    //         x_texture_draw_line(&context->screen->canvas,
+    //                             X_Vec2(edge->x >> 16, edge->startY),
+    //                             X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
+    //                             context->screen->palette->brightRed);
+    //     }
+    //     else
+    //     {
+    //         x_texture_draw_line(&context->screen->canvas,
+    //                             X_Vec2(edge->x >> 16, edge->startY),
+    //                             X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
+    //                             context->screen->palette->darkGreen);
+    //     }
+    // }
+    
+    // return;
+    
     static bool initialized = 0;
 
     if(!initialized)
@@ -724,14 +470,14 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         initialized = 1;
     }
 
-    x_ae_context_reset_background_surface(context);
+    context->resetBackgroundSurface();
 
     // Don't bother removing the edges from the last scanline
     context->newEdges[x_screen_h(context->screen) - 1].deleteHead = NULL;
     
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
-        for(int i = 0; i < x_screen_h(context->screen); ++i)
+        for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
         {
             x_ae_context_process_edges(context, i);
         }
@@ -740,35 +486,38 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
     if((context->renderContext->renderer->renderMode & 1) == 0)
         return;
 
-    for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
+    for(X_AE_Surface* surface = context->surfaces.begin(); surface != context->surfaces.end(); ++surface)
     {
-        if(context->surfacePool[i].last == &context->surfacePool[i].spanHead)
+        if(surface->last == &surface->spanHead)
             continue;
 
         X_AE_SurfaceRenderContext surfaceRenderContext;
-        x_ae_surfacerendercontext_init(&surfaceRenderContext, context->surfacePool + i, context->renderContext, context->renderContext->renderer->mipLevel);
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, surface, context->renderContext, context->renderContext->renderer->mipLevel);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
 }
 
 bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)
 {
-//     for(int i = 0; i < surface->totalSpans; ++i)
-//     {
-//         X_AE_Span* span = surface->spans + i;
-//         if(span->y == y && x >= span->x1 && x < span->x2)
-//             return 1;
-//     }
+    X_AE_Span* span = surface->spanHead.next;
+    
+    while(span)
+    {
+        if(span->y == y && x >= span->x1 && x < span->x2)
+            return true;
+        
+        span = span->next;
+    }
 
-    return 0;
+    return false;
 }
 
 int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level)
 {
-    for(int i = 0; i < context->nextAvailableSurface - context->surfacePool; ++i)
+    for(X_AE_Surface* s = context->surfaces.begin(); s != context->surfaces.end(); ++s)
     {
-        if(x_ae_surface_point_is_in_surface_spans(context->surfacePool + i, x, y))
-            return context->surfacePool[i].bspSurface - level->surfaces;
+        if(x_ae_surface_point_is_in_surface_spans(s, x, y))
+            return s->bspSurface - level->surfaces;
     }
 
     return -1;

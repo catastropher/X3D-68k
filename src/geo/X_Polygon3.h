@@ -17,6 +17,7 @@
 
 #include "X_Vec3.h"
 #include "render/X_RenderContext.h"
+#include "render/X_Screen.h"
 
 struct X_Plane;
 
@@ -48,6 +49,15 @@ public:
     
 private:
     Vec3 internalVertices[X_POLYGON3_MAX_VERTS];
+};
+
+struct LevelPolygon3 : Polygon3
+{
+    LevelPolygon3(Vec3* vertices_, int totalVertices_, int* edgeIds_)
+    : Polygon3(vertices_, totalVertices_),
+    edgeIds(edgeIds_) { }
+    
+    int* edgeIds;
 };
 
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color);
