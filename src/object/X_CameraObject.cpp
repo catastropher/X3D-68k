@@ -94,7 +94,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     // FIXME: why is this drawn here???
     if(!x_engine_level_is_loaded(renderContext->engineContext))
     {
-        x_texture_draw_str(renderContext->canvas, "No level loaded", &renderContext->engineContext->mainFont, x_vec2_make(0, 0));
+        renderContext->canvas->drawStr("No level loaded", renderContext->engineContext->mainFont, { 0, 0});
         return;
     }
     

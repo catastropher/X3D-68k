@@ -441,25 +441,25 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
 
 void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 {
-    for(X_AE_Edge* edge = context->edges.begin(); edge != context->edges.end(); ++edge)
-    {
-        if((edge->surfaces[0] == NULL) ^ (edge->surfaces[1] == NULL))
-        {
-            x_texture_draw_line(&context->screen->canvas,
-                                X_Vec2(edge->x >> 16, edge->startY),
-                                X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
-                                context->screen->palette->brightRed);
-        }
-        else
-        {
-            x_texture_draw_line(&context->screen->canvas,
-                                X_Vec2(edge->x >> 16, edge->startY),
-                                X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
-                                context->screen->palette->darkGreen);
-        }
-    }
+    // for(X_AE_Edge* edge = context->edges.begin(); edge != context->edges.end(); ++edge)
+    // {
+    //     if((edge->surfaces[0] == NULL) ^ (edge->surfaces[1] == NULL))
+    //     {
+    //         x_texture_draw_line(&context->screen->canvas,
+    //                             X_Vec2(edge->x >> 16, edge->startY),
+    //                             X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
+    //                             context->screen->palette->brightRed);
+    //     }
+    //     else
+    //     {
+    //         x_texture_draw_line(&context->screen->canvas,
+    //                             X_Vec2(edge->x >> 16, edge->startY),
+    //                             X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
+    //                             context->screen->palette->darkGreen);
+    //     }
+    // }
     
-    return;
+    // return;
     
     static bool initialized = 0;
 

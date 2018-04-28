@@ -143,9 +143,9 @@ static inline void setup_surface(X_AE_SurfaceRenderContext* context)
     X_Vec2 surfaceSize = context->surface->bspSurface->textureExtent;
     context->surfaceW = mip_adjust(surfaceSize.x, context->mipLevel) - X_FP16x16_ONE;
     context->surfaceH = mip_adjust(surfaceSize.y, context->mipLevel) - X_FP16x16_ONE;
-    context->texW = context->surfaceTexture.w;
+    context->texW = context->surfaceTexture.getW();
     
-    context->surfaceTexels = context->surfaceTexture.texels;
+    context->surfaceTexels = context->surfaceTexture.getTexels();
 }
 
 static inline void setup_recip_tab(X_AE_SurfaceRenderContext* context)
@@ -155,7 +155,7 @@ static inline void setup_recip_tab(X_AE_SurfaceRenderContext* context)
 
 static inline void setup_screen(X_AE_SurfaceRenderContext* context)
 {
-    context->screen = context->renderContext->canvas->texels;
+    context->screen = context->renderContext->canvas->getTexels();
 }
 
 void x_ae_surfacerendercontext_setup_constants(X_AE_SurfaceRenderContext* context)
@@ -230,11 +230,11 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
     int vv = (v >> 16);
     
 #if 1
-    uu = uu % context->surfaceTexture.w;
-    vv = vv % context->surfaceTexture.h;
+    uu = uu % context->surfaceTexture.getW();
+    vv = vv % context->surfaceTexture.getH();
 #endif
     
-    return context->surfaceTexture.texels[vv * context->surfaceTexture.w + uu];
+    return context->surfaceTexture.getTexels()[vv * context->surfaceTexture.getW() + uu];
 }
 
 
@@ -245,8 +245,8 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     //span->y *= 2;
     
     X_Texture* screenTex = context->renderContext->canvas;
-    X_Color* scanline = screenTex->texels + span->y * screenTex->w;
-    x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->w;
+    X_Color* scanline = screenTex->getRow(span->y);
+    x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
     
     x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y) >> 10;
     x_fp16x16 dInvZ = context->surface->zInverseXStep >> 10;

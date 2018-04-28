@@ -37,7 +37,7 @@ void drawSpan(int x1, int x2, int y, X_Screen* screen, X_Color color)
 {
     for(int i = x1; i <= x2; ++i)
     {
-        x_texture_set_texel(&screen->canvas, i, y, color);
+        screen->canvas.setTexel({ i, y }, color);
     }
 }
 

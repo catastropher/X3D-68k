@@ -87,7 +87,7 @@ static inline void x_sdl_putpixel(SDL_Surface *surface, int x, int y, Uint32 pix
 
 static inline void x_texture_to_sdl_surface(const X_Texture* src, const X_Palette* palette, SDL_Surface* dest)
 {
-    x_assert(dest->w >= src->w && dest->h >= src->h, "SDL surface dimensions too small");
+    x_assert(dest->w >= src->getW() && dest->h >= src->getH(), "SDL surface dimensions too small");
     
     unsigned int colorTable[256];
     
@@ -98,11 +98,11 @@ static inline void x_texture_to_sdl_surface(const X_Texture* src, const X_Palett
         colorTable[i] = SDL_MapRGB(dest->format, r, g, b);
     }
     
-    for(int i = 0; i < src->h; ++i)
+    for(int i = 0; i < src->getH(); ++i)
     {
-        for(int j = 0; j < src->w; ++j)
+        for(int j = 0; j < src->getW(); ++j)
         {
-            x_sdl_putpixel(dest, j, i, colorTable[x_texture_get_texel(src, j, i)]);
+            x_sdl_putpixel(dest, j, i, colorTable[src->getTexel({ j, i })]);
         }
     }
 }

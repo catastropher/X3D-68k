@@ -17,7 +17,7 @@
 
 #include <string.h>
 
-#include "memory/X_alloc.h"
+#include "memory/Allocator.hpp"
 #include "geo/X_Vec2.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,112 +25,101 @@
 ////////////////////////////////////////////////////////////////////////////////
 typedef unsigned char X_Color;
 
+struct X_Font;
+
+enum TextureFlags
+{
+    TEXTURE_ALLOCED = 1
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 /// A texture, which is basically a 2D array of texels ("texture elements")
-typedef struct X_Texture
+class X_Texture
 {
+public:
+    X_Texture()
+        : w(0), h(0), texels(nullptr), flags(0)
+    { }
+
+    X_Texture(int w_, int h_)
+        : w(w_), h(h_), flags(TEXTURE_ALLOCED)
+    {
+        texels = xalloc<X_Color>(w * h);
+    }
+
+    X_Texture(int w_, int h_, X_Color* texels_)
+        : w(w_), h(h_), texels(texels_), flags(0)
+    { }
+
+    int getW() const{ return w; }
+    int getH() const { return h; }
+    int totalTexels() const { return w * h; }
+    X_Color* getTexels() const { return texels; }
+
+    void setTexels(X_Color* texels_)
+    {
+        // FIXME: should free mem
+        texels = texels_;
+        flags &= (~TEXTURE_ALLOCED);
+    }
+
+    int texelIndex(X_Vec2i pos) const
+        { return pos.y * w + pos.x; }
+
+    X_Color* getRow(int row) const
+        { return texels + row * w; }
+
+    void setTexel(X_Vec2i pos, X_Color color)
+        { texels[texelIndex(pos)] = color; }
+
+    X_Color getTexel(X_Vec2i pos) const
+        { return texels[texelIndex(pos)]; }
+
+    void resize(int newW, int newH)
+    {
+        w = newW;
+        h = newH;
+
+        if(flags & TEXTURE_ALLOCED)
+            xfree(texels);
+
+        texels = xalloc<X_Color>(totalTexels());
+        flags |= TEXTURE_ALLOCED;
+    }
+
+    void setDimensions(int w_, int h_)
+    {
+        w = w_;
+        h = h_;
+    }
+
+    bool saveToFile(const char* fileName);
+    bool loadFromFile(const char* fileName);
+
+    void clampVec2i(X_Vec2i& v);
+    void drawLine(X_Vec2i start, X_Vec2i end, X_Color color);
+    void blit(const X_Texture& tex, X_Vec2i pos);
+    void drawChar(int c, const X_Font& font, X_Vec2i pos);
+    void drawStr(const char* str, const X_Font& font, X_Vec2i pos);
+    void fillRect(X_Vec2i topLeft, X_Vec2i bottomRight, X_Color color);
+    void fill(X_Color color);
+    void drawDecal(X_Texture& decal, X_Vec2i pos, X_Vec2fp& uOrientation, X_Vec2fp& vOrientation, X_Color transparency);
+
+    ~X_Texture()
+    {
+        if(flags & TEXTURE_ALLOCED)
+            xfree(texels);
+
+        // TODO: is it worth it to set these to default?
+        w = 0;
+        h = 0;
+        texels = nullptr;
+    }
+
+private:
     int w;              ///< Width of the texture
     int h;              ///< Height of the texture
     X_Color* texels;    ///< Texels
-} X_Texture;
-
-struct X_Font;
-
-bool x_texture_save_to_xtex_file(const X_Texture* tex, const char* fileName);
-bool x_texture_load_from_xtex_file(X_Texture* tex, const char* fileName);
-
-void x_texture_clamp_vec2(const X_Texture* tex, X_Vec2* v);
-void x_texture_draw_line(X_Texture* tex, X_Vec2 start, X_Vec2 end, X_Color color);
-void x_texture_blit_texture(X_Texture* canvas, const X_Texture* tex, X_Vec2 pos);
-void x_texture_draw_char(X_Texture* canvas, unsigned char c, const struct X_Font* font, X_Vec2 pos);
-void x_texture_draw_str(X_Texture* canvas, const char* str, const struct X_Font* font, X_Vec2 pos);
-void x_texture_fill_rect(X_Texture* canvas, X_Vec2 topLeft, X_Vec2 bottomRight, X_Color color);
-void x_texture_fill(X_Texture* canvas, X_Color fillColor);
-void x_texture_draw_decal(X_Texture* canvas, X_Texture* decal, X_Vec2 pos, X_Vec2_fp16x16* uOrientation, X_Vec2_fp16x16* vOrientation, X_Color transparency);
-
-////////////////////////////////////////////////////////////////////////////////
-/// Returns the width of a texture.
-////////////////////////////////////////////////////////////////////////////////
-static inline int x_texture_w(const X_Texture* tex)
-{
-    return tex->w;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Returns the height of a texture.
-////////////////////////////////////////////////////////////////////////////////
-static inline int x_texture_h(const X_Texture* tex)
-{
-    return tex->h;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the total number of texels in a texture.
-////////////////////////////////////////////////////////////////////////////////
-static inline int x_texture_total_texels(const X_Texture* tex)
-{
-    return tex->w * tex->h;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the size of the texels array (in bytes) needed to hold the
-///     dimensions for tex.
-////////////////////////////////////////////////////////////////////////////////
-static inline size_t x_texture_texels_size(const X_Texture* tex)
-{
-    return x_texture_total_texels(tex) * sizeof(X_Color);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Initializes a texture given its size.
-///
-/// @param tex  - texture
-/// @param w    - width of the texture
-/// @param h    - height of the texture
-///
-/// @note This allocates memory (for the texels array). Make sure to call
-///     @ref x_texture_cleanup() to release the memory!
-/// @note This function does not initialize the texels.
-////////////////////////////////////////////////////////////////////////////////
-static inline void x_texture_init(X_Texture* tex, int w, int h)
-{
-    tex->w = w;
-    tex->h = h;
-    tex->texels = (X_Color*)x_malloc(x_texture_texels_size(tex));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Cleans up a texture and releases its memory.
-////////////////////////////////////////////////////////////////////////////////
-static inline void x_texture_cleanup(X_Texture* tex)
-{
-    x_free(tex->texels);
-    tex->texels = NULL;
-    tex->w = 0;
-    tex->h = 0;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Calculates the index of a texel given its coordinates (u and v).
-////////////////////////////////////////////////////////////////////////////////
-static inline int x_texture_texel_index(const X_Texture* tex, int u, int v)
-{
-    return v * tex->w + u;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Sets the color of a texel in a texture.
-////////////////////////////////////////////////////////////////////////////////
-static inline void x_texture_set_texel(X_Texture* tex, int u, int v, X_Color color)
-{
-    tex->texels[x_texture_texel_index(tex, u, v)] = color;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Gets the color of a texel in a texture.
-////////////////////////////////////////////////////////////////////////////////
-static inline X_Color x_texture_get_texel(const X_Texture* tex, int u, int v)
-{
-    return tex->texels[x_texture_texel_index(tex, u, v)];
-}
+    int flags;
+};
 

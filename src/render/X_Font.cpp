@@ -35,17 +35,17 @@ static void load_character(X_Font* font, const X_Texture* fontTex, int charRow, 
     
     for(int i = 0; i < font->charH; ++i)
         for(int j = 0; j < font->charW; ++j)
-            *characterPixelsDest++ = x_texture_get_texel(fontTex, startX + j, startY + i);
+            *characterPixelsDest++ = fontTex->getTexel({ startX + j, startY + i });
 }
 
 static void load_characters(X_Font* font, const X_Texture* fontTex)
 {
-    int charsPerRow = x_texture_w(fontTex) / font->charW;
+    int charsPerRow = fontTex->getW() / font->charW;
     
-    x_assert(x_texture_w(fontTex) % font->charW == 0, "Font texture width not multiple of font width");
-    x_assert(x_texture_h(fontTex) % font->charH == 0, "Font texture height not multiple of font height");
+    x_assert(fontTex->getW() % font->charW == 0, "Font texture width not multiple of font width");
+    x_assert(fontTex->getH() % font->charH == 0, "Font texture height not multiple of font height");
     
-    int totalRows = x_texture_h(fontTex) / font->charH;
+    int totalRows = fontTex->getH() / font->charH;
     x_assert(totalRows * charsPerRow == X_FONT_TOTAL_CHARS, "Wrong number of chars in font");
     
     // Start at char 1 because 0 is the null terminator
@@ -73,7 +73,7 @@ bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidt
     font->charH = fontHeight;
     
     X_Texture fontTex;
-    if(!x_texture_load_from_xtex_file(&fontTex, fileName))
+    if(!fontTex.loadFromFile(fileName))
     {
         x_log_error("Failed to load font %s", fileName);
         return 0;
@@ -82,7 +82,6 @@ bool x_font_load_from_xtex_file(X_Font* font, const char* fileName, int fontWidt
     font->charSize = calculate_character_size(font);
     font->pixels = (X_Color*)x_malloc(calculate_font_pixels_size(font));
     load_characters(font, &fontTex);
-    x_texture_cleanup(&fontTex);
     
     x_log("Loaded font %s", fileName);
     

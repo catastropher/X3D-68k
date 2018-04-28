@@ -44,7 +44,7 @@ typedef struct Portal
 {
     Vec3 geometryVertices[4];
     InternalPolygon3 geometry;
-    _Bool portalOnWall;
+    bool portalOnWall;
     X_Mat4x4 wallOrientation;
 } Portal;
 
@@ -110,7 +110,7 @@ void handle_test_portal(Portal* portal, X_EngineContext* engineContext, X_Camera
     x_mat4x4_visualize(&portal->wallOrientation, x_vec3_origin(), &renderContext);
 }
 
-X_Texture paint;
+X_Texture paint(32, 32);
 
 void apply_paint_to_surface(X_BspSurface* surface, Vec3* pos, X_EngineContext* engineContext)
 {
@@ -163,9 +163,9 @@ void fill_with_checkerboard(X_Texture* tex)
 {
     int size = 8;
     
-    for(int i = 0; i < tex->h; ++i)
+    for(int i = 0; i < tex->getH(); ++i)
     {
-        for(int j = 0; j < tex->w; ++j)
+        for(int j = 0; j < tex->getW(); ++j)
         {
             int x = j / size;
             int y = i / size;
@@ -176,37 +176,37 @@ void fill_with_checkerboard(X_Texture* tex)
             else
                 color = x_palette_get_quake_palette()->black;
             
-            x_texture_set_texel(tex, j, i, color);
+            tex->setTexel({ j, i }, color);
         }
     }
 }
 
 void fill_circle(X_Texture* tex, X_Color color, X_Color background)
 {    
-    int r = X_MIN(tex->w, tex->h) / 2;
+    int r = X_MIN(tex->getW(), tex->getH()) / 2;
     
-    for(int i = 0; i < tex->h; ++i)
+    for(int i = 0; i < tex->getH(); ++i)
     {
-        for(int j = 0; j < tex->w; ++j)
+        for(int j = 0; j < tex->getW(); ++j)
         {
             int dx = j - r;
             int dy = i - r;
             
             if(dx * dx + dy * dy < r * r)
-                x_texture_set_texel(tex, j, i, color);
+                tex->setTexel({ j, i }, color);
             else
-                x_texture_set_texel(tex, j, i, background);
+                tex->setTexel({ j, i }, background);
         }
     }
 }
 
 void add_count(X_Texture* tex, int x, int y, int* r, int* g, int* b, int* total)
 {
-    if(x < 0 || x >= tex->w || y < 0 || y >= tex->h)
+    if(x < 0 || x >= tex->getW() || y < 0 || y >= tex->getH())
         return;
     
     unsigned char rr, gg, bb;
-    x_palette_get_rgb(x_palette_get_quake_palette(), x_texture_get_texel(tex, x, y), &rr, &gg, &bb);
+    x_palette_get_rgb(x_palette_get_quake_palette(), tex->getTexel({ x, y }), &rr, &gg, &bb);
     
     *r += rr;
     *g += gg;
@@ -216,11 +216,11 @@ void add_count(X_Texture* tex, int x, int y, int* r, int* g, int* b, int* total)
 
 void shrink_antialias(X_Texture* tex, X_Texture* dest)
 {
-    int scale = tex->w / dest->w;
+    int scale = tex->getW() / dest->getW();
     
-    for(int i = 0; i < dest->h; ++i)
+    for(int i = 0; i < dest->getH(); ++i)
     {
-        for(int j = 0; j < dest->w; ++j)
+        for(int j = 0; j < dest->getW(); ++j)
         {
             int r = 0, g = 0, b = 0, total = 0;
             
@@ -232,7 +232,7 @@ void shrink_antialias(X_Texture* tex, X_Texture* dest)
                 }
             }
             
-            x_texture_set_texel(dest, j, i, x_palette_get_closest_color_from_rgb(x_palette_get_quake_palette(), r / total, g / total, b / total));
+            dest->setTexel({ j, i }, x_palette_get_closest_color_from_rgb(x_palette_get_quake_palette(), r / total, g / total, b / total));
         }
     }
 }
@@ -356,7 +356,6 @@ void gameloop(Context* context)
     portal.portalOnWall = 0;
     x_mat4x4_load_identity(&portal.wallOrientation);
     
-    x_texture_init(&paint, 32, 32);
     fill_circle(&paint, x_palette_get_quake_palette()->darkBlue, x_palette_get_quake_palette()->lightBlue);
     
     x_objectfactory_register_type(&context->engineContext->gameObjectFactory, &g_cubeType);

@@ -367,7 +367,7 @@ void x_palette_visualize(X_Screen* screen)
             {
                 for(int d = 0; d < 8; ++d)
                 {
-                    x_texture_set_texel(&screen->canvas, x + d, y + k, color);
+                    screen->canvas.setTexel({ x + d, y + k }, color);
                 }
             }
         }

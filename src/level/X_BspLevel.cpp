@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <new>
+
 #include "geo/X_Ray3.h"
 #include "render/X_activeedge.h"
 #include "render/X_RenderContext.h"
@@ -380,9 +382,7 @@ void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X
     
     X_BspTexture* bspTex = level->textures + textureId;
     
-    dest->w = bspTex->w >> mipMapLevel;
-    dest->h = bspTex->h >> mipMapLevel;
-    dest->texels = bspTex->mipTexels[mipMapLevel];
+    new (dest) X_Texture(bspTex->w >> mipMapLevel,  bspTex->h >> mipMapLevel, bspTex->mipTexels[mipMapLevel]);
 }
 
 void x_bsplevel_cleanup(X_BspLevel* level)
