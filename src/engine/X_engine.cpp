@@ -56,7 +56,7 @@ X_EngineContext* x_engine_init(X_Config* config)
         x_system_error("Called x_engine_int() after engine already initialized");
     
     x_memory_init();
-    x_filesystem_init(config->programPath);
+    x_filesystem_init(config->path);
     x_log_init();
     x_filesystem_add_search_path("../assets");
     

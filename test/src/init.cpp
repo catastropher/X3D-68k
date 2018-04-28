@@ -45,12 +45,14 @@ static void init_camera(Context* context)
 static void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
 {
     X_Config config;
-    
-    x_config_init(&config);
-    x_config_set_program_path(&config, programPath);
-    x_config_set_screen_defaults(&config, screenW, screenH, X_ANG_60, 0);
+
+    config
+        .programPath(programPath)
+        .screenSize(screenW, screenH)
+        .fieldOfView(X_ANG_60)
+        .useQuakeColorPalette();
+
     screen_set_callbacks(context, &config);
-    x_config_screen_set_palette(&config, x_palette_get_quake_palette());
     
     context->engineContext = x_engine_init(&config);
     context->engineContext->userData = context;

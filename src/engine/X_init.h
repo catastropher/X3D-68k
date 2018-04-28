@@ -17,8 +17,66 @@
 
 #include "render/X_Screen.h"
 
-typedef struct X_Config
+struct X_Config
 {
+    X_Config()
+    {
+        fov = 0;
+        screenW = 0;
+        screenH = 0;
+        fullscreen = 0;
+        
+        screenHandlers.displayFrame = NULL;
+        screenHandlers.isValidResolution = NULL;
+        screenHandlers.restartVideo = NULL;
+        screenHandlers.userData = NULL;
+        
+        path = NULL;
+    }
+
+    X_Config& screenSize(int w, int h)
+    {
+        screenW = w;
+        screenH = h;
+
+        return *this;
+    }
+
+    X_Config& fieldOfView(fp fov)
+    {
+        this->fov = fov.toFp16x16();
+
+        return *this;
+    }
+
+    X_Config& programPath(const char* path)
+    {
+        this->path = path;
+
+        return *this;
+    }
+
+    X_Config& screenFullscreen()
+    {
+        fullscreen = true;
+
+        return *this;
+    }
+
+    X_Config& colorPalette(const X_Palette* palette)
+    {
+        palette = palette;
+
+        return *this;
+    }
+
+    X_Config& useQuakeColorPalette()
+    {
+        palette = x_palette_get_quake_palette();
+
+        return *this;
+    }
+
     X_ScreenEventHandlers screenHandlers;
     const X_Palette* palette;
     
@@ -27,8 +85,8 @@ typedef struct X_Config
     x_fp16x16 fov;
     bool fullscreen;
     
-    const char* programPath;
-} X_Config;
+    const char* path;
+};
 
 void x_config_init(X_Config* config);
 
@@ -41,11 +99,11 @@ void x_config_set_screen_cleanup_video_callback(X_Config* config, void (*cleanup
 
 static inline void x_config_set_program_path(X_Config* config, const char* programPath)
 {
-    config->programPath = programPath;
+    programPath = programPath;
 }
 
 static inline void x_config_screen_set_palette(X_Config* config, const X_Palette* palette)
 {
-    config->palette = palette;
+    palette = palette;
 }
 

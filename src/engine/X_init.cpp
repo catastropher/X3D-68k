@@ -15,21 +15,6 @@
 
 #include "X_init.h"
 
-void x_config_init(X_Config* config)
-{
-    config->fov = 0;
-    config->screenW = 0;
-    config->screenH = 0;
-    config->fullscreen = 0;
-    
-    config->screenHandlers.displayFrame = NULL;
-    config->screenHandlers.isValidResolution = NULL;
-    config->screenHandlers.restartVideo = NULL;
-    config->screenHandlers.userData = NULL;
-    
-    config->programPath = NULL;
-}
-
 void x_config_set_screen_defaults(X_Config* config, int screenW, int screenH, x_fp16x16 fov, bool fullscreen)
 {
     config->screenW = screenW;
