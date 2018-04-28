@@ -16,3 +16,4 @@ kdev4/
 tools/tigcc-x3d
 *.elf
 *.tns
+.vscode/
