@@ -123,7 +123,6 @@ set(X_SOURCES
     src/physics/X_BoxCollider.cpp
 
     # render
-    src/render/new-renderer.cpp
     src/render/X_activeedge.cpp
     src/render/X_Font.cpp
     src/render/X_Palette.cpp

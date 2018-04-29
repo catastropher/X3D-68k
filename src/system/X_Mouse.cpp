@@ -19,18 +19,18 @@
 
 static void cmd_mouselook(X_EngineContext* engineContext, int argc, char* argv[])
 {
-    X_MouseState* state = &engineContext->mouseState;
+    X_MouseState* state = engineContext->getMouseState();
     
     if(argc != 2)
     {
-        x_console_printf(&engineContext->console, "Usage: mouse.look [0/1] -> enables/disables mouse look\n"
+        x_console_printf(engineContext->getConsole(), "Usage: mouse.look [0/1] -> enables/disables mouse look\n"
             "Currently %s\n", (state->mouseLook ? "enabled" : "disabled"));
         return;
     }
     
     state->mouseLook = atoi(argv[1]);
     x_mousestate_show_cursor(state, !state->mouseLook);
-    x_mousestate_set_pos(state, x_screen_center(&engineContext->screen));
+    x_mousestate_set_pos(state, x_screen_center(engineContext->getScreen()));
     
     state->offset.x = 0;
     state->offset.y = 0;

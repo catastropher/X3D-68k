@@ -161,8 +161,8 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
 {
     console->openState = X_CONSOLE_STATE_CLOSED;
     console->cursor = x_vec2_make(0, 0);
-    console->size.x = x_screen_w(&engineContext->screen) / font->getW();
-    console->size.y = x_screen_h(&engineContext->screen) / font->getH() / 2;
+    console->size.x = x_screen_w(engineContext->getScreen()) / font->getW();
+    console->size.y = x_screen_h(engineContext->getScreen()) / font->getH() / 2;
     console->font = font;
     console->engineContext = engineContext;
     console->renderYOffset = 0;
@@ -399,7 +399,7 @@ static int x_console_h(const X_Console* console)
 
 static X_Screen* x_console_get_screen(X_Console* console)
 {
-    return &console->engineContext->screen;
+    return console->engineContext->getScreen();
 }
 
 static X_Texture* x_console_get_canvas(X_Console* console)

@@ -28,7 +28,7 @@
 
 static inline void init_object_factory(X_EngineContext* context)
 {
-    x_objectfactory_init(&context->gameObjectFactory, context);
+    x_objectfactory_init(context->getGameObjectFactory(), context);
     
     context->activeObjectHead.nextActive = &context->activeObjectTail;
     context->activeObjectHead.prevActive = NULL;
@@ -36,53 +36,53 @@ static inline void init_object_factory(X_EngineContext* context)
     context->activeObjectTail.nextActive = NULL;
     context->activeObjectTail.prevActive = &context->activeObjectHead;
     
-    x_gameobject_register_default_types(&context->gameObjectFactory);
+    x_gameobject_register_default_types(context->getGameObjectFactory());
 }
 
 static inline void init_screen(X_EngineContext* context, X_Config* config)
 {
-    x_screen_init(&context->screen, config->screenW, config->screenH, &config->screenHandlers);
-    x_screen_set_palette(&context->screen, config->palette);
+    x_screen_init(context->getScreen(), config->screenW, config->screenH, &config->screenHandlers);
+    x_screen_set_palette(context->getScreen(), config->palette);
 }
 
 static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
 {  
-    if(!context->mainFont.loadFromFile(fontFileName))
+    if(!context->getMainFont()->loadFromFile(fontFileName))
         x_system_error("Failed to load font");
 }
 
 static inline void init_console(X_EngineContext* context)
 {
-    x_console_init(&context->console, context, &context->mainFont);
-    x_console_print(&context->console, "Console initialized.\n");
+    x_console_init(context->getConsole(), context, context->getMainFont());
+    x_console_print(context->getConsole(), "Console initialized.\n");
 }
 
 static inline void init_keystate(X_EngineContext* context)
 {
-    x_keystate_init(&context->keystate);
+    x_keystate_init(context->getKeyState());
 }
 
 static inline void init_level(X_EngineContext* context)
 {
-    x_bsplevel_init_empty(&context->currentLevel);
+    x_bsplevel_init_empty(context->getCurrentLevel());
 }
 
 
 
 static inline void cleanup_object_factory(X_EngineContext* context)
 {
-    x_objectfactory_cleanup(&context->gameObjectFactory);
+    x_objectfactory_cleanup(context->getGameObjectFactory());
 }
 
 static inline void cleanup_screen(X_EngineContext* context)
 {
-    x_screen_cleanup(&context->screen);
+    x_screen_cleanup(context->getScreen());
 }
 
 
 static inline void cleanup_console(X_EngineContext* context)
 {
-    x_console_cleanup(&context->console);
+    x_console_cleanup(context->getConsole());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,30 +107,30 @@ void x_enginecontext_init(X_EngineContext* context, X_Config* config)
     init_console(context);
     init_keystate(context);
     
-    x_mousestate_init(&context->mouseState, &context->console, &context->screen);
+    x_mousestate_init(context->getMouseState(), context->getConsole(), context->getScreen());
     
     init_level(context);
     
-    x_renderer_init(&context->renderer, &context->console, &context->screen, config->fov);
+    x_renderer_init(context->getRenderer(), context->getConsole(), context->getScreen(), config->fov);
 }
 
 void x_enginecontext_restart_video(X_EngineContext* context)
 {
-    int newW = context->renderer.screenW;
-    int newH = context->renderer.screenH;
-    x_fp16x16 newFov = context->renderer.fov;
+    int newW = context->getRenderer()->screenW;
+    int newH = context->getRenderer()->screenH;
+    x_fp16x16 newFov = context->getRenderer()->fov;
     
-    if(context->screen.handlers.restartVideo == NULL)
+    if(context->getScreen()->handlers.restartVideo == NULL)
         x_system_error("No restart video callback");
     
-    x_screen_restart_video(&context->screen, newW, newH, newFov);
-    x_renderer_restart_video(&context->renderer, &context->screen);
+    x_screen_restart_video(context->getScreen(), newW, newH, newFov);
+    x_renderer_restart_video(context->getRenderer(), context->getScreen());
     
-    context->screen.handlers.restartVideo(context, context->screen.handlers.userData);
+    context->getScreen()->handlers.restartVideo(context, context->getScreen()->handlers.userData);
     
     // FIXME: this is a hack
-    if(context->mouseState.mouseLook)
-        x_console_execute_cmd(&context->console, "mouse.look 1");
+    if(context->getMouseState()->mouseLook)
+        x_console_execute_cmd(context->getConsole(), "mouse.look 1");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -141,10 +141,10 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     cleanup_object_factory(context);
     cleanup_screen(context);
     cleanup_console(context);
-    x_bsplevel_cleanup(&context->currentLevel);
-    x_renderer_cleanup(&context->renderer);
+    x_bsplevel_cleanup(context->getCurrentLevel());
+    x_renderer_cleanup(context->getRenderer());
     
-    context->screen.handlers.cleanupVideo(context, context->screen.handlers.userData);
+    context->getScreen()->handlers.cleanupVideo(context, context->getScreen()->handlers.userData);
 }
 
 void x_enginecontext_update_time(X_EngineContext* context)
@@ -167,15 +167,15 @@ void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext
 {
     dest->cam = cam;
     dest->camPos = x_cameraobject_get_position(cam);
-    dest->canvas = &engineContext->screen.canvas;
-    dest->zbuf = engineContext->screen.zbuf;
+    dest->canvas = &engineContext->getScreen()->canvas;
+    dest->zbuf = engineContext->getScreen()->zbuf;
     dest->currentFrame = x_enginecontext_get_frame(engineContext);
     dest->engineContext = engineContext;
-    dest->level = &engineContext->currentLevel;
-    dest->renderer = &engineContext->renderer;
-    dest->screen = &engineContext->screen;
+    dest->level = engineContext->getCurrentLevel();
+    dest->renderer = engineContext->getRenderer();
+    dest->screen = engineContext->getScreen();
     dest->viewFrustum = &cam->viewport.viewFrustum;
     dest->viewMatrix = &cam->viewMatrix;
-    dest->renderer = &engineContext->renderer;
+    dest->renderer = engineContext->getRenderer();
 }
 

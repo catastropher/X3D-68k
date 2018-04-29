@@ -22,7 +22,7 @@
 X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
 {
     int objectHandle;
-    X_GameObject* newObject = (X_GameObject*)x_factory_alloc(&context->gameObjectFactory.objectFactory, objectSize, &objectHandle);
+    X_GameObject* newObject = (X_GameObject*)x_factory_alloc(&context->getGameObjectFactory()->objectFactory, objectSize, &objectHandle);
     newObject->id = objectHandle;
     newObject->engineContext = context;
     

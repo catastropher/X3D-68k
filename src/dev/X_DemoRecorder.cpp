@@ -30,7 +30,7 @@ static void save_camera_state(X_DemoRecorder* recorder, X_CameraObject* cam)
 
 static void save_brush_models(X_DemoRecorder* recorder)
 {
-    X_BspLevel* level = &recorder->cam->base.engineContext->currentLevel;
+    X_BspLevel* level = recorder->cam->base.engineContext->getCurrentLevel();
     for(int i = 0; i < level->totalModels; ++i)
         x_file_write_vec3(&recorder->file, &level->models[i].origin);
 }

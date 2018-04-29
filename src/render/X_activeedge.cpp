@@ -465,8 +465,8 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     if(!initialized)
     {
-        x_console_register_var(&context->renderContext->engineContext->console, &g_sortCount, "sortCount", X_CONSOLEVAR_INT, "0", 0);
-        x_console_register_var(&context->renderContext->engineContext->console, &g_stackCount, "stackCount", X_CONSOLEVAR_INT, "0", 0);
+        x_console_register_var(context->renderContext->engineContext->getConsole(), &g_sortCount, "sortCount", X_CONSOLEVAR_INT, "0", 0);
+        x_console_register_var(context->renderContext->engineContext->getConsole(), &g_stackCount, "stackCount", X_CONSOLEVAR_INT, "0", 0);
         initialized = 1;
     }
 

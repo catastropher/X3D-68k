@@ -30,14 +30,14 @@ static void draw_fps(X_EngineContext* context)
     char fpsStr[20];
     sprintf(fpsStr, "%d", fps);
     
-    X_Vec2 pos = x_vec2_make(x_screen_w(&context->screen) - context->mainFont.calcWidthOfStr(fpsStr), 0);
-    context->screen.canvas.drawStr(fpsStr, context->mainFont, pos);
+    X_Vec2 pos = x_vec2_make(x_screen_w(context->getScreen()) - context->getMainFont()->calcWidthOfStr(fpsStr), 0);
+    context->getScreen()->canvas.drawStr(fpsStr, *context->getMainFont(), pos);
 }
 
 static void draw_crosshair(X_EngineContext* engineContext)
 {
-    X_Color white = engineContext->screen.palette->white;
-    X_Texture* tex = &engineContext->screen.canvas;
+    X_Color white = engineContext->getScreen()->palette->white;
+    X_Texture* tex = &engineContext->getScreen()->canvas;
     
     int centerX = tex->getW() / 2;
     int centerY = tex->getH() / 2;
@@ -65,16 +65,16 @@ X_Light* add_light(X_Renderer* renderer)
 
 static void update_dynamic_lights(X_EngineContext* engineContext)
 {
-    bool down = x_keystate_key_down(&engineContext->keystate, (X_Key)'q');
+    bool down = x_keystate_key_down(engineContext->getKeyState(), (X_Key)'q');
     static bool lastDown;
-    X_CameraObject* cam = engineContext->screen.cameraListHead;
+    X_CameraObject* cam = engineContext->getScreen()->cameraListHead;
     
     if(down && !lastDown)
     {
         Vec3 up, right, forward;
         x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
         
-        X_Light* light = add_light(&engineContext->renderer);
+        X_Light* light = add_light(engineContext->getRenderer());
         
         if(light == NULL)
             return;
@@ -85,10 +85,10 @@ static void update_dynamic_lights(X_EngineContext* engineContext)
         //light->flags |= X_LIGHT_ENABLED;
     }
     
-    X_Light* lights = engineContext->renderer.dynamicLights;
+    X_Light* lights = engineContext->getRenderer()->dynamicLights;
     for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
     {
-        if(x_light_is_enabled(engineContext->renderer.dynamicLights + i))
+        if(x_light_is_enabled(engineContext->getRenderer()->dynamicLights + i))
         {
             lights[i].position = x_vec3_add_scaled(&lights[i].position, &lights[i].direction, 10 << 16);
         }
@@ -111,7 +111,7 @@ void render(Context* context)
     x_engine_render_frame(engineContext);
     draw_hud(engineContext);
     
-    if(x_console_is_open(&engineContext->console))
-        x_console_render(&engineContext->console);
+    if(x_console_is_open(engineContext->getConsole()))
+        x_console_render(engineContext->getConsole());
 }
 

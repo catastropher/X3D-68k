@@ -32,7 +32,7 @@ X_GameObject* x_worldobject_new(X_EngineContext* engineContext, X_Edict* edict)
 {
     X_WorldObject* obj = (X_WorldObject*)x_gameobject_new(engineContext, sizeof(X_WorldObject));
     
-    obj->model = x_bsplevel_get_level_model(&engineContext->currentLevel);
+    obj->model = x_bsplevel_get_level_model(engineContext->getCurrentLevel());
     
     return (X_GameObject*)obj;
 }

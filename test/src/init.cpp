@@ -30,8 +30,8 @@ static void init_camera(Context* context)
     X_EngineContext* engineContext = context->engineContext;
     
     context->cam = x_cameraobject_new(engineContext);
-    x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, x_screen_w(&engineContext->screen), x_screen_h(&engineContext->screen), X_ANG_60);
-    x_screen_attach_camera(&engineContext->screen, context->cam);
+    x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), X_ANG_60);
+    x_screen_attach_camera(engineContext->getScreen(), context->cam);
     context->cam->screenResizeCallback = cam_screen_size_changed_callback;
     
     context->cam->angleX = 0;
@@ -74,10 +74,10 @@ void init(Context* context, const char* programPath)
     init_camera(context);    
     init_keys(context);
     
-    x_console_execute_cmd(&context->engineContext->console, "searchpath ..");
-    x_console_execute_cmd(&context->engineContext->console, "exec engine.cfg");
+    x_console_execute_cmd(context->engineContext->getConsole(), "searchpath ..");
+    x_console_execute_cmd(context->engineContext->getConsole(), "exec engine.cfg");
     
-    screen_init_console_vars(&context->engineContext->console);
+    screen_init_console_vars(context->engineContext->getConsole());
     
     context->quit = 0;
     context->netMode = NET_CLIENT;

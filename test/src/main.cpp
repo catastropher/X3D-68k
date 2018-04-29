@@ -81,7 +81,7 @@ static void shoot_portal(Portal* portal, X_EngineContext* engineContext, X_Camer
     Vec3 end = x_vec3_add_scaled(&camPos, &forward, x_fp16x16_from_float(3000));
     
     X_RayTracer trace;
-    x_raytracer_init(&trace, &engineContext->currentLevel, x_bsplevel_get_level_model(&engineContext->currentLevel), &camPos, &end, NULL);
+    x_raytracer_init(&trace, engineContext->getCurrentLevel(), x_bsplevel_get_level_model(engineContext->getCurrentLevel()), &camPos, &end, NULL);
     trace.rootClipNode = 0;
     
     if(!x_raytracer_trace(&trace))
@@ -101,7 +101,7 @@ void handle_test_portal(Portal* portal, X_EngineContext* engineContext, X_Camera
     
     //x_bsplevel_render_submodels(&engineContext->currentLevel, &renderContext);
     
-    if(x_keystate_key_down(&engineContext->keystate, (X_Key)'k'))
+    if(x_keystate_key_down(engineContext->getKeyState(), (X_Key)'k'))
         shoot_portal(portal, engineContext, cam);
     
     if(portal->portalOnWall)
@@ -153,7 +153,7 @@ void apply_paint(X_EngineContext* engineContext, X_CameraObject* cam)
     
     X_BspNode* nodes[100];
     
-    int totalNodes = x_bsplevel_find_nodes_intersecting_sphere(&engineContext->currentLevel, &sphere, nodes);
+    int totalNodes = x_bsplevel_find_nodes_intersecting_sphere(engineContext->getCurrentLevel(), &sphere, nodes);
     
     for(int i = 0; i < totalNodes; ++i)
         apply_paint_to_node(nodes[i], &sphere.center, engineContext);
@@ -248,14 +248,14 @@ typedef struct CubeObject
 void cube_update(X_GameObject* obj, x_fp16x16 deltaTime)
 {
     CubeObject* cube = (CubeObject*)obj;
-    x_boxcollider_update(&cube->collider, &obj->engineContext->currentLevel);
+    x_boxcollider_update(&cube->collider, obj->engineContext->getCurrentLevel());
     
     cube->model->origin = cube->collider.position - cube->center;
     cube->model->origin.y += x_fp16x16_from_int(8);
     
-    if(x_keystate_key_down(&obj->engineContext->keystate, (X_Key)'/'))
+    if(x_keystate_key_down(obj->engineContext->getKeyState(), (X_Key)'/'))
     {
-        cube->collider.position = x_cameraobject_get_position(obj->engineContext->screen.cameraListHead);
+        cube->collider.position = x_cameraobject_get_position(obj->engineContext->getScreen()->cameraListHead);
     }
         
 }
@@ -277,7 +277,7 @@ X_GameObject* cube_new(X_EngineContext* engineContext, X_Edict* edict)
 {
     CubeObject* cube = (CubeObject*)x_gameobject_new(engineContext, sizeof(CubeObject));
     
-    cube->model = engineContext->currentLevel.models + x_edict_get_model_id(edict, "model");
+    cube->model = engineContext->getCurrentLevel()->models + x_edict_get_model_id(edict, "model");
     
     static X_BoundBox box;
     x_boxcollider_init(&cube->collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
@@ -299,7 +299,7 @@ static void cmd_trigger(X_EngineContext* engineContext, int argc, char* argv[])
     if(argc != 3)
         return;
     
-    x_gameobject_trigger(&engineContext->screen.cameraListHead->base, argv[1], (X_GameObjectTriggerType)atoi(argv[2]));
+    x_gameobject_trigger(&engineContext->getScreen()->cameraListHead->base, argv[1], (X_GameObjectTriggerType)atoi(argv[2]));
 }
 
 void test_pc_socket(int port);
@@ -314,7 +314,7 @@ static void cmd_server(X_EngineContext* engineContext, int argc, char* argv[])
     
     //test_pc_socket(8000);
     
-    x_console_print(&engineContext->console, "Server initialized\n");
+    x_console_print(engineContext->getConsole(), "Server initialized\n");
     
     //test_socket();
     
@@ -330,9 +330,9 @@ static void cmd_connect(X_EngineContext* engineContext, int argc, char* argv[])
     //test_pc_socket(0);
     
     if(x_client_connect(&context->client, argv[1]))
-        x_console_print(&engineContext->console, "Connected to server\n");
+        x_console_print(engineContext->getConsole(), "Connected to server\n");
     else
-        x_console_printf(&engineContext->console, "Failed to open socket\n");
+        x_console_printf(engineContext->getConsole(), "Failed to open socket\n");
 }
 
 static void cmd_download(X_EngineContext* engineContext, int argc, char* argv[])
@@ -346,11 +346,9 @@ static void cmd_download(X_EngineContext* engineContext, int argc, char* argv[])
 
 void net_update();
 
-void testNewRenderer(X_RenderContext* renderContext);
-
 void gameloop(Context* context)
 {
-    x_console_register_cmd(&context->engineContext->console, "trigger", cmd_trigger);
+    x_console_register_cmd(context->engineContext->getConsole(), "trigger", cmd_trigger);
     
     Portal portal;
     portal.portalOnWall = 0;
@@ -358,7 +356,7 @@ void gameloop(Context* context)
     
     fill_circle(&paint, x_palette_get_quake_palette()->darkBlue, x_palette_get_quake_palette()->lightBlue);
     
-    x_objectfactory_register_type(&context->engineContext->gameObjectFactory, &g_cubeType);
+    x_objectfactory_register_type(context->engineContext->getGameObjectFactory(), &g_cubeType);
     
     //x_console_execute_cmd(&context->engineContext->console, "map e1m1");
     //x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
@@ -378,8 +376,6 @@ void gameloop(Context* context)
         x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
         
         render(context);
-        
-        testNewRenderer(&renderContext);
 
         handle_keys(context);
         screen_update(context);
@@ -398,9 +394,9 @@ int main(int argc, char* argv[])
     
     //x_client_init(&context.client);
     
-    x_console_register_cmd(&context.engineContext->console, "server", cmd_server);
-    x_console_register_cmd(&context.engineContext->console, "connect", cmd_connect);
-    x_console_register_cmd(&context.engineContext->console, "download", cmd_download);
+    x_console_register_cmd(context.engineContext->getConsole(), "server", cmd_server);
+    x_console_register_cmd(context.engineContext->getConsole(), "connect", cmd_connect);
+    x_console_register_cmd(context.engineContext->getConsole(), "download", cmd_download);
     
     gameloop(&context);
     cleanup(&context);

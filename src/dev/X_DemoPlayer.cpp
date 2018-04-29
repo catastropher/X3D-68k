@@ -44,7 +44,7 @@ static void read_camera_state(X_CameraObject* cam, X_File* file)
 
 static void read_brush_models(X_DemoPlayer* player)
 {
-    X_BspLevel* level = &player->cam->base.engineContext->currentLevel;
+    X_BspLevel* level = player->cam->base.engineContext->getCurrentLevel();
     for(int i = 0; i < level->totalModels; ++i)
         x_file_read_vec3(&player->file, &level->models[i].origin);
 }

@@ -33,24 +33,47 @@ struct X_RenderContext;
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct X_EngineContext
 {
-    X_EngineContext() : renderer(&screen) { }
+    X_EngineContext()
+    {
+        gameObjectFactory = new X_ObjectFactory;
+        screen = new X_Screen;
+        console = new X_Console;
+        mainFont = new X_Font;
+        keystate = new X_KeyState;
+        mouseState = new X_MouseState;
+        currentLevel = new X_BspLevel;
+        renderer = new X_Renderer(screen);
+    }
     
-    X_ObjectFactory gameObjectFactory;
+    X_ObjectFactory* getGameObjectFactory() const { return gameObjectFactory; }
+    X_Screen* getScreen() const { return screen; }
+    X_Console* getConsole() const { return console; }
+    X_Font* getMainFont() const { return mainFont; }
+    X_KeyState* getKeyState() const { return keystate; }
+    X_MouseState* getMouseState() const { return mouseState; }
+    X_BspLevel* getCurrentLevel() const { return currentLevel; }
+    X_Renderer* getRenderer() const { return renderer; }
+
+    void setCurrentLevel(X_BspLevel* level) { currentLevel = level; }
+
     X_GameObject activeObjectHead;
     X_GameObject activeObjectTail;
-    X_Screen screen;                    ///< Virtual screen
-    X_Console console;
-    X_Font mainFont;
-    X_KeyState keystate;
-    X_MouseState mouseState;
-    X_BspLevel currentLevel;
-    X_Renderer renderer;
-    
+
     int frameCount;     // TODO Where should this go?
     X_Time frameStart;
     X_Time lastFrameStart;
     
     void* userData;
+
+private:
+    X_ObjectFactory* gameObjectFactory;
+    X_Screen* screen;
+    X_Console* console;
+    X_Font* mainFont;
+    X_KeyState* keystate;
+    X_MouseState* mouseState;
+    X_BspLevel* currentLevel;
+    X_Renderer* renderer;
 } X_EngineContext;
 
 void x_enginecontext_init(X_EngineContext* context, X_Config* config);

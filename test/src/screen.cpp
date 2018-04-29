@@ -128,7 +128,7 @@ static void pack_screen(const X_Palette* palette, X_Color* screen)
 
 #endif
 
-static _Bool record = 0;
+static bool record = 0;
 static char recordBaseFile[256];
 static int recordFrame;
 static int frameId;
@@ -144,7 +144,7 @@ void screen_update(Context* context)
         pack_screen(context->engineContext->screen.palette, context->engineContext->screen.canvas.texels);
 #else
     
-    x_texture_to_sdl_surface(&context->engineContext->screen.canvas, context->engineContext->screen.palette, context->screen);
+    x_texture_to_sdl_surface(&context->engineContext->getScreen()->canvas, context->engineContext->getScreen()->palette, context->screen);
     
     if(record && (x_enginecontext_get_frame(context->engineContext) % recordFrame) == 0) {
         char fileName[512];
@@ -165,7 +165,7 @@ static void cmd_record(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 3)
     {
-        x_console_printf(&context->console, "Usage: record [frameBaseFileName] [nth frame] -> records every nth frame to bitmap files\n");
+        x_console_printf(context->getConsole(), "Usage: record [frameBaseFileName] [nth frame] -> records every nth frame to bitmap files\n");
         return;
     }
     
@@ -174,12 +174,12 @@ static void cmd_record(X_EngineContext* context, int argc, char* argv[])
     record = 1;
     frameId = 0;
     
-    x_console_printf(&context->console, "Recording enabled every %d frames", recordFrame);
+    x_console_printf(context->getConsole(), "Recording enabled every %d frames", recordFrame);
 }
 
 static void cmd_endrecord(X_EngineContext* context, int argc, char* argv[])
 {
-    x_console_printf(&context->console, "Recording stopped\n");
+    x_console_printf(context->getConsole(), "Recording stopped\n");
     record = 0;
 }
 
@@ -189,7 +189,7 @@ void screen_init_console_vars(X_Console* console)
     x_console_register_cmd(console, "endrecord", cmd_endrecord);
 }
 
-static _Bool is_valid_resolution_callback(int w, int h)
+static bool is_valid_resolution_callback(int w, int h)
 {
 #ifdef __nspire__
     return w == 320 && h == 240;
@@ -203,9 +203,9 @@ static _Bool is_valid_resolution_callback(int w, int h)
 static void video_restart_callback(X_EngineContext* engineContext, void* userData)
 {
     Context* context = (Context*)userData;
-    X_Screen* screen = &engineContext->screen;
+    X_Screen* screen = engineContext->getScreen();
     
-    if(!engineContext->renderer.videoInitialized)
+    if(!engineContext->getRenderer()->videoInitialized)
     {
         if(SDL_Init(SDL_INIT_VIDEO) != 0)
             x_system_error("Failed to initialize SDL");
@@ -232,7 +232,7 @@ static void video_restart_callback(X_EngineContext* engineContext, void* userDat
 #ifndef __nspire__
     int flags = SDL_SWSURFACE;
     
-    if(engineContext->renderer.fullscreen)
+    if(engineContext->getRenderer()->fullscreen)
         flags |= SDL_FULLSCREEN;
     
     context->screen = SDL_SetVideoMode(x_screen_w(screen), x_screen_h(screen), 32, flags);
