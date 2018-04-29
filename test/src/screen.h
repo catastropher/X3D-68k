@@ -16,9 +16,10 @@
 #pragma once
 
 #include "Context.h"
+#include "engine/X_init.h"
 
 void screen_update(Context* context);
-void screen_set_callbacks(Context* context, X_Config* config);
+void screen_set_callbacks(Context* context, ScreenConfig& config);
 
 void screen_init_console_vars(X_Console* console);
 

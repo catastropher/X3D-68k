@@ -250,11 +250,12 @@ static void cleanup_video_callback(X_EngineContext* context, void* userData)
 #endif
 }
 
-void screen_set_callbacks(Context* context, X_Config* config)
+void screen_set_callbacks(Context* context, ScreenConfig& config)
 {
-    x_config_set_screen_is_valid_resolution_callback(config, is_valid_resolution_callback);
-    x_config_set_screen_restart_video_callback(config, video_restart_callback);
-    x_config_set_screen_cleanup_video_callback(config, cleanup_video_callback);
-    x_config_set_screen_user_data(config, context);
+    config
+        .isValidResolutionCallback(is_valid_resolution_callback)
+        .restartVideoCallback(video_restart_callback)
+        .cleanupVideoCallback(cleanup_video_callback)
+        .userData(context);
 }
 

@@ -44,15 +44,17 @@ static void init_camera(Context* context)
 
 static void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
 {
-    X_Config config;
-
-    config
-        .programPath(programPath)
-        .screenSize(screenW, screenH)
+    ScreenConfig screenConfig = ScreenConfig()
         .fieldOfView(X_ANG_60)
+        .resolution(screenW, screenH)
         .useQuakeColorPalette();
 
-    screen_set_callbacks(context, &config);
+    screen_set_callbacks(context, screenConfig);
+
+    X_Config config = X_Config()
+        .programPath(programPath)
+        .defaultFont("font.xtex")
+        .screenConfig(screenConfig);
     
     context->engineContext = x_engine_init(&config);
     context->engineContext->userData = context;

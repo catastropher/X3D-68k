@@ -17,34 +17,112 @@
 
 #include "render/X_Screen.h"
 
-struct X_Config
+struct ScreenConfig
 {
-    X_Config()
+    ScreenConfig() : fov(0)     // Because fp doesn't have a default constructor yet
     {
-        fov = 0;
-        screenW = 0;
-        screenH = 0;
-        fullscreen = 0;
-        
         screenHandlers.displayFrame = NULL;
         screenHandlers.isValidResolution = NULL;
         screenHandlers.restartVideo = NULL;
         screenHandlers.userData = NULL;
-        
-        path = NULL;
+
+        fov = 0;
+        w = 320;
+        h = 240;
+        fullscreen = false;
     }
 
-    X_Config& screenSize(int w, int h)
+    ScreenConfig& displayFrameCallback(void (*callback)(struct X_Screen* screen, void* userData))
     {
-        screenW = w;
-        screenH = h;
+        screenHandlers.displayFrame = callback;
 
         return *this;
     }
 
-    X_Config& fieldOfView(fp fov)
+    ScreenConfig& restartVideoCallback(void (*callback)(struct X_EngineContext* context, void* userData))
     {
-        this->fov = fov.toFp16x16();
+        screenHandlers.restartVideo = callback;
+
+        return *this;
+    }
+
+    ScreenConfig& isValidResolutionCallback(bool (*callback)(int w, int h))
+    {
+        screenHandlers.isValidResolution = callback;
+
+        return *this;
+    }
+
+    ScreenConfig& cleanupVideoCallback(void (*callback)(struct X_EngineContext* context, void* userData))
+    {
+        screenHandlers.cleanupVideo = callback;
+
+        return *this;
+    }
+
+    ScreenConfig& userData(void* data)
+    {
+        screenHandlers.userData = data;
+
+        return *this;
+    }
+
+    ScreenConfig& resolution(int w, int h)
+    {
+        this->w = w;
+        this->h = h;
+
+        return *this;
+    }
+
+    ScreenConfig& fieldOfView(fp fov)
+    {
+        this->fov = fov;
+
+        return *this;
+    }
+
+    ScreenConfig& enableFullscreen()
+    {
+        fullscreen = true;
+
+        return *this;
+    }
+
+    ScreenConfig& colorPalette(const X_Palette* palette)
+    {
+        palette = palette;
+
+        return *this;
+    }
+
+    ScreenConfig& useQuakeColorPalette()
+    {
+        palette = x_palette_get_quake_palette();
+
+        return *this;
+    }
+
+    int w;
+    int h;
+    fp fov;
+    bool fullscreen;
+    const X_Palette* palette;
+
+    X_ScreenEventHandlers screenHandlers;
+};
+
+struct X_Config
+{
+    X_Config()
+    {
+        path = nullptr;
+        font = "font.xtex";
+    }
+
+    X_Config& screenConfig(ScreenConfig& config)
+    {
+        screen = &config;
 
         return *this;
     }
@@ -56,54 +134,17 @@ struct X_Config
         return *this;
     }
 
-    X_Config& screenFullscreen()
+    X_Config& defaultFont(const char* fileName)
     {
-        fullscreen = true;
+        font = fileName;
 
         return *this;
     }
-
-    X_Config& colorPalette(const X_Palette* palette)
-    {
-        palette = palette;
-
-        return *this;
-    }
-
-    X_Config& useQuakeColorPalette()
-    {
-        palette = x_palette_get_quake_palette();
-
-        return *this;
-    }
-
-    X_ScreenEventHandlers screenHandlers;
-    const X_Palette* palette;
-    
-    int screenW;
-    int screenH;
-    x_fp16x16 fov;
-    bool fullscreen;
     
     const char* path;
+    const char* font;
+    ScreenConfig* screen;
 };
 
 void x_config_init(X_Config* config);
-
-void x_config_set_screen_defaults(X_Config* config, int screenW, int screenH, x_fp16x16 fov, bool fullscreen);
-void x_config_set_screen_display_frame_callback(X_Config* config, void (*displayFrameCallback)(struct X_Screen* screen, void* userData));
-void x_config_set_screen_restart_video_callback(X_Config* config, void (*restartVideoCallback)(struct X_EngineContext* context, void* userData));
-void x_config_set_screen_is_valid_resolution_callback(X_Config* config, bool (*isValidResolutionCallback)(int w, int h));
-void x_config_set_screen_user_data(X_Config* config, void* userData);
-void x_config_set_screen_cleanup_video_callback(X_Config* config, void (*cleanupVideoCallback)(struct X_EngineContext* context, void* userData));
-
-static inline void x_config_set_program_path(X_Config* config, const char* programPath)
-{
-    programPath = programPath;
-}
-
-static inline void x_config_screen_set_palette(X_Config* config, const X_Palette* palette)
-{
-    palette = palette;
-}
 

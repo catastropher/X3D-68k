@@ -41,8 +41,8 @@ static inline void init_object_factory(X_EngineContext* context)
 
 static inline void init_screen(X_EngineContext* context, X_Config* config)
 {
-    x_screen_init(context->getScreen(), config->screenW, config->screenH, &config->screenHandlers);
-    x_screen_set_palette(context->getScreen(), config->palette);
+    x_screen_init(context->getScreen(), config->screen->w, config->screen->h, &config->screen->screenHandlers);
+    x_screen_set_palette(context->getScreen(), config->screen->palette);
 }
 
 static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
@@ -103,7 +103,7 @@ void x_enginecontext_init(X_EngineContext* context, X_Config* config)
     
     init_object_factory(context);
     init_screen(context, config);
-    init_main_font(context, "font.xtex", 8, 8);     // TODO: this should be configurable
+    init_main_font(context, config->font, 8, 8);     // TODO: this should be configurable
     init_console(context);
     init_keystate(context);
     
@@ -111,7 +111,7 @@ void x_enginecontext_init(X_EngineContext* context, X_Config* config)
     
     init_level(context);
     
-    x_renderer_init(context->getRenderer(), context->getConsole(), context->getScreen(), config->fov);
+    x_renderer_init(context->getRenderer(), context->getConsole(), context->getScreen(), config->screen->fov.toFp16x16());
 }
 
 void x_enginecontext_restart_video(X_EngineContext* context)
