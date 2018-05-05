@@ -146,5 +146,142 @@ struct X_Config
     ScreenConfig* screen;
 };
 
+struct ConfigurationFileVariable
+{
+    const char* name;
+    const char* value;
+};
+
+class ConfigurationFileSection
+{
+public:
+    ConfigurationFileSection() : totalVars(0)
+    {
+    }
+
+    void setName(const char* newName)
+    {
+        name = newName;
+    }
+
+    const char* getName() const
+    {
+        return name;
+    }
+
+    void setPlatform(const char* newPlatform)
+    {
+        platform = newPlatform;
+    }
+
+    const char* getPlatform() const
+    {
+        return platform;
+    }
+
+    void setParent(ConfigurationFileSection* newParent)
+    {
+        parent = newParent;
+    }
+
+    void addVar(const char* varName, const char* value);
+    int getInt(const char* varName, bool required = false, int defaultValue = 0);
+    int getPositiveInt(const char* varName, bool requried = false, int defaultValue = 1);
+    void getStr(const char* varName, char* dest, bool requied = false, const char* defaultValue = "");
+
+private:
+    ConfigurationFileVariable* getByName(const char* name, bool required);
+
+    static const int MAX_VARS = 32;
+
+    const char* name;
+    const char* platform;
+    ConfigurationFileVariable vars[MAX_VARS];
+    int totalVars;
+    ConfigurationFileSection* parent;
+};
+
+class ConfigurationFile
+{
+public:
+    ConfigurationFile()
+        : currentSection(nullptr),
+        totalSections(1),
+        lineNumber(1),
+        colNumber(1),
+        fileContents(nullptr),
+        wasNewline(false)
+    {
+
+    }
+
+    bool load(const char* fileName, const char* platform_);
+    ConfigurationFileSection* getSection(const char* name);
+    ConfigurationFileSection* getSectionForPlatform(const char* name, const char* platformName);
+
+    ~ConfigurationFile();
+
+private:
+    char* getCurrentLocation()
+    {
+        return currentLocation;
+    }
+
+    static bool isValidIdentifier(const char* str)
+    {
+        int length = strlen(str);
+
+        return length > 0 && length < MAX_SECTION_NAME_LENGTH;
+    }
+
+    static bool stringIsWhitespace(const char* str)
+    {
+        while(*str)
+        {
+            if(*str != ' ' || *str != '\n')
+                return false;
+        }
+
+        return true;
+    }
+
+    void setSectionParents();
+
+    bool loadLine();
+    void skipWhitespace();
+    bool parseLine();
+    char getCh();
+    void nextCh();
+    void terminateString(char* strEnd);
+    bool eof();
+    
+    void parseSectionDecl();
+    void parseAssignment();
+    char* parseIdentifier();
+    char* parseRestOfLine();
+
+    void expect(char c);
+    void error(const char* msg);
+    ConfigurationFileSection* createOrGetSection(const char* name, const char* platform);
+
+    static const int MAX_SECTIONS = 64;
+    static const int MAX_LINE_LENGTH = 1024;
+    static const int MAX_SECTION_NAME_LENGTH = 128;
+
+    ConfigurationFileSection sections[MAX_SECTIONS];
+    ConfigurationFileSection* currentSection;
+    int totalSections;
+    
+    int lineNumber;
+    int colNumber;
+
+    char* fileContents;
+    char* fileEnd;
+    char* currentLocation;
+
+    bool wasNewline;
+    const char* platform;
+};
+
 void x_config_init(X_Config* config);
 

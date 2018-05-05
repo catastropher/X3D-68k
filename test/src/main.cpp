@@ -386,6 +386,17 @@ void x_socket_pc_register_interface(void);
 
 int main(int argc, char* argv[])
 {
+    ConfigurationFile file;
+    file.load("init.cfg", "pc");
+
+    auto section = file.getSectionForPlatform("screen", "pc");
+
+    int w = section->getInt("fov", true);
+
+    printf("Size: %d\n", w);
+
+    return 0;
+
     Context context;
     
     init(&context, argv[0]);
