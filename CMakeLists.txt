@@ -104,6 +104,7 @@ set(X_SOURCES
     # memory
     src/memory/X_alloc.cpp
     src/memory/X_Cache.cpp
+    src/memory/X_Memory.cpp
     src/memory/X_Factory.cpp
     src/memory/X_String.cpp
 

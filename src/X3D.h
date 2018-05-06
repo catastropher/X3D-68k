@@ -68,6 +68,7 @@
 #include "memory/X_Cache.h"
 #include "memory/X_Factory.h"
 #include "memory/X_Link.h"
+#include "memory/X_Memory.hpp"
 #include "memory/X_String.h"
 
 // net

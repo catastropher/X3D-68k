@@ -384,16 +384,26 @@ void gameloop(Context* context)
 
 void x_socket_pc_register_interface(void);
 
+#include <string>
+
 int main(int argc, char* argv[])
 {
-    ConfigurationFile file;
-    file.load("init.cfg", "pc");
+    Hunk::init(5000);
+    Zone::init(1000);
 
-    auto section = file.getSectionForPlatform("screen", "pc");
+    unsigned char* a = Zone::alloc<unsigned char>(100);
+    unsigned char* b = Zone::alloc<unsigned char>(100);
+    unsigned char* c = Zone::alloc<unsigned char>(100);
+    unsigned char* d = Zone::alloc<unsigned char>(100);
+    unsigned char* e = Zone::alloc<unsigned char>(100);
 
-    int w = section->getInt("fov", true);
+    Zone::free(a);
+    Zone::free(b);
+    Zone::free(c);
+    Zone::free(d);
+    Zone::free(e);
 
-    printf("Size: %d\n", w);
+    Zone::print();
 
     return 0;
 
