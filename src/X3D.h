@@ -65,6 +65,7 @@
 
 // memory
 #include "memory/X_alloc.h"
+#include "memory/X_Array.hpp"
 #include "memory/X_Cache.h"
 #include "memory/X_Factory.h"
 #include "memory/X_Link.h"

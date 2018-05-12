@@ -32,6 +32,7 @@ public:
     static void freeToLowMark(void* lowMark);
 
     static void init(int size);
+    static void cleanup();
 
     static void print();
 
@@ -92,6 +93,12 @@ public:
         return (T*)allocChunk(count * sizeof(T));
     }
 
+    template<typename T>
+    static T* realloc(T* ptr, int newCount)
+    {
+        return (T*)reallocChunk(ptr, newCount * sizeof(T));
+    }
+
     static void init(int size);
     static void free(void* ptr);
 
@@ -121,6 +128,8 @@ private:
         }
 
         Block* mergeWithNext(Block* next);
+        Block* trySplit(int size);
+        Block* tryMergeWithAdjacentBlocks();
 
         static const int MIN_SIZE = 64;
         static const unsigned int SIZE_MASK = 0x00FFFFFF;
@@ -130,8 +139,29 @@ private:
         unsigned int flags;
     };
 
+    static Block* blockFromChunk(void* ptr)
+    {
+        return (Block *)((unsigned char*)ptr - sizeof(Block));
+    }
+
+    static void* chunkFromBlock(Block* block)
+    {
+        return (void *)((unsigned char*)block + sizeof(Block));
+    }
+
     static Block* rover;
 
+    static void* tryAllocChunk(int size);
     static void* allocChunk(int size);
+    static void* reallocChunk(void* ptr, int newSize);
+};
+
+class ConfigurationFile;
+
+class MemoryManager
+{
+public:
+    static void init(ConfigurationFile& config);
+    static void cleanup();
 };
 

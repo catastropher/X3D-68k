@@ -357,6 +357,18 @@ int ConfigurationFileSection::getInt(const char* varName, bool required, int def
     return atoi(var->value);
 }
 
+int ConfigurationFileSection::getPositiveInt(const char* varName, bool required, int defaultValue)
+{
+    int val = getInt(varName, required, defaultValue);
+
+    if(val <= 0)
+    {
+        x_system_error("Expected positive value for %s", varName);
+    }
+
+    return val;
+}
+
 ConfigurationFileSection* ConfigurationFile::getSection(const char* name)
 {
     return getSectionForPlatform(name, platform);

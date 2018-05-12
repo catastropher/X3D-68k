@@ -41,7 +41,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
     #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O0 -g")
     
     set(X_WITH_SDL "1")
