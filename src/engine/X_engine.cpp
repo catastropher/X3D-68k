@@ -53,7 +53,7 @@ static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
 X_EngineContext* x_engine_init(X_Config* config)
 {
     if(g_engineInitialized)
-        x_system_error("Called x_engine_int() after engine already initialized");
+        x_system_error("Called x_engine_init() after engine already initialized");
     
     x_memory_init();
     x_filesystem_init(config->path);
@@ -69,8 +69,12 @@ X_EngineContext* x_engine_init(X_Config* config)
     x_enginecontext_init(engineContext, config);
     
     // Perform a vidrestart so that we call the client's screen initialization code
-    x_console_execute_cmd(engineContext->getConsole(), "vidrestart");
-    engineContext->getRenderer()->videoInitialized = 1;
+    // x_console_execute_cmd(engineContext->getConsole(), "vidrestart");
+    // engineContext->getRenderer()->videoInitialized = 1;
+
+    auto platform = engineContext->getPlatform();
+    
+    platform->init(*config);
 
     x_console_register_cmd(engineContext->getConsole(), "info", cmd_info);
     

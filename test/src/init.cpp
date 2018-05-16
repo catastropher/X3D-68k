@@ -29,34 +29,14 @@ static void init_camera(Context* context)
 {
     X_EngineContext* engineContext = context->engineContext;
     
-    context->cam = x_cameraobject_new(engineContext);
-    x_viewport_init(&context->cam->viewport, (X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), X_ANG_60);
-    x_screen_attach_camera(engineContext->getScreen(), context->cam);
-    context->cam->screenResizeCallback = cam_screen_size_changed_callback;
     
-    context->cam->angleX = 0;
-    context->cam->angleY = 0;
-    context->cam->collider.position = Vec3(0, -50 * 65536, -800 * 65536);
-    context->cam->collider.velocity = x_vec3_origin();
-    
-    x_cameraobject_update_view(context->cam);
 }
 
 static void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
 {
-    ScreenConfig screenConfig = ScreenConfig()
-        .fieldOfView(X_ANG_60)
-        .resolution(screenW, screenH)
-        .useQuakeColorPalette();
-
-    screen_set_callbacks(context, screenConfig);
-
-    X_Config config = X_Config()
-        .programPath(programPath)
-        .defaultFont("font.xtex")
-        .screenConfig(screenConfig);
     
-    context->engineContext = x_engine_init(&config);
+    
+
     context->engineContext->userData = context;
 }
 
@@ -69,12 +49,14 @@ static X_Vec2 determine_default_platform_resolution(void)
 #endif
 }
 
-void init(Context* context, const char* programPath)
+void init(Context* context, const char* programPath, X_Config& config)
 {
     X_Vec2 resolution = determine_default_platform_resolution();
-    init_x3d(context, resolution.x, resolution.y, programPath);    
-    init_camera(context);    
+    //init_x3d(context, resolution.x, resolution.y, programPath);    
+    //init_camera(context);    
     init_keys(context);
+
+    screen_set_callbacks(context, *config.screen);
     
     x_console_execute_cmd(context->engineContext->getConsole(), "searchpath ..");
     x_console_execute_cmd(context->engineContext->getConsole(), "exec engine.cfg");

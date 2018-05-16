@@ -47,6 +47,7 @@
 
 // game
 #include "game/X_Game.h"
+#include "game/X_Game.hpp"
 
 // level
 #include "level/X_BspLevel.h"

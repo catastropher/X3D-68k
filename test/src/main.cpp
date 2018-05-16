@@ -24,6 +24,8 @@
 #include "init.h"
 #include "render.h"
 
+#include "game.hpp"
+
 const char* x_game_name(void)
 {
     return "X3D Test";
@@ -59,23 +61,24 @@ void gameloop(Context* context)
 
 int main(int argc, char* argv[])
 {
-    Hunk::init(5000);
-    Zone::init(1000);
+    const char* programPath = argv[0];
 
-    Array<int> arr;
+    int screenW = 640;
+    int screenH = 480;
 
-    for(int i = 0; i < 2000; ++i)
-    {
-        printf("Iteration: %d\n", i);
-        Zone::print();
-        arr.push_back(50);
-    }
+    ScreenConfig screenConfig = ScreenConfig()
+        .fieldOfView(X_ANG_60)
+        .resolution(screenW, screenH)
+        .useQuakeColorPalette();
 
-    Context context;
-    
-    init(&context, argv[0]);
-    
-    gameloop(&context);
-    cleanup(&context);
+    //screen_set_callbacks(context, screenConfig);
+
+    X_Config config = X_Config()
+        .programPath(programPath)
+        .defaultFont("font.xtex")
+        .screenConfig(screenConfig);
+
+    TestGame game(config);
+    game.run();
 }
 

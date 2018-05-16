@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "engine/X_config.h"
 #include "memory/X_Factory.h"
 #include "render/X_Screen.h"
 #include "dev/X_Console.h"
@@ -54,6 +55,8 @@ typedef struct X_EngineContext
     X_BspLevel* getCurrentLevel() const { return currentLevel; }
     X_Renderer* getRenderer() const { return renderer; }
 
+    Platform* getPlatform() { return &platform; }
+
     void setCurrentLevel(X_BspLevel* level) { currentLevel = level; }
 
     X_GameObject activeObjectHead;
@@ -74,6 +77,8 @@ private:
     X_MouseState* mouseState;
     X_BspLevel* currentLevel;
     X_Renderer* renderer;
+
+    Platform platform;
 } X_EngineContext;
 
 void x_enginecontext_init(X_EngineContext* context, X_Config* config);

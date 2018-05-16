@@ -13,10 +13,5 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D/X3D.h>
-
-#include "Context.h"
-
-void init(Context* context, const char* programPath, X_Config& config);
-void cleanup(Context* context);
+#include "X_Game.hpp"
 

@@ -188,7 +188,10 @@ if(DEFINED X_WITH_SDL)
     find_package(SDL REQUIRED)
     include_directories(SDL_INCLUDE_DIR)
     
-    set(X_SOURCES ${X_SOURCES} src/platform/X_SDL.cpp)
+    set(X_SOURCES ${X_SOURCES}
+        src/platform/X_SDL.cpp
+        src/platform/SDL/X_SdlScreenDriver.cpp
+    )
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})

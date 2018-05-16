@@ -15,30 +15,13 @@
 
 #pragma once
 
-#include "platform/pc/X_PcPlatform.hpp"
+#include "engine/X_init.h"
+#include "platform/SDL/X_SdlScreenDriver.hpp"
 
-// Enables colord output for different types of logging
-#define X_ENABLE_COLOR_LOG 1
+class PcScreenDriver : public SdlScreenDriver
+{
+public:
 
-// Cursor blink time for the console (in ms)
-#define X_CONSOLE_CURSOR_BLINK_TIME 250
-
-// Total time for the console to open or close (in ms)
-#define X_CONSOLE_TOGGLE_TIME 250
-
-// Extension to automatically add to all files that are opened for reading
-#ifdef __nspire__
-#define X_FILE_AUTO_ADDED_EXTENSION ".tns"
-#endif
-
-// Nspire has no implementation of clock() so we use SDL_GetTicks()
-#ifdef __nspire__
-#define X_GET_TIME_USING_SDL
-#endif
-
-#define X_SDL_SUPPORT
-
-#ifndef __nspire__
-using Platform = PcPlatform;
-#endif
+private:
+};
 
