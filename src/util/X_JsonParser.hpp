@@ -15,20 +15,32 @@
 
 #pragma once
 
-#include <string>
+#include "X_Json.hpp"
 
-#include "X_Allocator.hpp"
-
-using String = std::basic_string<char, std::char_traits<char>, XAllocator<char>>;
-
-typedef struct X_String
+class JsonParser
 {
-    char* data;
-} X_String;
+public:
+    JsonParser(const char* start) : next(start)
+    {
 
-void x_string_init(X_String* str, const char* initialValue);
-void x_string_cleanup(X_String* str);
-X_String* x_string_assign(X_String* str, const char* value);
-X_String* x_string_concat(X_String* strToAppendTo, const X_String* strToAppend);
-X_String* x_string_concat_cstr(X_String* strToAppendTo, const char* strToAppend);
+    }
+
+    void expect(char c);
+    void expectWord(const char* word);
+
+    JsonValue* parse();
+
+private:
+    JsonValue* parseValue();
+    JsonValue* parseString();
+    JsonValue* parseObject();
+    JsonValue* parseArray();
+    JsonValue* parseNumber();
+    JsonValue* parseBool();
+    JsonValue* parseNull();
+
+    void skipWhitespace();
+
+    const char* next;
+};
 

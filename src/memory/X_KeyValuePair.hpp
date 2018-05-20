@@ -13,22 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include <string>
-
-#include "X_Allocator.hpp"
-
-using String = std::basic_string<char, std::char_traits<char>, XAllocator<char>>;
-
-typedef struct X_String
+template<typename Key, typename Value>
+struct KeyValuePair
 {
-    char* data;
-} X_String;
-
-void x_string_init(X_String* str, const char* initialValue);
-void x_string_cleanup(X_String* str);
-X_String* x_string_assign(X_String* str, const char* value);
-X_String* x_string_concat(X_String* strToAppendTo, const X_String* strToAppend);
-X_String* x_string_concat_cstr(X_String* strToAppendTo, const char* strToAppend);
+    Key key;
+    Value value;
+};
 

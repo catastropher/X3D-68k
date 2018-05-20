@@ -162,6 +162,7 @@ class MemoryManager
 {
 public:
     static void init(ConfigurationFile& config);
+    static void init(int hunkSize, int zoneSize);
     static void cleanup();
 };
 

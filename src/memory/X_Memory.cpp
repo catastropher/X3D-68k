@@ -395,6 +395,12 @@ void MemoryManager::init(ConfigurationFile& config)
     Zone::init(zoneSize);
 }
 
+void MemoryManager::init(int hunkSize, int zoneSize)
+{
+    Hunk::init(hunkSize);
+    Zone::init(zoneSize);
+}
+
 void MemoryManager::cleanup()
 {
     // Only the hunk needs to be cleaned up because the other allocators allocate

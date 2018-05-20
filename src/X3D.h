@@ -113,6 +113,7 @@
 #include "system/X_Time.h"
 
 // util
+#include "util/X_Json.hpp"
 #include "util/X_util.h"
 
 #ifdef X_SDL_SUPPORT

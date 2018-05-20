@@ -146,6 +146,8 @@ set(X_SOURCES
     src/system/X_PackFile.cpp
 
     # util
+    src/util/X_Json.cpp
+    src/util/X_JsonParser.cpp
     src/util/X_util.cpp
 )
 

@@ -73,7 +73,6 @@ X_EngineContext* x_engine_init(X_Config* config)
     // engineContext->getRenderer()->videoInitialized = 1;
 
     auto platform = engineContext->getPlatform();
-    
     platform->init(*config);
 
     x_console_register_cmd(engineContext->getConsole(), "info", cmd_info);

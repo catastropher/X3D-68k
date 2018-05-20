@@ -71,6 +71,16 @@ int main(int argc, char* argv[])
         .resolution(screenW, screenH)
         .useQuakeColorPalette();
 
+    MemoryManager::init(8 * 1024 * 1024, 1024 * 1024);
+
+    JsonValue* value = Json::parse("[\"hello world\", \"I like cats!\", \"Blah\"]");
+
+    String res = Json::stringify(value, true);
+
+    printf("%s\n", res.c_str());
+
+    return 0;
+
     //screen_set_callbacks(context, screenConfig);
 
     X_Config config = X_Config()
