@@ -39,6 +39,8 @@ private:
     JsonValue* parseBool();
     JsonValue* parseNull();
 
+    void parseStringLiteral(String& dest);
+
     void skipWhitespace();
 
     const char* next;

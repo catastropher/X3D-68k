@@ -73,9 +73,10 @@ int main(int argc, char* argv[])
 
     MemoryManager::init(8 * 1024 * 1024, 1024 * 1024);
 
-    JsonValue* value = Json::parse("[\"hello world\", \"I like cats!\", \"Blah\"]");
+    char str[1024];
+    fgets(str, 1024, stdin);
 
-    String res = Json::stringify(value, true);
+    String res = Json::stringify(Json::parse(str), true);
 
     printf("%s\n", res.c_str());
 

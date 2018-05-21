@@ -75,6 +75,14 @@ static void stringifyArray(JsonValue* value, bool pretty, int indent, String& de
         if(pretty)
         {
             dest.push_back('\n');
+
+            if(pretty)
+            {
+                for(int i = 0; i < indent + 1; ++i)
+                {
+                    dest.push_back('\t');
+                }
+            }
         }
 
         stringifyValue(arr[i], pretty, indent + 1, dest);
@@ -98,26 +106,103 @@ static void stringifyArray(JsonValue* value, bool pretty, int indent, String& de
     dest.push_back(']');
 }
 
-static void stringifyValue(JsonValue* value, bool pretty, int indent, String& dest)
+static void stringifyEscapedString(String& str, String& dest)
 {
+    dest.push_back('"');
+
+    for(int i = 0; i < (int)str.length(); ++i)
+    {
+        char c = '\0';
+
+        switch(str[i])
+        {
+            case '\\':      c = '\\'; break;
+            case '\b':       c = 'b'; break;
+            case '\n':       c = 'n'; break;
+            case '"':       c = '"'; break;
+            case '\f':       c = 'f'; break;
+            case '\r':       c = 'r'; break;
+            case '\t':       c = 't'; break;
+        }
+
+        if(c != '\0')
+        {
+            dest.push_back('\\');
+            dest.push_back(c);
+        }
+        else
+        {
+            dest.push_back(str[i]);
+        }
+    }
+
+    dest.push_back('"');
+}
+
+static void stringifyObject(JsonValue* value, bool pretty, int indent, String& dest)
+{
+    dest.push_back('{');
+
+    auto& pairs = value->object.pairs;
+    for(int i = 0; i < (int)pairs.size(); ++i)
+    {
+        if(pretty)
+        {
+            dest.push_back('\n');
+
+            if(pretty)
+            {
+                for(int i = 0; i < indent + 1; ++i)
+                {
+                    dest.push_back('\t');
+                }
+            }
+        }
+
+        stringifyEscapedString(pairs[i].key, dest);
+
+        dest.push_back(':');
+
+        if(pretty)
+        {
+            dest.push_back(' ');
+        }
+
+        stringifyValue(pairs[i].value, pretty, indent + 1, dest);
+
+        if(i != (int)pairs.size() - 1)
+        {
+            dest.push_back(',');
+        }
+    }
+
     if(pretty)
     {
+        dest.push_back('\n');
+
         for(int i = 0; i < indent; ++i)
         {
             dest.push_back('\t');
         }
     }
 
+    dest.push_back('}');
+}
+
+static void stringifyValue(JsonValue* value, bool pretty, int indent, String& dest)
+{
     switch(value->type)
     {
         case JSON_STRING:
-            dest.push_back('"');
-            dest += value->stringValue;
-            dest.push_back('"');
+            stringifyEscapedString(value->stringValue, dest);
             break;
 
         case JSON_ARRAY:
             stringifyArray(value, pretty, indent, dest);
+            break;
+
+        case JSON_OBJECT:
+            stringifyObject(value, pretty, indent, dest);
             break;
 
         default:
