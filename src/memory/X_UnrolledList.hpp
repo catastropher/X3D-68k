@@ -15,35 +15,22 @@
 
 #pragma once
 
-#include "X_Json.hpp"
+#include "X_MemoryAllocator.hpp"
 
-class JsonParser
+template<typename T>
+struct UnrolledListNode
 {
-public:
-    JsonParser(const char* start) : next(start)
+    short count;
+    short capacity;
+    UnrolledListNode* next;
+    T elem[];
+
+    static UnrolledListNode* alloc(MemoryAllocator& allocator, int capacity)
     {
+        auto node = allocator.allocBlock<UnrolledListNode<T>>(sizeof(UnrolledListNode) + sizeof(T) * capacity);
 
+        node->capacity = capacity;
+        node->count = 0;
     }
-
-    void expect(char c);
-    void expectWord(const char* word);
-
-    JsonValue* parse();
-
-private:
-    JsonValue* parseValue();
-    JsonValue* parseString();
-    JsonValue* parseObject();
-    JsonValue* parseArray();
-    JsonValue* parseNumber();
-    JsonValue* parseTrue();
-    JsonValue* parseFalse();
-    JsonValue* parseNull();
-
-    void parseStringLiteral(String& dest);
-
-    void skipWhitespace();
-
-    const char* next;
 };
 

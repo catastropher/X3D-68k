@@ -21,6 +21,7 @@
 #include "util/X_util.h"
 #include "memory/X_String.h"
 #include "engine/X_init.h"
+#include "util/X_Json.hpp"
 
 unsigned char* Hunk::memoryStart;
 unsigned char* Hunk::memoryEnd;
@@ -399,6 +400,7 @@ void MemoryManager::init(int hunkSize, int zoneSize)
 {
     Hunk::init(hunkSize);
     Zone::init(zoneSize);
+    Json::init();
 }
 
 void MemoryManager::cleanup()

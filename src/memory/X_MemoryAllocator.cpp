@@ -13,37 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_MemoryAllocator.hpp"
 
-#include "X_Json.hpp"
 
-class JsonParser
-{
-public:
-    JsonParser(const char* start) : next(start)
-    {
-
-    }
-
-    void expect(char c);
-    void expectWord(const char* word);
-
-    JsonValue* parse();
-
-private:
-    JsonValue* parseValue();
-    JsonValue* parseString();
-    JsonValue* parseObject();
-    JsonValue* parseArray();
-    JsonValue* parseNumber();
-    JsonValue* parseTrue();
-    JsonValue* parseFalse();
-    JsonValue* parseNull();
-
-    void parseStringLiteral(String& dest);
-
-    void skipWhitespace();
-
-    const char* next;
-};
 

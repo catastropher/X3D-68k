@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <cstring>
+
 #include "X_Json.hpp"
 #include "error/X_error.h"
 #include "X_JsonParser.hpp"
@@ -191,6 +193,8 @@ static void stringifyObject(JsonValue* value, bool pretty, int indent, String& d
 
 static void stringifyValue(JsonValue* value, bool pretty, int indent, String& dest)
 {
+    char buf[32];
+
     switch(value->type)
     {
         case JSON_STRING:
@@ -203,6 +207,24 @@ static void stringifyValue(JsonValue* value, bool pretty, int indent, String& de
 
         case JSON_OBJECT:
             stringifyObject(value, pretty, indent, dest);
+            break;
+
+        case JSON_INT:
+            sprintf(buf, "%d", value->iValue);
+            dest += buf;
+            break;
+
+        case JSON_FP:
+            sprintf(buf, "%.4f", value->fpValue.toFloat());
+            dest += buf;
+            break;
+
+        case JSON_BOOL:
+            dest += (value->boolValue ? "true" : "false");
+            break;
+
+        case JSON_NULL:
+            dest += "null";
             break;
 
         default:
@@ -218,7 +240,40 @@ String Json::stringify(JsonValue* value, bool pretty)
     return res;
 }
 
+JsonValue& JsonValue::operator[](int index)
+{
+    if(type != JSON_ARRAY)
+    {
+        x_system_error("Json type is not array");
+    }
 
+    if(index < 0 || index >= (int)array.values.size())
+    {
+        x_system_error("Json array index out of bounds");
+    }
 
+    return *array.values[index];
+}
 
+JsonValue& JsonValue::operator[](const char* name)
+{
+    if(type != JSON_OBJECT)
+    {
+        x_system_error("Json type is not object");
+    }
+
+    for(int i = 0; i < (int)object.pairs.size(); ++i)
+    {
+        if(strcmp(object.pairs[i].key.c_str(), name) == 0)
+        {
+            return *object.pairs[i].value;
+        }
+    }
+
+    return JsonValue::nullValue;
+}
+
+JsonValue JsonValue::nullValue;
+JsonValue JsonValue::trueValue;
+JsonValue JsonValue::falseValue;
 

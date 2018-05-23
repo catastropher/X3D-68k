@@ -37,6 +37,15 @@ struct JsonValue;
 
 struct JsonObject
 {
+    void addProperty(const char* name, JsonValue* value)
+    {
+        KeyValuePair<String, JsonValue*> pair;
+        pair.key = name;
+        pair.value = value;
+
+        pairs.push_back(std::move(pair));
+    }
+
     Array<KeyValuePair<String, JsonValue*>> pairs;
 };
 
@@ -47,6 +56,8 @@ struct JsonArray
 
 struct JsonValue
 {
+    JsonValue() { }
+
     ~JsonValue();
 
     JsonType type;
@@ -60,6 +71,13 @@ struct JsonValue
         bool boolValue;
         String stringValue;
     };
+
+    JsonValue& operator[](int index);
+    JsonValue& operator[](const char* name);
+
+    static JsonValue nullValue;
+    static JsonValue trueValue;
+    static JsonValue falseValue;
 
     friend class Json;
 };
@@ -116,7 +134,19 @@ public:
 
     static JsonValue* parse(const char* str);
 
+    friend class MemoryManager;
+
 private:
+    static void init()
+    {
+        JsonValue::nullValue.type = JSON_NULL;
+
+        JsonValue::trueValue.type = JSON_BOOL;
+        JsonValue::trueValue.boolValue = true;
+
+        JsonValue::falseValue.type = JSON_BOOL;
+        JsonValue::falseValue.boolValue = false;
+    }
     
 };
 

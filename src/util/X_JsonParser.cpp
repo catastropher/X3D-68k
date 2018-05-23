@@ -36,15 +36,17 @@ JsonValue* JsonParser::parseValue()
         case '{':
             return parseObject();
 
-        // case 't':
-        // case 'f':
-        //     return parseBool();
+        case 't':
+            return parseTrue();
 
-        // case 'n':
-        //     return parseNull();
+        case 'f':
+            return parseFalse();
 
-        // case '0'...'9':
-        //     return parseNumber();
+        case 'n':
+            return parseNull();
+
+        case '0'...'9':
+            return parseNumber();
 
         default:
             x_system_error("Unexpected character '%c'\n", *next);
@@ -133,6 +135,66 @@ JsonValue* JsonParser::parseObject()
     return objectValue;
 }
 
+JsonValue* JsonParser::parseNumber()
+{
+    bool isFloat = false;
+    char buf[128];
+    char* bufptr = buf;
+
+    do
+    {
+        if(*next == '.')
+        {
+            isFloat = true;
+        }
+        else if(*next < '0' || *next > '9')
+        {
+            break;
+        }
+
+        *bufptr++ = *next++;
+    } while(true);
+
+    JsonValue* value;
+
+    if(isFloat)
+    {
+        value = Json::newValue(JSON_FP);
+        value->fpValue = fp::fromFloat(atof(buf));
+    }
+    else
+    {
+        value = Json::newValue(JSON_INT);
+        value->iValue = atoi(buf);
+    }
+
+    return value;
+}
+
+JsonValue* JsonParser::parseTrue()
+{
+    expectWord("true");
+
+    return &JsonValue::trueValue;
+}
+
+JsonValue* JsonParser::parseFalse()
+{
+    expectWord("false");
+
+    JsonValue* value = Json::newValue(JSON_BOOL);
+    value->boolValue = false;
+
+    return &JsonValue::falseValue;
+}
+
+JsonValue* JsonParser::parseNull()
+{
+    expectWord("null");
+
+    return &JsonValue::nullValue;
+}
+
 void JsonParser::parseStringLiteral(String& dest)
 {
     expect('"');
@@ -193,4 +255,19 @@ void JsonParser::expect(char c)
 
     ++next;
 }
+
+void JsonParser::expectWord(const char* word)
+{
+    const char* ptr = word;
+
+    while(*ptr)
+    {
+        if(*next == '\0' || *next++ != *ptr++)
+        {
+            x_system_error("Expected \"%s\"", word);
+        }
+    }
+}
+
+
 
