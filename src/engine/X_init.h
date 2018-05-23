@@ -295,5 +295,30 @@ struct X_Config
     ConfigurationFile configFile;
 };
 
+struct ConsoleConfig
+{
+
+};
+
+struct LogConfig
+{
+    bool enabled = true;
+    const char* file = "engine.log";
+};
+
+struct ScreenConfig2
+{
+    const X_Palette* palette;
+    int screenW;
+    int screenH;
+    bool fullscreen;
+};
+
+struct Config
+{
+    ConsoleConfig console;
+    
+};
+
 void x_config_init(X_Config* config);
 

@@ -269,5 +269,3 @@ void JsonParser::expectWord(const char* word)
     }
 }
 
-
-

@@ -26,39 +26,6 @@
 
 #include "game.hpp"
 
-const char* x_game_name(void)
-{
-    return "X3D Test";
-}
-
-int x_game_major_version(void)
-{
-    return 0;
-}
-
-int x_game_minor_version(void)
-{
-    return 1;
-}
-
-void gameloop(Context* context)
-{
-    
-    //x_console_execute_cmd(&context->engineContext->console, "map e1m1");
-    //x_gameobjectloader_load_objects(context->engineContext, context->engineContext->currentLevel.entityDictionary);
-    
-    while(!context->quit)
-    {   
-        X_RenderContext renderContext;
-        x_enginecontext_get_rendercontext_for_camera(context->engineContext, context->cam, &renderContext);
-        
-        render(context);
-
-        handle_keys(context);
-        screen_update(context);
-    }    
-}
-
 int main(int argc, char* argv[])
 {
     const char* programPath = argv[0];

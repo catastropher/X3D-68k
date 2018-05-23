@@ -37,17 +37,17 @@ X_Console* x_engine_get_console(void)
 
 static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
 {
-    x_console_printf
-    (
-        engineContext->getConsole(),
-        "\"%s\" %d.%d\nX3D version %d.%d\nCurrent map: %s\n",
-        x_game_name(),
-        x_game_major_version(),
-        x_game_minor_version(),
-        X_MAJOR_VERSION,
-        X_MINOR_VERSION,
-        x_engine_level_is_loaded(engineContext) ? engineContext->getCurrentLevel()->name : "<no level loaded>"
-    );
+    // x_console_printf
+    // (
+    //     engineContext->getConsole(),
+    //     "\"%s\" %d.%d\nX3D version %d.%d\nCurrent map: %s\n",
+    //     x_game_name(),
+    //     x_game_major_version(),
+    //     x_game_minor_version(),
+    //     X_MAJOR_VERSION,
+    //     X_MINOR_VERSION,
+    //     x_engine_level_is_loaded(engineContext) ? engineContext->getCurrentLevel()->name : "<no level loaded>"
+    // );
 }
 
 X_EngineContext* x_engine_init(X_Config* config)
