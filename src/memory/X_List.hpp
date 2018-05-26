@@ -15,30 +15,12 @@
 
 #pragma once
 
-#include <cstdarg>
+#include <new>
 
-struct LogConfig;
+#include "memory/X_Memory.hpp"
 
-class Log
+template<typename T>
+struct Link
 {
-public:
-    static void init(const char* logFile, bool enableLogging);
-    static void cleanup();
-
-    static void log(const char* format, ...);
-    static void logSub(const char* format, ...);
-
-private:
-    static void writeToLog(const char* format, va_list list);
-    static void writeToLog(const char* screenText, const char* fileText);
-    static void writeToLog(char c);
+    T* next;
 };
-
-void x_log_init(void);
-void x_log_cleanup(void);
-
-// Here for backwards compatibility
-#define x_log(_args...) Log::log(_args)
-
-void x_log_error(const char* format, ...);
-

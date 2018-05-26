@@ -50,15 +50,15 @@ JsonValue::~JsonValue()
 }
 
 template<>
-int fromJson<int>(JsonValue* value)
+int fromJson<int>(JsonValue& value)
 {
-    switch(value->type)
+    switch(value.type)
     {
         case JSON_INT:
-            return value->iValue;
+            return value.iValue;
         
         case JSON_FP:
-            return value->fpValue.toInt();
+            return value.fpValue.toInt();
 
         default:
             x_system_error("Value is not an int\n");

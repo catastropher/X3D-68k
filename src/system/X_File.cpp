@@ -26,6 +26,7 @@
 #include "memory/X_alloc.h"
 #include "memory/X_String.h"
 #include "engine/X_config.h"
+#include "engine/X_init.h"
 #include "util/X_util.h"
 #include "math/X_Mat4x4.h"
 
@@ -34,6 +35,8 @@
 
 static X_String g_searchPaths;
 static char g_programPath[256];
+
+FilesystemSearchPath Filesystem::rootSearchPath;
 
 static inline void determine_file_size(X_File* file)
 {
@@ -89,8 +92,9 @@ static void log_search_paths(void)
     char* nextSearchPath = g_searchPaths.data;
     char path[512];
     
-    while(get_next_search_path(&nextSearchPath, path))
-        x_log_error("    Searched %s", path);
+    // FIXME: need to traverse list of file paths
+    //while(get_next_search_path(&nextSearchPath, path))
+    //    x_log_error("    Searched %s", path);
 }
 
 bool x_file_open_reading(X_File* file, const char* fileName)
@@ -100,10 +104,12 @@ bool x_file_open_reading(X_File* file, const char* fileName)
     file->file = NULL;
     
     char nextFileToSearch[512];
-    char* nextSearchPath = g_searchPaths.data;
+    const FilesystemSearchPath* searchPath = Filesystem::getRootSearchPath();
+
     
-    while(!file->file && get_next_search_path(&nextSearchPath, nextFileToSearch))
+    while(!file->file && searchPath)
     {
+        strcpy(nextFileToSearch, searchPath->path);
         strcat(nextFileToSearch, "/");
         strcat(nextFileToSearch, fileName);
         
@@ -612,4 +618,19 @@ bool x_file_open_from_packfile(X_File* file, const char* fileName)
     
     return 0;
 }
+
+void Filesystem::init(const char* programPath)
+{
+    if(programPath == nullptr)
+    {
+        x_system_error("No program path in config");
+    }
+
+    x_filepath_extract_path(programPath, rootSearchPath.path);
+
+    // FIXME: only here for backwards compat
+    strcpy(g_programPath, rootSearchPath.path);
+}
+
+
 

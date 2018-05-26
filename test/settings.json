@@ -1,0 +1,14 @@
+{
+    "filesystem": {
+        "paths": [
+            "../assets",
+            "../maps"
+        ]
+    },
+    
+    "screen": {
+        "w": 640,
+        "h": 480,
+        "fullscreen": false
+    }
+}

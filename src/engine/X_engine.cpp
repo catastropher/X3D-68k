@@ -21,6 +21,8 @@
 #include "geo/X_Polygon3.h"
 #include "platform/X_Platform.h"
 #include "game/X_Game.h"
+#include "memory/X_Memory.hpp"
+#include "util/X_JsonParser.hpp"
 
 static bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -50,6 +52,13 @@ static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
     // );
 }
 
+void initSystem(SystemConfig& config)
+{
+    Filesystem::init(config.programPath);
+    Log::init(config.logFile, config.enableLogging);
+    MemoryManager::init(config.hunkSize, config.zoneSize);
+}
+
 X_EngineContext* x_engine_init(X_Config* config)
 {
     if(g_engineInitialized)
@@ -57,7 +66,7 @@ X_EngineContext* x_engine_init(X_Config* config)
     
     x_memory_init();
     x_filesystem_init(config->path);
-    x_log_init();
+    //x_log_init();
     x_filesystem_add_search_path("../assets");
     
     X_EngineContext* engineContext = x_engine_get_context();
@@ -67,10 +76,6 @@ X_EngineContext* x_engine_init(X_Config* config)
 
     x_platform_init(engineContext, config);
     x_enginecontext_init(engineContext, config);
-    
-    // Perform a vidrestart so that we call the client's screen initialization code
-    // x_console_execute_cmd(engineContext->getConsole(), "vidrestart");
-    // engineContext->getRenderer()->videoInitialized = 1;
 
     auto platform = engineContext->getPlatform();
     platform->init(*config);

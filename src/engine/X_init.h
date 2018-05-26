@@ -17,6 +17,7 @@
 
 #include "render/X_Screen.h"
 #include "error/X_error.h"
+#include "util/X_Json.hpp"
 
 struct ConfigurationFileVariable
 {
@@ -295,6 +296,8 @@ struct X_Config
     ConfigurationFile configFile;
 };
 
+struct JsonValue;
+
 struct ConsoleConfig
 {
 
@@ -306,6 +309,11 @@ struct LogConfig
     const char* file = "engine.log";
 };
 
+struct FilesystemConfig
+{
+    const char* programPath = nullptr;
+};
+
 struct ScreenConfig2
 {
     const X_Palette* palette;
@@ -314,10 +322,36 @@ struct ScreenConfig2
     bool fullscreen;
 };
 
+struct MemoryConfig
+{
+    int hunkSize;
+    int zoneSize;
+};
+
 struct Config
 {
     ConsoleConfig console;
-    
+    FilesystemConfig filesystem;
+    LogConfig log;
+    MemoryConfig memory;
+
+    JsonValue* configJson;
+
+    JsonValue& operator[](const char* name)
+    {
+        return (*configJson)[name];
+    }
+
+    const char* configFile;
+};
+
+struct SystemConfig
+{
+    const char* programPath = nullptr;
+    const char* logFile = "engine.log";
+    int hunkSize = 8 * 1024 * 1024;
+    int zoneSize = 1024 * 1024;
+    bool enableLogging = true;
 };
 
 void x_config_init(X_Config* config);

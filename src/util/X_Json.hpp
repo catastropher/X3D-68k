@@ -21,6 +21,7 @@
 #include "memory/X_KeyValuePair.hpp"
 #include "memory/X_String.h"
 #include "math/X_fix.h"
+#include "error/X_error.h"
 
 enum JsonType
 {
@@ -54,6 +55,48 @@ struct JsonArray
     Array<JsonValue*> values;
 };
 
+struct JsonValue;
+
+template<typename T>
+inline T fromJson(JsonValue& value)
+{
+    return T::fromJson(value);
+}
+
+template<typename T>
+class JsonArrayIterator
+{
+public:
+    JsonArrayIterator(JsonValue** ptr_) : ptr(ptr_) { }
+
+    JsonArrayIterator operator++()
+    {
+        return JsonArrayIterator(++ptr);
+    }
+
+    JsonArrayIterator operator++(int)
+    {
+        return JsonArrayIterator(ptr++);
+    }
+
+    bool operator==(const JsonArrayIterator& it) const
+    {
+        return ptr == it.ptr;
+    }
+
+    bool operator!=(const JsonArrayIterator& it) const
+    {
+        return !(*this == it);
+    }
+
+    T operator*()
+    {
+        return fromJson<T>(**ptr);
+    }
+
+    JsonValue** ptr;
+};
+
 struct JsonValue
 {
     JsonValue() { }
@@ -75,6 +118,28 @@ struct JsonValue
     JsonValue& operator[](int index);
     JsonValue& operator[](const char* name);
 
+    template<typename T>
+    JsonArrayIterator<T> begin()
+    {
+        if(type != JSON_ARRAY)
+        {
+            x_system_error("Type is not array");
+        }
+
+        return JsonArrayIterator<T>(&array.values[0]);
+    }
+
+    template<typename T>
+    JsonArrayIterator<T> end()
+    {
+        if(type != JSON_ARRAY)
+        {
+            x_system_error("Type is not array");
+        }
+
+        return JsonArrayIterator<T>(&array.values[array.values.size()]);
+    }
+
     static JsonValue nullValue;
     static JsonValue trueValue;
     static JsonValue falseValue;
@@ -82,14 +147,8 @@ struct JsonValue
     friend class Json;
 };
 
-template<typename T>
-inline T fromJson(JsonValue* value)
-{
-    return T::fromJson(value);
-}
-
 template<>
-int fromJson<int>(JsonValue* value);
+int fromJson<int>(JsonValue& value);
 
 class Json
 {
@@ -226,4 +285,3 @@ inline JsonValue* toJson(Array<T>& arr)
 
     return jsonValue;
 }
-

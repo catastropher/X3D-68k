@@ -18,6 +18,7 @@
 
 #include "X_Memory.hpp"
 #include "error/X_error.h"
+#include "error/X_log.h"
 #include "util/X_util.h"
 #include "memory/X_String.h"
 #include "engine/X_init.h"
@@ -33,6 +34,8 @@ Zone::Block* Zone::rover;
 
 void Hunk::init(int size)
 {
+    Log::logSub("Init hunk size = %d", size);
+
     memoryStart = (unsigned char *)malloc(size);
     if(!memoryStart)
     {
@@ -353,6 +356,8 @@ Zone::Block* Zone::Block::trySplit(int size)
 
 void Zone::init(int size)
 {
+    Log::logSub("Init zone size = %d", size);
+
     unsigned char* mem = (unsigned char*)Hunk::allocLow(size, "zone");
     Block* block = (Block*)(mem + sizeof(Block));
 
@@ -385,19 +390,10 @@ void Zone::print()
     printf("============================\n");
 }
 
-void MemoryManager::init(ConfigurationFile& config)
-{
-    auto section = config.getSection("memory");
-
-    int hunkSize = section->getPositiveInt("hunkSize", false, 8 * 1024 * 1024);
-    Hunk::init(hunkSize);
-    
-    int zoneSize = section->getPositiveInt("zoneSize", false, 48 * 1024);
-    Zone::init(zoneSize);
-}
-
 void MemoryManager::init(int hunkSize, int zoneSize)
 {
+    Log::log("Initializing memory manager");
+
     Hunk::init(hunkSize);
     Zone::init(zoneSize);
     Json::init();

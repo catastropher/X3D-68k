@@ -21,6 +21,7 @@
 
 #include "geo/X_Vec3.h"
 #include "geo/X_Vec2.h"
+#include "memory/X_List.hpp"
 
 struct X_Mat4x4;
 
@@ -116,4 +117,25 @@ static inline bool x_file_is_open(const X_File* file)
 {
     return x_file_is_open_for_reading(file) || x_file_is_open_for_writing(file);
 }
+
+struct FilesystemConfig;
+
+struct FilesystemSearchPath : Link<FilesystemSearchPath>
+{
+    char path[X_FILENAME_MAX_LENGTH];
+};
+
+class Filesystem
+{
+public:
+    static void init(const char* programPath);
+
+    static const FilesystemSearchPath* getRootSearchPath()
+    {
+        return &rootSearchPath;
+    }
+
+private:
+    static FilesystemSearchPath rootSearchPath;
+};
 
