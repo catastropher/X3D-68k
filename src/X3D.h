@@ -107,6 +107,8 @@
 
 // system
 #include "system/X_File.h"
+#include "system/X_File2.hpp"
+#include "system/X_FilePath.hpp"
 #include "system/X_Keys.h"
 #include "system/X_Mouse.h"
 #include "system/X_PackFile.h"
