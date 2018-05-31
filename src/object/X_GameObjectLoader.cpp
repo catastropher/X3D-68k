@@ -162,7 +162,7 @@ void x_gameobjectloader_load_objects(X_EngineContext* engineContext, const char*
                 printf("\t%s -> %s\n", edict.attributes[i].name, edict.attributes[i].value);
             }
             
-            x_objectfactory_create_object_from_edict(&engineContext->gameObjectFactory, &edict);
+            x_objectfactory_create_object_from_edict(engineContext->getGameObjectFactory(), &edict);
         }
     }
 }

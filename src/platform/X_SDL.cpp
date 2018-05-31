@@ -96,7 +96,7 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
             int x3dUnicodeCharacter = translate_sdl_key_to_x3d_key(unicodeCharacter);
             
             if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_press(&engineContext->keystate, (X_Key)x3dKey, (X_Key)x3dUnicodeCharacter);
+                x_keystate_send_key_press(engineContext->getKeyState(), (X_Key)x3dKey, (X_Key)x3dUnicodeCharacter);
         }
         else if(ev.type == SDL_KEYUP)
         {
@@ -104,14 +104,14 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
             int x3dKey = translate_sdl_key_to_x3d_key((SDLKey)sdlKey);
             
             if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_release(&engineContext->keystate, (X_Key)x3dKey);
+                x_keystate_send_key_release(engineContext->getKeyState(), (X_Key)x3dKey);
         }
     }
 }
 
 void x_sdl_handle_mouse(X_EngineContext* engineContext)
 {
-    X_MouseState* state = &engineContext->mouseState;
+    X_MouseState* state = engineContext->getMouseState();
     
     int x, y;
     SDL_GetMouseState(&x, &y);

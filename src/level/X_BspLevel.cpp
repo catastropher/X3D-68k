@@ -357,9 +357,6 @@ void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderConte
         x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
 }
 
-
-void renderSurfaces(X_RenderContext* renderContext);
-
 void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
 {
     x_bsplevel_reset_bspkeys(level);
@@ -367,12 +364,10 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
     
     X_BoundBoxFrustumFlags enableAllPlanes = (X_BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
     
-     if(!x_keystate_key_down(&renderContext->engineContext->keystate, (X_Key)'g'))
+     if(!x_keystate_key_down(renderContext->engineContext->getKeyState(), (X_Key)'g'))
         x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
     
     x_bsplevel_render_submodels(level, renderContext);
-    
-    renderSurfaces(renderContext);
 }
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)

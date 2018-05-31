@@ -41,7 +41,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
     #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O0 -g")
     
     set(X_WITH_SDL "1")
@@ -69,6 +69,10 @@ set(X_SOURCES
     src/dev/X_DemoPlayer.cpp
     src/dev/X_DemoRecorder.cpp
     src/dev/X_TokenLexer.cpp
+
+        # dev/console
+        src/dev/console/X_ConsoleVariable.cpp
+        src/dev/console/X_ConsoleVariableInt.cpp
 
     # engine
     src/engine/X_engine.cpp
@@ -104,6 +108,7 @@ set(X_SOURCES
     # memory
     src/memory/X_alloc.cpp
     src/memory/X_Cache.cpp
+    src/memory/X_Memory.cpp
     src/memory/X_Factory.cpp
     src/memory/X_String.cpp
 
@@ -123,7 +128,6 @@ set(X_SOURCES
     src/physics/X_BoxCollider.cpp
 
     # render
-    src/render/new-renderer.cpp
     src/render/X_activeedge.cpp
     src/render/X_Font.cpp
     src/render/X_Palette.cpp
@@ -146,6 +150,8 @@ set(X_SOURCES
     src/system/X_PackFile.cpp
 
     # util
+    src/util/X_Json.cpp
+    src/util/X_JsonParser.cpp
     src/util/X_util.cpp
 )
 
@@ -188,7 +194,10 @@ if(DEFINED X_WITH_SDL)
     find_package(SDL REQUIRED)
     include_directories(SDL_INCLUDE_DIR)
     
-    set(X_SOURCES ${X_SOURCES} src/platform/X_SDL.cpp)
+    set(X_SOURCES ${X_SOURCES}
+        src/platform/X_SDL.cpp
+        src/platform/SDL/X_SdlScreenDriver.cpp
+    )
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})

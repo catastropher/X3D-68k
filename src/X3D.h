@@ -47,6 +47,7 @@
 
 // game
 #include "game/X_Game.h"
+#include "game/X_Game.hpp"
 
 // level
 #include "level/X_BspLevel.h"
@@ -65,9 +66,11 @@
 
 // memory
 #include "memory/X_alloc.h"
+#include "memory/X_Array.hpp"
 #include "memory/X_Cache.h"
 #include "memory/X_Factory.h"
 #include "memory/X_Link.h"
+#include "memory/X_Memory.hpp"
 #include "memory/X_String.h"
 
 // net
@@ -110,6 +113,7 @@
 #include "system/X_Time.h"
 
 // util
+#include "util/X_Json.hpp"
 #include "util/X_util.h"
 
 #ifdef X_SDL_SUPPORT

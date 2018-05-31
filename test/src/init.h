@@ -17,6 +17,6 @@
 
 #include "Context.h"
 
-void init(Context* context, const char* programPath);
+void init(Context* context, const char* programPath, X_Config& config);
 void cleanup(Context* context);
 

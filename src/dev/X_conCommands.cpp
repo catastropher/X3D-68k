@@ -22,16 +22,16 @@
 static void cmd_echo(X_EngineContext* context, int argc, char* argv[])
 {
     for(int i = 1; i < argc; ++i)
-        x_console_printf(&context->console, "%s ", argv[i]);
+        x_console_printf(context->getConsole(), "%s ", argv[i]);
     
-    x_console_print(&context->console, "\n");
+    x_console_print(context->getConsole(), "\n");
 }
 
 static void cmd_map(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: map [filename] -> loads a map file\n");
+        x_console_print(context->getConsole(), "Usage: map [filename] -> loads a map file\n");
         return;
     }
     
@@ -40,36 +40,37 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     x_filepath_set_default_file_extension(fileName, ".bsp");
     
     // FIXME: this doesn't belong here
-    x_cache_flush(&context->renderer.surfaceCache);
+    x_cache_flush(&context->getRenderer()->surfaceCache);
     
     X_BspLevel tempLevel;
     
     if(!x_bsplevel_load_from_bsp_file(&tempLevel, fileName))
     {
-        x_console_printf(&context->console, "Failed to load map %s\n", fileName);
+        x_console_printf(context->getConsole(), "Failed to load map %s\n", fileName);
         return;
     }
     
     if(x_engine_level_is_loaded(context))
-        x_bsplevel_cleanup(&context->currentLevel);
+        x_bsplevel_cleanup(context->getCurrentLevel());
     
-    context->currentLevel = tempLevel;
+    // FIXME: omg why
+    *context->getCurrentLevel() = tempLevel;
     
-    x_console_printf(&context->console, "Loaded map %s\n", fileName);
+    x_console_printf(context->getConsole(), "Loaded map %s\n", fileName);
 }
 
 static void cmd_packlist(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: packlist [pack file name] -> prints the filenames of the files in a pack file\n");
+        x_console_print(context->getConsole(), "Usage: packlist [pack file name] -> prints the filenames of the files in a pack file\n");
         return;
     }
     
     X_PackFile file;
     if(!x_packfile_read_from_file(&file, argv[1]))
     {
-        x_console_printf(&context->console, "Failed to read packfile %s\n", argv[1]);
+        x_console_printf(context->getConsole(), "Failed to read packfile %s\n", argv[1]);
         return;
     }
     
@@ -85,20 +86,20 @@ static void cmd_packextract(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 3)
     {
-        x_console_print(&context->console, "Usage: packextract [pack file name] [dir] -> extracts the files in the pack file to [dir]\n");
+        x_console_print(context->getConsole(), "Usage: packextract [pack file name] [dir] -> extracts the files in the pack file to [dir]\n");
         return;
     }
     
     X_PackFile file;
     if(!x_packfile_read_from_file(&file, argv[1]))
     {
-        x_console_printf(&context->console, "Failed to read packfile %s\n", argv[1]);
+        x_console_printf(context->getConsole(), "Failed to read packfile %s\n", argv[1]);
         return;
     }
     
     if(!x_packfile_extract(&file, argv[2]))
     {
-        x_console_printf(&context->console, "Failed to extract packfile %s\n", argv[1]);
+        x_console_printf(context->getConsole(), "Failed to extract packfile %s\n", argv[1]);
         return;
     }
     
@@ -109,20 +110,20 @@ static void cmd_searchpath(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: searchpath [path] -> adds a new search path to look in when opening a file\n");
+        x_console_print(context->getConsole(), "Usage: searchpath [path] -> adds a new search path to look in when opening a file\n");
         return;
     }
     
     // TODO: check that path exists?
     x_filesystem_add_search_path(argv[1]);
-    x_console_printf(&context->console, "Added search path %s\n", argv[1]);
+    x_console_printf(context->getConsole(), "Added search path %s\n", argv[1]);
 }
 
 static void cmd_exec(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: exec [file] -> executes a console script file\n");
+        x_console_print(context->getConsole(), "Usage: exec [file] -> executes a console script file\n");
         return;
     }
     
@@ -131,14 +132,14 @@ static void cmd_exec(X_EngineContext* context, int argc, char* argv[])
     
     if(!x_file_open_reading(&file, argv[1]))
     {
-        x_console_printf(&context->console, "Failed to open file %s for execution\n", argv[1]);
+        x_console_printf(context->getConsole(), "Failed to open file %s for execution\n", argv[1]);
         return;
     }
     
     while(x_file_read_line(&file, sizeof(line), line))
     {
         if(*line)
-            x_console_execute_cmd(&context->console, line);
+            x_console_execute_cmd(context->getConsole(), line);
     }
 }
 

@@ -26,6 +26,10 @@
 
 #define X_SIGNOF(_v) ((_v) < 0 ? -1 : ((_v) > 0 ? 1 : 0))
 
+static inline int nearestPowerOf2(int x, int powerOf2)
+{
+    return (x + powerOf2 - 1) & ~(powerOf2 - 1);
+}
 
 static inline void x_print_binary(const char* label, int num, int bits)
 {

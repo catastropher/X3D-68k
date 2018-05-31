@@ -40,7 +40,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan -D_Bool=bool")
+    set(CMAKE_CXX_FLAGS "-fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan -D_Bool=bool")
     #set(CMAKE_C_FLAGS "-std=gnu99 -Wall -g")
     add_definitions(-D__pc__)
 elseif(${XTARGET} STREQUAL "nspire")

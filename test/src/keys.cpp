@@ -38,42 +38,42 @@ static void cmd_demo(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage demo [filename] -> begins recording a demo\n");
+        x_console_print(context->getConsole(), "Usage demo [filename] -> begins recording a demo\n");
         return;
     }
     
     if(x_demorecorder_is_recording(&g_Context->demoRecorder))
     {
-        x_console_print(&context->console, "A demo is already recording\n");
+        x_console_print(context->getConsole(), "A demo is already recording\n");
         return;
     }
     
     if(!x_demorecorder_record(&g_Context->demoRecorder, argv[1]))
-        x_console_print(&context->console, "Failed to start recording demo");
+        x_console_print(context->getConsole(), "Failed to start recording demo");
     
-    x_keystate_reset_keys(&context->keystate);
-    x_console_force_close(&context->console);
+    x_keystate_reset_keys(context->getKeyState());
+    x_console_force_close(context->getConsole());
 }
 
 static void cmd_playdemo(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc < 2)
     {
-        x_console_print(&context->console, "Usage playdemo [filename] [opt base record filename] -> plays a demo\n");
+        x_console_print(context->getConsole(), "Usage playdemo [filename] [opt base record filename] -> plays a demo\n");
         return;
     }
     
     if(x_demorecorder_is_recording(&g_Context->demoRecorder))
     {
-        x_console_print(&context->console, "A demo is being recorded\n");
+        x_console_print(context->getConsole(), "A demo is being recorded\n");
         return;
     }
     
     if(!x_demoplayer_play(&g_Context->demoPlayer, argv[1]))
-        x_console_print(&context->console, "Failed to start playing demo");
+        x_console_print(context->getConsole(), "Failed to start playing demo");
     
-    x_keystate_reset_keys(&context->keystate);
-    x_console_force_close(&context->console);
+    x_keystate_reset_keys(context->getKeyState());
+    x_console_force_close(context->getConsole());
     
     if(argc != 3)
         return;
@@ -81,21 +81,21 @@ static void cmd_playdemo(X_EngineContext* context, int argc, char* argv[])
     char recordCmd[X_FILENAME_MAX_LENGTH];
     sprintf(recordCmd, "record %s 4", argv[2]);
     
-    x_console_execute_cmd(&context->console, recordCmd);
+    x_console_execute_cmd(context->getConsole(), recordCmd);
 }
 
 void init_keys(Context* context)
 {
     g_Context = context;
     
-    x_demorecorder_init(&context->demoRecorder, context->cam, &context->engineContext->keystate);
-    x_demoplayer_init(&context->demoPlayer, context->cam, &context->engineContext->keystate);
+    x_demorecorder_init(&context->demoRecorder, context->cam, context->engineContext->getKeyState());
+    x_demoplayer_init(&context->demoPlayer, context->cam, context->engineContext->getKeyState());
     
-    x_console_register_cmd(&context->engineContext->console, "demo", cmd_demo);
-    x_console_register_cmd(&context->engineContext->console, "playdemo", cmd_playdemo);
+    x_console_register_cmd(context->engineContext->getConsole(), "demo", cmd_demo);
+    x_console_register_cmd(context->engineContext->getConsole(), "playdemo", cmd_playdemo);
     
-    x_console_register_var(&context->engineContext->console, &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "3.0", 0);
-    x_console_register_var(&context->engineContext->console, &physics, "physics", X_CONSOLEVAR_BOOL, "1", 0);
+    x_console_register_var(context->engineContext->getConsole(), &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "3.0", 0);
+    x_console_register_var(context->engineContext->getConsole(), &physics, "physics", X_CONSOLEVAR_BOOL, "1", 0);
 }
 
 void cleanup_keys(Context* context)
@@ -157,17 +157,17 @@ void cleanup_keys(Context* context)
 void handle_console_keys(X_EngineContext* context)
 {
     X_Key key;
-    while(x_keystate_dequeue(&context->keystate, &key))
+    while(x_keystate_dequeue(context->getKeyState(), &key))
     {
         if(key == X_KEY_OPEN_CONSOLE)
         {
-            x_console_close(&context->console);
-            x_keystate_reset_keys(&context->keystate);
-            x_keystate_disable_text_input(&context->keystate);
+            x_console_close(context->getConsole());
+            x_keystate_reset_keys(context->getKeyState());
+            x_keystate_disable_text_input(context->getKeyState());
             return;
         }
         
-        x_console_send_key(&context->console, key);
+        x_console_send_key(context->getConsole(), key);
     }
 }
 
@@ -238,7 +238,7 @@ static Vec3 get_movement_vector(X_EngineContext* context, X_CameraObject* cam)
     if(!x_boxcollider_is_on_ground(&cam->collider))
         return x_vec3_origin();
     
-    X_KeyState* keyState = &context->keystate;
+    X_KeyState* keyState = context->getKeyState();
     
     Vec3 moveVelocity = get_movement_key_vector(cam, keyState, 1);
     Vec3 jumpVelocity = get_jump_vector(keyState);
@@ -262,7 +262,7 @@ void handle_demo(Context* context)
     
     if(wasPlaying && !x_demoplayer_is_playing(&g_Context->demoPlayer))
     {
-        x_console_execute_cmd(&context->engineContext->console, "endrecord");
+        x_console_execute_cmd(context->engineContext->getConsole(), "endrecord");
     }
 }
 
@@ -283,17 +283,17 @@ void handle_angle_keys(X_CameraObject* cam, X_KeyState* keyState)
 
 bool handle_console(X_EngineContext* engineContext)
 {
-    if(x_console_is_open(&engineContext->console))
+    if(x_console_is_open(engineContext->getConsole()))
     {
         handle_console_keys(engineContext);
         return 1;
     }
     
-    if(x_keystate_key_down(&engineContext->keystate, X_KEY_OPEN_CONSOLE))
+    if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_OPEN_CONSOLE))
     {
-        x_console_open(&engineContext->console);
-        x_keystate_reset_keys(&engineContext->keystate);
-        x_keystate_enable_text_input(&engineContext->keystate);
+        x_console_open(engineContext->getConsole());
+        x_keystate_reset_keys(engineContext->getKeyState());
+        x_keystate_enable_text_input(engineContext->getKeyState());
         return 1;
     }
     
@@ -306,7 +306,7 @@ bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* ca
     {
         Vec3 camPos = x_cameraobject_get_position(cam);
         
-        if(x_bsplevel_find_leaf_point_is_in(&engineContext->currentLevel, &camPos)->contents != X_BSPLEAF_SOLID)
+        if(x_bsplevel_find_leaf_point_is_in(engineContext->getCurrentLevel(), &camPos)->contents != X_BSPLEAF_SOLID)
             return 0;
     }
     
@@ -321,14 +321,14 @@ void handle_normal_movement(X_EngineContext* engineContext, X_CameraObject* cam)
 {
     Vec3 movementVector = get_movement_vector(engineContext, cam);
     cam->collider.velocity = cam->collider.velocity + movementVector;
-    x_boxcollider_update(&cam->collider, &engineContext->currentLevel);
+    x_boxcollider_update(&cam->collider, engineContext->getCurrentLevel());
     
     x_cameraobject_update_view(cam);
 }
 
 void handle_mouse(Context* context)
 {
-    X_MouseState* state = &context->engineContext->mouseState;
+    X_MouseState* state = context->engineContext->getMouseState();
     x_cameraobject_add_angle(context->cam, x_mousestate_get_mouselook_angle_change(state));
 }
 
@@ -339,13 +339,13 @@ void handle_keys(Context* context)
     
     handle_demo(context);
     
-    if(x_keystate_key_down(&context->engineContext->keystate, X_KEY_ESCAPE))
+    if(x_keystate_key_down(context->engineContext->getKeyState(), X_KEY_ESCAPE))
         context->quit = 1;
     
     if(handle_console(context->engineContext))
         return;
     
-    X_KeyState* keyState = &context->engineContext->keystate;
+    X_KeyState* keyState = context->engineContext->getKeyState();
 
     
     handle_mouse(context);

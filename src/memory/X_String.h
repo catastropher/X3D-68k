@@ -15,6 +15,12 @@
 
 #pragma once
 
+#include <string>
+
+#include "X_Allocator.hpp"
+
+using String = std::basic_string<char, std::char_traits<char>, XAllocator<char>>;
+
 typedef struct X_String
 {
     char* data;

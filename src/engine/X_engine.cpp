@@ -21,6 +21,8 @@
 #include "geo/X_Polygon3.h"
 #include "platform/X_Platform.h"
 #include "game/X_Game.h"
+#include "memory/X_Memory.hpp"
+#include "util/X_JsonParser.hpp"
 
 static bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -32,43 +34,53 @@ static X_EngineContext* x_engine_get_context(void)
 
 X_Console* x_engine_get_console(void)
 {
-    return &g_engineContext.console;
+    return g_engineContext.getConsole();
 }
 
 static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
 {
-    x_console_printf
-    (
-        &engineContext->console,
-        "\"%s\" %d.%d\nX3D version %d.%d\nCurrent map: %s\n",
-        x_game_name(),
-        x_game_major_version(),
-        x_game_minor_version(),
-        X_MAJOR_VERSION,
-        X_MINOR_VERSION,
-        x_engine_level_is_loaded(engineContext) ? engineContext->currentLevel.name : "<no level loaded>"
-    );
+    // x_console_printf
+    // (
+    //     engineContext->getConsole(),
+    //     "\"%s\" %d.%d\nX3D version %d.%d\nCurrent map: %s\n",
+    //     x_game_name(),
+    //     x_game_major_version(),
+    //     x_game_minor_version(),
+    //     X_MAJOR_VERSION,
+    //     X_MINOR_VERSION,
+    //     x_engine_level_is_loaded(engineContext) ? engineContext->getCurrentLevel()->name : "<no level loaded>"
+    // );
+}
+
+void initSystem(SystemConfig& config)
+{
+    Filesystem::init(config.programPath);
+    Log::init(config.logFile, config.enableLogging);
+    MemoryManager::init(config.hunkSize, config.zoneSize);
 }
 
 X_EngineContext* x_engine_init(X_Config* config)
 {
     if(g_engineInitialized)
-        x_system_error("Called x_engine_int() after engine already initialized");
+        x_system_error("Called x_engine_init() after engine already initialized");
     
     x_memory_init();
-    x_filesystem_init(config->programPath);
-    x_log_init();
+    x_filesystem_init(config->path);
+    //x_log_init();
     x_filesystem_add_search_path("../assets");
     
     X_EngineContext* engineContext = x_engine_get_context();
+
+    
+
+
     x_platform_init(engineContext, config);
     x_enginecontext_init(engineContext, config);
-    
-    // Perform a vidrestart so that we call the client's screen initialization code
-    x_console_execute_cmd(&engineContext->console, "vidrestart");
-    engineContext->renderer.videoInitialized = 1;
 
-    x_console_register_cmd(&engineContext->console, "info", cmd_info);
+    auto platform = engineContext->getPlatform();
+    platform->init(*config);
+
+    x_console_register_cmd(engineContext->getConsole(), "info", cmd_info);
     
     g_engineInitialized = 1;
     

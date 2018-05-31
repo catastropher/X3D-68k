@@ -20,6 +20,7 @@
 #include "engine/X_config.h"
 #include "system/X_File.h"
 #include "error/X_error.h"
+#include "engine/X_init.h"
 
 #if X_ENABLE_COLOR_LOG
 
@@ -53,7 +54,7 @@ static void get_log_file_name(char* dest)
     strcat(dest, "/engine.log");
 }
 
-void x_log_init(void)
+void x_log_init()
 {
     char logFileName[X_FILENAME_MAX_LENGTH];
     get_log_file_name(logFileName);
@@ -74,31 +75,58 @@ static void flush_log_to_file(void)
     x_file_open_append(&logFile, logFileName);
 }
 
-void x_log(const char* format, ...)
+void Log::log(const char* format, ...)
 {
+    const char* infoMessageColored = ANSI_COLOR_GREEN "[INFO]" ANSI_COLOR_RESET " ";
+    const char* infoMessage = "[INFO] ";
+
+    writeToLog(infoMessageColored, infoMessage);
+
     va_list list;
-    const char* infoMessage = ANSI_COLOR_GREEN "[INFO]" ANSI_COLOR_RESET;
-    
-    printf("%s ", infoMessage);
     va_start(list, format);
-    vprintf(format, list);
-    printf("\n");
-    
-    if(!x_file_is_open(&logFile))
-    {
-        va_end(list);
-        return;
-    }
-    
-    va_start(list, format);
-    
-    fprintf(logFile.file, "[INFO] ");
-    vfprintf(logFile.file, format, list);
-    fputc('\n', logFile.file);
+    writeToLog(format, list);
+
+    writeToLog('\n');
+
     va_end(list);
-    
-    if(enableSafeLogging)
-        flush_log_to_file();
+}
+
+void Log::logSub(const char* format, ...)
+{
+    const char* subText = "\t- ";
+    writeToLog(subText, subText);
+
+    va_list list;
+    va_start(list, format);
+    writeToLog(format, list);
+
+    writeToLog('\n');
+
+    va_end(list);
+}
+
+void Log::writeToLog(const char* screenText, const char* fileText)
+{
+    fputs(screenText, stdout);
+    fputs(fileText, logFile.file);
+}
+
+void Log::writeToLog(const char* format, va_list list)
+{
+    vprintf(format, list);
+    vfprintf(logFile.file, format, list);
+}
+
+void Log::writeToLog(char c)
+{
+    fputc(c, stdout);
+    fputc(c, logFile.file);
+}
+
+// TODO: take parameters into account
+void Log::init(const char* logFile, bool enableLogging)
+{
+    x_log_init();
 }
 
 void x_log_error(const char* format, ...)

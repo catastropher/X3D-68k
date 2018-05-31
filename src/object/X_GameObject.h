@@ -62,6 +62,12 @@ typedef struct X_GameObject
     struct X_EngineContext* engineContext;
 } X_GameObject;
 
+
+class GameObject
+{
+    
+};
+
 struct X_EngineContext;
 struct X_ObjectFactory;
 

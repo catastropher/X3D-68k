@@ -67,7 +67,7 @@ X_GameObject* x_buttonobject_new(X_EngineContext* engineContext, X_Edict* edict)
     X_ButtonObject* obj = (X_ButtonObject*)x_gameobject_new(engineContext, sizeof(X_ButtonObject));
     
     x_edict_get_int(edict, "angle", 0, &obj->pushAngle);
-    obj->model = x_bsplevel_get_model(&engineContext->currentLevel, x_edict_get_model_id(edict, "model"));
+    obj->model = x_bsplevel_get_model(engineContext->getCurrentLevel(), x_edict_get_model_id(edict, "model"));
     obj->modelHeight = x_bspmodel_height(obj->model);
     obj->base.type = &g_buttonObjectType;
     

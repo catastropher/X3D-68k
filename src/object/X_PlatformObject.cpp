@@ -139,7 +139,7 @@ X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edic
     X_PlatformObject* obj = (X_PlatformObject*)x_gameobject_new(engineContext, sizeof(X_PlatformObject));
     
     int modelId = x_edict_get_model_id(edict, "model");
-    obj->model = x_bsplevel_get_model(&engineContext->currentLevel, modelId);
+    obj->model = x_bsplevel_get_model(engineContext->getCurrentLevel(), modelId);
     
     x_fp16x16 modelHeight = x_bspmodel_height(obj->model);
     

@@ -38,11 +38,11 @@ static void cmd_res(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: res [WxH] -> changes screen resolution\n");
+        x_console_print(context->getConsole(), "Usage: res [WxH] -> changes screen resolution\n");
         return;
     }
     
-    X_Screen* screen = &context->screen;
+    X_Screen* screen = context->getScreen();
     
     if(screen->handlers.isValidResolution == NULL)
         x_system_error("No screen valid resolution checking callback");
@@ -52,21 +52,21 @@ static void cmd_res(X_EngineContext* context, int argc, char* argv[])
     
     if(!screen->handlers.isValidResolution(w, h))
     {
-        x_console_print(&context->console, "Invalid resolution for platform\n");
+        x_console_print(context->getConsole(), "Invalid resolution for platform\n");
         return;
     }
     
-    context->renderer.screenW = w;
-    context->renderer.screenH = h;
+    context->getRenderer()->screenW = w;
+    context->getRenderer()->screenH = h;
     
-    x_console_printf(&context->console, "Effect will take place on next vidrestart\n");
+    x_console_printf(context->getConsole(), "Effect will take place on next vidrestart\n");
 }
 
 static void cmd_fov(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: fov [angle] -> changes field of view\n");
+        x_console_print(context->getConsole(), "Usage: fov [angle] -> changes field of view\n");
         return;
     }
     
@@ -74,12 +74,12 @@ static void cmd_fov(X_EngineContext* context, int argc, char* argv[])
     
     if(fov == 0)
     {
-        x_console_print(&context->console, "Invalid angle\n");
+        x_console_print(context->getConsole(), "Invalid angle\n");
         return;
     }
     
-    context->renderer.fov = fov;
-    x_console_printf(&context->console, "Effect will take place on next vidrestart\n");
+    context->getRenderer()->fov = fov;
+    x_console_printf(context->getConsole(), "Effect will take place on next vidrestart\n");
 }
 
 static void cmd_vidrestart(X_EngineContext* context, int argc, char* argv[])
@@ -91,13 +91,13 @@ static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: fullscreen [WxH] -> enables/disables fullscreen mode\n");
+        x_console_print(context->getConsole(), "Usage: fullscreen [WxH] -> enables/disables fullscreen mode\n");
         return;
     }
     
-    context->renderer.fullscreen = atoi(argv[1]);
+    context->getRenderer()->fullscreen = atoi(argv[1]);
     
-    x_console_printf(&context->console, "Effect will take place on next vidrestart\n");;
+    x_console_printf(context->getConsole(), "Effect will take place on next vidrestart\n");;
 }
 
 #include "error/X_log.h"
@@ -129,49 +129,49 @@ static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
     // Render a frame so we can get the span data
     //x_engine_render_frame(context);
     
-    int centerX = x_screen_w(&context->screen) / 2;
-    int centerY = x_screen_h(&context->screen) / 2;
+    int centerX = x_screen_w(context->getScreen()) / 2;
+    int centerY = x_screen_h(context->getScreen()) / 2;
     
-    int surfaceId = x_ae_context_find_surface_point_is_in(&context->renderer.activeEdgeContext, centerX, centerY, &context->currentLevel);
+    int surfaceId = x_ae_context_find_surface_point_is_in(&context->getRenderer()->activeEdgeContext, centerX, centerY, context->getCurrentLevel());
     
     if(surfaceId != -1)
-        x_console_printf(&context->console, "Looking at surface #%d\n", surfaceId);
+        x_console_printf(context->getConsole(), "Looking at surface #%d\n", surfaceId);
     else
-        x_console_print(&context->console, "Not looking at a surface\n");
+        x_console_print(context->getConsole(), "Not looking at a surface\n");
 }
 
 static void cmd_lighting(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(&context->console, "Usage: lighting [1/0] -> enables/disables lighting");
+        x_console_print(context->getConsole(), "Usage: lighting [1/0] -> enables/disables lighting");
         return;
     }
     
-    context->renderer.enableLighting = atoi(argv[1]);
-    x_cache_flush(&context->renderer.surfaceCache);
+    context->getRenderer()->enableLighting = atoi(argv[1]);
+    x_cache_flush(&context->getRenderer()->surfaceCache);
 }
 
 static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_printf(&context->console, "Usage: %s [0/1] - enables/disables screen scaling", argv[0]);
+        x_console_printf(context->getConsole(), "Usage: %s [0/1] - enables/disables screen scaling", argv[0]);
         return;
     }
     
 #ifndef __nspire__
-    x_console_print(&context->console, "Screen scaling only available on Nspire\n");
+    x_console_print(context->getConsole(), "Screen scaling only available on Nspire\n");
     return;
 #endif
     
-    X_CameraObject* cam = context->screen.cameraListHead;
+    X_CameraObject* cam = context->getScreen()->cameraListHead;
     int w;
     int h;
     
-    context->renderer.scaleScreen = atoi(argv[1]) != 0;
+    context->getRenderer()->scaleScreen = atoi(argv[1]) != 0;
     
-    if(context->renderer.scaleScreen)
+    if(context->getRenderer()->scaleScreen)
     {
         w = 320 / 2;
         h = 240 / 2;
@@ -237,8 +237,6 @@ static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
     renderer->dynamicLightsNeedingUpdated = 0;
 }
 
-void cmd_draw(X_EngineContext* context, int argc, char* argv[]);
-
 static void x_renderer_console_cmds(X_Console* console)
 {
     x_console_register_cmd(console, "res", cmd_res);
@@ -249,7 +247,6 @@ static void x_renderer_console_cmds(X_Console* console)
     x_console_register_cmd(console, "lighting", cmd_lighting);
     x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
     x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
-    x_console_register_cmd(console, "draw", cmd_draw);
 }
 
 static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen, int fov)
@@ -299,20 +296,20 @@ static void mark_lights(X_EngineContext* context)
 {
     return;
     
-    X_Light* lights = context->renderer.dynamicLights;
+    X_Light* lights = context->getRenderer()->dynamicLights;
     for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
     {
         if(!x_light_is_free(lights + i))
         {
-            x_bsplevel_mark_surfaces_light_is_close_to(&context->currentLevel, lights + i, context->frameCount);
+            x_bsplevel_mark_surfaces_light_is_close_to(context->getCurrentLevel(), lights + i, context->frameCount);
         }
     }
 }
 
 static void fill_with_background_color(X_EngineContext* engineContext)
 {
-    if(engineContext->renderer.fillColor != X_RENDERER_FILL_DISABLED)
-        engineContext->screen.canvas.fill(engineContext->renderer.fillColor);
+    if(engineContext->getRenderer()->fillColor != X_RENDERER_FILL_DISABLED)
+        engineContext->getScreen()->canvas.fill(engineContext->getRenderer()->fillColor);
 }
 
 static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engineContext)
@@ -336,20 +333,20 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
 
 static void clear_zbuffer(X_EngineContext* engineContext)
 {
-    x_screen_zbuf_clear(&engineContext->screen);
+    x_screen_zbuf_clear(engineContext->getScreen());
 }
 
 void x_renderer_render_frame(X_EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
-    x_renderer_begin_frame(&engineContext->renderer, engineContext);
+    x_renderer_begin_frame(engineContext->getRenderer(), engineContext);
     clear_zbuffer(engineContext);
     fill_with_background_color(engineContext);
     mark_lights(engineContext);
     
-    for(X_CameraObject* cam = engineContext->screen.cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    for(X_CameraObject* cam = engineContext->getScreen()->cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
-        render_camera(&engineContext->renderer, cam, engineContext);
+        render_camera(engineContext->getRenderer(), cam, engineContext);
     }
 }
 

@@ -26,6 +26,13 @@
 #include "error/X_log.h"
 #include "X_AutoCompleter.h"
 #include "X_TokenLexer.h"
+#include "console/X_ConsoleVariable.hpp"
+
+void  X_Console::addVariableToList(ConsoleVariable* var)
+{
+    var->next = varHead;
+    varHead = var;
+}
 
 void x_console_open(X_Console* console)
 {
@@ -161,8 +168,8 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
 {
     console->openState = X_CONSOLE_STATE_CLOSED;
     console->cursor = x_vec2_make(0, 0);
-    console->size.x = x_screen_w(&engineContext->screen) / font->getW();
-    console->size.y = x_screen_h(&engineContext->screen) / font->getH() / 2;
+    console->size.x = x_screen_w(engineContext->getScreen()) / font->getW();
+    console->size.y = x_screen_h(engineContext->getScreen()) / font->getH() / 2;
     console->font = font;
     console->engineContext = engineContext;
     console->renderYOffset = 0;
@@ -399,7 +406,7 @@ static int x_console_h(const X_Console* console)
 
 static X_Screen* x_console_get_screen(X_Console* console)
 {
-    return &console->engineContext->screen;
+    return console->engineContext->getScreen();
 }
 
 static X_Texture* x_console_get_canvas(X_Console* console)
@@ -709,14 +716,6 @@ static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
     
     int cmdLength;
     char* currentCmd = find_start_of_current_cmd(console->input, console->inputPos, &cmdLength);
-    
-    printf("CMD: ");
-    for(int i = 0; i < cmdLength; ++i)
-    {
-        printf("%c\n", currentCmd[i]);
-    }
-    
-    printf("\n");
     
     X_AutoCompleter ac;
     x_autocompleter_init(&ac, currentCmd, cmdLength, matches, MAX_MATCHES);

@@ -15,9 +15,30 @@
 
 #pragma once
 
+#include <cstdarg>
+
+struct LogConfig;
+
+class Log
+{
+public:
+    static void init(const char* logFile, bool enableLogging);
+    static void cleanup();
+
+    static void log(const char* format, ...);
+    static void logSub(const char* format, ...);
+
+private:
+    static void writeToLog(const char* format, va_list list);
+    static void writeToLog(const char* screenText, const char* fileText);
+    static void writeToLog(char c);
+};
+
 void x_log_init(void);
 void x_log_cleanup(void);
 
-void x_log(const char* format, ...);
+// Here for backwards compatibility
+#define x_log(_args...) Log::log(_args)
+
 void x_log_error(const char* format, ...);
 

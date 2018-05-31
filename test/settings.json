@@ -1,0 +1,20 @@
+{
+    "filesystem": {
+        "paths": [
+            "../assets",
+            "../maps"
+        ]
+    },
+
+    "console": {
+        "background": [ 0, 0, 0 ],
+        "lineColor": [ 255, 0, 0 ],
+        "font": "default"
+    },
+    
+    "screen": {
+        "w": 640,
+        "h": 480,
+        "fullscreen": false
+    }
+}
