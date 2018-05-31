@@ -70,6 +70,10 @@ set(X_SOURCES
     src/dev/X_DemoRecorder.cpp
     src/dev/X_TokenLexer.cpp
 
+        # dev/console
+        src/dev/console/X_ConsoleVariable.cpp
+        src/dev/console/X_ConsoleVariableInt.cpp
+
     # engine
     src/engine/X_engine.cpp
     src/engine/X_EngineContext.cpp

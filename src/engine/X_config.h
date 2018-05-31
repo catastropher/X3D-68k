@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "render/X_Texture.h"
+
 #include "platform/pc/X_PcPlatform.hpp"
 
 // Enables colord output for different types of logging
@@ -41,4 +43,48 @@
 #ifndef __nspire__
 using Platform = PcPlatform;
 #endif
+
+struct ConsoleConfig
+{
+    X_Color backgroundColor;
+    X_Color lineColor;
+};
+
+struct ScreenConfig2
+{
+    const X_Palette* palette;
+    int screenW;
+    int screenH;
+    bool fullscreen;
+};
+
+struct MemoryConfig
+{
+    int hunkSize;
+    int zoneSize;
+};
+
+struct Config
+{
+    ConsoleConfig console;
+    MemoryConfig memory;
+
+    // JsonValue* configJson;
+
+    // JsonValue& operator[](const char* name)
+    // {
+    //     return (*configJson)[name];
+    // }
+
+    const char* configFile;
+};
+
+struct SystemConfig
+{
+    const char* programPath = nullptr;
+    const char* logFile = "engine.log";
+    int hunkSize = 8 * 1024 * 1024;
+    int zoneSize = 1024 * 1024;
+    bool enableLogging = true;
+};
 

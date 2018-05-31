@@ -26,6 +26,13 @@
 #include "error/X_log.h"
 #include "X_AutoCompleter.h"
 #include "X_TokenLexer.h"
+#include "console/X_ConsoleVariable.hpp"
+
+void  X_Console::addVariableToList(ConsoleVariable* var)
+{
+    var->next = varHead;
+    varHead = var;
+}
 
 void x_console_open(X_Console* console)
 {
@@ -709,14 +716,6 @@ static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
     
     int cmdLength;
     char* currentCmd = find_start_of_current_cmd(console->input, console->inputPos, &cmdLength);
-    
-    printf("CMD: ");
-    for(int i = 0; i < cmdLength; ++i)
-    {
-        printf("%c\n", currentCmd[i]);
-    }
-    
-    printf("\n");
     
     X_AutoCompleter ac;
     x_autocompleter_init(&ac, currentCmd, cmdLength, matches, MAX_MATCHES);

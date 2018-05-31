@@ -42,7 +42,8 @@ typedef struct X_ConsoleVar
     X_ConsoleVarType type;
     bool saveToConfig;
     
-    union {
+    union
+    {
         int* intPtr;
         float* floatPtr;
         x_fp16x16* fp16x16Ptr;
@@ -72,6 +73,8 @@ typedef enum X_ConsoleOpenState
 
 #define X_CONSOLE_COMMAND_HISTORY_SIZE 10
 
+struct ConsoleVariable;
+
 typedef struct X_Console
 {
     X_ConsoleVar* consoleVars;
@@ -97,7 +100,19 @@ typedef struct X_Console
     
     X_ConsoleOpenState openState;
     int renderYOffset;
-    X_Time consoleToggleTime;    
+    X_Time consoleToggleTime;
+
+    template<typename T>
+    void addVariable(const char* name, T& var);
+
+    ConsoleVariable* varHead;
+
+private:
+    template<typename ClassType, typename VarType>
+    void createVariable(const char* name, VarType& var);
+
+    void addVariableToList(ConsoleVariable* var);
+
 } X_Console;
 
 void x_console_open(X_Console* console);
