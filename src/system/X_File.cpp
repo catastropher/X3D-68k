@@ -89,8 +89,8 @@ void x_filesystem_add_search_path(const char* searchPath)
 
 static void log_search_paths(void)
 {
-    char* nextSearchPath = g_searchPaths.data;
-    char path[512];
+    //char* nextSearchPath = g_searchPaths.data;
+    //char path[512];
     
     // FIXME: need to traverse list of file paths
     //while(get_next_search_path(&nextSearchPath, path))
@@ -297,7 +297,7 @@ void x_file_read_fixed_length_str(X_File* file, int strLength, char* dest)
 void x_file_read_buf(X_File* file, int bufSize, void* dest)
 {
     ASSERT_OPEN_FOR_READING(file);
-    if(fread(dest, 1, bufSize, file->file) != bufSize)
+    if((int)fread(dest, 1, bufSize, file->file) != bufSize)
         x_system_error("Failed to write buf to file");
 }
 

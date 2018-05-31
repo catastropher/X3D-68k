@@ -559,7 +559,7 @@ static void determine_column_widths(const char** items, int totalItems, int tota
     {
         for(int item = col; item < totalItems; item += totalColumns)
         {
-            colWidths[col] = X_MAX(colWidths[col], strlen(items[item]));
+            colWidths[col] = X_MAX(colWidths[col], (int)strlen(items[item]));
         }
     }
 }
@@ -623,7 +623,7 @@ static void print_items_in_columns(X_Console* console, const char** items, int t
         
         int spacing = (col != totalColumns - 1 ? itemSpacing : 0);
         
-        for(int i = 0; i < colWidths[col] - strlen(items[match]) + spacing; ++i)
+        for(int i = 0; i < colWidths[col] - (int)strlen(items[match]) + spacing; ++i)
             x_console_print(console, " ");
     }
     

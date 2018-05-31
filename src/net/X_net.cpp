@@ -78,20 +78,20 @@ bool x_socket_send_packet(X_Socket* socket, X_Packet* packet)
     return socket->interface->sendPacket(socket, packet);
 }
 
-static void process_connect_acknowledge(X_Socket* socket, X_Packet* packet)
-{
-    if(packet->data[0] != X_NET_SUCCESS)
-        socket->error = X_SOCKETERROR_SERVER_REJECTED;
-}
+// static void process_connect_acknowledge(X_Socket* socket, X_Packet* packet)
+// {
+//     if(packet->data[0] != X_NET_SUCCESS)
+//         socket->error = X_SOCKETERROR_SERVER_REJECTED;
+// }
 
-static void send_connect_acknowledge(X_Socket* socket, bool success)
-{
-    X_Packet packet;
-    char buf[1] = { success };
+// static void send_connect_acknowledge(X_Socket* socket, bool success)
+// {
+//     X_Packet packet;
+//     char buf[1] = { success };
     
-    x_packet_init(&packet, X_PACKET_CONNECT_ACKNOWLEDGE, buf, 1);
-    x_socket_send_packet(socket, &packet);
-}
+//     x_packet_init(&packet, X_PACKET_CONNECT_ACKNOWLEDGE, buf, 1);
+//     x_socket_send_packet(socket, &packet);
+// }
 
 X_Packet* x_socket_receive_packet(X_Socket* socket)
 {
@@ -105,7 +105,6 @@ bool x_socket_connection_is_valid(X_Socket* socket)
 
 bool x_net_extract_address_and_port(const char* address, char* addressDest, int* portDest)
 {
-    char* t = addressDest;
     while(*address && *address != ':')
         *addressDest++ = *address++;
     

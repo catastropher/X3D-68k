@@ -19,39 +19,8 @@
 #include "screen.h"
 #include "keys.h"
 
-static void cam_screen_size_changed_callback(X_CameraObject* cam, X_Screen* screen, x_fp16x16 fov)
-{
-    x_viewport_init(&cam->viewport, x_vec2_make(0, 0), x_screen_w(screen), x_screen_h(screen), fov);
-    x_cameraobject_update_view(cam);
-}
-
-static void init_camera(Context* context)
-{
-    X_EngineContext* engineContext = context->engineContext;
-    
-    
-}
-
-static void init_x3d(Context* context, int screenW, int screenH, const char* programPath)
-{
-    
-    
-
-    context->engineContext->userData = context;
-}
-
-static X_Vec2 determine_default_platform_resolution(void)
-{
-#ifdef __nspire__
-    return x_vec2_make(320, 240);
-#else
-    return x_vec2_make(640, 480);
-#endif
-}
-
 void init(Context* context, const char* programPath, X_Config& config)
 {
-    X_Vec2 resolution = determine_default_platform_resolution();
     //init_x3d(context, resolution.x, resolution.y, programPath);    
     //init_camera(context);    
     init_keys(context);

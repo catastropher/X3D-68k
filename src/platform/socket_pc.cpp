@@ -139,14 +139,14 @@ static bool pcsocket_init(PcSocket* sock, unsigned short port)
     return 1;
 }
 
-static void pcsocket_cleanup(PcSocket* sock)
-{
-    if(sock->socketFd < 0)
-        return;
+// static void pcsocket_cleanup(PcSocket* sock)
+// {
+//     if(sock->socketFd < 0)
+//         return;
     
-    x_log("Closing socket...");
-    close(sock->socketFd);
-}
+//     x_log("Closing socket...");
+//     close(sock->socketFd);
+// }
 
 static void enqueue_packet(X_Socket* socket, unsigned char* data, int dataSize)
 {
@@ -223,7 +223,7 @@ static bool extract_address(const char* addressString, ConnectionAddress* dest)
         return 0;
     
     int ipAddress = inet_addr(address);
-    if(ipAddress == (in_addr_t)-1)
+    if(ipAddress == -1)
         return 0;
     
     dest->ipAddress = ipAddress;

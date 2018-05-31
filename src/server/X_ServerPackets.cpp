@@ -18,11 +18,11 @@
 #include "engine/X_Engine.h"
 #include "error/X_log.h"
 
-static void send_echo_packet(X_Socket* socket)
-{
-    struct timeval currentTime;
-    //gettimeofday(&currentTime, NULL);
-}
+// static void send_echo_packet(X_Socket* socket)
+// {
+//     //struct timeval currentTime;
+//     //gettimeofday(&currentTime, NULL);
+// }
 
 static void send_file_request_response(X_Socket* socket, bool success, int fileSize, const char* fileName)
 {
@@ -69,7 +69,7 @@ static void send_chunk_of_transfer_file(X_Player* player)
     x_log("Enter transfer");
     char buf[X_PACKET_MAX_SIZE];
     
-    int amountToSend = X_MIN(X_PACKET_MAX_SIZE, player->currentTransfer.size - ftell(player->currentTransfer.file));
+    int amountToSend = X_MIN(X_PACKET_MAX_SIZE, (int)(player->currentTransfer.size - ftell(player->currentTransfer.file)));
     
     x_log("Amount to send: %d\n", amountToSend);
     
