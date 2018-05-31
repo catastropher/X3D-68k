@@ -246,7 +246,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     
     X_Texture* screenTex = context->renderContext->canvas;
     X_Color* scanline = screenTex->getRow(span->y);
-    x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
+    //x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
     
     x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y) >> 10;
     x_fp16x16 dInvZ = context->surface->zInverseXStep >> 10;

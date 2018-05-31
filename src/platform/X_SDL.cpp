@@ -57,7 +57,7 @@ static void build_key_map(void)
     keyMap[SDLK_RIGHT] = X_KEY_RIGHT;
 
     const char symbols[] = "!@#$%^&*()[]{}\\|:;'\",.<>/?-_=+";
-    for(int i = 0; i < strlen(symbols); ++i)
+    for(int i = 0; i < (int)strlen(symbols); ++i)
         keyMap[(int)symbols[i]] = symbols[i];
 }
 

@@ -35,6 +35,6 @@ void x_autocompleter_sort_matches(X_AutoCompleter* ac);
 
 static inline bool x_autocompleter_has_exact_match(const X_AutoCompleter* ac)
 {
-    return ac->minMatchLength == strlen(ac->minMatchStr);
+    return ac->minMatchLength == (int)strlen(ac->minMatchStr);
 }
 

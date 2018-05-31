@@ -284,10 +284,10 @@ static void recv_packet(X_Socket* socket)
     pthread_mutex_unlock(&con->recvLock);
 }
 
-static void close_connection(Connection* con)
-{
+// static void close_connection(Connection* con)
+// {
     
-}
+// }
 
 static void send_queued_packet(Connection* con)
 {

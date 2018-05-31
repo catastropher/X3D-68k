@@ -777,7 +777,7 @@ static void x_bsplevel_init_textures(X_BspLevel* level, X_BspLevelLoader* loader
         X_BspLoaderTexture* loadTex = loader->textures + i;
     
         const int INVALID_TEXTURE_OFFSET = -1;
-        if(loadTex->texelsOffset[0] == INVALID_TEXTURE_OFFSET)
+        if((int)loadTex->texelsOffset[0] == INVALID_TEXTURE_OFFSET)
         {
             for(int j = 0; j < 4; ++j)
                 tex->mipTexels[j] = NULL;
