@@ -145,6 +145,8 @@ set(X_SOURCES
 
     # system
     src/system/X_File.cpp
+    src/system/X_FilePath.cpp
+    src/system/X_FileSystem.cpp
     src/system/X_Keys.cpp
     src/system/X_Mouse.cpp
     src/system/X_PackFile.cpp

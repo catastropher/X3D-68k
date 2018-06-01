@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #define X_FILEPATH_MAX_LENGTH 256
 
 #include <cstring>
@@ -35,15 +37,26 @@ public:
         path[0] = '\0';
     }
 
+    FilePath& set(const char* path)
+    {
+        strcpy(this->path, path);
+
+        return *this;
+    }
+
     void getFilename(const char* dest);
     void splitFilename(const char* nameDest, const char* extensionDest);
     FilePath& replaceFilename(const char* newFileName);
+
+    FilePath& removeLastSegment();
     
     FilePath& defaultExtension(const char* defaultExtension);
     FilePath& replaceExtension(const char* newExtension);
     void getExtension(const char* dest);
 
     FilePath& parentDirectory();
+
+    FilePath& appendSegment(const char* segment);
 
     FilePath clone();
 
@@ -53,6 +66,9 @@ public:
     }
 
 private:
+    char* startOfLastSegment();
+    char* end();
+
     char path[X_FILEPATH_MAX_LENGTH];
 };
 
