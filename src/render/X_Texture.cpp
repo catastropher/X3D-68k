@@ -45,8 +45,6 @@ bool X_Texture::loadFromFile(const char* fileName)
     {
         return 0;
     }
-
-    Log::info("A");
     
     char signature[5];
     reader.readFixedLengthString(signature, 4);
@@ -57,20 +55,11 @@ bool X_Texture::loadFromFile(const char* fileName)
         return 0;
     }
 
-    Log::info("B");
-    
     int w = reader.read<short>();
-
-    Log::info("K");
-
     int h = reader.read<short>();
-
-    Log::info("C");
     
     resize(w, h);
     reader.readArray(texels, totalTexels());
-
-    Log::info("Done loading texture");
     
     return 1;
 }
