@@ -34,41 +34,26 @@ int main(int argc, char* argv[])
 
     initSystem(sysConfig);
 
-    //char* fileContents = (char*)x_file_read_contents(config.configFile);
-    //config.configJson = Json::parse(fileContents);
+    int size;
+    char* data = FileReader::readWholeFile("../settings.json", size);
 
-    //x3dInit(config);
+    FileSystem::addSearchPath("../assets");
+    FileSystem::addSearchPath("../maps");
 
+    int screenW = 640;
+    int screenH = 480;
 
-    // const char* programPath = argv[0];
+    ScreenConfig screenConfig = ScreenConfig()
+        .fieldOfView(X_ANG_60)
+        .resolution(screenW, screenH)
+        .useQuakeColorPalette();
+    
+    X_Config config = X_Config()
+        .programPath(argv[0])
+        .defaultFont("font.xtex")
+        .screenConfig(screenConfig);
 
-    // int screenW = 640;
-    // int screenH = 480;
-
-    // ScreenConfig screenConfig = ScreenConfig()
-    //     .fieldOfView(X_ANG_60)
-    //     .resolution(screenW, screenH)
-    //     .useQuakeColorPalette();
-
-    // MemoryManager::init(8 * 1024 * 1024, 1024 * 1024);
-
-    // char str[1024];
-    // fgets(str, 1024, stdin);
-
-    // String res = Json::stringify(Json::parse(str), true);
-
-    // printf("%s\n", res.c_str());
-
-    return 0;
-
-    //screen_set_callbacks(context, screenConfig);
-
-    // X_Config config = X_Config()
-    //     .programPath(programPath)
-    //     .defaultFont("font.xtex")
-    //     .screenConfig(screenConfig);
-
-    // TestGame game(config);
-    // game.run();
+    TestGame game(config);
+    game.run();
 }
 

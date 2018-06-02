@@ -70,7 +70,7 @@ set(X_SOURCES
     src/dev/X_DemoRecorder.cpp
     src/dev/X_TokenLexer.cpp
 
-        # dev/console
+    # dev/console
         src/dev/console/X_ConsoleVariable.cpp
         src/dev/console/X_ConsoleVariableInt.cpp
 
@@ -145,6 +145,9 @@ set(X_SOURCES
 
     # system
     src/system/X_File.cpp
+    src/system/X_FilePath.cpp
+    src/system/X_FileReader.cpp
+    src/system/X_FileSystem.cpp
     src/system/X_Keys.cpp
     src/system/X_Mouse.cpp
     src/system/X_PackFile.cpp

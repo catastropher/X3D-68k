@@ -120,22 +120,3 @@ static inline bool x_file_is_open(const X_File* file)
 
 struct FilesystemConfig;
 
-struct FilesystemSearchPath : Link<FilesystemSearchPath>
-{
-    char path[X_FILENAME_MAX_LENGTH];
-};
-
-class Filesystem
-{
-public:
-    static void init(const char* programPath);
-
-    static const FilesystemSearchPath* getRootSearchPath()
-    {
-        return &rootSearchPath;
-    }
-
-private:
-    static FilesystemSearchPath rootSearchPath;
-};
-

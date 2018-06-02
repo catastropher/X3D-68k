@@ -23,6 +23,7 @@
 #include "game/X_Game.h"
 #include "memory/X_Memory.hpp"
 #include "util/X_JsonParser.hpp"
+#include "system/X_FileSystem.hpp"
 
 static bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -54,7 +55,7 @@ static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
 
 void initSystem(SystemConfig& config)
 {
-    Filesystem::init(config.programPath);
+    FileSystem::init(config.programPath);
     Log::init(config.logFile, config.enableLogging);
     MemoryManager::init(config.hunkSize, config.zoneSize);
 }

@@ -16,10 +16,11 @@
 #include <algorithm>
 
 #include "X_Texture.h"
-#include "system/X_File.h"
+#include "system/X_FileReader.hpp"
 #include "error/X_log.h"
 #include "util/X_util.h"
 #include "X_Font.h"
+#include "system/X_File.h"
 
 bool X_Texture::saveToFile(const char* fileName)
 {
@@ -39,26 +40,26 @@ bool X_Texture::saveToFile(const char* fileName)
 
 bool X_Texture::loadFromFile(const char* fileName)
 {
-    X_File file;
-    if(!x_file_open_reading(&file, fileName))
-        return 0;
-    
-    char signature[5];
-    x_file_read_fixed_length_str(&file, 4, signature);
-    
-    if(strcmp(signature, "XTEX") != 0)
+    FileReader reader;
+    if(!reader.open(fileName))
     {
-        x_log_error("File %s has bad XTEX header", fileName);
         return 0;
     }
     
-    int w = x_file_read_le_int16(&file);
-    int h = x_file_read_le_int16(&file);
+    char signature[5];
+    reader.readFixedLengthString(signature, 4);
+    
+    if(strcmp(signature, "XTEX") != 0)
+    {
+        Log::error("File %s has bad XTEX header", fileName);
+        return 0;
+    }
+
+    int w = reader.read<short>();
+    int h = reader.read<short>();
     
     resize(w, h);
-    x_file_read_buf(&file, totalTexels(), texels);
-    
-    x_file_close(&file);
+    reader.readArray(texels, totalTexels());
     
     return 1;
 }

@@ -29,6 +29,7 @@
 #include "engine/X_init.h"
 #include "util/X_util.h"
 #include "math/X_Mat4x4.h"
+#include "X_FileSystem.hpp"
 
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
@@ -36,7 +37,6 @@
 static X_String g_searchPaths;
 static char g_programPath[256];
 
-FilesystemSearchPath Filesystem::rootSearchPath;
 
 static inline void determine_file_size(X_File* file)
 {
@@ -102,22 +102,30 @@ bool x_file_open_reading(X_File* file, const char* fileName)
     file->flags = 0;
     file->size = 0;
     file->file = NULL;
-    
-    char nextFileToSearch[512];
-    const FilesystemSearchPath* searchPath = Filesystem::getRootSearchPath();
+
 
     
-    while(!file->file && searchPath)
+    char nextFileToSearch[512];
+    //const FilesystemSearchPath* searchPath = nullptr;
+
+    
+//     while(!file->file && searchPath)
+//     {
+//         strcpy(nextFileToSearch, searchPath->path);
+//         strcat(nextFileToSearch, "/");
+//         strcat(nextFileToSearch, fileName);
+        
+// #ifdef X_FILE_AUTO_ADDED_EXTENSION
+//         strcat(nextFileToSearch, X_FILE_AUTO_ADDED_EXTENSION);
+// #endif
+        
+//         file->file = fopen(nextFileToSearch, "rb");
+//     }
+
+    FileLocation location;
+    if(FileSystem::locateFile(fileName, location))
     {
-        strcpy(nextFileToSearch, searchPath->path);
-        strcat(nextFileToSearch, "/");
-        strcat(nextFileToSearch, fileName);
-        
-#ifdef X_FILE_AUTO_ADDED_EXTENSION
-        strcat(nextFileToSearch, X_FILE_AUTO_ADDED_EXTENSION);
-#endif
-        
-        file->file = fopen(nextFileToSearch, "rb");
+        file->file = location.file;
     }
     
     if(!file->file)
@@ -618,19 +626,3 @@ bool x_file_open_from_packfile(X_File* file, const char* fileName)
     
     return 0;
 }
-
-void Filesystem::init(const char* programPath)
-{
-    if(programPath == nullptr)
-    {
-        x_system_error("No program path in config");
-    }
-
-    x_filepath_extract_path(programPath, rootSearchPath.path);
-
-    // FIXME: only here for backwards compat
-    strcpy(g_programPath, rootSearchPath.path);
-}
-
-
-

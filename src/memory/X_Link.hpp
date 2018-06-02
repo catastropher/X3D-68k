@@ -15,7 +15,10 @@
 
 #pragma once
 
-#include <new>
-
-#include "memory/X_Memory.hpp"
+template<typename T>
+struct Link
+{
+    T value;
+    Link* next;
+};
 
