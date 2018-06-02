@@ -39,7 +39,6 @@ private:
 
     void renderView()
     {
-        printf("Render\n");
         ::render(&context);
     }
 

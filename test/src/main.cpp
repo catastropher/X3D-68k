@@ -37,17 +37,8 @@ int main(int argc, char* argv[])
     int size;
     char* data = FileReader::readWholeFile("../settings.json", size);
 
-    printf("%s\n", data);
-
-    //char* fileContents = (char*)x_file_read_contents(config.configFile);
-    //config.configJson = Json::parse(fileContents);
-
-    //x3dInit(config);
-
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");
-
-    // const char* programPath = argv[0];
 
     int screenW = 640;
     int screenH = 480;
@@ -56,19 +47,7 @@ int main(int argc, char* argv[])
         .fieldOfView(X_ANG_60)
         .resolution(screenW, screenH)
         .useQuakeColorPalette();
-
-    // MemoryManager::init(8 * 1024 * 1024, 1024 * 1024);
-
-    // char str[1024];
-    // fgets(str, 1024, stdin);
-
-    // String res = Json::stringify(Json::parse(str), true);
-
-    // printf("%s\n", res.c_str());
-
-
-    //screen_set_callbacks(context, screenConfig);
-
+    
     X_Config config = X_Config()
         .programPath(argv[0])
         .defaultFont("font.xtex")
