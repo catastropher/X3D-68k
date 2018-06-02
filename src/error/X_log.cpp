@@ -40,18 +40,17 @@
 
 #endif
 
-static X_File logFile;
+static FILE* logFile;
 static bool enableSafeLogging = 1;
 
 void x_log_cleanup(void)
 {
-    x_file_close(&logFile);
+    fclose(logFile);
 }
 
 static void get_log_file_name(char* dest)
 {
-    strcpy(dest, x_filesystem_get_program_path());
-    strcat(dest, "/engine.log");
+    strcpy(dest, "./engine.log");
 }
 
 void x_log_init()
@@ -59,26 +58,46 @@ void x_log_init()
     char logFileName[X_FILENAME_MAX_LENGTH];
     get_log_file_name(logFileName);
     
-    if(!x_file_open_writing(&logFile, logFileName))
+    logFile = fopen(logFileName, "wb");
+
+    if(logFile == nullptr)
+    {
         x_system_error("Failed to open log file");
+    }
     
     enableSafeLogging = 0;
 }
 
 static void flush_log_to_file(void)
 {
-    x_file_close(&logFile);
+    // x_file_close(&logFile);
     
-    char logFileName[X_FILENAME_MAX_LENGTH];
-    get_log_file_name(logFileName);
+    // char logFileName[X_FILENAME_MAX_LENGTH];
+    // get_log_file_name(logFileName);
     
-    x_file_open_append(&logFile, logFileName);
+    // x_file_open_append(&logFile, logFileName);
 }
 
 void Log::log(const char* format, ...)
 {
     const char* infoMessageColored = ANSI_COLOR_GREEN "[INFO]" ANSI_COLOR_RESET " ";
     const char* infoMessage = "[INFO] ";
+
+    writeToLog(infoMessageColored, infoMessage);
+
+    va_list list;
+    va_start(list, format);
+    writeToLog(format, list);
+
+    writeToLog('\n');
+
+    va_end(list);
+}
+
+void Log::error(const char* format, ...)
+{
+    const char* infoMessageColored = ANSI_COLOR_RED "[ERR ]" ANSI_COLOR_RESET " ";
+    const char* infoMessage = "[ERR] ";
 
     writeToLog(infoMessageColored, infoMessage);
 
@@ -108,19 +127,19 @@ void Log::logSub(const char* format, ...)
 void Log::writeToLog(const char* screenText, const char* fileText)
 {
     fputs(screenText, stdout);
-    fputs(fileText, logFile.file);
+    fputs(fileText, logFile);
 }
 
 void Log::writeToLog(const char* format, va_list list)
 {
     vprintf(format, list);
-    vfprintf(logFile.file, format, list);
+    vfprintf(logFile, format, list);
 }
 
 void Log::writeToLog(char c)
 {
     fputc(c, stdout);
-    fputc(c, logFile.file);
+    fputc(c, logFile);
 }
 
 // TODO: take parameters into account
@@ -131,31 +150,31 @@ void Log::init(const char* logFile, bool enableLogging)
 
 void x_log_error(const char* format, ...)
 {
-    va_list list;
-    const char* errorMessage = ANSI_COLOR_RED "[ERR ]" ANSI_COLOR_RESET;
+    // va_list list;
+    // const char* errorMessage = ANSI_COLOR_RED "[ERR ]" ANSI_COLOR_RESET;
     
-    printf("%s ", errorMessage);
-    va_start(list, format);
-    vprintf(format, list);
-    printf("\n");
+    // printf("%s ", errorMessage);
+    // va_start(list, format);
+    // vprintf(format, list);
+    // printf("\n");
 
-    if(!x_file_is_open(&logFile))
-    {
-        va_end(list);
-        return;
-    }
+    // if(!x_file_is_open(&logFile))
+    // {
+    //     va_end(list);
+    //     return;
+    // }
     
     
-    va_end(list);
-    va_start(list, format);
+    // va_end(list);
+    // va_start(list, format);
     
-    fprintf(logFile.file, "[ERR ] ");
-    vfprintf(logFile.file, format, list);
-    fputc('\n', logFile.file);
+    // fprintf(logFile.file, "[ERR ] ");
+    // vfprintf(logFile.file, format, list);
+    // fputc('\n', logFile.file);
     
-    va_end(list);
+    // va_end(list);
     
-    if(enableSafeLogging)
-        flush_log_to_file();
+    // if(enableSafeLogging)
+    //     flush_log_to_file();
 }
 

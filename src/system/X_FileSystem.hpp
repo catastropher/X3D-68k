@@ -13,13 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <cstdio>
+
 #include "X_FilePath.hpp"
+#include "memory/X_Link.hpp"
 
 #pragma once
 
-struct SearchPath : public FilePath
+enum FileLocationFlags
 {
-    SearchPath* next;
+    IN_PAKFILE = (1 << 0)
+};
+
+struct FileLocation
+{
+    FilePath path;
+    FILE* file;
+    int flags;
+    int pakFileOffset;
 };
 
 class FileSystem
@@ -27,9 +38,13 @@ class FileSystem
 public:
     static void init(const char* programPath);
 
-    static bool locateFile(const char* name, FilePath& dest);
+    static bool locateFile(const char* name, FileLocation& dest);
 
 private:
-    static SearchPath root;
+    static bool locateFileInPakFiles(const char* name, FileLocation& dest);
+    static bool locateFileInSearchPaths(const char* name, FileLocation& dest);
+
+    static Link<FilePath> searchPathRoot;
+    static Link<FilePath>* pakFileHead;
 };
 

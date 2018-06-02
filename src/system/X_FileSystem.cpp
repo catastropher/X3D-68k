@@ -17,36 +17,61 @@
 
 #include "X_FileSystem.hpp"
 
-SearchPath FileSystem::root;
+Link<FilePath> FileSystem::searchPathRoot;
+Link<FilePath>* FileSystem::pakFileHead;
 
 void FileSystem::init(const char* programPath)
 {
-    root
+    searchPathRoot.value
         .set(programPath)
         .removeLastSegment();
 
-    printf("Path: %s\n", root.c_str());
+    printf("Path: %s\n", searchPathRoot.value.c_str());
 
-    root.next = nullptr;
+    searchPathRoot.next = nullptr;
 }
 
-bool FileSystem::locateFile(const char* name, FilePath& dest)
+// Locates a file and opens it for reading
+bool FileSystem::locateFile(const char* name, FileLocation& dest)
 {
-    for(SearchPath* path = &root; path != nullptr; path = path->next)
+    dest.flags = 0;
+
+    if(locateFileInPakFiles(name, dest))
     {
-        dest
+        return true;
+    }
+
+    if(locateFileInSearchPaths(name, dest))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+bool FileSystem::locateFileInPakFiles(const char* name, FileLocation& dest)
+{
+    return false;
+}
+
+bool FileSystem::locateFileInSearchPaths(const char* name, FileLocation& dest)
+{
+    for(auto pathLink = &searchPathRoot; pathLink != nullptr; pathLink = pathLink->next)
+    {
+        FilePath* path = &pathLink->value;
+
+        dest.path
             .set(path->c_str())
             .appendSegment(name);
 
-        FILE* file = fopen(dest.c_str(), "rb");
-        if(file != nullptr)
-        {
-            fclose(file);
+        printf("Search %s\n", dest.path.c_str());
 
+        dest.file = fopen(dest.path.c_str(), "rb");
+        if(dest.file != nullptr)
+        {
             return true;
         }
     }
 
     return false;
 }
-

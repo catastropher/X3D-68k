@@ -34,6 +34,11 @@ int main(int argc, char* argv[])
 
     initSystem(sysConfig);
 
+    int size;
+    char* data = FileReader::readWholeFile("../settings.json", size);
+
+    printf("%s\n", data);
+
     //char* fileContents = (char*)x_file_read_contents(config.configFile);
     //config.configJson = Json::parse(fileContents);
 

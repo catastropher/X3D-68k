@@ -25,8 +25,9 @@ public:
     static void init(const char* logFile, bool enableLogging);
     static void cleanup();
 
-    static void log(const char* format, ...);
-    static void logSub(const char* format, ...);
+    static void log(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
+    static void error(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
+    static void logSub(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
 private:
     static void writeToLog(const char* format, va_list list);

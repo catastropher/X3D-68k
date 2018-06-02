@@ -36,7 +36,6 @@
 static X_String g_searchPaths;
 static char g_programPath[256];
 
-FilesystemSearchPath Filesystem::rootSearchPath;
 
 static inline void determine_file_size(X_File* file)
 {
@@ -104,21 +103,21 @@ bool x_file_open_reading(X_File* file, const char* fileName)
     file->file = NULL;
     
     char nextFileToSearch[512];
-    const FilesystemSearchPath* searchPath = Filesystem::getRootSearchPath();
+    //const FilesystemSearchPath* searchPath = nullptr;
 
     
-    while(!file->file && searchPath)
-    {
-        strcpy(nextFileToSearch, searchPath->path);
-        strcat(nextFileToSearch, "/");
-        strcat(nextFileToSearch, fileName);
+//     while(!file->file && searchPath)
+//     {
+//         strcpy(nextFileToSearch, searchPath->path);
+//         strcat(nextFileToSearch, "/");
+//         strcat(nextFileToSearch, fileName);
         
-#ifdef X_FILE_AUTO_ADDED_EXTENSION
-        strcat(nextFileToSearch, X_FILE_AUTO_ADDED_EXTENSION);
-#endif
+// #ifdef X_FILE_AUTO_ADDED_EXTENSION
+//         strcat(nextFileToSearch, X_FILE_AUTO_ADDED_EXTENSION);
+// #endif
         
-        file->file = fopen(nextFileToSearch, "rb");
-    }
+//         file->file = fopen(nextFileToSearch, "rb");
+//     }
     
     if(!file->file)
     {
@@ -618,19 +617,3 @@ bool x_file_open_from_packfile(X_File* file, const char* fileName)
     
     return 0;
 }
-
-void Filesystem::init(const char* programPath)
-{
-    if(programPath == nullptr)
-    {
-        x_system_error("No program path in config");
-    }
-
-    x_filepath_extract_path(programPath, rootSearchPath.path);
-
-    // FIXME: only here for backwards compat
-    strcpy(g_programPath, rootSearchPath.path);
-}
-
-
-

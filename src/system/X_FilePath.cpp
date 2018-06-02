@@ -32,10 +32,13 @@ char* FilePath::startOfLastSegment()
     return ptr;
 }
 
+#include <cstdio>
+
 FilePath& FilePath::appendSegment(const char* segment)
 {
     if(segment[0] == '\0')
     {
+        strcpy(path, segment);
         return *this;
     }
 
@@ -48,6 +51,7 @@ FilePath& FilePath::appendSegment(const char* segment)
     char* ptr = end() - 1;
     if(*ptr != '/')
     {
+        ++ptr;
         *ptr++ = '/';
     }
 

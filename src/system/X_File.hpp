@@ -16,6 +16,7 @@
 #include <cstdio>
 
 #include "geo/X_Vec3.h"
+#include "system/X_FilePath.hpp"
 
 static inline void swapIntBytes(unsigned int& val)
 {
@@ -30,6 +31,20 @@ static inline void swapShortBytes(unsigned short& val)
 class FileReader
 {
 public:
+    FileReader() : file(nullptr) { }
+    
+    bool open(const char* fileName);
+
+    bool open(FilePath& path)
+    {
+        return open(path.c_str());
+    }
+
+    int getSize() const
+    {
+        return size;
+    }
+
     template<typename T>
     T read();
 
@@ -42,8 +57,16 @@ public:
         }
     }
 
+    static char* readWholeFile(const char* fileName, int& size);
+
+    ~FileReader();
+
 private:
+    void determineSize();
+
     FILE* file;
+    int size;
+    int flags;
 };
 
 template<>

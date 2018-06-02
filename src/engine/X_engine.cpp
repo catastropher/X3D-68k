@@ -56,7 +56,6 @@ static void cmd_info(X_EngineContext* engineContext, int argc, char* argv[])
 void initSystem(SystemConfig& config)
 {
     FileSystem::init(config.programPath);
-    Filesystem::init(config.programPath);
     Log::init(config.logFile, config.enableLogging);
     MemoryManager::init(config.hunkSize, config.zoneSize);
 }
