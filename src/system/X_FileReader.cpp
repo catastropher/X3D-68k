@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_File.hpp"
+#include "X_FileReader.hpp"
 #include "X_FileSystem.hpp"
 #include "error/X_log.h"
 #include "memory/X_Memory.hpp"
@@ -31,7 +31,7 @@ bool FileReader::open(const char* fileName)
     file = location.file;
     determineSize();
 
-    Log::log("Open file %s for reading", fileName);
+    Log::info("Open file %s for reading", fileName);
 
     return true;
 }
@@ -62,6 +62,9 @@ void FileReader::determineSize()
 
 FileReader::~FileReader()
 {
-    fclose(file);
+    if(file != nullptr)
+    {
+        fclose(file);
+    }
 }
 

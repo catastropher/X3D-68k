@@ -32,8 +32,6 @@ char* FilePath::startOfLastSegment()
     return ptr;
 }
 
-#include <cstdio>
-
 FilePath& FilePath::appendSegment(const char* segment)
 {
     if(segment[0] == '\0')

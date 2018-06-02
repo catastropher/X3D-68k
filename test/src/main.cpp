@@ -44,16 +44,18 @@ int main(int argc, char* argv[])
 
     //x3dInit(config);
 
+    FileSystem::addSearchPath("../assets");
+    FileSystem::addSearchPath("../maps");
 
     // const char* programPath = argv[0];
 
-    // int screenW = 640;
-    // int screenH = 480;
+    int screenW = 640;
+    int screenH = 480;
 
-    // ScreenConfig screenConfig = ScreenConfig()
-    //     .fieldOfView(X_ANG_60)
-    //     .resolution(screenW, screenH)
-    //     .useQuakeColorPalette();
+    ScreenConfig screenConfig = ScreenConfig()
+        .fieldOfView(X_ANG_60)
+        .resolution(screenW, screenH)
+        .useQuakeColorPalette();
 
     // MemoryManager::init(8 * 1024 * 1024, 1024 * 1024);
 
@@ -64,16 +66,15 @@ int main(int argc, char* argv[])
 
     // printf("%s\n", res.c_str());
 
-    return 0;
 
     //screen_set_callbacks(context, screenConfig);
 
-    // X_Config config = X_Config()
-    //     .programPath(programPath)
-    //     .defaultFont("font.xtex")
-    //     .screenConfig(screenConfig);
+    X_Config config = X_Config()
+        .programPath(argv[0])
+        .defaultFont("font.xtex")
+        .screenConfig(screenConfig);
 
-    // TestGame game(config);
-    // game.run();
+    TestGame game(config);
+    game.run();
 }
 

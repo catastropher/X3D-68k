@@ -392,7 +392,7 @@ void Zone::print()
 
 void MemoryManager::init(int hunkSize, int zoneSize)
 {
-    Log::log("Initializing memory manager");
+    Log::info("Initializing memory manager");
 
     Hunk::init(hunkSize);
     Zone::init(zoneSize);

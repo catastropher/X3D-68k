@@ -61,7 +61,7 @@ bool X_Font::loadFromFile(const char* fileName)
     X_Texture fontTex;
     if(!fontTex.loadFromFile(fileName))
     {
-        x_log_error("Failed to load font %s", fileName);
+        Log::error("Failed to load font %s", fileName);
         return 0;
     }
 
@@ -72,7 +72,7 @@ bool X_Font::loadFromFile(const char* fileName)
     pixels = xalloc<X_Color>(fontTex.totalTexels());
     loadCharacters(fontTex);
     
-    x_log("Loaded font %s", fileName);
+    Log::info("Loaded font %s", fileName);
     
     return 1;
 }

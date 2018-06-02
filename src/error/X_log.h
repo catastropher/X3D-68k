@@ -25,7 +25,7 @@ public:
     static void init(const char* logFile, bool enableLogging);
     static void cleanup();
 
-    static void log(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
+    static void info(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
     static void error(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
     static void logSub(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
@@ -39,7 +39,6 @@ void x_log_init(void);
 void x_log_cleanup(void);
 
 // Here for backwards compatibility
-#define x_log(_args...) Log::log(_args)
-
-void x_log_error(const char* format, ...);
+#define x_log(_args...) Log::info(_args)
+#define x_log_error(_args...) Log::error(_args)
 

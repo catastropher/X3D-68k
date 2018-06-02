@@ -29,6 +29,7 @@
 #include "engine/X_init.h"
 #include "util/X_util.h"
 #include "math/X_Mat4x4.h"
+#include "X_FileSystem.hpp"
 
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
@@ -101,6 +102,8 @@ bool x_file_open_reading(X_File* file, const char* fileName)
     file->flags = 0;
     file->size = 0;
     file->file = NULL;
+
+
     
     char nextFileToSearch[512];
     //const FilesystemSearchPath* searchPath = nullptr;
@@ -118,6 +121,12 @@ bool x_file_open_reading(X_File* file, const char* fileName)
         
 //         file->file = fopen(nextFileToSearch, "rb");
 //     }
+
+    FileLocation location;
+    if(FileSystem::locateFile(fileName, location))
+    {
+        file->file = location.file;
+    }
     
     if(!file->file)
     {

@@ -46,6 +46,11 @@ private:
     void handleKeys()
     {
         ::handle_keys(&context);
+
+        if(x_keystate_key_down(getInstance()->getKeyState(), X_KEY_ESCAPE))
+        {
+            done = true;
+        }
     }
 
     void createCamera()

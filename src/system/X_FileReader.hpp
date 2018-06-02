@@ -13,10 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include <cstdio>
 
 #include "geo/X_Vec3.h"
 #include "system/X_FilePath.hpp"
+#include "render/X_Texture.h"
+#include "error/X_log.h"
 
 static inline void swapIntBytes(unsigned int& val)
 {
@@ -47,6 +51,12 @@ public:
 
     template<typename T>
     T read();
+
+    void readFixedLengthString(char* dest, int length)
+    {
+        readArray<char>(dest, length);
+        dest[length] = '\0';
+    }
 
     template<typename T>
     void readArray(T* dest, int count)
@@ -100,6 +110,7 @@ inline char FileReader::read()
 template<>
 inline unsigned short FileReader::read()
 {
+    Log::info("Here");
     unsigned short result;
     fread(&result, 2, 1, file);
     swapShortBytes(result);
@@ -110,7 +121,7 @@ inline unsigned short FileReader::read()
 template<>
 inline short FileReader::read()
 {
-    return read<short>();
+    return read<unsigned short>();
 }
 
 template<>
@@ -126,6 +137,4 @@ inline Vec3 FileReader::read()
 
     return Vec3(v[0], v[1], v[2]);
 }
-
-
 

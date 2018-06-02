@@ -16,6 +16,7 @@
 #include <cstdio>
 
 #include "X_FileSystem.hpp"
+#include "memory/X_Memory.hpp"
 
 Link<FilePath> FileSystem::searchPathRoot;
 Link<FilePath>* FileSystem::pakFileHead;
@@ -64,8 +65,6 @@ bool FileSystem::locateFileInSearchPaths(const char* name, FileLocation& dest)
             .set(path->c_str())
             .appendSegment(name);
 
-        printf("Search %s\n", dest.path.c_str());
-
         dest.file = fopen(dest.path.c_str(), "rb");
         if(dest.file != nullptr)
         {
@@ -74,4 +73,13 @@ bool FileSystem::locateFileInSearchPaths(const char* name, FileLocation& dest)
     }
 
     return false;
+}
+
+void FileSystem::addSearchPath(const char* path)
+{
+    auto pathNode = Zone::alloc<Link<FilePath>>();
+
+    pathNode->value.set(path);
+    pathNode->next = searchPathRoot.next;
+    searchPathRoot.next = pathNode;
 }
