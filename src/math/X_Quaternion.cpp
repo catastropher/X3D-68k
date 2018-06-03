@@ -29,10 +29,10 @@ QuaternionTemplate<T> QuaternionTemplate<T>::fromAxisAngle(Vec3Template<T>& axis
     fp cosAngle = x_cos(angle / 2);
     fp sinAngle = x_sin(angle / 2);
 
-    q.x = convertNumberType<T>(axis.x * sinAngle);
-    q.y = convertNumberType<T>(axis.y * sinAngle);
-    q.z = convertNumberType<T>(axis.z * sinAngle);
-    q.w = convertNumberType<T>(cosAngle);
+    q.x = convert<T>(axis.x * sinAngle);
+    q.y = convert<T>(axis.y * sinAngle);
+    q.z = convert<T>(axis.z * sinAngle);
+    q.w = convert<T>(cosAngle);
 
     return q;
 }
@@ -42,25 +42,25 @@ QuaternionTemplate<T> QuaternionTemplate<T>::operator*(QuaternionTemplate<T>& q)
 {
     QuaternionTemplate<T> result;
 
-    result.x = convertNumberType<T>(
+    result.x = convert<T>(
         this->x * q.w
             + this->y * q.z
             - this->z * q.y
             + this->w * q.x);
 
-    result.y = convertNumberType<T>(
+    result.y = convert<T>(
         -this->x * q.z
             + this->y * q.w
             + this->z * q.x
             + this->w * q.y);
 
-    result.z = convertNumberType<T>(
+    result.z = convert<T>(
         this->x * q.y
             - this->y * q.x
             + this->z * q.w
             + this->w * q.z);
     
-    result.w = convertNumberType<T>(
+    result.w = convert<T>(
         -this->x * q.x
             - this->y * q.y
             - this->z * q.z

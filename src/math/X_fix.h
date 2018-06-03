@@ -17,6 +17,8 @@
 
 #include <cstdint>
 
+#include "math/X_convert.hpp"
+
 typedef int x_fp16x16;
 typedef int x_fp24x8;
 typedef long long int x_fp32x32;
@@ -295,30 +297,17 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
     return x >> (16 - shiftUp);
 }
 
-template<typename To, typename From>
-To convertNumberType(From value);
+
 
 template<>
-inline fp convertNumberType(fp value)
+void convert(fp& from, float& to)
 {
-    return value;
+    to = from.toFloat();
 }
 
 template<>
-inline float convertNumberType(float value)
+void convert(float& from, fp& to)
 {
-    return value;
-}
-
-template<>
-inline float convertNumberType(fp value)
-{
-    return value.toFloat();
-}
-
-template<>
-inline fp convertNumberType(float value)
-{
-    return fp::fromFloat(value);
+    to = fp::fromFloat(from);
 }
 

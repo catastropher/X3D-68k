@@ -20,6 +20,7 @@
 #include "render/X_Texture.h"
 #include "system/X_File.h"
 #include "X_BspLevel.h"
+#include "memory/X_StreamReader.hpp"
 
 #define X_LUMP_ENTITIES     0
 #define X_LUMP_PLANES       1
@@ -214,6 +215,8 @@ typedef struct X_BspLevelLoader
     unsigned char* lightmapData;
     
     char* entityDictionary;
+
+    StreamReader reader;
 } X_BspLevelLoader;
 
 bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);

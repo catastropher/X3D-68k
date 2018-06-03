@@ -17,6 +17,7 @@
 
 #include "math/X_sqrt.h"
 #include "math/X_fix.h"
+#include "math/X_convert.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A 3D vector or vertex.
@@ -49,6 +50,14 @@ struct Vec3Template
     T y;
     T z;
 };
+
+template<typename From, typename To>
+inline void convert(Vec3Template<From>& from, Vec3Template<To>& to)
+{
+    convert(from.x, to.x);
+    convert(from.y, to.y);
+    convert(from.z, to.z);
+}
 
 using Vec3 = Vec3Template<x_fp16x16>;
 
