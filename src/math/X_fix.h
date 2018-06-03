@@ -28,6 +28,8 @@ typedef short x_fp0x16;
 
 struct fp
 {
+    fp() { }
+
     fp(int val_) : val(val_) { }
     
     friend fp operator+(fp a, fp b);
@@ -52,7 +54,7 @@ struct fp
     friend bool operator>=(fp a, fp b);
     friend bool operator==(fp a, fp b);
     friend bool operator!=(fp a, fp b);
-    
+
     fp whole()
     {
         return val & 0x7FFF0000;
@@ -292,3 +294,31 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
 
     return x >> (16 - shiftUp);
 }
+
+template<typename To, typename From>
+To convertNumberType(From value);
+
+template<>
+inline fp convertNumberType(fp value)
+{
+    return value;
+}
+
+template<>
+inline float convertNumberType(float value)
+{
+    return value;
+}
+
+template<>
+inline float convertNumberType(fp value)
+{
+    return value.toFloat();
+}
+
+template<>
+inline fp convertNumberType(float value)
+{
+    return fp::fromFloat(value);
+}
+

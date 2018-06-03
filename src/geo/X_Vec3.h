@@ -21,38 +21,36 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// A 3D vector or vertex.
 ////////////////////////////////////////////////////////////////////////////////
-// typedef struct X_Vec3_int
-// {
-//     int x;
-//     int y;
-//     int z;
-// } X_Vec3_int;
 
-struct Vec3
+
+template<typename T>
+struct Vec3Template
 {
-    Vec3(x_fp16x16 x_, x_fp16x16 y_, x_fp16x16 z_) : x(x_), y(y_), z(z_) { }
-    Vec3() : x(0), y(0), z(0) { }
+    Vec3Template(T x_, T y_, T z_) : x(x_), y(y_), z(z_) { }
+    Vec3Template() : x(0), y(0), z(0) { }
     
-    Vec3 operator+(const Vec3& v) const
+    Vec3Template operator+(const Vec3Template& v) const
     {
-        return Vec3(x + v.x, y + v.y, z + v.z);
+        return Vec3Template(x + v.x, y + v.y, z + v.z);
     }
     
-    Vec3 operator-(const Vec3& v) const
+    Vec3Template operator-(const Vec3Template& v) const
     {
-        return Vec3(x - v.x, y - v.y, z - v.z);
+        return Vec3Template(x - v.x, y - v.y, z - v.z);
     }
     
-    Vec3 operator+=(const Vec3& v)
+    Vec3Template operator+=(const Vec3Template& v)
     {
         *this = *this + v;
         return *this;
     }
     
-    x_fp16x16 x;
-    x_fp16x16 y;
-    x_fp16x16 z;
+    T x;
+    T y;
+    T z;
 };
+
+using Vec3 = Vec3Template<x_fp16x16>;
 
 typedef Vec3 X_Vec3_int;
 
