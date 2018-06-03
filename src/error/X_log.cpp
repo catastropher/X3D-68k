@@ -50,7 +50,7 @@ void x_log_cleanup(void)
 
 static void get_log_file_name(char* dest)
 {
-    strcpy(dest, "./engine.log");
+    strcpy(dest, "engine.log");
 }
 
 void x_log_init()
@@ -64,7 +64,7 @@ void x_log_init()
     {
         x_system_error("Failed to open log file");
     }
-    
+
     enableSafeLogging = 0;
 }
 
@@ -137,6 +137,8 @@ void Log::writeToLog(const char* format, va_list list)
 
     vprintf(format, list);
     vfprintf(logFile, format, fileList);
+
+    va_end(fileList);
 }
 
 void Log::writeToLog(char c)

@@ -31,7 +31,7 @@ bool FileReader::open(const char* fileName)
     file = location.file;
     determineSize();
 
-    Log::info("Open file %s for reading", fileName);
+    Log::info("Opened file %s for reading", fileName);
 
     return true;
 }

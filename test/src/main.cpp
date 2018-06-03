@@ -60,5 +60,7 @@ int main(int argc, char* argv[])
 
     TestGame game(config);
     game.run();
+
+    x_log_cleanup();
 }
 
