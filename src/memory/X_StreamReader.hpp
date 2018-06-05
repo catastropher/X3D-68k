@@ -44,7 +44,7 @@ public:
     template<typename T>
     StreamReader& read(Vec3Template<T>& v);
 
-    template<typename To, typename From>
+    template<typename From, typename To>
     StreamReader& readAs(To& dest)
     {
         From from;
@@ -68,13 +68,13 @@ public:
 private:
     unsigned int next()
     {
-        return *ptr++;
+        return *(unsigned char*)ptr++;
     }
 
     template<int Bytes>
     int readInt()
     {
-        int res = 0;
+        unsigned int res = 0;
 
         for(int i = 0; i < Bytes; ++i)
         {
@@ -131,7 +131,7 @@ inline StreamReader& StreamReader::read(char& dest)
 template<>
 inline StreamReader& StreamReader::read(unsigned char& dest)
 {
-    dest = readInt<1>();
+    dest = next();
 
     return *this;
 }
@@ -154,9 +154,9 @@ inline StreamReader& StreamReader::read(float& dest)
 template<typename T>
 inline StreamReader& StreamReader::read(Vec3Template<T>& v)
 {
-    v.x = read<T>();
-    v.y = read<T>();
-    v.z = read<T>();
+    read(v.x);
+    read(v.y);
+    read(v.z);
 
     return *this;
 }

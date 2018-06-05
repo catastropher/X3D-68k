@@ -45,6 +45,11 @@ struct Vec3Template
         *this = *this + v;
         return *this;
     }
+
+    Vec3Template toX3dCoords() const
+    {
+        return Vec3Template(y, -z, -x);
+    }
     
     T x;
     T y;
@@ -59,6 +64,15 @@ inline void convert(Vec3Template<From>& from, Vec3Template<To>& to)
     convert(from.z, to.z);
 }
 
+// FIXME: need specialization becuase Vec3 can't use fp yet
+template<>
+inline void convert(Vec3Template<float>& from, Vec3Template<x_fp16x16>& to)
+{
+    to.x = convert<fp>(from.x).toFp16x16();
+    to.y = convert<fp>(from.y).toFp16x16();
+    to.z = convert<fp>(from.z).toFp16x16();
+}
+
 using Vec3 = Vec3Template<x_fp16x16>;
 
 typedef Vec3 X_Vec3_int;
@@ -67,12 +81,7 @@ typedef Vec3 X_Vec3_int;
 
 typedef X_Vec3_int X_Vec3_fp0x30;
 
-typedef struct X_Vec3_float
-{
-    float x;
-    float y;
-    float z;
-} X_Vec3_float;
+using X_Vec3_float = Vec3Template<float>;
 
 typedef struct X_Vec3_short
 {

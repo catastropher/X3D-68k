@@ -25,21 +25,25 @@
 #include "util/X_util.h"
 #include "error/X_error.h"
 
-static X_Vec3_float x_bsplevelloader_convert_coordinate_float(const X_Vec3_float* v)
+template<typename T>
+void readLump(X_BspLoaderLump* lump, T* dest, int total, X_File& file)
 {
-    return x_vec3_float_make(v->y, -v->z, -v->x);
-}
+    char* temp = (char*)x_malloc(lump->length);
 
-// TODO: replace with new version in X_Vec3.h
-static Vec3 x_bsplevelloader_convert_coordinate(const Vec3* v)
-{
-    return Vec3(v->y, -v->z, -v->x);
+    x_file_seek(&file, lump->fileOffset);
+    x_file_read_buf(&file, lump->length, temp);
+
+    StreamReader reader(temp, temp + lump->length);
+
+    reader.readArray(dest, total);
+
+    x_free(temp);
 }
 
 static void x_boundbox_convert_coordinate(X_BoundBox* box)
 {
-    box->v[0] = x_bsplevelloader_convert_coordinate(box->v + 0);
-    box->v[1] = x_bsplevelloader_convert_coordinate(box->v + 1);
+    box->v[0] = box->v[0].toX3dCoords();
+    box->v[1] = box->v[1].toX3dCoords();
     
     X_BoundBox temp;
     
@@ -85,6 +89,18 @@ static void x_bsploaderheader_read_from_file(X_BspLoaderHeader* header, X_File* 
         x_bsploaderlump_read_from_file(header->lumps + i, file);
 }
 
+template<>
+StreamReader& StreamReader::read(X_BspLoaderTexture& texture)
+{
+    readArray(texture.name, 16)
+        .read(texture.w)
+        .read(texture.h)
+        .readArray(texture.texelsOffset, 4);
+
+    return *this;
+}
+
+
 static void x_bsploadertexture_read_from_file(X_BspLoaderTexture* texture, X_File* file)
 {
     x_file_read_buf(file, 16, texture->name);
@@ -95,30 +111,22 @@ static void x_bsploadertexture_read_from_file(X_BspLoaderTexture* texture, X_Fil
         texture->texelsOffset[mipTex] = x_file_read_le_int32(file);
 }
 
-static void x_bsploaderfacetexture_read_from_file(X_BspLoaderFaceTexture* faceTexture, X_File* file)
+template<>
+StreamReader& StreamReader::read(X_BspLoaderFaceTexture& tex)
 {
-    X_Vec3_float u;
-    x_file_read_vec3_float(file, &u);
-    u = x_bsplevelloader_convert_coordinate_float(&u);
-    faceTexture->uOrientation = x_vec3_float_to_vec3(&u);
-    faceTexture->uOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
-    
-    X_Vec3_float v;
-    x_file_read_vec3_float(file, &v);
-    v = x_bsplevelloader_convert_coordinate_float(&v);
-    
-    faceTexture->vOrientation = x_vec3_float_to_vec3(&v);
-    faceTexture->vOffset = x_fp16x16_from_float(x_file_read_le_float32(file));
-    
-    faceTexture->textureId = x_file_read_le_int32(file);
-    faceTexture->flags = x_file_read_le_int32(file);
+    return readAs<Vec3Template<float>>(tex.uOrientation)
+        .readAs<float>(tex.uOffset)
+        .readAs<Vec3Template<float>>(tex.vOrientation)
+        .readAs<float>(tex.vOffset)
+        .read(tex.textureId)
+        .read(tex.flags);
 }
 
 static void x_bsploaderplane_read_from_file(X_BspLoaderPlane* plane, X_File* file)
 {
     X_Vec3_float normal;
     x_file_read_vec3_float(file, &normal);
-    normal = x_bsplevelloader_convert_coordinate_float(&normal);
+    normal = normal.toX3dCoords();
     
     plane->plane.normal = x_vec3_float_to_vec3(&normal);
     
@@ -133,22 +141,20 @@ static void x_bsploadervertex_read_from_file(X_BspLoaderVertex* vertex, X_File* 
     X_Vec3_float v;
     x_file_read_vec3_float(file, &v);
     
-    v = x_bsplevelloader_convert_coordinate_float(&v);
+    v = v.toX3dCoords();
     vertex->v = x_vec3_float_to_vec3(&v);
 }
 
-static void x_bsploaderface_read_from_file(X_BspLoaderFace* face, X_File* file)
+template<>
+StreamReader& StreamReader::read(X_BspLoaderFace& face)
 {
-    face->planeNum = x_file_read_le_int16(file);
-    face->side = x_file_read_le_int16(file);
-    face->firstEdge = x_file_read_le_int32(file);
-    face->totalEdges = x_file_read_le_int16(file);
-    face->texInfo = x_file_read_le_int16(file);
-    
-    for(int i = 0; i < X_BSPFACE_MAX_LIGHTMAPS; ++i)
-        face->lightmapStyles[i] = x_file_read_char(file);
-    
-    face->lightmapOffset = x_file_read_le_int32(file);
+    return read(face.planeNum)
+        .read(face.side)
+        .read(face.firstEdge)
+        .read(face.totalEdges)
+        .read(face.texInfo)
+        .readArray(face.lightmapStyles, X_BSPFACE_MAX_LIGHTMAPS)
+        .read(face.lightmapOffset);
 }
 
 static void x_bsploaderleaf_read_from_file(X_BspLoaderLeaf* leaf, X_File* file)
@@ -169,21 +175,15 @@ static void x_bsploaderleaf_read_from_file(X_BspLoaderLeaf* leaf, X_File* file)
         leaf->ambientLevel[i] = x_file_read_char(file);
 }
 
-static void x_bsploadernode_read_from_file(X_BspLoaderNode* node, X_File* file)
+template<>
+StreamReader& StreamReader::read(X_BspLoaderNode& node)
 {
-    node->planeNum = x_file_read_le_int32(file);
-    
-    for(int i = 0; i < 2; ++i)
-        node->children[i] = x_file_read_le_int16(file);
-    
-    for(int i = 0; i < 3; ++i)
-        node->mins[i] = x_file_read_le_int16(file);
-    
-    for(int i = 0; i < 3; ++i)
-        node->maxs[i] = x_file_read_le_int16(file);
-    
-    node->firstFace = x_file_read_le_int16(file);
-    node->totalFaces = x_file_read_le_int16(file);
+    return read(node.planeNum)
+        .readArray(node.children, 2)
+        .readArray(node.mins, 3)
+        .readArray(node.maxs, 3)
+        .read(node.firstFace)
+        .read(node.totalFaces);
 }
 
 static void x_bsploaderedge_read_from_file(X_BspLoaderEdge* edge, X_File* file)
@@ -192,32 +192,27 @@ static void x_bsploaderedge_read_from_file(X_BspLoaderEdge* edge, X_File* file)
     edge->v[1] = x_file_read_le_int16(file);
 }
 
-static void x_bspclipnode_read_from_file(X_BspClipNode* node, X_File* file)
+template<>
+StreamReader& StreamReader::read(X_BspClipNode& node)
 {
-    node->planeId = x_file_read_le_int32(file);
-    node->frontChild = x_file_read_le_int16(file);
-    node->backChild = x_file_read_le_int16(file);
+    return read(node.planeId)
+        .read(node.frontChild)
+        .read(node.backChild);
 }
 
-static void x_bsploadermodel_read_from_file(X_BspLoaderModel* model, X_File* file)
+template<>
+StreamReader& StreamReader::read(X_BspLoaderModel& model)
 {
-    for(int i = 0; i < 3; ++i)
-        model->mins[i] = x_file_read_le_float32(file);
-    
-    for(int i = 0; i < 3; ++i)
-        model->maxs[i] = x_file_read_le_float32(file);
-
-    x_file_read_vec3_float(file, &model->origin);
-    model->origin = x_bsplevelloader_convert_coordinate_float(&model->origin);
-    
-    model->rootBspNode = x_file_read_le_int32(file);
-    model->rootClipNode = x_file_read_le_int32(file);
-    model->secondRootClipNode = x_file_read_le_int32(file);
-    model->thirdRootClipNode = x_file_read_le_int32(file);
-    
-    model->totalBspLeaves = x_file_read_le_int32(file);
-    model->firstFaceId = x_file_read_le_int32(file);
-    model->totalFaces = x_file_read_le_int32(file);
+    return readArray(model.mins, 3)
+        .readArray(model.maxs, 3)
+        .read(model.origin)
+        .read(model.rootBspNode)
+        .read(model.rootClipNode)
+        .read(model.secondRootClipNode)
+        .read(model.thirdRootClipNode)
+        .read(model.totalBspLeaves)
+        .read(model.firstFaceId)
+        .read(model.totalFaces);
 }
 
 static void x_bsplevelloader_load_clip_nodes(X_BspLevelLoader* loader)
@@ -229,11 +224,8 @@ static void x_bsplevelloader_load_clip_nodes(X_BspLevelLoader* loader)
     loader->clipNodes = (X_BspClipNode*)x_malloc(loader->totalClipNodes * sizeof(X_BspClipNode));
     
     x_log("Total clip nodes: %d", loader->totalClipNodes);
-    
-    x_file_seek(&loader->file, nodeLump->fileOffset);
-    
-    for(int i = 0; i < loader->totalClipNodes; ++i)
-        x_bspclipnode_read_from_file(loader->clipNodes + i, &loader->file);
+
+    readLump(nodeLump, loader->clipNodes, loader->totalClipNodes, loader->file);
 }
 
 static void x_bsplevelloader_load_planes(X_BspLevelLoader* level)
@@ -277,11 +269,8 @@ static void x_bsplevelloader_load_faces(X_BspLevelLoader* level)
     level->faces = (X_BspLoaderFace*)x_malloc(level->totalFaces * sizeof(X_BspLoaderFace));
     
     x_log("Total faces: %d", level->totalFaces);
-    
-    x_file_seek(&level->file, faceLump->fileOffset);
-    
-    for(int i = 0; i < level->totalFaces; ++i)
-        x_bsploaderface_read_from_file(level->faces + i, &level->file);
+
+    readLump(faceLump, level->faces, level->totalFaces, level->file);
 }
 
 static void x_bsplevelloader_load_leaves(X_BspLevelLoader* level)
@@ -309,11 +298,8 @@ static void x_bsplevelloader_load_nodes(X_BspLevelLoader* level)
     level->nodes = (X_BspLoaderNode*)x_malloc(level->totalNodes * sizeof(X_BspLoaderNode));
     
     x_log("Total nodes: %d\n", level->totalNodes);
-    
-    x_file_seek(&level->file, nodeLump->fileOffset);
-    
-    for(int i = 0; i < level->totalNodes; ++i)
-        x_bsploadernode_read_from_file(level->nodes + i, &level->file);
+
+    readLump(nodeLump, level->nodes, level->totalNodes, level->file);
 }
 
 static void x_bsplevelloader_load_edges(X_BspLevelLoader* level)
@@ -341,11 +327,8 @@ static void x_bsplevelloader_load_models(X_BspLevelLoader* level)
     level->models = (X_BspLoaderModel*)x_malloc(level->totalEdges * sizeof(X_BspLoaderModel));
     
     x_log("Total models: %d", level->totalModels);
-    
-    x_file_seek(&level->file, modelLump->fileOffset);
-    
-    for(int i = 0; i < level->totalModels; ++i)
-        x_bsploadermodel_read_from_file(level->models + i, &level->file);
+
+    readLump(modelLump, level->models, level->totalModels, level->file);
 }
 
 static void x_bsplevelloader_load_compressed_pvs(X_BspLevelLoader* level)
@@ -487,12 +470,9 @@ static void x_bsplevelloader_load_facetextures(X_BspLevelLoader* loader)
     loader->totalFaceTextures = faceTextureLump->length /  FACE_TEXTURE_SIZE_IN_FILE;
     loader->faceTextures = (X_BspLoaderFaceTexture*)x_malloc(loader->totalFaceTextures * sizeof(X_BspLoaderFaceTexture));
     
-    x_file_seek(&loader->file, faceTextureLump->fileOffset);
-    
     x_log("Total face textures: %d", loader->totalFaceTextures);
-    
-    for(int i = 0; i < loader->totalFaceTextures; ++i)
-        x_bsploaderfacetexture_read_from_file(loader->faceTextures + i, &loader->file);
+
+    readLump(faceTextureLump, loader->faceTextures, loader->totalFaceTextures, loader->file);
 }
 
 static void x_bsplevelloader_init_collision_hulls(X_BspLevelLoader* loader)
@@ -695,7 +675,8 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         model->clipNodeRoots[1] = loadModel->secondRootClipNode;
         model->clipNodeRoots[2] = loadModel->thirdRootClipNode;
         
-        model->origin = x_vec3_float_to_vec3(&loadModel->origin);
+        model->origin = convert<Vec3>(loadModel->origin)
+            .toX3dCoords();
         
         model->boundBox.v[0].x = x_fp16x16_from_float(loadModel->mins[0]);
         model->boundBox.v[0].y = x_fp16x16_from_float(loadModel->mins[1]);
@@ -803,11 +784,11 @@ static void x_bsplevel_init_facetextures(X_BspLevel* level, X_BspLevelLoader* lo
         X_BspFaceTexture* tex = level->faceTextures + i;
         X_BspLoaderFaceTexture* loadTex = loader->faceTextures + i;
         
-        tex->uOrientation = loadTex->uOrientation;
-        tex->uOffset = loadTex->uOffset;
+        tex->uOrientation = loadTex->uOrientation.toX3dCoords();
+        tex->uOffset = loadTex->uOffset.toFp16x16();
         
-        tex->vOrientation = loadTex->vOrientation;
-        tex->vOffset = loadTex->vOffset;
+        tex->vOrientation = loadTex->vOrientation.toX3dCoords();
+        tex->vOffset = loadTex->vOffset.toFp16x16();
         
         tex->flags = loadTex->flags;
         tex->texture = level->textures + loadTex->textureId;

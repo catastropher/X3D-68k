@@ -300,13 +300,13 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
 
 
 template<>
-void convert(fp& from, float& to)
+inline void convert(fp& from, float& to)
 {
     to = from.toFloat();
 }
 
 template<>
-void convert(float& from, fp& to)
+inline void convert(float& from, fp& to)
 {
     to = fp::fromFloat(from);
 }

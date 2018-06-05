@@ -104,8 +104,8 @@ typedef struct X_BspLoaderFaceTexture
 {
     Vec3 uOrientation;    // Orientation of texture in 3D space
     Vec3 vOrientation;
-    x_fp16x16 uOffset;
-    x_fp16x16 vOffset;
+    fp uOffset;
+    fp vOffset;
     int textureId;
     int flags;
 } X_BspLoaderFaceTexture;
@@ -116,7 +116,7 @@ typedef struct X_BspLoaderFace
 {
     short planeNum;
     short side;
-    X_BspEdgeId firstEdge;
+    int firstEdge;
     short totalEdges;
     short texInfo;
     
@@ -156,7 +156,7 @@ typedef struct X_BspLoaderModel
 {
     float mins[3];
     float maxs[3];
-    X_Vec3_float origin;
+    Vec3Template<float> origin;
     int rootBspNode;
     int rootClipNode;
     int secondRootClipNode;
