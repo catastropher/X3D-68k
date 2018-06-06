@@ -21,6 +21,7 @@
 #include "system/X_File.h"
 #include "X_BspLevel.h"
 #include "memory/X_StreamReader.hpp"
+#include "memory/X_Array.hpp"
 
 #define X_LUMP_ENTITIES     0
 #define X_LUMP_PLANES       1
@@ -173,31 +174,23 @@ typedef struct X_BspLevelLoader
     X_File file;
     X_BspLoaderHeader header;
     
-    X_BspLoaderVertex* vertices;
-    int totalVertices;
+    Array<X_BspLoaderVertex> vertices;
     
-    X_BspLoaderEdge* edges;
-    int totalEdges;
+    Array<X_BspLoaderEdge> edges;
     
-    X_BspLoaderPlane* planes;
-    int totalPlanes;
+    Array<X_BspLoaderPlane> planes;
     
-    X_BspLoaderFace* faces;
-    int totalFaces;
+    Array<X_BspLoaderFace> faces;
     
-    X_BspLoaderLeaf* leaves;
-    int totalLeaves;
+    Array<X_BspLoaderLeaf> leaves;
     
-    X_BspLoaderNode* nodes;
-    int totalNodes;
+    Array<X_BspLoaderNode> nodes;
     
-    X_BspClipNode* clipNodes;
-    int totalClipNodes;
+    Array<X_BspClipNode> clipNodes;
     
     X_BspCollisionHull collisionHulls[X_BSPLEVEL_MAX_COLLISION_HULLS];
     
-    X_BspLoaderModel* models;
-    int totalModels;
+    Array<X_BspLoaderModel> models;
     
     X_Color* textureTexels;
     X_BspLoaderTexture* textures;
@@ -206,19 +199,18 @@ typedef struct X_BspLevelLoader
     X_BspLoaderFaceTexture* faceTextures;
     int totalFaceTextures;
     
-    unsigned short* markSurfaces;
-    int totalMarkSurfaces;
+    Array<unsigned short> markSurfaces;
+
+    Array<int> surfaceEdgeIds;
     
-    int* surfaceEdgeIds;
-    int totalSurfaceEdgeIds;
+    Array<unsigned char> compressedPvsData;       // Potential visibility set
     
-    unsigned char* compressedPvsData;       // Potential visibility set
-    
-    unsigned char* lightmapData;
+    Array<unsigned char> lightmapData;
     
     char* entityDictionary;
 
-    StreamReader reader;
+    template<typename T>
+    void loadLump(int lumpId, Array<T>& dest, const char* name);
 } X_BspLevelLoader;
 
 bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);

@@ -15,8 +15,17 @@
 
 #include <vector>
 
+#pragma once
+
 #include "X_Allocator.hpp"
 
 template<typename T>
-using Array = std::vector<T, XAllocator<T>>;
+using Vector = std::vector<T, XAllocator<T>>;
+
+template<typename T>
+struct Array
+{
+    T* elem;
+    int count;
+};
 
