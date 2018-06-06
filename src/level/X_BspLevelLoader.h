@@ -22,6 +22,7 @@
 #include "X_BspLevel.h"
 #include "memory/X_StreamReader.hpp"
 #include "memory/X_Array.hpp"
+#include "engine/X_EngineQueue.hpp"
 
 #define X_LUMP_ENTITIES     0
 #define X_LUMP_PLANES       1
@@ -175,22 +176,15 @@ typedef struct X_BspLevelLoader
     X_BspLoaderHeader header;
     
     Array<X_BspLoaderVertex> vertices;
-    
     Array<X_BspLoaderEdge> edges;
-    
     Array<X_BspLoaderPlane> planes;
-    
     Array<X_BspLoaderFace> faces;
-    
     Array<X_BspLoaderLeaf> leaves;
-    
     Array<X_BspLoaderNode> nodes;
-    
     Array<X_BspClipNode> clipNodes;
-    
-    X_BspCollisionHull collisionHulls[X_BSPLEVEL_MAX_COLLISION_HULLS];
-    
     Array<X_BspLoaderModel> models;
+
+    X_BspCollisionHull collisionHulls[X_BSPLEVEL_MAX_COLLISION_HULLS];
     
     X_Color* textureTexels;
     X_BspLoaderTexture* textures;
@@ -211,7 +205,17 @@ typedef struct X_BspLevelLoader
 
     template<typename T>
     void loadLump(int lumpId, Array<T>& dest, const char* name);
+
+    EngineQueue* engineQueue;
+
+    void sendProgressEvent()
+    {
+        engineQueue->addEvent(progressEvent);
+        engineQueue->flush();
+    }
+
+    EngineEvent progressEvent;
 } X_BspLevelLoader;
 
-bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
+bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName, EngineQueue* engineQueue);
 

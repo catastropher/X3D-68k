@@ -112,6 +112,8 @@ StreamReader& StreamReader::read(X_BspLoaderTexture& texture)
     return *this;
 }
 
+const int totalSteps = 15;
+
 template<typename T>
 void X_BspLevelLoader::loadLump(int lumpId, Array<T>& dest, const char* name)
 {
@@ -123,6 +125,9 @@ void X_BspLevelLoader::loadLump(int lumpId, Array<T>& dest, const char* name)
     Log::logSub("Total %s: %d", name, dest.count);
 
     readLump(&lump, dest.elem, dest.count, file);
+
+    ++progressEvent.levelLoadProgress.currentStep;
+    sendProgressEvent();
 }
 
 static void x_bsplevelloader_load_entity_dictionary(X_BspLevelLoader* loader)
@@ -651,9 +656,18 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_boundbox_print(&levelRootNode->frontChild->nodeBoundBox);
 }
 
-static bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName)
+static bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName, EngineQueue* engineQueue)
 {
     Log::info("Loading map %s", fileName);
+
+    loader->engineQueue = engineQueue;
+
+    loader->progressEvent.type = EVENT_LEVEL_LOAD_PROGRESS;
+    loader->progressEvent.levelLoadProgress.currentStep = 0;
+    loader->progressEvent.levelLoadProgress.totalSteps = totalSteps;
+    loader->progressEvent.fileName = fileName;
+
+    loader->sendProgressEvent();
 
     if(!x_file_open_reading(&loader->file, fileName))
     {
@@ -670,25 +684,15 @@ static bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char*
     x_bsplevelloader_load_entity_dictionary(loader);
 
     loader->loadLump(X_LUMP_VISIBILITY, loader->compressedPvsData, "pvs size");
-
     loader->loadLump(X_LUMP_LIGHTING, loader->lightmapData, "lightmap size");
-
     loader->loadLump(X_LUMP_PLANES, loader->planes, "planes");
-
     loader->loadLump(X_LUMP_VERTEXES, loader->vertices, "vertices");
-
     loader->loadLump(X_LUMP_EDGES, loader->edges, "edges");
-
     loader->loadLump(X_LUMP_FACES, loader->faces, "faces");
-
     loader->loadLump(X_LUMP_LEAFS, loader->leaves, "leaves");
-
     loader->loadLump(X_LUMP_NODES, loader->nodes, "nodes");
-
     loader->loadLump(X_LUMP_MODELS, loader->models, "models");
-
     loader->loadLump(X_LUMP_MARKSURFACES, loader->markSurfaces, "marksurfaces");
-
     loader->loadLump(X_LUMP_SURFEDGES, loader->surfaceEdgeIds, "surface edge ids");
 
     x_bsplevelloader_load_textures(loader);
@@ -723,10 +727,10 @@ static void x_bsplevelloader_cleanup(X_BspLevelLoader* level)
     x_file_close(&level->file);
 }
 
-bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName)
+bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName, EngineQueue* engineQueue)
 {
     X_BspLevelLoader loader;
-    if(!x_bsplevelloader_load_bsp_file(&loader, fileName))
+    if(!x_bsplevelloader_load_bsp_file(&loader, fileName, engineQueue))
         return 0;
     
     x_bsplevel_init_from_bsplevel_loader(level, &loader);

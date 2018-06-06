@@ -24,13 +24,13 @@ void EngineQueue::addEvent(EngineEvent& event)
 {
     if(queue.isFull())
     {
-        processEvents();
+        flush();
     }
 
     queue.enqueue(event);
 }
 
-void EngineQueue::processEvents()
+void EngineQueue::flush()
 {
     while(!queue.isEmpty())
     {
@@ -109,8 +109,20 @@ void EngineQueue::removeHandler(const char* name)
     }
 }
 
+#include <cstdio>
+
 bool EngineQueue::systemHandler(EngineEvent& event, X_EngineContext* engineContext)
 {
+    switch(event.type)
+    {
+        case EVENT_LEVEL_LOAD_PROGRESS:
+            printf("Receive progress event! %d/%d\n", event.levelLoadProgress.currentStep, event.levelLoadProgress.totalSteps);
+            break;
+
+        default:
+            break;
+    }
+
     return true;
 }
 

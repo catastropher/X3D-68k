@@ -21,7 +21,8 @@
 
 enum EngineEventType
 {
-    EVENT_LEVEL_LOAD = 1
+    EVENT_LEVEL_LOAD_PROGRESS = 1,
+    EVENT_LEVEL_LOAD_FAILED
 };
 
 struct EngineEvent
@@ -30,13 +31,19 @@ struct EngineEvent
 
     union
     {
-        // EVENT_LEVEL_LOAD
+        // EVENT_LEVEL_LOAD_PROGRESS
         struct
         {
             const char* fileName;
             int currentStep;
             int totalSteps;
-        } levelLoad;
+        } levelLoadProgress;
+
+        // EVENT_LEVEL_LOAD_FAILED
+        struct
+        {
+            const char* fileName;
+        };
     };
 };
 
@@ -78,7 +85,7 @@ public:
     }
 
     void addEvent(EngineEvent& event);
-    void processEvents();
+    void flush();
 
     void addHandler(const char* name, bool (*handler)(EngineEvent& event, X_EngineContext* engineContext), int priority);
     void removeHandler(const char* name);

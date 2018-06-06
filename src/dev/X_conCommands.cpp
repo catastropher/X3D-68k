@@ -44,7 +44,7 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     
     X_BspLevel tempLevel;
     
-    if(!x_bsplevel_load_from_bsp_file(&tempLevel, fileName))
+    if(!x_bsplevel_load_from_bsp_file(&tempLevel, fileName, context->getEngineQueue()))
     {
         x_console_printf(context->getConsole(), "Failed to load map %s\n", fileName);
         return;
