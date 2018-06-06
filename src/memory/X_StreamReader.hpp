@@ -44,6 +44,9 @@ public:
     template<typename T>
     StreamReader& read(Vec3Template<T>& v);
 
+    template<typename From, typename To = From>
+    StreamReader& readX3dCoord(To& v);
+
     template<typename From, typename To>
     StreamReader& readAs(To& dest)
     {
@@ -61,6 +64,15 @@ public:
         {
             read(arr[i]);
         }
+
+        return *this;
+    }
+
+    template<typename T>
+    StreamReader& skip()
+    {
+        T temp;
+        read<T>(temp);
 
         return *this;
     }
@@ -151,12 +163,29 @@ inline StreamReader& StreamReader::read(float& dest)
     return *this;
 }
 
+template<>
+inline StreamReader& StreamReader::read(fp& dest)
+{
+    dest = fp(readInt<4>());
+
+    return *this;
+}
+
 template<typename T>
 inline StreamReader& StreamReader::read(Vec3Template<T>& v)
 {
     read(v.x);
     read(v.y);
     read(v.z);
+
+    return *this;
+}
+
+template<typename From, typename To = From>
+StreamReader& StreamReader::readX3dCoord(To& v)
+{
+    readAs<From>(v);
+    v = v.toX3dCoords();
 
     return *this;
 }

@@ -311,3 +311,9 @@ inline void convert(float& from, fp& to)
     to = fp::fromFloat(from);
 }
 
+template<>
+inline void convert(fp& from, x_fp16x16& to)
+{
+    to = from.internalValue();
+}
+

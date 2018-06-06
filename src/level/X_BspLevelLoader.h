@@ -78,7 +78,9 @@ typedef enum X_BspLoaderPlaneType
 
 typedef struct X_BspLoaderPlane
 {
-    X_Plane plane;
+    Vec3fp normal;
+    fp d;
+
     X_BspLoaderPlaneType type;
 } X_BspLoaderPlane;
 
@@ -89,7 +91,7 @@ typedef struct X_BspLoaderVertex
 
 typedef struct X_BspLoaderEdge
 {
-    X_BspVertexId v[2];
+    short v[2];
 } X_BspLoaderEdge;
 
 typedef struct X_BspLoaderTexture
@@ -156,7 +158,7 @@ typedef struct X_BspLoaderModel
 {
     float mins[3];
     float maxs[3];
-    Vec3Template<float> origin;
+    Vec3f origin;
     int rootBspNode;
     int rootClipNode;
     int secondRootClipNode;

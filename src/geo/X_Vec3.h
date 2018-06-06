@@ -56,6 +56,8 @@ struct Vec3Template
     T z;
 };
 
+using Vec3fp = Vec3Template<fp>;
+
 template<typename From, typename To>
 inline void convert(Vec3Template<From>& from, Vec3Template<To>& to)
 {
@@ -82,6 +84,7 @@ typedef Vec3 X_Vec3_int;
 typedef X_Vec3_int X_Vec3_fp0x30;
 
 using X_Vec3_float = Vec3Template<float>;
+using Vec3f = Vec3Template<float>;
 
 typedef struct X_Vec3_short
 {

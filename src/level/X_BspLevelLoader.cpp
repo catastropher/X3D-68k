@@ -114,26 +114,20 @@ static void x_bsploadertexture_read_from_file(X_BspLoaderTexture* texture, X_Fil
 template<>
 StreamReader& StreamReader::read(X_BspLoaderFaceTexture& tex)
 {
-    return readAs<Vec3Template<float>>(tex.uOrientation)
+    return readX3dCoord<Vec3f>(tex.uOrientation)
         .readAs<float>(tex.uOffset)
-        .readAs<Vec3Template<float>>(tex.vOrientation)
+        .readX3dCoord<Vec3f>(tex.vOrientation)
         .readAs<float>(tex.vOffset)
         .read(tex.textureId)
         .read(tex.flags);
 }
 
-static void x_bsploaderplane_read_from_file(X_BspLoaderPlane* plane, X_File* file)
+template<>
+StreamReader& StreamReader::read(X_BspLoaderPlane& plane)
 {
-    X_Vec3_float normal;
-    x_file_read_vec3_float(file, &normal);
-    normal = normal.toX3dCoords();
-    
-    plane->plane.normal = x_vec3_float_to_vec3(&normal);
-    
-    float dist = x_file_read_le_float32(file);
-    plane->plane.d = -x_fp16x16_from_float(dist);
-    
-    plane->type = (X_BspLoaderPlaneType)x_file_read_le_int32(file);
+    return readX3dCoord<Vec3f>(plane.normal)
+        .readAs<float>(plane.d)
+        .skip<int>();
 }
 
 static void x_bsploadervertex_read_from_file(X_BspLoaderVertex* vertex, X_File* file)
@@ -157,22 +151,17 @@ StreamReader& StreamReader::read(X_BspLoaderFace& face)
         .read(face.lightmapOffset);
 }
 
-static void x_bsploaderleaf_read_from_file(X_BspLoaderLeaf* leaf, X_File* file)
+/////
+template<>
+StreamReader& StreamReader::read(X_BspLoaderLeaf& leaf)
 {
-    leaf->contents = x_file_read_le_int32(file);    
-    leaf->pvsOffset = x_file_read_le_int32(file);
-    
-    for(int i = 0; i < 3; ++i)
-        leaf->mins[i] = x_file_read_le_int16(file);
-    
-    for(int i = 0; i < 3; ++i)
-        leaf->maxs[i] = x_file_read_le_int16(file);
-    
-    leaf->firstMarkSurface = x_file_read_le_int16(file);
-    leaf->totalMarkSurfaces = x_file_read_le_int16(file);
-    
-    for(int i = 0; i < X_BSPLEAF_TOTAL_AMBIENTS; ++i)
-        leaf->ambientLevel[i] = x_file_read_char(file);
+    return read(leaf.contents)
+        .read(leaf.pvsOffset)
+        .readArray(leaf.mins, 3)
+        .readArray(leaf.maxs, 3)
+        .read(leaf.firstMarkSurface)
+        .read(leaf.totalMarkSurfaces)
+        .readArray(leaf.ambientLevel, X_BSPLEAF_TOTAL_AMBIENTS);
 }
 
 template<>
@@ -186,10 +175,10 @@ StreamReader& StreamReader::read(X_BspLoaderNode& node)
         .read(node.totalFaces);
 }
 
-static void x_bsploaderedge_read_from_file(X_BspLoaderEdge* edge, X_File* file)
+template<>
+StreamReader& StreamReader::read(X_BspLoaderEdge& edge)
 {
-    edge->v[0] = x_file_read_le_int16(file);
-    edge->v[1] = x_file_read_le_int16(file);
+    return readArray(edge.v, 2);
 }
 
 template<>
@@ -237,11 +226,8 @@ static void x_bsplevelloader_load_planes(X_BspLevelLoader* level)
     level->planes = (X_BspLoaderPlane*)x_malloc(level->totalPlanes * sizeof(X_BspLoaderPlane));
     
     x_log("Total planes: %d", level->totalPlanes);
-    
-    x_file_seek(&level->file, planeLump->fileOffset);
-    
-    for(int i = 0; i < level->totalPlanes; ++i)
-        x_bsploaderplane_read_from_file(level->planes + i, &level->file);
+
+    readLump(planeLump, level->planes,  level->totalPlanes, level->file);
 }
 
 static void x_bsplevelloader_load_vertices(X_BspLevelLoader* level)
@@ -282,11 +268,8 @@ static void x_bsplevelloader_load_leaves(X_BspLevelLoader* level)
     level->leaves = (X_BspLoaderLeaf*)x_malloc(level->totalLeaves * sizeof(X_BspLoaderLeaf));
     
     x_log("Total leaves: %d", level->totalLeaves);
-    
-    x_file_seek(&level->file, leafLump->fileOffset);
-    
-    for(int i = 0; i < level->totalLeaves; ++i)
-        x_bsploaderleaf_read_from_file(level->leaves + i, &level->file);
+
+    readLump(leafLump, level->leaves, level->totalLeaves, level->file);
 }
 
 static void x_bsplevelloader_load_nodes(X_BspLevelLoader* level)
@@ -311,11 +294,8 @@ static void x_bsplevelloader_load_edges(X_BspLevelLoader* level)
     level->edges = (X_BspLoaderEdge*)x_malloc(level->totalEdges * sizeof(X_BspLoaderVertex));
     
     x_log("Total edges: %d", level->totalEdges);
-    
-    x_file_seek(&level->file, edgeLump->fileOffset);
-    
-    for(int i = 0; i < level->totalEdges; ++i)
-        x_bsploaderedge_read_from_file(level->edges + i, &level->file);
+
+    readLump(edgeLump, level->edges, level->totalEdges, level->file);
 }
 
 static void x_bsplevelloader_load_models(X_BspLevelLoader* level)
@@ -611,7 +591,19 @@ static void x_bsplevel_init_marksurfaces(X_BspLevel* level, const X_BspLevelLoad
 static void x_bsplevel_init_planes(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalPlanes; ++i)
-        level->planes[i].plane = loader->planes[i].plane;
+    {
+        level->planes[i].plane.normal.x = loader->planes[i].normal.x.toFp16x16();
+        level->planes[i].plane.normal.y = loader->planes[i].normal.y.toFp16x16();
+        level->planes[i].plane.normal.z = loader->planes[i].normal.z.toFp16x16();
+
+        level->planes[i].plane.d = -loader->planes[i].d.toFp16x16();
+
+
+        if(i < 10)
+        {
+            x_plane_print(&level->planes[i].plane);
+        }
+    }
 }
 
 static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* loader)
@@ -784,10 +776,10 @@ static void x_bsplevel_init_facetextures(X_BspLevel* level, X_BspLevelLoader* lo
         X_BspFaceTexture* tex = level->faceTextures + i;
         X_BspLoaderFaceTexture* loadTex = loader->faceTextures + i;
         
-        tex->uOrientation = loadTex->uOrientation.toX3dCoords();
+        tex->uOrientation = loadTex->uOrientation;
         tex->uOffset = loadTex->uOffset.toFp16x16();
         
-        tex->vOrientation = loadTex->vOrientation.toX3dCoords();
+        tex->vOrientation = loadTex->vOrientation;
         tex->vOffset = loadTex->vOffset.toFp16x16();
         
         tex->flags = loadTex->flags;
