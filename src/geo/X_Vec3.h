@@ -50,6 +50,11 @@ struct Vec3Template
     {
         return Vec3Template(y, -z, -x);
     }
+
+    T dot(const Vec3Template& v) const
+    {
+        return x * v.x + y * v.y + z * v.z;
+    }
     
     T x;
     T y;
