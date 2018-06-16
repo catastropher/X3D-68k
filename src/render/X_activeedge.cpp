@@ -63,12 +63,13 @@ static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* v
     for(int i = 0; i < poly->totalVertices; ++i)
     {
         Vec3 transformed;
-        x_mat4x4_transform_vec3(viewMatrix, poly->vertices + i, &transformed);
+        Vec3 temp = MakeVec3(poly->vertices[i]);
+        x_mat4x4_transform_vec3(viewMatrix, &temp, &transformed);
         
         if(transformed.z < x_fp16x16_from_float(16.0))
             transformed.z = x_fp16x16_from_float(16.0);
         
-        poly->vertices[i] = transformed;
+        poly->vertices[i] = MakeVec3fp(transformed);
         
         *closestZ = X_MIN(*closestZ, transformed.z);
         
@@ -145,7 +146,7 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
 // TODO: check whether edgeIds is NULL
 void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
-    Vec3 firstVertex = polygon->vertices[0];
+    Vec3 firstVertex = MakeVec3(polygon->vertices[0]);
     
     ++context->renderContext->renderer->totalSurfacesRendered;
 
@@ -185,7 +186,7 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
         else
             v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
                 
-        dest->vertices[dest->totalVertices++] = v + *origin;
+        dest->vertices[dest->totalVertices++] = MakeVec3fp(v + *origin);
     }
 }
 

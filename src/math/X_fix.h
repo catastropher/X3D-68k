@@ -82,7 +82,7 @@ struct fp
         return val;
     }
     
-    int internalValue()
+    int internalValue() const
     {
         return val;
     }

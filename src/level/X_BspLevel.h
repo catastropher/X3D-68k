@@ -225,7 +225,7 @@ typedef struct X_BspLevel
             else
                 v = vertices[edges[-edgeId].v[1]].v;
             
-            dest->vertices[i] = v + *modelOrigin;
+            dest->vertices[i] = MakeVec3fp(v + *modelOrigin);
         }
     }
     

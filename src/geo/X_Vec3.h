@@ -77,6 +77,19 @@ inline void convert(Vec3Template<float>& from, Vec3Template<x_fp16x16>& to)
 
 using Vec3 = Vec3Template<x_fp16x16>;
 
+// For the refactoring effort
+static inline Vec3 MakeVec3(const Vec3fp v)
+{
+    return Vec3(v.x.internalValue(), v.y.internalValue(), v.z.internalValue());
+}
+
+// For the refactoring effort
+static inline Vec3fp MakeVec3fp(const Vec3 v)
+{
+    return Vec3fp(fp(v.x), fp(v.y), fp(v.z));
+}
+
+
 typedef Vec3 X_Vec3_int;
 
 /// A 3D vertex or vector with fp16x16 components.

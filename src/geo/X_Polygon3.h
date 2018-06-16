@@ -26,6 +26,10 @@ struct X_Plane;
 struct Polygon3
 {
     Polygon3(Vec3* vertices_, int totalVertices_) :
+        vertices((Vec3fp*)vertices_),
+        totalVertices(totalVertices_) { }
+
+    Polygon3(Vec3fp* vertices_, int totalVertices_) :
         vertices(vertices_),
         totalVertices(totalVertices_) { }
         
@@ -37,7 +41,7 @@ struct Polygon3
     bool clipToFrustumPreserveEdgeIds(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
     void reverse();
     
-    Vec3* vertices;
+    Vec3fp* vertices;
     int totalVertices;
 };
 
@@ -56,7 +60,11 @@ struct LevelPolygon3 : Polygon3
     LevelPolygon3(Vec3* vertices_, int totalVertices_, int* edgeIds_)
     : Polygon3(vertices_, totalVertices_),
     edgeIds(edgeIds_) { }
-    
+
+    LevelPolygon3(Vec3fp* vertices_, int totalVertices_, int* edgeIds_)
+    : Polygon3(vertices_, totalVertices_),
+    edgeIds(edgeIds_) { } 
+
     int* edgeIds;
 };
 

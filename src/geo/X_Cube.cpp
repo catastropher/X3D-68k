@@ -70,21 +70,21 @@ void x_cube_get_face(const X_Cube* cube, int faceId, Polygon3* dest)
     if(faceId == 0)
     {
         for(int i = 0; i < 4; ++i)
-            dest->vertices[3 - i] = cube->vertices[i];
+            dest->vertices[3 - i] = MakeVec3fp(cube->vertices[i]);
     }
     else if(faceId == 1)
     {
          for(int i = 0; i < 4; ++i)
-            dest->vertices[i] = cube->vertices[i + 4];
+            dest->vertices[i] = MakeVec3fp(cube->vertices[i + 4]);
     }
     else
     {
         int sideId = faceId - 2;
         int next = (sideId != 3 ? sideId + 1 : 0);
-        dest->vertices[0] = cube->vertices[sideId];
-        dest->vertices[1] = cube->vertices[next];
-        dest->vertices[2] = cube->vertices[next + 4];
-        dest->vertices[3] = cube->vertices[sideId + 4];
+        dest->vertices[0] = MakeVec3fp(cube->vertices[sideId]);
+        dest->vertices[1] = MakeVec3fp(cube->vertices[next]);
+        dest->vertices[2] = MakeVec3fp(cube->vertices[next + 4]);
+        dest->vertices[3] = MakeVec3fp(cube->vertices[sideId + 4]);
     }
 }
 

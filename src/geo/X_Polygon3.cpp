@@ -23,218 +23,219 @@
 
 bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
 {
-    dest.totalVertices = 0;
+    // dest.totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
-    bool in = dot >= -plane.d;
+    // x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
+    // bool in = dot >= -plane.d;
     
-    for(int i = 0; i < totalVertices; ++i)
-    {
-        int next = (i + 1 < totalVertices ? i + 1 : 0);
+    // for(int i = 0; i < totalVertices; ++i)
+    // {
+    //     int next = (i + 1 < totalVertices ? i + 1 : 0);
         
-        if(in)
-            dest.vertices[dest.totalVertices++] = vertices[i];
+    //     if(in)
+    //         dest.vertices[dest.totalVertices++] = vertices[i];
         
-        x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
-        bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+    //     x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
+    //     bool nextIn = nextDot >= -plane.d;
+    //     int dotDiff = nextDot - dot;
         
-        if(in != nextIn && dotDiff != 0)
-        {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
-            x_ray3_lerp(&ray, scale, dest.vertices + dest.totalVertices);
+    //     if(in != nextIn && dotDiff != 0)
+    //     {
+    //         x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
+    //         X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
+    //         x_ray3_lerp(&ray, scale, dest.vertices + dest.totalVertices);
             
-            ++dest.totalVertices;
-        }
+    //         ++dest.totalVertices;
+    //     }
         
-        dot = nextDot;
-        in = nextIn;
-    }
+    //     dot = nextDot;
+    //     in = nextIn;
+    // }
     
-    return dest.totalVertices > 2;
+    // return dest.totalVertices > 2;
 }
 
 bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const
 {
-    dest.totalVertices = 0;
+    // dest.totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
-    bool in = dot >= -plane.d;
+    // x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
+    // bool in = dot >= -plane.d;
     
-    for(int i = 0; i < totalVertices; ++i)
-    {
-        int next = (i + 1 < totalVertices ? i + 1 : 0);
+    // for(int i = 0; i < totalVertices; ++i)
+    // {
+    //     int next = (i + 1 < totalVertices ? i + 1 : 0);
         
-        if(in)
-        {
-            dest.vertices[dest.totalVertices++] = vertices[i];
-            *edgeIdsDest++ = edgeIds[i];
-        }
+    //     if(in)
+    //     {
+    //         dest.vertices[dest.totalVertices++] = vertices[i];
+    //         *edgeIdsDest++ = edgeIds[i];
+    //     }
         
-        x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
-        bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+    //     x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
+    //     bool nextIn = nextDot >= -plane.d;
+    //     int dotDiff = nextDot - dot;
         
-        if(in != nextIn && dotDiff != 0)
-        {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
-            x_ray3_lerp(&ray, scale, dest.vertices + dest.totalVertices);
+    //     if(in != nextIn && dotDiff != 0)
+    //     {
+    //         x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
+    //         X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
+    //         x_ray3_lerp(&ray, scale, dest.vertices + dest.totalVertices);
             
-            if(in)
-                *edgeIdsDest++ = 0;    // Create a new edge
-            else
-                *edgeIdsDest++ = edgeIds[i];
+    //         if(in)
+    //             *edgeIdsDest++ = 0;    // Create a new edge
+    //         else
+    //             *edgeIdsDest++ = edgeIds[i];
             
-            ++dest.totalVertices;
-        }
+    //         ++dest.totalVertices;
+    //     }
         
-        dot = nextDot;
-        in = nextIn;        
-    }
+    //     dot = nextDot;
+    //     in = nextIn;        
+    // }
     
-    return dest.totalVertices > 2;
+    // return dest.totalVertices > 2;
 }
 
 void Polygon3::splitAlongPlane(const X_Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const
 {
-    frontSide.totalVertices = 0;
-    backSide.totalVertices = 0;
+    // frontSide.totalVertices = 0;
+    // backSide.totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
-    bool in = dot >= -plane.d;
+    // x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
+    // bool in = dot >= -plane.d;
     
-    for(int i = 0; i < totalVertices; ++i)
-    {
-        int next = (i + 1 < totalVertices ? i + 1 : 0);
+    // for(int i = 0; i < totalVertices; ++i)
+    // {
+    //     int next = (i + 1 < totalVertices ? i + 1 : 0);
         
-        if(in)
-        {
-            frontSide.vertices[frontSide.totalVertices++] = vertices[i];
-            *frontEdgeIds++ = 0;//edgeIds[i];
-        }
-        else
-        {
-            backSide.vertices[backSide.totalVertices++] = vertices[i];
-            *backEdgeIds++ = 0;//edgeIds[i];
-        }
+    //     if(in)
+    //     {
+    //         frontSide.vertices[frontSide.totalVertices++] = vertices[i];
+    //         *frontEdgeIds++ = 0;//edgeIds[i];
+    //     }
+    //     else
+    //     {
+    //         backSide.vertices[backSide.totalVertices++] = vertices[i];
+    //         *backEdgeIds++ = 0;//edgeIds[i];
+    //     }
         
-        x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
-        bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+    //     x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
+    //     bool nextIn = nextDot >= -plane.d;
+    //     int dotDiff = nextDot - dot;
         
-        if(in != nextIn && dotDiff != 0)
-        {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
+    //     if(in != nextIn && dotDiff != 0)
+    //     {
+    //         x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
+    //         X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
             
-            x_ray3_lerp(&ray, scale, frontSide.vertices + frontSide.totalVertices);
-            backSide.vertices[backSide.totalVertices] = frontSide.vertices[frontSide.totalVertices];
+    //         x_ray3_lerp(&ray, scale, frontSide.vertices + frontSide.totalVertices);
+    //         backSide.vertices[backSide.totalVertices] = frontSide.vertices[frontSide.totalVertices];
             
             
-            if(in)
-            {
-                *frontEdgeIds++ = 0;    // Create a new edge
-                *backEdgeIds++ = 0;
-            }
-            else
-            {
-                *frontEdgeIds++ = 0;// edgeIds[i];
-                *backEdgeIds++ = 0;//edgeIds[i];
-            }
+    //         if(in)
+    //         {
+    //             *frontEdgeIds++ = 0;    // Create a new edge
+    //             *backEdgeIds++ = 0;
+    //         }
+    //         else
+    //         {
+    //             *frontEdgeIds++ = 0;// edgeIds[i];
+    //             *backEdgeIds++ = 0;//edgeIds[i];
+    //         }
             
-            ++frontSide.totalVertices;
-            ++backSide.totalVertices;
-        }
+    //         ++frontSide.totalVertices;
+    //         ++backSide.totalVertices;
+    //     }
         
-        dot = nextDot;
-        in = nextIn;        
-    }    
+    //     dot = nextDot;
+    //     in = nextIn;        
+    // }    
 }
 
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color)
 {
-    for(int i = 0; i < poly->totalVertices; ++i)
-    {
-        int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
-        X_Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
+    // for(int i = 0; i < poly->totalVertices; ++i)
+    // {
+    //     int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
+    //     X_Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
         
-        x_ray3_render(&ray, rcontext, color);
-    }
+    //     x_ray3_render(&ray, rcontext, color);
+    // }
 }
 
 void Polygon3::clone(Polygon3& dest) const
 {
-    if(&dest == this)
-        return;
+    // if(&dest == this)
+    //     return;
     
-    dest.totalVertices = totalVertices;
-    memcpy(dest.vertices, vertices, totalVertices * sizeof(Vec3));
+    // dest.totalVertices = totalVertices;
+    // memcpy(dest.vertices, vertices, totalVertices * sizeof(Vec3));
 }
 
 bool Polygon3::clipToFrustum(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags) const
 {
-    InternalPolygon3 temp[2];
+    // InternalPolygon3 temp[2];
     
-    int currentTemp = 0;
-    const Polygon3* polyToClip = this;
+    // int currentTemp = 0;
+    // const Polygon3* polyToClip = this;
     
-    int lastClipPlane = 31 - __builtin_clz(clipFlags);
+    // int lastClipPlane = 31 - __builtin_clz(clipFlags);
     
-    for(int plane = 0; plane < lastClipPlane; ++plane)
-    {
-        bool clipToPlane = (clipFlags & (1 << plane)) != 0;
-        if(!clipToPlane)
-            continue;
+    // for(int plane = 0; plane < lastClipPlane; ++plane)
+    // {
+    //     bool clipToPlane = (clipFlags & (1 << plane)) != 0;
+    //     if(!clipToPlane)
+    //         continue;
         
-        if(!polyToClip->clipToPlane(frustum.planes[plane], temp[currentTemp]))
-            return 0;
+    //     if(!polyToClip->clipToPlane(frustum.planes[plane], temp[currentTemp]))
+    //         return 0;
         
-        polyToClip = &temp[currentTemp];
-        currentTemp ^= 1;
-    }
+    //     polyToClip = &temp[currentTemp];
+    //     currentTemp ^= 1;
+    // }
     
-    return polyToClip->clipToPlane(frustum.planes[lastClipPlane], dest);
+    // return polyToClip->clipToPlane(frustum.planes[lastClipPlane], dest);
 }
 
 // Clips a polygon to a frustum and keeps track of the id's of the edges
 // If a new edge is inserted, it will have an ID of 0
 bool Polygon3::clipToFrustumPreserveEdgeIds(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags, int* edgeIds, int* edgeIdsDest)
 {
-    InternalPolygon3 tempPoly[2];
+    // InternalPolygon3 tempPoly[2];
     
-    int tempIds[2][100];
+    // int tempIds[2][100];
     
-    int currentTemp = 0;
-    const Polygon3* polyToClip = this;
-    int* polyEdgeIds = edgeIds;
+    // int currentTemp = 0;
+    // const Polygon3* polyToClip = this;
+    // int* polyEdgeIds = edgeIds;
     
-    int lastClipPlane = 31 - __builtin_clz(clipFlags);
+    // int lastClipPlane = 31 - __builtin_clz(clipFlags);
     
-    for(int plane = 0; plane < lastClipPlane; ++plane)
-    {
-        bool clipToPlane = (clipFlags & (1 << plane)) != 0;
-        if(!clipToPlane)
-            continue;
+    // for(int plane = 0; plane < lastClipPlane; ++plane)
+    // {
+    //     bool clipToPlane = (clipFlags & (1 << plane)) != 0;
+    //     if(!clipToPlane)
+    //         continue;
         
-        if(!polyToClip->clipToPlanePreserveEdgeIds(frustum.planes[plane], tempPoly[currentTemp], polyEdgeIds, tempIds[currentTemp]))
-            return 0;
+    //     if(!polyToClip->clipToPlanePreserveEdgeIds(frustum.planes[plane], tempPoly[currentTemp], polyEdgeIds, tempIds[currentTemp]))
+    //         return 0;
         
-        polyToClip = &tempPoly[currentTemp];
-        polyEdgeIds = tempIds[currentTemp];
-        currentTemp ^= 1;
-    }
+    //     polyToClip = &tempPoly[currentTemp];
+    //     polyEdgeIds = tempIds[currentTemp];
+    //     currentTemp ^= 1;
+    // }
     
-    return polyToClip->clipToPlanePreserveEdgeIds(frustum.planes[lastClipPlane], dest, polyEdgeIds, edgeIdsDest);
+    // return polyToClip->clipToPlanePreserveEdgeIds(frustum.planes[lastClipPlane], dest, polyEdgeIds, edgeIdsDest);
 }
 
 void Polygon3::reverse()
 {
-    for(int i = 0; i < totalVertices / 2; ++i)
-        std::swap(vertices[i], vertices[totalVertices - i - 1]);
+    // for(int i = 0; i < totalVertices / 2; ++i)
+    //     std::swap(vertices[i], vertices[totalVertices - i - 1]);
 }
 
+// Skip me
 void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color)
 {
 //     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
