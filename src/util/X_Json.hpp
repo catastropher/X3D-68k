@@ -47,12 +47,12 @@ struct JsonObject
         pairs.push_back(std::move(pair));
     }
 
-    Array<KeyValuePair<String, JsonValue*>> pairs;
+    Vector<KeyValuePair<String, JsonValue*>> pairs;
 };
 
 struct JsonArray
 {
-    Array<JsonValue*> values;
+    Vector<JsonValue*> values;
 };
 
 struct JsonValue;
@@ -274,7 +274,7 @@ inline JsonValue* toJson(T* arr, int size)
 }
 
 template<typename T>
-inline JsonValue* toJson(Array<T>& arr)
+inline JsonValue* toJson(Vector<T>& arr)
 {
     auto jsonValue = Json::newValue(JSON_ARRAY);
     

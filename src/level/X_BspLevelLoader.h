@@ -20,6 +20,9 @@
 #include "render/X_Texture.h"
 #include "system/X_File.h"
 #include "X_BspLevel.h"
+#include "memory/X_StreamReader.hpp"
+#include "memory/X_Array.hpp"
+#include "engine/X_EngineQueue.hpp"
 
 #define X_LUMP_ENTITIES     0
 #define X_LUMP_PLANES       1
@@ -77,7 +80,9 @@ typedef enum X_BspLoaderPlaneType
 
 typedef struct X_BspLoaderPlane
 {
-    X_Plane plane;
+    Vec3fp normal;
+    fp d;
+
     X_BspLoaderPlaneType type;
 } X_BspLoaderPlane;
 
@@ -88,7 +93,7 @@ typedef struct X_BspLoaderVertex
 
 typedef struct X_BspLoaderEdge
 {
-    X_BspVertexId v[2];
+    short v[2];
 } X_BspLoaderEdge;
 
 typedef struct X_BspLoaderTexture
@@ -103,8 +108,8 @@ typedef struct X_BspLoaderFaceTexture
 {
     Vec3 uOrientation;    // Orientation of texture in 3D space
     Vec3 vOrientation;
-    x_fp16x16 uOffset;
-    x_fp16x16 vOffset;
+    fp uOffset;
+    fp vOffset;
     int textureId;
     int flags;
 } X_BspLoaderFaceTexture;
@@ -115,7 +120,7 @@ typedef struct X_BspLoaderFace
 {
     short planeNum;
     short side;
-    X_BspEdgeId firstEdge;
+    int firstEdge;
     short totalEdges;
     short texInfo;
     
@@ -155,7 +160,7 @@ typedef struct X_BspLoaderModel
 {
     float mins[3];
     float maxs[3];
-    X_Vec3_float origin;
+    Vec3f origin;
     int rootBspNode;
     int rootClipNode;
     int secondRootClipNode;
@@ -170,31 +175,16 @@ typedef struct X_BspLevelLoader
     X_File file;
     X_BspLoaderHeader header;
     
-    X_BspLoaderVertex* vertices;
-    int totalVertices;
-    
-    X_BspLoaderEdge* edges;
-    int totalEdges;
-    
-    X_BspLoaderPlane* planes;
-    int totalPlanes;
-    
-    X_BspLoaderFace* faces;
-    int totalFaces;
-    
-    X_BspLoaderLeaf* leaves;
-    int totalLeaves;
-    
-    X_BspLoaderNode* nodes;
-    int totalNodes;
-    
-    X_BspClipNode* clipNodes;
-    int totalClipNodes;
-    
+    Array<X_BspLoaderVertex> vertices;
+    Array<X_BspLoaderEdge> edges;
+    Array<X_BspLoaderPlane> planes;
+    Array<X_BspLoaderFace> faces;
+    Array<X_BspLoaderLeaf> leaves;
+    Array<X_BspLoaderNode> nodes;
+    Array<X_BspClipNode> clipNodes;
+    Array<X_BspLoaderModel> models;
+
     X_BspCollisionHull collisionHulls[X_BSPLEVEL_MAX_COLLISION_HULLS];
-    
-    X_BspLoaderModel* models;
-    int totalModels;
     
     X_Color* textureTexels;
     X_BspLoaderTexture* textures;
@@ -203,18 +193,29 @@ typedef struct X_BspLevelLoader
     X_BspLoaderFaceTexture* faceTextures;
     int totalFaceTextures;
     
-    unsigned short* markSurfaces;
-    int totalMarkSurfaces;
+    Array<unsigned short> markSurfaces;
+
+    Array<int> surfaceEdgeIds;
     
-    int* surfaceEdgeIds;
-    int totalSurfaceEdgeIds;
+    Array<unsigned char> compressedPvsData;       // Potential visibility set
     
-    unsigned char* compressedPvsData;       // Potential visibility set
-    
-    unsigned char* lightmapData;
+    Array<unsigned char> lightmapData;
     
     char* entityDictionary;
+
+    template<typename T>
+    void loadLump(int lumpId, Array<T>& dest, const char* name);
+
+    EngineQueue* engineQueue;
+
+    void sendProgressEvent()
+    {
+        engineQueue->addEvent(progressEvent);
+        engineQueue->flush();
+    }
+
+    EngineEvent progressEvent;
 } X_BspLevelLoader;
 
-bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName);
+bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName, EngineQueue* engineQueue);
 

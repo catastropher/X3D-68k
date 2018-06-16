@@ -110,7 +110,6 @@ inline char FileReader::read()
 template<>
 inline unsigned short FileReader::read()
 {
-    Log::info("Here");
     unsigned short result;
     fread(&result, 2, 1, file);
     swapShortBytes(result);

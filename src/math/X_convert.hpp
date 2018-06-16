@@ -13,19 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-
 #pragma once
 
-#include "X_Allocator.hpp"
+#include <utility>
 
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
+template<typename From, typename To>
+void convert(From& from, To& to);
 
+// No-op if we're converting to the same type
 template<typename T>
-struct Array
+void convert(T& from, T& to)
 {
-    T* elem;
-    int count;
-};
+
+}
+
+template<typename To, typename From>
+To convert(From from)
+{
+    To temp;
+    convert(from, temp);
+
+    return std::move(temp);
+}
 

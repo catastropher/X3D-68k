@@ -17,42 +17,65 @@
 
 #include "math/X_sqrt.h"
 #include "math/X_fix.h"
+#include "math/X_convert.hpp"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A 3D vector or vertex.
 ////////////////////////////////////////////////////////////////////////////////
-// typedef struct X_Vec3_int
-// {
-//     int x;
-//     int y;
-//     int z;
-// } X_Vec3_int;
 
-struct Vec3
+
+template<typename T>
+struct Vec3Template
 {
-    Vec3(x_fp16x16 x_, x_fp16x16 y_, x_fp16x16 z_) : x(x_), y(y_), z(z_) { }
-    Vec3() : x(0), y(0), z(0) { }
+    Vec3Template(T x_, T y_, T z_) : x(x_), y(y_), z(z_) { }
+    Vec3Template() : x(0), y(0), z(0) { }
     
-    Vec3 operator+(const Vec3& v) const
+    Vec3Template operator+(const Vec3Template& v) const
     {
-        return Vec3(x + v.x, y + v.y, z + v.z);
+        return Vec3Template(x + v.x, y + v.y, z + v.z);
     }
     
-    Vec3 operator-(const Vec3& v) const
+    Vec3Template operator-(const Vec3Template& v) const
     {
-        return Vec3(x - v.x, y - v.y, z - v.z);
+        return Vec3Template(x - v.x, y - v.y, z - v.z);
     }
     
-    Vec3 operator+=(const Vec3& v)
+    Vec3Template operator+=(const Vec3Template& v)
     {
         *this = *this + v;
         return *this;
     }
+
+    Vec3Template toX3dCoords() const
+    {
+        return Vec3Template(y, -z, -x);
+    }
     
-    x_fp16x16 x;
-    x_fp16x16 y;
-    x_fp16x16 z;
+    T x;
+    T y;
+    T z;
 };
+
+using Vec3fp = Vec3Template<fp>;
+
+template<typename From, typename To>
+inline void convert(Vec3Template<From>& from, Vec3Template<To>& to)
+{
+    convert(from.x, to.x);
+    convert(from.y, to.y);
+    convert(from.z, to.z);
+}
+
+// FIXME: need specialization becuase Vec3 can't use fp yet
+template<>
+inline void convert(Vec3Template<float>& from, Vec3Template<x_fp16x16>& to)
+{
+    to.x = convert<fp>(from.x).toFp16x16();
+    to.y = convert<fp>(from.y).toFp16x16();
+    to.z = convert<fp>(from.z).toFp16x16();
+}
+
+using Vec3 = Vec3Template<x_fp16x16>;
 
 typedef Vec3 X_Vec3_int;
 
@@ -60,12 +83,8 @@ typedef Vec3 X_Vec3_int;
 
 typedef X_Vec3_int X_Vec3_fp0x30;
 
-typedef struct X_Vec3_float
-{
-    float x;
-    float y;
-    float z;
-} X_Vec3_float;
+using X_Vec3_float = Vec3Template<float>;
+using Vec3f = Vec3Template<float>;
 
 typedef struct X_Vec3_short
 {

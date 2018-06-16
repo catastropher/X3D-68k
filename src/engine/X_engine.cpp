@@ -65,6 +65,8 @@ X_EngineContext* x_engine_init(X_Config* config)
     if(g_engineInitialized)
         x_system_error("Called x_engine_init() after engine already initialized");
     
+    g_engineContext.init();
+
     x_memory_init();
     x_filesystem_init(config->path);
     //x_log_init();

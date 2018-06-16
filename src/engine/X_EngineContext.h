@@ -26,6 +26,7 @@
 #include "X_init.h"
 #include "system/X_Mouse.h"
 #include "object/X_ObjectFactory.h"
+#include "X_EngineQueue.hpp"
 
 struct X_RenderContext;
 
@@ -34,8 +35,9 @@ struct X_RenderContext;
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct X_EngineContext
 {
-    X_EngineContext()
+    void init()
     {
+        queue = new EngineQueue(this);
         gameObjectFactory = new X_ObjectFactory;
         screen = new X_Screen;
         console = new X_Console;
@@ -54,6 +56,7 @@ typedef struct X_EngineContext
     X_MouseState* getMouseState() const { return mouseState; }
     X_BspLevel* getCurrentLevel() const { return currentLevel; }
     X_Renderer* getRenderer() const { return renderer; }
+    EngineQueue* getEngineQueue() const { return queue; }
 
     Platform* getPlatform() { return &platform; }
 
@@ -77,6 +80,7 @@ private:
     X_MouseState* mouseState;
     X_BspLevel* currentLevel;
     X_Renderer* renderer;
+    EngineQueue* queue;
 
     Platform platform;
 } X_EngineContext;

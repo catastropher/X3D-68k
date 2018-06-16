@@ -18,23 +18,55 @@
 #include "X_Quaternion.h"
 #include "math/X_trig.h"
 
-void x_quaternion_init_from_axis_angle(X_Quaternion* quat, const Vec3* axis, fp angle)
+template struct QuaternionTemplate<fp>;
+template struct QuaternionTemplate<float>;
+
+template<typename T>
+QuaternionTemplate<T> QuaternionTemplate<T>::fromAxisAngle(Vec3Template<T>& axis, fp angle)
 {
-    x_fp16x16 cosAngle = x_cos(angle / 2).toFp16x16();
-    x_fp16x16 sinAngle = x_sin(angle / 2).toFp16x16();
-    
-    quat->x = x_fp16x16_mul(axis->x, sinAngle);
-    quat->y = x_fp16x16_mul(axis->y, sinAngle);
-    quat->z = x_fp16x16_mul(axis->z, sinAngle);
-    quat->w = cosAngle;
+    QuaternionTemplate<T> q;
+
+    fp cosAngle = x_cos(angle / 2);
+    fp sinAngle = x_sin(angle / 2);
+
+    q.x = convert<T>(axis.x * sinAngle);
+    q.y = convert<T>(axis.y * sinAngle);
+    q.z = convert<T>(axis.z * sinAngle);
+    q.w = convert<T>(cosAngle);
+
+    return q;
 }
 
-void x_quaternion_mul(const X_Quaternion* a, const X_Quaternion* b, X_Quaternion* dest)
+template<typename T>
+QuaternionTemplate<T> QuaternionTemplate<T>::operator*(QuaternionTemplate<T>& q) const
 {
-    dest->x =  x_fp16x16_mul(a->x, b->w) + x_fp16x16_mul(a->y, b->z) - x_fp16x16_mul(a->z, b->y) + x_fp16x16_mul(a->w, b->x);
-    dest->y = -x_fp16x16_mul(a->x, b->z) + x_fp16x16_mul(a->y, b->w) + x_fp16x16_mul(a->z, b->x) + x_fp16x16_mul(a->w, b->y);
-    dest->z =  x_fp16x16_mul(a->x, b->y) - x_fp16x16_mul(a->y, b->x) + x_fp16x16_mul(a->z, b->w) + x_fp16x16_mul(a->w, b->z);
-    dest->w = -x_fp16x16_mul(a->x, b->x) - x_fp16x16_mul(a->y, b->y) - x_fp16x16_mul(a->z, b->z) + x_fp16x16_mul(a->w, b->w);
+    QuaternionTemplate<T> result;
+
+    result.x = convert<T>(
+        this->x * q.w
+            + this->y * q.z
+            - this->z * q.y
+            + this->w * q.x);
+
+    result.y = convert<T>(
+        -this->x * q.z
+            + this->y * q.w
+            + this->z * q.x
+            + this->w * q.y);
+
+    result.z = convert<T>(
+        this->x * q.y
+            - this->y * q.x
+            + this->z * q.w
+            + this->w * q.z);
+    
+    result.w = convert<T>(
+        -this->x * q.x
+            - this->y * q.y
+            - this->z * q.z
+            + this->w * q.w);
+
+    return result;
 }
 
 void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest)

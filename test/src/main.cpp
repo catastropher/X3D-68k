@@ -28,6 +28,11 @@
 
 int main(int argc, char* argv[])
 {
+    Vec3Template<fp> v;
+    Quaternion q1 = Quaternion::fromAxisAngle(v, fp(0));
+
+    auto q2 = q1 * q1;
+
     SystemConfig sysConfig;
 
     sysConfig.programPath = argv[0];
@@ -55,5 +60,7 @@ int main(int argc, char* argv[])
 
     TestGame game(config);
     game.run();
+
+    x_log_cleanup();
 }
 

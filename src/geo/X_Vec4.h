@@ -26,6 +26,23 @@ typedef struct X_Vec4
     x_fp16x16 w;
 } X_Vec4;
 
+template<typename T>
+struct Vec4Template
+{
+    Vec4Template() { }
+
+    Vec4Template(T x_, T y_, T z_, T w_)
+        : x(x_),
+        y(y_),
+        z(z_),
+        w(w_)
+    { }
+
+    T x, y, z, w;
+};
+
+using Vec4 = Vec4Template<fp>;
+
 typedef X_Vec4 X_Vec4_fp16x16;
 
 static inline X_Vec4 x_vec4_make(int x, int y, int z, int w)

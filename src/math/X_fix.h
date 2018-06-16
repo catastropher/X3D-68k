@@ -17,6 +17,8 @@
 
 #include <cstdint>
 
+#include "math/X_convert.hpp"
+
 typedef int x_fp16x16;
 typedef int x_fp24x8;
 typedef long long int x_fp32x32;
@@ -28,6 +30,8 @@ typedef short x_fp0x16;
 
 struct fp
 {
+    fp() { }
+
     fp(int val_) : val(val_) { }
     
     friend fp operator+(fp a, fp b);
@@ -52,7 +56,7 @@ struct fp
     friend bool operator>=(fp a, fp b);
     friend bool operator==(fp a, fp b);
     friend bool operator!=(fp a, fp b);
-    
+
     fp whole()
     {
         return val & 0x7FFF0000;
@@ -292,3 +296,24 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
 
     return x >> (16 - shiftUp);
 }
+
+
+
+template<>
+inline void convert(fp& from, float& to)
+{
+    to = from.toFloat();
+}
+
+template<>
+inline void convert(float& from, fp& to)
+{
+    to = fp::fromFloat(from);
+}
+
+template<>
+inline void convert(fp& from, x_fp16x16& to)
+{
+    to = from.internalValue();
+}
+
