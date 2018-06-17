@@ -55,6 +55,11 @@ struct Vec3Template
     {
         return x * v.x + y * v.y + z * v.z;
     }
+
+    Vec3Template operator-() const
+    {
+        return Vec3Template(-x, -y, -z);
+    }
     
     T x;
     T y;

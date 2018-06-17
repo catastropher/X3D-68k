@@ -317,3 +317,8 @@ inline void convert(fp& from, x_fp16x16& to)
     to = from.internalValue();
 }
 
+inline fp abs(fp val)
+{
+    return val < 0 ? -val : val;
+}
+

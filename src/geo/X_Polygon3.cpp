@@ -25,7 +25,7 @@ bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = MakeVec3fp(plane.normal).dot(vertices[0]).toFp16x16();
+    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -35,13 +35,13 @@ bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
         if(in)
             dest.vertices[dest.totalVertices++] = vertices[i];
         
-        x_fp16x16 nextDot = MakeVec3fp(plane.normal).dot(vertices[next]).toFp16x16();
+        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
         bool nextIn = nextDot >= -plane.d;
         int dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
+            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
             X_Ray3_fp16x16 ray = x_ray3_make(MakeVec3(vertices[i]), MakeVec3(vertices[next]));
             x_ray3_lerp(&ray, scale, (Vec3*)&dest.vertices[dest.totalVertices]);
             
@@ -59,7 +59,7 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, 
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = MakeVec3fp(plane.normal).dot(vertices[0]).toFp16x16();
+    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -72,13 +72,13 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, 
             *edgeIdsDest++ = edgeIds[i];
         }
         
-        x_fp16x16 nextDot = MakeVec3fp(plane.normal).dot(vertices[next]).toFp16x16();
+        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
         bool nextIn = nextDot >= -plane.d;
         int dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
+            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
             X_Ray3_fp16x16 ray = x_ray3_make(MakeVec3(vertices[i]), MakeVec3(vertices[next]));
             x_ray3_lerp(&ray, scale, (Vec3*)&dest.vertices[dest.totalVertices]);
             

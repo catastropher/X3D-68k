@@ -163,7 +163,10 @@ static bool trace_model(X_RayTracer* trace, X_BspModel* model)
     
     // Move the plane relative to the origin of the object
     trace->collisionPoint = trace->collisionPoint + model->origin;
-    trace->collisionPlane.d = -x_vec3_dot(&trace->collisionPlane.normal, &trace->collisionPoint);
+
+    Vec3fp temp = MakeVec3fp(trace->collisionPoint);
+
+    trace->collisionPlane.d = -trace->collisionPlane.normal.dot(temp);
     
     return success;
 }

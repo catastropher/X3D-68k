@@ -84,8 +84,10 @@ typedef enum IterationFlags
 
 static void adjust_velocity_to_slide_along_wall(Vec3* velocity, X_Plane* plane, x_fp16x16 bounceCoefficient)
 {
-    x_fp16x16 dot = x_vec3_dot(&plane->normal, velocity);
-    *velocity = x_vec3_add_scaled(velocity, &plane->normal, -x_fp16x16_mul(dot, bounceCoefficient));
+    Vec3 temp = MakeVec3(plane->normal);
+
+    x_fp16x16 dot = x_vec3_dot(&temp, velocity);
+    *velocity = x_vec3_add_scaled(velocity, &temp, -x_fp16x16_mul(dot, bounceCoefficient));
 }
 
 static IterationFlags move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, X_RayTracer* trace, Vec3* newVelocity, Vec3* newPos)

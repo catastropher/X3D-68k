@@ -20,8 +20,8 @@
 
 typedef struct X_Plane
 {
-    Vec3 normal;
-    x_fp16x16 d;
+    Vec3fp normal;
+    fp d;
 } X_Plane;
 
 struct X_Mat4x4;
@@ -33,14 +33,16 @@ void x_plane_get_orientation(X_Plane* plane, struct X_CameraObject* cam, struct 
 
 static inline void x_plane_init_from_normal_and_point(X_Plane* plane, const Vec3* normal, const Vec3* point)
 {
-    plane->normal = *normal;
+    plane->normal = MakeVec3fp(*normal);
     plane->d = -x_vec3_dot(normal, point);
 }
 
 // TODO: needs a better name
 static inline x_fp16x16 x_plane_point_distance(const X_Plane* plane, const Vec3* point)
 {
-    return x_vec3_dot(&plane->normal, point) + plane->d;
+    Vec3fp temp = MakeVec3fp(*point);
+
+    return (plane->normal.dot(temp) + plane->d).toFp16x16();
 }
 
 static inline bool x_plane_point_is_on_normal_facing_side(const X_Plane* plane, const Vec3* point)
@@ -51,7 +53,7 @@ static inline bool x_plane_point_is_on_normal_facing_side(const X_Plane* plane, 
 
 static inline void x_plane_flip_direction(X_Plane* plane)
 {
-    plane->normal = x_vec3_neg(&plane->normal);
+    plane->normal = -plane->normal;
     plane->d = -plane->d;
 }
 

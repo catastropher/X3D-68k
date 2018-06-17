@@ -52,7 +52,7 @@ struct X_AE_Surface
         X_Plane planeInViewSpace;
         bspSurface->calculatePlaneInViewSpace(camPos, viewMatrix, pointOnSurface, &planeInViewSpace);
         
-        int dist = -planeInViewSpace.d;
+        int dist = -planeInViewSpace.d.internalValue();
         int scale = viewport->distToNearPlane;
         
         if(dist == 0 || scale == 0) return;
@@ -64,13 +64,13 @@ struct X_AE_Surface
         
         x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
         
-        zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x);
-        zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y);
+        zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x.toFp16x16());
+        zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y.toFp16x16());
         
         int centerX = viewport->screenPos.x + viewport->w / 2;
         int centerY = viewport->screenPos.y + viewport->h / 2;
         
-        zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z, invDist) -
+        zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z.toFp16x16(), invDist) -
             centerX * zInverseXStep -
             centerY * zInverseYStep;
     }

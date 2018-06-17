@@ -219,9 +219,9 @@ static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* bu
     X_Plane* plane = &builder->bspSurface->plane->plane;
     int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &lightPos));
     
-    dest->x = lightPos.x - plane->normal.x * dist;
-    dest->y = lightPos.y - plane->normal.y * dist;
-    dest->z = lightPos.z - plane->normal.z * dist;
+    dest->x = lightPos.x - plane->normal.x.toFp16x16() * dist;
+    dest->y = lightPos.y - plane->normal.y.toFp16x16() * dist;
+    dest->z = lightPos.z - plane->normal.z.toFp16x16() * dist;
     
     *distDest = abs(dist);
 }
