@@ -18,16 +18,37 @@
 #include "X_Vec3.h"
 #include "math/X_fix.h"
 
-typedef struct X_Plane
+struct X_Plane;
+
+void x_plane_init_from_three_points(X_Plane* plane, const Vec3* a, const Vec3* b, const Vec3* c);
+
+struct X_Plane
 {
+    X_Plane() { }
+
+    X_Plane(Vec3fp& a, Vec3fp& b, Vec3fp& c)
+    {
+        Vec3 va = MakeVec3(a);
+        Vec3 vb = MakeVec3(b);
+        Vec3 vc = MakeVec3(c);
+
+        x_plane_init_from_three_points(this, &va, &vb, &vc);
+    }
+
+    X_Plane(Vec3fp& normal_, Vec3fp& point)
+    {
+        normal = normal_;
+        d = -normal.dot(point);
+    }
+
     Vec3fp normal;
     fp d;
-} X_Plane;
+};
 
 struct X_Mat4x4;
 struct X_CameraObject;
 
-void x_plane_init_from_three_points(X_Plane* plane, const Vec3* a, const Vec3* b, const Vec3* c);
+
 void x_plane_print(const X_Plane* plane);
 void x_plane_get_orientation(X_Plane* plane, struct X_CameraObject* cam, struct X_Mat4x4* dest);
 

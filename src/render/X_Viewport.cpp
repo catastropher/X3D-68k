@@ -56,53 +56,41 @@ void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_fp1
     x_viewport_init_mip_distances(viewport);
 }
 
-static inline Vec3 calculate_center_of_near_plane(const X_Viewport* viewport, const Vec3* camPos, const Vec3* forward)
+void x_viewport_update_frustum(X_Viewport* viewport, const Vec3* camPos, const Vec3* f, const Vec3* r, const Vec3* u)
 {
-    Vec3 translation = x_vec3_scale_int(forward, viewport->distToNearPlane);
-    return *camPos + translation;
-}
+    auto cp = MakeVec3fp(*camPos);
+    auto forward = MakeVec3fp(*f);
+    auto right = MakeVec3fp(*r);
+    auto up = MakeVec3fp(*u);
 
-static inline Vec3 calculate_right_translation(const X_Viewport* viewport, const Vec3* right)
-{
-    return x_vec3_scale_int(right, viewport->w / 2 + 10);
-}
+    Vec3fp nearPlaneCenter = cp + forward * viewport->distToNearPlane;
 
-static inline Vec3 calculate_up_translation(const X_Viewport* viewport, const Vec3* up)
-{
-    return x_vec3_scale_int(up, viewport->h / 2 + 10);
-}
+    int epsilon = 10;
 
-void x_viewport_update_frustum(X_Viewport* viewport, const Vec3* camPos, const Vec3* forward, const Vec3* right, const Vec3* up)
-{
-    Vec3 nearPlaneCenter = calculate_center_of_near_plane(viewport, camPos, forward);
+    Vec3fp rightTranslation = right * (viewport->w / 2 + epsilon);
 
-    Vec3 rightTranslation = calculate_right_translation(viewport, right);
-    Vec3 leftTranslation = x_vec3_neg(&rightTranslation);
+    Vec3fp upTranslation = up * (viewport->h / 2 + epsilon);
 
-    Vec3 upTranslation = calculate_up_translation(viewport, up);
-    Vec3 downTranslation = x_vec3_neg(&upTranslation);
-
-    Vec3 nearPlaneVertices[4] =
+    Vec3fp nearPlaneVertices[4] =
     {
-        x_vec3_add_three(&nearPlaneCenter, &rightTranslation, &upTranslation),      // Top right
-        x_vec3_add_three(&nearPlaneCenter, &rightTranslation, &downTranslation),    // Bottom right
-        x_vec3_add_three(&nearPlaneCenter, &leftTranslation, &downTranslation),     // Bottom left
-        x_vec3_add_three(&nearPlaneCenter, &leftTranslation, &upTranslation)        // Top left
+        nearPlaneCenter + rightTranslation + upTranslation,      // Top right
+        nearPlaneCenter + rightTranslation - upTranslation,    // Bottom right
+        nearPlaneCenter - rightTranslation - upTranslation,     // Bottom left
+        nearPlaneCenter - rightTranslation + upTranslation        // Top left
     };
 
     // Top, bottom, left, and right planes
     for(int i = 0; i < 4; ++i)
     {
         int next = (i != 3 ? i + 1 : 0);
-        x_plane_init_from_three_points(viewport->viewFrustumPlanes + i, nearPlaneVertices + i, camPos, nearPlaneVertices + next);
+        viewport->viewFrustumPlanes[i] = X_Plane(nearPlaneVertices[i], cp, nearPlaneVertices[next]);
     }
 
     // Near plane
-    int distToNearPlane = 16;
-    Vec3 translation = x_vec3_scale_int(forward, distToNearPlane);
-    Vec3 pointOnNearPlane = translation + *camPos;
+    int fakeDistToNearPlane = 16;
+    Vec3fp pointOnNearPlane = cp + forward * fakeDistToNearPlane;
 
-    x_plane_init_from_normal_and_point(viewport->viewFrustumPlanes + 4, forward, &pointOnNearPlane);
+    viewport->viewFrustumPlanes[4] = X_Plane(forward, pointOnNearPlane);
 }
 
 void x_viewport_project_vec3(const X_Viewport* viewport, const Vec3* src, X_Vec2_fp16x16* dest)
