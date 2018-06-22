@@ -61,6 +61,16 @@ struct Vec3Template
         return Vec3Template(-x, -y, -z);
     }
     
+    Vec3Template cross(const Vec3Template& v) const
+    {
+        return Vec3Template(
+            y * v.z - v.y * z,
+            z * v.x - v.z * x,
+            x * v.y - v.x * y);
+    }
+
+    void normalize();
+    
     T x;
     T y;
     T z;
@@ -104,7 +114,6 @@ static inline Vec3fp MakeVec3fp(const Vec3 v)
 {
     return Vec3fp(fp(v.x), fp(v.y), fp(v.z));
 }
-
 
 typedef Vec3 X_Vec3_int;
 
@@ -287,4 +296,11 @@ static inline Vec3 x_vec3_convert_quake_coord_to_x3d_coord(const Vec3* v)
     return Vec3(v->y, -v->z, -v->x);
 }
 
+template<>
+inline void Vec3fp::normalize()
+{
+    Vec3 v = MakeVec3(*this);
+    x_vec3_normalize(&v);
+    *this = MakeVec3fp(v);
+}
 

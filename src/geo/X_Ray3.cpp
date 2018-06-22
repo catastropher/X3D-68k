@@ -22,40 +22,41 @@
 
 bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest)
 {
-    x_fp16x16 v0DistToPlane = x_plane_point_distance(plane, ray->v + 0);
-    bool v0In = v0DistToPlane > 0;
+    return false;
+    // x_fp16x16 v0DistToPlane = x_plane_point_distance(plane, ray->v + 0);
+    // bool v0In = v0DistToPlane > 0;
     
-    x_fp16x16 v1DistToPlane = x_plane_point_distance(plane, ray->v + 1);
-    bool v1In = v1DistToPlane > 0;
+    // x_fp16x16 v1DistToPlane = x_plane_point_distance(plane, ray->v + 1);
+    // bool v1In = v1DistToPlane > 0;
     
-    // Trivial case: both points inside
-    if(v0In && v1In)
-    {
-        *dest = *ray;
-        return 1;
-    }
+    // // Trivial case: both points inside
+    // if(v0In && v1In)
+    // {
+    //     *dest = *ray;
+    //     return 1;
+    // }
     
-    // Trivial case: both points outside
-    if(!v0In && !v1In)
-        return 0;
+    // // Trivial case: both points outside
+    // if(!v0In && !v1In)
+    //     return 0;
     
-    // One inside and one outside, so need to clip
-    if(v0In)
-    {
-        x_fp16x16 t = x_fp16x16_div(v0DistToPlane, v0DistToPlane - v1DistToPlane);
+    // // One inside and one outside, so need to clip
+    // if(v0In)
+    // {
+    //     x_fp16x16 t = x_fp16x16_div(v0DistToPlane, v0DistToPlane - v1DistToPlane);
         
-        dest->v[0] = ray->v[0];
-        x_ray3_lerp(ray, t, dest->v + 1);
+    //     dest->v[0] = ray->v[0];
+    //     x_ray3_lerp(ray, t, dest->v + 1);
         
-        return 1;
-    }
+    //     return 1;
+    // }
     
-    x_fp16x16 t = x_fp16x16_div(v1DistToPlane, v1DistToPlane - v0DistToPlane);
+    // x_fp16x16 t = x_fp16x16_div(v1DistToPlane, v1DistToPlane - v0DistToPlane);
     
-    dest->v[1] = ray->v[1];
-    x_ray3_lerp(ray, X_FP16x16_ONE - t, dest->v + 0);
+    // dest->v[1] = ray->v[1];
+    // x_ray3_lerp(ray, X_FP16x16_ONE - t, dest->v + 0);
     
-    return 1;
+    // return 1;
 }
 
 bool x_ray3_clip_to_frustum(const X_Ray3* ray, const X_Frustum* frustum, X_Ray3* dest)

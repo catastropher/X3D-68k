@@ -366,12 +366,6 @@ static void x_bsplevel_init_planes(X_BspLevel* level, const X_BspLevelLoader* lo
         level->planes[i].plane.normal.z = loader->planes.elem[i].normal.z.toFp16x16();
 
         level->planes[i].plane.d = -loader->planes.elem[i].d.toFp16x16();
-
-
-        if(i < 10)
-        {
-            x_plane_print(&level->planes[i].plane);
-        }
     }
 }
 

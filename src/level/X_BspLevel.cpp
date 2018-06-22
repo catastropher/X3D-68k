@@ -75,10 +75,12 @@ void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X
 X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, Vec3* point)
 {
     X_BspNode* node = x_bsplevel_get_root_node(level);
+
+    Vec3fp pointTemp = MakeVec3fp(*point);
  
     do
     {
-        node = x_plane_point_is_on_normal_facing_side(&node->plane->plane, point) ? node->frontChild : node->backChild;
+        node = node->plane->plane.pointOnNormalFacingSide(pointTemp) ? node->frontChild : node->backChild;
     } while(!x_bspnode_is_leaf(node));
     
     return (X_BspLeaf*)node;
@@ -209,7 +211,10 @@ static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_L
         return;
     
     X_Plane* plane = &node->plane->plane;
-    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &light->position));
+
+    Vec3fp lightPosTemp = MakeVec3fp(light->position);
+
+    int dist = plane->distanceTo(lightPosTemp).toInt();
     
     if(dist > light->intensity)
     {
@@ -237,7 +242,9 @@ void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light
 
 static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
 {
-    bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);
+    Vec3fp camPosTemp = MakeVec3fp(*camPos);
+
+    bool onNormalSide = node->plane->plane.pointOnNormalFacingSide(camPosTemp);
     
     if(onNormalSide)
     {
@@ -264,7 +271,9 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
             continue;
         
-        bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
+        Vec3fp camPosTemp = MakeVec3fp(renderContext->camPos);
+
+        bool onNormalSide = surface->plane->plane.pointOnNormalFacingSide(camPosTemp);
         bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
         
         if((!onNormalSide) ^ planeFlipped)
@@ -407,7 +416,9 @@ X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node,
     if(x_bspnode_is_leaf(node))
         return nextNodeDest;
     
-    x_fp16x16 dist = x_plane_point_distance(&node->plane->plane, &sphere->center);
+    Vec3fp sphereCenterTemp = MakeVec3fp(sphere->center);
+
+    x_fp16x16 dist = node->plane->plane.distanceTo(sphereCenterTemp).toFp16x16();
     bool exploreFront = 1;
     bool exploreBack = 1;
     

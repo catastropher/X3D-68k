@@ -19,33 +19,32 @@
 #include "math/X_fix.h"
 #include "object/X_CameraObject.h"
 
-void x_plane_init_from_three_points(X_Plane* plane, const Vec3* a, const Vec3* b, const Vec3* c)
+X_Plane::X_Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
 {
-    Vec3 v1 = x_vec3_sub(a, b);
-    Vec3 v2 = x_vec3_sub(c, b);
+    Vec3fp v1 = a - b;
+    Vec3fp v2 = c - b;
 
-    x_vec3_normalize(&v1);
-    x_vec3_normalize(&v2);
+    v1.normalize();
+    v2.normalize();
 
-    plane->normal = MakeVec3fp(x_vec3_cross(&v1, &v2));
+    normal = v1.cross(v2);
 
-    Vec3fp temp = MakeVec3fp(*a);
-    plane->d = -plane->normal.dot(temp);
+    d = -normal.dot(a);
 }
 
-void x_plane_print(const X_Plane* plane)
+void X_Plane::print() const
 {
-    float x = plane->normal.x.toFloat();
-    float y = plane->normal.y.toFloat();
-    float z = plane->normal.z.toFloat();
-    float d = plane->d.toFloat();
+    float x = normal.x.toFloat();
+    float y = normal.y.toFloat();
+    float z = normal.z.toFloat();
+    float dd = d.toFloat();
     
-    printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, d);
+    printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, dd);
 }
 
-void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest)
+void X_Plane::getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const
 {
-    Vec3 temp = MakeVec3(plane->normal);
+    Vec3 temp = MakeVec3(normal);
     temp.y = 0;
     
     X_Mat4x4 mat;
@@ -53,12 +52,12 @@ void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest
     
     Vec3 right, up;
     
-    if(abs(plane->normal.y) != X_FP16x16_ONE)
+    if(abs(normal.y) != X_FP16x16_ONE)
     {
         x_mat4x4_transform_vec3(&mat, &temp, &right);
         x_vec3_normalize(&right);
         
-        Vec3 temp = MakeVec3(plane->normal);
+        Vec3 temp = MakeVec3(normal);
 
         up = x_vec3_cross(&temp, &right);
     }
@@ -66,7 +65,7 @@ void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest
     {
         // Pick the vectors from the cam direction
         Vec3 temp;
-        x_mat4x4_extract_view_vectors(&cam->viewMatrix, &up, &right, &temp);
+        x_mat4x4_extract_view_vectors(&cam.viewMatrix, &up, &right, &temp);
         
         right.y = 0;
         x_vec3_normalize(&right);
@@ -75,17 +74,17 @@ void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest
         x_vec3_normalize(&up);
     }
     
-    x_mat4x4_load_identity(dest);
+    x_mat4x4_load_identity(&dest);
     
     X_Vec4 up4 = x_vec4_from_vec3(&up);
     X_Vec4 right4 = x_vec4_from_vec3(&right);
 
-    temp = MakeVec3(plane->normal);
+    temp = MakeVec3(normal);
 
     X_Vec4 forward4 = x_vec4_from_vec3(&temp);
     
-    x_mat4x4_set_column(dest, 0, &right4);
-    x_mat4x4_set_column(dest, 1, &up4);
-    x_mat4x4_set_column(dest, 2, &forward4);
+    x_mat4x4_set_column(&dest, 0, &right4);
+    x_mat4x4_set_column(&dest, 1, &up4);
+    x_mat4x4_set_column(&dest, 2, &forward4);
 }
 

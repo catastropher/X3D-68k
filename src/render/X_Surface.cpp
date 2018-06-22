@@ -217,7 +217,10 @@ static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* bu
 {
     Vec3 lightPos = builder->currentLight->position;
     X_Plane* plane = &builder->bspSurface->plane->plane;
-    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &lightPos));
+
+    Vec3fp lightPosTemp = MakeVec3fp(lightPos);
+
+    int dist = plane->distanceTo(lightPosTemp).toInt();
     
     dest->x = lightPos.x - plane->normal.x.toFp16x16() * dist;
     dest->y = lightPos.y - plane->normal.y.toFp16x16() * dist;

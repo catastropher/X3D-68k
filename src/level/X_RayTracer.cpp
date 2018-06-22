@@ -63,7 +63,9 @@ static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeI
         X_BspClipNode* clipNode = x_bsplevel_get_clip_node(level, clipNodeId);
         X_Plane* plane = &level->planes[clipNode->planeId].plane;
         
-        if(x_plane_point_distance(plane, v) >= 0)
+        Vec3fp vTemp = MakeVec3fp(*v);
+
+        if(plane->pointOnNormalFacingSide(vTemp))
             clipNodeId = clipNode->frontChild;
         else
             clipNodeId = clipNode->backChild;
@@ -114,7 +116,7 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
     if(startDist < 0)
     {
         // Flip the direction of the plane because we're colliding on the wrong side
-        x_plane_flip_direction(&trace->collisionPlane);
+        trace->collisionPlane.flip();
     }
     
     trace->collisionPoint = intersection;
@@ -131,8 +133,11 @@ bool visit_node(X_RayTracer* trace, int clipNodeId, Vec3* start, x_fp16x16 start
     X_BspClipNode* node = x_bsplevel_get_clip_node(trace->level, clipNodeId);
     X_Plane* plane = &trace->level->planes[node->planeId].plane;
     
-    x_fp16x16 startDist = x_plane_point_distance(plane, start);
-    x_fp16x16 endDist = x_plane_point_distance(plane, end);
+    Vec3fp startTemp = MakeVec3fp(*start);
+    Vec3fp endTemp = MakeVec3fp(*end);
+
+    x_fp16x16 startDist = plane->distanceTo(startTemp).toFp16x16();
+    x_fp16x16 endDist = plane->distanceTo(endTemp).toFp16x16();
     
     if(both_points_on_front_side(startDist, endDist))
         return visit_node(trace, node->frontChild, start, startT, end, endT);
