@@ -13,107 +13,101 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <algorithm>
+
 #include "X_Viewport.h"
 #include "math/X_trig.h"
 #include "util/X_util.h"
 
-static inline int calculate_distance_to_projection_plane(int w, x_fp16x16 fieldOfView)
+void X_Viewport::initMipDistances()
 {
-    return x_fp16x16_from_int(w / 2) / x_tan(fp(fieldOfView) / 2).toFp16x16();
-}
-
-static void x_viewport_init_mip_distances(X_Viewport* viewport)
-{
-    x_fp16x16 mipScale[3] =
+    fp mipScale[3] =
     {
-        x_fp16x16_from_float(1.0),
-        x_fp16x16_from_float(0.5 * 0.8),
-        x_fp16x16_from_float(0.25 * 0.8)
+        fp::fromFloat(1.0),
+        fp::fromFloat(0.5 * 0.8),
+        fp::fromFloat(0.25 * 0.8)
     };
 
     // TODO: this will need to take into account y scale once it's added
-    x_fp16x16 xScale = x_fp16x16_from_int(viewport->distToNearPlane);
+    fp xScale = fp::fromInt(distToNearPlane);
     for(int i = 0; i < 3; ++i)
     {
-        viewport->mipDistances[i] = x_fp16x16_div(xScale, mipScale[i]);
-        printf("Mip Distance: %f\n", x_fp16x16_to_float(viewport->mipDistances[i]));
+        mipDistances[i] = xScale / mipScale[i];
     }
-
-    // screen->w / z = 1.0
 }
 
-void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_fp16x16 fieldOfView)
+void X_Viewport::init(X_Vec2 screenPos_, int w_, int h_, fp fieldOfView)
 {
-    viewport->screenPos = screenPos;
-    viewport->w = w;
-    viewport->h = h;
-    viewport->distToNearPlane = calculate_distance_to_projection_plane(w, fieldOfView);
+    screenPos = screenPos_;
+    w = w_;
+    h = h_;
+    distToNearPlane = (fp::fromInt(w / 2) / x_tan(fieldOfView / 2)).toInt();
 
     /// @todo If we add a far plane, this should be 6
-    viewport->viewFrustum.totalPlanes = 5;
-    viewport->viewFrustum.planes = viewport->viewFrustumPlanes;
+    viewFrustum.totalPlanes = 5;
+    viewFrustum.planes = viewFrustumPlanes;
 
-    x_viewport_init_mip_distances(viewport);
+    initMipDistances();
 }
 
-void x_viewport_update_frustum(X_Viewport* viewport, const Vec3* camPos, const Vec3* f, const Vec3* r, const Vec3* u)
+void X_Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const Vec3fp& right, const Vec3fp& up)
 {
-    auto cp = MakeVec3fp(*camPos);
-    auto forward = MakeVec3fp(*f);
-    auto right = MakeVec3fp(*r);
-    auto up = MakeVec3fp(*u);
-
-    Vec3fp nearPlaneCenter = cp + forward * viewport->distToNearPlane;
+    Vec3fp nearPlaneCenter = camPos + forward * distToNearPlane;
 
     int epsilon = 10;
 
-    Vec3fp rightTranslation = right * (viewport->w / 2 + epsilon);
-
-    Vec3fp upTranslation = up * (viewport->h / 2 + epsilon);
+    Vec3fp rightTranslation = right * (w / 2 + epsilon);
+    Vec3fp upTranslation = up * (h / 2 + epsilon);
 
     Vec3fp nearPlaneVertices[4] =
     {
-        nearPlaneCenter + rightTranslation + upTranslation,      // Top right
-        nearPlaneCenter + rightTranslation - upTranslation,    // Bottom right
-        nearPlaneCenter - rightTranslation - upTranslation,     // Bottom left
-        nearPlaneCenter - rightTranslation + upTranslation        // Top left
+        nearPlaneCenter + rightTranslation + upTranslation,
+        nearPlaneCenter + rightTranslation - upTranslation,
+        nearPlaneCenter - rightTranslation - upTranslation,
+        nearPlaneCenter - rightTranslation + upTranslation
     };
 
     // Top, bottom, left, and right planes
     for(int i = 0; i < 4; ++i)
     {
         int next = (i != 3 ? i + 1 : 0);
-        viewport->viewFrustumPlanes[i] = X_Plane(nearPlaneVertices[i], cp, nearPlaneVertices[next]);
+        viewFrustumPlanes[i] = X_Plane(nearPlaneVertices[i], camPos, nearPlaneVertices[next]);
     }
 
     // Near plane
-    int fakeDistToNearPlane = 16;
-    Vec3fp pointOnNearPlane = cp + forward * fakeDistToNearPlane;
+    int fakeDistToNearPlane = 16;       // TODO: what should this value really be?
+    Vec3fp pointOnNearPlane = camPos + forward * fakeDistToNearPlane;
 
-    viewport->viewFrustumPlanes[4] = X_Plane(forward, pointOnNearPlane);
+    viewFrustumPlanes[4] = X_Plane(forward, pointOnNearPlane);
 }
 
-void x_viewport_project_vec3(const X_Viewport* viewport, const Vec3* src, X_Vec2_fp16x16* dest)
+void X_Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
 {
     // TODO: may be able to get away with multiplying by distToNearPlane / z
-    dest->x = x_fp16x16_div(src->x, src->z) * viewport->distToNearPlane + x_fp16x16_from_int(viewport->w) / 2;
-    dest->y = x_fp16x16_div(src->y, src->z) * viewport->distToNearPlane + x_fp16x16_from_int(viewport->h) / 2;;
+    dest.x = (src.x / src.z * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
+    dest.y = (src.y / src.z * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
 }
 
-void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v)
+void X_Viewport::clamp(X_Vec2& v)
 {
-    v->x = X_MAX(v->x, viewport->screenPos.x);
-    v->x = X_MIN(v->x, viewport->screenPos.x + viewport->w - 1);
+    v.x = std::max(v.x, screenPos.x);
+    v.x = std::min(v.x, screenPos.x + w - 1);
 
-    v->y = X_MAX(v->y, viewport->screenPos.y);
-    v->y = X_MIN(v->y, viewport->screenPos.y + viewport->h - 1);
+    v.y = std::max(v.y, screenPos.y);
+    v.y = std::min(v.y, screenPos.y + h - 1);
 }
 
-void x_viewport_clamp_vec2_fp16x16(const X_Viewport* viewport, X_Vec2_fp16x16* v)
+void X_Viewport::clampfp(X_Vec2_fp16x16& v)
 {
-    v->x = X_MAX(v->x, x_fp16x16_from_int(viewport->screenPos.x));
-    v->x = X_MIN(v->x, x_fp16x16_from_int(viewport->screenPos.x + viewport->w) - X_FP16x16_ONE);
+    fp x = fp(v.x);
+    fp y = fp(v.y);
 
-    v->y = X_MAX(v->y, x_fp16x16_from_int(viewport->screenPos.y));
-    v->y = X_MIN(v->y, x_fp16x16_from_int(viewport->screenPos.y + viewport->h) - X_FP16x16_ONE);
+    x = std::max(x, fp::fromInt(screenPos.x));
+    x = std::min(x, fp::fromInt(screenPos.x + w - 1));
+
+    y = std::max(y, fp::fromInt(screenPos.y));
+    y = std::min(y, fp::fromInt(screenPos.y + h - 1));
+
+    v.x = x.toFp16x16();
+    v.y = y.toFp16x16();
 }

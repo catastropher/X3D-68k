@@ -73,8 +73,10 @@ static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* v
         
         *closestZ = X_MIN(*closestZ, transformed.z);
         
-        x_viewport_project_vec3(viewport, &transformed, dest->vertices + i);
-        x_viewport_clamp_vec2_fp16x16(viewport, dest->vertices + i);
+        Vec3fp tempTransformed = MakeVec3fp(transformed);
+
+        viewport->project(tempTransformed, dest->vertices[i]);
+        viewport->clampfp(dest->vertices[i]);
     }
     
     dest->totalVertices = poly->totalVertices;

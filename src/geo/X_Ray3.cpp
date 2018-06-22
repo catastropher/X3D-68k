@@ -71,25 +71,25 @@ bool x_ray3_clip_to_frustum(const X_Ray3* ray, const X_Frustum* frustum, X_Ray3*
 
 void x_ray3_render(const X_Ray3* ray, X_RenderContext* rcontext, X_Color color)
 {
-    X_Ray3 clipped = *ray;
-    if(!x_ray3_clip_to_frustum(ray, rcontext->viewFrustum, &clipped))
-        return;
+    // X_Ray3 clipped = *ray;
+    // if(!x_ray3_clip_to_frustum(ray, rcontext->viewFrustum, &clipped))
+    //     return;
     
-    X_Ray3 transformed;
-    for(int i = 0; i < 2; ++i)
-        x_mat4x4_transform_vec3(rcontext->viewMatrix, clipped.v + i, transformed.v + i);
+    // X_Ray3 transformed;
+    // for(int i = 0; i < 2; ++i)
+    //     x_mat4x4_transform_vec3(rcontext->viewMatrix, clipped.v + i, transformed.v + i);
     
-    if(transformed.v[0].z <= 0 || transformed.v[0].z <= 0) return;
+    // if(transformed.v[0].z <= 0 || transformed.v[0].z <= 0) return;
     
-    X_Vec2 projected[2];
-    for(int i = 0; i < 2; ++i)
-    {
-        x_viewport_project_vec3(&rcontext->cam->viewport, transformed.v + i, projected + i);
-        x_viewport_clamp_vec2_fp16x16(&rcontext->cam->viewport, projected + 0);
-        projected[i].x >>= 16;
-        projected[i].y >>= 16;
-    }
+    // X_Vec2 projected[2];
+    // for(int i = 0; i < 2; ++i)
+    // {
+    //     rcontext->cam->viewport.project() transformed.v + i, projected + i);
+    //     x_viewport_clamp_vec2_fp16x16(&rcontext->cam->viewport, projected + 0);
+    //     projected[i].x >>= 16;
+    //     projected[i].y >>= 16;
+    // }
     
-    rcontext->canvas->drawLine(projected[0], projected[1], color);
+    // rcontext->canvas->drawLine(projected[0], projected[1], color);
 }
 

@@ -26,7 +26,7 @@ struct X_Plane
 {
     X_Plane() { }
 
-    X_Plane(Vec3fp& a, Vec3fp& b, Vec3fp& c)
+    X_Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
     {
         Vec3 va = MakeVec3(a);
         Vec3 vb = MakeVec3(b);
@@ -35,7 +35,7 @@ struct X_Plane
         x_plane_init_from_three_points(this, &va, &vb, &vc);
     }
 
-    X_Plane(Vec3fp& normal_, Vec3fp& point)
+    X_Plane(const Vec3fp& normal_, const Vec3fp& point)
     {
         normal = normal_;
         d = -normal.dot(point);

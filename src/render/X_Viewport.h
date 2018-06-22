@@ -19,33 +19,36 @@
 #include "math/X_angle.h"
 #include "geo/X_Frustum.h"
 
-typedef struct X_Viewport
+class X_Viewport
 {
+public:
+    void init(X_Vec2 screenPos, int w, int h, fp fieldOfView);
+    void updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const Vec3fp& right, const Vec3fp& up);
+    void project(const Vec3fp& src, X_Vec2_fp16x16& dest);
+    void clamp(X_Vec2& v);
+    void clampfp(X_Vec2_fp16x16& v);
+
+    int closestMipLevelForZ(fp z)
+    {
+        for(int i = 0; i < 3; ++i)
+        {
+            if(z < mipDistances[i])
+                return i;
+        }
+        
+        return 3;
+    }
+
     X_Vec2 screenPos;
     int w;
     int h;
     int distToNearPlane;
-    x_fp16x16 fieldOfView;
+    fp fieldOfView;
     X_Frustum viewFrustum;
     X_Plane viewFrustumPlanes[6];
-    x_fp16x16 mipDistances[3];
-} X_Viewport;
+    fp mipDistances[3];
 
-static inline int x_viewport_get_miplevel_for_closest_z(X_Viewport* viewport, x_fp16x16 z)
-{
-    for(int i = 0; i < 3; ++i)
-    {
-        if(z < viewport->mipDistances[i])
-            return i;
-    }
-    
-    return 3;
-}
-
-void x_viewport_init(X_Viewport* viewport, X_Vec2 screenPos, int w, int h, x_fp16x16 fieldOfView);
-void x_viewport_update_frustum(X_Viewport* viewport, const Vec3* camPos, const Vec3* forward, const Vec3* right, const Vec3* up);
-void x_viewport_clamp_vec2(const X_Viewport* viewport, X_Vec2* v);
-
-void x_viewport_project_vec3(const X_Viewport* viewport, const Vec3* src, X_Vec2_fp16x16* dest);
-void x_viewport_clamp_vec2_fp16x16(const X_Viewport* viewport, X_Vec2_fp16x16* v);
+private:
+    void initMipDistances();
+};
 

@@ -183,7 +183,7 @@ static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
     }
     
     // FIXME: don't hardcode angle
-    x_viewport_init(&cam->viewport, x_vec2_make(0, 0), w, h, X_ANG_60);
+    cam->viewport.init(x_vec2_make(0, 0), w, h, fp(X_ANG_60));
 }
 
 #define MAX_SURFACES 300

@@ -57,7 +57,7 @@ private:
         X_EngineContext* engineContext = getInstance();
 
         cam = x_cameraobject_new(engineContext);
-        x_viewport_init(&cam->viewport, (X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), X_ANG_60);
+        cam->viewport.init((X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), fp(X_ANG_60));
         x_screen_attach_camera(engineContext->getScreen(), cam);
         //context->cam->screenResizeCallback = cam_screen_size_changed_callback;
         

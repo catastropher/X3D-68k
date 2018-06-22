@@ -67,7 +67,13 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     
     Vec3 forward, up, right;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
-    x_viewport_update_frustum(&cam->viewport, &position, &forward, &right, &up);
+
+    Vec3fp f = MakeVec3fp(forward);
+    Vec3fp r = MakeVec3fp(right);
+    Vec3fp u = MakeVec3fp(up);
+    Vec3fp p = MakeVec3fp(position);
+
+    cam->viewport.updateFrustum(p, f, r, u);
 }
 
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
