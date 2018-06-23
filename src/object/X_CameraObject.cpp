@@ -50,20 +50,22 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
 void x_cameraobject_update_view(X_CameraObject* cam)
 {
     X_Mat4x4 xRotation;
-    x_mat4x4_load_x_rotation(&xRotation, cam->angleX);
+    xRotation.loadXRotation(cam->angleX);
     
     X_Mat4x4 yRotation;
-    x_mat4x4_load_y_rotation(&yRotation, cam->angleY);
+    yRotation.loadYRotation(cam->angleY);
     
-    X_Mat4x4 rotation;
-    x_mat4x4_mul(&xRotation, &yRotation, &rotation);    
+    X_Mat4x4 rotation = xRotation * yRotation;
     
     X_Mat4x4 translation;
     Vec3 position = x_cameraobject_get_position(cam);
     Vec3 negatedPosition = x_vec3_neg(&position);
-    x_mat4x4_load_translation(&translation, &negatedPosition);
+
+    Vec3fp negatedPositionTemp = MakeVec3fp(negatedPosition);
+
+    translation.loadTranslation(negatedPositionTemp);
     
-    x_mat4x4_mul(&rotation, &translation, &cam->viewMatrix);
+    cam->viewMatrix = rotation * translation;
     
     Vec3 forward, up, right;
     x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);

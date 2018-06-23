@@ -18,6 +18,40 @@
 #include "math/X_fix.h"
 #include "X_Vec3.h"
 
+template<typename T>
+struct Vec4Template
+{
+    Vec4Template() { }
+    Vec4Template(T x_, T y_, T z_, T w_)
+        : x(x_),
+        y(y_),
+        z(z_),
+        w(w_)
+    {
+
+    }
+
+    Vec4Template(const Vec3Template<T>& v)
+    {
+        x = v.x;
+        y = v.y;
+        z = v.z;
+        w = 0;
+    }
+
+    Vec3Template<T> toVec3() const
+    {
+        return Vec3Template<T>(x, y, z);
+    }
+
+    T x;
+    T y;
+    T z;
+    T w;
+};
+
+using Vec416x16 = Vec4Template<x_fp16x16>;
+
 typedef struct X_Vec4
 {
     x_fp16x16 x;
@@ -25,21 +59,6 @@ typedef struct X_Vec4
     x_fp16x16 z;
     x_fp16x16 w;
 } X_Vec4;
-
-template<typename T>
-struct Vec4Template
-{
-    Vec4Template() { }
-
-    Vec4Template(T x_, T y_, T z_, T w_)
-        : x(x_),
-        y(y_),
-        z(z_),
-        w(w_)
-    { }
-
-    T x, y, z, w;
-};
 
 using Vec4 = Vec4Template<fp>;
 

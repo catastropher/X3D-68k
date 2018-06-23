@@ -48,7 +48,7 @@ void X_Plane::getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const
     temp.y = 0;
     
     X_Mat4x4 mat;
-    x_mat4x4_load_y_rotation(&mat, X_ANG_270);
+    mat.loadXRotation(X_ANG_270);
     
     Vec3 right, up;
     
@@ -74,17 +74,17 @@ void X_Plane::getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const
         x_vec3_normalize(&up);
     }
     
-    x_mat4x4_load_identity(&dest);
+    dest.loadIdentity();
     
-    X_Vec4 up4 = x_vec4_from_vec3(&up);
-    X_Vec4 right4 = x_vec4_from_vec3(&right);
+    Vec416x16 up4 = Vec416x16(up);
+    Vec416x16 right4 = Vec416x16(right);
 
     temp = MakeVec3(normal);
 
-    X_Vec4 forward4 = x_vec4_from_vec3(&temp);
+    Vec416x16 forward4 = Vec416x16(temp);
     
-    x_mat4x4_set_column(&dest, 0, &right4);
-    x_mat4x4_set_column(&dest, 1, &up4);
-    x_mat4x4_set_column(&dest, 2, &forward4);
+    dest.setColumn(0, right4);
+    dest.setColumn(1, up4);
+    dest.setColumn(2, forward4);
 }
 
