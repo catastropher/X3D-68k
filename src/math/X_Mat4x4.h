@@ -33,13 +33,13 @@ struct X_Mat4x4
     void setColumn(int col, const Vec416x16& v);
     void setRow(int col, const Vec416x16& v);
 
+    Vec416x16 transform(const Vec416x16& src) const;
+    Vec3fp transform(const Vec3fp& src) const;
+
     X_Mat4x4 operator*(const X_Mat4x4& mat) const;
 
     x_fp16x16 elem[4][4];
 };
-
-void x_mat4x4_transform_vec4(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16x16* dest);
-void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const Vec3* src, Vec3* dest);
 
 void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const Vec3* normal, Vec3* dest);
 

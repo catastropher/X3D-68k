@@ -150,39 +150,34 @@ void X_Mat4x4::setRow(int row, const Vec416x16& v)
     elem[row][3] = v.w;
 }
 
-void x_mat4x4_transform_vec4(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16x16* dest)
+Vec416x16 X_Mat4x4::transform(const Vec416x16& src) const
 {
     x_fp16x16 res[4] = { 0 };
-    const x_fp16x16* srcArray = &src->x;
+    const x_fp16x16* srcArray = &src.x;
     
     for(int i = 0; i < 4; ++i)
     {
         for(int j = 0; j < 4; ++j) {
-            res[i] += x_fp16x16_mul(mat->elem[i][j], srcArray[j]);
+            res[i] += x_fp16x16_mul(elem[i][j], srcArray[j]);
         }
     }
-    
-    *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
+
+    return Vec416x16(res[0], res[1], res[2], res[3]);
 }
 
-void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const Vec3* src, Vec3* dest)
+Vec3fp X_Mat4x4::transform(const Vec3fp& src) const
 {
-    X_Vec4 vec4 = x_vec4_make(src->x, src->y, src->z, X_FP16x16_ONE);
-    X_Vec4_fp16x16 res;
-    x_mat4x4_transform_vec4(mat, &vec4, &res);
+    Vec416x16 v = Vec416x16(src.x.toFp16x16(), src.y.toFp16x16(), src.z.toFp16x16(), X_FP16x16_ONE);
+    Vec416x16 transformed = transform(v);
+
+    return MakeVec3fp(transformed.toVec3());
     
-    dest->x = res.x;
-    dest->y = res.y;
-    dest->z = res.z;
+    if(transformed.w != X_FP16x16_ONE)
+        printf("ERROR %d\n", transformed.w);
     
-    if(res.w != X_FP16x16_ONE)
-        printf("ERROR %d\n", res.w);
-    
-    return;
-    
-    dest->x = res.x / res.w;
-    dest->y = res.y / res.w;
-    dest->z = res.z / res.w;
+    // dest->x = res.x / res.w;
+    // dest->y = res.y / res.w;
+    // dest->z = res.z / res.w;
 }
 
 void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const Vec3* normal, Vec3* dest)

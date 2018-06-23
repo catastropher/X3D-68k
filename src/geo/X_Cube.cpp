@@ -59,7 +59,9 @@ void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat)
 {
     for(int i = 0; i < 8; ++i)
     {
-        x_mat4x4_transform_vec3(mat, src->vertices + i, dest->vertices + i);
+        Vec3fp temp = MakeVec3fp(src->vertices[i]);
+
+        dest->vertices[i] = MakeVec3(mat->transform(temp));
     }
 }
 

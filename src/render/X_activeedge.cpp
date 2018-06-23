@@ -62,9 +62,7 @@ static bool project_polygon3(Polygon3* poly, X_Mat4x4* viewMatrix, X_Viewport* v
     
     for(int i = 0; i < poly->totalVertices; ++i)
     {
-        Vec3 transformed;
-        Vec3 temp = MakeVec3(poly->vertices[i]);
-        x_mat4x4_transform_vec3(viewMatrix, &temp, &transformed);
+        Vec3 transformed = MakeVec3(viewMatrix->transform(poly->vertices[i]));
         
         if(transformed.z < x_fp16x16_from_float(16.0))
             transformed.z = x_fp16x16_from_float(16.0);

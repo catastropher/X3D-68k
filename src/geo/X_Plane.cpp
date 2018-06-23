@@ -54,7 +54,9 @@ void X_Plane::getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const
     
     if(abs(normal.y) != X_FP16x16_ONE)
     {
-        x_mat4x4_transform_vec3(&mat, &temp, &right);
+        Vec3fp tempTemp = MakeVec3fp(temp);
+
+        right = MakeVec3(mat.transform(tempTemp));
         x_vec3_normalize(&right);
         
         Vec3 temp = MakeVec3(normal);
