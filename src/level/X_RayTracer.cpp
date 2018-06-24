@@ -85,10 +85,9 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
                                                x_fp16x16 startDist
                                               )
 {
-    X_Ray3_fp16x16 ray = x_ray3_make(*start, *end);
+    X_Ray3 ray(MakeVec3fp(*start), MakeVec3fp(*end));
  
-    Vec3 intersection;
-    x_ray3_lerp(&ray, intersectionT, &intersection);
+    Vec3 intersection = MakeVec3(ray.lerp(intersectionT));
     
     int startChildNode;
     int endChildNode;
@@ -154,17 +153,20 @@ void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, 
 {
     trace->modelOrigin = &model->origin;
     trace->level = level;
-    trace->ray.v[0] = *start;
-    trace->ray.v[1] = *end;
+    trace->ray.v[0] = MakeVec3fp(*start);
+    trace->ray.v[1] = MakeVec3fp(*end);
     trace->rootClipNode = model->clipNodeRoots[0];
 }
 
 static bool trace_model(X_RayTracer* trace, X_BspModel* model)
 {
-    Vec3 start = x_vec3_sub(trace->ray.v + 0, &model->origin);
-    Vec3 end = x_vec3_sub(trace->ray.v + 1, &model->origin);
+    Vec3fp start = trace->ray.v[0] - MakeVec3fp(model->origin);
+    Vec3fp end = trace->ray.v[1] - MakeVec3fp(model->origin);
+
+    Vec3 startTemp = MakeVec3(start);
+    Vec3 endTemp = MakeVec3(end);
     
-    bool success = !visit_node(trace, model->clipNodeRoots[0], &start, 0, &end, X_FP16x16_ONE);
+    bool success = !visit_node(trace, model->clipNodeRoots[0], &startTemp, 0, &endTemp, X_FP16x16_ONE);
     
     // Move the plane relative to the origin of the object
     trace->collisionPoint = trace->collisionPoint + model->origin;

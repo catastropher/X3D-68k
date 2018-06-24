@@ -42,8 +42,8 @@ bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
         if(in != nextIn && dotDiff != 0)
         {
             x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(MakeVec3(vertices[i]), MakeVec3(vertices[next]));
-            x_ray3_lerp(&ray, scale, (Vec3*)&dest.vertices[dest.totalVertices]);
+            X_Ray3 ray(vertices[i], vertices[next]);
+            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
             
             ++dest.totalVertices;
         }
@@ -79,8 +79,8 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, in
         if(in != nextIn && dotDiff != 0)
         {
             x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(MakeVec3(vertices[i]), MakeVec3(vertices[next]));
-            x_ray3_lerp(&ray, scale, (Vec3*)&dest.vertices[dest.totalVertices]);
+            X_Ray3 ray(vertices[i], vertices[next]);
+            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
             
             if(in)
                 *edgeIdsDest++ = 0;    // Create a new edge
