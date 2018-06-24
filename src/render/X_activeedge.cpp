@@ -64,8 +64,10 @@ static bool project_polygon3(Polygon3* poly, Mat4x4* viewMatrix, Viewport* viewp
     {
         Vec3 transformed = MakeVec3(viewMatrix->transform(poly->vertices[i]));
         
-        if(transformed.z < x_fp16x16_from_float(16.0))
-            transformed.z = x_fp16x16_from_float(16.0);
+        const fp minZ = fp::fromFloat(0.5);
+
+        if(transformed.z < minZ.toFp16x16())
+            transformed.z = minZ.toFp16x16();
         
         poly->vertices[i] = MakeVec3fp(transformed);
         

@@ -44,7 +44,7 @@ void Viewport::init(X_Vec2 screenPos_, int w_, int h_, fp fieldOfView)
     distToNearPlane = (fp::fromInt(w / 2) / x_tan(fieldOfView / 2)).toInt();
 
     /// @todo If we add a far plane, this should be 6
-    viewFrustum.totalPlanes = 5;
+    viewFrustum.totalPlanes = 4;
     viewFrustum.planes = viewFrustumPlanes;
 
     initMipDistances();
@@ -75,7 +75,7 @@ void Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const 
     }
 
     // Near plane
-    int fakeDistToNearPlane = 16;       // TODO: what should this value really be?
+    fp fakeDistToNearPlane = fp::fromFloat(0.5);       // TODO: what should this value really be?
     Vec3fp pointOnNearPlane = camPos + forward * fakeDistToNearPlane;
 
     viewFrustumPlanes[4] = Plane(forward, pointOnNearPlane);
