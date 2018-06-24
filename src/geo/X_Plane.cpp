@@ -75,12 +75,10 @@ void X_Plane::getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const
     
     dest.loadIdentity();
     
-    Vec416x16 up4 = Vec416x16(MakeVec3(up));
-    Vec416x16 right4 = Vec416x16(MakeVec3(right));
+    Vec4 up4 = Vec4(up);
+    Vec4 right4 = Vec4(right);
 
-    temp = MakeVec3(normal);
-
-    Vec416x16 forward4 = Vec416x16(temp);
+    Vec4 forward4 = Vec4(normal);
     
     dest.setColumn(0, right4);
     dest.setColumn(1, up4);

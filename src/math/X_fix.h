@@ -137,6 +137,13 @@ inline fp operator-(int a, fp b)
     return fp::fromInt(a) - b;
 }
 
+inline fp& operator+=(fp& a, fp b)
+{
+    a.val += b.val;
+
+    return a;
+}
+
 inline fp operator-(fp f)
 {
     return fp(-f.val);

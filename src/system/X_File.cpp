@@ -450,7 +450,7 @@ void x_file_write_mat4x4(X_File* file, X_Mat4x4* mat)
     {
         for(int j = 0; j < 4; ++j)
         {
-            x_file_write_le_int32(file, mat->elem[i][j]);
+            x_file_write_le_int32(file, mat->elem[i][j].internalValue());
         }
     }
 }

@@ -29,13 +29,13 @@ struct X_Mat4x4
     void loadZRotation(fp angle);
     void loadTranslation(const Vec3fp& translation);
 
-    Vec416x16 getColumn(int col) const;
-    Vec416x16 getRow(int row) const;
+    Vec4 getColumn(int col) const;
+    Vec4 getRow(int row) const;
 
-    void setColumn(int col, const Vec416x16& v);
-    void setRow(int col, const Vec416x16& v);
+    void setColumn(int col, const Vec4& v);
+    void setRow(int col, const Vec4& v);
 
-    Vec416x16 transform(const Vec416x16& src) const;
+    Vec4 transform(const Vec4& src) const;
     Vec3fp transform(const Vec3fp& src) const;
     Vec3fp transformNormal(const Vec3fp& normal) const;
 
@@ -48,5 +48,5 @@ struct X_Mat4x4
 
     X_Mat4x4 operator*(const X_Mat4x4& mat) const;
 
-    x_fp16x16 elem[4][4];
+    fp elem[4][4];
 };
