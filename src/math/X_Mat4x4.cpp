@@ -248,7 +248,7 @@ void x_mat4x4_visualize(Mat4x4* mat, Vec3 position, X_RenderContext* renderConte
     //     end = x_vec3_scale_int(&end, 50);
     //     end += position;
         
-    //     X_Ray3 r = x_ray3_make(position, end);
+    //     Ray3 r = x_ray3_make(position, end);
     //     x_ray3_render(&r, renderContext, color[i]);
     // }
 }

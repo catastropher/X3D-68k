@@ -22,7 +22,7 @@
 typedef struct X_RayTracer
 {
     X_BspLevel* level;
-    X_Ray3 ray;
+    Ray3 ray;
     int rootClipNode;
     Plane collisionPlane;
     Vec3 collisionPoint;

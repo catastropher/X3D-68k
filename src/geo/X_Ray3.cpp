@@ -20,7 +20,7 @@
 #include "math/X_Mat4x4.h"
 #include "object/X_CameraObject.h"
 
-bool X_Ray3::clipToPlane(const Plane& plane, X_Ray3& dest)
+bool Ray3::clipToPlane(const Plane& plane, Ray3& dest)
 {
     fp v0DistToPlane = plane.distanceTo(v[0]);
     bool v0In = v0DistToPlane > 0;
@@ -57,7 +57,7 @@ bool X_Ray3::clipToPlane(const Plane& plane, X_Ray3& dest)
     return true;
 }
 
-bool X_Ray3::clipToFrustum(const X_Frustum& frustum, X_Ray3& dest) const
+bool Ray3::clipToFrustum(const X_Frustum& frustum, Ray3& dest) const
 {
     dest = *this;
     
@@ -72,15 +72,15 @@ bool X_Ray3::clipToFrustum(const X_Frustum& frustum, X_Ray3& dest) const
     return true;
 }
 
-void X_Ray3::render(const X_RenderContext& renderContext, X_Color color) const
+void Ray3::render(const X_RenderContext& renderContext, X_Color color) const
 {
-    X_Ray3 clipped = *this;
+    Ray3 clipped = *this;
     if(!clipToFrustum(*renderContext.viewFrustum, clipped))
     {
         return;
     }
 
-    X_Ray3 transformed;
+    Ray3 transformed;
     for(int i = 0; i < 2; ++i)
     {
         transformed.v[i] = renderContext.viewMatrix->transform(clipped.v[i]);

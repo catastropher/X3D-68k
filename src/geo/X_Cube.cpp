@@ -45,9 +45,9 @@
 //     {   
 //         int nextVertex = (i != 3 ? i + 1 : 0);
         
-//         X_Ray3 topRay(cube->vertices[i], cube->vertices[nextVertex]);
-//         X_Ray3 bottomRay = x_ray3_make(cube->vertices[i + 4], cube->vertices[nextVertex + 4]);
-//         X_Ray3 sideRay = x_ray3_make(cube->vertices[i], cube->vertices[i + 4]);
+//         Ray3 topRay(cube->vertices[i], cube->vertices[nextVertex]);
+//         Ray3 bottomRay = x_ray3_make(cube->vertices[i + 4], cube->vertices[nextVertex + 4]);
+//         Ray3 sideRay = x_ray3_make(cube->vertices[i], cube->vertices[i + 4]);
         
 //         x_ray3_render(&topRay, rcontext, color);
 //         x_ray3_render(&bottomRay, rcontext, color);

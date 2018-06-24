@@ -23,17 +23,17 @@ struct Plane;
 struct X_Frustum;
 struct X_RenderContext;
 
-struct X_Ray3
+struct Ray3
 {
-    X_Ray3() { }
-    X_Ray3(Vec3fp start, Vec3fp end)
+    Ray3() { }
+    Ray3(Vec3fp start, Vec3fp end)
     {
         v[0] = start;
         v[1] = end;
     }
 
-    bool clipToPlane(const Plane& plane, X_Ray3& dest);
-    bool clipToFrustum(const X_Frustum& frustum, X_Ray3& dest) const;
+    bool clipToPlane(const Plane& plane, Ray3& dest);
+    bool clipToFrustum(const X_Frustum& frustum, Ray3& dest) const;
     void render(const X_RenderContext& renderContext, X_Color color) const;
 
     Vec3fp lerp(fp t) const

@@ -39,7 +39,7 @@ static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext
             {
                 X_BspEdge* edge = level->edges + abs(level->surfaceEdgeIds[s->firstEdgeId + j]);
                 
-                X_Ray3 ray(
+                Ray3 ray(
                     MakeVec3fp(level->vertices[edge->v[0]].v),
                     MakeVec3fp(level->vertices[edge->v[1]].v));
                 

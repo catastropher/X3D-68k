@@ -42,7 +42,7 @@ bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
         if(in != nextIn && dotDiff != 0)
         {
             x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
-            X_Ray3 ray(vertices[i], vertices[next]);
+            Ray3 ray(vertices[i], vertices[next]);
             dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
             
             ++dest.totalVertices;
@@ -79,7 +79,7 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, in
         if(in != nextIn && dotDiff != 0)
         {
             x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
-            X_Ray3 ray(vertices[i], vertices[next]);
+            Ray3 ray(vertices[i], vertices[next]);
             dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
             
             if(in)
@@ -127,7 +127,7 @@ void Polygon3::splitAlongPlane(const Plane& plane, int* edgeIds, Polygon3& front
     //     if(in != nextIn && dotDiff != 0)
     //     {
     //         x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-    //         X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
+    //         Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
             
     //         x_ray3_lerp(&ray, scale, frontSide.vertices + frontSide.totalVertices);
     //         backSide.vertices[backSide.totalVertices] = frontSide.vertices[frontSide.totalVertices];
@@ -158,7 +158,7 @@ void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext
     // for(int i = 0; i < poly->totalVertices; ++i)
     // {
     //     int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
-    //     X_Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
+    //     Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
         
     //     x_ray3_render(&ray, rcontext, color);
     // }

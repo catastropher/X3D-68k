@@ -85,7 +85,7 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
                                                x_fp16x16 startDist
                                               )
 {
-    X_Ray3 ray(MakeVec3fp(*start), MakeVec3fp(*end));
+    Ray3 ray(MakeVec3fp(*start), MakeVec3fp(*end));
  
     Vec3 intersection = MakeVec3(ray.lerp(intersectionT));
     
