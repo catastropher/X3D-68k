@@ -483,6 +483,22 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
         {
             x_ae_context_process_edges(context, i);
+
+            // FIXME: temporary fix for disappearing polygons due to crossCount not getting reset
+            // on each scanline. Should maybe keep a list of active surfaces to reset. The code below
+            // may reset the same surface up to 4 times :(
+            for(auto ae = context->leftEdge.next; ae != &context->rightEdge; ae = ae->next)
+            {
+                if(ae->surfaces[0])
+                {
+                    ae->surfaces[0]->crossCount = 0;
+                }
+
+                if(ae->surfaces[1])
+                {
+                    ae->surfaces[1]->crossCount = 0;
+                }
+            }
         }
     }
 
