@@ -20,79 +20,87 @@
 #include "math/X_Mat4x4.h"
 #include "object/X_CameraObject.h"
 
-bool X_Ray3::clipToPlane(const Plane& plane, X_Ray3& dest) const
+bool X_Ray3::clipToPlane(const Plane& plane, X_Ray3& dest)
 {
-    return false;
-    // x_fp16x16 v0DistToPlane = x_plane_point_distance(plane, ray->v + 0);
-    // bool v0In = v0DistToPlane > 0;
+    fp v0DistToPlane = plane.distanceTo(v[0]);
+    bool v0In = v0DistToPlane > 0;
     
-    // x_fp16x16 v1DistToPlane = x_plane_point_distance(plane, ray->v + 1);
-    // bool v1In = v1DistToPlane > 0;
+    fp v1DistToPlane = plane.distanceTo(v[1]);
+    bool v1In = v1DistToPlane > 0;
     
-    // // Trivial case: both points inside
-    // if(v0In && v1In)
-    // {
-    //     *dest = *ray;
-    //     return 1;
-    // }
+    // Trivial case: both points inside
+    if(v0In && v1In)
+    {
+        dest = *this;
+
+        return true;
+    }
     
-    // // Trivial case: both points outside
-    // if(!v0In && !v1In)
-    //     return 0;
+    // Trivial case: both points outside
+    if(!v0In && !v1In)
+    {
+        return false;
+    }
     
-    // // One inside and one outside, so need to clip
-    // if(v0In)
-    // {
-    //     x_fp16x16 t = x_fp16x16_div(v0DistToPlane, v0DistToPlane - v1DistToPlane);
-        
-    //     dest->v[0] = ray->v[0];
-    //     x_ray3_lerp(ray, t, dest->v + 1);
-        
-    //     return 1;
-    // }
+    if(!v0In)
+    {
+        std::swap(v[0], v[1]);
+        std::swap(v0DistToPlane, v1DistToPlane);
+    }
+
+    // One inside and one outside, so need to clip
+    fp t = v0DistToPlane / (v0DistToPlane - v1DistToPlane);
     
-    // x_fp16x16 t = x_fp16x16_div(v1DistToPlane, v1DistToPlane - v0DistToPlane);
+    dest.v[1] = lerp(t);
+    dest.v[0] = v[0];
     
-    // dest->v[1] = ray->v[1];
-    // x_ray3_lerp(ray, X_FP16x16_ONE - t, dest->v + 0);
-    
-    // return 1;
+    return true;
 }
 
 bool X_Ray3::clipToFrustum(const X_Frustum& frustum, X_Ray3& dest) const
 {
-    bool inside = 1;
     dest = *this;
     
-    for(int i = 0; i < frustum.totalPlanes && inside; ++i)
+    for(int i = 0; i < frustum.totalPlanes ;++i)
     {
-        inside &= dest.clipToPlane(frustum.planes[i], dest);
+        if(!dest.clipToPlane(frustum.planes[i], dest))
+        {
+            return false;
+        }
     }
     
-    return inside;
+    return true;
 }
 
 void X_Ray3::render(const X_RenderContext& renderContext, X_Color color) const
 {
-    // X_Ray3 clipped = *ray;
-    // if(!x_ray3_clip_to_frustum(ray, rcontext->viewFrustum, &clipped))
-    //     return;
+    X_Ray3 clipped = *this;
+    if(!clipToFrustum(*renderContext.viewFrustum, clipped))
+    {
+        return;
+    }
+
+    X_Ray3 transformed;
+    for(int i = 0; i < 2; ++i)
+    {
+        transformed.v[i] = renderContext.viewMatrix->transform(clipped.v[i]);
+    }
     
-    // X_Ray3 transformed;
-    // for(int i = 0; i < 2; ++i)
-    //     x_mat4x4_transform_vec3(rcontext->viewMatrix, clipped.v + i, transformed.v + i);
+    if(transformed.v[0].z <= 0 || transformed.v[0].z <= 0)
+    {
+        return;
+    }
     
-    // if(transformed.v[0].z <= 0 || transformed.v[0].z <= 0) return;
-    
-    // X_Vec2 projected[2];
-    // for(int i = 0; i < 2; ++i)
-    // {
-    //     rcontext->cam->viewport.project() transformed.v + i, projected + i);
-    //     x_viewport_clamp_vec2_fp16x16(&rcontext->cam->viewport, projected + 0);
-    //     projected[i].x >>= 16;
-    //     projected[i].y >>= 16;
-    // }
-    
-    // rcontext->canvas->drawLine(projected[0], projected[1], color);
+    X_Vec2 projected[2];
+    for(int i = 0; i < 2; ++i)
+    {
+        renderContext.cam->viewport.project(transformed.v[i], projected[i]);
+
+        // FIXME
+        projected[i].x = projected[i].x >> 16;
+        projected[i].y = projected[i].y >> 16;
+    }
+
+    renderContext.canvas->drawLine(projected[0], projected[1], color);
 }
 

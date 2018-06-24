@@ -54,7 +54,7 @@ void X_Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, cons
 {
     Vec3fp nearPlaneCenter = camPos + forward * distToNearPlane;
 
-    int epsilon = 10;
+    int epsilon = 0;
 
     Vec3fp rightTranslation = right * (w / 2 + epsilon);
     Vec3fp upTranslation = up * (h / 2 + epsilon);
