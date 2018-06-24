@@ -49,7 +49,7 @@ struct X_AE_Surface
     
     void calculateInverseZGradient(Vec3* camPos, X_Viewport* viewport, Mat4x4* viewMatrix, Vec3* pointOnSurface)
     {
-        X_Plane planeInViewSpace;
+        Plane planeInViewSpace;
         bspSurface->calculatePlaneInViewSpace(camPos, viewMatrix, pointOnSurface, &planeInViewSpace);
         
         int dist = -planeInViewSpace.d.internalValue();

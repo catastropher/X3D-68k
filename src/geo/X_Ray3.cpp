@@ -20,7 +20,7 @@
 #include "math/X_Mat4x4.h"
 #include "object/X_CameraObject.h"
 
-bool x_ray3_clip_to_plane(const X_Ray3* ray, const X_Plane* plane, X_Ray3* dest)
+bool x_ray3_clip_to_plane(const X_Ray3* ray, const Plane* plane, X_Ray3* dest)
 {
     return false;
     // x_fp16x16 v0DistToPlane = x_plane_point_distance(plane, ray->v + 0);

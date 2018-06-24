@@ -21,13 +21,13 @@
 struct Mat4x4;
 struct X_CameraObject;
 
-struct X_Plane
+struct Plane
 {
-    X_Plane() { }
+    Plane() { }
 
-    X_Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c);
+    Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c);
 
-    X_Plane(const Vec3fp& normal_, const Vec3fp& point)
+    Plane(const Vec3fp& normal_, const Vec3fp& point)
     {
         normal = normal_;
         d = -normal.dot(point);

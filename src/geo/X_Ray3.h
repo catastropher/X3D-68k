@@ -19,7 +19,7 @@
 #include "math/X_fix.h"
 #include "render/X_Texture.h"
 
-struct X_Plane;
+struct Plane;
 struct X_Frustum;
 struct X_RenderContext;
 
@@ -30,7 +30,7 @@ typedef struct X_Ray3
 
 typedef X_Ray3 X_Ray3_fp16x16;
 
-bool x_ray3_clip_to_plane(const X_Ray3* ray, const struct X_Plane* plane, X_Ray3* dest);
+bool x_ray3_clip_to_plane(const X_Ray3* ray, const struct Plane* plane, X_Ray3* dest);
 bool x_ray3_clip_to_frustum(const X_Ray3* ray, const struct X_Frustum* frustum, X_Ray3* dest);
 void x_ray3_render(const X_Ray3* ray, struct X_RenderContext* rcontext, X_Color color);
 

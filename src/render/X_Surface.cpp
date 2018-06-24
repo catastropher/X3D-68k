@@ -216,7 +216,7 @@ static void x_surfacebuilder_build_from_combined_lightmap(X_SurfaceBuilder* buil
 static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, Vec3* dest, int* distDest)
 {
     Vec3 lightPos = builder->currentLight->position;
-    X_Plane* plane = &builder->bspSurface->plane->plane;
+    Plane* plane = &builder->bspSurface->plane->plane;
 
     Vec3fp lightPosTemp = MakeVec3fp(lightPos);
 

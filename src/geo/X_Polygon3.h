@@ -19,7 +19,7 @@
 #include "render/X_RenderContext.h"
 #include "render/X_Screen.h"
 
-struct X_Plane;
+struct Plane;
 
 #define X_POLYGON3_MAX_VERTS 100
 
@@ -33,9 +33,9 @@ struct Polygon3
         vertices(vertices_),
         totalVertices(totalVertices_) { }
         
-    bool clipToPlane(const X_Plane& plane, Polygon3& dest) const;
-    bool clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const;
-    void splitAlongPlane(const X_Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const;
+    bool clipToPlane(const Plane& plane, Polygon3& dest) const;
+    bool clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const;
+    void splitAlongPlane(const Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const;
     void clone(Polygon3& dest) const;
     bool clipToFrustum(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags) const;
     bool clipToFrustumPreserveEdgeIds(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);

@@ -210,7 +210,7 @@ static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_L
     if(x_bspnode_is_leaf(node))
         return;
     
-    X_Plane* plane = &node->plane->plane;
+    Plane* plane = &node->plane->plane;
 
     Vec3fp lightPosTemp = MakeVec3fp(light->position);
 

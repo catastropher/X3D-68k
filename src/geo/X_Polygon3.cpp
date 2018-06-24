@@ -21,7 +21,7 @@
 #include "render/X_TriangleFiller.h"
 #include "X_Frustum.h"
 
-bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
+bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
 {
     dest.totalVertices = 0;
     
@@ -55,7 +55,7 @@ bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
     return dest.totalVertices > 2;
 }
 
-bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const
+bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const
 {
     dest.totalVertices = 0;
     
@@ -97,7 +97,7 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, 
     return dest.totalVertices > 2;
 }
 
-void Polygon3::splitAlongPlane(const X_Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const
+void Polygon3::splitAlongPlane(const Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const
 {
     frontSide.totalVertices = 0;
     backSide.totalVertices = 0;
@@ -262,7 +262,7 @@ void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContex
 //         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);
 //     }
 //     
-//     X_Plane plane;
+//     Plane plane;
 //     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
 //     
 //     //if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
@@ -297,7 +297,7 @@ void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, 
 //         x_trianglefiller_set_textured_vertex(&filler, i, projected, transformed.z, textureCoords[i]);
 //     }
 //     
-// //     X_Plane plane;
+// //     Plane plane;
 // //     x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
 // //     
 // //     if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
@@ -333,7 +333,7 @@ void x_polygon3_render_transparent(Polygon3* poly, X_RenderContext* renderContex
 //         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);
 //     }
 //     
-//     X_Plane plane;
+//     Plane plane;
 //     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
 //     
 //    // if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))

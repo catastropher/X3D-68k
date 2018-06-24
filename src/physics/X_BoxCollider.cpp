@@ -56,13 +56,13 @@ static bool try_push_into_ground(X_BoxCollider* collider, X_BspLevel* level, x_f
     return x_raytracer_trace(trace);
 }
 
-static bool plane_is_floor_surface(const X_Plane* plane)
+static bool plane_is_floor_surface(const Plane* plane)
 {
     const x_fp16x16 MAX_FLOOR_Y_NORMAL = x_fp16x16_from_float(-0.7);
     return plane->normal.y <= MAX_FLOOR_Y_NORMAL;
 }
 
-static bool plane_is_vertical(const X_Plane* plane)
+static bool plane_is_vertical(const Plane* plane)
 {
     return plane->normal.y == 0;
 }
@@ -82,7 +82,7 @@ typedef enum IterationFlags
     IT_HIT_ANYTHING = 8
 } IterationFlags;
 
-static void adjust_velocity_to_slide_along_wall(Vec3* velocity, X_Plane* plane, x_fp16x16 bounceCoefficient)
+static void adjust_velocity_to_slide_along_wall(Vec3* velocity, Plane* plane, x_fp16x16 bounceCoefficient)
 {
     Vec3 temp = MakeVec3(plane->normal);
 

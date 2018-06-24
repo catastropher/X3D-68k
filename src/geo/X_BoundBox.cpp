@@ -17,7 +17,7 @@
 #include "X_Plane.h"
 #include "X_Frustum.h"
 
-X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, X_Plane* plane)
+X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, Plane* plane)
 {
     int px = (plane->normal.x > 0 ? 1 : 0);
     int py = (plane->normal.y > 0 ? 1 : 0);

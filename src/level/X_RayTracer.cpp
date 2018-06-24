@@ -61,7 +61,7 @@ static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeI
     while(!is_leaf_node(clipNodeId))
     {
         X_BspClipNode* clipNode = x_bsplevel_get_clip_node(level, clipNodeId);
-        X_Plane* plane = &level->planes[clipNode->planeId].plane;
+        Plane* plane = &level->planes[clipNode->planeId].plane;
         
         Vec3fp vTemp = MakeVec3fp(*v);
 
@@ -80,7 +80,7 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
                                                x_fp16x16 startT,
                                                Vec3* end,
                                                x_fp16x16 endT,
-                                               X_Plane* plane,
+                                               Plane* plane,
                                                x_fp16x16 intersectionT,
                                                x_fp16x16 startDist
                                               )
@@ -131,7 +131,7 @@ bool visit_node(X_RayTracer* trace, int clipNodeId, Vec3* start, x_fp16x16 start
         return 1;
     
     X_BspClipNode* node = x_bsplevel_get_clip_node(trace->level, clipNodeId);
-    X_Plane* plane = &trace->level->planes[node->planeId].plane;
+    Plane* plane = &trace->level->planes[node->planeId].plane;
     
     Vec3fp startTemp = MakeVec3fp(*start);
     Vec3fp endTemp = MakeVec3fp(*end);

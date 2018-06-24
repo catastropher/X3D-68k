@@ -61,7 +61,7 @@ typedef struct X_BspBoundRect
 
 typedef struct X_BspPlane
 {
-    X_Plane plane;
+    Plane plane;
 } X_BspPlane;
 
 typedef struct X_BspVertex
@@ -79,7 +79,7 @@ typedef enum X_BspSurfaceFlags
 
 struct X_BspSurface
 {
-    void calculatePlaneInViewSpace(Vec3* camPos, Mat4x4* viewMatrix, Vec3* pointOnSurface, X_Plane* dest)
+    void calculatePlaneInViewSpace(Vec3* camPos, Mat4x4* viewMatrix, Vec3* pointOnSurface, Plane* dest)
     {
         Vec3fp pointOnSurfaceTemp = MakeVec3fp(*pointOnSurface);
         Vec3fp camPosTemp = MakeVec3fp(*camPos);

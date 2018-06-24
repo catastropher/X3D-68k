@@ -24,7 +24,7 @@ typedef struct X_RayTracer
     X_BspLevel* level;
     X_Ray3_fp16x16 ray;
     int rootClipNode;
-    X_Plane collisionPlane;
+    Plane collisionPlane;
     Vec3 collisionPoint;
     x_fp16x16 collisionFrac;
     Vec3* modelOrigin;

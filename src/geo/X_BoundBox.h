@@ -36,10 +36,10 @@ typedef struct X_BoundBox
     Vec3 v[2];
 } X_BoundBox;
 
-struct X_Plane;
+struct Plane;
 struct X_Frustum;
 
-X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, struct X_Plane* plane);
+X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, struct Plane* plane);
 X_BoundBoxFrustumFlags x_boundbox_determine_frustum_clip_flags(X_BoundBox* box, struct X_Frustum* frustum, X_BoundBoxFrustumFlags parentFlags);
 void x_boundbox_print(X_BoundBox* box);
 

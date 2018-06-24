@@ -19,7 +19,7 @@
 
 typedef struct X_Frustum
 {
-    X_Plane* planes;
+    Plane* planes;
     int totalPlanes;
 } X_Frustum;
 

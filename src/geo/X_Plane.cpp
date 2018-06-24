@@ -19,7 +19,7 @@
 #include "math/X_fix.h"
 #include "object/X_CameraObject.h"
 
-X_Plane::X_Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
+Plane::Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
 {
     Vec3fp v1 = a - b;
     Vec3fp v2 = c - b;
@@ -32,7 +32,7 @@ X_Plane::X_Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
     d = -normal.dot(a);
 }
 
-void X_Plane::print() const
+void Plane::print() const
 {
     float x = normal.x.toFloat();
     float y = normal.y.toFloat();
@@ -42,7 +42,7 @@ void X_Plane::print() const
     printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, dd);
 }
 
-void X_Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
+void Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
 {
     Vec3 temp = MakeVec3(normal);
     temp.y = 0;

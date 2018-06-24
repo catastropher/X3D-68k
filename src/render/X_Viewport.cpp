@@ -71,14 +71,14 @@ void X_Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, cons
     for(int i = 0; i < 4; ++i)
     {
         int next = (i != 3 ? i + 1 : 0);
-        viewFrustumPlanes[i] = X_Plane(nearPlaneVertices[i], camPos, nearPlaneVertices[next]);
+        viewFrustumPlanes[i] = Plane(nearPlaneVertices[i], camPos, nearPlaneVertices[next]);
     }
 
     // Near plane
     int fakeDistToNearPlane = 16;       // TODO: what should this value really be?
     Vec3fp pointOnNearPlane = camPos + forward * fakeDistToNearPlane;
 
-    viewFrustumPlanes[4] = X_Plane(forward, pointOnNearPlane);
+    viewFrustumPlanes[4] = Plane(forward, pointOnNearPlane);
 }
 
 void X_Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
