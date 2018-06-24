@@ -55,7 +55,7 @@ void x_cube_render(const X_Cube* cube, X_RenderContext* rcontext, X_Color color)
     }
 }
 
-void x_cube_transform(const X_Cube* src, X_Cube* dest, const X_Mat4x4* mat)
+void x_cube_transform(const X_Cube* src, X_Cube* dest, const Mat4x4* mat)
 {
     for(int i = 0; i < 8; ++i)
     {

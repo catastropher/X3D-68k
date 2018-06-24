@@ -23,7 +23,7 @@ struct X_Renderer;
 struct X_CameraObject;
 struct X_Frustum;
 struct X_Texture;
-struct X_Mat4x4;
+struct Mat4x4;
 struct X_BspLevel;
 
 typedef struct X_RenderContext
@@ -34,7 +34,7 @@ typedef struct X_RenderContext
     struct X_Texture* canvas;
     x_fp0x16* zbuf;
     struct X_Frustum* viewFrustum;
-    struct X_Mat4x4* viewMatrix;
+    struct Mat4x4* viewMatrix;
     struct X_EngineContext* engineContext;
     struct X_BspLevel* level;
     int currentFrame;

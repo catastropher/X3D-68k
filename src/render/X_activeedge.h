@@ -47,7 +47,7 @@ struct X_AE_Surface
         return inverseZAtScreenPoint(x + X_FP16x16_ONE * 7, y) >= surface->inverseZAtScreenPoint(x + X_FP16x16_ONE * 7 , y);
     }
     
-    void calculateInverseZGradient(Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, Vec3* pointOnSurface)
+    void calculateInverseZGradient(Vec3* camPos, X_Viewport* viewport, Mat4x4* viewMatrix, Vec3* pointOnSurface)
     {
         X_Plane planeInViewSpace;
         bspSurface->calculatePlaneInViewSpace(camPos, viewMatrix, pointOnSurface, &planeInViewSpace);

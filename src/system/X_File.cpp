@@ -338,7 +338,7 @@ void x_file_read_vec2(X_File* file, X_Vec2* dest)
     dest->y = x_file_read_le_int32(file);
 }
 
-void x_file_read_mat4x4(X_File* file, X_Mat4x4* mat)
+void x_file_read_mat4x4(X_File* file, Mat4x4* mat)
 {
     for(int i = 0; i < 4; ++i)
     {
@@ -444,7 +444,7 @@ void x_file_write_vec3(X_File* file, Vec3* v)
     x_file_write_le_int32(file, v->z);
 }
 
-void x_file_write_mat4x4(X_File* file, X_Mat4x4* mat)
+void x_file_write_mat4x4(X_File* file, Mat4x4* mat)
 {
     for(int i = 0; i < 4; ++i)
     {

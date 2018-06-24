@@ -42,12 +42,12 @@ void X_Plane::print() const
     printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, dd);
 }
 
-void X_Plane::getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const
+void X_Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
 {
     Vec3 temp = MakeVec3(normal);
     temp.y = 0;
     
-    X_Mat4x4 mat;
+    Mat4x4 mat;
     mat.loadXRotation(X_ANG_270);
     
     Vec3fp right, up;

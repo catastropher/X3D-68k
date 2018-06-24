@@ -18,7 +18,7 @@
 #include "X_Vec3.h"
 #include "math/X_fix.h"
 
-struct X_Mat4x4;
+struct Mat4x4;
 struct X_CameraObject;
 
 struct X_Plane
@@ -50,7 +50,7 @@ struct X_Plane
     }
 
     void print() const;
-    void getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const;
+    void getOrientation(X_CameraObject& cam, Mat4x4& dest) const;
 
     Vec3fp normal;
     fp d;

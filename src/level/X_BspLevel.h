@@ -79,7 +79,7 @@ typedef enum X_BspSurfaceFlags
 
 struct X_BspSurface
 {
-    void calculatePlaneInViewSpace(Vec3* camPos, X_Mat4x4* viewMatrix, Vec3* pointOnSurface, X_Plane* dest)
+    void calculatePlaneInViewSpace(Vec3* camPos, Mat4x4* viewMatrix, Vec3* pointOnSurface, X_Plane* dest)
     {
         Vec3fp pointOnSurfaceTemp = MakeVec3fp(*pointOnSurface);
         Vec3fp camPosTemp = MakeVec3fp(*camPos);

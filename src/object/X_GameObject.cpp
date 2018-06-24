@@ -31,7 +31,7 @@ X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
 
 void x_gameobject_extract_view_vectors(const X_GameObject* obj, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest)
 {
-    X_Mat4x4 mat;
+    Mat4x4 mat;
     x_quaternion_to_mat4x4(&obj->orientation, &mat);
 
     Vec3fp u, r, f;

@@ -69,7 +69,7 @@ QuaternionTemplate<T> QuaternionTemplate<T>::operator*(QuaternionTemplate<T>& q)
     return result;
 }
 
-void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest)
+void x_quaternion_to_mat4x4(const X_Quaternion* src, Mat4x4* dest)
 {
     x_fp16x16 xx = x_fp16x16_mul(src->x, src->x);
     x_fp16x16 xy = x_fp16x16_mul(src->x, src->y);

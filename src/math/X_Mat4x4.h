@@ -21,7 +21,7 @@
 
 struct X_RenderContext;
 
-struct X_Mat4x4
+struct Mat4x4
 {
     void loadIdentity();
     void loadXRotation(fp angle);
@@ -42,11 +42,11 @@ struct X_Mat4x4
     void print() const;
 
     void extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const;
-    void invertDiagonal(X_Mat4x4 dest) const;
+    void invertDiagonal(Mat4x4 dest) const;
     void transpose3x3();
     void visualize(Vec3fp position, const X_RenderContext& renderContext) const;
 
-    X_Mat4x4 operator*(const X_Mat4x4& mat) const;
+    Mat4x4 operator*(const Mat4x4& mat) const;
 
     fp elem[4][4];
 };

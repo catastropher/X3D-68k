@@ -22,9 +22,9 @@
 #include "geo/X_Ray3.h"
 #include "render/X_Palette.h"
 
-void X_Mat4x4::loadIdentity()
+void Mat4x4::loadIdentity()
 {
-    static const X_Mat4x4 identity =
+    static const Mat4x4 identity =
     {
         {
             { X_FP16x16_ONE, 0, 0, 0 },
@@ -37,12 +37,12 @@ void X_Mat4x4::loadIdentity()
     *this = identity;
 }
 
-void X_Mat4x4::loadXRotation(fp angle) 
+void Mat4x4::loadXRotation(fp angle) 
 {
     x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
     x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
-    X_Mat4x4 xRotation = {
+    Mat4x4 xRotation = {
         {
             { X_FP16x16_ONE, 0, 0, 0 },
             { 0, cosAngle, -sinAngle, 0 },
@@ -54,12 +54,12 @@ void X_Mat4x4::loadXRotation(fp angle)
     *this = xRotation;
 }
 
-void X_Mat4x4::loadYRotation(fp angle)
+void Mat4x4::loadYRotation(fp angle)
 {
     x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
     x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
-    X_Mat4x4 yRotation = {
+    Mat4x4 yRotation = {
         {
             { cosAngle, 0, sinAngle, 0 },
             { 0, X_FP16x16_ONE, 0, 0 },
@@ -71,12 +71,12 @@ void X_Mat4x4::loadYRotation(fp angle)
     *this = yRotation;
 }
 
-void X_Mat4x4::loadZRotation(fp angle)
+void Mat4x4::loadZRotation(fp angle)
 {
     x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
     x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
-    X_Mat4x4 zRotation = {
+    Mat4x4 zRotation = {
         {
             { cosAngle, -sinAngle, 0, 0 },
             { sinAngle, cosAngle, 0, 0 },
@@ -88,9 +88,9 @@ void X_Mat4x4::loadZRotation(fp angle)
     *this = zRotation;
 }
 
-void X_Mat4x4::loadTranslation(const Vec3fp& translation)
+void Mat4x4::loadTranslation(const Vec3fp& translation)
 {
-    X_Mat4x4 translationMatrix = 
+    Mat4x4 translationMatrix = 
     {
         {
             { X_FP16x16_ONE, 0, 0, translation.x },
@@ -103,9 +103,9 @@ void X_Mat4x4::loadTranslation(const Vec3fp& translation)
     *this = translationMatrix;
 }
 
-X_Mat4x4 X_Mat4x4::operator*(const X_Mat4x4& mat) const
+Mat4x4 Mat4x4::operator*(const Mat4x4& mat) const
 {
-    X_Mat4x4 res;
+    Mat4x4 res;
 
     for(int i = 0; i < 4; ++i)
     {
@@ -124,12 +124,12 @@ X_Mat4x4 X_Mat4x4::operator*(const X_Mat4x4& mat) const
     return res;
 }
 
-Vec4 X_Mat4x4::getColumn(int col) const
+Vec4 Mat4x4::getColumn(int col) const
 {
     return Vec4(elem[0][col], elem[1][col], elem[2][col], elem[3][col]);
 }
 
-void X_Mat4x4::setColumn(int col, const Vec4& v)
+void Mat4x4::setColumn(int col, const Vec4& v)
 {
     elem[0][col] = v.x;
     elem[1][col] = v.y;
@@ -137,12 +137,12 @@ void X_Mat4x4::setColumn(int col, const Vec4& v)
     elem[3][col] = v.w;
 }
 
-Vec4 X_Mat4x4::getRow(int row) const
+Vec4 Mat4x4::getRow(int row) const
 {
     return Vec4(elem[row][0], elem[row][1], elem[row][2], elem[row][3]);
 }
 
-void X_Mat4x4::setRow(int row, const Vec4& v)
+void Mat4x4::setRow(int row, const Vec4& v)
 {
     elem[row][0] = v.x;
     elem[row][1] = v.y;
@@ -150,7 +150,7 @@ void X_Mat4x4::setRow(int row, const Vec4& v)
     elem[row][3] = v.w;
 }
 
-Vec4 X_Mat4x4::transform(const Vec4& src) const
+Vec4 Mat4x4::transform(const Vec4& src) const
 {
     fp res[4] = { 0, 0, 0, 0 };
     const fp* srcArray = &src.x;
@@ -166,7 +166,7 @@ Vec4 X_Mat4x4::transform(const Vec4& src) const
     return Vec4(res[0], res[1], res[2], res[3]);
 }
 
-Vec3fp X_Mat4x4::transform(const Vec3fp& src) const
+Vec3fp Mat4x4::transform(const Vec3fp& src) const
 {
     Vec4 v = Vec4(src.x, src.y, src.z, X_FP16x16_ONE);
     Vec4 transformed = transform(v);
@@ -181,7 +181,7 @@ Vec3fp X_Mat4x4::transform(const Vec3fp& src) const
     // dest->z = res.z / res.w;
 }
 
-Vec3fp X_Mat4x4::transformNormal(const Vec3fp& normal) const
+Vec3fp Mat4x4::transformNormal(const Vec3fp& normal) const
 {
     Vec3 norm = MakeVec3(normal);
 
@@ -191,7 +191,7 @@ Vec3fp X_Mat4x4::transformNormal(const Vec3fp& normal) const
         normal.x * elem[2][0] + normal.y * elem[2][1] + normal.z * elem[2][2]);
 }
 
-void X_Mat4x4::print() const
+void Mat4x4::print() const
 {
     for(int i = 0; i < 4; ++i)
     {
@@ -206,14 +206,14 @@ void X_Mat4x4::print() const
     printf("\n");
 }
 
-void X_Mat4x4::extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const
+void Mat4x4::extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const
 {
     rightDest = getRow(0).toVec3();
     upDest = -getRow(1).toVec3();
     forwardDest = getRow(2).toVec3();
 }
 
-void X_Mat4x4::invertDiagonal(X_Mat4x4 dest) const
+void Mat4x4::invertDiagonal(Mat4x4 dest) const
 {
     dest.loadIdentity();
     
@@ -223,7 +223,7 @@ void X_Mat4x4::invertDiagonal(X_Mat4x4 dest) const
     }
 }
 
-void X_Mat4x4::transpose3x3()
+void Mat4x4::transpose3x3()
 {
     for(int i = 1; i < 3; ++i)
     {
@@ -234,7 +234,7 @@ void X_Mat4x4::transpose3x3()
     }
 }
 
-void x_mat4x4_visualize(X_Mat4x4* mat, Vec3 position, X_RenderContext* renderContext)
+void x_mat4x4_visualize(Mat4x4* mat, Vec3 position, X_RenderContext* renderContext)
 {
     // const X_Palette* p = x_palette_get_quake_palette();
     // X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
