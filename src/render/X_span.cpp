@@ -30,7 +30,8 @@ static inline int mip_adjust(int val, int mipLevel)
 
 static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* context, Vec3* vecToRotate, Vec3* dest)
 {
-    x_mat4x4_rotate_normal(context->renderContext->viewMatrix, vecToRotate, dest);   
+    Vec3fp vecToRotateTemp = MakeVec3fp(*vecToRotate);
+    *dest = MakeVec3(context->renderContext->viewMatrix->transformNormal(vecToRotateTemp));
 }
 
 static inline void calculate_uv_orientation_steps_in_screen_space(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3* orientationInEyeSpace)

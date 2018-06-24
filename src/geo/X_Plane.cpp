@@ -50,36 +50,33 @@ void X_Plane::getOrientation(X_CameraObject& cam, X_Mat4x4& dest) const
     X_Mat4x4 mat;
     mat.loadXRotation(X_ANG_270);
     
-    Vec3 right, up;
+    Vec3fp right, up;
     
     if(abs(normal.y) != X_FP16x16_ONE)
     {
         Vec3fp tempTemp = MakeVec3fp(temp);
 
-        right = MakeVec3(mat.transform(tempTemp));
-        x_vec3_normalize(&right);
-        
-        Vec3 temp = MakeVec3(normal);
-
-        up = x_vec3_cross(&temp, &right);
+        right = mat.transform(tempTemp);
+        right.normalize();
+        up = normal.cross(right);
     }
     else
     {
         // Pick the vectors from the cam direction
-        Vec3 temp;
-        x_mat4x4_extract_view_vectors(&cam.viewMatrix, &up, &right, &temp);
+        Vec3fp temp;
+        cam.viewMatrix.extractViewVectors(up, right, temp);
         
         right.y = 0;
-        x_vec3_normalize(&right);
+        right.normalize();
         
         up.y = 0;
-        x_vec3_normalize(&up);
+        up.normalize();
     }
     
     dest.loadIdentity();
     
-    Vec416x16 up4 = Vec416x16(up);
-    Vec416x16 right4 = Vec416x16(right);
+    Vec416x16 up4 = Vec416x16(MakeVec3(up));
+    Vec416x16 right4 = Vec416x16(MakeVec3(right));
 
     temp = MakeVec3(normal);
 

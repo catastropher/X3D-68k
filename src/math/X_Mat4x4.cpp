@@ -180,20 +180,23 @@ Vec3fp X_Mat4x4::transform(const Vec3fp& src) const
     // dest->z = res.z / res.w;
 }
 
-void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const Vec3* normal, Vec3* dest)
+Vec3fp X_Mat4x4::transformNormal(const Vec3fp& normal) const
 {
-    dest->x = x_fp16x16_mul(normal->x, mat->elem[0][0]) + x_fp16x16_mul(normal->y, mat->elem[0][1]) + x_fp16x16_mul(normal->z, mat->elem[0][2]);
-    dest->y = x_fp16x16_mul(normal->x, mat->elem[1][0]) + x_fp16x16_mul(normal->y, mat->elem[1][1]) + x_fp16x16_mul(normal->z, mat->elem[1][2]);
-    dest->z = x_fp16x16_mul(normal->x, mat->elem[2][0]) + x_fp16x16_mul(normal->y, mat->elem[2][1]) + x_fp16x16_mul(normal->z, mat->elem[2][2]);
+    Vec3 norm = MakeVec3(normal);
+
+    return MakeVec3fp(Vec3(
+        x_fp16x16_mul(norm.x, elem[0][0]) + x_fp16x16_mul(norm.y, elem[0][1]) + x_fp16x16_mul(norm.z, elem[0][2]),
+        x_fp16x16_mul(norm.x, elem[1][0]) + x_fp16x16_mul(norm.y, elem[1][1]) + x_fp16x16_mul(norm.z, elem[1][2]),
+        x_fp16x16_mul(norm.x, elem[2][0]) + x_fp16x16_mul(norm.y, elem[2][1]) + x_fp16x16_mul(norm.z, elem[2][2])));
 }
 
-void x_mat4x4_print(const X_Mat4x4* mat)
+void X_Mat4x4::print() const
 {
     for(int i = 0; i < 4; ++i)
     {
         for(int j = 0; j < 4; ++j)
         {
-            printf("%f\t", x_fp16x16_to_float(mat->elem[i][j]));
+            printf("%f\t", x_fp16x16_to_float(elem[i][j]));
         }
         
         printf("\n");
@@ -202,52 +205,30 @@ void x_mat4x4_print(const X_Mat4x4* mat)
     printf("\n");
 }
 
-void x_mat4x4_print_machine_readable(const X_Mat4x4* mat)
+void X_Mat4x4::extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const
 {
-    printf("{");
-    for(int i = 0; i < 4; ++i)
-    {
-        printf("{");
-        for(int j = 0; j < 4; ++j)
-        {
-            printf("%f", x_fp16x16_to_float(mat->elem[i][j]));
-            
-            if(j != 3)
-                printf(",");
-        }
-        printf("}");
-        
-        if(i != 3)
-            printf(",");
-    }
-    
-    printf("}\n");
+    rightDest = MakeVec3fp(getRow(0).toVec3());
+    upDest = MakeVec3fp(-getRow(1).toVec3());
+    forwardDest = MakeVec3fp(getRow(2).toVec3());
 }
 
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest)
+void X_Mat4x4::invertDiagonal(X_Mat4x4 dest) const
 {
-    *rightDest = mat->getRow(0).toVec3();
-    *upDest = -mat->getRow(1).toVec3();
-    *forwardDest = mat->getRow(2).toVec3();
-}
-
-void x_mat4x4_invert_diagonal(const X_Mat4x4* mat, X_Mat4x4* dest)
-{
-    dest->loadIdentity();
+    dest.loadIdentity();
     
     for(int i = 0; i < 4; ++i)
     {
-        dest->elem[i][i] = x_fp16x16_div(X_FP16x16_ONE, mat->elem[i][i]);
+        dest.elem[i][i] = x_fp16x16_div(X_FP16x16_ONE, elem[i][i]);
     }
 }
 
-void x_mat4x4_transpose_3x3(X_Mat4x4* mat)
+void X_Mat4x4::transpose3x3()
 {
     for(int i = 1; i < 3; ++i)
     {
         for(int j = 0; j < i; ++j)
         {
-            X_SWAP(mat->elem[i][j], mat->elem[j][i]);
+            std::swap(elem[i][j], elem[j][i]);
         }
     }
 }

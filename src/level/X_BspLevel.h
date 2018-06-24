@@ -81,16 +81,14 @@ struct X_BspSurface
 {
     void calculatePlaneInViewSpace(Vec3* camPos, X_Mat4x4* viewMatrix, Vec3* pointOnSurface, X_Plane* dest)
     {
-        Vec3 planeNormal = MakeVec3(plane->plane.normal);
+        Vec3fp pointOnSurfaceTemp = MakeVec3fp(*pointOnSurface);
+        Vec3fp camPosTemp = MakeVec3fp(*camPos);
 
-        Vec3 temp = MakeVec3(dest->normal);
-        x_mat4x4_rotate_normal(viewMatrix, &planeNormal, &temp);
+        dest->normal = viewMatrix->transformNormal(plane->plane.normal);
 
-        dest->normal = MakeVec3fp(temp);
+        fp d = -plane->plane.normal.dot(pointOnSurfaceTemp);
 
-        x_fp16x16 d = -x_vec3_dot(&planeNormal, pointOnSurface);
-
-        dest->d = d + x_vec3_dot(&planeNormal, camPos);
+        dest->d = d + plane->plane.normal.dot(camPosTemp);
     }
     
     int id;     // Just for debugging

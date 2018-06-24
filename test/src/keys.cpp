@@ -203,7 +203,14 @@ static Vec3 get_movement_key_vector(X_CameraObject* cam, X_KeyState* keyState, b
     x_fp16x16 rightComponent = get_straife_component(keyState);
     
     Vec3 forward, right, up;
-    x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
+
+    Vec3fp f, r, u;
+
+    cam->viewMatrix.extractViewVectors(f, r, u);
+
+    forward = MakeVec3(f);
+    right = MakeVec3(r);
+    up = MakeVec3(u);
     
     if(ignoreVerticalComponent)
     {

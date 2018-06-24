@@ -19,6 +19,8 @@
 #include "geo/X_Vec3.h"
 #include "geo/X_Vec4.h"
 
+struct X_RenderContext;
+
 struct X_Mat4x4
 {
     void loadIdentity();
@@ -35,21 +37,16 @@ struct X_Mat4x4
 
     Vec416x16 transform(const Vec416x16& src) const;
     Vec3fp transform(const Vec3fp& src) const;
+    Vec3fp transformNormal(const Vec3fp& normal) const;
+
+    void print() const;
+
+    void extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const;
+    void invertDiagonal(X_Mat4x4 dest) const;
+    void transpose3x3();
+    void visualize(Vec3fp position, const X_RenderContext& renderContext) const;
 
     X_Mat4x4 operator*(const X_Mat4x4& mat) const;
 
     x_fp16x16 elem[4][4];
 };
-
-void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const Vec3* normal, Vec3* dest);
-
-void x_mat4x4_print(const X_Mat4x4* mat);
-void x_mat4x4_print_machine_readable(const X_Mat4x4* mat);
-
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest);
-void x_mat4x4_invert_diagonal(const X_Mat4x4* mat, X_Mat4x4* dest);
-void x_mat4x4_transpose_3x3(X_Mat4x4* mat);
-
-struct X_RenderContext;
-void x_mat4x4_visualize(X_Mat4x4* mat, Vec3 position, struct X_RenderContext* renderContext);
-
