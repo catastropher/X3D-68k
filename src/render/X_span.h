@@ -19,7 +19,7 @@
 #include "render/X_Texture.h"
 
 struct X_AE_Surface;
-struct X_Viewport;
+struct Viewport;
 struct X_RenderContext;
 struct X_BspFaceTexture;
 
@@ -79,7 +79,7 @@ typedef struct X_AE_SurfaceRenderContext
     X_AE_TextureVar tDivZ;
     
     struct X_AE_Surface* surface;
-    struct X_Viewport* viewport;
+    struct Viewport* viewport;
     struct X_RenderContext* renderContext;
     struct X_BspFaceTexture* faceTexture;
     int mipLevel;

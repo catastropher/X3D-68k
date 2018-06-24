@@ -56,7 +56,7 @@ static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int cu
 }
 
 // TODO: no need to project vertices if can just reuse the cached edge
-static bool project_polygon3(Polygon3* poly, Mat4x4* viewMatrix, X_Viewport* viewport, Polygon2* dest, x_fp16x16* closestZ)
+static bool project_polygon3(Polygon3* poly, Mat4x4* viewMatrix, Viewport* viewport, Polygon2* dest, x_fp16x16* closestZ)
 {
     *closestZ = 0x7FFFFFFF;
     

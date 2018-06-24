@@ -30,7 +30,7 @@ typedef struct X_CameraObject
 {
     X_GameObject base;
     X_BoxCollider collider;
-    X_Viewport viewport;
+    Viewport viewport;
     Mat4x4 viewMatrix;
     x_fp16x16 angleX;
     x_fp16x16 angleY;

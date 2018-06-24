@@ -19,7 +19,7 @@
 #include "math/X_angle.h"
 #include "geo/X_Frustum.h"
 
-class X_Viewport
+class Viewport
 {
 public:
     void init(X_Vec2 screenPos, int w, int h, fp fieldOfView);

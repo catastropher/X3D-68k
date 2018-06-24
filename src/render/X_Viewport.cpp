@@ -19,7 +19,7 @@
 #include "math/X_trig.h"
 #include "util/X_util.h"
 
-void X_Viewport::initMipDistances()
+void Viewport::initMipDistances()
 {
     fp mipScale[3] =
     {
@@ -36,7 +36,7 @@ void X_Viewport::initMipDistances()
     }
 }
 
-void X_Viewport::init(X_Vec2 screenPos_, int w_, int h_, fp fieldOfView)
+void Viewport::init(X_Vec2 screenPos_, int w_, int h_, fp fieldOfView)
 {
     screenPos = screenPos_;
     w = w_;
@@ -50,7 +50,7 @@ void X_Viewport::init(X_Vec2 screenPos_, int w_, int h_, fp fieldOfView)
     initMipDistances();
 }
 
-void X_Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const Vec3fp& right, const Vec3fp& up)
+void Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const Vec3fp& right, const Vec3fp& up)
 {
     Vec3fp nearPlaneCenter = camPos + forward * distToNearPlane;
 
@@ -81,14 +81,14 @@ void X_Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, cons
     viewFrustumPlanes[4] = Plane(forward, pointOnNearPlane);
 }
 
-void X_Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
+void Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
 {
     // TODO: may be able to get away with multiplying by distToNearPlane / z
     dest.x = (src.x / src.z * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
     dest.y = (src.y / src.z * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
 }
 
-void X_Viewport::clamp(X_Vec2& v)
+void Viewport::clamp(X_Vec2& v)
 {
     v.x = std::max(v.x, screenPos.x);
     v.x = std::min(v.x, screenPos.x + w - 1);
@@ -97,7 +97,7 @@ void X_Viewport::clamp(X_Vec2& v)
     v.y = std::min(v.y, screenPos.y + h - 1);
 }
 
-void X_Viewport::clampfp(X_Vec2_fp16x16& v)
+void Viewport::clampfp(X_Vec2_fp16x16& v)
 {
     fp x = fp(v.x);
     fp y = fp(v.y);
