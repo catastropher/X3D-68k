@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
+#include <new>
 
 #include "X_BspLevel.h"
 #include "X_BspLevelLoader.h"
@@ -562,7 +563,7 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspS
         else
             v = level->vertices[level->edges[-edgeId].v[0]].v;
         
-        x_boundbox_add_point(&node->geoBoundBox, x_vec3_to_vec3_int(&v));
+        node->geoBoundBox.addPoint(x_vec3_to_vec3_int(&v));
     }
 }
 
@@ -571,7 +572,7 @@ static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
     if(x_bspnode_is_leaf(node))
         return;
     
-    x_boundbox_init(&node->geoBoundBox);
+    new (&node->geoBoundBox) X_BoundBox();
 
     for(int i = 0; i < node->totalSurfaces; ++i)
         x_bspnode_calculate_geo_boundbox_add_surface(node, node->firstSurface + i, level);
@@ -644,10 +645,10 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
     
     printf("Calculated:\n");
-    x_boundbox_print(&levelRootNode->frontChild->geoBoundBox);
+    levelRootNode->frontChild->geoBoundBox.print();
     
     printf("Real:\n");
-    x_boundbox_print(&levelRootNode->frontChild->nodeBoundBox);
+    levelRootNode->frontChild->nodeBoundBox.print();
 }
 
 static bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName, EngineQueue* engineQueue)

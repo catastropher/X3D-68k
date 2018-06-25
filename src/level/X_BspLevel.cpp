@@ -330,7 +330,7 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
         return;
     
-    X_BoundBoxFrustumFlags nodeFlags = x_boundbox_determine_frustum_clip_flags(&node->nodeBoundBox, renderContext->viewFrustum, parentNodeFlags);
+    X_BoundBoxFrustumFlags nodeFlags = node->nodeBoundBox.determineFrustumClipFlags(*renderContext->viewFrustum, parentNodeFlags);
     if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
         return;
     
@@ -346,7 +346,7 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     X_BspNode* backSide;
     x_bspnode_determine_children_sides_relative_to_camera(node, &renderContext->camPos, &frontSide, &backSide);
     
-    X_BoundBoxFrustumFlags geoFlags = x_boundbox_determine_frustum_clip_flags(&node->geoBoundBox, renderContext->viewFrustum, nodeFlags);
+    X_BoundBoxFrustumFlags geoFlags = node->geoBoundBox.determineFrustumClipFlags(*renderContext->viewFrustum, nodeFlags);
 
     x_bspnode_render_recursive(frontSide, renderContext, nodeFlags);
     

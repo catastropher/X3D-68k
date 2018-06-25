@@ -17,24 +17,24 @@
 #include "X_Plane.h"
 #include "X_Frustum.h"
 
-X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, Plane* plane)
+X_BoundBoxPlaneFlags X_BoundBox::determinePlaneClipFlags(const Plane& plane) const
 {
-    int px = (plane->normal.x > 0 ? 1 : 0);
-    int py = (plane->normal.y > 0 ? 1 : 0);
-    int pz = (plane->normal.z > 0 ? 1 : 0);
+    int px = (plane.normal.x > 0 ? 1 : 0);
+    int py = (plane.normal.y > 0 ? 1 : 0);
+    int pz = (plane.normal.z > 0 ? 1 : 0);
     
-    Vec3 furthestPointAlongNormal = Vec3(box->v[px].x, box->v[py].y, box->v[pz].z);
+    Vec3 furthestPointAlongNormal = Vec3(v[px].x, v[py].y, v[pz].z);
     Vec3fp furthestPointAlongNormalTemp = MakeVec3fp(furthestPointAlongNormal);
 
-    if(!plane->pointOnNormalFacingSide(furthestPointAlongNormalTemp))
+    if(!plane.pointOnNormalFacingSide(furthestPointAlongNormalTemp))
     {
         return X_BOUNDBOX_OUTSIDE_PLANE;
     }
     
-    Vec3 closestPointAlongNormal = Vec3(box->v[px ^ 1].x, box->v[py ^ 1].y, box->v[pz ^ 1].z);
+    Vec3 closestPointAlongNormal = Vec3(v[px ^ 1].x, v[py ^ 1].y, v[pz ^ 1].z);
     Vec3fp closestPointAlongNormalTemp = MakeVec3fp(closestPointAlongNormal);
 
-    if(plane->pointOnNormalFacingSide(closestPointAlongNormalTemp))
+    if(plane.pointOnNormalFacingSide(closestPointAlongNormalTemp))
     {
         return X_BOUNDBOX_INSIDE_PLANE;
     }
@@ -43,33 +43,39 @@ X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, Plan
 }
 
 // Based on an algorithm described at http://www.txutxi.com/?p=584
-X_BoundBoxFrustumFlags x_boundbox_determine_frustum_clip_flags(X_BoundBox* box, X_Frustum* frustum, X_BoundBoxFrustumFlags parentFlags)
+X_BoundBoxFrustumFlags X_BoundBox::determineFrustumClipFlags(const X_Frustum& frustum, X_BoundBoxFrustumFlags parentFlags) const
 {
     if(parentFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
         return X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM;
     
     X_BoundBoxFrustumFlags newFlags = (X_BoundBoxFrustumFlags)0;
     
-    for(int i = 0; i < frustum->totalPlanes; ++i)
+    for(int i = 0; i < frustum.totalPlanes; ++i)
     {
-        if(!x_boundbox_clip_against_frustum_plane(parentFlags, i))
+        if(!X_BoundBox::clipAgainstFrustumPlane(parentFlags, i))
+        {
             continue;
+        }
         
-        X_BoundBoxPlaneFlags planeFlags = x_boundbox_determine_plane_clip_flags(box, frustum->planes + i);
+        X_BoundBoxPlaneFlags planeFlags = determinePlaneClipFlags(frustum.planes[i]);
         
         if(planeFlags == X_BOUNDBOX_OUTSIDE_PLANE)
+        {
             return X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM;
+        }
         
         if(planeFlags == X_BOUNDBOX_INTERSECT_PLANE)
+        {
             newFlags = (X_BoundBoxFrustumFlags)(newFlags | (1 << i));
+        }
     }
     
     return newFlags;
 }
 
-void x_boundbox_print(X_BoundBox* box)
+void X_BoundBox::print() const
 {
-    x_vec3_fp16x16_print(box->v + 0, "Mins");
-    x_vec3_fp16x16_print(box->v + 1, "Maxs");
+    x_vec3_fp16x16_print(v + 0, "Mins");
+    x_vec3_fp16x16_print(v + 1, "Maxs");
 }
 

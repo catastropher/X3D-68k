@@ -15,8 +15,13 @@
 
 #pragma once
 
+#include <algorithm>
+
 #include "X_Vec3.h"
 #include "util/X_util.h"
+
+struct Plane;
+struct X_Frustum;
 
 typedef enum X_BoundBoxPlaneFlags
 {
@@ -31,53 +36,51 @@ typedef enum X_BoundBoxFrustumFlags
     X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM = 0,
 } X_BoundBoxFrustumFlags;
 
-typedef struct X_BoundBox
+struct X_BoundBox
 {
+    X_BoundBox()
+    {
+        v[0].x = 0x7FFFFFFF;
+        v[0].y = 0x7FFFFFFF;
+        v[0].z = 0x7FFFFFFF;
+
+        v[1].x = -0x7FFFFFFF;
+        v[1].y = -0x7FFFFFFF;
+        v[1].z = -0x7FFFFFFF;
+    }
+
+    void addPoint(const Vec3& point)
+    {
+        v[0].x = std::min(v[0].x, point.x);
+        v[0].y = std::min(v[0].y, point.y);
+        v[0].z = std::min(v[0].z, point.z);
+        
+        v[1].x = std::max(v[1].x, point.x);
+        v[1].y = std::max(v[1].y, point.y);
+        v[1].z = std::max(v[1].z, point.z);
+    }
+
+    void merge(const X_BoundBox& box, X_BoundBox& dest) const
+    {
+        dest.v[0].x = std::min(v[0].x, box.v[0].x);
+        dest.v[0].y = std::min(v[0].y, box.v[0].y);
+        dest.v[0].z = std::min(v[0].z, box.v[0].z);
+        
+        dest.v[1].x = std::max(v[1].x, box.v[1].x);
+        dest.v[1].y = std::max(v[1].y, box.v[1].y);
+        dest.v[1].z = std::max(v[1].z, box.v[1].z);
+    }
+
+    X_BoundBoxPlaneFlags determinePlaneClipFlags(const Plane& plane) const;
+    X_BoundBoxFrustumFlags determineFrustumClipFlags(const X_Frustum& frustum, X_BoundBoxFrustumFlags parentFlags) const;
+
+    void print() const;
+
+    static bool clipAgainstFrustumPlane(X_BoundBoxFrustumFlags flags, int planeId)
+    {
+        return flags & (1 << planeId);
+    }
+
     Vec3 v[2];
-} X_BoundBox;
-
-struct Plane;
-struct X_Frustum;
-
-X_BoundBoxPlaneFlags x_boundbox_determine_plane_clip_flags(X_BoundBox* box, struct Plane* plane);
-X_BoundBoxFrustumFlags x_boundbox_determine_frustum_clip_flags(X_BoundBox* box, struct X_Frustum* frustum, X_BoundBoxFrustumFlags parentFlags);
-void x_boundbox_print(X_BoundBox* box);
-
-static inline bool x_boundbox_clip_against_frustum_plane(X_BoundBoxFrustumFlags flags, int planeId)
-{
-    return flags & (1 << planeId);
-}
-
-static inline void x_boundbox_init(X_BoundBox* box)
-{
-    box->v[0].x = 0x7FFFFFFF;
-    box->v[0].y = 0x7FFFFFFF;
-    box->v[0].z = 0x7FFFFFFF;
-    
-    box->v[1].x = -0x7FFFFFFF;
-    box->v[1].y = -0x7FFFFFFF;
-    box->v[1].z = -0x7FFFFFFF;
-}
-
-static inline void x_boundbox_add_point(X_BoundBox* box, Vec3 point)
-{
-    box->v[0].x = X_MIN(box->v[0].x, point.x);
-    box->v[0].y = X_MIN(box->v[0].y, point.y);
-    box->v[0].z = X_MIN(box->v[0].z, point.z);
-    
-    box->v[1].x = X_MAX(box->v[1].x, point.x);
-    box->v[1].y = X_MAX(box->v[1].y, point.y);
-    box->v[1].z = X_MAX(box->v[1].z, point.z);
-}
-
-static inline void x_boundbox_merge(X_BoundBox* a, X_BoundBox* b, X_BoundBox* dest)
-{
-    dest->v[0].x = X_MIN(a->v[0].x, b->v[0].x);
-    dest->v[0].y = X_MIN(a->v[0].y, b->v[0].y);
-    dest->v[0].z = X_MIN(a->v[0].z, b->v[0].z);
-    
-    dest->v[1].x = X_MAX(a->v[1].x, b->v[1].x);
-    dest->v[1].y = X_MAX(a->v[1].y, b->v[1].y);
-    dest->v[1].z = X_MAX(a->v[1].z, b->v[1].z);
-}
+};
 
