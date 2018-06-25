@@ -31,7 +31,7 @@ static ArenaAllocator<X_AE_Edge> edgePool(1000, "NewEdgePool");
 X_AE_Span clippedSpans[MAX_SPANS];
 X_AE_Span* currentClippedSpan;
 
-bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ);
+bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ);
 
 void drawSpan(int x1, int x2, int y, X_Screen* screen, X_Color color)
 {
@@ -161,7 +161,7 @@ inline X_AE_Span* __attribute__((always_inline))  clipSpan2(short left, short ri
     return drawSpans;
 }
 
-X_AE_Edge* projectPoly(LevelPolygon3* poly, LevelPolygon2* dest, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, x_fp16x16* minZ, int* minY, int* maxY)
+X_AE_Edge* projectPoly(LevelPolygon3* poly, LevelPolygon2* dest, X_RenderContext* renderContext, BoundBoxFrustumFlags clipFlags, x_fp16x16* minZ, int* minY, int* maxY)
 {
     edgePool.freeAll();
     
@@ -286,7 +286,7 @@ bool polygon2IsConvex(Polygon2* poly)
     return true;
 }
 
-X_AE_Span* __attribute__((hot)) renderLevelPolygon(LevelPolygon3* poly, X_BspSurface* surface, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, x_fp16x16* minZ, X_AE_Span* spans) 
+X_AE_Span* __attribute__((hot)) renderLevelPolygon(LevelPolygon3* poly, X_BspSurface* surface, X_RenderContext* renderContext, BoundBoxFrustumFlags clipFlags, x_fp16x16* minZ, X_AE_Span* spans) 
 {
     X_Vec2 v2d[X_POLYGON3_MAX_VERTS];
     int clippedEdgeIds[X_POLYGON3_MAX_VERTS];
@@ -386,7 +386,7 @@ void cmd_draw(X_EngineContext* context, int argc, char* argv[])
     x_enginecontext_get_rendercontext_for_camera(context, context->screen.cameraListHead, &renderContext);
     
     
-    //renderLevelPolygon(&poly, s, &renderContext, (X_BoundBoxFrustumFlags)((1 << renderContext.viewFrustum->totalPlanes) - 1));
+    //renderLevelPolygon(&poly, s, &renderContext, (BoundBoxFrustumFlags)((1 << renderContext.viewFrustum->totalPlanes) - 1));
 }
 
 int surfacesToRender[2000];
@@ -519,7 +519,7 @@ void renderSurface(X_RenderContext* renderContext, int surfaceId)
     
     //currentClippedSpan = clippedSpans;
     
-    X_AE_Span* spanEnd = renderLevelPolygon(&poly, s, renderContext, (X_BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1), &aeSurface.closestZ, clippedSpans);
+    X_AE_Span* spanEnd = renderLevelPolygon(&poly, s, renderContext, (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1), &aeSurface.closestZ, clippedSpans);
 
     if(spanEnd == clippedSpans)
         return;

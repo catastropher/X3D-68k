@@ -53,12 +53,12 @@ static void x_bsploadertexture_read_from_file(X_BspLoaderTexture* texture, X_Fil
         texture->texelsOffset[mipTex] = x_file_read_le_int32(file);
 }
 
-static void x_boundbox_convert_coordinate(X_BoundBox* box)
+static void x_boundbox_convert_coordinate(BoundBox* box)
 {
     box->v[0] = box->v[0].toX3dCoords();
     box->v[1] = box->v[1].toX3dCoords();
     
-    X_BoundBox temp;
+    BoundBox temp;
     
     temp.v[0].x = X_MIN(box->v[0].x, box->v[1].x);
     temp.v[0].y = X_MIN(box->v[0].y, box->v[1].y);
@@ -572,7 +572,7 @@ static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
     if(x_bspnode_is_leaf(node))
         return;
     
-    new (&node->geoBoundBox) X_BoundBox();
+    new (&node->geoBoundBox) BoundBox();
 
     for(int i = 0; i < node->totalSurfaces; ++i)
         x_bspnode_calculate_geo_boundbox_add_surface(node, node->firstSurface + i, level);

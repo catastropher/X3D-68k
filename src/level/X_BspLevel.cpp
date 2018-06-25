@@ -258,7 +258,7 @@ static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNod
 
 void scheduleSurfaceToRender(X_RenderContext* renderContext, int surface);
 
-static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
+static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
 {
     X_BspLevel* level = renderContext->level;
     
@@ -292,7 +292,7 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
     }
 }
 
-static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
+static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
 {
     // Submodels disabled for now
     
@@ -325,12 +325,12 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
     }
 }
 
-void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags parentNodeFlags)
+void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, BoundBoxFrustumFlags parentNodeFlags)
 {
     if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
         return;
     
-    X_BoundBoxFrustumFlags nodeFlags = node->nodeBoundBox.determineFrustumClipFlags(*renderContext->viewFrustum, parentNodeFlags);
+    BoundBoxFrustumFlags nodeFlags = node->nodeBoundBox.determineFrustumClipFlags(*renderContext->viewFrustum, parentNodeFlags);
     if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
         return;
     
@@ -346,7 +346,7 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
     X_BspNode* backSide;
     x_bspnode_determine_children_sides_relative_to_camera(node, &renderContext->camPos, &frontSide, &backSide);
     
-    X_BoundBoxFrustumFlags geoFlags = node->geoBoundBox.determineFrustumClipFlags(*renderContext->viewFrustum, nodeFlags);
+    BoundBoxFrustumFlags geoFlags = node->geoBoundBox.determineFrustumClipFlags(*renderContext->viewFrustum, nodeFlags);
 
     x_bspnode_render_recursive(frontSide, renderContext, nodeFlags);
     
@@ -358,7 +358,7 @@ void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext,
 
 void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderContext)
 {
-    X_BoundBoxFrustumFlags enableAllPlanes = (X_BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
+    BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
     
     for(int i = 1; i < level->totalModels; ++i)
         x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
@@ -369,7 +369,7 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
     x_bsplevel_reset_bspkeys(level);
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, x_bsplevel_get_level_model(level));
     
-    X_BoundBoxFrustumFlags enableAllPlanes = (X_BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
+    BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
     
      if(!x_keystate_key_down(renderContext->engineContext->getKeyState(), (X_Key)'g'))
         x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);

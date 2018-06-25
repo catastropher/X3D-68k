@@ -23,22 +23,22 @@
 struct Plane;
 struct X_Frustum;
 
-typedef enum X_BoundBoxPlaneFlags
+typedef enum BoundBoxPlaneFlags
 {
     X_BOUNDBOX_OUTSIDE_PLANE = 0,
     X_BOUNDBOX_INSIDE_PLANE = 1,
     X_BOUNDBOX_INTERSECT_PLANE = 2
-} X_BoundBoxPlaneFlags;
+} BoundBoxPlaneFlags;
 
-typedef enum X_BoundBoxFrustumFlags
+typedef enum BoundBoxFrustumFlags
 {
     X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM = -1,
     X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM = 0,
-} X_BoundBoxFrustumFlags;
+} BoundBoxFrustumFlags;
 
-struct X_BoundBox
+struct BoundBox
 {
-    X_BoundBox()
+    BoundBox()
     {
         v[0].x = 0x7FFFFFFF;
         v[0].y = 0x7FFFFFFF;
@@ -60,7 +60,7 @@ struct X_BoundBox
         v[1].z = std::max(v[1].z, point.z);
     }
 
-    void merge(const X_BoundBox& box, X_BoundBox& dest) const
+    void merge(const BoundBox& box, BoundBox& dest) const
     {
         dest.v[0].x = std::min(v[0].x, box.v[0].x);
         dest.v[0].y = std::min(v[0].y, box.v[0].y);
@@ -71,12 +71,12 @@ struct X_BoundBox
         dest.v[1].z = std::max(v[1].z, box.v[1].z);
     }
 
-    X_BoundBoxPlaneFlags determinePlaneClipFlags(const Plane& plane) const;
-    X_BoundBoxFrustumFlags determineFrustumClipFlags(const X_Frustum& frustum, X_BoundBoxFrustumFlags parentFlags) const;
+    BoundBoxPlaneFlags determinePlaneClipFlags(const Plane& plane) const;
+    BoundBoxFrustumFlags determineFrustumClipFlags(const X_Frustum& frustum, BoundBoxFrustumFlags parentFlags) const;
 
     void print() const;
 
-    static bool clipAgainstFrustumPlane(X_BoundBoxFrustumFlags flags, int planeId)
+    static bool clipAgainstFrustumPlane(BoundBoxFrustumFlags flags, int planeId)
     {
         return flags & (1 << planeId);
     }

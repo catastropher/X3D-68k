@@ -215,7 +215,7 @@ static bool try_move(X_BoxCollider* collider, X_BspLevel* level)
     return 1;
 }
 
-void x_boxcollider_init(X_BoxCollider* collider, X_BoundBox* boundBox, X_BoxColliderFlags flags)
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, X_BoxColliderFlags flags)
 {
     static Vec3 gravity = { 0, x_fp16x16_from_float(0.25), 0 };
     

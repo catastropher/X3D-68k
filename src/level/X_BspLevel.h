@@ -139,8 +139,8 @@ typedef struct X_BspNode
     // Common with X_BspLeaf - DO NOT REORDER
     X_BspLeafContents contents;
     int lastVisibleFrame;
-    X_BoundBox nodeBoundBox;
-    X_BoundBox geoBoundBox;
+    BoundBox nodeBoundBox;
+    BoundBox geoBoundBox;
     struct X_BspNode* parent;
     
     // Unique elements for node
@@ -158,8 +158,8 @@ typedef struct X_BspLeaf
     // Common with X_BspNode - DO NOT REOREDER
     X_BspLeafContents contents;
     int lastVisibleFrame;
-    X_BoundBox nodeBoundBox;
-    X_BoundBox geoBoundBox;
+    BoundBox nodeBoundBox;
+    BoundBox geoBoundBox;
     struct X_BspNode* parent;
     
     // Unique elements for leaf
@@ -184,7 +184,7 @@ typedef struct X_BspClipNode
 
 typedef struct X_BspModel
 {
-    X_BoundBox boundBox;
+    BoundBox boundBox;
     X_BspNode* rootBspNode;
     int clipNodeRoots[3];
     

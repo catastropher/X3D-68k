@@ -383,11 +383,11 @@ void x_ae_context_add_level_polygon(X_AE_Context* context,
                                     int* edgeIds,
                                     int totalEdges,
                                     X_BspSurface* bspSurface,
-                                    X_BoundBoxFrustumFlags geoFlags,
+                                    BoundBoxFrustumFlags geoFlags,
                                     int bspKey
                                    );
 
-void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey);
+void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
 
 
 void x_ae_context_scan_edges(X_AE_Context* context);

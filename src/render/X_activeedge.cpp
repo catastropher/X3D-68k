@@ -126,7 +126,7 @@ void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2
     }
 }
 
-bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, X_BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ)
+bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ)
 {
     Vec3 clippedV[X_POLYGON3_MAX_VERTS];
     LevelPolygon3 clipped(clippedV, X_POLYGON3_MAX_VERTS, dest->edgeIds);
@@ -146,7 +146,7 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
 }
 
 // TODO: check whether edgeIds is NULL
-void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
+void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
     Vec3 firstVertex = MakeVec3(polygon->vertices[0]);
     
@@ -192,7 +192,7 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
     }
 }
 
-void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
+void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     x_ae_surface_reset_current_parent(context);
     
@@ -206,7 +206,7 @@ void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, in
     x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
 
-static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
+static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     if(!x_bspnode_is_visible_this_frame(node, context->renderContext->currentFrame))
         return;
@@ -236,7 +236,7 @@ static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, P
     x_ae_context_add_submodel_polygon_recursive(context, &back, node->backChild, backEdges, bspSurface, geoFlags, bspKey);
 }
 
-void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey)
+void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     x_ae_surface_reset_current_parent(context);
     

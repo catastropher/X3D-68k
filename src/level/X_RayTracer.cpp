@@ -149,7 +149,7 @@ bool visit_node(X_RayTracer* trace, int clipNodeId, Vec3* start, x_fp16x16 start
     return explore_both_sides_of_node(trace, node, start, startT, end, endT, plane, intersectionT, startDist);
 }
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, X_BoundBox* boundBox)
+void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox)
 {
     trace->modelOrigin = &model->origin;
     trace->level = level;

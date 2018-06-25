@@ -17,7 +17,7 @@
 #include "X_Plane.h"
 #include "X_Frustum.h"
 
-X_BoundBoxPlaneFlags X_BoundBox::determinePlaneClipFlags(const Plane& plane) const
+BoundBoxPlaneFlags BoundBox::determinePlaneClipFlags(const Plane& plane) const
 {
     int px = (plane.normal.x > 0 ? 1 : 0);
     int py = (plane.normal.y > 0 ? 1 : 0);
@@ -43,21 +43,21 @@ X_BoundBoxPlaneFlags X_BoundBox::determinePlaneClipFlags(const Plane& plane) con
 }
 
 // Based on an algorithm described at http://www.txutxi.com/?p=584
-X_BoundBoxFrustumFlags X_BoundBox::determineFrustumClipFlags(const X_Frustum& frustum, X_BoundBoxFrustumFlags parentFlags) const
+BoundBoxFrustumFlags BoundBox::determineFrustumClipFlags(const X_Frustum& frustum, BoundBoxFrustumFlags parentFlags) const
 {
     if(parentFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
         return X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM;
     
-    X_BoundBoxFrustumFlags newFlags = (X_BoundBoxFrustumFlags)0;
+    BoundBoxFrustumFlags newFlags = (BoundBoxFrustumFlags)0;
     
     for(int i = 0; i < frustum.totalPlanes; ++i)
     {
-        if(!X_BoundBox::clipAgainstFrustumPlane(parentFlags, i))
+        if(!BoundBox::clipAgainstFrustumPlane(parentFlags, i))
         {
             continue;
         }
         
-        X_BoundBoxPlaneFlags planeFlags = determinePlaneClipFlags(frustum.planes[i]);
+        BoundBoxPlaneFlags planeFlags = determinePlaneClipFlags(frustum.planes[i]);
         
         if(planeFlags == X_BOUNDBOX_OUTSIDE_PLANE)
         {
@@ -66,14 +66,14 @@ X_BoundBoxFrustumFlags X_BoundBox::determineFrustumClipFlags(const X_Frustum& fr
         
         if(planeFlags == X_BOUNDBOX_INTERSECT_PLANE)
         {
-            newFlags = (X_BoundBoxFrustumFlags)(newFlags | (1 << i));
+            newFlags = (BoundBoxFrustumFlags)(newFlags | (1 << i));
         }
     }
     
     return newFlags;
 }
 
-void X_BoundBox::print() const
+void BoundBox::print() const
 {
     x_vec3_fp16x16_print(v + 0, "Mins");
     x_vec3_fp16x16_print(v + 1, "Maxs");
