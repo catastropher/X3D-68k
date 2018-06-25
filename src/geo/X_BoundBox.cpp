@@ -17,6 +17,7 @@
 #include "X_Plane.h"
 #include "X_Frustum.h"
 
+template<>
 BoundBoxPlaneFlags BoundBox::determinePlaneClipFlags(const Plane& plane) const
 {
     int px = (plane.normal.x > 0 ? 1 : 0);
@@ -43,6 +44,7 @@ BoundBoxPlaneFlags BoundBox::determinePlaneClipFlags(const Plane& plane) const
 }
 
 // Based on an algorithm described at http://www.txutxi.com/?p=584
+template<>
 BoundBoxFrustumFlags BoundBox::determineFrustumClipFlags(const X_Frustum& frustum, BoundBoxFrustumFlags parentFlags) const
 {
     if(parentFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)
@@ -73,6 +75,7 @@ BoundBoxFrustumFlags BoundBox::determineFrustumClipFlags(const X_Frustum& frustu
     return newFlags;
 }
 
+template<>
 void BoundBox::print() const
 {
     x_vec3_fp16x16_print(v + 0, "Mins");

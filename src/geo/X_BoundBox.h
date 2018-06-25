@@ -36,20 +36,21 @@ typedef enum BoundBoxFrustumFlags
     X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM = 0,
 } BoundBoxFrustumFlags;
 
-struct BoundBox
+template<typename T>
+struct BoundBoxTemplate
 {
-    BoundBox()
+    BoundBoxTemplate()
     {
-        v[0].x = 0x7FFFFFFF;
-        v[0].y = 0x7FFFFFFF;
-        v[0].z = 0x7FFFFFFF;
+        v[0].x = maxValue<T>();
+        v[0].y = maxValue<T>();
+        v[0].z = maxValue<T>();
 
-        v[1].x = -0x7FFFFFFF;
-        v[1].y = -0x7FFFFFFF;
-        v[1].z = -0x7FFFFFFF;
+        v[1].x = minValue<T>();
+        v[1].y = minValue<T>();
+        v[1].z = minValue<T>();
     }
 
-    void addPoint(const Vec3& point)
+    void addPoint(const Vec3Template<T>& point)
     {
         v[0].x = std::min(v[0].x, point.x);
         v[0].y = std::min(v[0].y, point.y);
@@ -60,7 +61,7 @@ struct BoundBox
         v[1].z = std::max(v[1].z, point.z);
     }
 
-    void merge(const BoundBox& box, BoundBox& dest) const
+    void merge(const BoundBoxTemplate& box, BoundBoxTemplate& dest) const
     {
         dest.v[0].x = std::min(v[0].x, box.v[0].x);
         dest.v[0].y = std::min(v[0].y, box.v[0].y);
@@ -81,6 +82,8 @@ struct BoundBox
         return flags & (1 << planeId);
     }
 
-    Vec3 v[2];
+    Vec3Template<T> v[2];
 };
+
+using BoundBox = BoundBoxTemplate<int>;
 

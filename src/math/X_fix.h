@@ -32,7 +32,7 @@ struct fp
 {
     fp() { }
 
-    fp(int val_) : val(val_) { }
+    constexpr fp(int val_) : val(val_) { }
     
     friend fp operator+(fp a, fp b);
     friend fp operator+(fp a, int b);
