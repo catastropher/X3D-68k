@@ -17,6 +17,7 @@
 
 #include "engine/X_Engine.h"
 #include "engine/X_init.h"
+#include "util/X_StopWatch.hpp"
 
 template<typename T>
 class Game
@@ -82,10 +83,25 @@ protected:
     {
         do
         {
+            StopWatch::start("total");
+
             static_cast<T*>(this)->handleKeys();
+
+            StopWatch::start("rendering");
+
             static_cast<T*>(this)->renderView();
+
+            StopWatch::stop("rendering");
+
             static_cast<T*>(this)->renderHud();
+
+            StopWatch::start("update-screen");
+
             static_cast<T*>(this)->updateScreen();
+
+            StopWatch::stop("update-screen");
+
+            StopWatch::stop("total");
         } while(!done);
     }
 

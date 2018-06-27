@@ -156,6 +156,7 @@ set(X_SOURCES
     # util
     src/util/X_Json.cpp
     src/util/X_JsonParser.cpp
+    src/util/X_StopWatch.cpp
     src/util/X_util.cpp
 )
 

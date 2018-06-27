@@ -35,6 +35,8 @@ private:
         context.engineContext = getInstance();
         
         ::init(&context, nullptr, getConfig());
+
+        x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
     }
 
     void renderView()

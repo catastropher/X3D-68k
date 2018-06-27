@@ -119,6 +119,7 @@
 // util
 #include "util/X_Json.hpp"
 #include "util/X_util.h"
+#include "util/X_StopWatch.hpp"
 
 #ifdef X_SDL_SUPPORT
 #include "util/X_sdl.h"

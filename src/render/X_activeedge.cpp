@@ -24,6 +24,7 @@
 #include "render/X_Renderer.h"
 #include "engine/X_EngineContext.h"
 #include "object/X_CameraObject.h"
+#include "util/X_StopWatch.hpp"
 
 int g_sortCount;
 int g_stackCount;
@@ -477,6 +478,8 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     // Don't bother removing the edges from the last scanline
     context->newEdges[x_screen_h(context->screen) - 1].deleteHead = NULL;
+
+    StopWatch::start("scan-active-edge");
     
     if((context->renderContext->renderer->renderMode & 2) != 0)
     {
@@ -502,8 +505,12 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         }
     }
 
+    StopWatch::stop("scan-active-edge");
+
     if((context->renderContext->renderer->renderMode & 1) == 0)
         return;
+
+    StopWatch::start("render-spans");
 
     for(X_AE_Surface* surface = context->surfaces.begin(); surface != context->surfaces.end(); ++surface)
     {
@@ -514,6 +521,8 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         x_ae_surfacerendercontext_init(&surfaceRenderContext, surface, context->renderContext, context->renderContext->renderer->mipLevel);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
+
+    StopWatch::stop("render-spans");
 }
 
 bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)

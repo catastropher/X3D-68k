@@ -23,6 +23,7 @@
 #include "engine/X_Engine.h"
 #include "system/X_File.h"
 #include "object/X_CameraObject.h"
+#include "util/X_StopWatch.hpp"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
@@ -327,7 +328,10 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
     //if((renderer->renderMode & 2) != 0)
     x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
     
+    StopWatch::start("traverse-level");
     x_cameraobject_render(cam, &renderContext);
+    StopWatch::stop("traverse-level");
+
     x_ae_context_scan_edges(&renderer->activeEdgeContext);
 }
 
