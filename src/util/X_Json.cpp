@@ -39,7 +39,7 @@ JsonValue::~JsonValue()
             break;
 
         case JSON_STRING:
-            stringValue.~String();
+            stringValue.~XString();
             break;
 
         default:
@@ -65,9 +65,9 @@ int fromJson<int>(JsonValue& value)
     }
 }
 
-static void stringifyValue(JsonValue* value, bool pretty, int indent, String& dest);
+static void stringifyValue(JsonValue* value, bool pretty, int indent, XString& dest);
 
-static void stringifyArray(JsonValue* value, bool pretty, int indent, String& dest)
+static void stringifyArray(JsonValue* value, bool pretty, int indent, XString& dest)
 {
     dest.push_back('[');
 
@@ -108,7 +108,7 @@ static void stringifyArray(JsonValue* value, bool pretty, int indent, String& de
     dest.push_back(']');
 }
 
-static void stringifyEscapedString(String& str, String& dest)
+static void stringifyEscapedXString(XString& str, XString& dest)
 {
     dest.push_back('"');
 
@@ -141,7 +141,7 @@ static void stringifyEscapedString(String& str, String& dest)
     dest.push_back('"');
 }
 
-static void stringifyObject(JsonValue* value, bool pretty, int indent, String& dest)
+static void stringifyObject(JsonValue* value, bool pretty, int indent, XString& dest)
 {
     dest.push_back('{');
 
@@ -161,7 +161,7 @@ static void stringifyObject(JsonValue* value, bool pretty, int indent, String& d
             }
         }
 
-        stringifyEscapedString(pairs[i].key, dest);
+        stringifyEscapedXString(pairs[i].key, dest);
 
         dest.push_back(':');
 
@@ -191,14 +191,14 @@ static void stringifyObject(JsonValue* value, bool pretty, int indent, String& d
     dest.push_back('}');
 }
 
-static void stringifyValue(JsonValue* value, bool pretty, int indent, String& dest)
+static void stringifyValue(JsonValue* value, bool pretty, int indent, XString& dest)
 {
     char buf[32];
 
     switch(value->type)
     {
         case JSON_STRING:
-            stringifyEscapedString(value->stringValue, dest);
+            stringifyEscapedXString(value->stringValue, dest);
             break;
 
         case JSON_ARRAY:
@@ -232,9 +232,9 @@ static void stringifyValue(JsonValue* value, bool pretty, int indent, String& de
     }
 }
 
-String Json::stringify(JsonValue* value, bool pretty)
+XString Json::stringify(JsonValue* value, bool pretty)
 {
-    String res;
+    XString res;
     stringifyValue(value, pretty, 0, res);
 
     return res;

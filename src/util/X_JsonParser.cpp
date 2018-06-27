@@ -28,7 +28,7 @@ JsonValue* JsonParser::parseValue()
     switch(*next)
     {
         case '"':
-            return parseString();
+            return parseXString();
 
         case '[':
             return parseArray();
@@ -53,10 +53,10 @@ JsonValue* JsonParser::parseValue()
     }
 }
 
-JsonValue* JsonParser::parseString()
+JsonValue* JsonParser::parseXString()
 {
     JsonValue* stringValue = Json::newValue(JSON_STRING);
-    parseStringLiteral(stringValue->stringValue);
+    parseXStringLiteral(stringValue->stringValue);
 
     return stringValue;
 }
@@ -116,9 +116,9 @@ JsonValue* JsonParser::parseObject()
             break;
         }
 
-        KeyValuePair<String, JsonValue*> pair;
+        KeyValuePair<XString, JsonValue*> pair;
 
-        parseStringLiteral(pair.key);
+        parseXStringLiteral(pair.key);
         skipWhitespace();
         expect(':');
         skipWhitespace();
@@ -195,7 +195,7 @@ JsonValue* JsonParser::parseNull()
     return &JsonValue::nullValue;
 }
 
-void JsonParser::parseStringLiteral(String& dest)
+void JsonParser::parseXStringLiteral(XString& dest)
 {
     expect('"');
 

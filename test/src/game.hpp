@@ -17,6 +17,8 @@
 
 #include "Context.h"
 #include "init.h"
+#include "render.h"
+#include "keys.h"
 
 class TestGame : public Game<TestGame>
 {

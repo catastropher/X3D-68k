@@ -17,8 +17,6 @@
 
 #include "render/X_Texture.h"
 
-#include "platform/pc/X_PcPlatform.hpp"
-
 // Enables colord output for different types of logging
 #define X_ENABLE_COLOR_LOG 1
 
@@ -41,7 +39,13 @@
 #define X_SDL_SUPPORT
 
 #ifndef __nspire__
+#include "platform/pc/X_PcPlatform.hpp"
 using Platform = PcPlatform;
+#endif
+
+#ifdef __nspire__
+#include "platform/nspire/X_NspirePlatform.hpp"
+using Platform = NspirePlatform;
 #endif
 
 struct ConsoleConfig

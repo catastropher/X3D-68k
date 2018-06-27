@@ -32,7 +32,7 @@ public:
 
 private:
     JsonValue* parseValue();
-    JsonValue* parseString();
+    JsonValue* parseXString();
     JsonValue* parseObject();
     JsonValue* parseArray();
     JsonValue* parseNumber();
@@ -40,7 +40,7 @@ private:
     JsonValue* parseFalse();
     JsonValue* parseNull();
 
-    void parseStringLiteral(String& dest);
+    void parseXStringLiteral(XString& dest);
 
     void skipWhitespace();
 

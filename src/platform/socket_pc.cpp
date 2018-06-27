@@ -214,12 +214,12 @@ static bool pcsocket_receive_packet(PcSocket* sock)
     return 1;
 }
 
-static bool extract_address(const char* addressString, ConnectionAddress* dest)
+static bool extract_address(const char* addressXString, ConnectionAddress* dest)
 {
     char address[X_NET_ADDRESS_MAX_LENGTH];
     int port;
     
-    if(!x_net_extract_address_and_port(addressString, address, &port))
+    if(!x_net_extract_address_and_port(addressXString, address, &port))
         return 0;
     
     int ipAddress = inet_addr(address);
@@ -232,10 +232,10 @@ static bool extract_address(const char* addressString, ConnectionAddress* dest)
     return 1;
 }
 
-static bool socket_open(X_Socket* socket, const char* addressString)
+static bool socket_open(X_Socket* socket, const char* addressXString)
 {
     ConnectionAddress address;
-    if(!extract_address(addressString, &address))
+    if(!extract_address(addressXString, &address))
     {
         socket->error = X_SOCKETERROR_BAD_ADDRESS;
         return 0;

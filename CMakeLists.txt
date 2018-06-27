@@ -190,6 +190,7 @@ if(${XTARGET} STREQUAL "nspire")
         src/render/X_span_arm.s
         src/platform/platform_nspire.cpp
         src/platform/socket_nspire.cpp
+        src/platform/nspire/X_NspireScreenDriver.cpp
     )
 endif()
 

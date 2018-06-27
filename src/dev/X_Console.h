@@ -48,7 +48,7 @@ typedef struct X_ConsoleVar
         float* floatPtr;
         x_fp16x16* fp16x16Ptr;
         bool* boolPtr;
-        X_String* stringPtr;
+        X_XString* stringPtr;
         void* voidPtr;
     };    
 } X_ConsoleVar;
@@ -90,7 +90,7 @@ typedef struct X_Console
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;
-    X_String commandHistory[X_CONSOLE_COMMAND_HISTORY_SIZE];
+    X_XString commandHistory[X_CONSOLE_COMMAND_HISTORY_SIZE];
     int commandHistorySize;
     int commandHistoryPos;
     

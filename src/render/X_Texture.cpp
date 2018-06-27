@@ -47,7 +47,7 @@ bool X_Texture::loadFromFile(const char* fileName)
     }
     
     char signature[5];
-    reader.readFixedLengthString(signature, 4);
+    reader.readFixedLengthXString(signature, 4);
     
     if(strcmp(signature, "XTEX") != 0)
     {

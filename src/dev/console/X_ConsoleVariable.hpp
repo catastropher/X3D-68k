@@ -23,7 +23,7 @@ struct ConsoleVariable
     ConsoleVariable(const char* name_) : name(name_), next(nullptr) { }
 
     virtual bool trySetValue(const char* value) = 0;
-    virtual void toString(String& dest) const = 0;
+    virtual void toXString(XString& dest) const = 0;
     virtual const char* getTypeName() const = 0;
 
     const char* name;

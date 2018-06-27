@@ -52,7 +52,7 @@ public:
     template<typename T>
     T read();
 
-    void readFixedLengthString(char* dest, int length)
+    void readFixedLengthXString(char* dest, int length)
     {
         readArray<char>(dest, length);
         dest[length] = '\0';

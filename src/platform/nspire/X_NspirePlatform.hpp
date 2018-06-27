@@ -15,20 +15,30 @@
 
 #pragma once
 
-#include <string>
+#include "X_NspireScreenDriver.hpp"
+#include "engine/X_init.h"
+#include "error/X_log.h"
 
-#include "X_Allocator.hpp"
-
-using XString = std::basic_string<char, std::char_traits<char>, XAllocator<char>>;
-
-typedef struct X_XString
+class NspirePlatform
 {
-    char* data;
-} X_XString;
+public:
+    void init(X_Config& config)
+    {
+        x_log("Initializing nspire platform");
+        screenDriver.init(config);
+    }
 
-void x_string_init(X_XString* str, const char* initialValue);
-void x_string_cleanup(X_XString* str);
-X_XString* x_string_assign(X_XString* str, const char* value);
-X_XString* x_string_concat(X_XString* strToAppendTo, const X_XString* strToAppend);
-X_XString* x_string_concat_cstr(X_XString* strToAppendTo, const char* strToAppend);
+    void cleanup()
+    {
+        screenDriver.cleanup();
+    }
+
+    NspireScreenDriver& getScreenDriver()
+    {
+        return screenDriver;
+    }
+
+private:
+    NspireScreenDriver screenDriver;
+};
 

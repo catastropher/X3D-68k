@@ -34,7 +34,7 @@
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
 
-static X_String g_searchPaths;
+static X_XString g_searchPaths;
 static char g_programPath[256];
 
 
