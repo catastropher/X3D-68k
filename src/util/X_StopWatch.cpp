@@ -13,16 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <sys/time.h>
+
 #include "X_StopWatch.hpp"
 #include "dev/X_Console.h"
 #include "engine/X_EngineContext.h"
 
 StopWatchEntry StopWatch::entries[X_STOPWATCH_MAX_ENTRIES];
-int StopWatch::totalEntries;
+int StopWatch::totalEntries = 0;
 
 static long long getTime()
 {
-    return clock();
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+
+    return (long long)1000000 * tv.tv_sec + tv.tv_usec;
+    //return clock();
 }
 
 void StopWatch::start(const char* name)
@@ -86,9 +92,11 @@ void StopWatch::stopwatchCmd(X_EngineContext* engineContext, int argc, char* arg
 
     for(int i = 0; i < totalEntries; ++i)
     {
+
+
         x_console_printf(
             engineContext->getConsole(),
-            "%30s    %.3f%%\n",
+            "%s   %.3f%%\n",
             entries[i].name,
             (float)entries[i].totalTicks / total->totalTicks * 100);
 

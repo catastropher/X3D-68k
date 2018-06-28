@@ -28,6 +28,8 @@ void x_platform_init(X_EngineContext* engineContext, X_Config* config)
 {
     x_sdl_init_keys(engineContext, 0);
     init_net();
+
+    Log::info("Initialized nspire\n");
 }
 
 void x_platform_cleanup(X_EngineContext* engineContext)

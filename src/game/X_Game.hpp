@@ -81,6 +81,7 @@ protected:
 
     void gameloop()
     {
+
         do
         {
             StopWatch::start("total");
@@ -89,11 +90,11 @@ protected:
 
             StopWatch::start("rendering");
 
-            static_cast<T*>(this)->renderView();
+             static_cast<T*>(this)->renderView();
 
             StopWatch::stop("rendering");
 
-            static_cast<T*>(this)->renderHud();
+             static_cast<T*>(this)->renderHud();
 
             StopWatch::start("update-screen");
 

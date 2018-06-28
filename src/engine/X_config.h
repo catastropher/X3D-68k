@@ -29,6 +29,8 @@
 // Extension to automatically add to all files that are opened for reading
 #ifdef __nspire__
 #define X_FILE_AUTO_ADDED_EXTENSION ".tns"
+#else
+#define X_FILE_AUTO_ADDED_EXTENSION ""
 #endif
 
 // Nspire has no implementation of clock() so we use SDL_GetTicks()
@@ -87,7 +89,7 @@ struct SystemConfig
 {
     const char* programPath = nullptr;
     const char* logFile = "engine.log";
-    int hunkSize = 8 * 1024 * 1024;
+    int hunkSize = 4 * 1024 * 1024;
     int zoneSize = 1024 * 1024;
     bool enableLogging = true;
 };

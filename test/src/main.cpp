@@ -39,14 +39,16 @@ int main(int argc, char* argv[])
 
     initSystem(sysConfig);
 
-    int size;
-    char* data = FileReader::readWholeFile("../settings.json", size);
+    Log::info("Hello world!!!!!!!!!!!!!!\n");
+
+    // int size;
+    // char* data = FileReader::readWholeFile("../settings.json", size);
 
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");
 
-    int screenW = 640;
-    int screenH = 480;
+    int screenW = 320;
+    int screenH = 240;
 
     ScreenConfig screenConfig = ScreenConfig()
         .fieldOfView(X_ANG_60)
@@ -60,6 +62,8 @@ int main(int argc, char* argv[])
 
     TestGame game(config);
     game.run();
+
+    MemoryManager::cleanup();
 
     x_log_cleanup();
 }

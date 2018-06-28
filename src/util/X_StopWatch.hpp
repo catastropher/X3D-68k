@@ -31,6 +31,11 @@ struct StopWatchEntry
 class StopWatch
 {
 public:
+    static void init()
+    {
+        totalEntries = 0;
+    }
+
     static void start(const char* name);
     static void stop(const char* name);
 

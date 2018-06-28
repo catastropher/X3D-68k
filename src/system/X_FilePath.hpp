@@ -44,6 +44,13 @@ public:
         return *this;
     }
 
+    FilePath& append(const char* str)
+    {
+        strcat(path, str);
+
+        return *this;
+    }
+
     void getFilename(const char* dest);
     void splitFilename(const char* nameDest, const char* extensionDest);
     FilePath& replaceFilename(const char* newFileName);

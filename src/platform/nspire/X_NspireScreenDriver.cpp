@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_NspireScreenDriver.hpp"
+#include "error/X_log.h"
 
 extern "C"
 {
@@ -22,8 +23,14 @@ extern "C"
 
 void NspireScreenDriver::init(X_Config& config)
 {
+    SDL_Init(SDL_INIT_VIDEO);
+
+    lcd_init(SCR_320x240_8);
+    memset(REAL_SCREEN_BASE_ADDRESS, 255, 320 * 240);  
     saveOldPalette();
     setPalette(x_palette_get_quake_palette());
+
+    Log::info("Init nspire screen");
 }
 
 void NspireScreenDriver::cleanup()
