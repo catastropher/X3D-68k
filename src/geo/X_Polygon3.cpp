@@ -102,55 +102,55 @@ void Polygon3::splitAlongPlane(const Plane& plane, int* edgeIds, Polygon3& front
     frontSide.totalVertices = 0;
     backSide.totalVertices = 0;
     
-    // x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
-    // bool in = dot >= -plane.d;
+    fp dot = plane.normal.dot(vertices[0]);
+    bool in = dot >= -plane.d;
     
-    // for(int i = 0; i < totalVertices; ++i)
-    // {
-    //     int next = (i + 1 < totalVertices ? i + 1 : 0);
+    for(int i = 0; i < totalVertices; ++i)
+    {
+        int next = (i + 1 < totalVertices ? i + 1 : 0);
         
-    //     if(in)
-    //     {
-    //         frontSide.vertices[frontSide.totalVertices++] = vertices[i];
-    //         *frontEdgeIds++ = 0;//edgeIds[i];
-    //     }
-    //     else
-    //     {
-    //         backSide.vertices[backSide.totalVertices++] = vertices[i];
-    //         *backEdgeIds++ = 0;//edgeIds[i];
-    //     }
+        if(in)
+        {
+            frontSide.vertices[frontSide.totalVertices++] = vertices[i];
+            *frontEdgeIds++ = 0;//edgeIds[i];
+        }
+        else
+        {
+            backSide.vertices[backSide.totalVertices++] = vertices[i];
+            *backEdgeIds++ = 0;//edgeIds[i];
+        }
         
-    //     x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
-    //     bool nextIn = nextDot >= -plane.d;
-    //     int dotDiff = nextDot - dot;
+        fp nextDot = plane.normal.dot(vertices[next]);
+        bool nextIn = nextDot >= -plane.d;
+        fp dotDiff = nextDot - dot;
         
-    //     if(in != nextIn && dotDiff != 0)
-    //     {
-    //         x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-    //         Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
+        if(in != nextIn && dotDiff != 0)
+        {
+            fp scale = (-plane.d - dot) / dotDiff;
+            Ray3 ray(vertices[i], vertices[next]);
             
-    //         x_ray3_lerp(&ray, scale, frontSide.vertices + frontSide.totalVertices);
-    //         backSide.vertices[backSide.totalVertices] = frontSide.vertices[frontSide.totalVertices];
+            frontSide.vertices[frontSide.totalVertices] = ray.lerp(scale);
+            backSide.vertices[backSide.totalVertices] = frontSide.vertices[frontSide.totalVertices];
             
             
-    //         if(in)
-    //         {
-    //             *frontEdgeIds++ = 0;    // Create a new edge
-    //             *backEdgeIds++ = 0;
-    //         }
-    //         else
-    //         {
-    //             *frontEdgeIds++ = 0;// edgeIds[i];
-    //             *backEdgeIds++ = 0;//edgeIds[i];
-    //         }
+            if(in)
+            {
+                *frontEdgeIds++ = 0;    // Create a new edge
+                *backEdgeIds++ = 0;
+            }
+            else
+            {
+                *frontEdgeIds++ = 0;// edgeIds[i];
+                *backEdgeIds++ = 0;//edgeIds[i];
+            }
             
-    //         ++frontSide.totalVertices;
-    //         ++backSide.totalVertices;
-    //     }
+            ++frontSide.totalVertices;
+            ++backSide.totalVertices;
+        }
         
-    //     dot = nextDot;
-    //     in = nextIn;        
-    // }    
+        dot = nextDot;
+        in = nextIn;        
+    }    
 }
 
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color)
