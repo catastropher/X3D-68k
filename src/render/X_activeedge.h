@@ -74,6 +74,12 @@ struct X_AE_Surface
             centerX * zInverseXStep -
             centerY * zInverseYStep;
     }
+
+    void removeFromSurfaceStack()
+    {
+        prev->next = next;
+        next->prev = prev;
+    }
     
     int bspKey;
     int id;
@@ -235,8 +241,25 @@ struct X_AE_Context
     
     X_BspModel* currentModel;
     X_AE_Surface* currentParent;
-    
+
+    void addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addLevelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+
+    // !-- To be made private --!
+    X_AE_Edge* getCachedEdge(X_BspEdge* edge, int currentFrame) const;
+    X_AE_Surface* createSurface(X_BspSurface* bspSurface, int bspKey);
+    void emitEdges(X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
+    void addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel);
+    void addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void emitSpan(int left, int right, int y, X_AE_Surface* surface);
+
+    void processEdge(X_AE_Edge* edge, int y);
+    void addActiveEdge(X_AE_Edge* edge, int y);
+    void processEdges(int y);
+
 private:
+    
+
     void initSentinalEdges()
     {
         leftEdge.x = -0x7FFFFFFF;
@@ -372,22 +395,10 @@ private:
     // FIXME
     friend void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
     friend void x_ae_context_scan_edges(X_AE_Context* context);
-    friend void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
 };
 
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
-
-void x_ae_context_add_level_polygon(X_AE_Context* context,
-                                    X_BspLevel* level,
-                                    int* edgeIds,
-                                    int totalEdges,
-                                    X_BspSurface* bspSurface,
-                                    BoundBoxFrustumFlags geoFlags,
-                                    int bspKey
-                                   );
-
-void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
 
 
 void x_ae_context_scan_edges(X_AE_Context* context);

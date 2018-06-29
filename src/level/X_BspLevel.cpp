@@ -279,16 +279,13 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
         
 //        scheduleSurfaceToRender(renderContext, surface->id);
         
-        x_ae_context_add_level_polygon
-        (
-            &renderContext->renderer->activeEdgeContext,
+        renderContext->renderer->activeEdgeContext.addLevelPolygon(
             renderContext->level,
             level->surfaceEdgeIds + surface->firstEdgeId,
             surface->totalEdges,
             surface,
             geoFlags,
-            x_bsplevel_current_bspkey(renderContext->level)
-        );        
+            x_bsplevel_current_bspkey(renderContext->level));        
     }
 }
 
@@ -312,16 +309,13 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
 //         if((!onNormalSide) ^ planeFlipped)
 //            continue;
         
-        x_ae_context_add_submodel_polygon
-        (
-            &renderContext->renderer->activeEdgeContext,
+        renderContext->renderer->activeEdgeContext.addSubmodelPolygon(
             renderContext->level,
             level->surfaceEdgeIds + surface->firstEdgeId,
             surface->totalEdges,
             surface,
             geoFlags,
-            x_bsplevel_current_bspkey(renderContext->level)
-        );        
+            x_bsplevel_current_bspkey(renderContext->level));        
     }
 }
 

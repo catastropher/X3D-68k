@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");
 
-    int screenW = 320;
-    int screenH = 240;
+    int screenW = 640;
+    int screenH = 480;
 
     ScreenConfig screenConfig = ScreenConfig()
         .fieldOfView(X_ANG_60)

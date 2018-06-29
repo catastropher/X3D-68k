@@ -37,6 +37,7 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
     context->renderContext = renderContext;
     
     context->resetActiveEdges();
+    
     context->resetArenas();
     context->resetNewEdges();
 }
@@ -46,12 +47,14 @@ static bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-static X_AE_Edge* get_cached_edge(X_AE_Context* context, X_BspEdge* edge, int currentFrame)
+X_AE_Edge* X_AE_Context::getCachedEdge(X_BspEdge* edge, int currentFrame) const
 {
-    X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)context->edges.begin() + edge->cachedEdgeOffset);
+    X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)edges.begin() + edge->cachedEdgeOffset);
 
     if(aeEdge->frameCreated != currentFrame || aeEdge->bspEdge != edge)
+    {
         return NULL;
+    }
 
     return aeEdge;
 }
@@ -85,35 +88,37 @@ static bool project_polygon3(Polygon3* poly, Mat4x4* viewMatrix, Viewport* viewp
     return 1;
 }
 
-static X_AE_Surface* create_ae_surface(X_AE_Context* context, X_BspSurface* bspSurface, int bspKey)
+X_AE_Surface* X_AE_Context::createSurface(X_BspSurface* bspSurface, int bspKey)
 {
-    X_AE_Surface* surface = context->surfaces.alloc();
+    X_AE_Surface* surface = surfaces.alloc();
 
     surface->last = &surface->spanHead;
     surface->bspKey = bspKey;
     surface->bspSurface = bspSurface;
     surface->crossCount = 0;
     surface->closestZ = 0x7FFFFFFF;
-    surface->modelOrigin = &context->currentModel->origin;
+    surface->modelOrigin = &currentModel->origin;
     
-    if(context->currentParent == NULL)
-        context->currentParent = surface;
+    if(currentParent == NULL)
+    {
+        currentParent = surface;
+    }
     
-    surface->parent = context->currentParent;
+    surface->parent = currentParent;
 
     return surface;
 }
 
-void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
+void X_AE_Context::emitEdges(X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
 {
     for(int i = 0; i < totalVertices; ++i)
     {
         int edgeId = abs(clippedEdgeIds[i]);
-        X_BspEdge* bspEdge = context->renderContext->level->edges + edgeId;
+        X_BspEdge* bspEdge = renderContext->level->edges + edgeId;
 
         if(edgeId != 0)
         {
-            X_AE_Edge* cachedEdge = get_cached_edge(context, bspEdge, context->renderContext->currentFrame);
+            X_AE_Edge* cachedEdge = getCachedEdge(bspEdge, renderContext->currentFrame);
 
             if(cachedEdge != NULL)
             {
@@ -123,7 +128,7 @@ void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2
         }
 
         int next = (i + 1 < totalVertices ? i + 1 : 0);
-        context->addEdge(v2d + i, v2d + next, surface, bspEdge);
+        addEdge(v2d + i, v2d + next, surface, bspEdge);
     }
 }
 
@@ -147,11 +152,11 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
 }
 
 // TODO: check whether edgeIds is NULL
-void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
+void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
     Vec3 firstVertex = MakeVec3(polygon->vertices[0]);
     
-    ++context->renderContext->renderer->totalSurfacesRendered;
+    ++renderContext->renderer->totalSurfacesRendered;
 
     int clippedEdgeIds[X_POLYGON3_MAX_VERTS] = { 0 };
     
@@ -161,19 +166,19 @@ void x_ae_context_add_polygon(X_AE_Context* context, Polygon3* polygon, X_BspSur
     LevelPolygon2 poly2d(v2d, X_POLYGON3_MAX_VERTS, clippedEdgeIds);
     
     x_fp16x16 closestZ;
-    if(!projectAndClipBspPolygon(&levelPoly, context->renderContext, geoFlags, &poly2d, &closestZ))
+    if(!projectAndClipBspPolygon(&levelPoly, renderContext, geoFlags, &poly2d, &closestZ))
         return;
     
-    X_AE_Surface* surface = create_ae_surface(context, bspSurface, bspKey);
+    X_AE_Surface* surface = createSurface(bspSurface, bspKey);
 
     surface->inSubmodel = inSubmodel;
     surface->closestZ = closestZ;
 
     // FIXME: shouldn't be done this way
-    Vec3 camPos = x_cameraobject_get_position(context->renderContext->cam);
+    Vec3 camPos = x_cameraobject_get_position(renderContext->cam);
     
-    surface->calculateInverseZGradient(&camPos, &context->renderContext->cam->viewport, context->renderContext->viewMatrix, &firstVertex);
-    emit_edges(context, surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
+    surface->calculateInverseZGradient(&camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
+    emitEdges(surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 
 static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3* origin)
@@ -193,23 +198,23 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
     }
 }
 
-void x_ae_context_add_level_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addLevelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
-    x_ae_surface_reset_current_parent(context);
+    x_ae_surface_reset_current_parent(this);
     
     InternalPolygon3 polygon;
 
     // FIXME: why is this here?
     polygon.totalVertices = 0;
 
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon, &context->currentModel->origin);
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon, &currentModel->origin);
 
-    x_ae_context_add_polygon(context, &polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
+    addPolygon(&polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
 
-static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
-    if(!x_bspnode_is_visible_this_frame(node, context->renderContext->currentFrame))
+    if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
         return;
     
     if(poly->totalVertices < 3)
@@ -221,7 +226,7 @@ static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, P
             return;
         
         X_BspLeaf* leaf = (X_BspLeaf*)node;
-        x_ae_context_add_polygon(context, poly, bspSurface, geoFlags, edgeIds, leaf->bspKey, 1);
+        addPolygon(poly, bspSurface, geoFlags, edgeIds, leaf->bspKey, true);
         return;
     }
     
@@ -233,28 +238,28 @@ static void x_ae_context_add_submodel_polygon_recursive(X_AE_Context* context, P
     
     poly->splitAlongPlane(node->plane->plane, edgeIds, front, frontEdges, back, backEdges);
     
-    x_ae_context_add_submodel_polygon_recursive(context, &front, node->frontChild, frontEdges, bspSurface, geoFlags, bspKey);
-    x_ae_context_add_submodel_polygon_recursive(context, &back, node->backChild, backEdges, bspSurface, geoFlags, bspKey);
+    addSubmodelRecursive(&front, node->frontChild, frontEdges, bspSurface, geoFlags, bspKey);
+    addSubmodelRecursive(&back, node->backChild, backEdges, bspSurface, geoFlags, bspKey);
 }
 
-void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
-    x_ae_surface_reset_current_parent(context);
+    x_ae_surface_reset_current_parent(this);
     
     InternalPolygon3 poly;
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly, &context->currentModel->origin);
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly, &currentModel->origin);
     
-    x_ae_context_add_submodel_polygon_recursive(context, &poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
+    addSubmodelRecursive(&poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
 }
 
-static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, int y, X_AE_Surface* surface)
+void X_AE_Context::emitSpan(int left, int right, int y, X_AE_Surface* surface)
 {
     if(left == right)
         return;
     
     surface = surface->parent;
 
-    X_AE_Span* span = context->spans.alloc();
+    X_AE_Span* span = spans.alloc();
     
     span->x1 = left;
     span->x2 = right;
@@ -262,12 +267,6 @@ static void x_ae_context_emit_span(X_AE_Context* context, int left, int right, i
     
     surface->last->next = span;
     surface->last = span;
-}
-
-static void remove_from_surface_stack(X_AE_Surface* surface)
-{
-    surface->prev->next = surface->next;
-    surface->next->prev = surface->prev;
 }
 
 // void validate_stack(X_AE_Context* c, const char* msg)
@@ -289,12 +288,12 @@ static void remove_from_surface_stack(X_AE_Surface* surface)
 //     }
 // }
 
-static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* edge, int y)
+void X_AE_Context::processEdge(X_AE_Edge* edge, int y)
 {
     X_AE_Surface* surfaceToEnable = edge->surfaces[X_AE_EDGE_RIGHT_SURFACE];
     X_AE_Surface* surfaceToDisable = edge->surfaces[X_AE_EDGE_LEFT_SURFACE];
 
-    X_AE_Surface* topSurface = context->foreground.next;
+    X_AE_Surface* topSurface = foreground.next;
     
     if(surfaceToDisable != NULL)
     {
@@ -311,18 +310,18 @@ static inline void x_ae_context_process_edge(X_AE_Context* context, X_AE_Edge* e
             // We were on top, so emit the span
             int x = (edge->x) >> 16;
 
-            x_ae_context_emit_span(context, surfaceToDisable->xStart, x, y, surfaceToDisable);
+            emitSpan(surfaceToDisable->xStart, x, y, surfaceToDisable);
             
             topSurface->next->xStart = x;
         }
         
-        remove_from_surface_stack(surfaceToDisable);
+        surfaceToDisable->removeFromSurfaceStack();
     }
 
 enable:
     if(surfaceToEnable != NULL)
     {
-        topSurface = context->foreground.next;
+        topSurface = foreground.next;
         
         // Make sure the edges didn't cross
         if(++surfaceToEnable->crossCount != 1)
@@ -358,12 +357,12 @@ enable:
         search->prev = surfaceToEnable;
 
         // Are we the top surface now?
-        if(context->foreground.next == surfaceToEnable)
+        if(foreground.next == surfaceToEnable)
         {
             // Yes, emit span for the old top
             int x = edge->x >> 16;
 
-            x_ae_context_emit_span(context, topSurface->xStart, x, y, topSurface);
+            emitSpan(topSurface->xStart, x, y, topSurface);
 
             surfaceToEnable->xStart = x;
             //context->foreground.next = surfaceToEnable;
@@ -371,9 +370,9 @@ enable:
     }
 }
 
-static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge* edge, int y)
+void X_AE_Context::addActiveEdge(X_AE_Edge* edge, int y)
 {
-    x_ae_context_process_edge(context, edge, y);
+    processEdge(edge, y);
 
     // Advance the edge
     edge->x += edge->xSlope;
@@ -392,22 +391,22 @@ static inline void x_ae_context_add_active_edge(X_AE_Context* context, X_AE_Edge
     }
 }
 
-static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
+void X_AE_Context::processEdges(int y)
 {
-    context->background.crossCount = 1;
-    context->background.xStart = 0;
-    context->foreground.next = &context->background;
-    context->foreground.prev = NULL;
+    background.crossCount = 1;
+    background.xStart = 0;
+    foreground.next = &background;
+    foreground.prev = NULL;
     
-    context->background.next = NULL;
-    context->background.prev = &context->foreground;
+    background.next = NULL;
+    background.prev = &foreground;
 
-    X_AE_Edge* activeEdge = context->leftEdge.next;
+    X_AE_Edge* activeEdge = leftEdge.next;
 
-    X_AE_Edge* newEdge = context->newEdges[y].next;
+    X_AE_Edge* newEdge = newEdges[y].next;
 
     
-    while(newEdge != &context->newRightEdge)
+    while(newEdge != &newRightEdge)
     {
         while(activeEdge->x <= newEdge->x)
             activeEdge = activeEdge->next;
@@ -424,15 +423,15 @@ static inline void x_ae_context_process_edges(X_AE_Context* context, int y)
     }
     
 
-    for(X_AE_Edge* edge = context->leftEdge.next; edge != &context->rightEdge; )
+    for(X_AE_Edge* edge = leftEdge.next; edge != &rightEdge; )
     {
         X_AE_Edge* next = edge->next;
-        x_ae_context_add_active_edge(context, edge, y);
+        addActiveEdge(edge, y);
         edge = next;
     }
 
 
-    X_AE_Edge* nextDelete = context->newEdges[y].deleteHead;
+    X_AE_Edge* nextDelete = newEdges[y].deleteHead;
 
     while(nextDelete)
     {
@@ -485,7 +484,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
     {
         for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
         {
-            x_ae_context_process_edges(context, i);
+            context->processEdges(i);
 
             // FIXME: temporary fix for disappearing polygons due to crossCount not getting reset
             // on each scanline. Should maybe keep a list of active surfaces to reset. The code below
