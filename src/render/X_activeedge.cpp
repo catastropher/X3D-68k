@@ -25,6 +25,7 @@
 #include "engine/X_EngineContext.h"
 #include "object/X_CameraObject.h"
 #include "util/X_StopWatch.hpp"
+#include "geo/X_Ray3.h"
 
 int g_sortCount;
 int g_stackCount;
@@ -60,26 +61,26 @@ X_AE_Edge* X_AE_Context::getCachedEdge(X_BspEdge* edge, int currentFrame) const
 }
 
 // TODO: no need to project vertices if can just reuse the cached edge
-static bool project_polygon3(Polygon3* poly, Mat4x4* viewMatrix, Viewport* viewport, Polygon2* dest, x_fp16x16* closestZ)
+static bool project_polygon3(Polygon3* poly, Mat4x4* viewMatrix, Viewport* viewport, Polygon2* dest, fp& closestZ)
 {
-    *closestZ = 0x7FFFFFFF;
-    
+    const fp minZ = fp::fromFloat(0.5);
+
+    closestZ = maxValue<fp>();
+
     for(int i = 0; i < poly->totalVertices; ++i)
     {
-        Vec3 transformed = MakeVec3(viewMatrix->transform(poly->vertices[i]));
-        
-        const fp minZ = fp::fromFloat(0.5);
+        Vec3fp transformed = viewMatrix->transform(poly->vertices[i]);
 
-        if(transformed.z < minZ.toFp16x16())
-            transformed.z = minZ.toFp16x16();
+        if(transformed.z < minZ)
+        {
+            transformed.z = minZ;
+        }
         
-        poly->vertices[i] = MakeVec3fp(transformed);
+        poly->vertices[i] = transformed;
         
-        *closestZ = X_MIN(*closestZ, transformed.z);
-        
-        Vec3fp tempTransformed = MakeVec3fp(transformed);
+        closestZ = std::min(closestZ, transformed.z);
 
-        viewport->project(tempTransformed, dest->vertices[i]);
+        viewport->project(transformed, dest->vertices[i]);
         viewport->clampfp(dest->vertices[i]);
     }
     
@@ -132,7 +133,7 @@ void X_AE_Context::emitEdges(X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int tot
     }
 }
 
-bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, x_fp16x16* closestZ)
+bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, fp& closestZ)
 {
     Vec3 clippedV[X_POLYGON3_MAX_VERTS];
     LevelPolygon3 clipped(clippedV, X_POLYGON3_MAX_VERTS, dest->edgeIds);
@@ -151,6 +152,101 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
     return project_polygon3(&clipped, renderContext->viewMatrix, &renderContext->cam->viewport, dest, closestZ);
 }
 
+Vec3fp transform(Mat4x4& mat, Vec3fp& v)
+{
+    const fp minZ = fp::fromFloat(0.5);
+    Vec3fp transformed = mat.transform(v);
+
+    if(transformed.z < minZ)
+    {
+        transformed.z = minZ;
+    }
+
+    return transformed;
+}
+
+void clipRayToPlane(Ray3& ray, Plane& plane, int& clipFlags, Ray3& dest)
+{
+
+}
+
+void clipRayToFrustum(Ray3& ray, X_Frustum& frustum, int& clipFlags, bool& rightClipped, Ray3& dest)
+{
+    ray.clipToFrustum(frustum, dest);
+
+    for(int i = 0; i < frustum.totalPlanes; ++i)
+    {
+        //clipRayToPlane(dest, )
+    }
+}
+
+void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
+                                  BoundBoxFrustumFlags geoFlags,
+                                  int* edgeIds,
+                                  int bspKey,
+                                  bool inSubmodel)
+{
+    auto level = renderContext->level;
+    auto aeSurface = createSurface(bspSurface, bspKey); 
+
+    int vertexIds[32];
+
+    for(int i = 0; i < bspSurface->totalEdges; ++i)
+    {
+        if(!edge_is_flipped(edgeIds[i]))    vertexIds[i] = level->edges[edgeIds[i]].v[0];
+        else                                vertexIds[i] = level->edges[-edgeIds[i]].v[1];
+    }
+
+    fp closestZ = maxValue<fp>();
+
+    Vec3 firstVertex = level->vertices[vertexIds[0]].v;
+
+    for(int i = 0; i < bspSurface->totalEdges; ++i)
+    {
+        auto bspEdge = renderContext->level->edges + abs(edgeIds[i]);
+        // auto cachedEdge = getCachedEdge(bspEdge, renderContext->currentFrame);
+
+        // if(cachedEdge != nullptr)
+        // {
+        //     cachedEdge->emitCachedEdge(aeSurface);
+        //     continue;
+        // }
+
+        int next = (i + 1 < bspSurface->totalEdges ? i + 1 : 0);
+        Ray3 ray(
+            MakeVec3fp(level->vertices[vertexIds[i]].v),
+            MakeVec3fp(level->vertices[vertexIds[next]].v));
+
+        ray.v[0] = transform(*renderContext->viewMatrix, ray.v[0]);
+        ray.v[1] = transform(*renderContext->viewMatrix, ray.v[1]);
+
+        Ray3 clipped;
+        ray.clipToFrustum(*renderContext->viewFrustum, clipped);
+
+        for(int i = 0; i < 2; ++i)
+        {
+            closestZ = std::min(closestZ, clipped.v[i].z);
+        }
+
+        X_Vec2_fp16x16 projected[2];
+
+        for(int i = 0; i < 2; ++i)
+        {
+            renderContext->cam->viewport.project(clipped.v[i], projected[i]);
+            renderContext->cam->viewport.clampfp(projected[i]);
+        }
+
+        addEdge(projected + 0, projected + 1, aeSurface, bspEdge);
+    }
+
+    aeSurface->inSubmodel = false;
+    aeSurface->closestZ = closestZ.toFp16x16();
+
+    Vec3 camPos = x_cameraobject_get_position(renderContext->cam);
+    
+    aeSurface->calculateInverseZGradient(&camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
+}
+
 // TODO: check whether edgeIds is NULL
 void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
@@ -165,14 +261,14 @@ void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, Bound
     X_Vec2_fp16x16 v2d[X_POLYGON3_MAX_VERTS];
     LevelPolygon2 poly2d(v2d, X_POLYGON3_MAX_VERTS, clippedEdgeIds);
     
-    x_fp16x16 closestZ;
-    if(!projectAndClipBspPolygon(&levelPoly, renderContext, geoFlags, &poly2d, &closestZ))
+    fp closestZ;
+    if(!projectAndClipBspPolygon(&levelPoly, renderContext, geoFlags, &poly2d, closestZ))
         return;
     
     X_AE_Surface* surface = createSurface(bspSurface, bspKey);
 
     surface->inSubmodel = inSubmodel;
-    surface->closestZ = closestZ;
+    surface->closestZ = closestZ.toFp16x16();
 
     // FIXME: shouldn't be done this way
     Vec3 camPos = x_cameraobject_get_position(renderContext->cam);
@@ -201,6 +297,12 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
 void X_AE_Context::addLevelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     x_ae_surface_reset_current_parent(this);
+
+    processPolygon(bspSurface, geoFlags, edgeIds, bspKey, false);
+
+    return;
+
+
     
     InternalPolygon3 polygon;
 
@@ -244,6 +346,7 @@ void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* ed
 
 void X_AE_Context::addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
+    return;
     x_ae_surface_reset_current_parent(this);
     
     InternalPolygon3 poly;

@@ -257,6 +257,12 @@ struct X_AE_Context
     void addActiveEdge(X_AE_Edge* edge, int y);
     void processEdges(int y);
 
+    void processPolygon(X_BspSurface* bspSurface,
+                        BoundBoxFrustumFlags geoFlags,
+                        int* edgeIds,
+                        int bspKey,
+                        bool inSubmodel);
+
 private:
     
 
