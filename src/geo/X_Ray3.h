@@ -32,7 +32,7 @@ struct Ray3
         v[1] = end;
     }
 
-    bool clipToPlane(const Plane& plane, Ray3& dest);
+    int clipToPlane(const Plane& plane, Ray3& dest);
     bool clipToFrustum(const X_Frustum& frustum, Ray3& dest) const;
     void render(const X_RenderContext& renderContext, X_Color color) const;
 

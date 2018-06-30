@@ -61,10 +61,10 @@ void Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const 
 
     Vec3fp nearPlaneVertices[4] =
     {
-        nearPlaneCenter + rightTranslation + upTranslation,
-        nearPlaneCenter + rightTranslation - upTranslation,
-        nearPlaneCenter - rightTranslation - upTranslation,
-        nearPlaneCenter - rightTranslation + upTranslation
+        nearPlaneCenter + rightTranslation + upTranslation,     // Right
+        nearPlaneCenter + rightTranslation - upTranslation,     // Bottom
+        nearPlaneCenter - rightTranslation - upTranslation,     // Left
+        nearPlaneCenter - rightTranslation + upTranslation      // Top
     };
 
     // Top, bottom, left, and right planes

@@ -24,6 +24,7 @@
 #include "level/X_BspLevel.h"
 #include "X_span.h"
 #include "X_Viewport.h"
+#include "geo/X_Ray3.h"
 
 #include "memory/X_ArenaAllocator.hpp"
 
@@ -262,6 +263,8 @@ struct X_AE_Context
                         int* edgeIds,
                         int bspKey,
                         bool inSubmodel);
+
+    void addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* surface, X_BspEdge* bspEdge);
 
 private:
     

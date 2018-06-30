@@ -20,50 +20,54 @@
 #include "math/X_Mat4x4.h"
 #include "object/X_CameraObject.h"
 
-bool Ray3::clipToPlane(const Plane& plane, Ray3& dest)
+int Ray3::clipToPlane(const Plane& plane, Ray3& dest)
 {
     fp v0DistToPlane = plane.distanceTo(v[0]);
-    bool v0In = v0DistToPlane > 0;
+    int v0In = v0DistToPlane >= 0;
     
     fp v1DistToPlane = plane.distanceTo(v[1]);
-    bool v1In = v1DistToPlane > 0;
-    
-    // Trivial case: both points inside
-    if(v0In && v1In)
-    {
-        dest = *this;
+    int v1In = v1DistToPlane >= 0;
 
-        return true;
-    }
-    
-    // Trivial case: both points outside
-    if(!v0In && !v1In)
+    int flags = v0In | (v1In << 1);
+    fp t;
+
+    switch(flags)
     {
-        return false;
-    }
+        case 0:
+            break;
+
+        case 1:
+            t = v0DistToPlane / (v0DistToPlane - v1DistToPlane);
     
-    if(!v0In)
-    {
-        std::swap(v[0], v[1]);
-        std::swap(v0DistToPlane, v1DistToPlane);
+            dest.v[1] = lerp(t);
+            dest.v[0] = v[0];
+
+            break;
+
+        case 2:
+            t = v1DistToPlane / (v1DistToPlane - v0DistToPlane);
+    
+            dest.v[0] = lerp(fp(X_FP16x16_ONE) - t);
+            dest.v[1] = v[1];
+
+            break;
+
+        case 3:
+            dest = *this;
+
+            break;
     }
 
-    // One inside and one outside, so need to clip
-    fp t = v0DistToPlane / (v0DistToPlane - v1DistToPlane);
-    
-    dest.v[1] = lerp(t);
-    dest.v[0] = v[0];
-    
-    return true;
+    return flags;
 }
 
 bool Ray3::clipToFrustum(const X_Frustum& frustum, Ray3& dest) const
 {
     dest = *this;
-    
+
     for(int i = 0; i < frustum.totalPlanes ;++i)
     {
-        if(!dest.clipToPlane(frustum.planes[i], dest))
+        if(dest.clipToPlane(frustum.planes[i], dest) == 0)
         {
             return false;
         }
@@ -86,10 +90,10 @@ void Ray3::render(const X_RenderContext& renderContext, X_Color color) const
         transformed.v[i] = renderContext.viewMatrix->transform(clipped.v[i]);
     }
     
-    if(transformed.v[0].z <= 0 || transformed.v[0].z <= 0)
-    {
-        return;
-    }
+    // if(transformed.v[0].z <= 0 || transformed.v[0].z <= 0)
+    // {
+    //     return;
+    // }
     
     X_Vec2 projected[2];
     for(int i = 0; i < 2; ++i)

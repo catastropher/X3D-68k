@@ -152,32 +152,112 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
     return project_polygon3(&clipped, renderContext->viewMatrix, &renderContext->cam->viewport, dest, closestZ);
 }
 
-Vec3fp transform(Mat4x4& mat, Vec3fp& v)
+struct ClipContext
 {
-    const fp minZ = fp::fromFloat(0.5);
-    Vec3fp transformed = mat.transform(v);
-
-    if(transformed.z < minZ)
+    ClipContext(X_Frustum* frustum_)
+        : leftClipped(false),
+        rightClipped(false),
+        frustum(frustum_)
     {
-        transformed.z = minZ;
     }
+
+    bool clipToLeft()
+    {
+        int flags = ray.clipToPlane(frustum->planes[2], ray);
+
+        if(flags == 1)
+        {
+            leftClipped = true;
+            leftEnter = ray.v[1];
+        }
+        else if(flags == 2)
+        {
+            leftClipped = true;
+            leftExit = ray.v[0];
+        }
+
+        return flags != 0;
+    }
+
+    bool clipToRight()
+    {
+        int flags = ray.clipToPlane(frustum->planes[0], ray);
+
+        if(flags == 1)
+        {
+            rightClipped = true;
+            rightEnter = ray.v[1];
+        }
+        else if(flags == 2)
+        {
+            rightClipped = true;
+            rightExit = ray.v[0];
+        }
+
+        return flags != 0;
+    }
+
+    bool clipToTopAndBottom()
+    {
+        return ray.clipToPlane(frustum->planes[1], ray) != 0
+            && ray.clipToPlane(frustum->planes[3], ray) != 0;
+    }
+
+    bool clip()
+    {
+        return clipToLeft()
+            && clipToRight()
+            && clipToTopAndBottom();
+    }
+    
+    Ray3 ray;
+
+    bool leftClipped;
+    bool rightClipped;
+
+    Vec3fp leftEnter;
+    Vec3fp leftExit;
+
+    Vec3fp rightEnter;
+    Vec3fp rightExit;
+
+    X_Frustum* frustum;
+};
+
+Vec3fp transform(Mat4x4& mat, Vec3fp v)
+{
+    Vec3fp transformed = mat.transform(v);
 
     return transformed;
 }
 
-void clipRayToPlane(Ray3& ray, Plane& plane, int& clipFlags, Ray3& dest)
+void X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge)
 {
+    X_Vec2_fp16x16 projected[2];
 
-}
+    X_Vec2_fp16x16 save[2];
 
-void clipRayToFrustum(Ray3& ray, X_Frustum& frustum, int& clipFlags, bool& rightClipped, Ray3& dest)
-{
-    ray.clipToFrustum(frustum, dest);
+    bool neg = false;
 
-    for(int i = 0; i < frustum.totalPlanes; ++i)
+    for(int i = 0; i < 2; ++i)
     {
-        //clipRayToPlane(dest, )
+        const fp minZ = fp::fromFloat(0.5);
+
+        neg |= clipped.v[i].z < 0;
+
+        if(clipped.v[i].z < minZ)
+        {
+            clipped.v[i].z = minZ;
+        }
+
+        renderContext->cam->viewport.project(clipped.v[i], projected[i]);
+
+        save[i] = projected[i];
+
+        renderContext->cam->viewport.clampfp(projected[i]);
     }
+
+    addEdge(projected + 0, projected + 1, aeSurface, bspEdge);
 }
 
 void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
@@ -186,6 +266,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
                                   int bspKey,
                                   bool inSubmodel)
 {
+
     auto level = renderContext->level;
     auto aeSurface = createSurface(bspSurface, bspKey); 
 
@@ -200,6 +281,8 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
     fp closestZ = maxValue<fp>();
 
     Vec3 firstVertex = level->vertices[vertexIds[0]].v;
+
+    ClipContext context(renderContext->viewFrustum);
 
     for(int i = 0; i < bspSurface->totalEdges; ++i)
     {
@@ -217,27 +300,67 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
             MakeVec3fp(level->vertices[vertexIds[i]].v),
             MakeVec3fp(level->vertices[vertexIds[next]].v));
 
-        ray.v[0] = transform(*renderContext->viewMatrix, ray.v[0]);
-        ray.v[1] = transform(*renderContext->viewMatrix, ray.v[1]);
 
-        Ray3 clipped;
-        ray.clipToFrustum(*renderContext->viewFrustum, clipped);
+        context.ray = ray;
+
+        if(!context.clip())
+        {
+            continue;
+        }
+
+        Ray3 clipped = context.ray;
+
+        clipped.v[0] = transform(*renderContext->viewMatrix, clipped.v[0]);
+        clipped.v[1] = transform(*renderContext->viewMatrix, clipped.v[1]);
 
         for(int i = 0; i < 2; ++i)
         {
             closestZ = std::min(closestZ, clipped.v[i].z);
         }
 
-        X_Vec2_fp16x16 projected[2];
-
-        for(int i = 0; i < 2; ++i)
-        {
-            renderContext->cam->viewport.project(clipped.v[i], projected[i]);
-            renderContext->cam->viewport.clampfp(projected[i]);
-        }
-
-        addEdge(projected + 0, projected + 1, aeSurface, bspEdge);
+        addEdgeFromClippedRay(clipped, aeSurface, bspEdge);
     }
+
+    if(context.leftClipped)
+    {
+        Ray3 ray(context.leftEnter, context.leftExit);
+
+        context.ray = ray;
+
+        if(context.clipToTopAndBottom())
+        {
+            ray = context.ray;
+
+            for(int i = 0; i < 2; ++i)
+            {
+                ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
+            }
+
+            addEdgeFromClippedRay(ray, aeSurface, level->edges + 0);
+        }
+    }
+
+    // if(context.rightClipped)
+    // {
+
+    //     Ray3 ray(context.rightEnter, context.rightExit);
+
+    //     context.ray = ray;
+
+    //     if(context.clipToTopAndBottom())
+    //     {
+    //         ray = context.ray;
+
+    //         for(int i = 0; i < 2; ++i)
+    //         {
+    //             ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
+    //         }
+
+    //         right = true;
+    //         //addEdgeFromClippedRay(ray, aeSurface, level->edges + 0);
+    //         print = false;
+    //     }
+    // }
 
     aeSurface->inSubmodel = false;
     aeSurface->closestZ = closestZ.toFp16x16();
@@ -428,7 +551,9 @@ enable:
         
         // Make sure the edges didn't cross
         if(++surfaceToEnable->crossCount != 1)
+        {
             return;
+        }
         
         X_AE_Surface* search;
         if(surfaceToDisable != NULL)
@@ -533,6 +658,31 @@ void X_AE_Context::processEdges(int y)
         edge = next;
     }
 
+    // If there is still a surface on top, we should emit a span for it
+
+    if(foreground.next != &background)
+    {
+        if(639 > foreground.next->xStart)
+        {
+            emitSpan(foreground.next->xStart, 639, y, foreground.next);
+        }
+    }
+
+    // FIXME: temporary fix for disappearing polygons due to crossCount not getting reset
+    // on each scanline. Should maybe keep a list of active surfaces to reset. The code below
+    // may reset the same surface up to 4 times :(
+    for(auto ae = leftEdge.next; ae != &rightEdge; ae = ae->next)
+    {
+        if(ae->surfaces[0])
+        {
+            ae->surfaces[0]->crossCount = 0;
+        }
+
+        if(ae->surfaces[1])
+        {
+            ae->surfaces[1]->crossCount = 0;
+        }
+    }
 
     X_AE_Edge* nextDelete = newEdges[y].deleteHead;
 
@@ -588,22 +738,6 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
         for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
         {
             context->processEdges(i);
-
-            // FIXME: temporary fix for disappearing polygons due to crossCount not getting reset
-            // on each scanline. Should maybe keep a list of active surfaces to reset. The code below
-            // may reset the same surface up to 4 times :(
-            for(auto ae = context->leftEdge.next; ae != &context->rightEdge; ae = ae->next)
-            {
-                if(ae->surfaces[0])
-                {
-                    ae->surfaces[0]->crossCount = 0;
-                }
-
-                if(ae->surfaces[1])
-                {
-                    ae->surfaces[1]->crossCount = 0;
-                }
-            }
         }
     }
 
