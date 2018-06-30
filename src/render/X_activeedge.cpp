@@ -334,33 +334,36 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
             for(int i = 0; i < 2; ++i)
             {
                 ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
+                closestZ = std::min(closestZ, ray.v[i].z);
             }
 
             addEdgeFromClippedRay(ray, aeSurface, level->edges + 0);
         }
     }
 
-    // if(context.rightClipped)
-    // {
+    if(context.rightClipped)
+    {
 
-    //     Ray3 ray(context.rightEnter, context.rightExit);
+        Ray3 ray(context.rightEnter, context.rightExit);
 
-    //     context.ray = ray;
+        context.ray = ray;
 
-    //     if(context.clipToTopAndBottom())
-    //     {
-    //         ray = context.ray;
+        if(context.clipToTopAndBottom())
+        {
+            // ray = context.ray;
 
-    //         for(int i = 0; i < 2; ++i)
-    //         {
-    //             ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
-    //         }
+            for(int i = 0; i < 2; ++i)
+            {
+                ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
+                closestZ = std::min(closestZ, ray.v[i].z);
+            }
 
-    //         right = true;
-    //         //addEdgeFromClippedRay(ray, aeSurface, level->edges + 0);
-    //         print = false;
-    //     }
-    // }
+
+            // right = true;
+            // //addEdgeFromClippedRay(ray, aeSurface, level->edges + 0);
+            // print = false;
+        }
+    }
 
     aeSurface->inSubmodel = false;
     aeSurface->closestZ = closestZ.toFp16x16();
