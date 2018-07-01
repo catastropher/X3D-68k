@@ -18,6 +18,7 @@
 #include "memory/X_String.h"
 #include "math/X_fix.h"
 #include "geo/X_Vec2.h"
+#include "geo/X_Vec3.h"
 #include "render/X_Font.h"
 #include "render/X_Screen.h"
 #include "system/X_Keys.h"
@@ -29,7 +30,8 @@ typedef enum X_ConsoleVarType
     X_CONSOLEVAR_FLOAT,
     X_CONSOLEVAR_FP16X16,
     X_CONSOLEVAR_STRING,
-    X_CONSOLEVAR_BOOL
+    X_CONSOLEVAR_BOOL,
+    X_CONSOLEVAR_VEC3
 } X_ConsoleVarType;
 
 #define X_CONSOLE_INPUT_BUF_SIZE 512
@@ -50,6 +52,7 @@ typedef struct X_ConsoleVar
         bool* boolPtr;
         X_XString* stringPtr;
         void* voidPtr;
+        Vec3fp* vec3Ptr;
     };    
 } X_ConsoleVar;
 

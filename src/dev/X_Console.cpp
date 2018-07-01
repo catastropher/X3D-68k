@@ -156,8 +156,19 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
         case X_CONSOLEVAR_FP16X16:
             *var->fp16x16Ptr = x_fp16x16_from_float(atof(varValue));
             break;
+
         case X_CONSOLEVAR_BOOL:
             *var->boolPtr = (strcmp(varValue, "true") == 0 || atoi(varValue) != 0);
+            break;
+
+        case X_CONSOLEVAR_VEC3:
+            float x, y, z;
+            sscanf(varValue, "%f,%f,%f", &x, &y, &z);
+
+            var->vec3Ptr->x = fp::fromFloat(x);
+            var->vec3Ptr->y = fp::fromFloat(y);
+            var->vec3Ptr->z = fp::fromFloat(z);
+
             break;
     }
 }
@@ -829,6 +840,15 @@ static void print_variable_value(X_Console* console, X_ConsoleVar* var)
             break;
         case X_CONSOLEVAR_BOOL:
             sprintf(varValue, "%s", *var->boolPtr ? "true" : "false");
+            break;
+        case X_CONSOLEVAR_VEC3:
+            sprintf(
+                varValue,
+                "%f,%f,%f",
+                var->vec3Ptr->x.toFloat(),
+                var->vec3Ptr->y.toFloat(),
+                var->vec3Ptr->z.toFloat());
+
             break;
     }
     
