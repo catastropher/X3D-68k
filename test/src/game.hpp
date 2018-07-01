@@ -39,6 +39,8 @@ private:
         ::init(&context, nullptr, getConfig());
 
         x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
+
+        x_console_register_var(context.engineContext->getConsole(), &cam->collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
     }
 
     void renderView()
