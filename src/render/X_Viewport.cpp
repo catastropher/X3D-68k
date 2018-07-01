@@ -84,8 +84,29 @@ void Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const 
 void Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
 {
     // TODO: may be able to get away with multiplying by distToNearPlane / z
-    dest.x = (src.x / src.z * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
-    dest.y = (src.y / src.z * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
+
+    if(src.z < fp::fromFloat(100))
+    {
+        dest.x = (src.x / src.z * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
+        dest.y = (src.y / src.z * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
+    }
+    else
+    {
+        int shiftDown; //16 + shift;// + 16 - shiftUp;
+        int invZ = x_fastrecip_unshift(src.z.toFp16x16(), shiftDown); //x_fastrecip(z); //x_fastrecip_unshift(z, shiftUp);  //
+
+        fp x = (((long long)src.x.toFp16x16() * invZ) >> (shiftDown + 16));
+        fp y = (((long long)src.y.toFp16x16() * invZ) >> (shiftDown + 16));
+
+        dest.x = (x * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
+        dest.y = (y * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
+
+
+        //fp inverseZ = fp::fromInt(distToNearPlane) / fp(src.z);   //fp(x_fastrecip(src.z.toFp16x16() >> 16));
+
+        //dest.x = (src.x * inverseZ + fp::fromInt(w / 2)).toFp16x16();
+        //dest.y = (src.y * inverseZ + fp::fromInt(h / 2)).toFp16x16();
+    }
 }
 
 void Viewport::clamp(X_Vec2& v)

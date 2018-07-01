@@ -304,6 +304,33 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
     return x >> (16 - shiftUp);
 }
 
+static inline int mul(int a, int b)
+{
+    return ((long long)a * b) >> 22;
+}
+
+#include <cstdio>
+
+static inline x_fp16x16 x_fastrecip_unshift(unsigned int val, int& shift)
+{
+    const int bits = 22;
+    int shiftDown =  (32 - bits) - __builtin_clz(val);
+    val >>= shiftDown;
+
+    const unsigned int ADD = (48 << bits) / 17;
+
+    unsigned int x = ADD - (val << 1);
+
+    const int ONE = 1 << bits;
+
+    x = x + mul(x, ONE - mul(val, x));
+    x = x + mul(x, ONE - mul(val, x));
+    x = x + mul(x, ONE - mul(val, x));
+
+    shift = (shiftDown + bits - (32 - bits));
+
+    return x;
+}
 
 
 template<>

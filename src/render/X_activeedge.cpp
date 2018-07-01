@@ -154,15 +154,21 @@ bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContex
 
 struct ClipContext
 {
-    ClipContext(X_Frustum* frustum_)
+    ClipContext(X_Frustum* frustum_, int geoFlags_)
         : leftClipped(false),
         rightClipped(false),
-        frustum(frustum_)
+        frustum(frustum_),
+        geoFlags(geoFlags_)
     {
     }
 
     bool clipToLeft()
     {
+        if((geoFlags & (1 << 2)) == 0)
+        {
+            return true;
+        }
+
         int flags = ray.clipToPlane(frustum->planes[2], ray);
 
         if(flags == 1)
@@ -181,6 +187,11 @@ struct ClipContext
 
     bool clipToRight()
     {
+        if((geoFlags & (1 << 0)) == 0)
+        {
+            return true;
+        }
+
         int flags = ray.clipToPlane(frustum->planes[0], ray);
 
         if(flags == 1)
@@ -199,8 +210,23 @@ struct ClipContext
 
     bool clipToTopAndBottom()
     {
-        return ray.clipToPlane(frustum->planes[1], ray) != 0
-            && ray.clipToPlane(frustum->planes[3], ray) != 0;
+        if(geoFlags & (1 << 1))
+        {
+            if(ray.clipToPlane(frustum->planes[1], ray) == 0)
+            {
+                return false;
+            }
+        }
+
+        if(geoFlags & (1 << 3))
+        {
+            if(ray.clipToPlane(frustum->planes[3], ray) == 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     bool clip()
@@ -222,28 +248,26 @@ struct ClipContext
     Vec3fp rightExit;
 
     X_Frustum* frustum;
+
+    int geoFlags;
 };
 
 Vec3fp transform(Mat4x4& mat, Vec3fp v)
 {
-    Vec3fp transformed = mat.transform(v);
-
-    return transformed;
+    return Vec3fp(
+        mat.elem[0][0] * v.x + mat.elem[0][1] * v.y + mat.elem[0][2] * v.z + mat.elem[0][3],
+        mat.elem[1][0] * v.x + mat.elem[1][1] * v.y + mat.elem[1][2] * v.z + mat.elem[1][3],
+        mat.elem[2][0] * v.x + mat.elem[2][1] * v.y + mat.elem[2][2] * v.z + mat.elem[2][3]);
 }
 
 void X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge)
 {
     X_Vec2_fp16x16 projected[2];
 
-    X_Vec2_fp16x16 save[2];
-
-    bool neg = false;
-
     for(int i = 0; i < 2; ++i)
     {
         const fp minZ = fp::fromFloat(0.5);
 
-        neg |= clipped.v[i].z < 0;
 
         if(clipped.v[i].z < minZ)
         {
@@ -251,8 +275,6 @@ void X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface,
         }
 
         renderContext->cam->viewport.project(clipped.v[i], projected[i]);
-
-        save[i] = projected[i];
 
         renderContext->cam->viewport.clampfp(projected[i]);
     }
@@ -282,7 +304,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
     Vec3 firstVertex = level->vertices[vertexIds[0]].v;
 
-    ClipContext context(renderContext->viewFrustum);
+    ClipContext context(renderContext->viewFrustum, (int)geoFlags);
 
     for(int i = 0; i < bspSurface->totalEdges; ++i)
     {
@@ -665,9 +687,9 @@ void X_AE_Context::processEdges(int y)
 
     if(foreground.next != &background)
     {
-        if(639 > foreground.next->xStart)
+        if(screen->canvas.getW() - 1 > foreground.next->xStart)
         {
-            emitSpan(foreground.next->xStart, 639, y, foreground.next);
+            emitSpan(foreground.next->xStart, screen->canvas.getW() - 1, y, foreground.next);
         }
     }
 
