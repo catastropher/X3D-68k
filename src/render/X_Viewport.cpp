@@ -79,6 +79,12 @@ void Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const 
     Vec3fp pointOnNearPlane = camPos + forward * fakeDistToNearPlane;
 
     viewFrustumPlanes[4] = Plane(forward, pointOnNearPlane);
+
+    // Far plane
+    Vec3fp backward = -forward;
+    Vec3fp pointOnFarPlane = camPos + forward * fp::fromInt(1000);
+
+    viewFrustumPlanes[5] = Plane(backward, pointOnFarPlane);
 }
 
 void Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)

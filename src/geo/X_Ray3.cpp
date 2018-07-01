@@ -16,6 +16,7 @@
 #include "X_Ray3.h"
 #include "X_Plane.h"
 #include "render/X_RenderContext.h"
+#include "render/X_Renderer.h"
 #include "X_Frustum.h"
 #include "math/X_Mat4x4.h"
 #include "object/X_CameraObject.h"
@@ -106,5 +107,41 @@ void Ray3::render(const X_RenderContext& renderContext, X_Color color) const
     }
 
     renderContext.canvas->drawLine(projected[0], projected[1], color);
+}
+
+void Ray3::renderShaded(const X_RenderContext& renderContext, X_Color color, fp maxDist) const
+{
+    Ray3 clipped = *this;
+    if(!clipToFrustum(*renderContext.viewFrustum, clipped))
+    {
+        return;
+    }
+
+    Ray3 transformed;
+    for(int i = 0; i < 2; ++i)
+    {
+        transformed.v[i] = renderContext.viewMatrix->transform(clipped.v[i]);
+    }
+
+    if(transformed.v[0].z > maxDist && transformed.v[1].z > maxDist)
+    {
+        return;
+    }
+    
+    X_Vec2 projected[2];
+    fp intensity[2];
+
+    for(int i = 0; i < 2; ++i)
+    {
+        intensity[i] = fp::fromInt(1) - transformed.v[i].z / maxDist.toInt();
+
+        renderContext.cam->viewport.project(transformed.v[i], projected[i]);
+
+        // FIXME
+        projected[i].x = projected[i].x >> 16;
+        projected[i].y = projected[i].y >> 16;
+    }
+
+    renderContext.canvas->drawLineShaded(projected[0], projected[1], color, intensity[0], intensity[1], renderContext.renderer->colorMap);
 }
 

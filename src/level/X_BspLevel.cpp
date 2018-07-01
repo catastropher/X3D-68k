@@ -25,8 +25,19 @@
 #include "geo/X_BoundSphere.h"
 #include "engine/X_EngineContext.h"
 
-static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext* renderContext, X_Color color, X_BspModel* model)
+static void render_recursive(X_BspLevel* level,
+                             X_BspNode* node,
+                             X_RenderContext* renderContext,
+                             X_Color color,
+                             X_BspModel* model,
+                             int parentFlags,
+                             unsigned char* drawnEdges)
 {
+    BoundBoxFrustumFlags nodeFlags = node->nodeBoundBox.determineFrustumClipFlags(*renderContext->viewFrustum, (BoundBoxFrustumFlags)parentFlags);
+
+    if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
+        return;
+
     if(x_bspnode_is_leaf(node))
     {
         X_BspLeaf* leaf = (X_BspLeaf*)node;
@@ -37,7 +48,15 @@ static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext
             
             for(int j = 0; j < s->totalEdges; ++j)
             {
-                X_BspEdge* edge = level->edges + abs(level->surfaceEdgeIds[s->firstEdgeId + j]);
+                int edgeId = abs(level->surfaceEdgeIds[s->firstEdgeId + j]);
+                X_BspEdge* edge = level->edges + edgeId;
+
+                if(drawnEdges[edgeId / 8] & (1 << (edgeId & 7)))
+                {
+                    continue;
+                }
+
+                drawnEdges[edgeId / 8] |= 1 << (edgeId & 7);
                 
                 Ray3 ray(
                     MakeVec3fp(level->vertices[edge->v[0]].v),
@@ -46,28 +65,41 @@ static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext
                 ray.v[0] += MakeVec3fp(model->origin);
                 ray.v[1] += MakeVec3fp(model->origin);
                 
-                ray.render(*renderContext, color);
+                //ray.render(*renderContext, color);
+
+                ray.renderShaded(*renderContext, color, fp::fromInt(1000));
             }
         }
         
         return;
     }
     
-    render_recursive(level, node->frontChild, renderContext, color, model);
-    render_recursive(level, node->backChild, renderContext, color, model);
+    render_recursive(level, node->frontChild, renderContext, color, model, nodeFlags, drawnEdges);
+    render_recursive(level, node->backChild, renderContext, color, model, nodeFlags, drawnEdges);
 }
 
-void x_bspmodel_render_wireframe(X_BspLevel* level, X_BspModel* model, X_RenderContext* renderContext, X_Color color)
+void x_bspmodel_render_wireframe(X_BspLevel* level, X_BspModel* model, X_RenderContext* renderContext, X_Color color, unsigned char* drawnEdges)
 {
-    render_recursive(level, model->rootBspNode, renderContext, color, model);
+    int flags = (1 << renderContext->viewFrustum->totalPlanes) - 1;
+
+    render_recursive(level, model->rootBspNode, renderContext, color, model, flags, drawnEdges);
 }
 
 void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
 {
-    x_bspmodel_render_wireframe(level, level->models + 0, rcontext, color);
+    unsigned char drawnEdges[8192];
+    memset(drawnEdges, 8192, (level->totalEdges + 7) / 8);
+
+    int totalPlanes = rcontext->viewFrustum->totalPlanes;
+
+    rcontext->viewFrustum->totalPlanes = 6;
+
+    x_bspmodel_render_wireframe(level, level->models + 0, rcontext, color, drawnEdges);
     
     for(int i = 1; i < level->totalModels; ++i)
-        x_bspmodel_render_wireframe(level, level->models + i, rcontext, 15);
+        x_bspmodel_render_wireframe(level, level->models + i, rcontext, 15, drawnEdges);
+
+    rcontext->viewFrustum->totalPlanes = totalPlanes;
 }
 
 X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, Vec3* point)

@@ -35,6 +35,7 @@ struct Ray3
     int clipToPlane(const Plane& plane, Ray3& dest);
     bool clipToFrustum(const X_Frustum& frustum, Ray3& dest) const;
     void render(const X_RenderContext& renderContext, X_Color color) const;
+    void renderShaded(const X_RenderContext& renderContext, X_Color color, fp maxDist) const;
 
     Vec3fp lerp(fp t) const
     {

@@ -47,7 +47,7 @@ public:
     X_Frustum viewFrustum;
     Plane viewFrustumPlanes[6];
     fp mipDistances[3];
-
+    
 private:
     void initMipDistances();
 };

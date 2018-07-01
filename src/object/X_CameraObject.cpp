@@ -115,7 +115,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     if(cam->currentLeaf != renderContext->level->leaves + 0 && !renderContext->renderer->wireframe)
         x_bsplevel_render(renderContext->level, renderContext);
     else
-        x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
+        x_bsplevel_render_wireframe(renderContext->level, renderContext, 5 * 16 - 1);
 }
 
 

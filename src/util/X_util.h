@@ -75,6 +75,21 @@ inline constexpr fp maxValue()
     return fp(maxValue<int>());
 }
 
+template<typename T>
+T clamp(T val, T min, T max)
+{
+    if(val < min)
+    {
+        val = min;
+    }
+    else if(val > max)
+    {
+        val = max;
+    }
+
+    return val;
+}
+
 int x_count_prefix_match_length(const char* a, const char* b);
 void x_strncpy(char* dest, const char* src, size_t lengthToCopy);
 
