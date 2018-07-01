@@ -158,7 +158,8 @@ struct ClipContext
         : leftClipped(false),
         rightClipped(false),
         frustum(frustum_),
-        geoFlags(geoFlags_)
+        geoFlags(geoFlags_),
+        clipFlags(0)
     {
     }
 
@@ -170,6 +171,8 @@ struct ClipContext
         }
 
         int flags = ray.clipToPlane(frustum->planes[2], ray);
+
+        clipFlags &= flags;
 
         if(flags == 1)
         {
@@ -194,6 +197,8 @@ struct ClipContext
 
         int flags = ray.clipToPlane(frustum->planes[0], ray);
 
+        clipFlags &= flags;
+
         if(flags == 1)
         {
             rightClipped = true;
@@ -212,7 +217,11 @@ struct ClipContext
     {
         if(geoFlags & (1 << 1))
         {
-            if(ray.clipToPlane(frustum->planes[1], ray) == 0)
+            int flags = ray.clipToPlane(frustum->planes[1], ray);
+
+            clipFlags &= flags;
+
+            if(flags == 0)
             {
                 return false;
             }
@@ -220,7 +229,11 @@ struct ClipContext
 
         if(geoFlags & (1 << 3))
         {
-            if(ray.clipToPlane(frustum->planes[3], ray) == 0)
+            int flags = ray.clipToPlane(frustum->planes[3], ray);
+
+            clipFlags &= flags;
+
+            if(flags == 0)
             {
                 return false;
             }
@@ -231,9 +244,16 @@ struct ClipContext
 
     bool clip()
     {
+        clipFlags = 3;
+
         return clipToLeft()
             && clipToRight()
             && clipToTopAndBottom();
+    }
+
+    bool lastVertexWasClipped()
+    {
+        return (clipFlags & 2) == 0;
     }
     
     Ray3 ray;
@@ -250,6 +270,9 @@ struct ClipContext
     X_Frustum* frustum;
 
     int geoFlags;
+
+    X_Vec2 lastProjected;
+    int clipFlags;
 };
 
 Vec3fp transform(Mat4x4& mat, Vec3fp v)
@@ -260,26 +283,26 @@ Vec3fp transform(Mat4x4& mat, Vec3fp v)
         mat.elem[2][0] * v.x + mat.elem[2][1] * v.y + mat.elem[2][2] * v.z + mat.elem[2][3]);
 }
 
-void X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge)
+void X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected)
 {
     X_Vec2_fp16x16 projected[2];
 
-    for(int i = 0; i < 2; ++i)
+    if(!lastWasClipped)
     {
-        const fp minZ = fp::fromFloat(0.5);
-
-
-        if(clipped.v[i].z < minZ)
-        {
-            clipped.v[i].z = minZ;
-        }
-
-        renderContext->cam->viewport.project(clipped.v[i], projected[i]);
-
-        renderContext->cam->viewport.clampfp(projected[i]);
+        projected[0] = lastProjected;
+    }
+    else
+    {
+        renderContext->cam->viewport.project(clipped.v[0], projected[0]);
+        renderContext->cam->viewport.clampfp(projected[0]);
     }
 
+    renderContext->cam->viewport.project(clipped.v[1], projected[1]);
+    renderContext->cam->viewport.clampfp(projected[1]);
+
     addEdge(projected + 0, projected + 1, aeSurface, bspEdge);
+
+    lastProjected = projected[1];
 }
 
 void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
@@ -288,7 +311,6 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
                                   int bspKey,
                                   bool inSubmodel)
 {
-
     auto level = renderContext->level;
     auto aeSurface = createSurface(bspSurface, bspKey); 
 
@@ -306,16 +328,12 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
     ClipContext context(renderContext->viewFrustum, (int)geoFlags);
 
+    Vec3fp lastTransformed;
+    X_Vec2 lastProjected;
+
     for(int i = 0; i < bspSurface->totalEdges; ++i)
     {
         auto bspEdge = renderContext->level->edges + abs(edgeIds[i]);
-        // auto cachedEdge = getCachedEdge(bspEdge, renderContext->currentFrame);
-
-        // if(cachedEdge != nullptr)
-        // {
-        //     cachedEdge->emitCachedEdge(aeSurface);
-        //     continue;
-        // }
 
         int next = (i + 1 < bspSurface->totalEdges ? i + 1 : 0);
         Ray3 ray(
@@ -325,6 +343,8 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
         context.ray = ray;
 
+        bool lastWasClipped = context.lastVertexWasClipped();
+
         if(!context.clip())
         {
             continue;
@@ -332,15 +352,44 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
         Ray3 clipped = context.ray;
 
-        clipped.v[0] = transform(*renderContext->viewMatrix, clipped.v[0]);
+        if(lastWasClipped)
+        {
+            clipped.v[0] = transform(*renderContext->viewMatrix, clipped.v[0]);
+        }
+        else
+        {
+            clipped.v[0] = lastTransformed;
+        }
+
         clipped.v[1] = transform(*renderContext->viewMatrix, clipped.v[1]);
+
+        lastTransformed = clipped.v[1];
+
+        const fp minZ = fp::fromFloat(0.5);
 
         for(int i = 0; i < 2; ++i)
         {
             closestZ = std::min(closestZ, clipped.v[i].z);
+
+            if(clipped.v[i].z < minZ)
+            {
+                clipped.v[i].z = minZ;
+            }
         }
 
-        addEdgeFromClippedRay(clipped, aeSurface, bspEdge);
+        if(context.clipFlags == 3)
+        {
+            auto cachedEdge = getCachedEdge(bspEdge, renderContext->currentFrame);
+
+            if(cachedEdge != nullptr)
+            {
+                cachedEdge->emitCachedEdge(aeSurface);
+                context.clipFlags = 0;
+                continue;
+            }
+        }
+
+        addEdgeFromClippedRay(clipped, aeSurface, bspEdge, lastWasClipped, lastProjected);
     }
 
     if(context.leftClipped)
@@ -355,11 +404,12 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
             for(int i = 0; i < 2; ++i)
             {
+                // TODO: can just transform the Z because that's all we need
                 ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
                 closestZ = std::min(closestZ, ray.v[i].z);
             }
 
-            addEdgeFromClippedRay(ray, aeSurface, level->edges + 0);
+            addEdgeFromClippedRay(ray, aeSurface, level->edges + 0, true, lastProjected);
         }
     }
 

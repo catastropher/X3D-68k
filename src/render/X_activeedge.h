@@ -264,7 +264,7 @@ struct X_AE_Context
                         int bspKey,
                         bool inSubmodel);
 
-    void addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* surface, X_BspEdge* bspEdge);
+    void addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected);
 
 private:
     
