@@ -45,7 +45,7 @@ public:
     int distToNearPlane;
     fp fieldOfView;
     X_Frustum viewFrustum;
-    Plane viewFrustumPlanes[6];
+    FrustumPlane viewFrustumPlanes[6];
     fp mipDistances[3];
     
 private:

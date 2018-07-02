@@ -67,24 +67,27 @@ void Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const 
         nearPlaneCenter - rightTranslation + upTranslation      // Top
     };
 
+    // Order has to be left, right, bottom, top
+    int id[4] = { 1, 2, 0, 3 };
+
     // Top, bottom, left, and right planes
     for(int i = 0; i < 4; ++i)
     {
         int next = (i != 3 ? i + 1 : 0);
-        viewFrustumPlanes[i] = Plane(nearPlaneVertices[i], camPos, nearPlaneVertices[next]);
+        viewFrustumPlanes[id[i]] = FrustumPlane(nearPlaneVertices[i], camPos, nearPlaneVertices[next], id[i]);
     }
 
     // Near plane
     fp fakeDistToNearPlane = fp::fromFloat(0.5);       // TODO: what should this value really be?
     Vec3fp pointOnNearPlane = camPos + forward * fakeDistToNearPlane;
 
-    viewFrustumPlanes[4] = Plane(forward, pointOnNearPlane);
+    viewFrustumPlanes[4] = FrustumPlane(forward, pointOnNearPlane, 4);
 
     // Far plane
     Vec3fp backward = -forward;
     Vec3fp pointOnFarPlane = camPos + forward * fp::fromInt(1000);
 
-    viewFrustumPlanes[5] = Plane(backward, pointOnFarPlane);
+    viewFrustumPlanes[5] = FrustumPlane(backward, pointOnFarPlane, 5);
 }
 
 void Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)

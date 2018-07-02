@@ -17,9 +17,31 @@
 
 #include "X_Plane.h"
 
+struct FrustumPlane : Plane
+{
+    FrustumPlane() { }
+
+    FrustumPlane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c, int id_)
+        : Plane(a, b, c),
+        id(id_)
+    {
+
+    }
+
+    FrustumPlane(const Vec3fp& normal_, const Vec3fp& point, int id_)
+    {
+        normal = normal_;
+        d = -normal.dot(point);
+        id = id_;
+    }
+
+    int id;
+    FrustumPlane* next;
+};
+
 typedef struct X_Frustum
 {
-    Plane* planes;
+    FrustumPlane* planes;
     int totalPlanes;
 } X_Frustum;
 

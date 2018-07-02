@@ -219,12 +219,12 @@ struct ClipContext
 
     bool clipToLeft()
     {
-        if((geoFlags & (1 << 2)) == 0)
+        if((geoFlags & (1 << 0)) == 0)
         {
             return true;
         }
 
-        int flags = clipRayToPlane(2, ray);
+        int flags = clipRayToPlane(0, ray);
 
         clipFlags &= flags;
 
@@ -244,12 +244,12 @@ struct ClipContext
 
     bool clipToRight()
     {
-        if((geoFlags & (1 << 0)) == 0)
+        if((geoFlags & (1 << 1)) == 0)
         {
             return true;
         }
 
-        int flags = clipRayToPlane(0, ray);
+        int flags = clipRayToPlane(1, ray);
 
         clipFlags &= flags;
 
@@ -269,9 +269,9 @@ struct ClipContext
 
     bool clipToTopAndBottom()
     {
-        if(geoFlags & (1 << 1))
+        if(geoFlags & (2 << 1))
         {
-            int flags = clipRayToPlane(1, ray);
+            int flags = clipRayToPlane(2, ray);
 
             clipFlags &= flags;
 
