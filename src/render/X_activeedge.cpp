@@ -159,8 +159,62 @@ struct ClipContext
         rightClipped(false),
         frustum(frustum_),
         geoFlags(geoFlags_),
-        clipFlags(0)
+        clipFlags(0),
+        currentGroup(0)
     {
+    }
+
+    int clipRayToPlane(int planeId, Ray3& ray)
+    {
+        const Plane& plane = frustum->planes[planeId];
+
+        fp v0DistToPlane;
+        
+        if(!wasClipped)
+        {
+            v0DistToPlane = dist[currentGroup ^ 1][planeId];
+        }
+        else
+        {
+            v0DistToPlane = plane.distanceTo(ray.v[0]);
+        }
+
+        int v0In = v0DistToPlane >= 0;
+        
+        fp v1DistToPlane = plane.distanceTo(ray.v[1]);
+        int v1In = v1DistToPlane >= 0;
+
+        dist[currentGroup][planeId] = v1DistToPlane;
+
+        int flags = v0In | (v1In << 1);
+        fp t;
+
+        switch(flags)
+        {
+            case 0:
+                break;
+
+            case 1:
+                t = v0DistToPlane / (v0DistToPlane - v1DistToPlane);
+        
+                ray.v[1] = ray.lerp(t);
+                ray.v[0] = ray.v[0];
+
+                break;
+
+            case 2:
+                t = v1DistToPlane / (v1DistToPlane - v0DistToPlane);
+        
+                ray.v[0] = ray.lerp(fp(X_FP16x16_ONE) - t);
+                ray.v[1] = ray.v[1];
+
+                break;
+
+            case 3:
+                break;
+        }
+
+        return flags;
     }
 
     bool clipToLeft()
@@ -170,7 +224,7 @@ struct ClipContext
             return true;
         }
 
-        int flags = ray.clipToPlane(frustum->planes[2], ray);
+        int flags = clipRayToPlane(2, ray);
 
         clipFlags &= flags;
 
@@ -195,7 +249,7 @@ struct ClipContext
             return true;
         }
 
-        int flags = ray.clipToPlane(frustum->planes[0], ray);
+        int flags = clipRayToPlane(0, ray);
 
         clipFlags &= flags;
 
@@ -217,7 +271,7 @@ struct ClipContext
     {
         if(geoFlags & (1 << 1))
         {
-            int flags = ray.clipToPlane(frustum->planes[1], ray);
+            int flags = clipRayToPlane(1, ray);
 
             clipFlags &= flags;
 
@@ -229,7 +283,7 @@ struct ClipContext
 
         if(geoFlags & (1 << 3))
         {
-            int flags = ray.clipToPlane(frustum->planes[3], ray);
+            int flags = clipRayToPlane(3, ray);
 
             clipFlags &= flags;
 
@@ -244,11 +298,16 @@ struct ClipContext
 
     bool clip()
     {
+        wasClipped = lastVertexWasClipped();
         clipFlags = 3;
 
-        return clipToLeft()
+        bool c = clipToLeft()
             && clipToRight()
             && clipToTopAndBottom();
+
+        currentGroup ^= 1;
+
+        return c;
     }
 
     bool lastVertexWasClipped()
@@ -273,6 +332,11 @@ struct ClipContext
 
     X_Vec2 lastProjected;
     int clipFlags;
+
+    fp dist[2][4];
+    int currentGroup;
+
+    bool wasClipped;
 };
 
 Vec3fp transform(Mat4x4& mat, Vec3fp v)
@@ -283,7 +347,7 @@ Vec3fp transform(Mat4x4& mat, Vec3fp v)
         mat.elem[2][0] * v.x + mat.elem[2][1] * v.y + mat.elem[2][2] * v.z + mat.elem[2][3]);
 }
 
-void X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected)
+X_AE_Edge* X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected)
 {
     X_Vec2_fp16x16 projected[2];
 
@@ -300,9 +364,9 @@ void X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface,
     renderContext->cam->viewport.project(clipped.v[1], projected[1]);
     renderContext->cam->viewport.clampfp(projected[1]);
 
-    addEdge(projected + 0, projected + 1, aeSurface, bspEdge);
-
     lastProjected = projected[1];
+
+    return addEdge(projected + 0, projected + 1, aeSurface, bspEdge);
 }
 
 void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
@@ -389,7 +453,12 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
             }
         }
 
-        addEdgeFromClippedRay(clipped, aeSurface, bspEdge, lastWasClipped, lastProjected);
+        X_AE_Edge* edge = addEdgeFromClippedRay(clipped, aeSurface, bspEdge, lastWasClipped, lastProjected);
+
+        if(edge->isLeadingEdge)
+        {
+            // Vertices are swapped if leading edge
+        }
     }
 
     if(context.leftClipped)
@@ -397,6 +466,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
         Ray3 ray(context.leftEnter, context.leftExit);
 
         context.ray = ray;
+        context.wasClipped = true;
 
         if(context.clipToTopAndBottom())
         {
@@ -404,7 +474,6 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
             for(int i = 0; i < 2; ++i)
             {
-                // TODO: can just transform the Z because that's all we need
                 ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
                 closestZ = std::min(closestZ, ray.v[i].z);
             }
@@ -419,21 +488,16 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
         Ray3 ray(context.rightEnter, context.rightExit);
 
         context.ray = ray;
+        context.wasClipped = true;
 
         if(context.clipToTopAndBottom())
         {
-            // ray = context.ray;
-
             for(int i = 0; i < 2; ++i)
             {
+                // TODO: can just transform the Z because that's all we need
                 ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
                 closestZ = std::min(closestZ, ray.v[i].z);
             }
-
-
-            // right = true;
-            // //addEdgeFromClippedRay(ray, aeSurface, level->edges + 0);
-            // print = false;
         }
     }
 

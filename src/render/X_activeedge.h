@@ -264,7 +264,7 @@ struct X_AE_Context
                         int bspKey,
                         bool inSubmodel);
 
-    void addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected);
+    X_AE_Edge* addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected);
 
 private:
     
@@ -385,7 +385,7 @@ private:
         return true;
     }
     
-    void addEdge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
+    X_AE_Edge* addEdge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
     {
         X_AE_Edge* edge = edges.alloc();
         
@@ -399,6 +399,8 @@ private:
         {
             addEdgeToStartingScanline(edge);
         }
+
+        return edge;
     }
     
     // FIXME
