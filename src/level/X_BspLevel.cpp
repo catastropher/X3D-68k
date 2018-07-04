@@ -292,6 +292,22 @@ void scheduleSurfaceToRender(X_RenderContext* renderContext, int surface);
 
 static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
 {
+    // Stitch the frustum planes together
+    X_Frustum* frustum = renderContext->viewFrustum;
+    int flags = (int)geoFlags;
+    FrustumPlane* planePtr = nullptr;
+
+    for(int i = frustum->totalPlanes - 1; i >= 0; --i)
+    {
+        if(flags & (1 << i))
+        {
+            frustum->planes[i].next = planePtr;
+            planePtr = &frustum->planes[i];
+        }
+    }
+
+    frustum->head = planePtr;
+
     X_BspLevel* level = renderContext->level;
     
     for(int i = 0; i < node->totalSurfaces; ++i)
@@ -323,8 +339,6 @@ static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderCo
 
 static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
 {
-    // Submodels disabled for now
-    
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
     
     for(int i = 0; i < submodel->totalFaces; ++i)

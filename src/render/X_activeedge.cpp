@@ -164,9 +164,12 @@ struct ClipContext
     {
     }
 
-    int clipRayToPlane(int planeId, Ray3& ray)
+    int clipRayToPlane(FrustumPlane* plane)
     {
-        const Plane& plane = frustum->planes[planeId];
+        const int LEFT_PLANE = 0;
+        const int RIGHT_PLANE = 1;
+
+        int planeId = plane->id;
 
         fp v0DistToPlane;
         
@@ -176,18 +179,20 @@ struct ClipContext
         }
         else
         {
-            v0DistToPlane = plane.distanceTo(ray.v[0]);
+            v0DistToPlane = plane->distanceTo(ray.v[0]);
         }
 
         int v0In = v0DistToPlane >= 0;
         
-        fp v1DistToPlane = plane.distanceTo(ray.v[1]);
+        fp v1DistToPlane = plane->distanceTo(ray.v[1]);
         int v1In = v1DistToPlane >= 0;
 
         dist[currentGroup][planeId] = v1DistToPlane;
 
         int flags = v0In | (v1In << 1);
         fp t;
+
+        clipFlags &= flags;
 
         switch(flags)
         {
@@ -200,6 +205,17 @@ struct ClipContext
                 ray.v[1] = ray.lerp(t);
                 ray.v[0] = ray.v[0];
 
+                if(planeId == LEFT_PLANE)
+                {
+                    leftClipped = true;
+                    leftEnter = ray.v[1];
+                }
+                else if(planeId == RIGHT_PLANE)
+                {
+                    rightClipped = true;
+                    rightEnter = ray.v[1];
+                }
+
                 break;
 
             case 2:
@@ -207,6 +223,17 @@ struct ClipContext
         
                 ray.v[0] = ray.lerp(fp(X_FP16x16_ONE) - t);
                 ray.v[1] = ray.v[1];
+
+                if(planeId == LEFT_PLANE)
+                {
+                    leftClipped = true;
+                    leftExit = ray.v[0];
+                }
+                else
+                {
+                    rightClipped = true;
+                    rightExit = ray.v[0];
+                }
 
                 break;
 
@@ -217,97 +244,36 @@ struct ClipContext
         return flags;
     }
 
-    bool clipToLeft()
-    {
-        if((geoFlags & (1 << 0)) == 0)
-        {
-            return true;
-        }
-
-        int flags = clipRayToPlane(0, ray);
-
-        clipFlags &= flags;
-
-        if(flags == 1)
-        {
-            leftClipped = true;
-            leftEnter = ray.v[1];
-        }
-        else if(flags == 2)
-        {
-            leftClipped = true;
-            leftExit = ray.v[0];
-        }
-
-        return flags != 0;
-    }
-
-    bool clipToRight()
-    {
-        if((geoFlags & (1 << 1)) == 0)
-        {
-            return true;
-        }
-
-        int flags = clipRayToPlane(1, ray);
-
-        clipFlags &= flags;
-
-        if(flags == 1)
-        {
-            rightClipped = true;
-            rightEnter = ray.v[1];
-        }
-        else if(flags == 2)
-        {
-            rightClipped = true;
-            rightExit = ray.v[0];
-        }
-
-        return flags != 0;
-    }
-
-    bool clipToTopAndBottom()
-    {
-        if(geoFlags & (2 << 1))
-        {
-            int flags = clipRayToPlane(2, ray);
-
-            clipFlags &= flags;
-
-            if(flags == 0)
-            {
-                return false;
-            }
-        }
-
-        if(geoFlags & (1 << 3))
-        {
-            int flags = clipRayToPlane(3, ray);
-
-            clipFlags &= flags;
-
-            if(flags == 0)
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     bool clip()
     {
         wasClipped = lastVertexWasClipped();
         clipFlags = 3;
 
-        bool c = clipToLeft()
-            && clipToRight()
-            && clipToTopAndBottom();
+        auto plane = frustum->head;
+
+        while(plane)
+        {
+            if(clipRayToPlane(plane) == 0)
+            {
+                currentGroup ^= 1;
+
+                return false;
+            }
+
+            plane = plane->next;
+        };
 
         currentGroup ^= 1;
 
-        return c;
+        return true;
+    }
+
+    bool clipToTopAndBottom()
+    {
+        if(clipRayToPlane(&frustum->planes[2]) == 0) return false;
+        if(clipRayToPlane(&frustum->planes[3]) == 0) return false;
+
+        return true;
     }
 
     bool lastVertexWasClipped()
@@ -395,17 +361,16 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
     Vec3fp lastTransformed;
     X_Vec2 lastProjected;
 
+    const fp minZ = fp::fromFloat(0.5);
+
     for(int i = 0; i < bspSurface->totalEdges; ++i)
     {
         auto bspEdge = renderContext->level->edges + abs(edgeIds[i]);
 
         int next = (i + 1 < bspSurface->totalEdges ? i + 1 : 0);
-        Ray3 ray(
-            MakeVec3fp(level->vertices[vertexIds[i]].v),
-            MakeVec3fp(level->vertices[vertexIds[next]].v));
 
-
-        context.ray = ray;
+        context.ray.v[0] = MakeVec3fp(level->vertices[vertexIds[i]].v);
+        context.ray.v[1] = MakeVec3fp(level->vertices[vertexIds[next]].v);
 
         bool lastWasClipped = context.lastVertexWasClipped();
 
@@ -414,30 +379,26 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
             continue;
         }
 
-        Ray3 clipped = context.ray;
-
         if(lastWasClipped)
         {
-            clipped.v[0] = transform(*renderContext->viewMatrix, clipped.v[0]);
+            context.ray.v[0] = transform(*renderContext->viewMatrix, context.ray.v[0]);
         }
         else
         {
-            clipped.v[0] = lastTransformed;
+            context.ray.v[0] = lastTransformed;
         }
 
-        clipped.v[1] = transform(*renderContext->viewMatrix, clipped.v[1]);
+        context.ray.v[1] = transform(*renderContext->viewMatrix, context.ray.v[1]);
 
-        lastTransformed = clipped.v[1];
-
-        const fp minZ = fp::fromFloat(0.5);
+        lastTransformed = context.ray.v[1];
 
         for(int i = 0; i < 2; ++i)
         {
-            closestZ = std::min(closestZ, clipped.v[i].z);
+            closestZ = std::min(closestZ, context.ray.v[i].z);
 
-            if(clipped.v[i].z < minZ)
+            if(context.ray.v[i].z < minZ)
             {
-                clipped.v[i].z = minZ;
+                context.ray.v[i].z = minZ;
             }
         }
 
@@ -453,7 +414,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
             }
         }
 
-        X_AE_Edge* edge = addEdgeFromClippedRay(clipped, aeSurface, bspEdge, lastWasClipped, lastProjected);
+        X_AE_Edge* edge = addEdgeFromClippedRay(context.ray, aeSurface, bspEdge, lastWasClipped, lastProjected);
 
         if(edge->isLeadingEdge)
         {
@@ -475,6 +436,12 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
             for(int i = 0; i < 2; ++i)
             {
                 ray.v[i] = transform(*renderContext->viewMatrix, ray.v[i]);
+
+                if(ray.v[i].z < minZ)
+                {
+                    ray.v[i].z = minZ;
+                }
+
                 closestZ = std::min(closestZ, ray.v[i].z);
             }
 
@@ -608,7 +575,6 @@ void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* ed
 
 void X_AE_Context::addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
-    return;
     x_ae_surface_reset_current_parent(this);
     
     InternalPolygon3 poly;

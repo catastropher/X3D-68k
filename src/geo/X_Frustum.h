@@ -43,6 +43,7 @@ typedef struct X_Frustum
 {
     FrustumPlane* planes;
     int totalPlanes;
+    FrustumPlane* head;
 } X_Frustum;
 
 void x_frustum_print(const X_Frustum* frustum);
