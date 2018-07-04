@@ -399,7 +399,7 @@ static void x_bspnode_assign_parent(X_BspNode* node, X_BspNode* parent)
 {
     node->parent = parent;
     
-    if(x_bspnode_is_leaf(node))
+    if(node->isLeaf())
         return;
     
     x_bspnode_assign_parent(node->frontChild, node);
@@ -569,7 +569,7 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspS
 
 static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
 {
-    if(x_bspnode_is_leaf(node))
+    if(node->isLeaf())
         return;
     
     new (&node->geoBoundBox) BoundBox();

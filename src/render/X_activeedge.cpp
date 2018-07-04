@@ -551,7 +551,7 @@ void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* ed
     if(poly->totalVertices < 3)
         return;
     
-    if(x_bspnode_is_leaf(node))
+    if(node->isLeaf())
     {
         if(node->contents == X_BSPLEAF_SOLID)
             return;

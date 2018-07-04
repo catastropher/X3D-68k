@@ -132,22 +132,40 @@ typedef enum X_BspLeafContents
     X_BSPLEAF_SKY = -6
 } X_BspLeafContents;
 
-struct X_BspNode;
+struct X_BspLeaf;
+struct X_BspModel;
 
 typedef struct X_BspNode
 {
+    bool isLeaf()
+    {
+        return contents < 0;
+    }
+
+    X_BspLeaf* getLeaf()
+    {
+        return (X_BspLeaf*)this;
+    }
+
+    void renderWireframe(
+        X_RenderContext& renderContext,
+        X_Color color,
+        X_BspModel& model,
+        int parentFlags,
+        unsigned char* drawnEdges);
+
     // Common with X_BspLeaf - DO NOT REORDER
     X_BspLeafContents contents;
     int lastVisibleFrame;
     BoundBox nodeBoundBox;
     BoundBox geoBoundBox;
-    struct X_BspNode* parent;
+    X_BspNode* parent;
     
     // Unique elements for node
     X_BspPlane* plane;
     
-    struct X_BspNode* frontChild;
-    struct X_BspNode* backChild;
+    X_BspNode* frontChild;
+    X_BspNode* backChild;
     
     X_BspSurface* firstSurface;
     int totalSurfaces;
@@ -184,6 +202,8 @@ typedef struct X_BspClipNode
 
 typedef struct X_BspModel
 {
+    void renderWireframe(X_RenderContext& renderContext, X_Color color, unsigned char* drawnEdges);
+
     BoundBox boundBox;
     X_BspNode* rootBspNode;
     int clipNodeRoots[3];
@@ -280,6 +300,15 @@ typedef struct X_BspLevel
     char* entityDictionary;
     
     int nextBspKey;
+private:
+    void renderNodeWireframeRecursive(
+        X_BspNode* node,
+        X_RenderContext* renderContext,
+        X_Color color,
+        X_BspModel* model,
+        int parentFlags,
+        unsigned char* drawnEdges);
+
 } X_BspLevel;
 
 void x_bsplevel_cleanup(X_BspLevel* level);
@@ -346,11 +375,6 @@ static inline X_BspModel* x_bsplevel_get_model(X_BspLevel* level, int modelId)
 }
 
 //======================== node ========================
-
-static inline bool x_bspnode_is_leaf(const X_BspNode* node)
-{
-    return node->contents < 0;
-}
 
 static inline bool x_bspnode_is_visible_this_frame(const X_BspNode* node, int currentFrame)
 {
