@@ -135,7 +135,7 @@ void Ray3::renderShaded(const X_RenderContext& renderContext, X_Color color, fp 
     {
         intensity[i] = fp::fromInt(1) - transformed.v[i].z / maxDist.toInt();
 
-        renderContext.cam->viewport.project(transformed.v[i], projected[i]);
+        renderContext.cam->viewport.projectBisect(transformed.v[i], projected[i]);
 
         // FIXME
         projected[i].x = projected[i].x >> 16;

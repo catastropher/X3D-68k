@@ -28,6 +28,8 @@ public:
     void clamp(X_Vec2& v);
     void clampfp(X_Vec2_fp16x16& v);
 
+    void projectBisect(const Vec3fp& src, X_Vec2_fp16x16& dest);
+
     int closestMipLevelForZ(fp z)
     {
         for(int i = 0; i < 3; ++i)

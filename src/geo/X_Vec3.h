@@ -84,6 +84,12 @@ inline Vec3Template<T> operator*(const Vec3Template<T>& a, const U& b)
     return Vec3Template<T>(a.x * b, a.y * b, a.z * b);
 }
 
+template<typename T, typename U>
+inline Vec3Template<T> operator/(const Vec3Template<T>& a, const U& b)
+{
+    return Vec3Template<T>(a.x / b, a.y / b, a.z / b);
+}
+
 template<typename From, typename To>
 inline void convert(Vec3Template<From>& from, Vec3Template<To>& to)
 {

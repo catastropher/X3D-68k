@@ -306,14 +306,14 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
 
 static inline int mul(int a, int b)
 {
-    return ((long long)a * b) >> 22;
+    return ((long long)a * b) >> 16;
 }
 
 #include <cstdio>
 
 static inline x_fp16x16 x_fastrecip_unshift(unsigned int val, int& shift)
 {
-    const int bits = 22;
+    const int bits = 16;
     int shiftDown =  (32 - bits) - __builtin_clz(val);
     val >>= shiftDown;
 

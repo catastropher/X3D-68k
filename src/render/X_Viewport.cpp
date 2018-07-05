@@ -90,8 +90,139 @@ void Viewport::updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const 
     viewFrustumPlanes[5] = FrustumPlane(backward, pointOnFarPlane, 5);
 }
 
+fp recip(fp x)
+{
+    //return fp::fromFloat(1.0 / x.toFloat());
+
+    if(x > fp::fromFloat(1.5))
+    {
+        return fp::fromInt(1) / x;
+    }
+
+    x = x - fp::fromInt(1);
+
+    fp sum = fp::fromInt(1) - x;
+
+    fp newX = x * x;
+    sum += newX;
+
+    newX = newX * x;
+    sum = sum - newX;
+
+    newX = newX * x;
+    sum = sum + newX;
+
+    return sum;
+}
+
 void Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
 {
+#if 0
+    Vec3fp low(0, 0, 0);
+    Vec3fp hi = src;
+
+    Vec3fp mid;
+
+    fp near = fp::fromFloat(1.0);
+    fp epsilon = fp::fromFloat(0.001);
+
+    int it = 0;
+
+    int shift = 16 - __builtin_clz(src.z.toFp16x16());
+
+    while(hi.z > fp::fromInt(2))
+    {
+        hi = hi / 2;
+    }
+
+    if(hi.z <= fp::fromInt(1))
+    {
+        printf("Invalid val: %d\n", hi.z.toFloat());
+    }
+
+
+    //if(shift >= 7) shift = 7;
+    // if(shift < 0) shift = 0;
+
+    // hi = hi / (1 << shift);
+
+    fp val = hi.z;
+    fp x;
+
+
+  
+
+    //fp x = x + mul(x, ONE - mul(val, x));
+
+    //printf("Shift: %d, Z = %f\n", shift, hi.z.toFloat());
+
+    // for(int i = 0; i < 20; ++i)
+    // {
+    //     mid = (low + hi) / 2;
+    //      ++it;
+
+    //     if(abs(mid.z - near) < epsilon)
+    //     {
+    //         break;
+    //     }
+
+    //     if(mid.z > near)
+    //     {
+    //         hi = mid;
+    //     }
+    //     else
+    //     {
+    //         low = mid;
+    //     }
+    // }
+
+    //printf("Val: %f, original: %f\n", val.toFloat(), src.z.toFloat());
+
+    int shiftDown = 0;
+    //int invZ = (fp::fromInt(1) / hi.z).toFp16x16();  //x_fastrecip((val / 8).toFp16x16());  //x_fastrecip_unshift(val.toFp16x16(), shiftDown);
+
+    int invZ = recip(hi.z).toFp16x16();
+
+    mid.x = ((long long)hi.x.toFp16x16() * invZ) >> (shiftDown + 16);
+    mid.y = ((long long)hi.y.toFp16x16() * invZ) >> (shiftDown + 16);
+
+      if(src.z < fp::fromFloat(100))
+    {
+        goto small;
+    }
+
+
+    // do
+    // {
+    //     mid = (low + hi) / 2;
+    //     ++it;
+
+    //     if(abs(mid.z - near) < epsilon)
+    //     {
+    //         break;
+    //     }
+
+    //     if(mid.z > near)
+    //     {
+    //         hi = mid;
+    //     }
+    //     else
+    //     {
+    //         low = mid;
+    //     }
+
+    // } while(true);
+
+    //printf("It: %d\n", it);
+
+    dest.x = (mid.x * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
+    dest.y = (mid.y * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
+
+    return;
+
+
+#endif
+
     // TODO: may be able to get away with multiplying by distToNearPlane / z
 
     if(src.z < fp::fromFloat(100))
@@ -141,3 +272,57 @@ void Viewport::clampfp(X_Vec2_fp16x16& v)
     v.x = x.toFp16x16();
     v.y = y.toFp16x16();
 }
+
+#include "geo/X_Ray3.h"
+
+void Viewport::projectBisect(const Vec3fp& src, X_Vec2_fp16x16& dest)
+{
+#if 0
+    fp dist = fp::fromFloat(1.0);
+    Plane plane;
+
+    plane.normal = Vec3fp(0, 0, -fp::fromInt(1));
+    plane.d = dist;
+
+    Ray3 ray(Vec3fp(0, 0, 0), src);
+
+
+    ray.clipToPlane(plane, ray);
+
+    dest.x = (ray.v[1].x * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
+    dest.y = (ray.v[1].y * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
+#endif
+    
+
+    Vec3fp low(0, 0, 0);
+    Vec3fp hi = src;
+
+    Vec3fp mid;
+
+    fp near = fp::fromFloat(1.0);
+    fp epsilon = fp::fromFloat(0.001);
+
+    do
+    {
+        mid = (low + hi) / 2;
+
+        if(abs(mid.z - near) < epsilon)
+        {
+            break;
+        }
+
+        if(mid.z > near)
+        {
+            hi = mid;
+        }
+        else
+        {
+            low = mid;
+        }
+
+    } while(true);
+
+    dest.x = (mid.x * distToNearPlane + fp::fromInt(w / 2)).toFp16x16();
+    dest.y = (mid.y * distToNearPlane + fp::fromInt(h / 2)).toFp16x16();
+}
+
