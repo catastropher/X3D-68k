@@ -320,6 +320,9 @@ static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engine
     renderer->dynamicLightsNeedingUpdated = 0xFFFFFFFF;
 }
 
+// FIXME: just for testing...
+void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext);
+
 static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineContext* engineContext)
 {
     X_RenderContext renderContext;
@@ -331,6 +334,8 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
     StopWatch::start("traverse-level");
     x_cameraobject_render(cam, &renderContext);
     StopWatch::stop("traverse-level");
+
+    customRenderCallback(engineContext, &renderContext);
 
     x_ae_context_scan_edges(&renderer->activeEdgeContext);
 }

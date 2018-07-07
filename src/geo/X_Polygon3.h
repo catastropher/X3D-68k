@@ -40,6 +40,9 @@ struct Polygon3
     bool clipToFrustum(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags) const;
     bool clipToFrustumPreserveEdgeIds(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags, int* edgeIds, int* edgeIdsDest);
     void reverse();
+
+    void constructRegular(int totalSides, fp sideLength, fp angleOffset, Vec3fp translation);
+    void renderWireframe(X_RenderContext& renderContext, X_Color color);
     
     Vec3fp* vertices;
     int totalVertices;

@@ -25,10 +25,16 @@
 #include "X_span.h"
 #include "X_Viewport.h"
 #include "geo/X_Ray3.h"
+#include "memory/X_BitSet.hpp"
 
 #include "memory/X_ArenaAllocator.hpp"
 
 #define X_AE_SURFACE_MAX_SPANS 332
+
+enum SurfaceFlags
+{
+    SURFACE_NO_DRAW_SPANS = 1
+};
 
 struct X_AE_Surface
 {
@@ -105,6 +111,8 @@ struct X_AE_Surface
     struct X_AE_Surface* prev;
     
     struct X_AE_Surface* parent;    
+
+    EnumBitSet<SurfaceFlags> flags;
 };
 
 #define X_AE_EDGE_LEFT_SURFACE 0
@@ -263,6 +271,8 @@ struct X_AE_Context
                         int* edgeIds,
                         int bspKey,
                         bool inSubmodel);
+
+    void addPortalPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey);
 
     X_AE_Edge* addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected);
 

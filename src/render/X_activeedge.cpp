@@ -99,6 +99,7 @@ X_AE_Surface* X_AE_Context::createSurface(X_BspSurface* bspSurface, int bspKey)
     surface->crossCount = 0;
     surface->closestZ = 0x7FFFFFFF;
     surface->modelOrigin = &currentModel->origin;
+    surface->flags.clear();
     
     if(currentParent == NULL)
     {
@@ -583,6 +584,37 @@ void X_AE_Context::addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int total
     addSubmodelRecursive(&poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
 }
 
+void X_AE_Context::addPortalPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey)
+{
+    x_ae_surface_reset_current_parent(this);
+
+    int edgeIds[32] = { 0 };
+
+    X_BspPlane bspPlane;
+    bspPlane.plane = polygonPlane;
+
+    X_BspSurface bspSurface;
+    bspSurface.plane = &bspPlane;
+
+    auto startSurface = surfaces.end();
+
+    addSubmodelRecursive(&polygon, x_bsplevel_get_root_node(renderContext->level), edgeIds, &bspSurface, geoFlags, bspKey);
+
+    auto endSurface = surfaces.end();
+
+    for(auto s = startSurface; s != endSurface; ++s)
+    {
+        s->flags.set(SURFACE_NO_DRAW_SPANS);
+    }
+
+    // if(currentParent != nullptr)
+    // {
+    //     // Disable rendering spans of the parent surface because we're going to render the portal in its place
+    //     currentParent->flags.set(SURFACE_NO_DRAW_SPANS);
+
+    // }
+}
+
 void X_AE_Context::emitSpan(int left, int right, int y, X_AE_Surface* surface)
 {
     if(left == right)
@@ -853,8 +885,16 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     StopWatch::start("render-spans");
 
+    int count = 0;
+
     for(X_AE_Surface* surface = context->surfaces.begin(); surface != context->surfaces.end(); ++surface)
     {
+        if(surface->flags.isSet(SURFACE_NO_DRAW_SPANS))
+        {
+            ++count;
+            continue;
+        }
+
         if(surface->last == &surface->spanHead)
             continue;
 

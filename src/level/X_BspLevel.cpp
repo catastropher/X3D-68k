@@ -482,5 +482,15 @@ int x_bsplevel_find_nodes_intersecting_sphere(X_BspLevel* level, X_BoundSphere* 
     return x_bsplevel_find_nodes_intersecting_sphere_recursive(x_bsplevel_get_root_node(level), sphere, dest) - dest;
 }
 
+Portal* X_BspLevel::addPortal()
+{
+    auto portal = Zone::alloc<Portal>();
+
+    portal->next = portalHead;
+    portalHead = portal;
+
+    return portal;
+}
+
 
 

@@ -15,32 +15,26 @@
 
 #pragma once
 
-#include "geo/X_Vec3.h"
+#include "geo/X_Polygon3.h"
+#include "math/X_Mat4x4.h"
+#include "memory/X_BitSet.hpp"
 
+struct X_AE_Surface;
 
-struct X_EngineContext;
-struct X_Renderer;
-struct X_CameraObject;
-struct X_Frustum;
-struct X_Texture;
-struct Mat4x4;
-struct X_BspLevel;
-struct X_BspModel;
-struct X_Screen;
-
-typedef struct X_RenderContext
+enum PortalFlags
 {
-    X_Renderer* renderer;
-    X_CameraObject* cam;
-    X_Screen* screen;
-    X_Texture* canvas;
-    x_fp0x16* zbuf;
-    X_Frustum* viewFrustum;
-    Mat4x4* viewMatrix;
-    X_EngineContext* engineContext;
-    X_BspLevel* level;
-    
-    int currentFrame;
-    Vec3 camPos;
-} X_RenderContext;
+    PORTAL_ENABLED = 1
+};
+
+struct Portal
+{
+    Polygon3 poly;
+    Vec3fp center;
+    Mat4x4 orientation;
+    X_AE_Surface* aeSurface;
+    Portal* otherSide;
+    EnumBitSet<PortalFlags> flags;
+
+    Portal* next;
+};
 

@@ -26,6 +26,83 @@
 
 #include "game.hpp"
 
+Vec3fp position = Vec3fp(0, 0, 0);
+Mat4x4 orientation;
+
+void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext)
+{
+    auto level = engineContext->getCurrentLevel();
+    auto cam = renderContext->cam;
+
+    Vec3 v[32];
+    Polygon3 polygon(v, 32);
+
+    X_RayTracer tracer;
+
+    if(!x_engine_level_is_loaded(engineContext)
+        || x_bsplevel_find_leaf_point_is_in(level, &renderContext->cam->collider.position)->contents == X_BSPLEAF_SOLID)
+    {
+        return;
+    }
+
+    int dist = 5000;
+
+    Vec3fp up, forward, right;
+    cam->viewMatrix.extractViewVectors(forward, right, up);
+
+    Vec3 f = MakeVec3(forward);
+
+    Vec3 start = cam->collider.position;
+    Vec3 end = start + f * dist;
+
+    BoundBox box;
+
+    x_raytracer_init(&tracer, level, x_bsplevel_get_level_model(level), &start, &end, &box);
+
+    polygon.constructRegular(5, fp::fromInt(20), 0, Vec3fp(0, 0, 0));
+
+    Vec3fp camPos = MakeVec3fp(cam->collider.position);
+
+    if(x_keystate_key_down(engineContext->getKeyState(), (X_Key)'f') && x_raytracer_trace(&tracer))
+    {
+        // Make sure we're on the normal side of the plane
+        if(!tracer.collisionPlane.pointOnNormalFacingSide(camPos))
+        {
+            printf("Flip!\n");
+            tracer.collisionPlane.flip();
+        }
+        else
+        {
+            //polygon.reverse();
+        }
+
+        printf("Hit\n");
+        tracer.collisionPlane.print();
+        position = MakeVec3fp(tracer.collisionPoint);// + tracer.collisionPlane.normal * fp::fromFloat(25);
+
+
+        tracer.collisionPlane.getOrientation(*cam, orientation);
+
+        
+
+        printf("==========\n");
+        orientation.print();
+    }
+
+    for(int i = 0; i < polygon.totalVertices; ++i)
+    {
+        polygon.vertices[i] = orientation.transform(polygon.vertices[i]) + position;
+    }
+
+    //orientation.visualize(Vec3fp(0, 0, 0), *renderContext);
+
+    polygon.reverse();
+
+    polygon.renderWireframe(*renderContext, 255);
+    
+    engineContext->getRenderer()->activeEdgeContext.addPortalPolygon(polygon, tracer.collisionPlane, BoundBoxFrustumFlags((1 << 4) - 1), 0);
+}
+
 int main(int argc, char* argv[])
 {
     // int val = 581.641052 * 65536;

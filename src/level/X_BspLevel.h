@@ -26,6 +26,7 @@
 #include "geo/X_BoundBox.h"
 #include "memory/X_Link.h"
 #include "math/X_Mat4x4.h"
+#include "level/X_Portal.hpp"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -250,6 +251,8 @@ typedef struct X_BspLevel
             dest->vertices[i] = MakeVec3fp(v + *modelOrigin);
         }
     }
+
+    Portal* addPortal();
     
     X_BspLevelFlags flags;
     char name[X_BSPLEVEL_MAX_NAME_LENGTH];
@@ -308,6 +311,8 @@ private:
         X_BspModel* model,
         int parentFlags,
         unsigned char* drawnEdges);
+
+    Portal* portalHead;
 
 } X_BspLevel;
 

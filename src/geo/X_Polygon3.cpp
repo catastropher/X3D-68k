@@ -20,6 +20,7 @@
 #include "X_Ray3.h"
 #include "render/X_TriangleFiller.h"
 #include "X_Frustum.h"
+#include "math/X_Mat4x4.h"
 
 bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
 {
@@ -233,6 +234,37 @@ void Polygon3::reverse()
 {
     for(int i = 0; i < totalVertices / 2; ++i)
         std::swap(vertices[i], vertices[totalVertices - i - 1]);
+}
+
+void Polygon3::constructRegular(int totalSides, fp sideLength, fp angleOffset, Vec3fp translation)
+{
+    fp angle = angleOffset;
+    fp dAngle = fp::fromInt(256) / totalSides;
+
+    const fp conversionFactor = fp(92681);          // 2 / sqrt(2)
+    fp radius = sideLength * conversionFactor;
+
+    for(int i = 0; i < totalSides; ++i)
+    {
+        vertices[i].x = radius * x_cos(angle) + translation.x;
+        vertices[i].y = radius * x_sin(angle) + translation.y;
+        vertices[i].z = translation.z;
+
+        angle += dAngle;
+    }
+
+    totalVertices = totalSides;
+}
+
+void Polygon3::renderWireframe(X_RenderContext& renderContext, X_Color color)
+{
+    for(int i = 0; i < totalVertices; ++i)
+    {
+        int next = (i + 1 < totalVertices ? i + 1 : 0);
+
+        Ray3 ray(vertices[i], vertices[next]);
+        ray.render(renderContext, color);
+    }
 }
 
 void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color)

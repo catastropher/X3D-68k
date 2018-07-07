@@ -44,19 +44,17 @@ void Plane::print() const
 
 void Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
 {
-    Vec3 temp = MakeVec3(normal);
-    temp.y = 0;
+    Vec3fp temp(normal.x, 0, normal.z);
+    Vec3fp camPos = MakeVec3fp(cam.collider.position);
     
     Mat4x4 mat;
-    mat.loadXRotation(X_ANG_270);
+    mat.loadYRotation(X_ANG_270);
     
     Vec3fp right, up;
     
-    if(abs(normal.y) != X_FP16x16_ONE)
+    if(abs(normal.y) != fp::fromInt(1))
     {
-        Vec3fp tempTemp = MakeVec3fp(temp);
-
-        right = mat.transform(tempTemp);
+        right = mat.transform(temp);
         right.normalize();
         up = normal.cross(right);
     }
@@ -71,6 +69,12 @@ void Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
         
         up.y = 0;
         up.normalize();
+
+        // On the ceiling, so we need to reverse the up direction
+        if(normal.y == fp::fromInt(1))
+        {
+            up = -up;
+        }
     }
     
     dest.loadIdentity();

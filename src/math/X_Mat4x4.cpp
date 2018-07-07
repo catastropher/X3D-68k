@@ -234,23 +234,22 @@ void Mat4x4::transpose3x3()
     }
 }
 
-void x_mat4x4_visualize(Mat4x4* mat, Vec3 position, X_RenderContext* renderContext)
+void Mat4x4::visualize(Vec3fp position, const X_RenderContext& renderContext) const
 {
-    // const X_Palette* p = x_palette_get_quake_palette();
-    // X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
+    const X_Palette* p = x_palette_get_quake_palette();
+    X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
     
-    // for(int i = 0; i < 3; ++i)
-    // {
-    //     X_Vec4 v;
-    //     x_mat4x4_get_column(mat, i, &v);
+    for(int i = 0; i < 3; ++i)
+    {
+        Vec4 v = getColumn(i);
         
-    //     Vec3 end = x_vec4_to_vec3(&v);
-    //     end = x_vec3_scale_int(&end, 50);
-    //     end += position;
+        Vec3fp end = v.toVec3();
+        end = end * 50;
+        end += position;
         
-    //     Ray3 r = x_ray3_make(position, end);
-    //     x_ray3_render(&r, renderContext, color[i]);
-    // }
+        Ray3 r(position, end);
+        r.render(renderContext, color[i]);
+    }
 }
 
 
