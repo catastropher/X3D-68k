@@ -125,7 +125,7 @@ private:
     bool parseLine();
     char getCh();
     void nextCh();
-    void terminateString(char* strEnd);
+    void terminateXString(char* strEnd);
     bool eof();
     
     void parseSectionDecl();

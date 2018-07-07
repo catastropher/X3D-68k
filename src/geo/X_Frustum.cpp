@@ -24,7 +24,7 @@ void x_frustum_print(const X_Frustum* frustum)
     for(int i = 0; i < frustum->totalPlanes; ++i)
     {
         printf("\t%d: ", i);
-        x_plane_print(frustum->planes + i);
+        frustum->planes[i].print();
     }
     
     printf("\n");

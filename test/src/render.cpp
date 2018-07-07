@@ -71,8 +71,8 @@ static void update_dynamic_lights(X_EngineContext* engineContext)
     
     if(down && !lastDown)
     {
-        Vec3 up, right, forward;
-        x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
+        Vec3fp up, right, forward;
+        cam->viewMatrix.extractViewVectors(forward, right, up);
         
         X_Light* light = add_light(engineContext->getRenderer());
         
@@ -81,7 +81,7 @@ static void update_dynamic_lights(X_EngineContext* engineContext)
         
         light->position = cam->base.position;
         light->intensity = 300;
-        light->direction = forward;
+        light->direction = MakeVec3(forward);
         //light->flags |= X_LIGHT_ENABLED;
     }
     

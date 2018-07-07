@@ -96,6 +96,8 @@ set(X_SOURCES
     # level
     src/level/X_BspLevel.cpp
     src/level/X_BspLevelLoader.cpp
+    src/level/X_BspModel.cpp
+    src/level/X_BspNode.cpp
     src/level/X_EntityModel.cpp
     src/level/X_EntityModelLoader.cpp
     src/level/X_RayTracer.cpp
@@ -156,6 +158,7 @@ set(X_SOURCES
     # util
     src/util/X_Json.cpp
     src/util/X_JsonParser.cpp
+    src/util/X_StopWatch.cpp
     src/util/X_util.cpp
 )
 
@@ -189,6 +192,7 @@ if(${XTARGET} STREQUAL "nspire")
         src/render/X_span_arm.s
         src/platform/platform_nspire.cpp
         src/platform/socket_nspire.cpp
+        src/platform/nspire/X_NspireScreenDriver.cpp
     )
 endif()
 

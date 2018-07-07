@@ -38,7 +38,7 @@ bool ConsoleVariableInt::trySetValue(const char* value)
     return true;
 }
 
-void ConsoleVariableInt::toString(String& dest) const
+void ConsoleVariableInt::toXString(XString& dest) const
 {
     char buf[32];
     sprintf(buf, "%d", var);

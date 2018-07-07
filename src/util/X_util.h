@@ -19,6 +19,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "math/X_fix.h"
+
 #define X_SWAP(_a, _b) { __typeof__(_a) _temp = (_a); (_a) = (_b); (_b) = _temp; }
 
 #define X_MIN(_a, _b) ({ __typeof__(_a) _aa = _a; __typeof__(_b) _bb = _b; _aa < _bb ? _aa : _bb; })
@@ -41,6 +43,51 @@ static inline void x_print_binary(const char* label, int num, int bits)
     }
     
     printf("\n");
+}
+
+template<typename T>
+constexpr T maxValue();
+
+template<typename T>
+constexpr T minValue();
+
+template<>
+inline constexpr int maxValue()
+{
+    return 0x7FFFFFFF;
+}
+
+template<>
+inline constexpr int minValue()
+{
+    return -0x7FFFFFFF;
+}
+
+template<>
+inline constexpr fp minValue()
+{
+    return fp(minValue<int>());
+}
+
+template<>
+inline constexpr fp maxValue()
+{
+    return fp(maxValue<int>());
+}
+
+template<typename T>
+T clamp(T val, T min, T max)
+{
+    if(val < min)
+    {
+        val = min;
+    }
+    else if(val > max)
+    {
+        val = max;
+    }
+
+    return val;
 }
 
 int x_count_prefix_match_length(const char* a, const char* b);

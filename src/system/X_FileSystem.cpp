@@ -17,6 +17,7 @@
 
 #include "X_FileSystem.hpp"
 #include "memory/X_Memory.hpp"
+#include "engine/X_config.h"
 
 Link<FilePath> FileSystem::searchPathRoot;
 Link<FilePath>* FileSystem::pakFileHead;
@@ -63,7 +64,8 @@ bool FileSystem::locateFileInSearchPaths(const char* name, FileLocation& dest)
 
         dest.path
             .set(path->c_str())
-            .appendSegment(name);
+            .appendSegment(name)
+            .append(X_FILE_AUTO_ADDED_EXTENSION);
 
         dest.file = fopen(dest.path.c_str(), "rb");
         if(dest.file != nullptr)

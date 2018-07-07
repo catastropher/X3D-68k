@@ -23,20 +23,23 @@ struct X_Renderer;
 struct X_CameraObject;
 struct X_Frustum;
 struct X_Texture;
-struct X_Mat4x4;
+struct Mat4x4;
 struct X_BspLevel;
+struct X_BspModel;
+struct X_Screen;
 
 typedef struct X_RenderContext
 {
-    struct X_Renderer* renderer;
-    struct X_CameraObject* cam;
-    struct X_Screen* screen;
-    struct X_Texture* canvas;
+    X_Renderer* renderer;
+    X_CameraObject* cam;
+    X_Screen* screen;
+    X_Texture* canvas;
     x_fp0x16* zbuf;
-    struct X_Frustum* viewFrustum;
-    struct X_Mat4x4* viewMatrix;
-    struct X_EngineContext* engineContext;
-    struct X_BspLevel* level;
+    X_Frustum* viewFrustum;
+    Mat4x4* viewMatrix;
+    X_EngineContext* engineContext;
+    X_BspLevel* level;
+    
     int currentFrame;
     Vec3 camPos;
 } X_RenderContext;

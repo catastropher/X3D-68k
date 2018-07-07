@@ -50,6 +50,26 @@ struct Vec3Template
     {
         return Vec3Template(y, -z, -x);
     }
+
+    T dot(const Vec3Template& v) const
+    {
+        return x * v.x + y * v.y + z * v.z;
+    }
+
+    Vec3Template operator-() const
+    {
+        return Vec3Template(-x, -y, -z);
+    }
+    
+    Vec3Template cross(const Vec3Template& v) const
+    {
+        return Vec3Template(
+            y * v.z - v.y * z,
+            z * v.x - v.z * x,
+            x * v.y - v.x * y);
+    }
+
+    void normalize();
     
     T x;
     T y;
@@ -57,6 +77,18 @@ struct Vec3Template
 };
 
 using Vec3fp = Vec3Template<fp>;
+
+template<typename T, typename U>
+inline Vec3Template<T> operator*(const Vec3Template<T>& a, const U& b)
+{
+    return Vec3Template<T>(a.x * b, a.y * b, a.z * b);
+}
+
+template<typename T, typename U>
+inline Vec3Template<T> operator/(const Vec3Template<T>& a, const U& b)
+{
+    return Vec3Template<T>(a.x / b, a.y / b, a.z / b);
+}
 
 template<typename From, typename To>
 inline void convert(Vec3Template<From>& from, Vec3Template<To>& to)
@@ -76,6 +108,18 @@ inline void convert(Vec3Template<float>& from, Vec3Template<x_fp16x16>& to)
 }
 
 using Vec3 = Vec3Template<x_fp16x16>;
+
+// For the refactoring effort
+static inline Vec3 MakeVec3(const Vec3fp v)
+{
+    return Vec3(v.x.internalValue(), v.y.internalValue(), v.z.internalValue());
+}
+
+// For the refactoring effort
+static inline Vec3fp MakeVec3fp(const Vec3 v)
+{
+    return Vec3fp(fp(v.x), fp(v.y), fp(v.z));
+}
 
 typedef Vec3 X_Vec3_int;
 
@@ -258,4 +302,11 @@ static inline Vec3 x_vec3_convert_quake_coord_to_x3d_coord(const Vec3* v)
     return Vec3(v->y, -v->z, -v->x);
 }
 
+template<>
+inline void Vec3fp::normalize()
+{
+    Vec3 v = MakeVec3(*this);
+    x_vec3_normalize(&v);
+    *this = MakeVec3fp(v);
+}
 

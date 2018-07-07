@@ -21,6 +21,7 @@
 #include "util/X_util.h"
 #include "X_Font.h"
 #include "system/X_File.h"
+#include "render/X_Renderer.h"
 
 bool X_Texture::saveToFile(const char* fileName)
 {
@@ -47,7 +48,7 @@ bool X_Texture::loadFromFile(const char* fileName)
     }
     
     char signature[5];
-    reader.readFixedLengthString(signature, 4);
+    reader.readFixedLengthXString(signature, 4);
     
     if(strcmp(signature, "XTEX") != 0)
     {
@@ -73,37 +74,84 @@ void X_Texture::clampVec2i(X_Vec2i& v)
     v.y = std::min(v.y, h - 1);
 }
 
+static int signof(int x)
+{
+    return x < 0 ? -1 : 1;
+}
+
 void X_Texture::drawLine(X_Vec2i start, X_Vec2i end, X_Color color)
 {
     clampVec2i(start);
     clampVec2i(end);
-    
+
     int dx = abs(end.x - start.x);
     int sx = start.x < end.x ? 1 : -1;
     int dy = abs(end.y - start.y);
-    int sy = start.y < end.y ? 1 : -1; 
+    int sy = start.y < end.y ? 1 : -1;
     int err = (dx > dy ? dx : -dy) / 2;
     X_Vec2i pos = start;
-    
+
     while(1)
     {
         setTexel(pos, color);
-        
+
         if(x_vec2_equal(&pos, &end))
             break;
-        
+
         int old_err = err;
         if (old_err > -dx)
         {
             err -= dy;
             pos.x += sx;
         }
-        
+
         if (old_err < dy)
         {
             err += dx;
             pos.y += sy;
         }
+    }
+}
+
+void X_Texture::drawLineShaded(X_Vec2i start, X_Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable)
+{
+    clampVec2i(start);
+    clampVec2i(end);
+
+    int dx = abs(end.x - start.x);
+    int sx = start.x < end.x ? 1 : -1;
+    int dy = abs(end.y - start.y);
+    int sy = start.y < end.y ? 1 : -1;
+    int err = (dx > dy ? dx : -dy) / 2;
+    X_Vec2i pos = start;
+
+    int totalPixels = std::max(dx, dy) + 1;
+
+    fp dIntensity = (endIntensity - startIntensity) * (X_COLORMAP_SHADES_PER_COLOR - 1) / totalPixels;
+    fp intensity = startIntensity * (X_COLORMAP_SHADES_PER_COLOR - 1) + fp::fromFloat(0.5);
+
+    while(1)
+    {
+        fp clamped = clamp(intensity, fp::fromInt(0), fp::fromInt(X_COLORMAP_SHADES_PER_COLOR - 1));
+        setTexel(pos, colorTable[color * X_COLORMAP_SHADES_PER_COLOR + clamped.toInt()]);
+
+        if(x_vec2_equal(&pos, &end))
+            break;
+
+        int old_err = err;
+        if (old_err > -dx)
+        {
+            err -= dy;
+            pos.x += sx;
+        }
+
+        if (old_err < dy)
+        {
+            err += dx;
+            pos.y += sy;
+        }
+
+        intensity += dIntensity;
     }
 }
 

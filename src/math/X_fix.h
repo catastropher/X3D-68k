@@ -32,7 +32,7 @@ struct fp
 {
     fp() { }
 
-    fp(int val_) : val(val_) { }
+    constexpr fp(int val_) : val(val_) { }
     
     friend fp operator+(fp a, fp b);
     friend fp operator+(fp a, int b);
@@ -82,7 +82,7 @@ struct fp
         return val;
     }
     
-    int internalValue()
+    int internalValue() const
     {
         return val;
     }
@@ -135,6 +135,13 @@ inline fp operator-(fp a, int b)
 inline fp operator-(int a, fp b)
 {
     return fp::fromInt(a) - b;
+}
+
+inline fp& operator+=(fp& a, fp b)
+{
+    a.val += b.val;
+
+    return a;
 }
 
 inline fp operator-(fp f)
@@ -297,6 +304,33 @@ static inline x_fp16x16 x_fastrecip(unsigned int val)
     return x >> (16 - shiftUp);
 }
 
+static inline int mul(int a, int b)
+{
+    return ((long long)a * b) >> 16;
+}
+
+#include <cstdio>
+
+static inline x_fp16x16 x_fastrecip_unshift(unsigned int val, int& shift)
+{
+    const int bits = 16;
+    int shiftDown =  (32 - bits) - __builtin_clz(val);
+    val >>= shiftDown;
+
+    const unsigned int ADD = (48 << bits) / 17;
+
+    unsigned int x = ADD - (val << 1);
+
+    const int ONE = 1 << bits;
+
+    x = x + mul(x, ONE - mul(val, x));
+    x = x + mul(x, ONE - mul(val, x));
+    x = x + mul(x, ONE - mul(val, x));
+
+    shift = (shiftDown + bits - (32 - bits));
+
+    return x;
+}
 
 
 template<>
@@ -315,5 +349,10 @@ template<>
 inline void convert(fp& from, x_fp16x16& to)
 {
     to = from.internalValue();
+}
+
+inline fp abs(fp val)
+{
+    return val < 0 ? -val : val;
 }
 

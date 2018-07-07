@@ -18,13 +18,13 @@
 #include "X_String.h"
 #include "X_alloc.h"
 
-void x_string_init(X_String* str, const char* initialValue)
+void x_string_init(X_XString* str, const char* initialValue)
 {
     str->data = (char*)x_malloc(strlen(initialValue) + 1);
     strcpy(str->data, initialValue);
 }
 
-void x_string_cleanup(X_String* str)
+void x_string_cleanup(X_XString* str)
 {
     if(str->data)
         x_free(str->data);
@@ -32,21 +32,21 @@ void x_string_cleanup(X_String* str)
     str->data = NULL;
 }
 
-X_String* x_string_assign(X_String* str, const char* value)
+X_XString* x_string_assign(X_XString* str, const char* value)
 {
     str->data = (char*)x_realloc(str->data, strlen(value) + 1);
     strcpy(str->data, value);
     return str;
 }
 
-X_String* x_string_concat_cstr(X_String* strToAppendTo, const char* strToAppend)
+X_XString* x_string_concat_cstr(X_XString* strToAppendTo, const char* strToAppend)
 {
     strToAppendTo->data = (char*)x_realloc(strToAppendTo->data, strlen(strToAppendTo->data) + strlen(strToAppend) + 1);
     strcat(strToAppendTo->data, strToAppend);
     return strToAppendTo;
 }
 
-X_String* x_string_concat(X_String* strToAppendTo, const X_String* strToAppend)
+X_XString* x_string_concat(X_XString* strToAppendTo, const X_XString* strToAppend)
 {
     strToAppendTo->data = (char*)x_realloc(strToAppendTo->data, strlen(strToAppendTo->data) + strlen(strToAppend->data) + 1);
     strcat(strToAppendTo->data, strToAppend->data);

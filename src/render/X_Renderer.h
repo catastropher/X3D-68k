@@ -19,10 +19,13 @@
 #include "dev/X_Console.h"
 #include "X_activeedge.h"
 #include "X_Light.h"
+#include "memory/X_CircularQueue.hpp"
 
 #define X_RENDERER_FILL_DISABLED -1
 
 #define X_RENDERER_MAX_LIGHTS 32
+
+
 
 typedef struct X_Renderer
 {
@@ -59,6 +62,8 @@ typedef struct X_Renderer
     x_fp16x16 mipDistances[X_BSPTEXTURE_MIP_LEVELS - 1];
     
     bool wireframe;
+
+
 } X_Renderer;
 
 #define X_COLORMAP_SHADES_PER_COLOR 64

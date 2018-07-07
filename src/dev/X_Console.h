@@ -18,6 +18,7 @@
 #include "memory/X_String.h"
 #include "math/X_fix.h"
 #include "geo/X_Vec2.h"
+#include "geo/X_Vec3.h"
 #include "render/X_Font.h"
 #include "render/X_Screen.h"
 #include "system/X_Keys.h"
@@ -29,7 +30,8 @@ typedef enum X_ConsoleVarType
     X_CONSOLEVAR_FLOAT,
     X_CONSOLEVAR_FP16X16,
     X_CONSOLEVAR_STRING,
-    X_CONSOLEVAR_BOOL
+    X_CONSOLEVAR_BOOL,
+    X_CONSOLEVAR_VEC3
 } X_ConsoleVarType;
 
 #define X_CONSOLE_INPUT_BUF_SIZE 512
@@ -48,8 +50,9 @@ typedef struct X_ConsoleVar
         float* floatPtr;
         x_fp16x16* fp16x16Ptr;
         bool* boolPtr;
-        X_String* stringPtr;
+        X_XString* stringPtr;
         void* voidPtr;
+        Vec3fp* vec3Ptr;
     };    
 } X_ConsoleVar;
 
@@ -90,7 +93,7 @@ typedef struct X_Console
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;
-    X_String commandHistory[X_CONSOLE_COMMAND_HISTORY_SIZE];
+    X_XString commandHistory[X_CONSOLE_COMMAND_HISTORY_SIZE];
     int commandHistorySize;
     int commandHistoryPos;
     

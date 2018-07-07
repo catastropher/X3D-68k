@@ -19,38 +19,34 @@
 #include "geo/X_Vec3.h"
 #include "geo/X_Vec4.h"
 
-typedef struct X_Mat4x4
-{
-    x_fp16x16 elem[4][4];
-} X_Mat4x4;
-
-void x_mat4x4_load_identity(X_Mat4x4* mat);
-void x_mat4x4_load_x_rotation(X_Mat4x4* mat, fp angle);
-void x_mat4x4_load_y_rotation(X_Mat4x4* mat, fp angle);
-void x_mat4x4_load_z_rotation(X_Mat4x4* mat, fp angle);
-void x_mat4x4_load_translation(X_Mat4x4* mat, Vec3* translation);
-
-void x_mat4x4_add(X_Mat4x4* a, X_Mat4x4* b, X_Mat4x4* dest);
-void x_mat4x4_mul(const X_Mat4x4* a, const X_Mat4x4* b, X_Mat4x4* dest);
-void x_mat4x4_transpose(X_Mat4x4* mat);
-
-void x_mat4x4_get_column(const X_Mat4x4* mat, int col, X_Vec4* colDest);
-void x_mat4x4_set_column(X_Mat4x4* mat, int col, const X_Vec4* colSrc);
-void x_mat4x4_get_row(const X_Mat4x4* mat, int row, X_Vec4* rowDest);
-void x_mat4x4_set_row(X_Mat4x4* mat, int row, const X_Vec4* rowSrc);
-
-void x_mat4x4_transform_vec4(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16x16* dest);
-void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const Vec3* src, Vec3* dest);
-
-void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const Vec3* normal, Vec3* dest);
-
-void x_mat4x4_print(const X_Mat4x4* mat);
-void x_mat4x4_print_machine_readable(const X_Mat4x4* mat);
-
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest);
-void x_mat4x4_invert_diagonal(const X_Mat4x4* mat, X_Mat4x4* dest);
-void x_mat4x4_transpose_3x3(X_Mat4x4* mat);
-
 struct X_RenderContext;
-void x_mat4x4_visualize(X_Mat4x4* mat, Vec3 position, struct X_RenderContext* renderContext);
 
+struct Mat4x4
+{
+    void loadIdentity();
+    void loadXRotation(fp angle);
+    void loadYRotation(fp angle);
+    void loadZRotation(fp angle);
+    void loadTranslation(const Vec3fp& translation);
+
+    Vec4 getColumn(int col) const;
+    Vec4 getRow(int row) const;
+
+    void setColumn(int col, const Vec4& v);
+    void setRow(int col, const Vec4& v);
+
+    Vec4 transform(const Vec4& src) const;
+    Vec3fp transform(const Vec3fp& src) const;
+    Vec3fp transformNormal(const Vec3fp& normal) const;
+
+    void print() const;
+
+    void extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const;
+    void invertDiagonal(Mat4x4 dest) const;
+    void transpose3x3();
+    void visualize(Vec3fp position, const X_RenderContext& renderContext) const;
+
+    Mat4x4 operator*(const Mat4x4& mat) const;
+
+    fp elem[4][4];
+};

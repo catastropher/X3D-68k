@@ -61,9 +61,11 @@ static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeI
     while(!is_leaf_node(clipNodeId))
     {
         X_BspClipNode* clipNode = x_bsplevel_get_clip_node(level, clipNodeId);
-        X_Plane* plane = &level->planes[clipNode->planeId].plane;
+        Plane* plane = &level->planes[clipNode->planeId].plane;
         
-        if(x_plane_point_distance(plane, v) >= 0)
+        Vec3fp vTemp = MakeVec3fp(*v);
+
+        if(plane->pointOnNormalFacingSide(vTemp))
             clipNodeId = clipNode->frontChild;
         else
             clipNodeId = clipNode->backChild;
@@ -78,15 +80,14 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
                                                x_fp16x16 startT,
                                                Vec3* end,
                                                x_fp16x16 endT,
-                                               X_Plane* plane,
+                                               Plane* plane,
                                                x_fp16x16 intersectionT,
                                                x_fp16x16 startDist
                                               )
 {
-    X_Ray3_fp16x16 ray = x_ray3_make(*start, *end);
+    Ray3 ray(MakeVec3fp(*start), MakeVec3fp(*end));
  
-    Vec3 intersection;
-    x_ray3_lerp(&ray, intersectionT, &intersection);
+    Vec3 intersection = MakeVec3(ray.lerp(intersectionT));
     
     int startChildNode;
     int endChildNode;
@@ -114,7 +115,7 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
     if(startDist < 0)
     {
         // Flip the direction of the plane because we're colliding on the wrong side
-        x_plane_flip_direction(&trace->collisionPlane);
+        trace->collisionPlane.flip();
     }
     
     trace->collisionPoint = intersection;
@@ -129,10 +130,13 @@ bool visit_node(X_RayTracer* trace, int clipNodeId, Vec3* start, x_fp16x16 start
         return 1;
     
     X_BspClipNode* node = x_bsplevel_get_clip_node(trace->level, clipNodeId);
-    X_Plane* plane = &trace->level->planes[node->planeId].plane;
+    Plane* plane = &trace->level->planes[node->planeId].plane;
     
-    x_fp16x16 startDist = x_plane_point_distance(plane, start);
-    x_fp16x16 endDist = x_plane_point_distance(plane, end);
+    Vec3fp startTemp = MakeVec3fp(*start);
+    Vec3fp endTemp = MakeVec3fp(*end);
+
+    x_fp16x16 startDist = plane->distanceTo(startTemp).toFp16x16();
+    x_fp16x16 endDist = plane->distanceTo(endTemp).toFp16x16();
     
     if(both_points_on_front_side(startDist, endDist))
         return visit_node(trace, node->frontChild, start, startT, end, endT);
@@ -145,25 +149,31 @@ bool visit_node(X_RayTracer* trace, int clipNodeId, Vec3* start, x_fp16x16 start
     return explore_both_sides_of_node(trace, node, start, startT, end, endT, plane, intersectionT, startDist);
 }
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, X_BoundBox* boundBox)
+void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox)
 {
     trace->modelOrigin = &model->origin;
     trace->level = level;
-    trace->ray.v[0] = *start;
-    trace->ray.v[1] = *end;
+    trace->ray.v[0] = MakeVec3fp(*start);
+    trace->ray.v[1] = MakeVec3fp(*end);
     trace->rootClipNode = model->clipNodeRoots[0];
 }
 
 static bool trace_model(X_RayTracer* trace, X_BspModel* model)
 {
-    Vec3 start = x_vec3_sub(trace->ray.v + 0, &model->origin);
-    Vec3 end = x_vec3_sub(trace->ray.v + 1, &model->origin);
+    Vec3fp start = trace->ray.v[0] - MakeVec3fp(model->origin);
+    Vec3fp end = trace->ray.v[1] - MakeVec3fp(model->origin);
+
+    Vec3 startTemp = MakeVec3(start);
+    Vec3 endTemp = MakeVec3(end);
     
-    bool success = !visit_node(trace, model->clipNodeRoots[0], &start, 0, &end, X_FP16x16_ONE);
+    bool success = !visit_node(trace, model->clipNodeRoots[0], &startTemp, 0, &endTemp, X_FP16x16_ONE);
     
     // Move the plane relative to the origin of the object
     trace->collisionPoint = trace->collisionPoint + model->origin;
-    trace->collisionPlane.d = -x_vec3_dot(&trace->collisionPlane.normal, &trace->collisionPoint);
+
+    Vec3fp temp = MakeVec3fp(trace->collisionPoint);
+
+    trace->collisionPlane.d = -trace->collisionPlane.normal.dot(temp);
     
     return success;
 }

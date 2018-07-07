@@ -19,6 +19,7 @@
 
 #include "engine/X_config.h"
 #include "system/X_File.h"
+#include "system/X_FileSystem.hpp"
 #include "error/X_error.h"
 #include "engine/X_init.h"
 
@@ -50,7 +51,13 @@ void x_log_cleanup(void)
 
 static void get_log_file_name(char* dest)
 {
-    strcpy(dest, "engine.log");
+    FilePath path = FileSystem::getProgramPath();
+
+    path.appendSegment("engine.log");
+
+    printf("Log path: %s\n", path.c_str());
+
+    strcpy(dest, path.c_str());
 }
 
 void x_log_init()

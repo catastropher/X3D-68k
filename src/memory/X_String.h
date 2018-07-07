@@ -19,16 +19,16 @@
 
 #include "X_Allocator.hpp"
 
-using String = std::basic_string<char, std::char_traits<char>, XAllocator<char>>;
+using XString = std::basic_string<char, std::char_traits<char>, XAllocator<char>>;
 
-typedef struct X_String
+typedef struct X_XString
 {
     char* data;
-} X_String;
+} X_XString;
 
-void x_string_init(X_String* str, const char* initialValue);
-void x_string_cleanup(X_String* str);
-X_String* x_string_assign(X_String* str, const char* value);
-X_String* x_string_concat(X_String* strToAppendTo, const X_String* strToAppend);
-X_String* x_string_concat_cstr(X_String* strToAppendTo, const char* strToAppend);
+void x_string_init(X_XString* str, const char* initialValue);
+void x_string_cleanup(X_XString* str);
+X_XString* x_string_assign(X_XString* str, const char* value);
+X_XString* x_string_concat(X_XString* strToAppendTo, const X_XString* strToAppend);
+X_XString* x_string_concat_cstr(X_XString* strToAppendTo, const char* strToAppend);
 

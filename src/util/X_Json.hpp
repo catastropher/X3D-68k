@@ -40,14 +40,14 @@ struct JsonObject
 {
     void addProperty(const char* name, JsonValue* value)
     {
-        KeyValuePair<String, JsonValue*> pair;
+        KeyValuePair<XString, JsonValue*> pair;
         pair.key = name;
         pair.value = value;
 
         pairs.push_back(std::move(pair));
     }
 
-    Vector<KeyValuePair<String, JsonValue*>> pairs;
+    Vector<KeyValuePair<XString, JsonValue*>> pairs;
 };
 
 struct JsonArray
@@ -112,7 +112,7 @@ struct JsonValue
         int iValue;
         fp fpValue;
         bool boolValue;
-        String stringValue;
+        XString stringValue;
     };
 
     JsonValue& operator[](int index);
@@ -161,7 +161,7 @@ public:
         switch(type)
         {
             case JSON_STRING:
-                new (&value->stringValue) String;
+                new (&value->stringValue) XString;
                 break;
 
             case JSON_ARRAY:
@@ -179,17 +179,17 @@ public:
         return value;
     }
 
-    static JsonValue* newString(const char* begin, const char* end)
+    static JsonValue* newXString(const char* begin, const char* end)
     {
         auto value = Zone::alloc<JsonValue>();
         value->type = JSON_STRING;
 
-        new (&value->stringValue) String(begin, end);
+        new (&value->stringValue) XString(begin, end);
 
         return value;
     }
 
-    static String stringify(JsonValue* value, bool pretty);
+    static XString stringify(JsonValue* value, bool pretty);
 
     static JsonValue* parse(const char* str);
 
@@ -252,7 +252,7 @@ inline JsonValue* toJson(const char* const& str)
 }
 
 template<>
-inline JsonValue* toJson(const String& str)
+inline JsonValue* toJson(const XString& str)
 {
     auto jsonValue = Json::newValue(JSON_STRING);
     jsonValue->stringValue = str;

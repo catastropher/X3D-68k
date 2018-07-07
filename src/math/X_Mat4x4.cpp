@@ -22,9 +22,9 @@
 #include "geo/X_Ray3.h"
 #include "render/X_Palette.h"
 
-void x_mat4x4_load_identity(X_Mat4x4* mat)
+void Mat4x4::loadIdentity()
 {
-    static const X_Mat4x4 identity =
+    static const Mat4x4 identity =
     {
         {
             { X_FP16x16_ONE, 0, 0, 0 },
@@ -34,15 +34,15 @@ void x_mat4x4_load_identity(X_Mat4x4* mat)
         }
     };
     
-    *mat = identity;
+    *this = identity;
 }
 
-void x_mat4x4_load_x_rotation(X_Mat4x4* mat, fp angle) 
+void Mat4x4::loadXRotation(fp angle) 
 {
     x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
     x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
-    X_Mat4x4 xRotation = {
+    Mat4x4 xRotation = {
         {
             { X_FP16x16_ONE, 0, 0, 0 },
             { 0, cosAngle, -sinAngle, 0 },
@@ -51,15 +51,15 @@ void x_mat4x4_load_x_rotation(X_Mat4x4* mat, fp angle)
         }
     };
     
-    *mat = xRotation;
+    *this = xRotation;
 }
 
-void x_mat4x4_load_y_rotation(X_Mat4x4* mat, fp angle) 
+void Mat4x4::loadYRotation(fp angle)
 {
     x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
     x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
-    X_Mat4x4 yRotation = {
+    Mat4x4 yRotation = {
         {
             { cosAngle, 0, sinAngle, 0 },
             { 0, X_FP16x16_ONE, 0, 0 },
@@ -68,15 +68,15 @@ void x_mat4x4_load_y_rotation(X_Mat4x4* mat, fp angle)
         }
     };
     
-    *mat = yRotation;
+    *this = yRotation;
 }
 
-void x_mat4x4_load_z_rotation(X_Mat4x4* mat, fp angle) 
+void Mat4x4::loadZRotation(fp angle)
 {
     x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
     x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
     
-    X_Mat4x4 zRotation = {
+    Mat4x4 zRotation = {
         {
             { cosAngle, -sinAngle, 0, 0 },
             { sinAngle, cosAngle, 0, 0 },
@@ -85,144 +85,119 @@ void x_mat4x4_load_z_rotation(X_Mat4x4* mat, fp angle)
         }
     };
     
-    *mat = zRotation;
+    *this = zRotation;
 }
 
-void x_mat4x4_load_translation(X_Mat4x4* mat, Vec3* translation)
+void Mat4x4::loadTranslation(const Vec3fp& translation)
 {
-    X_Mat4x4 translationMatrix = 
+    Mat4x4 translationMatrix = 
     {
         {
-            { X_FP16x16_ONE, 0, 0, translation->x },
-            { 0, X_FP16x16_ONE, 0, translation->y },
-            { 0, 0, X_FP16x16_ONE, translation->z },
+            { X_FP16x16_ONE, 0, 0, translation.x },
+            { 0, X_FP16x16_ONE, 0, translation.y },
+            { 0, 0, X_FP16x16_ONE, translation.z },
             { 0, 0, 0, X_FP16x16_ONE }
         }
     };
     
-    *mat = translationMatrix;
+    *this = translationMatrix;
 }
 
-void x_mat4x4_add(X_Mat4x4* a, X_Mat4x4* b, X_Mat4x4* dest)
+Mat4x4 Mat4x4::operator*(const Mat4x4& mat) const
 {
+    Mat4x4 res;
+
     for(int i = 0; i < 4; ++i)
     {
         for(int j = 0; j < 4; ++j)
         {
-            dest->elem[i][j] = a->elem[i][j] + b->elem[i][j];
-        }
-    }
-}
-
-void x_mat4x4_mul(const X_Mat4x4* a, const X_Mat4x4* b, X_Mat4x4* dest)
-{
-    for(int i = 0; i < 4; ++i)
-    {
-        for(int j = 0; j < 4; ++j)
-        {
-            x_fp16x16 sum = 0;
+            fp sum = 0;
             for(int k = 0; k < 4; ++k)
             {
-                sum += ((long long)a->elem[i][k] * b->elem[k][j]) >> 16;
+                sum += elem[i][k] * mat.elem[k][j];
             }
             
-            dest->elem[i][j] = sum;
+            res.elem[i][j] = sum;
         }
     }
+
+    return res;
 }
 
-void x_mat4x4_transpose(X_Mat4x4* mat)
+Vec4 Mat4x4::getColumn(int col) const
 {
-    for(int i = 1; i < 4; ++i)
-    {
-        for(int j = 0; j < i; ++j)
-        {
-            X_SWAP(mat->elem[i][j], mat->elem[j][i]);
-        }
-    }
+    return Vec4(elem[0][col], elem[1][col], elem[2][col], elem[3][col]);
 }
 
-void x_mat4x4_get_column(const X_Mat4x4* mat, int col, X_Vec4* colDest)
+void Mat4x4::setColumn(int col, const Vec4& v)
 {
-    colDest->x = mat->elem[0][col];
-    colDest->y = mat->elem[1][col];
-    colDest->z = mat->elem[2][col];
-    colDest->w = mat->elem[3][col];
+    elem[0][col] = v.x;
+    elem[1][col] = v.y;
+    elem[2][col] = v.z;
+    elem[3][col] = v.w;
 }
 
-void x_mat4x4_set_column(X_Mat4x4* mat, int col, const X_Vec4* colSrc)
+Vec4 Mat4x4::getRow(int row) const
 {
-    mat->elem[0][col] = colSrc->x;
-    mat->elem[1][col] = colSrc->y;
-    mat->elem[2][col] = colSrc->z;
-    mat->elem[3][col] = colSrc->w;
+    return Vec4(elem[row][0], elem[row][1], elem[row][2], elem[row][3]);
 }
 
-void x_mat4x4_get_row(const X_Mat4x4* mat, int row, X_Vec4* rowDest)
+void Mat4x4::setRow(int row, const Vec4& v)
 {
-    rowDest->x = mat->elem[row][0];
-    rowDest->y = mat->elem[row][1];
-    rowDest->z = mat->elem[row][2];
-    rowDest->w = mat->elem[row][3];
+    elem[row][0] = v.x;
+    elem[row][1] = v.y;
+    elem[row][2] = v.z;
+    elem[row][3] = v.w;
 }
 
-void x_mat4x4_set_row(X_Mat4x4* mat, int row, const X_Vec4* rowSrc)
+Vec4 Mat4x4::transform(const Vec4& src) const
 {
-    mat->elem[row][0] = rowSrc->x;
-    mat->elem[row][1] = rowSrc->y;
-    mat->elem[row][2] = rowSrc->z;
-    mat->elem[row][3] = rowSrc->w;
-}
-
-void x_mat4x4_transform_vec4(const X_Mat4x4* mat, const X_Vec4* src, X_Vec4_fp16x16* dest)
-{
-    x_fp16x16 res[4] = { 0 };
-    const x_fp16x16* srcArray = &src->x;
+    fp res[4] = { 0, 0, 0, 0 };
+    const fp* srcArray = &src.x;
     
     for(int i = 0; i < 4; ++i)
     {
-        for(int j = 0; j < 4; ++j) {
-            res[i] += x_fp16x16_mul(mat->elem[i][j], srcArray[j]);
+        for(int j = 0; j < 4; ++j)
+        {
+            res[i] += elem[i][j] * srcArray[j];
         }
     }
-    
-    *dest = x_vec4_make(res[0], res[1], res[2], res[3]);
+
+    return Vec4(res[0], res[1], res[2], res[3]);
 }
 
-void x_mat4x4_transform_vec3(const X_Mat4x4* mat, const Vec3* src, Vec3* dest)
+Vec3fp Mat4x4::transform(const Vec3fp& src) const
 {
-    X_Vec4 vec4 = x_vec4_make(src->x, src->y, src->z, X_FP16x16_ONE);
-    X_Vec4_fp16x16 res;
-    x_mat4x4_transform_vec4(mat, &vec4, &res);
+    Vec4 v = Vec4(src.x, src.y, src.z, X_FP16x16_ONE);
+    Vec4 transformed = transform(v);
+
+    return transformed.toVec3();
     
-    dest->x = res.x;
-    dest->y = res.y;
-    dest->z = res.z;
+    if(transformed.w != X_FP16x16_ONE)
+        printf("ERROR %d\n", transformed.w);
     
-    if(res.w != X_FP16x16_ONE)
-        printf("ERROR %d\n", res.w);
-    
-    return;
-    
-    dest->x = res.x / res.w;
-    dest->y = res.y / res.w;
-    dest->z = res.z / res.w;
+    // dest->x = res.x / res.w;
+    // dest->y = res.y / res.w;
+    // dest->z = res.z / res.w;
 }
 
-void x_mat4x4_rotate_normal(const X_Mat4x4* mat, const Vec3* normal, Vec3* dest)
+Vec3fp Mat4x4::transformNormal(const Vec3fp& normal) const
 {
-    dest->x = x_fp16x16_mul(normal->x, mat->elem[0][0]) + x_fp16x16_mul(normal->y, mat->elem[0][1]) + x_fp16x16_mul(normal->z, mat->elem[0][2]);
-    dest->y = x_fp16x16_mul(normal->x, mat->elem[1][0]) + x_fp16x16_mul(normal->y, mat->elem[1][1]) + x_fp16x16_mul(normal->z, mat->elem[1][2]);
-    dest->z = x_fp16x16_mul(normal->x, mat->elem[2][0]) + x_fp16x16_mul(normal->y, mat->elem[2][1]) + x_fp16x16_mul(normal->z, mat->elem[2][2]);
+    Vec3 norm = MakeVec3(normal);
+
+    return Vec3fp(
+        normal.x * elem[0][0] + normal.y * elem[0][1] + normal.z * elem[0][2],
+        normal.x * elem[1][0] + normal.y * elem[1][1] + normal.z * elem[1][2],
+        normal.x * elem[2][0] + normal.y * elem[2][1] + normal.z * elem[2][2]);
 }
 
-void x_mat4x4_print(const X_Mat4x4* mat)
+void Mat4x4::print() const
 {
     for(int i = 0; i < 4; ++i)
     {
         for(int j = 0; j < 4; ++j)
         {
-            printf("%f\t", x_fp16x16_to_float(mat->elem[i][j]));
+            printf("%f\t", elem[i][j].toFloat());
         }
         
         printf("\n");
@@ -231,81 +206,49 @@ void x_mat4x4_print(const X_Mat4x4* mat)
     printf("\n");
 }
 
-void x_mat4x4_print_machine_readable(const X_Mat4x4* mat)
+void Mat4x4::extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const
 {
-    printf("{");
-    for(int i = 0; i < 4; ++i)
-    {
-        printf("{");
-        for(int j = 0; j < 4; ++j)
-        {
-            printf("%f", x_fp16x16_to_float(mat->elem[i][j]));
-            
-            if(j != 3)
-                printf(",");
-        }
-        printf("}");
-        
-        if(i != 3)
-            printf(",");
-    }
-    
-    printf("}\n");
+    rightDest = getRow(0).toVec3();
+    upDest = -getRow(1).toVec3();
+    forwardDest = getRow(2).toVec3();
 }
 
-void x_mat4x4_extract_view_vectors(const X_Mat4x4* mat, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest)
+void Mat4x4::invertDiagonal(Mat4x4 dest) const
 {
-    X_Vec4 right;
-    x_mat4x4_get_row(mat, 0, &right);
-    *rightDest = x_vec4_to_vec3(&right);
-    
-    X_Vec4 up;
-    x_mat4x4_get_row(mat, 1, &up);
-    *upDest = x_vec4_to_vec3(&up);
-    *upDest = x_vec3_neg(upDest);
-    
-    X_Vec4 forward;
-    x_mat4x4_get_row(mat, 2, &forward);
-    *forwardDest = x_vec4_to_vec3(&forward);
-}
-
-void x_mat4x4_invert_diagonal(const X_Mat4x4* mat, X_Mat4x4* dest)
-{
-    x_mat4x4_load_identity(dest);
+    dest.loadIdentity();
     
     for(int i = 0; i < 4; ++i)
     {
-        dest->elem[i][i] = x_fp16x16_div(X_FP16x16_ONE, mat->elem[i][i]);
+        dest.elem[i][i] = fp::fromInt(1) / elem[i][i];
     }
 }
 
-void x_mat4x4_transpose_3x3(X_Mat4x4* mat)
+void Mat4x4::transpose3x3()
 {
     for(int i = 1; i < 3; ++i)
     {
         for(int j = 0; j < i; ++j)
         {
-            X_SWAP(mat->elem[i][j], mat->elem[j][i]);
+            std::swap(elem[i][j], elem[j][i]);
         }
     }
 }
 
-void x_mat4x4_visualize(X_Mat4x4* mat, Vec3 position, X_RenderContext* renderContext)
+void Mat4x4::visualize(Vec3fp position, const X_RenderContext& renderContext) const
 {
     const X_Palette* p = x_palette_get_quake_palette();
     X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
     
     for(int i = 0; i < 3; ++i)
     {
-        X_Vec4 v;
-        x_mat4x4_get_column(mat, i, &v);
+        Vec4 v = getColumn(i);
         
-        Vec3 end = x_vec4_to_vec3(&v);
-        end = x_vec3_scale_int(&end, 50);
+        Vec3fp end = v.toVec3();
+        end = end * 50;
         end += position;
         
-        X_Ray3 r = x_ray3_make(position, end);
-        x_ray3_render(&r, renderContext, color[i]);
+        Ray3 r(position, end);
+        r.render(renderContext, color[i]);
     }
 }
 

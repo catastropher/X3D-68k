@@ -17,8 +17,6 @@
 
 #include "render/X_Texture.h"
 
-#include "platform/pc/X_PcPlatform.hpp"
-
 // Enables colord output for different types of logging
 #define X_ENABLE_COLOR_LOG 1
 
@@ -31,6 +29,8 @@
 // Extension to automatically add to all files that are opened for reading
 #ifdef __nspire__
 #define X_FILE_AUTO_ADDED_EXTENSION ".tns"
+#else
+#define X_FILE_AUTO_ADDED_EXTENSION ""
 #endif
 
 // Nspire has no implementation of clock() so we use SDL_GetTicks()
@@ -41,7 +41,13 @@
 #define X_SDL_SUPPORT
 
 #ifndef __nspire__
+#include "platform/pc/X_PcPlatform.hpp"
 using Platform = PcPlatform;
+#endif
+
+#ifdef __nspire__
+#include "platform/nspire/X_NspirePlatform.hpp"
+using Platform = NspirePlatform;
 #endif
 
 struct ConsoleConfig
@@ -83,7 +89,7 @@ struct SystemConfig
 {
     const char* programPath = nullptr;
     const char* logFile = "engine.log";
-    int hunkSize = 8 * 1024 * 1024;
+    int hunkSize = 4 * 1024 * 1024;
     int zoneSize = 1024 * 1024;
     bool enableLogging = true;
 };

@@ -42,6 +42,11 @@ public:
 
     static void addSearchPath(const char* path);
 
+    static FilePath& getProgramPath()
+    {
+        return searchPathRoot.value;
+    }
+
 private:
     static bool locateFileInPakFiles(const char* name, FileLocation& dest);
     static bool locateFileInSearchPaths(const char* name, FileLocation& dest);

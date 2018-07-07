@@ -17,6 +17,8 @@
 
 #include "Context.h"
 #include "init.h"
+#include "render.h"
+#include "keys.h"
 
 class TestGame : public Game<TestGame>
 {
@@ -25,6 +27,12 @@ public:
     {
 
     }
+
+    Portal* orangePortal = nullptr;
+    Portal* bluePortal = nullptr;
+
+    Vec3fp bluePortalVertices[16];
+    Vec3fp orangePortalVertices[16];
 
 private:
     void init()
@@ -35,6 +43,10 @@ private:
         context.engineContext = getInstance();
         
         ::init(&context, nullptr, getConfig());
+
+        x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
+
+        x_console_register_var(context.engineContext->getConsole(), &cam->collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
     }
 
     void renderView()
@@ -50,14 +62,38 @@ private:
         {
             done = true;
         }
+
+        if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'f'))
+        {
+            if(bluePortal == nullptr)
+            {
+                bluePortal = getInstance()->getCurrentLevel()->addPortal();
+                bluePortal->poly.vertices = bluePortalVertices;
+            }
+
+            shootPortal(bluePortal);
+        }
+
+        if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'g'))
+        {
+            if(orangePortal == nullptr)
+            {
+                orangePortal = getInstance()->getCurrentLevel()->addPortal();
+                orangePortal->poly.vertices = orangePortalVertices;
+            }
+
+            shootPortal(orangePortal);
+        }
     }
+
+    void shootPortal(Portal* portal);
 
     void createCamera()
     {
         X_EngineContext* engineContext = getInstance();
 
         cam = x_cameraobject_new(engineContext);
-        x_viewport_init(&cam->viewport, (X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), X_ANG_60);
+        cam->viewport.init((X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), fp(X_ANG_60));
         x_screen_attach_camera(engineContext->getScreen(), cam);
         //context->cam->screenResizeCallback = cam_screen_size_changed_callback;
         

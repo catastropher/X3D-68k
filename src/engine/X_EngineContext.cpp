@@ -64,7 +64,7 @@ static inline void init_keystate(X_EngineContext* context)
 
 static inline void init_level(X_EngineContext* context)
 {
-    x_bsplevel_init_empty(context->getCurrentLevel());
+   context->getCurrentLevel()->initEmpty();
 }
 
 

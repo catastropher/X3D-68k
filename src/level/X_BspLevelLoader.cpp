@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <math.h>
+#include <new>
 
 #include "X_BspLevel.h"
 #include "X_BspLevelLoader.h"
@@ -52,12 +53,12 @@ static void x_bsploadertexture_read_from_file(X_BspLoaderTexture* texture, X_Fil
         texture->texelsOffset[mipTex] = x_file_read_le_int32(file);
 }
 
-static void x_boundbox_convert_coordinate(X_BoundBox* box)
+static void x_boundbox_convert_coordinate(BoundBox* box)
 {
     box->v[0] = box->v[0].toX3dCoords();
     box->v[1] = box->v[1].toX3dCoords();
     
-    X_BoundBox temp;
+    BoundBox temp;
     
     temp.v[0].x = X_MIN(box->v[0].x, box->v[1].x);
     temp.v[0].y = X_MIN(box->v[0].y, box->v[1].y);
@@ -366,12 +367,6 @@ static void x_bsplevel_init_planes(X_BspLevel* level, const X_BspLevelLoader* lo
         level->planes[i].plane.normal.z = loader->planes.elem[i].normal.z.toFp16x16();
 
         level->planes[i].plane.d = -loader->planes.elem[i].d.toFp16x16();
-
-
-        if(i < 10)
-        {
-            x_plane_print(&level->planes[i].plane);
-        }
     }
 }
 
@@ -404,7 +399,7 @@ static void x_bspnode_assign_parent(X_BspNode* node, X_BspNode* parent)
 {
     node->parent = parent;
     
-    if(x_bspnode_is_leaf(node))
+    if(node->isLeaf())
         return;
     
     x_bspnode_assign_parent(node->frontChild, node);
@@ -568,16 +563,16 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspS
         else
             v = level->vertices[level->edges[-edgeId].v[0]].v;
         
-        x_boundbox_add_point(&node->geoBoundBox, x_vec3_to_vec3_int(&v));
+        node->geoBoundBox.addPoint(x_vec3_to_vec3_int(&v));
     }
 }
 
 static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
 {
-    if(x_bspnode_is_leaf(node))
+    if(node->isLeaf())
         return;
     
-    x_boundbox_init(&node->geoBoundBox);
+    new (&node->geoBoundBox) BoundBox();
 
     for(int i = 0; i < node->totalSurfaces; ++i)
         x_bspnode_calculate_geo_boundbox_add_surface(node, node->firstSurface + i, level);
@@ -650,10 +645,10 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
     
     printf("Calculated:\n");
-    x_boundbox_print(&levelRootNode->frontChild->geoBoundBox);
+    levelRootNode->frontChild->geoBoundBox.print();
     
     printf("Real:\n");
-    x_boundbox_print(&levelRootNode->frontChild->nodeBoundBox);
+    levelRootNode->frontChild->nodeBoundBox.print();
 }
 
 static bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName, EngineQueue* engineQueue)
@@ -741,6 +736,8 @@ bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName, Engi
     x_strncpy(level->name, mapName, X_BSPLEVEL_MAX_NAME_LENGTH);
     
     level->flags = X_BSPLEVEL_LOADED;
+
+    level->portalHead = nullptr;
     
     return 1;
 }

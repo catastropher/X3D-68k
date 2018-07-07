@@ -41,7 +41,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     cam->base.type = &g_cameraObjectType;
     
     // FIXME: need actual bound box
-    static X_BoundBox box;
+    static BoundBox box;
     x_boxcollider_init(&cam->collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
     
     return cam;
@@ -49,31 +49,36 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
 
 void x_cameraobject_update_view(X_CameraObject* cam)
 {
-    X_Mat4x4 xRotation;
-    x_mat4x4_load_x_rotation(&xRotation, cam->angleX);
+    Mat4x4 xRotation;
+    xRotation.loadXRotation(cam->angleX);
     
-    X_Mat4x4 yRotation;
-    x_mat4x4_load_y_rotation(&yRotation, cam->angleY);
+    Mat4x4 yRotation;
+    yRotation.loadYRotation(cam->angleY);
     
-    X_Mat4x4 rotation;
-    x_mat4x4_mul(&xRotation, &yRotation, &rotation);    
+    Mat4x4 rotation = xRotation * yRotation;
     
-    X_Mat4x4 translation;
+    Mat4x4 translation;
     Vec3 position = x_cameraobject_get_position(cam);
     Vec3 negatedPosition = x_vec3_neg(&position);
-    x_mat4x4_load_translation(&translation, &negatedPosition);
+
+    Vec3fp negatedPositionTemp = MakeVec3fp(negatedPosition);
+
+    translation.loadTranslation(negatedPositionTemp);
     
-    x_mat4x4_mul(&rotation, &translation, &cam->viewMatrix);
+    cam->viewMatrix = rotation * translation;
     
-    Vec3 forward, up, right;
-    x_mat4x4_extract_view_vectors(&cam->viewMatrix, &forward, &right, &up);
-    x_viewport_update_frustum(&cam->viewport, &position, &forward, &right, &up);
+    Vec3fp forward, up, right;
+    cam->viewMatrix.extractViewVectors(forward, right, up);
+
+    Vec3fp p = MakeVec3fp(position);
+
+    cam->viewport.updateFrustum(p, forward, right, up);
 }
 
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
-    Vec3 position = x_cameraobject_get_position(cam);
-    cam->currentLeaf = x_bsplevel_find_leaf_point_is_in(renderContext->level, &position);
+    Vec3fp position = MakeVec3fp(x_cameraobject_get_position(cam));
+    cam->currentLeaf = renderContext->level->findLeafPointIsIn(position);
 }
 
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -83,7 +88,7 @@ static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_Rend
     
     cam->lastLeaf = cam->currentLeaf;
     
-    x_bsplevel_decompress_pvs_for_leaf(renderContext->level, cam->currentLeaf, cam->pvsForCurrentLeaf);
+    renderContext->level->decompressPvsForLeaf(cam->currentLeaf, cam->pvsForCurrentLeaf);
 }
 
 void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -102,7 +107,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     
     x_cameraobject_determine_current_bspleaf(cam, renderContext);
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
-    x_bsplevel_mark_visible_leaves_from_pvs(renderContext->level, cam->pvsForCurrentLeaf, currentFrame);
+    renderContext->level->markVisibleLeavesFromPvs(cam->pvsForCurrentLeaf, currentFrame);
     
     renderContext->camPos = x_cameraobject_get_position(cam);
     renderContext->currentFrame = currentFrame;
@@ -110,7 +115,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     if(cam->currentLeaf != renderContext->level->leaves + 0 && !renderContext->renderer->wireframe)
         x_bsplevel_render(renderContext->level, renderContext);
     else
-        x_bsplevel_render_wireframe(renderContext->level, renderContext, renderContext->screen->palette->brightRed);
+        renderContext->level->renderWireframe(*renderContext, 5 * 16 - 1);
 }
 
 

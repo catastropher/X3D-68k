@@ -19,66 +19,73 @@
 #include "math/X_fix.h"
 #include "object/X_CameraObject.h"
 
-void x_plane_init_from_three_points(X_Plane* plane, const Vec3* a, const Vec3* b, const Vec3* c)
+Plane::Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
 {
-    Vec3 v1 = x_vec3_sub(a, b);
-    Vec3 v2 = x_vec3_sub(c, b);
+    Vec3fp v1 = a - b;
+    Vec3fp v2 = c - b;
 
-    x_vec3_normalize(&v1);
-    x_vec3_normalize(&v2);
-    
-    plane->normal = x_vec3_cross(&v1, &v2);
-    plane->d = -x_vec3_dot(&plane->normal, a);
+    v1.normalize();
+    v2.normalize();
+
+    normal = v1.cross(v2);
+
+    d = -normal.dot(a);
 }
 
-void x_plane_print(const X_Plane* plane)
+void Plane::print() const
 {
-    float x = x_fp16x16_to_float(plane->normal.x);
-    float y = x_fp16x16_to_float(plane->normal.y);
-    float z = x_fp16x16_to_float(plane->normal.z);
-    float d = x_fp16x16_to_float(plane->d);
+    float x = normal.x.toFloat();
+    float y = normal.y.toFloat();
+    float z = normal.z.toFloat();
+    float dd = d.toFloat();
     
-    printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, d);
+    printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, dd);
 }
 
-void x_plane_get_orientation(X_Plane* plane, X_CameraObject* cam, X_Mat4x4* dest)
+void Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
 {
-    Vec3 temp = plane->normal;
-    temp.y = 0;
+    Vec3fp temp(normal.x, 0, normal.z);
+    Vec3fp camPos = MakeVec3fp(cam.collider.position);
     
-    X_Mat4x4 mat;
-    x_mat4x4_load_y_rotation(&mat, X_ANG_270);
+    Mat4x4 mat;
+    mat.loadYRotation(X_ANG_270);
     
-    Vec3 right, up;
+    Vec3fp right, up;
     
-    if(abs(plane->normal.y) != X_FP16x16_ONE)
+    if(abs(normal.y) != fp::fromInt(1))
     {
-        x_mat4x4_transform_vec3(&mat, &temp, &right);
-        x_vec3_normalize(&right);
-        
-        up = x_vec3_cross(&plane->normal, &right);
+        right = mat.transform(temp);
+        right.normalize();
+        up = normal.cross(right);
     }
     else
     {
         // Pick the vectors from the cam direction
-        Vec3 temp;
-        x_mat4x4_extract_view_vectors(&cam->viewMatrix, &up, &right, &temp);
+        Vec3fp temp;
+        cam.viewMatrix.extractViewVectors(up, right, temp);
         
         right.y = 0;
-        x_vec3_normalize(&right);
+        right.normalize();
         
         up.y = 0;
-        x_vec3_normalize(&up);
+        up.normalize();
+
+        // On the ceiling, so we need to reverse the up direction
+        if(normal.y == fp::fromInt(1))
+        {
+            up = -up;
+        }
     }
     
-    x_mat4x4_load_identity(dest);
+    dest.loadIdentity();
     
-    X_Vec4 up4 = x_vec4_from_vec3(&up);
-    X_Vec4 right4 = x_vec4_from_vec3(&right);
-    X_Vec4 forward4 = x_vec4_from_vec3(&plane->normal);
+    Vec4 up4 = Vec4(up);
+    Vec4 right4 = Vec4(right);
+
+    Vec4 forward4 = Vec4(normal);
     
-    x_mat4x4_set_column(dest, 0, &right4);
-    x_mat4x4_set_column(dest, 1, &up4);
-    x_mat4x4_set_column(dest, 2, &forward4);
+    dest.setColumn(0, right4);
+    dest.setColumn(1, up4);
+    dest.setColumn(2, forward4);
 }
 

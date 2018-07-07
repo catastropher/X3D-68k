@@ -124,11 +124,11 @@ void ConfigurationFile::parseSectionDecl()
 
     expect(']');
 
-    terminateString(sectionNameEnd);
+    terminateXString(sectionNameEnd);
 
     if(platformNameEnd)
     {
-        terminateString(platformNameEnd);
+        terminateXString(platformNameEnd);
     }
 
     currentSection = createOrGetSection(sectionNameStart, platformNameStart);
@@ -151,8 +151,8 @@ void ConfigurationFile::parseAssignment()
     char* valueStart = getCurrentLocation();
     char* valueEnd = parseRestOfLine();
 
-    terminateString(variableNameEnd);
-    terminateString(valueEnd);
+    terminateXString(variableNameEnd);
+    terminateXString(valueEnd);
 
     if(currentSection == nullptr)
     {
@@ -225,7 +225,7 @@ void ConfigurationFile::nextCh()
     wasNewline = false;
 }
 
-void ConfigurationFile::terminateString(char* strEnd)
+void ConfigurationFile::terminateXString(char* strEnd)
 {
     *strEnd = '\0';
 }

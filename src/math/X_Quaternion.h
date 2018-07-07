@@ -32,7 +32,7 @@ struct QuaternionTemplate : public Vec4Template<T>
 
 using Quaternion = QuaternionTemplate<fp>;
 
-void x_quaternion_to_mat4x4(const X_Quaternion* src, X_Mat4x4* dest);
+void x_quaternion_to_mat4x4(const X_Quaternion* src, Mat4x4* dest);
 void x_quaternion_init_from_euler_angles(X_Quaternion* quat, fp x, fp y, fp z);
 void x_quaternion_normalize(X_Quaternion* quat);
 

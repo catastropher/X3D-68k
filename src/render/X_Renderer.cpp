@@ -23,6 +23,7 @@
 #include "engine/X_Engine.h"
 #include "system/X_File.h"
 #include "object/X_CameraObject.h"
+#include "util/X_StopWatch.hpp"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
@@ -183,7 +184,7 @@ static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
     }
     
     // FIXME: don't hardcode angle
-    x_viewport_init(&cam->viewport, x_vec2_make(0, 0), w, h, X_ANG_60);
+    cam->viewport.init(x_vec2_make(0, 0), w, h, fp(X_ANG_60));
 }
 
 #define MAX_SURFACES 300
@@ -319,6 +320,9 @@ static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engine
     renderer->dynamicLightsNeedingUpdated = 0xFFFFFFFF;
 }
 
+// FIXME: just for testing...
+void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext);
+
 static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineContext* engineContext)
 {
     X_RenderContext renderContext;
@@ -327,7 +331,12 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
     //if((renderer->renderMode & 2) != 0)
     x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
     
+    StopWatch::start("traverse-level");
     x_cameraobject_render(cam, &renderContext);
+    StopWatch::stop("traverse-level");
+
+    customRenderCallback(engineContext, &renderContext);
+
     x_ae_context_scan_edges(&renderer->activeEdgeContext);
 }
 

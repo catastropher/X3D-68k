@@ -19,6 +19,7 @@
 
 #include "memory/Allocator.hpp"
 #include "geo/X_Vec2.h"
+#include "math/X_fix.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// An 8-bit color palette index.
@@ -70,7 +71,9 @@ public:
         { return texels + row * w; }
 
     void setTexel(X_Vec2i pos, X_Color color)
-        { texels[texelIndex(pos)] = color; }
+    {
+        texels[texelIndex(pos)] = color;
+    }
 
     X_Color getTexel(X_Vec2i pos) const
         { return texels[texelIndex(pos)]; }
@@ -98,6 +101,7 @@ public:
 
     void clampVec2i(X_Vec2i& v);
     void drawLine(X_Vec2i start, X_Vec2i end, X_Color color);
+    void drawLineShaded(X_Vec2i start, X_Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable);
     void blit(const X_Texture& tex, X_Vec2i pos);
     void drawChar(int c, const X_Font& font, X_Vec2i pos);
     void drawStr(const char* str, const X_Font& font, X_Vec2i pos);

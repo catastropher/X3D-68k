@@ -28,6 +28,8 @@ void x_platform_init(X_EngineContext* engineContext, X_Config* config)
 {
     x_sdl_init_keys(engineContext, 0);
     init_net();
+
+    Log::info("Initialized nspire\n");
 }
 
 void x_platform_cleanup(X_EngineContext* engineContext)
@@ -42,7 +44,7 @@ void x_platform_handle_keys(X_EngineContext* engineContext)
 
 void x_platform_handle_mouse(X_EngineContext* engineContext)
 {
-    X_MouseState* state = &engineContext->mouseState;
+    X_MouseState* state = engineContext->getMouseState();
     touchpad_report_t report;
     touchpad_info_t* info = touchpad_getinfo();
     
@@ -50,7 +52,7 @@ void x_platform_handle_mouse(X_EngineContext* engineContext)
     if(!success)
         return;
     
-    X_Vec2 center = x_screen_center(&engineContext->screen);
+    X_Vec2 center = x_screen_center(engineContext->getScreen());
     
     if(!report.contact)
     {

@@ -20,12 +20,13 @@
 #include "X_Ray3.h"
 #include "render/X_TriangleFiller.h"
 #include "X_Frustum.h"
+#include "math/X_Mat4x4.h"
 
-bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
+bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
+    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -35,15 +36,15 @@ bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
         if(in)
             dest.vertices[dest.totalVertices++] = vertices[i];
         
-        x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
+        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
         bool nextIn = nextDot >= -plane.d;
         int dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
-            x_ray3_lerp(&ray, scale, dest.vertices + dest.totalVertices);
+            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
+            Ray3 ray(vertices[i], vertices[next]);
+            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
             
             ++dest.totalVertices;
         }
@@ -55,11 +56,11 @@ bool Polygon3::clipToPlane(const X_Plane& plane, Polygon3& dest) const
     return dest.totalVertices > 2;
 }
 
-bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const
+bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
+    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -72,15 +73,15 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, 
             *edgeIdsDest++ = edgeIds[i];
         }
         
-        x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
+        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
         bool nextIn = nextDot >= -plane.d;
         int dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
-            x_ray3_lerp(&ray, scale, dest.vertices + dest.totalVertices);
+            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
+            Ray3 ray(vertices[i], vertices[next]);
+            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
             
             if(in)
                 *edgeIdsDest++ = 0;    // Create a new edge
@@ -97,12 +98,12 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const X_Plane& plane, Polygon3& dest, 
     return dest.totalVertices > 2;
 }
 
-void Polygon3::splitAlongPlane(const X_Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const
+void Polygon3::splitAlongPlane(const Plane& plane, int* edgeIds, Polygon3& frontSide, int* frontEdgeIds, Polygon3& backSide, int* backEdgeIds) const
 {
     frontSide.totalVertices = 0;
     backSide.totalVertices = 0;
     
-    x_fp16x16 dot = x_vec3_dot(&plane.normal, vertices + 0);
+    fp dot = plane.normal.dot(vertices[0]);
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -120,16 +121,16 @@ void Polygon3::splitAlongPlane(const X_Plane& plane, int* edgeIds, Polygon3& fro
             *backEdgeIds++ = 0;//edgeIds[i];
         }
         
-        x_fp16x16 nextDot = x_vec3_dot(&plane.normal, vertices + next);
+        fp nextDot = plane.normal.dot(vertices[next]);
         bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+        fp dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d - dot, dotDiff);
-            X_Ray3_fp16x16 ray = x_ray3_make(vertices[i], vertices[next]);
+            fp scale = (-plane.d - dot) / dotDiff;
+            Ray3 ray(vertices[i], vertices[next]);
             
-            x_ray3_lerp(&ray, scale, frontSide.vertices + frontSide.totalVertices);
+            frontSide.vertices[frontSide.totalVertices] = ray.lerp(scale);
             backSide.vertices[backSide.totalVertices] = frontSide.vertices[frontSide.totalVertices];
             
             
@@ -155,13 +156,13 @@ void Polygon3::splitAlongPlane(const X_Plane& plane, int* edgeIds, Polygon3& fro
 
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color)
 {
-    for(int i = 0; i < poly->totalVertices; ++i)
-    {
-        int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
-        X_Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
+    // for(int i = 0; i < poly->totalVertices; ++i)
+    // {
+    //     int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
+    //     Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
         
-        x_ray3_render(&ray, rcontext, color);
-    }
+    //     x_ray3_render(&ray, rcontext, color);
+    // }
 }
 
 void Polygon3::clone(Polygon3& dest) const
@@ -170,7 +171,7 @@ void Polygon3::clone(Polygon3& dest) const
         return;
     
     dest.totalVertices = totalVertices;
-    memcpy(dest.vertices, vertices, totalVertices * sizeof(Vec3));
+    memcpy(dest.vertices, vertices, totalVertices * sizeof(Vec3fp));
 }
 
 bool Polygon3::clipToFrustum(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags) const
@@ -235,6 +236,37 @@ void Polygon3::reverse()
         std::swap(vertices[i], vertices[totalVertices - i - 1]);
 }
 
+void Polygon3::constructRegular(int totalSides, fp sideLength, fp angleOffset, Vec3fp translation)
+{
+    fp angle = angleOffset;
+    fp dAngle = fp::fromInt(256) / totalSides;
+
+    const fp conversionFactor = fp(92681);          // 2 / sqrt(2)
+    fp radius = sideLength * conversionFactor;
+
+    for(int i = 0; i < totalSides; ++i)
+    {
+        vertices[i].x = radius * x_cos(angle) + translation.x;
+        vertices[i].y = radius * x_sin(angle) + translation.y;
+        vertices[i].z = translation.z;
+
+        angle += dAngle;
+    }
+
+    totalVertices = totalSides;
+}
+
+void Polygon3::renderWireframe(X_RenderContext& renderContext, X_Color color)
+{
+    for(int i = 0; i < totalVertices; ++i)
+    {
+        int next = (i + 1 < totalVertices ? i + 1 : 0);
+
+        Ray3 ray(vertices[i], vertices[next]);
+        ray.render(renderContext, color);
+    }
+}
+
 void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color)
 {
 //     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
@@ -262,7 +294,7 @@ void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContex
 //         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);
 //     }
 //     
-//     X_Plane plane;
+//     Plane plane;
 //     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
 //     
 //     //if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
@@ -297,7 +329,7 @@ void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, 
 //         x_trianglefiller_set_textured_vertex(&filler, i, projected, transformed.z, textureCoords[i]);
 //     }
 //     
-// //     X_Plane plane;
+// //     Plane plane;
 // //     x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
 // //     
 // //     if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
@@ -333,7 +365,7 @@ void x_polygon3_render_transparent(Polygon3* poly, X_RenderContext* renderContex
 //         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);
 //     }
 //     
-//     X_Plane plane;
+//     Plane plane;
 //     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
 //     
 //    // if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))

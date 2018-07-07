@@ -29,7 +29,7 @@ typedef enum X_BoxColliderFlags
 typedef struct X_BoxCollider
 {
     int flags;
-    X_BoundBox boundBox;
+    BoundBox boundBox;
     int levelCollisionHull;
     Vec3 position;
     Vec3 velocity;
@@ -41,7 +41,7 @@ typedef struct X_BoxCollider
     X_Link objectsOnModel;
 } X_BoxCollider;
 
-void x_boxcollider_init(X_BoxCollider* collider, X_BoundBox* boundBox, X_BoxColliderFlags flags);
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, X_BoxColliderFlags flags);
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level);
 
 static inline bool x_boxcollider_is_on_ground(X_BoxCollider* collider)

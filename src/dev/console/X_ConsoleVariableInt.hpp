@@ -28,7 +28,7 @@ public:
     }
 
     bool trySetValue(const char* value);
-    void toString(String& dest) const;
+    void toXString(XString& dest) const;
     const char* getTypeName() const;
 
 private:

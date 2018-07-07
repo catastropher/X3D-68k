@@ -18,40 +18,41 @@
 #include "X_Vec3.h"
 #include "math/X_fix.h"
 
-typedef struct X_Plane
-{
-    Vec3 normal;
-    x_fp16x16 d;
-} X_Plane;
-
-struct X_Mat4x4;
+struct Mat4x4;
 struct X_CameraObject;
 
-void x_plane_init_from_three_points(X_Plane* plane, const Vec3* a, const Vec3* b, const Vec3* c);
-void x_plane_print(const X_Plane* plane);
-void x_plane_get_orientation(X_Plane* plane, struct X_CameraObject* cam, struct X_Mat4x4* dest);
-
-static inline void x_plane_init_from_normal_and_point(X_Plane* plane, const Vec3* normal, const Vec3* point)
+struct Plane
 {
-    plane->normal = *normal;
-    plane->d = -x_vec3_dot(normal, point);
-}
+    Plane() { }
 
-// TODO: needs a better name
-static inline x_fp16x16 x_plane_point_distance(const X_Plane* plane, const Vec3* point)
-{
-    return x_vec3_dot(&plane->normal, point) + plane->d;
-}
+    Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c);
 
-static inline bool x_plane_point_is_on_normal_facing_side(const X_Plane* plane, const Vec3* point)
-{
-    return x_plane_point_distance(plane, point) > 0;
-}
+    Plane(const Vec3fp& normal_, const Vec3fp& point)
+    {
+        normal = normal_;
+        d = -normal.dot(point);
+    }
 
+    fp distanceTo(const Vec3fp& v) const
+    {
+        return normal.dot(v) + d;
+    }
 
-static inline void x_plane_flip_direction(X_Plane* plane)
-{
-    plane->normal = x_vec3_neg(&plane->normal);
-    plane->d = -plane->d;
-}
+    bool pointOnNormalFacingSide(const Vec3fp& v) const
+    {
+        return distanceTo(v) > 0;
+    }
+
+    void flip()
+    {
+        normal = -normal;
+        d = -d;
+    }
+
+    void print() const;
+    void getOrientation(X_CameraObject& cam, Mat4x4& dest) const;
+
+    Vec3fp normal;
+    fp d;
+};
 

@@ -44,7 +44,7 @@ void __attribute__((noreturn)) x_system_error(const char* format, ...)
     x_log_error("%s", error);
     
 #ifdef __nspire__
-    //show_msgbox("System Error", error);
+    show_msgbox("System Error", error);
 #else
     fprintf(stderr, "Fatal system error: %s\n", error);
 #endif

@@ -25,72 +25,45 @@
 #include "geo/X_BoundSphere.h"
 #include "engine/X_EngineContext.h"
 
-static void render_recursive(X_BspLevel* level, X_BspNode* node, X_RenderContext* renderContext, X_Color color, X_BspModel* model)
+void X_BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
 {
-    if(x_bspnode_is_leaf(node))
+    unsigned char drawnEdges[8192];
+    memset(drawnEdges, 8192, (totalEdges + 7) / 8);
+
+    int totalPlanes = renderContext.viewFrustum->totalPlanes;
+
+    renderContext.viewFrustum->totalPlanes = 6;
+
+    models[0].renderWireframe(renderContext, color, drawnEdges);
+    
+    for(int i = 1; i < totalModels; ++i)
     {
-        X_BspLeaf* leaf = (X_BspLeaf*)node;
-        
-        for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
-        {
-            X_BspSurface* s = leaf->firstMarkSurface[i];
-            
-            for(int j = 0; j < s->totalEdges; ++j)
-            {
-                X_BspEdge* edge = level->edges + abs(level->surfaceEdgeIds[s->firstEdgeId + j]);
-                
-                X_Ray3 ray = x_ray3_make
-                (
-                    level->vertices[edge->v[0]].v,
-                    level->vertices[edge->v[1]].v
-                );
-                
-                ray.v[0] += model->origin;
-                ray.v[1] += model->origin;
-                
-                x_ray3_render(&ray, renderContext, color);
-            }
-        }
-        
-        return;
+        models[i].renderWireframe(renderContext, 15, drawnEdges);
     }
-    
-    render_recursive(level, node->frontChild, renderContext, color, model);
-    render_recursive(level, node->backChild, renderContext, color, model);
+
+    renderContext.viewFrustum->totalPlanes = totalPlanes;
 }
 
-void x_bspmodel_render_wireframe(X_BspLevel* level, X_BspModel* model, X_RenderContext* renderContext, X_Color color)
+X_BspLeaf* X_BspLevel::findLeafPointIsIn(Vec3fp& point)
 {
-    render_recursive(level, model->rootBspNode, renderContext, color, model);
-}
-
-void x_bsplevel_render_wireframe(X_BspLevel* level, X_RenderContext* rcontext, X_Color color)
-{
-    x_bspmodel_render_wireframe(level, level->models + 0, rcontext, color);
-    
-    for(int i = 1; i < level->totalModels; ++i)
-        x_bspmodel_render_wireframe(level, level->models + i, rcontext, 15);
-}
-
-X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, Vec3* point)
-{
-    X_BspNode* node = x_bsplevel_get_root_node(level);
+    X_BspNode* node = x_bsplevel_get_root_node(this);
  
     do
     {
-        node = x_plane_point_is_on_normal_facing_side(&node->plane->plane, point) ? node->frontChild : node->backChild;
-    } while(!x_bspnode_is_leaf(node));
+        node = node->plane->plane.pointOnNormalFacingSide(point)
+            ? node->frontChild
+            : node->backChild;
+    } while(!node->isLeaf());
     
-    return (X_BspLeaf*)node;
+    return node->getLeaf();
 }
 
-static void mark_all_leaves_in_pvs_as_visible(unsigned char* pvs, int pvsSize)
+void X_BspLevel::markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize)
 {
-    for(int i = 0; i < pvsSize; ++i)
-        pvs[i] = 0xFF;
+    memset(pvs, 0xFF, pvsSize);
 }
 
-static void decompress_pvs_using_run_length_encoding(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
+void X_BspLevel::decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
 {
     unsigned char* decompressedPvsEnd = decompressedPvsDest + pvsSize;
     
@@ -102,7 +75,9 @@ static void decompress_pvs_using_run_length_encoding(unsigned char* compressedPv
             int count = *compressedPvsData++;
             
             for(int i = 0; i < count; ++i)
+            {
                 *decompressedPvsDest++ = 0;
+            }
         }
         else
         {
@@ -111,184 +86,121 @@ static void decompress_pvs_using_run_length_encoding(unsigned char* compressedPv
     }
 }
 
-void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+void X_BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
 {
-    int pvsSize = x_bspfile_node_pvs_size(level);
+    int pvsSize = x_bspfile_node_pvs_size(this);
     unsigned char* pvsData = leaf->compressedPvsData;
 
-    bool outsideLevel = leaf == level->leaves + 0;
-    bool hasVisibilityInfoForCurrentLeaf = pvsData != NULL && !outsideLevel;
+    bool hasVisibilityInfoForCurrentLeaf = pvsData != nullptr && !leaf->isOutsideLevel();
     
     if(!hasVisibilityInfoForCurrentLeaf)
     {
-        mark_all_leaves_in_pvs_as_visible(decompressedPvsDest, pvsSize);
+        markAllLeavesInPvsAsVisible(decompressedPvsDest, pvsSize);
         return;
     }
     
-    decompress_pvs_using_run_length_encoding(pvsData, pvsSize, decompressedPvsDest);
+    decompressPvs(pvsData, pvsSize, decompressedPvsDest);
 }
 
-int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs)
+int X_BspLevel::countVisibleLeaves(unsigned char* pvs)
 {
     int count = 0;
     
-    for(int i = 0; i < x_bsplevel_get_level_model(level)->totalBspLeaves; ++i)
+    for(int i = 0; i < x_bsplevel_get_level_model(this)->totalBspLeaves; ++i)
     {
-        if(pvs[i / 8] & (1 << (i % 8)))
+        if(pvs[i / 8] & (1 << (i & 7)))
+        {
             ++count;
+        }
     }
     
     return count;
 }
 
-void x_bsplevel_init_empty(X_BspLevel* level)
+void X_BspLevel::initEmpty()
 {    
-    level->flags = (X_BspLevelFlags)0;
+    flags = (X_BspLevelFlags)0;
 }
 
-static void x_bspnode_mark_all_parents_as_visible(X_BspNode* node, int currentFrame)
+void X_BspLevel::markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame)
 {
-    do
-    {
-        // Don't bother walking all the way up the tree if we've already marked them as visible
-        if(node->lastVisibleFrame == currentFrame)
-            break;
-        
-        node->lastVisibleFrame = currentFrame;
-        node = node->parent;
-    } while(node != NULL);
-}
-
-void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame)
-{
-    int totalLeaves = x_bsplevel_get_level_model(level)->totalBspLeaves;
+    int totalLeaves = x_bsplevel_get_level_model(this)->totalBspLeaves;
     
     for(int i = 0; i < totalLeaves; ++i)
     {
         bool leafVisible = pvs[i / 8] & (1 << (i & 7));
-        X_BspNode* leafNode = (X_BspNode*)x_bsplevel_get_leaf(level, i + 1);    // PVS excludes leaf 0 so we start at leaf 1
+        X_BspNode* leafNode = (X_BspNode*)x_bsplevel_get_leaf(this, i + 1);    // PVS excludes leaf 0 so we start at leaf 1
         
         if(leafVisible)
-            x_bspnode_mark_all_parents_as_visible(leafNode, currentFrame);
-    }
-}
-
-static void x_bspleaf_mark_all_surfaces_in_leaf_as_visible(X_BspLeaf* leaf, int currentFrame, int bspKey)
-{
-    X_BspSurface** nextSurface = leaf->firstMarkSurface;
-    
-    for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
-    {
-        X_BspSurface* surface = *nextSurface;        
-        surface->lastVisibleFrame = currentFrame;
-        ++nextSurface;
-    }
-    
-    leaf->bspKey = bspKey;
-}
-
-static void x_bspnode_mark_surfaces_in_node_as_close_to_light(X_BspNode* node, const X_Light* light, int currentFrame)
-{
-    for(int i = 0; i < node->totalSurfaces; ++i)
-    {
-        X_BspSurface* surface = node->firstSurface + i;
-        
-        if(surface->lastLightUpdateFrame != currentFrame)
         {
-            surface->lastLightUpdateFrame = currentFrame;
-            surface->lightsTouchingSurface = 0;
+            leafNode->markAncestorsAsVisible(currentFrame);
         }
-        
-        surface->lightsTouchingSurface |= (1 << light->id);
     }
 }
 
-static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_Light* light, int currentFrame)
+void X_BspLevel::renderPortals(X_RenderContext& renderContext)
 {
-    if(x_bspnode_is_leaf(node))
-        return;
-    
-    X_Plane* plane = &node->plane->plane;
-    int dist = x_fp16x16_to_int(x_plane_point_distance(plane, &light->position));
-    
-    if(dist > light->intensity)
-    {
-        // Too far away from this node on the front side
-        x_bspnode_mark_surfaces_light_is_close_to(node->frontChild, light, currentFrame);
-        return;
-    }
-    
-    if(dist < -light->intensity)
-    {
-        // Too far away from this node on the back side
-        x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
-        return;
-    }
-    
-    x_bspnode_mark_surfaces_in_node_as_close_to_light(node, light, currentFrame);
-    x_bspnode_mark_surfaces_light_is_close_to(node->frontChild, light, currentFrame);
-    x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
-}
+    BoundBoxFrustumFlags bbFlags = (BoundBoxFrustumFlags)((1 << 4) - 1);
 
-void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light* light, int currentFrame)
-{
-    x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
-}
-
-static void x_bspnode_determine_children_sides_relative_to_camera(const X_BspNode* node, const Vec3* camPos, X_BspNode** frontSide, X_BspNode** backSide)
-{
-    bool onNormalSide = x_plane_point_is_on_normal_facing_side(&node->plane->plane, camPos);
-    
-    if(onNormalSide)
+    for(auto portal = portalHead; portal != nullptr; portal = portal->next)
     {
-        *frontSide = node->frontChild;
-        *backSide = node->backChild;
-    }
-    else
-    {
-        *frontSide = node->backChild;
-        *backSide = node->frontChild;
+        portal->aeSurface = renderContext.renderer->activeEdgeContext.addPortalPolygon(portal->poly, portal->plane, bbFlags, 0);
     }
 }
 
-void scheduleSurfaceToRender(X_RenderContext* renderContext, int surface);
+// static void x_bspnode_mark_surfaces_in_node_as_close_to_light(X_BspNode* node, const X_Light* light, int currentFrame)
+// {
+//     for(int i = 0; i < node->totalSurfaces; ++i)
+//     {
+//         X_BspSurface* surface = node->firstSurface + i;
+        
+//         if(surface->lastLightUpdateFrame != currentFrame)
+//         {
+//             surface->lastLightUpdateFrame = currentFrame;
+//             surface->lightsTouchingSurface = 0;
+//         }
+        
+//         surface->lightsTouchingSurface |= (1 << light->id);
+//     }
+// }
 
-static void x_bspnode_render_surfaces(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
-{
-    X_BspLevel* level = renderContext->level;
+// static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_Light* light, int currentFrame)
+// {
+//     if(node->isLeaf())
+//         return;
     
-    for(int i = 0; i < node->totalSurfaces; ++i)
-    {
-        X_BspSurface* surface = node->firstSurface + i;
-        
-        if(!x_bspsurface_is_visible_this_frame(surface, renderContext->currentFrame))
-            continue;
-        
-        bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
-        bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
-        
-        if((!onNormalSide) ^ planeFlipped)
-            continue;
-        
-//        scheduleSurfaceToRender(renderContext, surface->id);
-        
-        x_ae_context_add_level_polygon
-        (
-            &renderContext->renderer->activeEdgeContext,
-            renderContext->level,
-            level->surfaceEdgeIds + surface->firstEdgeId,
-            surface->totalEdges,
-            surface,
-            geoFlags,
-            x_bsplevel_current_bspkey(renderContext->level)
-        );        
-    }
-}
+//     Plane* plane = &node->plane->plane;
 
-static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, X_BoundBoxFrustumFlags geoFlags)
-{
-    // Submodels disabled for now
+//     Vec3fp lightPosTemp = MakeVec3fp(light->position);
+
+//     int dist = plane->distanceTo(lightPosTemp).toInt();
     
+//     if(dist > light->intensity)
+//     {
+//         // Too far away from this node on the front side
+//         x_bspnode_mark_surfaces_light_is_close_to(node->frontChild, light, currentFrame);
+//         return;
+//     }
+    
+//     if(dist < -light->intensity)
+//     {
+//         // Too far away from this node on the back side
+//         x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
+//         return;
+//     }
+    
+//     x_bspnode_mark_surfaces_in_node_as_close_to_light(node, light, currentFrame);
+//     x_bspnode_mark_surfaces_light_is_close_to(node->frontChild, light, currentFrame);
+//     x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
+// }
+
+// void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light* light, int currentFrame)
+// {
+//     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
+// }
+
+static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
+{
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
     
     for(int i = 0; i < submodel->totalFaces; ++i)
@@ -305,53 +217,19 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
 //         if((!onNormalSide) ^ planeFlipped)
 //            continue;
         
-        x_ae_context_add_submodel_polygon
-        (
-            &renderContext->renderer->activeEdgeContext,
+        renderContext->renderer->activeEdgeContext.addSubmodelPolygon(
             renderContext->level,
             level->surfaceEdgeIds + surface->firstEdgeId,
             surface->totalEdges,
             surface,
             geoFlags,
-            x_bsplevel_current_bspkey(renderContext->level)
-        );        
+            x_bsplevel_current_bspkey(renderContext->level));        
     }
-}
-
-void x_bspnode_render_recursive(X_BspNode* node, X_RenderContext* renderContext, X_BoundBoxFrustumFlags parentNodeFlags)
-{
-    if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
-        return;
-    
-    X_BoundBoxFrustumFlags nodeFlags = x_boundbox_determine_frustum_clip_flags(&node->nodeBoundBox, renderContext->viewFrustum, parentNodeFlags);
-    if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
-        return;
-    
-    if(x_bspnode_is_leaf(node))
-    {
-        x_bsplevel_next_bspkey(renderContext->level);
-        int leafBspKey = x_bsplevel_current_bspkey(renderContext->level);
-        x_bspleaf_mark_all_surfaces_in_leaf_as_visible((X_BspLeaf*)node, renderContext->currentFrame, leafBspKey);
-        return;
-    }
-    
-    X_BspNode* frontSide;
-    X_BspNode* backSide;
-    x_bspnode_determine_children_sides_relative_to_camera(node, &renderContext->camPos, &frontSide, &backSide);
-    
-    X_BoundBoxFrustumFlags geoFlags = x_boundbox_determine_frustum_clip_flags(&node->geoBoundBox, renderContext->viewFrustum, nodeFlags);
-
-    x_bspnode_render_recursive(frontSide, renderContext, nodeFlags);
-    
-    if(geoFlags != X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
-        x_bspnode_render_surfaces(node, renderContext, geoFlags);
-    
-    x_bspnode_render_recursive(backSide, renderContext, nodeFlags);
 }
 
 void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderContext)
 {
-    X_BoundBoxFrustumFlags enableAllPlanes = (X_BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
+    BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
     
     for(int i = 1; i < level->totalModels; ++i)
         x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
@@ -362,12 +240,13 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
     x_bsplevel_reset_bspkeys(level);
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, x_bsplevel_get_level_model(level));
     
-    X_BoundBoxFrustumFlags enableAllPlanes = (X_BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
-    
-     if(!x_keystate_key_down(renderContext->engineContext->getKeyState(), (X_Key)'g'))
-        x_bspnode_render_recursive(x_bsplevel_get_level_model(level)->rootBspNode, renderContext, enableAllPlanes);
+    BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
+
+    x_bsplevel_get_level_model(level)->rootBspNode->renderRecursive(*renderContext, enableAllPlanes);
     
     x_bsplevel_render_submodels(level, renderContext);
+
+    level->renderPortals(*renderContext);
 }
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
@@ -404,10 +283,12 @@ void x_bsplevel_cleanup(X_BspLevel* level)
 
 X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node, X_BoundSphere* sphere, X_BspNode** nextNodeDest)
 {
-    if(x_bspnode_is_leaf(node))
+    if(node->isLeaf())
         return nextNodeDest;
     
-    x_fp16x16 dist = x_plane_point_distance(&node->plane->plane, &sphere->center);
+    Vec3fp sphereCenterTemp = MakeVec3fp(sphere->center);
+
+    x_fp16x16 dist = node->plane->plane.distanceTo(sphereCenterTemp).toFp16x16();
     bool exploreFront = 1;
     bool exploreBack = 1;
     
@@ -430,6 +311,16 @@ X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node,
 int x_bsplevel_find_nodes_intersecting_sphere(X_BspLevel* level, X_BoundSphere* sphere, X_BspNode** dest)
 {
     return x_bsplevel_find_nodes_intersecting_sphere_recursive(x_bsplevel_get_root_node(level), sphere, dest) - dest;
+}
+
+Portal* X_BspLevel::addPortal()
+{
+    auto portal = Zone::alloc<Portal>();
+
+    portal->next = portalHead;
+    portalHead = portal;
+
+    return portal;
 }
 
 

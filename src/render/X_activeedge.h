@@ -24,10 +24,17 @@
 #include "level/X_BspLevel.h"
 #include "X_span.h"
 #include "X_Viewport.h"
+#include "geo/X_Ray3.h"
+#include "memory/X_BitSet.hpp"
 
 #include "memory/X_ArenaAllocator.hpp"
 
 #define X_AE_SURFACE_MAX_SPANS 332
+
+enum SurfaceFlags
+{
+    SURFACE_NO_DRAW_SPANS = 1
+};
 
 struct X_AE_Surface
 {
@@ -47,12 +54,12 @@ struct X_AE_Surface
         return inverseZAtScreenPoint(x + X_FP16x16_ONE * 7, y) >= surface->inverseZAtScreenPoint(x + X_FP16x16_ONE * 7 , y);
     }
     
-    void calculateInverseZGradient(Vec3* camPos, X_Viewport* viewport, X_Mat4x4* viewMatrix, Vec3* pointOnSurface)
+    void calculateInverseZGradient(Vec3* camPos, Viewport* viewport, Mat4x4* viewMatrix, Vec3* pointOnSurface)
     {
-        X_Plane planeInViewSpace;
+        Plane planeInViewSpace;
         bspSurface->calculatePlaneInViewSpace(camPos, viewMatrix, pointOnSurface, &planeInViewSpace);
         
-        int dist = -planeInViewSpace.d;
+        int dist = -planeInViewSpace.d.internalValue();
         int scale = viewport->distToNearPlane;
         
         if(dist == 0 || scale == 0) return;
@@ -64,15 +71,21 @@ struct X_AE_Surface
         
         x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
         
-        zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x);
-        zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y);
+        zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x.toFp16x16());
+        zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y.toFp16x16());
         
         int centerX = viewport->screenPos.x + viewport->w / 2;
         int centerY = viewport->screenPos.y + viewport->h / 2;
         
-        zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z, invDist) -
+        zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z.toFp16x16(), invDist) -
             centerX * zInverseXStep -
             centerY * zInverseYStep;
+    }
+
+    void removeFromSurfaceStack()
+    {
+        prev->next = next;
+        next->prev = prev;
     }
     
     int bspKey;
@@ -98,6 +111,8 @@ struct X_AE_Surface
     struct X_AE_Surface* prev;
     
     struct X_AE_Surface* parent;    
+
+    EnumBitSet<SurfaceFlags> flags;
 };
 
 #define X_AE_EDGE_LEFT_SURFACE 0
@@ -235,8 +250,35 @@ struct X_AE_Context
     
     X_BspModel* currentModel;
     X_AE_Surface* currentParent;
-    
+
+    void addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addLevelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+
+    // !-- To be made private --!
+    X_AE_Edge* getCachedEdge(X_BspEdge* edge, int currentFrame) const;
+    X_AE_Surface* createSurface(X_BspSurface* bspSurface, int bspKey);
+    void emitEdges(X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
+    void addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel);
+    void addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void emitSpan(int left, int right, int y, X_AE_Surface* surface);
+
+    void processEdge(X_AE_Edge* edge, int y);
+    void addActiveEdge(X_AE_Edge* edge, int y);
+    void processEdges(int y);
+
+    void processPolygon(X_BspSurface* bspSurface,
+                        BoundBoxFrustumFlags geoFlags,
+                        int* edgeIds,
+                        int bspKey,
+                        bool inSubmodel);
+
+    X_AE_Surface* addPortalPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey);
+
+    X_AE_Edge* addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected);
+
 private:
+    
+
     void initSentinalEdges()
     {
         leftEdge.x = -0x7FFFFFFF;
@@ -353,7 +395,7 @@ private:
         return true;
     }
     
-    void addEdge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
+    X_AE_Edge* addEdge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
     {
         X_AE_Edge* edge = edges.alloc();
         
@@ -367,27 +409,17 @@ private:
         {
             addEdgeToStartingScanline(edge);
         }
+
+        return edge;
     }
     
     // FIXME
     friend void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
     friend void x_ae_context_scan_edges(X_AE_Context* context);
-    friend void emit_edges(X_AE_Context* context, X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
 };
 
 
 void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderContext);
-
-void x_ae_context_add_level_polygon(X_AE_Context* context,
-                                    X_BspLevel* level,
-                                    int* edgeIds,
-                                    int totalEdges,
-                                    X_BspSurface* bspSurface,
-                                    X_BoundBoxFrustumFlags geoFlags,
-                                    int bspKey
-                                   );
-
-void x_ae_context_add_submodel_polygon(X_AE_Context* context, X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, X_BoundBoxFrustumFlags geoFlags, int bspKey);
 
 
 void x_ae_context_scan_edges(X_AE_Context* context);

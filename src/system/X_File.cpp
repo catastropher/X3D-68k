@@ -34,7 +34,7 @@
 #define ASSERT_OPEN_FOR_READING(_file) x_assert(x_file_is_open_for_reading(_file), "Attemping to read from file not opened for reading")
 #define ASSERT_OPEN_FOR_WRITING(_file) x_assert(x_file_is_open_for_writing(_file), "Attemping to write to file not opened for writing")
 
-static X_String g_searchPaths;
+static X_XString g_searchPaths;
 static char g_programPath[256];
 
 
@@ -338,7 +338,7 @@ void x_file_read_vec2(X_File* file, X_Vec2* dest)
     dest->y = x_file_read_le_int32(file);
 }
 
-void x_file_read_mat4x4(X_File* file, X_Mat4x4* mat)
+void x_file_read_mat4x4(X_File* file, Mat4x4* mat)
 {
     for(int i = 0; i < 4; ++i)
     {
@@ -444,13 +444,13 @@ void x_file_write_vec3(X_File* file, Vec3* v)
     x_file_write_le_int32(file, v->z);
 }
 
-void x_file_write_mat4x4(X_File* file, X_Mat4x4* mat)
+void x_file_write_mat4x4(X_File* file, Mat4x4* mat)
 {
     for(int i = 0; i < 4; ++i)
     {
         for(int j = 0; j < 4; ++j)
         {
-            x_file_write_le_int32(file, mat->elem[i][j]);
+            x_file_write_le_int32(file, mat->elem[i][j].internalValue());
         }
     }
 }

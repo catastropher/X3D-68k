@@ -81,7 +81,7 @@ struct Vec3 {
         return (*this - v).length();
     }
     
-    std::string toString() const {
+    std::string toXString() const {
         char str[128];
         sprintf(str, "{ %f, %f, %f }", x, y, z);
         

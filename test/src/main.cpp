@@ -26,8 +26,46 @@
 
 #include "game.hpp"
 
+Vec3fp position = Vec3fp(0, 0, 0);
+Mat4x4 orientation;
+
+TestGame* game;
+
+void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext)
+{
+
+ //   polygon.renderWireframe(*renderContext, 255);
+    
+  //  engineContext->getRenderer()->activeEdgeContext.addPortalPolygon(polygon, tracer.collisionPlane, BoundBoxFrustumFlags((1 << 4) - 1), 0);
+}
+
 int main(int argc, char* argv[])
 {
+    // int val = 581.641052 * 65536;
+    // int orig = val;
+
+    // int shift = 0;
+
+    // while(val >= 65536)
+    // {
+    //     val >>= 1;
+    //     ++shift;
+    // }
+
+    // printf("Shifted down: %d, shift = %d\n", val, shift);
+
+    // int real = (1.0 / orig) * 65536 * 65536;
+
+    // printf("Answer: %d\n", real);
+
+    // int shiftUp;
+    // int r = x_fastrecip_unshift(val, shiftUp);
+
+    // printf("Shift up: %d\n", shiftUp);
+
+    // printf("R: %d\n", r >> shift);
+
+
     Vec3Template<fp> v;
     Quaternion q1 = Quaternion::fromAxisAngle(v, fp(0));
 
@@ -39,14 +77,21 @@ int main(int argc, char* argv[])
 
     initSystem(sysConfig);
 
-    int size;
-    char* data = FileReader::readWholeFile("../settings.json", size);
+    Log::info("Hello world!!!!!!!!!!!!!!\n");
+
+    // int size;
+    // char* data = FileReader::readWholeFile("../settings.json", size);
 
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");
 
+#ifdef __nspire__
+    int screenW = 320;
+    int screenH = 240;
+#else
     int screenW = 640;
     int screenH = 480;
+#endif
 
     ScreenConfig screenConfig = ScreenConfig()
         .fieldOfView(X_ANG_60)
@@ -59,7 +104,10 @@ int main(int argc, char* argv[])
         .screenConfig(screenConfig);
 
     TestGame game(config);
+    ::game = &game;
     game.run();
+
+    MemoryManager::cleanup();
 
     x_log_cleanup();
 }
