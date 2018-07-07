@@ -311,9 +311,9 @@ bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* ca
 {
     if(x_engine_level_is_loaded(engineContext) && physics)
     {
-        Vec3 camPos = x_cameraobject_get_position(cam);
+        Vec3fp camPos = MakeVec3fp(x_cameraobject_get_position(cam));
         
-        if(x_bsplevel_find_leaf_point_is_in(engineContext->getCurrentLevel(), &camPos)->contents != X_BSPLEAF_SOLID)
+        if(engineContext->getCurrentLevel()->findLeafPointIsIn(camPos)->contents != X_BSPLEAF_SOLID)
             return 0;
     }
     

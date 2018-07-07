@@ -15,18 +15,20 @@
 
 #pragma once
 
-#include "geo/X_Polygon3.h"
-#include "geo/X_Polygon2.hpp"
-#include "geo/X_Vec3.h"
-#include "render/X_Texture.h"
-#include "geo/X_Plane.h"
-#include "util/X_util.h"
-#include "memory/X_Cache.h"
-#include "render/X_Light.h"
 #include "geo/X_BoundBox.h"
-#include "memory/X_Link.h"
-#include "math/X_Mat4x4.h"
+#include "geo/X_Plane.h"
+#include "geo/X_Polygon2.hpp"
+#include "geo/X_Polygon3.h"
+#include "geo/X_Vec3.h"
+#include "level/X_BspModel.hpp"
+#include "level/X_BspNode.hpp"
 #include "level/X_Portal.hpp"
+#include "math/X_Mat4x4.h"
+#include "memory/X_Cache.h"
+#include "memory/X_Link.h"
+#include "render/X_Light.h"
+#include "render/X_Texture.h"
+#include "util/X_util.h"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -122,72 +124,10 @@ typedef struct X_BspEdge
     unsigned int cachedEdgeOffset;
 } X_BspEdge;
 
-typedef enum X_BspLeafContents
-{
-    X_BSPLEAF_NODE = 0,
-    X_BSPLEAF_REGULAR = -1,
-    X_BSPLEAF_SOLID = -2,
-    X_BSPLEAF_WATER = -3,
-    X_BSPLEAF_SLIME = -4,
-    X_BSPLEAF_LAVA = -5,
-    X_BSPLEAF_SKY = -6
-} X_BspLeafContents;
+
 
 struct X_BspLeaf;
 struct X_BspModel;
-
-typedef struct X_BspNode
-{
-    bool isLeaf()
-    {
-        return contents < 0;
-    }
-
-    X_BspLeaf* getLeaf()
-    {
-        return (X_BspLeaf*)this;
-    }
-
-    void renderWireframe(
-        X_RenderContext& renderContext,
-        X_Color color,
-        X_BspModel& model,
-        int parentFlags,
-        unsigned char* drawnEdges);
-
-    // Common with X_BspLeaf - DO NOT REORDER
-    X_BspLeafContents contents;
-    int lastVisibleFrame;
-    BoundBox nodeBoundBox;
-    BoundBox geoBoundBox;
-    X_BspNode* parent;
-    
-    // Unique elements for node
-    X_BspPlane* plane;
-    
-    X_BspNode* frontChild;
-    X_BspNode* backChild;
-    
-    X_BspSurface* firstSurface;
-    int totalSurfaces;
-} X_BspNode;
-
-typedef struct X_BspLeaf
-{
-    // Common with X_BspNode - DO NOT REOREDER
-    X_BspLeafContents contents;
-    int lastVisibleFrame;
-    BoundBox nodeBoundBox;
-    BoundBox geoBoundBox;
-    struct X_BspNode* parent;
-    
-    // Unique elements for leaf
-    X_BspSurface** firstMarkSurface;
-    int totalMarkSurfaces;
-    int bspKey;
-    
-    unsigned char* compressedPvsData;
-} X_BspLeaf;
 
 typedef enum X_BspLevelFlags
 {
@@ -201,25 +141,6 @@ typedef struct X_BspClipNode
     short backChild;
 } X_BspClipNode;
 
-typedef struct X_BspModel
-{
-    void renderWireframe(X_RenderContext& renderContext, X_Color color, unsigned char* drawnEdges);
-
-    BoundBox boundBox;
-    X_BspNode* rootBspNode;
-    int clipNodeRoots[3];
-    
-    int totalBspLeaves;
-    
-    X_BspSurface* faces;
-    int totalFaces;
-    
-    Vec3 origin;
-    
-    X_Link objectsOnModelHead;
-    X_Link objectsOnModelTail;
-} X_BspModel;
-
 typedef struct X_BspCollisionHull
 {
     short rootNode;
@@ -231,6 +152,12 @@ typedef struct X_BspCollisionHull
 
 typedef struct X_BspLevel
 {
+    void renderWireframe(X_RenderContext& renderContext, X_Color color);
+    X_BspLeaf* findLeafPointIsIn(Vec3fp& point);
+    void decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
+    int countVisibleLeaves(unsigned char* pvs);
+    void initEmpty();
+
     void getLevelPolygon(X_BspSurface* surface, Vec3* modelOrigin, LevelPolygon3* dest)
     {
         dest->edgeIds = surfaceEdgeIds + surface->firstEdgeId;
@@ -304,6 +231,8 @@ typedef struct X_BspLevel
     
     int nextBspKey;
 private:
+    void markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize);
+
     void renderNodeWireframeRecursive(
         X_BspNode* node,
         X_RenderContext* renderContext,
@@ -318,12 +247,6 @@ private:
 
 void x_bsplevel_cleanup(X_BspLevel* level);
 
-void x_bsplevel_render_wireframe(X_BspLevel* level, struct X_RenderContext* rcontext, X_Color color);
-
-void x_bsplevel_init_empty(X_BspLevel* level);
-X_BspLeaf* x_bsplevel_find_leaf_point_is_in(X_BspLevel* level, Vec3* point);
-
-void x_bsplevel_decompress_pvs_for_leaf(X_BspLevel* level, X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
 int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs);
 void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame);
 void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext);
@@ -377,13 +300,6 @@ static inline int x_bsplevel_current_bspkey(const X_BspLevel* level)
 static inline X_BspModel* x_bsplevel_get_model(X_BspLevel* level, int modelId)
 {
     return level->models + modelId;
-}
-
-//======================== node ========================
-
-static inline bool x_bspnode_is_visible_this_frame(const X_BspNode* node, int currentFrame)
-{
-    return node->lastVisibleFrame == currentFrame;
 }
 
 //======================== surface ========================

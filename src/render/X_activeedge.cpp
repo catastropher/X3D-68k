@@ -546,7 +546,7 @@ void X_AE_Context::addLevelPolygon(X_BspLevel* level, int* edgeIds, int totalEdg
 
 void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
-    if(!x_bspnode_is_visible_this_frame(node, renderContext->currentFrame))
+    if(!node->isVisibleThisFrame(renderContext->currentFrame))
         return;
     
     if(poly->totalVertices < 3)

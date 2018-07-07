@@ -34,13 +34,17 @@ void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* rende
     auto level = engineContext->getCurrentLevel();
     auto cam = renderContext->cam;
 
+    Vec3fp camPos = MakeVec3fp(cam->collider.position);
+
     Vec3 v[32];
     Polygon3 polygon(v, 32);
 
     X_RayTracer tracer;
 
+
+
     if(!x_engine_level_is_loaded(engineContext)
-        || x_bsplevel_find_leaf_point_is_in(level, &renderContext->cam->collider.position)->contents == X_BSPLEAF_SOLID)
+        || level->findLeafPointIsIn(camPos)->contents == X_BSPLEAF_SOLID)
     {
         return;
     }
@@ -60,8 +64,6 @@ void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* rende
     x_raytracer_init(&tracer, level, x_bsplevel_get_level_model(level), &start, &end, &box);
 
     polygon.constructRegular(5, fp::fromInt(20), 0, Vec3fp(0, 0, 0));
-
-    Vec3fp camPos = MakeVec3fp(cam->collider.position);
 
     if(x_keystate_key_down(engineContext->getKeyState(), (X_Key)'f') && x_raytracer_trace(&tracer))
     {
