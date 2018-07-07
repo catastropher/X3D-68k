@@ -183,6 +183,8 @@ typedef struct X_BspLevel
     }
 
     Portal* addPortal();
+
+    void renderPortals(X_RenderContext& renderContext);
     
     X_BspLevelFlags flags;
     char name[X_BSPLEVEL_MAX_NAME_LENGTH];
@@ -233,6 +235,9 @@ typedef struct X_BspLevel
     char* entityDictionary;
     
     int nextBspKey;
+
+    Portal* portalHead;     // Should be private
+    
 private:
     static void markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize);
     static void decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest);
@@ -244,8 +249,6 @@ private:
         X_BspModel* model,
         int parentFlags,
         unsigned char* drawnEdges);
-
-    Portal* portalHead;
 
 } X_BspLevel;
 

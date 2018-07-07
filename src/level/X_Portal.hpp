@@ -30,6 +30,7 @@ struct Portal
 {
     Polygon3 poly;
     Vec3fp center;
+    Plane plane;
     Mat4x4 orientation;
     X_AE_Surface* aeSurface;
     Portal* otherSide;

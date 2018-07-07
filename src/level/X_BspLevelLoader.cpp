@@ -736,6 +736,8 @@ bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName, Engi
     x_strncpy(level->name, mapName, X_BSPLEVEL_MAX_NAME_LENGTH);
     
     level->flags = X_BSPLEVEL_LOADED;
+
+    level->portalHead = nullptr;
     
     return 1;
 }

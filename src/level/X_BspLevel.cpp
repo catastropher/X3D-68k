@@ -138,6 +138,16 @@ void X_BspLevel::markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame)
     }
 }
 
+void X_BspLevel::renderPortals(X_RenderContext& renderContext)
+{
+    BoundBoxFrustumFlags bbFlags = (BoundBoxFrustumFlags)((1 << 4) - 1);
+
+    for(auto portal = portalHead; portal != nullptr; portal = portal->next)
+    {
+        //portal->aeSurface = renderContext.renderer->activeEdgeContext.addPortalPolygon(portal->poly, bbFlags, 0);
+    }
+}
+
 // static void x_bspnode_mark_surfaces_in_node_as_close_to_light(X_BspNode* node, const X_Light* light, int currentFrame)
 // {
 //     for(int i = 0; i < node->totalSurfaces; ++i)
