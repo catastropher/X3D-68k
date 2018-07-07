@@ -107,7 +107,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     
     x_cameraobject_determine_current_bspleaf(cam, renderContext);
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
-    x_bsplevel_mark_visible_leaves_from_pvs(renderContext->level, cam->pvsForCurrentLeaf, currentFrame);
+    renderContext->level->markVisibleLeavesFromPvs(cam->pvsForCurrentLeaf, currentFrame);
     
     renderContext->camPos = x_cameraobject_get_position(cam);
     renderContext->currentFrame = currentFrame;

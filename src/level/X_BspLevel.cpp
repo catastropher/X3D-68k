@@ -63,7 +63,7 @@ void X_BspLevel::markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize)
     memset(pvs, 0xFF, pvsSize);
 }
 
-static void decompress_pvs_using_run_length_encoding(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
+void X_BspLevel::decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
 {
     unsigned char* decompressedPvsEnd = decompressedPvsDest + pvsSize;
     
@@ -99,7 +99,7 @@ void X_BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompress
         return;
     }
     
-    decompress_pvs_using_run_length_encoding(pvsData, pvsSize, decompressedPvsDest);
+    decompressPvs(pvsData, pvsSize, decompressedPvsDest);
 }
 
 int X_BspLevel::countVisibleLeaves(unsigned char* pvs)
@@ -122,14 +122,14 @@ void X_BspLevel::initEmpty()
     flags = (X_BspLevelFlags)0;
 }
 
-void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame)
+void X_BspLevel::markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame)
 {
-    int totalLeaves = x_bsplevel_get_level_model(level)->totalBspLeaves;
+    int totalLeaves = x_bsplevel_get_level_model(this)->totalBspLeaves;
     
     for(int i = 0; i < totalLeaves; ++i)
     {
         bool leafVisible = pvs[i / 8] & (1 << (i & 7));
-        X_BspNode* leafNode = (X_BspNode*)x_bsplevel_get_leaf(level, i + 1);    // PVS excludes leaf 0 so we start at leaf 1
+        X_BspNode* leafNode = (X_BspNode*)x_bsplevel_get_leaf(this, i + 1);    // PVS excludes leaf 0 so we start at leaf 1
         
         if(leafVisible)
         {

@@ -152,11 +152,14 @@ typedef struct X_BspCollisionHull
 
 typedef struct X_BspLevel
 {
+    void initEmpty();
+
     void renderWireframe(X_RenderContext& renderContext, X_Color color);
     X_BspLeaf* findLeafPointIsIn(Vec3fp& point);
-    void decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
     int countVisibleLeaves(unsigned char* pvs);
-    void initEmpty();
+    void markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame);
+
+    void decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
 
     void getLevelPolygon(X_BspSurface* surface, Vec3* modelOrigin, LevelPolygon3* dest)
     {
@@ -231,7 +234,8 @@ typedef struct X_BspLevel
     
     int nextBspKey;
 private:
-    void markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize);
+    static void markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize);
+    static void decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest);
 
     void renderNodeWireframeRecursive(
         X_BspNode* node,
@@ -247,8 +251,6 @@ private:
 
 void x_bsplevel_cleanup(X_BspLevel* level);
 
-int x_bsplevel_count_visible_leaves(X_BspLevel* level, unsigned char* pvs);
-void x_bsplevel_mark_visible_leaves_from_pvs(X_BspLevel* level, unsigned char* pvs, int currentFrame);
 void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext);
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
