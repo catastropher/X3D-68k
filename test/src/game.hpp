@@ -28,6 +28,12 @@ public:
 
     }
 
+    Portal* orangePortal = nullptr;
+    Portal* bluePortal = nullptr;
+
+    Vec3fp bluePortalVertices[16];
+    Vec3fp orangePortalVertices[16];
+
 private:
     void init()
     {
@@ -56,7 +62,31 @@ private:
         {
             done = true;
         }
+
+        if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'f'))
+        {
+            if(bluePortal == nullptr)
+            {
+                bluePortal = getInstance()->getCurrentLevel()->addPortal();
+                bluePortal->poly.vertices = bluePortalVertices;
+            }
+
+            shootPortal(bluePortal);
+        }
+
+        if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'g'))
+        {
+            if(orangePortal == nullptr)
+            {
+                orangePortal = getInstance()->getCurrentLevel()->addPortal();
+                orangePortal->poly.vertices = orangePortalVertices;
+            }
+
+            shootPortal(orangePortal);
+        }
     }
+
+    void shootPortal(Portal* portal);
 
     void createCamera()
     {

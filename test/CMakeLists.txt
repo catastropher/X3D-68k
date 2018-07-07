@@ -59,6 +59,7 @@ add_executable(xtest
     src/main.cpp
     src/render.cpp
     src/screen.cpp
+    src/game.cpp
 )
 
 find_package(SDL REQUIRED)

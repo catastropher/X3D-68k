@@ -144,7 +144,7 @@ void X_BspLevel::renderPortals(X_RenderContext& renderContext)
 
     for(auto portal = portalHead; portal != nullptr; portal = portal->next)
     {
-        //portal->aeSurface = renderContext.renderer->activeEdgeContext.addPortalPolygon(portal->poly, bbFlags, 0);
+        portal->aeSurface = renderContext.renderer->activeEdgeContext.addPortalPolygon(portal->poly, portal->plane, bbFlags, 0);
     }
 }
 
@@ -241,11 +241,12 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, x_bsplevel_get_level_model(level));
     
     BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
-    
-     if(!x_keystate_key_down(renderContext->engineContext->getKeyState(), (X_Key)'g'))
-        x_bsplevel_get_level_model(level)->rootBspNode->renderRecursive(*renderContext, enableAllPlanes);
+
+    x_bsplevel_get_level_model(level)->rootBspNode->renderRecursive(*renderContext, enableAllPlanes);
     
     x_bsplevel_render_submodels(level, renderContext);
+
+    level->renderPortals(*renderContext);
 }
 
 void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)

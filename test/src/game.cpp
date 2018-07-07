@@ -15,5 +15,69 @@
 
 #include "game.hpp"
 
+void TestGame::shootPortal(Portal* portal)
+{
+    auto engineContext = getInstance();
+    auto level = engineContext->getCurrentLevel();
 
+    Vec3fp camPos = MakeVec3fp(cam->collider.position);
+
+    X_RayTracer tracer;
+
+    if(!x_engine_level_is_loaded(engineContext) || level->findLeafPointIsIn(camPos)->contents == X_BSPLEAF_SOLID)
+    {
+        return;
+    }
+
+    int dist = 5000;
+
+    Vec3fp up, forward, right;
+    cam->viewMatrix.extractViewVectors(forward, right, up);
+
+    Vec3 f = MakeVec3(forward);
+
+    Vec3 start = cam->collider.position;
+    Vec3 end = start + f * dist;
+
+    BoundBox box;
+
+    x_raytracer_init(&tracer, level, x_bsplevel_get_level_model(level), &start, &end, &box);
+
+    portal->poly.constructRegular(5, fp::fromInt(20), 0, Vec3fp(0, 0, 0));
+
+    if(x_raytracer_trace(&tracer))
+    {
+        // Make sure we're on the normal side of the plane
+        if(!tracer.collisionPlane.pointOnNormalFacingSide(camPos))
+        {
+            printf("Flip!\n");
+            tracer.collisionPlane.flip();
+        }
+        else
+        {
+            //polygon.reverse();
+        }
+
+        printf("Hit\n");
+        tracer.collisionPlane.print();
+        portal->center = MakeVec3fp(tracer.collisionPoint);// + tracer.collisionPlane.normal * fp::fromFloat(25);
+
+
+        tracer.collisionPlane.getOrientation(*cam, portal->orientation);
+
+        
+
+        printf("==========\n");
+        portal->orientation.print();
+    }
+
+    for(int i = 0; i < portal->poly.totalVertices; ++i)
+    {
+        portal->poly.vertices[i] = portal->orientation.transform(portal->poly.vertices[i]) + portal->center;
+    }
+
+    //orientation.visualize(Vec3fp(0, 0, 0), *renderContext);
+
+    portal->poly.reverse();
+}
 
