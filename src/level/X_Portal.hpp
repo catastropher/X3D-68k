@@ -24,7 +24,8 @@ struct X_AE_Surface;
 
 enum PortalFlags
 {
-    PORTAL_ENABLED = 1
+    PORTAL_ENABLED = 1,
+    PORTAL_DRAW_OUTLINE = 2
 };
 
 struct Portal
@@ -51,6 +52,12 @@ struct Portal
         center = poly.calculateCenter();
     }
 
+    void enableOutline(X_Color color)
+    {
+        outlineColor = color;
+        flags.set(PORTAL_DRAW_OUTLINE);
+    }
+
     Polygon3 poly;
     Vec3fp center;
     Plane plane;
@@ -59,6 +66,7 @@ struct Portal
     X_AE_Surface* aeSurface;
     Portal* otherSide;
     EnumBitSet<PortalFlags> flags;
+    X_Color outlineColor;
 
     Portal* next;
 };

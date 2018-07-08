@@ -152,7 +152,28 @@ void X_BspLevel::renderPortals(X_RenderContext& renderContext)
 
         if(portal->otherSide != nullptr)
         {
-            portal->aeSurface = renderContext.renderer->activeEdgeContext.addPortalPolygon(portal->poly, portal->plane, bbFlags, 0);
+            portal->aeSurface = renderContext.renderer->activeEdgeContext.addBrushPolygon(portal->poly, portal->plane, bbFlags, 0);
+
+            if(portal->aeSurface != nullptr)
+            {
+                // Disable rendering spans of the surface because we're going to render the portal in its place
+                portal->aeSurface->flags.set(SURFACE_NO_DRAW_SPANS);
+            }
+
+            if(portal->flags.isSet(PORTAL_DRAW_OUTLINE))
+            {
+                Vec3fp vertices[16];
+                Polygon3 outline(vertices, 16);
+
+                portal->poly.scaleRelativeToCenter(fp::fromFloat(1.1), outline);
+
+                auto outlineSurface = renderContext.renderer->activeEdgeContext.addBrushPolygon(outline, portal->plane, bbFlags, 0);
+
+                if(outlineSurface != nullptr)
+                {
+                    outlineSurface->enableSolidFill(portal->outlineColor);
+                }
+            }
         }
         else
         {
@@ -332,6 +353,7 @@ Portal* X_BspLevel::addPortal()
 
     portal->next = portalHead;
     portal->aeSurface = nullptr;
+    portal->flags.clear();
 
     portalHead = portal;
 

@@ -422,19 +422,6 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
 
         Vec3fp predictCenter = otherSide->transformToOtherSide.transform(otherSide->center);
 
-        printf(
-            "Scheduled portal center: %f %f %f\n",
-            scheduledPortal->portal->center.x.toFloat(),
-            scheduledPortal->portal->center.y.toFloat(),
-            scheduledPortal->portal->center.z.toFloat());
-
-        printf(
-            "Predicted portal center: %f %f %f\n",
-            predictCenter.x.toFloat(),
-            predictCenter.y.toFloat(),
-            predictCenter.z.toFloat());
-
-
 
         // cam.viewMatrix.elem[0][3] = 0;
         // cam.viewMatrix.elem[1][3] = 0;
@@ -466,7 +453,6 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
 
 void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext)
 {
-    printf("Render portal: %d\n", totalRenderedPortals);
 
     bool wireframe = renderContext->renderer->wireframe;
 
@@ -482,6 +468,8 @@ void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_Engin
     x_ae_context_scan_edges(&activeEdgeContext);
 
     Zone::free(scheduledPortal->spans);
+
+    scheduledPortal->spans = nullptr;
 
     renderContext->renderer->wireframe = wireframe;
 }
@@ -523,16 +511,14 @@ void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContex
         renderScheduledPortal(scheduledPortal, *engineContext, &renderContext);
 
         recursionDepth = scheduledPortal->recursionDepth + 1;
-
-        
-
-        break;
     } while(true);
 
     while(!scheduledPortals.isEmpty())
     {
         auto scheduledPortal = scheduledPortals.dequeue();
         Zone::free(scheduledPortal->spans);
+
+        scheduledPortal->spans = nullptr;
     }
 
     for(auto portal = renderContext.level->portalHead; portal != nullptr; portal = portal->next)

@@ -71,6 +71,9 @@ private:
             {
                 bluePortal = getInstance()->getCurrentLevel()->addPortal();
                 bluePortal->poly.vertices = bluePortalVertices;
+
+                auto palette = getInstance()->getScreen()->palette;
+                bluePortal->enableOutline(palette->darkBlue);
             }
 
             shootPortal(bluePortal);
@@ -83,6 +86,11 @@ private:
             {
                 orangePortal = getInstance()->getCurrentLevel()->addPortal();
                 orangePortal->poly.vertices = orangePortalVertices;
+
+                auto palette = getInstance()->getScreen()->palette;
+                X_Color orange = x_palette_get_closest_color_from_rgb(palette, 255, 69, 0);
+
+                orangePortal->enableOutline(orange);
             }
 
             shootPortal(orangePortal);

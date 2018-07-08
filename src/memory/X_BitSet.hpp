@@ -53,6 +53,11 @@ public:
         flags = 0;
     }
 
+    unsigned int getMask() const
+    {
+        return flags;
+    }
+
 private:
     unsigned int flags;
 };
@@ -63,10 +68,10 @@ class EnumBitSet
 public:
     void set(T flag)
     {
-        bitset.setFromMask((int)flag);
+        bitset.setFromMask((unsigned int)flag);
     }
 
-    void set(int flags)
+    void set(unsigned int flags)
     {
         bitset.setFromMask(flags);
     }
@@ -79,6 +84,11 @@ public:
     void clear()
     {
         bitset.clear();
+    }
+
+    unsigned int getMask() const
+    {
+        return bitset.getMask();
     }
 
 private:

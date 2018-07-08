@@ -166,6 +166,18 @@ Vec3fp Polygon3::calculateCenter() const
     return center / totalVertices;
 }
 
+void Polygon3::scaleRelativeToCenter(fp scale, Polygon3& dest) const
+{
+    Vec3fp center = calculateCenter();
+
+    for(int i = 0; i < totalVertices; ++i)
+    {
+        dest.vertices[i] = (vertices[i] - center) * scale + center;
+    }
+
+    dest.totalVertices = totalVertices;
+}
+
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color)
 {
     // for(int i = 0; i < poly->totalVertices; ++i)

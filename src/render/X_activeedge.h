@@ -33,7 +33,8 @@
 
 enum SurfaceFlags
 {
-    SURFACE_NO_DRAW_SPANS = 1
+    SURFACE_NO_DRAW_SPANS = 1,
+    SURFACE_FILL_SOLID
 };
 
 struct X_AE_Surface
@@ -86,6 +87,19 @@ struct X_AE_Surface
     {
         prev->next = next;
         next->prev = prev;
+    }
+
+    void enableSolidFill(X_Color color)
+    {
+        flags.set(SURFACE_FILL_SOLID);
+
+        // Top 8 bits are color
+        flags.set(color << 24);
+    }
+
+    X_Color getSolidFillColor()
+    {
+        return flags.getMask() >> 24;
     }
     
     int bspKey;
@@ -272,7 +286,7 @@ struct X_AE_Context
                         int bspKey,
                         bool inSubmodel);
 
-    X_AE_Surface* addPortalPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey);
+    X_AE_Surface* addBrushPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey);
 
     X_AE_Edge* addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected);
 
