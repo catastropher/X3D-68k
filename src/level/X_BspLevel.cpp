@@ -35,11 +35,12 @@ void X_BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
     renderContext.viewFrustum->totalPlanes = 6;
 
     models[0].renderWireframe(renderContext, color, drawnEdges);
-    
-    for(int i = 1; i < totalModels; ++i)
-    {
-        models[i].renderWireframe(renderContext, 15, drawnEdges);
-    }
+
+
+    // for(int i = 1; i < totalModels; ++i)
+    // {
+    //     models[i].renderWireframe(renderContext, 15, drawnEdges);
+    // }
 
     renderContext.viewFrustum->totalPlanes = totalPlanes;
 }
@@ -93,7 +94,7 @@ void X_BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompress
 
     bool hasVisibilityInfoForCurrentLeaf = pvsData != nullptr && !leaf->isOutsideLevel();
     
-    if(!hasVisibilityInfoForCurrentLeaf)
+    if(true || !hasVisibilityInfoForCurrentLeaf)
     {
         markAllLeavesInPvsAsVisible(decompressedPvsDest, pvsSize);
         return;
@@ -144,7 +145,19 @@ void X_BspLevel::renderPortals(X_RenderContext& renderContext)
 
     for(auto portal = portalHead; portal != nullptr; portal = portal->next)
     {
-        portal->aeSurface = renderContext.renderer->activeEdgeContext.addPortalPolygon(portal->poly, portal->plane, bbFlags, 0);
+        if(!portal->plane.pointOnNormalFacingSide(MakeVec3fp(renderContext.camPos)))
+        {
+            continue;
+        }
+
+        if(portal->otherSide != nullptr)
+        {
+            portal->aeSurface = renderContext.renderer->activeEdgeContext.addPortalPolygon(portal->poly, portal->plane, bbFlags, 0);
+        }
+        else
+        {
+            portal->aeSurface = nullptr;
+        }
     }
 }
 
@@ -318,6 +331,8 @@ Portal* X_BspLevel::addPortal()
     auto portal = Zone::alloc<Portal>();
 
     portal->next = portalHead;
+    portal->aeSurface = nullptr;
+
     portalHead = portal;
 
     return portal;

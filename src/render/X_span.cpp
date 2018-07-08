@@ -267,6 +267,8 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         {
             X_Color texel = get_texel(context, u, v);
             
+            if(scanline[x] == 0)
+
             scanline[x] = texel;
 //             scanline[x * 2] = texel;
 //             scanline[x * 2 + 1] = texel;
@@ -300,6 +302,8 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         
         X_Color texel = get_texel(context, u, v);
    
+        if(scanline[x] == 0)
+
         scanline[x] = texel;
 //         scanline[x * 2] = texel;
 //         scanline[x * 2 + 1] = texel;

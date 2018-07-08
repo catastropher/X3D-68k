@@ -29,7 +29,7 @@ typedef struct Context
     SDL_Surface* screen;
     X_EngineContext* engineContext;
     X_CameraObject* cam;
-    _Bool quit;
+    bool quit;
     
     X_DemoRecorder demoRecorder;
     X_DemoPlayer demoPlayer;

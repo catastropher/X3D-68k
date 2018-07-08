@@ -20,16 +20,36 @@
 #include "X_activeedge.h"
 #include "X_Light.h"
 #include "memory/X_CircularQueue.hpp"
+#include "object/X_CameraObject.h"
 
 #define X_RENDERER_FILL_DISABLED -1
 
 #define X_RENDERER_MAX_LIGHTS 32
 
+struct PortalSpan
+{
+    short left;
+    short right;
+    int y;
+};
 
+struct ScheduledPortal
+{
+    Portal* portal;
+    PortalSpan* spans;
+    PortalSpan* spansEnd;
+
+    X_CameraObject cam;
+    int recursionDepth;
+};
 
 typedef struct X_Renderer
 {
     X_Renderer(X_Screen* screen) : activeEdgeContext(2000, 600, 20000, screen) { }
+
+    void scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth);
+    void renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext);
+    void renderCamera(X_CameraObject* cam, X_EngineContext* engineContext);
     
     X_AE_Context activeEdgeContext;
     X_Cache surfaceCache;
@@ -63,6 +83,11 @@ typedef struct X_Renderer
     
     bool wireframe;
 
+    int totalRenderedPortals;
+    int maxRenderedPortals;
+    int maxPortalDepth;
+
+    CircularQueue<ScheduledPortal, 10> scheduledPortals;
 
 } X_Renderer;
 

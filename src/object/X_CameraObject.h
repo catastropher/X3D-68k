@@ -18,17 +18,27 @@
 #include "X_GameObject.h"
 #include "render/X_Viewport.h"
 #include "physics/X_BoxCollider.h"
+#include "memory/X_BitSet.hpp"
 
 struct X_EngineContext;
 struct X_RenderContext;
 struct X_Screen;
 struct X_BspLeaf;
 
-////////////////////////////////////////////////////////////////////////////////
-/// 
+enum CameraobjectFlags
+{
+    CAMERA_OVERRIDE_PVS = 1
+};
+
+
 typedef struct X_CameraObject
 {
+    void updateFrustum();
+
+    void overrideBspLeaf(int leafId, X_BspLevel* level);
+
     X_GameObject base;
+    EnumBitSet<CameraobjectFlags> flags;
     X_BoxCollider collider;
     Viewport viewport;
     Mat4x4 viewMatrix;

@@ -27,6 +27,13 @@ static X_GameObjectType g_cameraObjectType =
     }
 };
 
+void X_CameraObject::overrideBspLeaf(int leafId, X_BspLevel* level)
+{
+    currentLeaf = level->leaves + leafId;
+    lastLeaf = nullptr;
+    flags.set(CAMERA_OVERRIDE_PVS);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Creates a new camera object.
 /// @todo Determine how to best initialize a camera
@@ -39,6 +46,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     cam->screenResizeCallback = NULL;
     cam->base.velocity = x_vec3_origin();
     cam->base.type = &g_cameraObjectType;
+    cam->flags.clear();
     
     // FIXME: need actual bound box
     static BoundBox box;
@@ -66,13 +74,19 @@ void x_cameraobject_update_view(X_CameraObject* cam)
     translation.loadTranslation(negatedPositionTemp);
     
     cam->viewMatrix = rotation * translation;
-    
-    Vec3fp forward, up, right;
-    cam->viewMatrix.extractViewVectors(forward, right, up);
 
+    cam->updateFrustum();
+}
+
+void X_CameraObject::updateFrustum()
+{
+    Vec3fp forward, up, right;
+    viewMatrix.extractViewVectors(forward, right, up);
+
+    Vec3 position = x_cameraobject_get_position(this);
     Vec3fp p = MakeVec3fp(position);
 
-    cam->viewport.updateFrustum(p, forward, right, up);
+    viewport.updateFrustum(p, forward, right, up);
 }
 
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -105,7 +119,11 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     
     int currentFrame = x_enginecontext_get_frame(renderContext->engineContext);
     
-    x_cameraobject_determine_current_bspleaf(cam, renderContext);
+    if(!cam->flags.isSet(CAMERA_OVERRIDE_PVS))
+    {
+        x_cameraobject_determine_current_bspleaf(cam, renderContext);
+    }
+    
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
     renderContext->level->markVisibleLeavesFromPvs(cam->pvsForCurrentLeaf, currentFrame);
     
@@ -113,9 +131,13 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     renderContext->currentFrame = currentFrame;
     
     if(cam->currentLeaf != renderContext->level->leaves + 0 && !renderContext->renderer->wireframe)
+    {
         x_bsplevel_render(renderContext->level, renderContext);
+    }
     else
+    {
         renderContext->level->renderWireframe(*renderContext, 5 * 16 - 1);
+    }
 }
 
 

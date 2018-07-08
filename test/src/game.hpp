@@ -47,6 +47,8 @@ private:
         x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
 
         x_console_register_var(context.engineContext->getConsole(), &cam->collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
+
+        x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289,-162,192");
     }
 
     void renderView()
@@ -72,6 +74,7 @@ private:
             }
 
             shootPortal(bluePortal);
+            Portal::linkMutual(orangePortal, bluePortal);
         }
 
         if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'g'))
@@ -83,6 +86,7 @@ private:
             }
 
             shootPortal(orangePortal);
+            Portal::linkMutual(orangePortal, bluePortal);
         }
     }
 

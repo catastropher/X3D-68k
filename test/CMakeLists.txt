@@ -40,8 +40,8 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_CXX_FLAGS "-fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan -D_Bool=bool")
-    #set(CMAKE_C_FLAGS "-std=gnu99 -Wall -g")
+    #set(CMAKE_CXX_FLAGS "-fPIC -Wall -g -fsanitize=address -fsanitize=undefined -static-libasan -D_Bool=bool")
+    set(CMAKE_CXX_FLAGS "-std=gnu99 -Wall -g -O3")
     add_definitions(-D__pc__)
 elseif(${XTARGET} STREQUAL "nspire")
     SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")       # Workaround for CMake wanting to add -rdynamic

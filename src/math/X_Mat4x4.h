@@ -23,6 +23,13 @@ struct X_RenderContext;
 
 struct Mat4x4
 {
+    void dropTranslation()
+    {
+        elem[0][3] = 0;
+        elem[1][3] = 0;
+        elem[2][3] = 0;
+    }
+
     void loadIdentity();
     void loadXRotation(fp angle);
     void loadYRotation(fp angle);

@@ -154,6 +154,18 @@ void Polygon3::splitAlongPlane(const Plane& plane, int* edgeIds, Polygon3& front
     }    
 }
 
+Vec3fp Polygon3::calculateCenter() const
+{
+    Vec3fp center = vertices[0];
+
+    for(int i = 1; i < totalVertices; ++i)
+    {
+        center += vertices[i];
+    }
+
+    return center / totalVertices;
+}
+
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color)
 {
     // for(int i = 0; i < poly->totalVertices; ++i)
