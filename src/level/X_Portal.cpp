@@ -30,12 +30,17 @@ void Portal::linkTo(Portal* otherSide_)
     Mat4x4 transpose = orientation;
     transpose.transpose3x3();
 
+    transpose.setColumn(0, Vec4(-transpose.getColumn(0).toVec3()));
+    transpose.setColumn(2, Vec4(-transpose.getColumn(2).toVec3()));
+
     Mat4x4 translation;
     translation.loadTranslation(-center);
 
-    Mat4x4 othersideFlipped = rotate180DegreesAroundY * otherSide->orientation;
+    Mat4x4 othersideFlipped =  otherSide->orientation;
 
-    transformToOtherSide = othersideFlipped * transpose * translation;
+    transformToOtherSide = othersideFlipped * transpose;
+
+    transformToOtherSide.transpose3x3();
 
 
     // Mat4x4 otherSideTranslation;

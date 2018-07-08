@@ -41,8 +41,8 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    #set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
-    set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -O3 -g")
+    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
+    #set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -O3 -g")
     
     set(X_WITH_SDL "1")
 elseif(${XTARGET} STREQUAL "nspire")
