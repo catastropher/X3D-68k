@@ -175,6 +175,11 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     context->renderContext = renderContext;
     context->mipLevel = renderContext->cam->viewport.closestMipLevelForZ(fp(surface->closestZ));
     context->viewport = &renderContext->cam->viewport;
+
+    if(surface->flags.isSet(SURFACE_FILL_SOLID))
+    {
+        return;
+    }
     
     X_BspFaceTexture* tex = context->faceTexture;
     X_BspSurface* bspSurface = context->surface->bspSurface;
@@ -237,6 +242,18 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16
     return context->surfaceTexture.getTexels()[vv * context->surfaceTexture.getW() + uu];
 }
 
+static inline void __attribute__((hot)) fill_solid_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span, X_Color color)
+{
+    X_Texture* screenTex = context->renderContext->canvas;
+    X_Color* scanline = screenTex->getRow(span->y);
+
+    for(int x = span->x1; x < span->x2; ++x)
+    {
+        // temp check
+        if(scanline[x] == 0)
+        scanline[x] = color;
+    }
+}
 
 static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span)
 {
@@ -267,6 +284,8 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         {
             X_Color texel = get_texel(context, u, v);
             
+            if(scanline[x] == 0)
+
             scanline[x] = texel;
 //             scanline[x * 2] = texel;
 //             scanline[x * 2 + 1] = texel;
@@ -300,6 +319,8 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
         
         X_Color texel = get_texel(context, u, v);
    
+        if(scanline[x] == 0)
+
         scanline[x] = texel;
 //         scanline[x * 2] = texel;
 //         scanline[x * 2 + 1] = texel;
@@ -359,13 +380,21 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
     return;
  #endif
      
-    for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
+    if(context->surface->flags.isSet(SURFACE_FILL_SOLID))
     {
-#ifdef __nspire__
-        draw_surface_span(context, span);
-#else
-        x_ae_surfacerendercontext_render_span(context, span);
-#endif
+        X_Color fillColor = context->surface->getSolidFillColor();
+
+        for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
+        {
+            fill_solid_span(context, span, fillColor);
+        }
+    }
+    else
+    {
+        for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
+        {
+            x_ae_surfacerendercontext_render_span(context, span);
+        }
     }
 }
 

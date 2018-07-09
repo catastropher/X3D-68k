@@ -42,7 +42,7 @@ endif()
 
 if(${XTARGET} STREQUAL "pc")
     set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
-    #set(CMAKE_C_FLAGS "-std=gnu99 -fPIC -Wall -O0 -g")
+    #set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -O3 -g")
     
     set(X_WITH_SDL "1")
 elseif(${XTARGET} STREQUAL "nspire")
@@ -100,6 +100,7 @@ set(X_SOURCES
     src/level/X_BspNode.cpp
     src/level/X_EntityModel.cpp
     src/level/X_EntityModelLoader.cpp
+    src/level/X_Portal.cpp
     src/level/X_RayTracer.cpp
 
     # math

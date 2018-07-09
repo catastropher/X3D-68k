@@ -43,6 +43,10 @@ struct Polygon3
 
     void constructRegular(int totalSides, fp sideLength, fp angleOffset, Vec3fp translation);
     void renderWireframe(X_RenderContext& renderContext, X_Color color);
+
+    Vec3fp calculateCenter() const;
+
+    void scaleRelativeToCenter(fp scale, Polygon3& dest) const;
     
     Vec3fp* vertices;
     int totalVertices;

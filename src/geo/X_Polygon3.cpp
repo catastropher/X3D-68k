@@ -154,15 +154,28 @@ void Polygon3::splitAlongPlane(const Plane& plane, int* edgeIds, Polygon3& front
     }    
 }
 
-void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color)
+Vec3fp Polygon3::calculateCenter() const
 {
-    // for(int i = 0; i < poly->totalVertices; ++i)
-    // {
-    //     int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
-    //     Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
-        
-    //     x_ray3_render(&ray, rcontext, color);
-    // }
+    Vec3fp center = vertices[0];
+
+    for(int i = 1; i < totalVertices; ++i)
+    {
+        center += vertices[i];
+    }
+
+    return center / totalVertices;
+}
+
+void Polygon3::scaleRelativeToCenter(fp scale, Polygon3& dest) const
+{
+    Vec3fp center = calculateCenter();
+
+    for(int i = 0; i < totalVertices; ++i)
+    {
+        dest.vertices[i] = (vertices[i] - center) * scale + center;
+    }
+
+    dest.totalVertices = totalVertices;
 }
 
 void Polygon3::clone(Polygon3& dest) const

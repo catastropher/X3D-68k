@@ -61,9 +61,9 @@ void X_BspNode::renderWireframe(
                 ray.v[0] += MakeVec3fp(model.origin);
                 ray.v[1] += MakeVec3fp(model.origin);
                 
-                //ray.render(*renderContext, color);
+                ray.render(renderContext, color);
 
-                ray.renderShaded(renderContext, color, fp::fromInt(1000));
+                //ray.renderShaded(renderContext, color, fp::fromInt(1000));
             }
         }
         

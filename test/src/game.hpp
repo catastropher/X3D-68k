@@ -47,6 +47,8 @@ private:
         x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
 
         x_console_register_var(context.engineContext->getConsole(), &cam->collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
+
+        x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289,-162,192");
     }
 
     void renderView()
@@ -69,9 +71,13 @@ private:
             {
                 bluePortal = getInstance()->getCurrentLevel()->addPortal();
                 bluePortal->poly.vertices = bluePortalVertices;
+
+                auto palette = getInstance()->getScreen()->palette;
+                //bluePortal->enableOutline(palette->darkBlue);
             }
 
             shootPortal(bluePortal);
+            Portal::linkMutual(orangePortal, bluePortal);
         }
 
         if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'g'))
@@ -80,9 +86,15 @@ private:
             {
                 orangePortal = getInstance()->getCurrentLevel()->addPortal();
                 orangePortal->poly.vertices = orangePortalVertices;
+
+                auto palette = getInstance()->getScreen()->palette;
+                X_Color orange = x_palette_get_closest_color_from_rgb(palette, 255, 69, 0);
+
+                //orangePortal->enableOutline(orange);
             }
 
             shootPortal(orangePortal);
+            Portal::linkMutual(orangePortal, bluePortal);
         }
     }
 

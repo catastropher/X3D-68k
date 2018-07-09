@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "geo/X_Plane.h"
 #include "geo/X_Polygon3.h"
 #include "math/X_Mat4x4.h"
 #include "memory/X_BitSet.hpp"
@@ -23,18 +24,49 @@ struct X_AE_Surface;
 
 enum PortalFlags
 {
-    PORTAL_ENABLED = 1
+    PORTAL_ENABLED = 1,
+    PORTAL_DRAW_OUTLINE = 2
 };
 
 struct Portal
 {
+    void linkTo(Portal* portal);
+
+    Vec3fp transformPointToOtherSide(Vec3fp point);
+
+    static void linkMutual(Portal* a, Portal* b)
+    {
+        if(a)
+        {
+            a->linkTo(b);
+        }
+
+        if(b)
+        {
+            b->linkTo(a);
+        }
+    }
+
+    void updatePoly()
+    {
+        center = poly.calculateCenter();
+    }
+
+    void enableOutline(X_Color color)
+    {
+        outlineColor = color;
+        flags.set(PORTAL_DRAW_OUTLINE);
+    }
+
     Polygon3 poly;
     Vec3fp center;
     Plane plane;
     Mat4x4 orientation;
+    Mat4x4 transformToOtherSide;
     X_AE_Surface* aeSurface;
     Portal* otherSide;
     EnumBitSet<PortalFlags> flags;
+    X_Color outlineColor;
 
     Portal* next;
 };

@@ -318,18 +318,133 @@ static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engine
     renderer->totalSurfacesRendered = 0;
     renderer->currentFrame = engineContext->frameCount;
     renderer->dynamicLightsNeedingUpdated = 0xFFFFFFFF;
+
+    renderer->totalRenderedPortals = 0;
+    renderer->maxRenderedPortals = 10;
+    renderer->maxPortalDepth = 1;
 }
 
 // FIXME: just for testing...
 void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext);
 
-static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineContext* engineContext)
+static void clear_zbuffer(X_EngineContext* engineContext)
+{
+    x_screen_zbuf_clear(engineContext->getScreen());
+}
+
+void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth)
+{
+    if(recursionDepth > maxPortalDepth)
+    {
+        return;
+    }
+
+    const int MAX_PORTAL_SPANS = 1024;
+    auto level = renderContext.level;
+
+    for(auto portal = level->portalHead; portal != nullptr; portal = portal->next)
+    {
+        if(!portal->aeSurface || portal->aeSurface->spanHead.next == nullptr)
+        {
+            continue;
+        }
+
+        if(scheduledPortals.isFull())
+        {
+            break;
+        }
+
+        auto scheduledPortal = scheduledPortals.allocate();
+        auto nextPortalSpan = Zone::alloc<PortalSpan>(MAX_PORTAL_SPANS);
+
+        scheduledPortal->recursionDepth = recursionDepth;
+        scheduledPortal->spans = nextPortalSpan;
+        scheduledPortal->cam = *renderContext.cam;
+        scheduledPortal->portal = portal;
+
+        auto otherSide = portal->otherSide;
+
+        scheduledPortal->cam.viewMatrix = *renderContext.viewMatrix; //otherSide->orientation;
+        scheduledPortal->cam.collider.position = MakeVec3(otherSide->center);
+
+        X_CameraObject& cam = scheduledPortal->cam;
+
+        createCameraFromPerspectiveOfPortal(renderContext, *portal, cam);
+
+        for(auto span = portal->aeSurface->spanHead.next; span != nullptr; span = span->next)
+        {
+            nextPortalSpan->left = span->x1;
+            nextPortalSpan->right = span->x2;
+            nextPortalSpan->y = span->y;
+
+            ++nextPortalSpan;
+        }
+
+        scheduledPortal->spansEnd = nextPortalSpan;
+    }
+}
+
+void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& dest)
+{
+    calculateCameraPositionOnOtherSideOfPortal(renderContext, portal, dest);
+    calculateCameraViewMatrix(renderContext, portal, dest);
+    
+
+    dest.viewport.viewFrustum.planes = dest.viewport.viewFrustumPlanes;
+
+    dest.updateFrustum();
+}
+
+void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
+{
+    cam.collider.position = MakeVec3(portal.transformPointToOtherSide(MakeVec3fp(renderContext.cam->collider.position)));
+
+    int leafId = renderContext.level->findLeafPointIsIn(portal.otherSide->center) - renderContext.level->leaves;
+    cam.overrideBspLeaf(leafId, renderContext.level);
+}
+
+void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
+{
+    cam.viewMatrix = *renderContext.viewMatrix * portal.transformToOtherSide;
+
+    cam.viewMatrix.dropTranslation();
+
+    Mat4x4 translation;
+    translation.loadTranslation(-MakeVec3fp(cam.collider.position));
+
+    cam.viewMatrix = cam.viewMatrix * translation;
+}
+
+void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext)
+{
+
+    bool wireframe = renderContext->renderer->wireframe;
+
+    renderContext->renderer->wireframe = false;
+
+    x_engine_begin_frame(&engineContext);
+    x_enginecontext_get_rendercontext_for_camera(&engineContext, &scheduledPortal->cam, renderContext);
+
+    x_ae_context_begin_render(&activeEdgeContext, renderContext);
+
+    x_cameraobject_render(&scheduledPortal->cam, renderContext);
+
+    x_ae_context_scan_edges(&activeEdgeContext);
+
+    Zone::free(scheduledPortal->spans);
+
+    scheduledPortal->spans = nullptr;
+
+    renderContext->renderer->wireframe = wireframe;
+}
+
+void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContext)
 {
     X_RenderContext renderContext;
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
     
     //if((renderer->renderMode & 2) != 0)
-    x_ae_context_begin_render(&renderer->activeEdgeContext, &renderContext);
+    x_ae_context_begin_render(&activeEdgeContext, &renderContext);
     
     StopWatch::start("traverse-level");
     x_cameraobject_render(cam, &renderContext);
@@ -337,12 +452,34 @@ static void render_camera(X_Renderer* renderer, X_CameraObject* cam, X_EngineCon
 
     customRenderCallback(engineContext, &renderContext);
 
-    x_ae_context_scan_edges(&renderer->activeEdgeContext);
-}
+    x_ae_context_scan_edges(&activeEdgeContext);
 
-static void clear_zbuffer(X_EngineContext* engineContext)
-{
-    x_screen_zbuf_clear(engineContext->getScreen());
+    int recursionDepth = 0;
+
+    x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
+
+    do
+    {
+        scheduleNextLevelOfPortals(renderContext, recursionDepth);
+
+        if(scheduledPortals.isEmpty() || ++totalRenderedPortals > maxRenderedPortals)
+        {
+            break;
+        }
+
+        auto scheduledPortal = scheduledPortals.dequeue();
+        renderScheduledPortal(scheduledPortal, *engineContext, &renderContext);
+
+        recursionDepth = scheduledPortal->recursionDepth + 1;
+    } while(true);
+
+    while(!scheduledPortals.isEmpty())
+    {
+        auto scheduledPortal = scheduledPortals.dequeue();
+        Zone::free(scheduledPortal->spans);
+
+        scheduledPortal->spans = nullptr;
+    }
 }
 
 void x_renderer_render_frame(X_EngineContext* engineContext)
@@ -352,10 +489,15 @@ void x_renderer_render_frame(X_EngineContext* engineContext)
     clear_zbuffer(engineContext);
     fill_with_background_color(engineContext);
     mark_lights(engineContext);
+
+    if(!x_engine_level_is_loaded(engineContext))
+    {
+        return;
+    }
     
     for(X_CameraObject* cam = engineContext->getScreen()->cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
-        render_camera(engineContext->getRenderer(), cam, engineContext);
+        engineContext->getRenderer()->renderCamera(cam, engineContext);
     }
 }
 

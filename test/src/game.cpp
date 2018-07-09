@@ -43,7 +43,7 @@ void TestGame::shootPortal(Portal* portal)
 
     x_raytracer_init(&tracer, level, x_bsplevel_get_level_model(level), &start, &end, &box);
 
-    portal->poly.constructRegular(5, fp::fromInt(20), 0, Vec3fp(0, 0, 0));
+    portal->poly.constructRegular(16, fp::fromInt(20), 0, Vec3fp(0, 0, 0));
 
     if(x_raytracer_trace(&tracer))
     {
@@ -61,6 +61,7 @@ void TestGame::shootPortal(Portal* portal)
         printf("Hit\n");
         tracer.collisionPlane.print();
         portal->center = MakeVec3fp(tracer.collisionPoint);// + tracer.collisionPlane.normal * fp::fromFloat(25);
+        portal->plane = tracer.collisionPlane;
 
 
         tracer.collisionPlane.getOrientation(*cam, portal->orientation);
@@ -73,11 +74,15 @@ void TestGame::shootPortal(Portal* portal)
 
     for(int i = 0; i < portal->poly.totalVertices; ++i)
     {
+        portal->poly.vertices[i].y = portal->poly.vertices[i].y * fp::fromFloat(1.75);
+
         portal->poly.vertices[i] = portal->orientation.transform(portal->poly.vertices[i]) + portal->center;
     }
 
     //orientation.visualize(Vec3fp(0, 0, 0), *renderContext);
 
     portal->poly.reverse();
+
+    portal->updatePoly();
 }
 
