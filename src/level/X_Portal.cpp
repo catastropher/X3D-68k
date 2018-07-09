@@ -41,27 +41,6 @@ void Portal::linkTo(Portal* otherSide_)
     transformToOtherSide = othersideFlipped * transpose;
 
     transformToOtherSide.transpose3x3();
-
-
-    // Mat4x4 otherSideTranslation;
-    // otherSideTranslation.loadTranslation(-otherSide->center);
-
-    // Mat4x4 otherSideTranspose = otherSide->orientation;
-    // otherSideTranspose.transpose3x3();
-
-    // Mat4x4 inverseOtherSideObjecToWorld = otherSideTranslation * otherSideTranspose;
-
-    // Mat4x4 translation;
-    // translation.loadTranslation(center);
-
-    // Mat4x4 objectToWorld = orientation * translation;
-
-    // Mat4x4 rotate180DegreesAroundY;
-    // rotate180DegreesAroundY.loadYRotation(0);
-
-    // transformToOtherSide = objectToWorld * rotate180DegreesAroundY * inverseOtherSideObjecToWorld;
-
-    // transformToOtherSide.print();
 }
 
 Vec3fp Portal::transformPointToOtherSide(Vec3fp point)

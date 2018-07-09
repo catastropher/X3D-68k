@@ -369,74 +369,7 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
 
         X_CameraObject& cam = scheduledPortal->cam;
 
-        Vec3fp pos = MakeVec3fp(renderContext.cam->collider.position);  //otherSide->center;// + otherSide->plane.normal * 500;
-
-        cam.collider.position = MakeVec3(pos);
-        cam.base.position = cam.collider.position;
-
-        Mat4x4 otherSideTranspose = otherSide->orientation;
-
-        auto x = Vec4(-otherSideTranspose.getRow(0).toVec3());
-        auto z = Vec4(-otherSideTranspose.getRow(2).toVec3());
-
-        otherSideTranspose.setRow(0, x);
-        otherSideTranspose.setRow(2, z);
-
-        otherSideTranspose.transpose3x3();
-
-       
-
-        Mat4x4 translation2;
-        translation2.loadTranslation(scheduledPortal->portal->center);
-
-        Mat4x4 t = *renderContext.viewMatrix;
-        //t.dropTranslation();
-        //t.transpose3x3();
-
-        cam.viewMatrix = t * portal->transformToOtherSide;
-
-        cam.collider.position = MakeVec3(portal->transformPointToOtherSide(MakeVec3fp(renderContext.cam->collider.position)));
-
-        cam.viewMatrix.dropTranslation();
-
-        Mat4x4 translation;
-        translation.loadTranslation(-MakeVec3fp(cam.collider.position));
-
-        cam.viewMatrix = cam.viewMatrix * translation;
-
-        int leafId = renderContext.level->findLeafPointIsIn(portal->otherSide->center) - renderContext.level->leaves;
-
-        cam.overrideBspLeaf(leafId, renderContext.level);
-
-        //cam.collider.position = Vec3(-289 << 16,-162 << 16,192 << 16); //MakeVec3(portal->transformToOtherSide.transform(MakeVec3fp(renderContext.cam->collider.position)));
-
-        //cam.collider.position = MakeVec3(-cam.viewMatrix.getColumn(3).toVec3());
-
-        //Vec3fp center = portal->otherSide->transformPointToOtherSide(portal->otherSide->center + portal->otherSide->plane.normal * 200); //portal->otherSide->transformToOtherSide.transform(portal->otherSide->center);
-
-
-
-        //Mat4x4 temp = portal->otherSide->transformToOtherSide * portal->otherSide->orientation;
-
-        //temp.visualize(center, renderContext);
-
-        Vec3fp predictCenter = otherSide->transformToOtherSide.transform(otherSide->center);
-
-
-        // cam.viewMatrix.elem[0][3] = 0;
-        // cam.viewMatrix.elem[1][3] = 0;
-        // cam.viewMatrix.elem[2][3] = 0;
-
-        for(int i = 0; i < 3; ++i)
-        {
-            //cam.viewMatrix.elem[2][i] = -cam.viewMatrix.elem[2][i];
-        }
-
-        cam.viewport.viewFrustum.planes = cam.viewport.viewFrustumPlanes;
-
-        cam.updateFrustum();
-
-        //x_cameraobject_update_view(&cam);
+        createCameraFromPerspectiveOfPortal(renderContext, *portal, cam);
 
         for(auto span = portal->aeSurface->spanHead.next; span != nullptr; span = span->next)
         {
@@ -449,6 +382,37 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
 
         scheduledPortal->spansEnd = nextPortalSpan;
     }
+}
+
+void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& dest)
+{
+    calculateCameraPositionOnOtherSideOfPortal(renderContext, portal, dest);
+    calculateCameraViewMatrix(renderContext, portal, dest);
+    
+
+    dest.viewport.viewFrustum.planes = dest.viewport.viewFrustumPlanes;
+
+    dest.updateFrustum();
+}
+
+void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
+{
+    cam.collider.position = MakeVec3(portal.transformPointToOtherSide(MakeVec3fp(renderContext.cam->collider.position)));
+
+    int leafId = renderContext.level->findLeafPointIsIn(portal.otherSide->center) - renderContext.level->leaves;
+    cam.overrideBspLeaf(leafId, renderContext.level);
+}
+
+void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
+{
+    cam.viewMatrix = *renderContext.viewMatrix * portal.transformToOtherSide;
+
+    cam.viewMatrix.dropTranslation();
+
+    Mat4x4 translation;
+    translation.loadTranslation(-MakeVec3fp(cam.collider.position));
+
+    cam.viewMatrix = cam.viewMatrix * translation;
 }
 
 void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext)

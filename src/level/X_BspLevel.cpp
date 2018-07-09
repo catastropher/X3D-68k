@@ -36,11 +36,10 @@ void X_BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
 
     models[0].renderWireframe(renderContext, color, drawnEdges);
 
-
-    // for(int i = 1; i < totalModels; ++i)
-    // {
-    //     models[i].renderWireframe(renderContext, 15, drawnEdges);
-    // }
+    for(int i = 1; i < totalModels; ++i)
+    {
+        models[i].renderWireframe(renderContext, 15, drawnEdges);
+    }
 
     renderContext.viewFrustum->totalPlanes = totalPlanes;
 }
@@ -94,7 +93,7 @@ void X_BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompress
 
     bool hasVisibilityInfoForCurrentLeaf = pvsData != nullptr && !leaf->isOutsideLevel();
     
-    if(true || !hasVisibilityInfoForCurrentLeaf)
+    if(!hasVisibilityInfoForCurrentLeaf)
     {
         markAllLeavesInPvsAsVisible(decompressedPvsDest, pvsSize);
         return;

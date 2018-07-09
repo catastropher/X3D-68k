@@ -178,17 +178,6 @@ void Polygon3::scaleRelativeToCenter(fp scale, Polygon3& dest) const
     dest.totalVertices = totalVertices;
 }
 
-void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color)
-{
-    // for(int i = 0; i < poly->totalVertices; ++i)
-    // {
-    //     int next = (i + 1 < poly->totalVertices ? i + 1 : 0);
-    //     Ray3 ray = x_ray3_make(poly->vertices[i], poly->vertices[next]);
-        
-    //     x_ray3_render(&ray, rcontext, color);
-    // }
-}
-
 void Polygon3::clone(Polygon3& dest) const
 {
     if(&dest == this)

@@ -89,6 +89,12 @@ typedef struct X_Renderer
 
     CircularQueue<ScheduledPortal, 10> scheduledPortals;
 
+private:
+    static void createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& dest);
+    static void calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam);
+
+    static void calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam);
+
 } X_Renderer;
 
 #define X_COLORMAP_SHADES_PER_COLOR 64
