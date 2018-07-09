@@ -462,10 +462,6 @@ void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContex
     {
         scheduleNextLevelOfPortals(renderContext, recursionDepth);
 
-        //printf("===============\n");
-
-        //break;
-
         if(scheduledPortals.isEmpty() || ++totalRenderedPortals > maxRenderedPortals)
         {
             break;
@@ -483,11 +479,6 @@ void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContex
         Zone::free(scheduledPortal->spans);
 
         scheduledPortal->spans = nullptr;
-    }
-
-    for(auto portal = renderContext.level->portalHead; portal != nullptr; portal = portal->next)
-    {
-        //portal->orientation.visualize(portal->center, renderContext);
     }
 }
 
