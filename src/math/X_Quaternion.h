@@ -25,6 +25,8 @@ typedef X_Vec4_fp16x16 X_Quaternion;
 template<typename T>
 struct QuaternionTemplate : public Vec4Template<T>
 {
+    void toMat4x4(Mat4x4& dest) const;
+
     QuaternionTemplate<T> operator*(QuaternionTemplate<T>& q) const;
 
     static QuaternionTemplate fromAxisAngle(Vec3Template<T>& axis, fp angle);

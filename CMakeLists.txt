@@ -133,6 +133,7 @@ set(X_SOURCES
 
     # render
     src/render/X_activeedge.cpp
+    src/render/X_Camera.cpp
     src/render/X_Font.cpp
     src/render/X_Palette.cpp
     src/render/X_Renderer.cpp
