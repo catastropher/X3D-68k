@@ -355,10 +355,10 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
         }
 
         auto scheduledPortal = scheduledPortals.allocate();
-        auto nextPortalSpan = Zone::alloc<PortalSpan>(MAX_PORTAL_SPANS);
+        //auto nextPortalSpan = Zone::alloc<PortalSpan>(MAX_PORTAL_SPANS);
 
         scheduledPortal->recursionDepth = recursionDepth;
-        scheduledPortal->spans = nextPortalSpan;
+        //scheduledPortal->spans = nextPortalSpan;
         scheduledPortal->cam = *renderContext.cam;
         scheduledPortal->portal = portal;
 
@@ -371,16 +371,16 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
 
         createCameraFromPerspectiveOfPortal(renderContext, *portal, cam);
 
-        for(auto span = portal->aeSurface->spanHead.next; span != nullptr; span = span->next)
-        {
-            nextPortalSpan->left = span->x1;
-            nextPortalSpan->right = span->x2;
-            nextPortalSpan->y = span->y;
+        // for(auto span = portal->aeSurface->spanHead.next; span != nullptr; span = span->next)
+        // {
+        //     nextPortalSpan->left = span->x1;
+        //     nextPortalSpan->right = span->x2;
+        //     nextPortalSpan->y = span->y;
 
-            ++nextPortalSpan;
-        }
+        //     ++nextPortalSpan;
+        // }
 
-        scheduledPortal->spansEnd = nextPortalSpan;
+        // scheduledPortal->spansEnd = nextPortalSpan;
     }
 }
 
@@ -431,7 +431,7 @@ void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_Engin
 
     x_ae_context_scan_edges(&activeEdgeContext);
 
-    Zone::free(scheduledPortal->spans);
+    //Zone::free(scheduledPortal->spans);
 
     scheduledPortal->spans = nullptr;
 
@@ -476,7 +476,7 @@ void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContex
     while(!scheduledPortals.isEmpty())
     {
         auto scheduledPortal = scheduledPortals.dequeue();
-        Zone::free(scheduledPortal->spans);
+        //Zone::free(scheduledPortal->spans);
 
         scheduledPortal->spans = nullptr;
     }

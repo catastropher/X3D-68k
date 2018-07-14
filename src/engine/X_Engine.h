@@ -26,6 +26,8 @@ void x_engine_cleanup(void);
 void x_engine_render_frame(X_EngineContext* engineContext);
 void x_engine_update_objects(X_EngineContext* engineContext);
 
+X_EngineContext* x_engine_get_context();
+
 X_Console* x_engine_get_console(void);
 
 struct Config;

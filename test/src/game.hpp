@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <X3D/X3D.h>
+#include <cmath>
 
 #include "Context.h"
 #include "init.h"
@@ -53,12 +54,41 @@ private:
 
     void renderView()
     {
+        
+
+        x_cameraobject_update_view(cam);
+        
         ::render(&context);
     }
 
     void handleKeys()
     {
+
+        int& a = cam->angleX;
+
+        //a += fp::fromFloat(1).toFp16x16();
+
+        if(a > fp::fromInt(256).toFp16x16())
+        {
+            a -= fp::fromInt(256).toFp16x16();
+        }
+
         ::handle_keys(&context);
+
+        Mat4x4& mat = cam->viewMatrix;
+
+        printf("Real angle:\t\t %f %f\n", fp(cam->angleX).toFloat(), fp(cam->angleY).toFloat());
+
+        fp x, y;
+        mat.extractEulerAngles(x, y);
+
+        printf("Diff %f\n", (fp(cam->angleY) - y).toFloat());
+
+        printf("Calculated angle:\t %f %f\n", x.toFloat(), y.toFloat());
+
+        //rintf("Angle: %f\n", sqrtf(angle.toFloat()) / 2);
+
+        //printf("Axis of rotation: %f %f %f\n", axis.x.toFloat(), axis.y.toFloat(), axis.z.toFloat());
 
         if(x_keystate_key_down(getInstance()->getKeyState(), X_KEY_ESCAPE))
         {

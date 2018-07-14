@@ -22,6 +22,9 @@
 #define X_VERTICAL_LINE_SLOPE 0x7FFFFFFF
 
 fp x_sin(fp angle);
+fp x_asin(fp val);
+fp x_acos(fp val);
+fp x_atan2(fp y, fp x);
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Calculates the cosine of an angle using a lookup table.
@@ -53,5 +56,34 @@ static inline fp x_tan(fp angle)
         return X_VERTICAL_LINE_SLOPE;
 
     return x_sin(angle) / x_cos(angle);
+}
+
+static inline fp angleToRadians(fp angle)
+{
+    const fp PI = fp::fromFloat(3.14159);
+
+    return angle * PI / 128;
+}
+
+static inline fp radiansToAngle(fp radians)
+{
+    const fp PI = fp::fromFloat(3.14159);
+
+    return 128 * radians / PI;
+}
+
+static inline void adjustAngle(fp& angle)
+{
+    fp unitsInCircle = fp::fromInt(256);
+
+    while(angle >= unitsInCircle)
+    {
+        angle -= unitsInCircle;
+    }
+
+    while(angle < 0)
+    {
+        angle += unitsInCircle;
+    }
 }
 

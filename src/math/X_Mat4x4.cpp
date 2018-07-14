@@ -252,4 +252,34 @@ void Mat4x4::visualize(Vec3fp position, const X_RenderContext& renderContext) co
     }
 }
 
+void Mat4x4::extractEulerAngles(fp& xDest, fp& yDest) const
+{
+    Mat4x4 mat = *this;
+    mat.dropTranslation();
+    mat.transpose3x3();
+
+    Vec3fp v(0, 0, fp::fromInt(1));
+    Vec3fp transformed = mat.transform(v);
+
+    Vec3fp up, forward, right;
+    mat.extractViewVectors(forward, right, up);
+
+    // I found these formulas experimentally...
+
+    if(up.y < 0)
+    {
+        xDest = x_asin(transformed.y);
+        yDest = x_atan2(transformed.z, transformed.x) - fp(X_ANG_90);
+    }
+    else
+    {
+        xDest = -x_asin(transformed.y) - fp(X_ANG_180);
+        yDest = x_atan2(transformed.z, transformed.x) + fp(X_ANG_90);
+    }
+
+    adjustAngle(xDest);
+    adjustAngle(yDest);
+}
+
+
 
