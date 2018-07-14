@@ -21,6 +21,9 @@ bool nodeIsLeaf(T id);
 template<typename IdType, typename NodeType>
 NodeType getNodeFromId(IdType idType, X_BspLevel* level);
 
+template<typename IdType>
+X_BspLeafContents getLeafContents(IdType type);
+
 // Clipnodes
 
 template<>
@@ -33,6 +36,12 @@ template<>
 X_BspClipNode* getNodeFromId(int id, X_BspLevel* level)
 {
     return level->clipNodes + id;
+}
+
+template<>
+X_BspLeafContents getLeafContents(int id)
+{
+    return (X_BspLeafContents)id;
 }
 
 // BspNode
@@ -48,6 +57,14 @@ X_BspNode* getNodeFromId(X_BspNode* id, X_BspLevel* level)
 {
     return id;
 }
+
+
+template<>
+X_BspLeafContents getLeafContents(X_BspNode* id)
+{
+    return (X_BspLeafContents)id->contents;
+}
+
 
 X_BspLeafContents get_leaf_contents(int clipNodeId)
 {
@@ -69,36 +86,38 @@ static bool both_points_on_back_side(x_fp16x16 startDist, x_fp16x16 endDist)
     return startDist < 0 && endDist < 0;
 }
 
-static inline x_fp16x16 calculate_intersection_t(x_fp16x16 startDist, x_fp16x16 endDist)
+fp calculateIntersectionT(fp startDist, fp endDist)
 {
-    const x_fp16x16 DISTANCE_EPSILON = x_fp16x16_from_float(0.03125);
-    x_fp16x16 top;
+    const fp DISTANCE_EPSILON = fp::fromFloat(0.03125);
+    fp top;
+
     if(startDist < 0)
         top = startDist + DISTANCE_EPSILON;
     else
         top = startDist - DISTANCE_EPSILON;
     
-    x_fp16x16 t = x_fp16x16_div(top, startDist - endDist);
+    fp t = top / (startDist - endDist);
     
-    return x_fp16x16_clamp(t, 0, X_FP16x16_ONE);
+    return clamp(t, fp::fromInt(0), fp::fromInt(1));
 }
 
-static X_BspLeafContents get_clip_node_contents(X_BspLevel* level, int clipNodeId, Vec3* v)
+template<typename IdType, typename NodeType>
+static X_BspLeafContents getNodeContents(X_BspLevel* level, IdType id, Vec3* v)
 {
-    while(!nodeIsLeaf(clipNodeId))
+    while(!nodeIsLeaf(id))
     {
-        X_BspClipNode* clipNode = x_bsplevel_get_clip_node(level, clipNodeId);
-        Plane* plane = &level->planes[clipNode->planeId].plane;
+        auto node = getNodeFromId<IdType, NodeType>(id, level);
+        Plane* plane = &level->planes[node->planeId].plane;
         
         Vec3fp vTemp = MakeVec3fp(*v);
 
         if(plane->pointOnNormalFacingSide(vTemp))
-            clipNodeId = clipNode->frontChild;
+            id = node->frontChild;
         else
-            clipNodeId = clipNode->backChild;
+            id = node->backChild;
     }
     
-    return get_leaf_contents(clipNodeId);
+    return getLeafContents(id);
 }
 
 template<typename IdType, typename NodeType>
@@ -137,7 +156,7 @@ static inline bool explore_both_sides_of_node(X_RayTracer* trace,
     if(!visit_node<IdType, NodeType>(trace, startChildNode, start, startT, &intersection, intersectionT))
         return 0;
     
-    bool intersectionInSolidLeaf = get_clip_node_contents(trace->level, endChildNode, &intersection) == X_BSPLEAF_SOLID;
+    bool intersectionInSolidLeaf = getNodeContents<IdType, NodeType>(trace->level, endChildNode, &intersection) == X_BSPLEAF_SOLID;
     if(!intersectionInSolidLeaf)
         return visit_node<IdType, NodeType>(trace, endChildNode, &intersection, intersectionT, end, endT);
     
@@ -179,7 +198,7 @@ bool visit_node(X_RayTracer* trace, IdType nodeId, Vec3* start, x_fp16x16 startT
         return visit_node<IdType, NodeType>(trace, (int)node->backChild, start, startT, end, endT);
     
     // The ray spans the split plane, so we need to explore both sides
-    x_fp16x16 intersectionT = calculate_intersection_t(startDist, endDist);
+    x_fp16x16 intersectionT = calculateIntersectionT(startDist, endDist).toFp16x16();
     
     return explore_both_sides_of_node<IdType, NodeType>(trace, node, start, startT, end, endT, plane, intersectionT, startDist);
 }
