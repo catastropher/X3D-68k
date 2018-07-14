@@ -92,6 +92,21 @@ static void adjust_velocity_to_slide_along_wall(Vec3* velocity, Plane* plane, x_
 
 static IterationFlags move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, X_RayTracer* trace, Vec3* newVelocity, Vec3* newPos)
 {
+    Ray3 moveRay(MakeVec3fp(collider->position), MakeVec3fp(*newPos));
+    // Check for collision with portal
+    for(Portal* portal = level->portalHead; portal != nullptr; portal = portal->next)
+    {
+        Ray3 clipRay;
+
+        if(moveRay.clipToPlane(portal->plane, clipRay) == 1)
+        {
+            if(portal->pointInPortal(clipRay.v[1]))
+            {
+                printf("Hit portal!\n");
+            }
+        }
+    }
+
     x_raytracer_init(trace, level, x_bsplevel_get_level_model(level), &collider->position, newPos, &collider->boundBox);
     
     if(!x_raytracer_trace(trace))

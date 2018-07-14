@@ -77,14 +77,14 @@ private:
 
         Mat4x4& mat = cam->viewMatrix;
 
-        printf("Real angle:\t\t %f %f\n", fp(cam->angleX).toFloat(), fp(cam->angleY).toFloat());
+        //printf("Real angle:\t\t %f %f\n", fp(cam->angleX).toFloat(), fp(cam->angleY).toFloat());
 
         fp x, y;
         mat.extractEulerAngles(x, y);
 
-        printf("Diff %f\n", (fp(cam->angleY) - y).toFloat());
+        //printf("Diff %f\n", (fp(cam->angleY) - y).toFloat());
 
-        printf("Calculated angle:\t %f %f\n", x.toFloat(), y.toFloat());
+        //printf("Calculated angle:\t %f %f\n", x.toFloat(), y.toFloat());
 
         //rintf("Angle: %f\n", sqrtf(angle.toFloat()) / 2);
 

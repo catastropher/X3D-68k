@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "geo/X_BoundRect.hpp"
 #include "geo/X_Plane.h"
 #include "geo/X_Polygon3.h"
 #include "math/X_Mat4x4.h"
@@ -50,6 +51,7 @@ struct Portal
     void updatePoly()
     {
         center = poly.calculateCenter();
+        calculateSurfaceBoundRect();
     }
 
     void enableOutline(X_Color color)
@@ -57,6 +59,10 @@ struct Portal
         outlineColor = color;
         flags.set(PORTAL_DRAW_OUTLINE);
     }
+
+    bool pointInPortal(Vec3fp& point) const;
+
+    Vec2fp projectPointOntoSurface(Vec3fp& point) const;
 
     Polygon3 poly;
     Vec3fp center;
@@ -68,6 +74,12 @@ struct Portal
     EnumBitSet<PortalFlags> flags;
     X_Color outlineColor;
 
+    BoundRect surfaceBoundRect;
+
+
     Portal* next;
+
+private:
+    void calculateSurfaceBoundRect();
 };
 

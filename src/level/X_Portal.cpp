@@ -54,3 +54,33 @@ Vec3fp Portal::transformPointToOtherSide(Vec3fp point)
     return mat.transform(diff) + otherSide->center;
 }
 
+Vec2fp Portal::projectPointOntoSurface(Vec3fp& point) const
+{
+    Vec3fp forward, right, up;
+    orientation.extractViewVectors(forward, right, up);
+
+    return Vec2fp(
+        point.dot(right),
+        point.dot(up));
+}
+
+void Portal::calculateSurfaceBoundRect()
+{
+    surfaceBoundRect.clear();
+
+    for(int i = 0; i < poly.totalVertices; ++i)
+    {
+        Vec2fp pointOnSurface = projectPointOntoSurface(poly.vertices[i]);
+        surfaceBoundRect.addPoint(pointOnSurface);
+    }
+
+    surfaceBoundRect.v[0].print();
+    surfaceBoundRect.v[1].print();
+}
+
+bool Portal::pointInPortal(Vec3fp& point) const
+{
+    Vec2fp pointOnSurface = projectPointOntoSurface(point);
+    return surfaceBoundRect.pointInside(pointOnSurface);
+}
+
