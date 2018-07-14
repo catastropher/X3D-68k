@@ -280,6 +280,16 @@ void Polygon3::renderWireframe(X_RenderContext& renderContext, X_Color color)
     }
 }
 
+void Polygon3::rotateRelateToCenter(Mat4x4& transform)
+{
+    Vec3fp center = calculateCenter();
+
+    for(int i = 0; i < totalVertices; ++i)
+    {
+        vertices[i] = transform.transform(vertices[i] - center) + center;
+    }
+}
+
 void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color)
 {
 //     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];

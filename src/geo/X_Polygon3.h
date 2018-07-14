@@ -47,6 +47,8 @@ struct Polygon3
     Vec3fp calculateCenter() const;
 
     void scaleRelativeToCenter(fp scale, Polygon3& dest) const;
+
+    void rotateRelateToCenter(Mat4x4& transform);
     
     Vec3fp* vertices;
     int totalVertices;

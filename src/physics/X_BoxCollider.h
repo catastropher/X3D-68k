@@ -26,6 +26,22 @@ typedef enum X_BoxColliderFlags
     X_BOXCOLLIDER_ON_GROUND = 4
 } X_BoxColliderFlags;
 
+enum BoxColliderCollisionType
+{
+    BOXCOLLIDER_COLLISION_NONE,
+    BOXCOLLIDER_COLLISION_PORTAL
+};
+
+struct BoxColliderCollisionInfo
+{
+    BoxColliderCollisionType type;
+
+    union
+    {
+        Portal* hitPortal;
+    };
+};
+
 typedef struct X_BoxCollider
 {
     int flags;
@@ -37,6 +53,7 @@ typedef struct X_BoxCollider
     x_fp16x16 bounceCoefficient;
     x_fp16x16 frictionCoefficient;
     x_fp16x16 maxSpeed;
+    BoxColliderCollisionInfo collisionInfo;
     
     X_Link objectsOnModel;
 } X_BoxCollider;

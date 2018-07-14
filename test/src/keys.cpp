@@ -329,6 +329,16 @@ void handle_normal_movement(X_EngineContext* engineContext, X_CameraObject* cam)
     Vec3 movementVector = get_movement_vector(engineContext, cam);
     cam->collider.velocity = cam->collider.velocity + movementVector;
     x_boxcollider_update(&cam->collider, engineContext->getCurrentLevel());
+
+    if(cam->collider.collisionInfo.type == BOXCOLLIDER_COLLISION_PORTAL)
+    {
+        auto portal = cam->collider.collisionInfo.hitPortal;
+
+        cam->angleX += portal->transformAngleX.toFp16x16();
+        cam->angleY += portal->transformAngleY.toFp16x16();
+
+        printf("Cam hit portal!\n");
+    }
     
     x_cameraobject_update_view(cam);
 }

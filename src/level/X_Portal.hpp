@@ -74,6 +74,9 @@ struct Portal
     EnumBitSet<PortalFlags> flags;
     X_Color outlineColor;
 
+    fp transformAngleX;
+    fp transformAngleY;
+
     BoundRect surfaceBoundRect;
 
 

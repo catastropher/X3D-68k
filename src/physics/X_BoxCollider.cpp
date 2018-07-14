@@ -79,7 +79,8 @@ typedef enum IterationFlags
     IT_MOVE_SUCCESS = 1,
     IT_HIT_VERTICAL_WALL = 2,
     IT_ON_FLOOR = 4,
-    IT_HIT_ANYTHING = 8
+    IT_HIT_ANYTHING = 8,
+    IT_HIT_PORTAL = 16
 } IterationFlags;
 
 static void adjust_velocity_to_slide_along_wall(Vec3* velocity, Plane* plane, x_fp16x16 bounceCoefficient)
@@ -102,7 +103,23 @@ static IterationFlags move_and_adjust_velocity(X_BoxCollider* collider, X_BspLev
         {
             if(portal->pointInPortal(clipRay.v[1]))
             {
-                printf("Hit portal!\n");
+                Vec3fp posTemp = MakeVec3fp(collider->position);
+                *newPos = MakeVec3(portal->transformPointToOtherSide(posTemp));
+
+                Vec3fp velocityTemp = MakeVec3fp(collider->velocity);
+                
+                Mat4x4 mat = portal->transformToOtherSide;
+                mat.dropTranslation();
+                mat.transpose3x3();
+
+                Vec3fp newV = mat.transform(velocityTemp);
+
+                *newVelocity = MakeVec3(newV);
+
+                collider->collisionInfo.type = BOXCOLLIDER_COLLISION_PORTAL;
+                collider->collisionInfo.hitPortal = portal;
+
+                return IT_MOVE_SUCCESS;
             }
         }
     }
@@ -240,6 +257,7 @@ void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, X_BoxCollid
     collider->frictionCoefficient = x_fp16x16_from_float(4.0);
     collider->maxSpeed = x_fp16x16_from_float(20.0);
     collider->bounceCoefficient = X_FP16x16_ONE;
+    collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
     
     x_link_init_self(&collider->objectsOnModel);
 }
@@ -251,6 +269,8 @@ static void unlink_from_model_standing_on(X_BoxCollider* collider)
 
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level)
 {
+    collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
+    
     unlink_from_model_standing_on(collider);
     apply_gravity(collider);
     try_move(collider, level);

@@ -454,7 +454,7 @@ void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContex
 
     x_ae_context_scan_edges(&activeEdgeContext);
 
-    int recursionDepth = 0;
+    int recursionDepth = 1;
 
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
 

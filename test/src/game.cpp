@@ -66,6 +66,20 @@ void TestGame::shootPortal(Portal* portal)
 
         tracer.collisionPlane.getOrientation(*cam, portal->orientation);
 
+        Quaternion q = Quaternion::fromAxisAngle(portal->plane.normal, fp(X_ANG_45));
+        Mat4x4 rot;
+        q.toMat4x4(rot);
+
+        if(!x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'r'))
+        {
+            rot.loadIdentity();
+        }
+
+
+        Mat4x4 temp = portal->orientation;
+
+        portal->orientation = rot * temp;
+
         
 
         printf("==========\n");
