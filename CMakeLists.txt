@@ -98,6 +98,7 @@ set(X_SOURCES
     src/level/X_BspLevelLoader.cpp
     src/level/X_BspModel.cpp
     src/level/X_BspNode.cpp
+    src/level/X_BspRayTracer.cpp
     src/level/X_EntityModel.cpp
     src/level/X_EntityModelLoader.cpp
     src/level/X_Portal.cpp

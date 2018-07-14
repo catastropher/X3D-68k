@@ -29,6 +29,8 @@ typedef struct X_RayTracer
     x_fp16x16 collisionFrac;
     Vec3* modelOrigin;
     X_BspModel* hitModel;
+
+    bool hitSomething;
 } X_RayTracer;
 
 void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox);
