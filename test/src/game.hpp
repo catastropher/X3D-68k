@@ -50,6 +50,8 @@ private:
         x_console_register_var(context.engineContext->getConsole(), &cam->collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
 
         x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289,-162,192");
+
+        x_gameobjectloader_load_objects(getInstance(), getInstance()->getCurrentLevel()->entityDictionary);
     }
 
     void renderView()

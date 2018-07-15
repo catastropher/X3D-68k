@@ -16,6 +16,7 @@
 #include "X_BspRayTracer.hpp"
 
 template class BspRayTracer<int, X_BspClipNode*>;
+template class BspRayTracer<X_BspNode*, X_BspNode*>;
 
 static fp calculateIntersectionT(fp startDist, fp endDist)
 {
@@ -60,8 +61,8 @@ bool BspRayTracer<IdType, NodeType>::exploreBothSidesOfNode(NodeType node, RayPo
  
     RayPoint intersection(ray.lerp(intersectionT), intersectionT);
     
-    int startChildNode;
-    int endChildNode;
+    IdType startChildNode;
+    IdType endChildNode;
     
     if(startDist >= 0)
     {
@@ -96,6 +97,10 @@ bool BspRayTracer<IdType, NodeType>::exploreBothSidesOfNode(NodeType node, RayPo
     
     collision.location = intersection;
     collision.hitModel = currentModel;
+
+    // Move the plane relative to the origin of the object
+    collision.location.point = collision.location.point + MakeVec3fp(currentModel->origin);
+    collision.plane.d = -collision.plane.normal.dot(collision.location.point);
     
     return 0;
 }
@@ -126,11 +131,11 @@ bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, R
     
     if(both_points_on_front_side(startDist, endDist))
     {
-        return visitNode((int)node->frontChild, start, end);
+        return visitNode(node->frontChild, start, end);
     }
     else if(both_points_on_back_side(startDist, endDist))
     {
-        return visitNode((int)node->backChild, start, end);
+        return visitNode(node->backChild, start, end);
     }
     
     // The ray spans the split plane, so we need to explore both sides
@@ -145,12 +150,7 @@ bool BspRayTracer<IdType, NodeType>::traceModel(X_BspModel& model)
     RayPoint start(ray.v[0] - MakeVec3fp(model.origin), 0);
     RayPoint end(ray.v[1] - MakeVec3fp(model.origin), fp::fromInt(1));
 
-    bool hitSomething = !visitNode(getRootNode(model), start, end);
-    
-    // Move the plane relative to the origin of the object
-    collision.location.point = collision.location.point + MakeVec3fp(model.origin);
-
-    collision.plane.d = -collision.plane.normal.dot(collision.location.point);
+    bool hitSomething = !visitNode(getRootNode(model), start, end);        
     
     return hitSomething;
 }
@@ -170,6 +170,8 @@ bool BspRayTracer<IdType, NodeType>::trace()
     
     return hitSomething;
 }
+
+// Specializations for clip nodes
 
 template<>
 Plane& BspRayTracer<int, X_BspClipNode*>::getNodePlane(X_BspClipNode* node)
@@ -199,5 +201,38 @@ template<>
 int BspRayTracer<int, X_BspClipNode*>::getRootNode(X_BspModel& model)
 {
     return model.clipNodeRoots[collisionHullId];
+}
+
+// Specializations for bsp nodes
+
+template<>
+Plane& BspRayTracer<X_BspNode*, X_BspNode*>::getNodePlane(X_BspNode* node)
+{
+    return node->plane->plane;
+}
+
+template<>
+bool BspRayTracer<X_BspNode*, X_BspNode*>::nodeIsLeaf(X_BspNode* node)
+{
+    return node->isLeaf();
+}
+
+template<>
+X_BspNode* BspRayTracer<X_BspNode*, X_BspNode*>::getNodeFromId(X_BspNode* node)
+{
+    return node;
+}
+
+
+template<>
+X_BspLeafContents BspRayTracer<X_BspNode*, X_BspNode*>::getLeafContents(X_BspNode* id)
+{
+    return (X_BspLeafContents)id->contents;
+}
+
+template<>
+X_BspNode* BspRayTracer<X_BspNode*, X_BspNode*>::getRootNode(X_BspModel& model)
+{
+    return model.rootBspNode;
 }
 

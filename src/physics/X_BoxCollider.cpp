@@ -93,7 +93,12 @@ static void adjust_velocity_to_slide_along_wall(Vec3* velocity, Plane* plane, x_
 
 static IterationFlags move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, X_RayTracer* trace, Vec3* newVelocity, Vec3* newPos)
 {
-    Ray3 moveRay(MakeVec3fp(collider->position), MakeVec3fp(*newPos));
+    Vec3fp vel = MakeVec3fp(collider->velocity);
+    vel.normalize();
+
+    Vec3fp newPosition = MakeVec3fp(*newPos) + vel * 30;
+
+    Ray3 moveRay(MakeVec3fp(collider->position), newPosition);
     // Check for collision with portal
     for(Portal* portal = level->portalHead; portal != nullptr; portal = portal->next)
     {
@@ -101,9 +106,23 @@ static IterationFlags move_and_adjust_velocity(X_BoxCollider* collider, X_BspLev
 
         if(moveRay.clipToPlane(portal->plane, clipRay) == 1)
         {
+            // We're going to hit the portal
             if(portal->pointInPortal(clipRay.v[1]))
             {
-                Vec3fp posTemp = MakeVec3fp(collider->position);
+                // Did we actually make it through?
+                Vec3fp newPosTemp = MakeVec3fp(*newPos);
+
+                if(portal->plane.distanceTo(newPosTemp) > 0)
+                {
+                    // No didn't actually make it through, but probably closer than collision would
+                    // normally let us get to the wall. But we need to be close to go through the
+                    // portal, so let it happen.
+
+                    return IT_MOVE_SUCCESS;
+                }
+
+                Vec3fp posTemp = MakeVec3fp(*newPos);
+
                 *newPos = MakeVec3(portal->transformPointToOtherSide(posTemp));
 
                 Vec3fp velocityTemp = MakeVec3fp(collider->velocity);

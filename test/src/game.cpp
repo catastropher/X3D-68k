@@ -22,8 +22,6 @@ void TestGame::shootPortal(Portal* portal)
 
     Vec3fp camPos = MakeVec3fp(cam->collider.position);
 
-    X_RayTracer tracer;
-
     if(!x_engine_level_is_loaded(engineContext) || level->findLeafPointIsIn(camPos)->contents == X_BSPLEAF_SOLID)
     {
         return;
@@ -41,17 +39,21 @@ void TestGame::shootPortal(Portal* portal)
 
     BoundBox box;
 
-    x_raytracer_init(&tracer, level, x_bsplevel_get_level_model(level), &start, &end, &box);
+    Ray3 ray(MakeVec3fp(start), MakeVec3fp(end));
+
+    BspRayTracer<X_BspNode*, X_BspNode*> tracer(ray, level, 0);
 
     portal->poly.constructRegular(16, fp::fromInt(20), 0, Vec3fp(0, 0, 0));
 
-    if(x_raytracer_trace(&tracer))
+    if(tracer.trace())
     {
+        auto& collision = tracer.getCollision();
+
         // Make sure we're on the normal side of the plane
-        if(!tracer.collisionPlane.pointOnNormalFacingSide(camPos))
+        if(!collision.plane.pointOnNormalFacingSide(camPos))
         {
             printf("Flip!\n");
-            tracer.collisionPlane.flip();
+            collision.plane.flip();
         }
         else
         {
@@ -59,28 +61,12 @@ void TestGame::shootPortal(Portal* portal)
         }
 
         printf("Hit\n");
-        tracer.collisionPlane.print();
-        portal->center = MakeVec3fp(tracer.collisionPoint);// + tracer.collisionPlane.normal * fp::fromFloat(25);
-        portal->plane = tracer.collisionPlane;
+        collision.plane.print();
+        portal->center = collision.location.point;// + collision.normal * fp::fromFloat(25);
+        portal->plane = collision.plane;
 
 
-        tracer.collisionPlane.getOrientation(*cam, portal->orientation);
-
-        Quaternion q = Quaternion::fromAxisAngle(portal->plane.normal, fp(X_ANG_45));
-        Mat4x4 rot;
-        q.toMat4x4(rot);
-
-        if(!x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'r'))
-        {
-            rot.loadIdentity();
-        }
-
-
-        Mat4x4 temp = portal->orientation;
-
-        portal->orientation = rot * temp;
-
-        
+        collision.plane.getOrientation(*cam, portal->orientation);
 
         printf("==========\n");
         portal->orientation.print();

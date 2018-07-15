@@ -16,55 +16,6 @@
 #include "X_RayTracer.h"
 #include "X_BspRayTracer.hpp"
 
-template<typename T>
-bool nodeIsLeaf(T id);
-
-template<typename IdType, typename NodeType>
-NodeType getNodeFromId(IdType idType, X_BspLevel* level);
-
-template<typename IdType>
-X_BspLeafContents getLeafContents(IdType type);
-
-// Clipnodes
-
-template<>
-bool nodeIsLeaf(int clipNodeId)
-{
-    return clipNodeId < 0;
-}
-
-template<>
-X_BspClipNode* getNodeFromId(int id, X_BspLevel* level)
-{
-    return level->clipNodes + id;
-}
-
-template<>
-X_BspLeafContents getLeafContents(int id)
-{
-    return (X_BspLeafContents)id;
-}
-
-// BspNode
-
-template<>
-bool nodeIsLeaf(X_BspNode* node)
-{
-    return node->isLeaf();
-}
-
-template<>
-X_BspNode* getNodeFromId(X_BspNode* id, X_BspLevel* level)
-{
-    return id;
-}
-
-
-template<>
-X_BspLeafContents getLeafContents(X_BspNode* id)
-{
-    return (X_BspLeafContents)id->contents;
-}
 
 void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox)
 {
