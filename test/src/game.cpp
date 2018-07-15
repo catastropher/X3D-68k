@@ -62,8 +62,8 @@ void TestGame::shootPortal(Portal* portal)
 
         printf("Hit\n");
         collision.plane.print();
-        portal->center = collision.location.point;// + collision.normal * fp::fromFloat(25);
-        portal->plane = collision.plane;
+        portal->center = collision.location.point + collision.plane.normal * fp::fromFloat(25);
+        portal->plane = Plane(collision.plane.normal, portal->center);
 
 
         collision.plane.getOrientation(*cam, portal->orientation);
