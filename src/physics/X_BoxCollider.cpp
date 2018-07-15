@@ -91,42 +91,50 @@ static void adjust_velocity_to_slide_along_wall(Vec3* velocity, Plane* plane, x_
     *velocity = x_vec3_add_scaled(velocity, &temp, -x_fp16x16_mul(dot, bounceCoefficient));
 }
 
+void moveUpUntilInLevel(X_BspLevel* level, Vec3* pos)
+{
+    Vec3fp posTemp = MakeVec3fp(*pos);
+
+    for(int i = 0; i < 100; ++i)
+    {
+        if(!level->findLeafPointIsIn(posTemp)->isOutsideLevel())
+        {
+            printf("Move up %d\n", i);
+            *pos = MakeVec3(posTemp);
+            return;
+        }
+
+        posTemp.y -= fp::fromFloat(1);
+    }
+
+    printf("Fail to move up\n");
+}
+
 static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, X_RayTracer* trace, Vec3* newVelocity, Vec3* newPos)
 {
     x_raytracer_init(trace, level, x_bsplevel_get_level_model(level), &collider->position, newPos, &collider->boundBox);
     
     if(!x_raytracer_trace(trace))
         return IT_MOVE_SUCCESS;
-    
-    IterationFlags flags = (IterationFlags)0;
-    if(plane_is_vertical(&trace->collisionPlane))
-        flags = (IterationFlags)(flags | IT_HIT_VERTICAL_WALL);
-    
-    if(plane_is_floor_surface(&trace->collisionPlane))
-        flags = (IterationFlags)(flags | IT_ON_FLOOR);
-
 
     // Maybe we actually hit a portal...
-     Vec3fp vel = MakeVec3fp(collider->velocity);
+    Vec3fp vel = MakeVec3fp(collider->velocity);
     vel.normalize();
 
-    Vec3fp newPosition = MakeVec3fp(*newPos) + vel * 30;
+    Vec3fp newPosition = MakeVec3fp(*newPos) + vel * 40;
 
     Ray3 moveRay(MakeVec3fp(collider->position), newPosition);
     // Check for collision with portal
     for(Portal* portal = level->portalHead; portal != nullptr; portal = portal->next)
     {
-        trace->collisionPlane.normal.print("Collision normal");
-        portal->plane.normal.print("Portal normal");
-
-        printf("Allow\n");
 
         Ray3 clipRay;
 
         if(moveRay.clipToPlane(portal->plane, clipRay) == 1)
         {
+            printf("Going to hit portal\n");
             // We're going to hit the portal
-            if(portal->pointInPortal(clipRay.v[1]))
+            if(portal->pointInPortal(clipRay.v[1]) || true)
             {
                 // Did we actually make it through?
                 Vec3fp newPosTemp = MakeVec3fp(*newPos);
@@ -137,19 +145,18 @@ static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, 
                     // normally let us get to the wall. But we need to be close to go through the
                     // portal, so let it happen.
 
+                    moveUpUntilInLevel(level, newPos);
+
                     // Only allow if would have hit the wall
-                    if(trace->collisionPlane.normal != portal->plane.normal && trace->collisionPlane.normal != -portal->plane.normal)
+                    if(trace->collisionPlane.normal != portal->plane.normal)
                     {
-                        printf("Disallow...\n");
                         continue;
                     }
 
-                    printf("Not quite\n");
+                    newPos->y = collider->position.y;
 
                     return IT_MOVE_SUCCESS;
                 }
-
-                printf("Made it through\n");
 
                 Vec3fp posTemp = MakeVec3fp(*newPos);
 
@@ -168,10 +175,19 @@ static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, 
                 collider->collisionInfo.type = BOXCOLLIDER_COLLISION_PORTAL;
                 collider->collisionInfo.hitPortal = portal;
 
-                return IT_MOVE_SUCCESS | IT_HIT_PORTAL;
+                moveUpUntilInLevel(level, newPos);
+
+                return IT_MOVE_SUCCESS;
             }
         }
     }
+    
+    IterationFlags flags = (IterationFlags)0;
+    if(plane_is_vertical(&trace->collisionPlane))
+        flags = (IterationFlags)(flags | IT_HIT_VERTICAL_WALL);
+    
+    if(plane_is_floor_surface(&trace->collisionPlane))
+        flags = (IterationFlags)(flags | IT_ON_FLOOR);
 
     
     adjust_velocity_to_slide_along_wall(newVelocity, &trace->collisionPlane, collider->bounceCoefficient);
@@ -219,13 +235,10 @@ static bool try_and_move_up_step(X_BoxCollider* collider, X_BspLevel* level, Vec
     
     if(!successfullyClimbedStep)
     {
-        printf("Did not climb step\n");
         collider->position = adjustedPos;
         collider->velocity = adjustedVelocity;
         return 0;
     }
-
-    printf("Climbed step\n");
     
     // We successfully moved up the step, but we don't know how big the step was, so use the hit point
     // with the floor to reposition the collider
@@ -260,7 +273,15 @@ static bool try_move(X_BoxCollider* collider, X_BspLevel* level)
     X_RayTracer lastHitWall;
     int flags = run_move_iterations(collider, level, &lastHitWall);
 
-    if((flags & IT_HIT_VERTICAL_WALL))
+    if(flags & IT_HIT_PORTAL)
+    {
+        oldPos = collider->position;
+        oldVelocity = collider->velocity;
+
+        printf("Hit portal!!!!!!\n");
+    }
+    
+    if((flags & IT_HIT_VERTICAL_WALL) || (flags & IT_HIT_PORTAL))
     {
         if(try_and_move_up_step(collider, level, &oldPos, &oldVelocity, &lastHitWall))
         {

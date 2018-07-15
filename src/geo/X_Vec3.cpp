@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <cmath>
 
 #include "X_Vec3.h"
 #include "util/X_util.h"
@@ -35,6 +36,19 @@ static inline void scale_components_to_less_than_one_half(Vec3* v)
 
 void x_vec3_normalize(Vec3* v)
 {
+    float x = fp(v->x).toFloat();
+    float y = fp(v->y).toFloat();
+    float z = fp(v->z).toFloat();
+
+    float length = sqrtf(x * x + y * y + z * z);
+
+    v->x = fp::fromFloat(x / length).toFp16x16();
+    v->y = fp::fromFloat(y / length).toFp16x16();
+    v->z = fp::fromFloat(z / length).toFp16x16();
+
+    return;
+
+
     scale_components_to_less_than_one_half(v);
     int len = x_sqrt(v->x * v->x + v->y * v->z + v->z * v->z);
 
