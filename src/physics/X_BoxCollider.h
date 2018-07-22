@@ -19,11 +19,14 @@
 #include "level/X_BspLevel.h"
 #include "memory/X_Link.h"
 
+struct X_RayTracer;
+
 typedef enum X_BoxColliderFlags
 {
     X_BOXCOLLIDER_APPLY_GRAVITY = 1,
     X_BOXCOLLIDER_APPLY_FRICTION = 2,
-    X_BOXCOLLIDER_ON_GROUND = 4
+    X_BOXCOLLIDER_ON_GROUND = 4,
+    BOXCOLLIDER_IN_PORTAL = 8
 } X_BoxColliderFlags;
 
 enum BoxColliderCollisionType
@@ -44,6 +47,8 @@ struct BoxColliderCollisionInfo
 
 typedef struct X_BoxCollider
 {
+    bool traceRay(X_RayTracer& tracer);
+
     int flags;
     BoundBox boundBox;
     int levelCollisionHull;
@@ -54,6 +59,8 @@ typedef struct X_BoxCollider
     x_fp16x16 frictionCoefficient;
     x_fp16x16 maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
+
+    Portal* currentPortal;
     
     X_Link objectsOnModel;
 } X_BoxCollider;

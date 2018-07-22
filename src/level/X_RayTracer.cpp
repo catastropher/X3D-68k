@@ -16,7 +16,6 @@
 #include "X_RayTracer.h"
 #include "X_BspRayTracer.hpp"
 
-
 void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox)
 {
     Ray3 ray(MakeVec3fp(*start), MakeVec3fp(*end));
@@ -25,12 +24,7 @@ void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, 
 
     trace->hitSomething = bspRayTracer.trace();
 
-    auto& collision = bspRayTracer.getCollision();
-
-    trace->hitModel = collision.hitModel;
-    trace->collisionFrac = collision.location.t.toFp16x16();
-    trace->collisionPlane = collision.plane;
-    trace->collisionPoint = MakeVec3(collision.location.point);
+    x_raytracer_from_bspraytracer(bspRayTracer, *trace, level);
 }
 
 bool x_raytracer_trace(X_RayTracer* trace)

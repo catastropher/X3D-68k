@@ -53,6 +53,7 @@ public:
     }
 
     bool trace();
+    bool traceModel(X_BspModel& model);
 
     RayCollision& getCollision()
     {
@@ -65,7 +66,6 @@ private:
     bool exploreBothSidesOfNode(NodeType node, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist);
     bool visitNode(IdType nodeId, RayPoint& start, RayPoint& end);
     X_BspLeafContents getLeafContents(IdType type);
-    bool traceModel(X_BspModel& model);
 
     static bool nodeIsLeaf(IdType id);
 

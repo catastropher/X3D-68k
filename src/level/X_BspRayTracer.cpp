@@ -118,6 +118,8 @@ static bool both_points_on_back_side(fp startDist, fp endDist)
 template<typename IdType, typename NodeType>
 bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, RayPoint& end)
 {
+    printf("    Visit node: %lld\n", (long long)nodeId);
+
     if(nodeIsLeaf(nodeId))
     {
         return true;
@@ -147,6 +149,9 @@ bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, R
 template<typename IdType, typename NodeType>
 bool BspRayTracer<IdType, NodeType>::traceModel(X_BspModel& model)
 {
+    printf("Trace model %lld\n", (long long)&model);
+    currentModel = &model;
+
     RayPoint start(ray.v[0] - MakeVec3fp(model.origin), 0);
     RayPoint end(ray.v[1] - MakeVec3fp(model.origin), fp::fromInt(1));
 
@@ -164,7 +169,6 @@ bool BspRayTracer<IdType, NodeType>::trace()
     bool hitSomething = false;
     for(int i = 0; i < level->totalModels; ++i)
     {
-        currentModel = level->models + i;
         hitSomething |= traceModel(level->models[i]);
     }
     
@@ -176,7 +180,7 @@ bool BspRayTracer<IdType, NodeType>::trace()
 template<>
 Plane& BspRayTracer<int, X_BspClipNode*>::getNodePlane(X_BspClipNode* node)
 {
-    return level->planes[node->planeId].plane;
+    return currentModel->planes[node->planeId].plane;
 }
 
 template<>
@@ -188,7 +192,7 @@ bool BspRayTracer<int, X_BspClipNode*>::nodeIsLeaf(int clipNodeId)
 template<>
 X_BspClipNode* BspRayTracer<int, X_BspClipNode*>::getNodeFromId(int id)
 {
-    return level->clipNodes + id;
+    return currentModel->clipNodes + id;
 }
 
 template<>

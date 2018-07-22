@@ -15,7 +15,34 @@
 
 #include "X_BoxCollider.h"
 #include "level/X_RayTracer.h"
+#include "level/X_BspRayTracer.hpp"
+#include "level/X_Portal.hpp"
 
+static bool frameByFrame = false;
+static bool lastDown = false;
+
+#include <SDL/SDL.h>
+
+bool X_BoxCollider::traceRay(X_RayTracer& tracer)
+{
+    if((flags & BOXCOLLIDER_IN_PORTAL) && currentPortal != nullptr)
+    {
+        printf("TRACE HERE\n");
+        BspRayTracer<int, X_BspClipNode*> bspRayTracer(tracer.ray, tracer.level, 0);
+
+        bool hitSomething = bspRayTracer.traceModel(currentPortal->bridgeModel);
+
+        x_raytracer_from_bspraytracer(bspRayTracer, tracer, tracer.level);
+
+        SDL_Delay(3000);
+
+        return hitSomething;
+    }
+    else
+    {
+        return x_raytracer_trace(&tracer);
+    }
+}
 
 static bool flag_enabled(X_BoxCollider* collider, X_BoxColliderFlags flag)
 {
@@ -53,7 +80,8 @@ static bool try_push_into_ground(X_BoxCollider* collider, X_BspLevel* level, x_f
 {
     Vec3 end = Vec3(collider->position.x, collider->position.y + distance, collider->position.z);
     x_raytracer_init(trace, level, x_bsplevel_get_level_model(level), &collider->position, &end, &collider->boundBox);
-    return x_raytracer_trace(trace);
+
+    return collider->traceRay(*trace);
 }
 
 static bool plane_is_floor_surface(const Plane* plane)
@@ -114,7 +142,7 @@ static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, 
 {
     x_raytracer_init(trace, level, x_bsplevel_get_level_model(level), &collider->position, newPos, &collider->boundBox);
     
-    if(!x_raytracer_trace(trace))
+    if(!collider->traceRay(*trace))
         return IT_MOVE_SUCCESS;
 
     // Maybe we actually hit a portal...
@@ -127,17 +155,24 @@ static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, 
     // Check for collision with portal
     for(Portal* portal = level->portalHead; portal != nullptr; portal = portal->next)
     {
+        collider->flags |= BOXCOLLIDER_IN_PORTAL;
+            collider->currentPortal = portal;
+            break;
 
         Ray3 clipRay;
 
         if(moveRay.clipToPlane(portal->plane, clipRay) == 1)
         {
+
             printf("Going to hit portal\n");
+            frameByFrame = true;
             // We're going to hit the portal
-            if(portal->pointInPortal(clipRay.v[1]) || true)
+            if(portal->pointInPortal(clipRay.v[1]))
             {
                 // Did we actually make it through?
                 Vec3fp newPosTemp = MakeVec3fp(*newPos);
+
+                printf("Distance: %f\n", portal->plane.distanceTo(newPosTemp).toFloat());
 
                 if(portal->plane.distanceTo(newPosTemp) > 0)
                 {
@@ -145,18 +180,34 @@ static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, 
                     // normally let us get to the wall. But we need to be close to go through the
                     // portal, so let it happen.
 
-                    moveUpUntilInLevel(level, newPos);
+                    //moveUpUntilInLevel(level, newPos);
+
+                    printf("HERE\n");
+
+                    collider->position.y = portal->center.y.toFp16x16();
+                    newPos->y = portal->center.y.toFp16x16();
+
+                    trace->collisionPlane.normal.print("Collision normal");
 
                     // Only allow if would have hit the wall
                     if(trace->collisionPlane.normal != portal->plane.normal)
                     {
+                        printf("Wrong normal...\n");
                         continue;
                     }
-
-                    newPos->y = collider->position.y;
+                    else
+                    {
+                        //printf("Not wrong norm")
+                    }
 
                     return IT_MOVE_SUCCESS;
                 }
+
+                printf("HIT PORTAL!\n");
+
+                *newPos = collider->position;
+                *newVelocity = x_vec3_origin();
+                return 0;
 
                 Vec3fp posTemp = MakeVec3fp(*newPos);
 
@@ -180,6 +231,8 @@ static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, 
                 return IT_MOVE_SUCCESS;
             }
         }
+
+        break;
     }
     
     IterationFlags flags = (IterationFlags)0;
@@ -332,8 +385,44 @@ static void unlink_from_model_standing_on(X_BoxCollider* collider)
     x_link_unlink(&collider->objectsOnModel);
 }
 
+#include "engine/X_Engine.h"
+
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level)
 {
+    // if(frameByFrame)
+    // {
+    //     auto key = x_engine_get_context()->getKeyState();
+
+    //     bool down = x_keystate_key_down(key, (X_Key)'\n');
+
+    //     if(down && lastDown)
+    //     {
+    //         return;
+    //     }
+
+    //     lastDown = down;
+
+    //     if(!down)
+    //     {
+    //         return;
+    //     }
+    // }
+
+    bool ran = false;
+
+    for(Portal* portal = level->portalHead; portal != nullptr; portal = portal->next)
+    {
+        ran = true;
+        collider->flags |= BOXCOLLIDER_IN_PORTAL;
+            collider->currentPortal = portal;
+            break;
+    }
+
+    if(!ran)
+    {
+        return;
+    }
+    
     collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
     
     unlink_from_model_standing_on(collider);

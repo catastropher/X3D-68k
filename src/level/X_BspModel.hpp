@@ -20,8 +20,10 @@
 #include "render/X_Texture.h"
 
 struct X_BspNode;
+struct X_BspClipNode;
 struct X_BspSurface;
 struct X_RenderContext;
+struct X_BspPlane;
 
 typedef struct X_BspModel
 {
@@ -29,7 +31,11 @@ typedef struct X_BspModel
 
     BoundBox boundBox;
     X_BspNode* rootBspNode;
+
+    X_BspClipNode* clipNodes;
     int clipNodeRoots[3];
+
+    X_BspPlane* planes;
     
     int totalBspLeaves;
     

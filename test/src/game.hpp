@@ -97,7 +97,9 @@ private:
             done = true;
         }
 
-        if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'f'))
+        static bool shot = false;
+
+        if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'f') || !shot)
         {
             if(bluePortal == nullptr)
             {
@@ -111,6 +113,8 @@ private:
             shootPortal(bluePortal);
             Portal::linkMutual(orangePortal, bluePortal);
         }
+
+        shot = true;
 
         if(x_keystate_key_down(getInstance()->getKeyState(), (X_Key)'g'))
         {

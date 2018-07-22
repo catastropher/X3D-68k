@@ -20,6 +20,7 @@
 #include "geo/X_Polygon3.h"
 #include "math/X_Mat4x4.h"
 #include "memory/X_BitSet.hpp"
+#include "level/X_BspLevel.h"
 
 struct X_AE_Surface;
 
@@ -48,11 +49,7 @@ struct Portal
         }
     }
 
-    void updatePoly()
-    {
-        center = poly.calculateCenter();
-        calculateSurfaceBoundRect();
-    }
+    void updatePoly();
 
     void enableOutline(X_Color color)
     {
@@ -63,6 +60,8 @@ struct Portal
     bool pointInPortal(Vec3fp& point) const;
 
     Vec2fp projectPointOntoSurface(Vec3fp& point) const;
+
+    Vec3fp& outlinePointWithLargestProjection(const Vec3fp& axis);
 
     Polygon3 poly;
     Vec3fp center;
@@ -78,6 +77,10 @@ struct Portal
     fp transformAngleY;
 
     BoundRect surfaceBoundRect;
+
+    X_BspModel bridgeModel;
+    X_BspPlane bridgePlanes[6];
+    X_BspClipNode bridgeClipNodes[6];
 
 
     Portal* next;

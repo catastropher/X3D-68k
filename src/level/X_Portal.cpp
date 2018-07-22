@@ -76,3 +76,66 @@ bool Portal::pointInPortal(Vec3fp& point) const
     return surfaceBoundRect.pointInside(pointOnSurface);
 }
 
+void Portal::updatePoly()
+{
+    center = poly.calculateCenter();
+    calculateSurfaceBoundRect();
+
+    // Create the bridge
+    Vec3fp forward, up, right;
+    orientation.extractViewVectors(forward, right, up);
+
+    Vec3fp axis[4] = 
+    { 
+        right,
+        up,
+        -right,
+        -up
+    };
+
+    for(int i = 0; i < 4; ++i)
+    {
+        Vec3fp& furthestPointAlongAxis = outlinePointWithLargestProjection(-axis[i]);
+
+        bridgePlanes[i].plane = Plane(axis[i], furthestPointAlongAxis);
+    }
+
+    for(int i = 0; i < 4; ++i)
+    {
+        bridgeClipNodes[i].frontChild = i + 1;
+        bridgeClipNodes[i].backChild = X_BSPLEAF_SOLID;
+        bridgeClipNodes[i].planeId = i;
+    }
+
+    bridgeClipNodes[3].frontChild = X_BSPLEAF_REGULAR;
+
+    bridgeModel.planes = bridgePlanes;
+    bridgeModel.clipNodes = bridgeClipNodes;
+
+    for(int i = 0; i < 3; ++i)
+    {
+        bridgeModel.clipNodeRoots[i] = 0;
+    }
+}
+
+Vec3fp& Portal::outlinePointWithLargestProjection(const Vec3fp& axis)
+{
+    int largestIndex = 0;
+    fp largestProjection = minValue<fp>();
+
+    Vec3fp center = poly.calculateCenter();
+
+    for(int i = 0; i < poly.totalVertices; ++i)
+    {
+        fp dot = (poly.vertices[i] - center).dot(axis);
+
+        if(dot > largestProjection)
+        {
+            largestProjection = dot;
+            largestIndex = i;
+        }
+    }
+
+    return poly.vertices[largestIndex];
+}
+

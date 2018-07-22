@@ -55,6 +55,7 @@
 #include "level/X_BspRayTracer.hpp"
 #include "level/X_EntityModel.h"
 #include "level/X_EntityModelLoader.h"
+#include "level/X_Portal.hpp"
 #include "level/X_RayTracer.h"
 
 // math

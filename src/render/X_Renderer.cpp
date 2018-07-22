@@ -24,6 +24,7 @@
 #include "system/X_File.h"
 #include "object/X_CameraObject.h"
 #include "util/X_StopWatch.hpp"
+#include "level/X_Portal.hpp"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
