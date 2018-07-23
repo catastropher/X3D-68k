@@ -34,8 +34,6 @@ bool X_BoxCollider::traceRay(X_RayTracer& tracer)
 
         x_raytracer_from_bspraytracer(bspRayTracer, tracer, tracer.level);
 
-        SDL_Delay(3000);
-
         return hitSomething;
     }
     else

@@ -28,6 +28,7 @@ struct RayPoint
     fp t;
 };
 
+template<typename NodeId>
 struct RayCollision
 {
     bool isCloserThan(const RayCollision& collision) const
@@ -38,6 +39,7 @@ struct RayCollision
     RayPoint location;
     Plane plane;
     X_BspModel* hitModel;
+    NodeId hitNode;
 };
 
 template<typename IdType, typename NodeType>
@@ -49,13 +51,13 @@ public:
         level(level_),
         collisionHullId(collisionHullId_)
     {
-
+        collision.location.t = maxValue<fp>();
     }
 
     bool trace();
     bool traceModel(X_BspModel& model);
 
-    RayCollision& getCollision()
+    RayCollision<IdType>& getCollision()
     {
         return collision;
     }
@@ -63,7 +65,7 @@ public:
 private:
     NodeType getNodeFromId(IdType id);
     X_BspLeafContents getNodeContents(IdType id, Vec3fp& v);
-    bool exploreBothSidesOfNode(NodeType node, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist);
+    bool exploreBothSidesOfNode(IdType nodeId, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist);
     bool visitNode(IdType nodeId, RayPoint& start, RayPoint& end);
     X_BspLeafContents getLeafContents(IdType type);
 
@@ -75,7 +77,7 @@ private:
 
     Ray3 ray;
     X_BspLevel* level;
-    RayCollision collision;
+    RayCollision<IdType> collision;
     int collisionHullId;
     X_BspModel* currentModel;
 };

@@ -23,6 +23,7 @@ void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, 
     BspRayTracer<int, X_BspClipNode*> bspRayTracer(ray, level, 0);
 
     trace->hitSomething = bspRayTracer.trace();
+    trace->ray = ray;
 
     x_raytracer_from_bspraytracer(bspRayTracer, *trace, level);
 }

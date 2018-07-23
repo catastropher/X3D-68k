@@ -55,8 +55,10 @@ X_BspLeafContents BspRayTracer<IdType, NodeType>::getNodeContents(IdType id, Vec
 }
 
 template<typename IdType, typename NodeType>
-bool BspRayTracer<IdType, NodeType>::exploreBothSidesOfNode(NodeType node, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist)
+bool BspRayTracer<IdType, NodeType>::exploreBothSidesOfNode(IdType nodeId, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist)
 {
+    NodeType node = getNodeFromId(nodeId);
+
     Ray3 ray(start.point, end.point);
  
     RayPoint intersection(ray.lerp(intersectionT), intersectionT);
@@ -97,6 +99,7 @@ bool BspRayTracer<IdType, NodeType>::exploreBothSidesOfNode(NodeType node, RayPo
     
     collision.location = intersection;
     collision.hitModel = currentModel;
+    collision.hitNode = nodeId;
 
     // Move the plane relative to the origin of the object
     collision.location.point = collision.location.point + MakeVec3fp(currentModel->origin);
@@ -143,7 +146,7 @@ bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, R
     // The ray spans the split plane, so we need to explore both sides
     fp intersectionT = calculateIntersectionT(startDist, endDist).toFp16x16();
     
-    return exploreBothSidesOfNode(node, start, end, intersectionT, startDist);
+    return exploreBothSidesOfNode(nodeId, start, end, intersectionT, startDist);
 }
 
 template<typename IdType, typename NodeType>
