@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <cmath>
+
 #include "math/X_sqrt.h"
 #include "math/X_fix.h"
 #include "math/X_convert.hpp"
@@ -85,6 +87,16 @@ struct Vec3Template
     }
 
     void normalize();
+
+    // FIXME: don't use floats
+    T length()
+    {
+        float xx = convert<float>(x);
+        float yy = convert<float>(y);
+        float zz = convert<float>(z);
+
+        return convert<T>(sqrtf(xx * xx + yy * yy + zz * zz));
+    }
     
     T x;
     T y;

@@ -58,12 +58,12 @@ void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderCo
 
 static inline Vec3 x_cameraobject_get_position(X_CameraObject* cam)
 {
-    return cam->collider.position;
+    return MakeVec3(cam->collider.position);
 }
 
 static inline Vec3 x_cameraobject_get_velocity(X_CameraObject* cam)
 {
-    return cam->collider.velocity;
+    return MakeVec3(cam->collider.velocity);
 }
 
 static inline void x_cameraobject_add_angle(X_CameraObject* cam, X_Vec2_fp16x16 angleOffset)

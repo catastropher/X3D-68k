@@ -366,7 +366,7 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
         auto otherSide = portal->otherSide;
 
         scheduledPortal->cam.viewMatrix = *renderContext.viewMatrix; //otherSide->orientation;
-        scheduledPortal->cam.collider.position = MakeVec3(otherSide->center);
+        scheduledPortal->cam.collider.position = otherSide->center;
 
         X_CameraObject& cam = scheduledPortal->cam;
 
@@ -398,7 +398,7 @@ void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderCont
 
 void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
 {
-    cam.collider.position = MakeVec3(portal.transformPointToOtherSide(MakeVec3fp(renderContext.cam->collider.position)));
+    cam.collider.position = portal.transformPointToOtherSide(renderContext.cam->collider.position);
 
     int leafId = renderContext.level->findLeafPointIsIn(portal.otherSide->center) - renderContext.level->leaves;
     cam.overrideBspLeaf(leafId, renderContext.level);
@@ -411,7 +411,7 @@ void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Porta
     cam.viewMatrix.dropTranslation();
 
     Mat4x4 translation;
-    translation.loadTranslation(-MakeVec3fp(cam.collider.position));
+    translation.loadTranslation(-cam.collider.position);
 
     cam.viewMatrix = cam.viewMatrix * translation;
 }

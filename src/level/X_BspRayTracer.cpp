@@ -121,8 +121,6 @@ static bool both_points_on_back_side(fp startDist, fp endDist)
 template<typename IdType, typename NodeType>
 bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, RayPoint& end)
 {
-    printf("    Visit node: %lld\n", (long long)nodeId);
-
     if(nodeIsLeaf(nodeId))
     {
         return true;
@@ -152,7 +150,6 @@ bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, R
 template<typename IdType, typename NodeType>
 bool BspRayTracer<IdType, NodeType>::traceModel(X_BspModel& model)
 {
-    printf("Trace model %lld\n", (long long)&model);
     currentModel = &model;
 
     RayPoint start(ray.v[0] - MakeVec3fp(model.origin), 0);

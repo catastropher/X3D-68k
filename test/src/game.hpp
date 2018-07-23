@@ -147,8 +147,8 @@ private:
         
         cam->angleX = 0;
         cam->angleY = 0;
-        cam->collider.position = Vec3(0, -50 * 65536, -800 * 65536);
-        cam->collider.velocity = x_vec3_origin();
+        cam->collider.position = Vec3fp(0, fp::fromInt(-50), fp::fromInt(-800));
+        cam->collider.velocity = Vec3fp(0, 0, 0);
         
         x_cameraobject_update_view(cam);
     }

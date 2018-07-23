@@ -18,6 +18,7 @@
 #include "geo/X_Vec3.h"
 #include "level/X_BspLevel.h"
 #include "memory/X_Link.h"
+#include "memory/X_BitSet.hpp"
 
 struct X_RayTracer;
 
@@ -50,14 +51,15 @@ typedef struct X_BoxCollider
     bool traceRay(X_RayTracer& tracer);
 
     int flags;
+
     BoundBox boundBox;
     int levelCollisionHull;
-    Vec3 position;
-    Vec3 velocity;
-    Vec3* gravity;
-    x_fp16x16 bounceCoefficient;
-    x_fp16x16 frictionCoefficient;
-    x_fp16x16 maxSpeed;
+    Vec3fp position;
+    Vec3fp velocity;
+    Vec3fp* gravity;
+    fp bounceCoefficient;
+    fp frictionCoefficient;
+    fp maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
 
     Portal* currentPortal;

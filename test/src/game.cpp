@@ -20,7 +20,7 @@ void TestGame::shootPortal(Portal* portal)
     auto engineContext = getInstance();
     auto level = engineContext->getCurrentLevel();
 
-    Vec3fp camPos = MakeVec3fp(cam->collider.position);
+    Vec3fp camPos = cam->collider.position;
 
     if(!x_engine_level_is_loaded(engineContext) || level->findLeafPointIsIn(camPos)->contents == X_BSPLEAF_SOLID)
     {
@@ -34,7 +34,7 @@ void TestGame::shootPortal(Portal* portal)
 
     Vec3 f = MakeVec3(forward);
 
-    Vec3 start = cam->collider.position;
+    Vec3 start = MakeVec3(cam->collider.position);
     Vec3 end = start + f * dist;
 
     BoundBox box;
