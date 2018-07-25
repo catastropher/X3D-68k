@@ -25,7 +25,7 @@ static bool lastDown = false;
 
 bool X_BoxCollider::traceRay(X_RayTracer& tracer)
 {
-    if(false&& (flags & BOXCOLLIDER_IN_PORTAL) && currentPortal != nullptr)
+    if(false && flags.isSet(BOXCOLLIDER_IN_PORTAL) && currentPortal != nullptr)
     {
         BspRayTracer<int, X_BspClipNode*> bspRayTracer(tracer.ray, tracer.level, 0);
 
@@ -48,7 +48,7 @@ bool X_BoxCollider::traceRay(X_RayTracer& tracer)
 
 static bool flag_enabled(X_BoxCollider* collider, X_BoxColliderFlags flag)
 {
-    return collider->flags & flag;
+    return collider->flags.isSet(flag);
 }
 
 static void apply_velocity(X_BoxCollider* collider, Vec3fp* velocity)
@@ -159,7 +159,7 @@ static int move_and_adjust_velocity(X_BoxCollider* collider, X_BspLevel* level, 
     // Check for collision with portal
     for(Portal* portal = level->portalHead; portal != nullptr; portal = portal->next)
     {
-        collider->flags |= BOXCOLLIDER_IN_PORTAL;
+        collider->flags.set(BOXCOLLIDER_IN_PORTAL);
             collider->currentPortal = portal;
             break;
 
@@ -359,17 +359,17 @@ static bool try_move(X_BoxCollider* collider, X_BspLevel* level)
     if(flags & IT_ON_FLOOR)
     {
         apply_friction(collider);
-        collider->flags |= X_BOXCOLLIDER_ON_GROUND;
+        collider->flags.set(X_BOXCOLLIDER_ON_GROUND);
     }
     else
     {
-        collider->flags &= ~X_BOXCOLLIDER_ON_GROUND;
+        collider->flags.reset(X_BOXCOLLIDER_ON_GROUND);
     }
     
     return 1;
 }
 
-void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, X_BoxColliderFlags flags)
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags)
 {
     static Vec3fp gravity = { 0, fp::fromFloat(0.25), 0 };
     
@@ -417,7 +417,7 @@ void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level)
     for(Portal* portal = level->portalHead; portal != nullptr; portal = portal->next)
     {
         ran = true;
-        collider->flags |= BOXCOLLIDER_IN_PORTAL;
+        collider->flags.set(BOXCOLLIDER_IN_PORTAL);
             collider->currentPortal = portal;
             break;
     }

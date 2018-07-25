@@ -50,7 +50,7 @@ typedef struct X_BoxCollider
 {
     bool traceRay(X_RayTracer& tracer);
 
-    int flags;
+    EnumBitSet<X_BoxColliderFlags> flags;
 
     BoundBox boundBox;
     int levelCollisionHull;
@@ -67,12 +67,12 @@ typedef struct X_BoxCollider
     X_Link objectsOnModel;
 } X_BoxCollider;
 
-void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, X_BoxColliderFlags flags);
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags);
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level);
 
 static inline bool x_boxcollider_is_on_ground(X_BoxCollider* collider)
 {
-    return collider->flags & X_BOXCOLLIDER_ON_GROUND;
+    return collider->flags.isSet(X_BOXCOLLIDER_ON_GROUND);
 }
 
 //static inline void x_boxcollider_apply_velocity(X_BoxCollider* collider, X_Vec3_fp16x16*)

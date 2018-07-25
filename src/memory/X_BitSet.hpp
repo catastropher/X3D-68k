@@ -18,6 +18,13 @@
 class BitSet
 {
 public:
+    BitSet() { }
+
+    BitSet(unsigned int flags_) : flags(flags_)
+    {
+
+    }
+
     bool isSet(int bit) const
     {
         return flags & (1 << bit);
@@ -31,6 +38,11 @@ public:
     void setFromMask(unsigned int mask)
     {
         flags |= mask;
+    }
+
+    void resetFromMask(unsigned int mask)
+    {
+        flags &= (~mask);
     }
 
     void set(int bit, bool value)
@@ -66,9 +78,24 @@ template<typename T>
 class EnumBitSet
 {
 public:
+    EnumBitSet()
+    {
+        
+    }
+
+    EnumBitSet(unsigned int flags) : bitset(flags)
+    {
+
+    }
+
     void set(T flag)
     {
         bitset.setFromMask((unsigned int)flag);
+    }
+
+    void reset(T flag)
+    {
+        return bitset.resetFromMask((unsigned int)flag);
     }
 
     void set(unsigned int flags)
