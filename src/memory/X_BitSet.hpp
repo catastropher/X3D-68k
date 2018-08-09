@@ -103,6 +103,11 @@ public:
         bitset.setFromMask(flags);
     }
 
+    void set(const EnumBitSet& set)
+    {
+        bitset.setFromMask(set.getMask());
+    }
+
     bool isSet(T flag)
     {
         return bitset.isSetFromMask((int)flag);

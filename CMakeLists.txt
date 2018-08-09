@@ -132,6 +132,7 @@ set(X_SOURCES
 
     # physics
     src/physics/X_BoxCollider.cpp
+    src/physics/X_BoxColliderEngine.cpp
 
     # render
     src/render/X_activeedge.cpp
