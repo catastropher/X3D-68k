@@ -18,17 +18,9 @@
 #include "X_BoxCollider.h"
 #include "level/X_BspRayTracer.hpp"
 #include "geo/X_Vec3.h"
+#include "X_BoxColliderMoveLogic.hpp"
 
-using BoxRayTracer = BspRayTracer<int, X_BspClipNode*>;
-
-typedef enum IterationFlags
-{
-    IT_MOVE_SUCCESS = 1,
-    IT_HIT_VERTICAL_WALL = 2,
-    IT_ON_FLOOR = 4,
-    IT_HIT_ANYTHING = 8,
-    IT_HIT_PORTAL = 16
-} IterationFlags;
+class BoxColliderMoveLogic;
 
 struct BoxColliderState
 {
@@ -56,35 +48,26 @@ public:
 
     }
 
-    void step();
+    void runStep();
 
 private:
+    void tryMove();
+
+    void useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic);
+
     void resetCollisionState();
 
     void unlinkFromModelStandingOn();
-    void linkToModelStandingOn();
+    void linkToModelStandingOn(X_BspModel* model);
 
     void applyGravity();
-    void applyFriction(BoxColliderState& state);
-
-    bool tryMove();
-    void runMoveIterations(BoxColliderState& state);
-    bool tryMoveUpStep(BoxColliderState& state);
-    void moveAndAdjustVelocity(BoxColliderState& state);
-    void slideAlongWall(BoxColliderState& state);
-    void comeToDeadStop(BoxColliderState& state);
-    bool tryPushIntoGround(Vec3fp& startLocation, fp distance);
-    void tryStickToFloor(BoxColliderState& state);
-
-    bool onFloor(BoxColliderState& state);
-
-    bool traceRay(const Ray3& ray, RayCollision<int>& collision);
-
-    Ray3 getMovementRay(BoxColliderState& state);
+    void applyFriction();
 
     X_BoxCollider& collider;
     X_BspLevel& level;
 
-    RayCollision<int> lastHitWall;
+    Vec3fp finalPosition;
+    Vec3fp finalVelocity;
+    EnumBitSet<IterationFlags> moveFlags;
 };
 

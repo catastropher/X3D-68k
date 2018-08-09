@@ -15,109 +15,66 @@
 
 #include "X_BoxColliderEngine.hpp"
 
-static bool planeIsFloorSurface(const Plane& plane)
+void BoxColliderEngine::runStep()
 {
-    const fp MAX_FLOOR_Y_NORMAL = fp::fromFloat(-0.7);
-    return plane.normal.y <= MAX_FLOOR_Y_NORMAL;
+    resetCollisionState();
+    applyGravity();
+    tryMove();
 }
 
-bool BoxColliderEngine::tryMove()
+void BoxColliderEngine::tryMove()
 {
-    BoxColliderState state(collider.position, collider.velocity);
-    
-    runMoveIterations(state);
+    BoxColliderMoveLogic moveLogic(
+        collider,
+        level,
+        collider.position,
+        collider.velocity);
 
-    if(state.flags.isSet(IT_HIT_VERTICAL_WALL))
+    moveLogic.tryMoveNormally();
+
+    if(moveLogic.potentiallyHitStep())
     {
-        if(tryMoveUpStep(state))
+        BoxColliderMoveLogic stepMoveLogic(
+            collider,
+            level,
+            collider.position,
+            collider.velocity);
+
+        if(stepMoveLogic.tryMoveUpStep())
         {
-            state.flags.set(IT_MOVE_SUCCESS);
+            useResultsFromMoveLogic(stepMoveLogic);
+            return;
         }
     }
 
-    if(!state.flags.isSet(IT_MOVE_SUCCESS))
-    {
-        comeToDeadStop(state);
-    }
+    useResultsFromMoveLogic(moveLogic);
+}
+
+void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
+{
+    collider.position = moveLogic.getFinalPosition();
+    collider.velocity = moveLogic.getFinalVelocity();
     
-    tryStickToFloor(state);
-    
-    if(state.flags.isSet(IT_ON_FLOOR))
+    auto moveFlags = moveLogic.getMovementFlags();
+
+    if(moveFlags.isSet(IT_ON_FLOOR))
     {
-        applyFriction(state);
+        applyFriction();
         collider.flags.set(X_BOXCOLLIDER_ON_GROUND);
+
+        auto lastHitWall = moveLogic.getLastHitWall();
+
+        linkToModelStandingOn(lastHitWall.hitModel);
     }
     else
     {
         collider.flags.reset(X_BOXCOLLIDER_ON_GROUND);
     }
-
-    collider.position = state.newPosition;
-    collider.velocity = state.velocity;
-    
-    return true;
 }
 
-bool BoxColliderEngine::tryMoveUpStep(BoxColliderState& state)
+void BoxColliderEngine::applyFriction()
 {
-    const fp MAX_STEP_SIZE = fp::fromFloat(18.0);
-    
-    // Try and move the collider up the height of the step and reattempt the move
-    Vec3fp newPosition = state.position - Vec3fp(0, MAX_STEP_SIZE, 0);
-
-    BoxColliderState newState(newPosition, collider.velocity);
-
-    runMoveIterations(newState);
-
-    bool successfullyClimbedStep = newState.flags.isSet(IT_MOVE_SUCCESS)
-        && tryPushIntoGround(newState.newPosition, MAX_STEP_SIZE - fp::fromFloat(1))
-        && planeIsFloorSurface(lastHitWall.plane);
-    
-    if(!successfullyClimbedStep)
-    {
-        return false;
-    }
-    
-    // We successfully moved up the step, but we don't know how big the step was, so use the hit point
-    // with the floor to reposition the collider
-    state.newPosition = lastHitWall.location.point;
-    state.velocity = newState.velocity;
-    state.flags = newState.flags;
-
-    return true;
-}
-
-
-void BoxColliderEngine::comeToDeadStop(BoxColliderState& state)
-{
-    state.velocity = Vec3fp(0, 0, 0);
-}
-
-void BoxColliderEngine::tryStickToFloor(BoxColliderState& state)
-{
-    if(!onFloor(state))
-    {
-        return;
-    }
-    
-    state.newPosition = lastHitWall.location.point;
-    slideAlongWall(state);
-    //link_to_model_standing_on(collider, floor.hitModel);
-    
-    state.flags.set(IT_ON_FLOOR);
-}
-
-bool BoxColliderEngine::onFloor(BoxColliderState& state)
-{
-    const fp MAX_FLOOR_DISTANCE_EPSILON = fp::fromFloat(3.0);
-
-    return tryPushIntoGround(state.newPosition, MAX_FLOOR_DISTANCE_EPSILON)
-        && planeIsFloorSurface(lastHitWall.plane);
-}
-
-void BoxColliderEngine::applyFriction(BoxColliderState& state)
-{
-    fp currentSpeed = state.velocity.length();
+    fp currentSpeed = collider.velocity.length();
     if(currentSpeed == 0)
     {
         return;
@@ -128,81 +85,7 @@ void BoxColliderEngine::applyFriction(BoxColliderState& state)
     
     newSpeed = newSpeed / currentSpeed;
 
-    state.velocity = state.velocity * newSpeed;
-}
-
-bool BoxColliderEngine::tryPushIntoGround(Vec3fp& startLocation, fp distance)
-{
-    Ray3 movementRay(
-        startLocation,
-        startLocation + Vec3fp(0, distance, 0));
-
-    return traceRay(movementRay, lastHitWall);
-}
-
-static bool planeIsVertical(const Plane& plane)
-{
-    return plane.normal.y == 0;
-}
-
-bool BoxColliderEngine::traceRay(const Ray3& ray, RayCollision<int>& collision)
-{
-    BoxRayTracer tracer(ray, &level, 0);
-
-    bool hitSomething = tracer.trace();
-
-    if(hitSomething)
-    {
-        collision = tracer.getCollision();
-    }
-
-    return hitSomething;
-}
-
-void BoxColliderEngine::moveAndAdjustVelocity(BoxColliderState& state)
-{
-    Ray3 movementRay = getMovementRay(state);
-
-    if(!traceRay(movementRay, lastHitWall))
-    {
-        state.flags.set(IT_MOVE_SUCCESS);
-        return;
-    }
-
-    if(planeIsVertical(lastHitWall.plane))
-    {
-        state.flags.set(IT_HIT_VERTICAL_WALL);
-    }
-    
-    if(planeIsFloorSurface(lastHitWall.plane))
-    {
-        state.flags.set(IT_ON_FLOOR);
-    }
-    
-    slideAlongWall(state);
-
-    state.newPosition = lastHitWall.location.point + state.velocity;
-}
-
-void BoxColliderEngine::slideAlongWall(BoxColliderState& state)
-{
-    state.velocity = state.velocity
-        + lastHitWall.plane.normal * (-lastHitWall.plane.normal.dot(state.velocity) * collider.bounceCoefficient);
-}
-
-Ray3 BoxColliderEngine::getMovementRay(BoxColliderState& state)
-{
-    return Ray3(state.position, state.newPosition);
-}
-
-void BoxColliderEngine::runMoveIterations(BoxColliderState& state)
-{
-    const int MAX_ITERATIONS = 4;
-
-    for(int i = 0; i < MAX_ITERATIONS && !state.flags.isSet(IT_MOVE_SUCCESS); ++i)
-    {
-        moveAndAdjustVelocity(state);
-    }
+    collider.velocity = collider.velocity * newSpeed;
 }
 
 void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags)
@@ -231,16 +114,9 @@ void BoxColliderEngine::unlinkFromModelStandingOn()
     x_link_unlink(&collider.objectsOnModel);
 }
 
-void BoxColliderEngine::linkToModelStandingOn()
+void BoxColliderEngine::linkToModelStandingOn(X_BspModel* model)
 {
-    x_link_insert_after(&collider.objectsOnModel, &lastHitWall.hitModel->objectsOnModelHead);
-}
-
-void BoxColliderEngine::step()
-{
-    resetCollisionState();
-    applyGravity();
-    tryMove();
+    x_link_insert_after(&collider.objectsOnModel, &model->objectsOnModelHead);
 }
 
 void BoxColliderEngine::applyGravity()
@@ -251,7 +127,7 @@ void BoxColliderEngine::applyGravity()
 void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level)
 {
     BoxColliderEngine engine(*collider, *level);
-    engine.step();
+    engine.runStep();
 }
 
 
