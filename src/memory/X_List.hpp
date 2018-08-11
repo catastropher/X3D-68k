@@ -16,6 +16,104 @@
 #pragma once
 
 #include <new>
+#include <functional>
 
 #include "memory/X_Memory.hpp"
+
+// A link of a singly linked list
+template<typename T>
+struct SLink : T
+{
+    SLink<T>* next;
+};
+
+template<typename T>
+struct List
+{
+    using MatchFunction = std::function<bool(T&)>;
+    using Link = SLink<T>;
+
+    List() : head(nullptr) { }
+
+    Link* findFirst(MatchFunction matches)
+    {
+        for(auto ptr = head; ptr != nullptr; ptr = ptr->next)
+        {
+            if(matches(*ptr))
+            {
+                return ptr;
+            }
+        }
+
+        return nullptr;
+    }
+
+    void deleteWhere(MatchFunction matches)
+    {
+        Link* prev = nullptr;
+
+        for(auto ptr = head; ptr != nullptr;)
+        {
+            if(matches(*ptr))
+            {
+                auto next = ptr->next;
+
+                if(prev)
+                {
+                    prev->next = ptr->next;
+                }
+                else
+                {
+                    head = ptr->next;
+                }
+
+                destroyNode(ptr);
+
+                ptr = next;
+            }
+            else
+            {
+                prev = ptr;
+            }
+        }
+    }
+
+    void prepend(Link* link)
+    {
+        link->next = head;
+        head = link;
+    }
+
+    void append(Link* link)
+    {
+        link->next = nullptr;
+
+        if(head == nullptr)
+        {
+            head = link;
+            return;
+        }
+
+        Link* ptr = head;
+        while(ptr->next != nullptr)
+        {
+            ptr = ptr->next;
+        }
+
+        ptr->next = link;
+    }
+
+    static Link* createNode()
+    {
+        return Zone::alloc<Link>();
+    }
+
+    static void destroyNode(Link* link)
+    {
+        Zone::free(link);
+    }
+
+    Link* head;
+};
+
 

@@ -27,7 +27,8 @@ typedef enum IterationFlags
     IT_HIT_VERTICAL_WALL = 2,
     IT_ON_FLOOR = 4,
     IT_HIT_ANYTHING = 8,
-    IT_HIT_PORTAL = 16
+    IT_HIT_PORTAL = 16,
+    IT_ENTER_PORTAL_BOX = 32
 } IterationFlags;
 
 
@@ -86,6 +87,8 @@ private:
     bool onFloor();
 
     bool traceRay(const Ray3& ray, RayCollision<int>& collision);
+
+    Portal* findWhichPortalBoxInside();
 
     X_BoxCollider& collider;
     X_BspLevel& level;

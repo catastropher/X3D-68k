@@ -59,6 +59,8 @@ struct Portal
 
     bool pointInPortal(Vec3fp& point) const;
 
+    bool pointInBox(const Vec3fp& point);
+
     Vec2fp projectPointOntoSurface(Vec3fp& point) const;
 
     Vec3fp& outlinePointWithLargestProjection(const Vec3fp& axis);

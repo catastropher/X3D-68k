@@ -41,7 +41,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
     #set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -O3 -g")
     
     set(X_WITH_SDL "1")
@@ -144,6 +144,7 @@ set(X_SOURCES
     src/render/X_Screen.cpp
     src/render/X_span.cpp
     src/render/X_Surface.cpp
+    src/render/X_StatusBar.cpp
     src/render/X_Texture.cpp
     src/render/X_TriangleFiller.cpp
     src/render/X_Viewport.cpp

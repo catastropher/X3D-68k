@@ -93,3 +93,16 @@ void Portal::updatePoly()
     x_link_init(&bridgeModel.objectsOnModelHead, &bridgeModel.objectsOnModelTail);
 }
 
+bool Portal::pointInBox(const Vec3fp& point)
+{
+    for(int i = 0; i < 6; ++i)
+    {
+        if(!bridgeModel.planes[i].plane.pointOnNormalFacingSide(point))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+

@@ -59,6 +59,23 @@ private:
         
 
         x_cameraobject_update_view(cam);
+
+        Vec3fp pos = cam->collider.position;
+        Vec3fp vel = cam->collider.velocity;
+
+        StatusBar::setItem(
+            "position",
+            "%f %f %f\n",
+            pos.x.toFloat(),
+            pos.y.toFloat(),
+            pos.z.toFloat());
+
+        StatusBar::setItem(
+            "velocity",
+            "%f %f %f\n",
+            vel.x.toFloat(),
+            vel.y.toFloat(),
+            vel.z.toFloat());
         
         ::render(&context);
     }

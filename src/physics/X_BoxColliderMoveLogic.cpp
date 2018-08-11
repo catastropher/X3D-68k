@@ -14,6 +14,8 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_BoxColliderMoveLogic.hpp"
+#include "level/X_BspLevel.h"
+#include "level/X_Portal.hpp"
 
 using BoxRayTracer = BspRayTracer<int, X_BspClipNode*>;
 
@@ -163,5 +165,18 @@ bool BoxColliderMoveLogic::traceRay(const Ray3& ray, RayCollision<int>& collisio
     }
 
     return hitSomething;
+}
+
+Portal* BoxColliderMoveLogic::findWhichPortalBoxInside()
+{
+    for(Portal* portal = level.portalHead; portal != nullptr; portal = portal->next)
+    {
+        if(portal->pointInBox(newPosition))
+        {
+            return portal;
+        }
+    }
+
+    return nullptr;
 }
 

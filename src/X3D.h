@@ -102,6 +102,7 @@
 #include "render/X_Renderer.h"
 #include "render/X_Screen.h"
 #include "render/X_span.h"
+#include "render/X_StatusBar.hpp"
 #include "render/X_Texture.h"
 #include "render/X_Viewport.h"
 
