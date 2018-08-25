@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "math/X_fix.h"
+
 ////////////////////////////////////////////////////////////////////////////////
 /// A 2D vector or vertex.
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,6 +30,11 @@ struct X_Vec2Generic
     {
         return X_Vec2Generic(x - v.x, y - v.y);
     }
+
+    void print() const
+    {
+        printf("%f %f\n", convert<float>(x), convert<float>(y));
+    }
     
     T x;
     T y;
@@ -37,6 +44,8 @@ using X_Vec2_fp16x16 = X_Vec2Generic<int>;
 using X_Vec2 = X_Vec2Generic<int>;
 using X_Vec2i = X_Vec2Generic<int>;
 using X_Vec2fp = X_Vec2Generic<int>;
+
+using Vec2fp = X_Vec2Generic<fp>;
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -15,24 +15,31 @@
 
 #pragma once
 
-#include <utility>
+#include "math/X_Mat4x4.h"
+#include "geo/X_Vec3.h"
+#include "X_Viewport.h"
+#include "math/X_Quaternion.h"
 
-template<typename From, typename To>
-void convert(From& from, To& to);
-
-// No-op if we're converting to the same type
-template<typename T>
-void convert(T& from, T& to)
+class Camera
 {
-    to = from;
-}
+public:
+    Mat4x4& getViewMatrix()
+    {
+        return viewMatrix;
+    }
 
-template<typename To, typename From>
-To convert(From from)
-{
-    To temp;
-    convert(from, temp);
+    Vec3fp& getPosition()
+    {
+        return position;
+    }
 
-    return std::move(temp);
-}
+    void setView(const Vec3fp& newPosition, const Quaternion& newOrientation);
+    void setView(const Vec3fp& newPosition, const Mat4x4& newViewMatrix);
+
+    void extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const;
+
+private:
+    Vec3fp position;
+    Mat4x4 viewMatrix;
+};
 

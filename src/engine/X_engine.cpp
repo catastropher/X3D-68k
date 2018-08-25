@@ -28,7 +28,7 @@
 static bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
 
-static X_EngineContext* x_engine_get_context(void)
+X_EngineContext* x_engine_get_context()
 {
     return &g_engineContext;
 }

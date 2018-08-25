@@ -18,6 +18,7 @@
 #include <cstdint>
 
 #include "math/X_convert.hpp"
+#include "math/X_sqrt.h"
 
 typedef int x_fp16x16;
 typedef int x_fp24x8;
@@ -101,6 +102,11 @@ struct fp
     {
         return fp(value * 65536.0);
     }
+
+    fp sqrt() const
+    {
+        return fp(x_sqrt(val) << 8);
+    }
     
     int val;
 };
@@ -140,6 +146,13 @@ inline fp operator-(int a, fp b)
 inline fp& operator+=(fp& a, fp b)
 {
     a.val += b.val;
+
+    return a;
+}
+
+inline fp& operator-=(fp& a, fp b)
+{
+    a.val -= b.val;
 
     return a;
 }

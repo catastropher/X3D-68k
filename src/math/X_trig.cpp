@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <cmath>
+
 #include "X_trig.h"
 #include "X_fix.h"
 
@@ -62,6 +64,22 @@ fp x_sin(fp angle)
     fp b(sintab[nextAngleIndex]);
     
     return fp::lerp(a, b, frac).toFp16x16();
+}
+
+// TODO: replace with lookup tables
+fp x_atan2(fp y, fp x)
+{
+    return radiansToAngle(fp::fromFloat(atan2(y.toFloat(), x.toFloat())));
+}
+
+fp x_acos(fp val)
+{
+    return radiansToAngle(fp::fromFloat(acos(val.toFloat())));
+}
+
+fp x_asin(fp val)
+{
+    return radiansToAngle(fp::fromFloat(asin(val.toFloat())));
 }
 
 

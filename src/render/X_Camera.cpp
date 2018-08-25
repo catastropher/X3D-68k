@@ -13,26 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_Camera.hpp"
 
-#include <utility>
-
-template<typename From, typename To>
-void convert(From& from, To& to);
-
-// No-op if we're converting to the same type
-template<typename T>
-void convert(T& from, T& to)
+void Camera::setView(const Vec3fp& newPosition, const Quaternion& newOrientation)
 {
-    to = from;
+    position = newPosition;
+
+    Mat4x4 rotation;
+    newOrientation.toMat4x4(rotation);
+
+    Mat4x4 translation;
+    translation.loadTranslation(-newPosition);
+
+    viewMatrix = translation * rotation;
 }
 
-template<typename To, typename From>
-To convert(From from)
+void Camera::setView(const Vec3fp& newPosition, const Mat4x4& newViewMatrix)
 {
-    To temp;
-    convert(from, temp);
+    position = newPosition;
+    viewMatrix = newViewMatrix;
+}
 
-    return std::move(temp);
+void Camera::extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const
+{
+    viewMatrix.extractViewVectors(forwardDest, rightDest, upDest);
 }
 

@@ -101,6 +101,11 @@ static void draw_hud(X_EngineContext* engineContext)
 {
     draw_crosshair(engineContext);
     draw_fps(engineContext);
+
+    auto& canvas = engineContext->getScreen()->canvas;
+    auto& font = *engineContext->getMainFont();
+
+    StatusBar::render(canvas, font);
 }
 
 void render(Context* context)

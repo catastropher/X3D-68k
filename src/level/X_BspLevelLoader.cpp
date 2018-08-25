@@ -426,7 +426,10 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         
         model->rootBspNode = x_bsplevel_get_node_from_id(level, loadModel->rootBspNode);
         model->totalBspLeaves = loadModel->totalBspLeaves;
+
+        model->planes = level->planes;
         
+        model->clipNodes = level->clipNodes;
         model->clipNodeRoots[0] = loadModel->rootClipNode;
         model->clipNodeRoots[1] = loadModel->secondRootClipNode;
         model->clipNodeRoots[2] = loadModel->thirdRootClipNode;
@@ -632,12 +635,12 @@ static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLo
     x_bsplevel_init_marksurfaces(level, loader);
     x_bsplevel_init_leaves(level, loader);
     x_bsplevel_init_nodes(level, loader);
+    x_bsplevel_init_clipnodes(level, loader);
     x_bsplevel_init_models(level, loader);
     x_bsplevel_init_surfacedgeids(level, loader);
     x_bsplevel_init_textures(level, loader);
     x_bsplevel_init_facetextures(level, loader);
     x_bsplevel_init_surfaces(level, loader);
-    x_bsplevel_init_clipnodes(level, loader);
     
     x_bsplevel_init_collision_hulls(level, loader);
     

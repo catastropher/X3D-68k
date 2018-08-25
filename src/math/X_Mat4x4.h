@@ -49,6 +49,8 @@ struct Mat4x4
     void print() const;
 
     void extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const;
+    void extractEulerAngles(fp& xDest, fp& yDest) const;
+
     void invertDiagonal(Mat4x4 dest) const;
     void transpose3x3();
     void visualize(Vec3fp position, const X_RenderContext& renderContext) const;

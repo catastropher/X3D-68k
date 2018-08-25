@@ -22,7 +22,6 @@
 #include "geo/X_Vec3.h"
 #include "level/X_BspModel.hpp"
 #include "level/X_BspNode.hpp"
-#include "level/X_Portal.hpp"
 #include "math/X_Mat4x4.h"
 #include "memory/X_Cache.h"
 #include "memory/X_Link.h"
@@ -32,6 +31,7 @@
 
 struct X_RenderContext;
 struct X_AE_Edge;
+struct Portal;
 
 typedef int X_BspVertexId;
 typedef int X_BspEdgeId;

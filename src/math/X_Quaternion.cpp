@@ -69,39 +69,42 @@ QuaternionTemplate<T> QuaternionTemplate<T>::operator*(QuaternionTemplate<T>& q)
     return result;
 }
 
-void x_quaternion_to_mat4x4(const X_Quaternion* src, Mat4x4* dest)
+template<typename T>
+void QuaternionTemplate<T>::toMat4x4(Mat4x4& dest) const
 {
-    x_fp16x16 xx = x_fp16x16_mul(src->x, src->x);
-    x_fp16x16 xy = x_fp16x16_mul(src->x, src->y);
-    x_fp16x16 xz = x_fp16x16_mul(src->x, src->z);
-    x_fp16x16 xw = x_fp16x16_mul(src->x, src->w);
+    auto xx = this->x * this->x;
+    auto xy = this->x * this->y;
+    auto xz = this->x * this->z;
+    auto xw = this->x * this->w;
     
-    x_fp16x16 yy = x_fp16x16_mul(src->y, src->y);
-    x_fp16x16 yz = x_fp16x16_mul(src->y, src->z);
-    x_fp16x16 yw = x_fp16x16_mul(src->y, src->w);
+    auto yy = this->y * this->y;
+    auto yz = this->y * this->z;
+    auto yw = this->y * this->w;
     
-    x_fp16x16 zz = x_fp16x16_mul(src->z, src->z);
-    x_fp16x16 zw = x_fp16x16_mul(src->z, src->w);
+    auto zz = this->z * this->z;
+    auto zw = this->z * this->w;
+
+    const fp ONE = fp::fromInt(1);
     
-    dest->elem[0][0] = X_FP16x16_ONE - 2 * (yy + zz);
-    dest->elem[0][1] =                 2 * (xy - zw);
-    dest->elem[0][2] =                 2 * (xz + yw);
-    dest->elem[0][3] = 0;
+    dest.elem[0][0] = ONE - convert<fp>(2 * (yy + zz));
+    dest.elem[0][1] =       convert<fp>(2 * (xy - zw));
+    dest.elem[0][2] =       convert<fp>(2 * (xz + yw));
+    dest.elem[0][3] = 0;
     
-    dest->elem[1][0] =                 2 * (xy + zw);
-    dest->elem[1][1] = X_FP16x16_ONE - 2 * (xx + zz);
-    dest->elem[1][2] =                 2 * (yz - xw);
-    dest->elem[1][3] = 0;
+    dest.elem[1][0] =       convert<fp>(2 * (xy + zw));
+    dest.elem[1][1] = ONE - convert<fp>(2 * (xx + zz));
+    dest.elem[1][2] =       convert<fp>(2 * (yz - xw));
+    dest.elem[1][3] = 0;
     
-    dest->elem[2][0] =                 2 * (xz - yw);
-    dest->elem[2][1] =                 2 * (yz + xw);
-    dest->elem[2][2] = X_FP16x16_ONE - 2 * (xx + yy);
-    dest->elem[2][3] = 0;
+    dest.elem[2][0] =       convert<fp>(2 * (xz - yw));
+    dest.elem[2][1] =       convert<fp>(2 * (yz + xw));
+    dest.elem[2][2] = ONE - convert<fp>(2 * (xx + yy));
+    dest.elem[2][3] = 0;
     
-    dest->elem[3][0] = 0;
-    dest->elem[3][1] = 0;
-    dest->elem[3][2] = 0;
-    dest->elem[3][3] = X_FP16x16_ONE;
+    dest.elem[3][0] = 0;
+    dest.elem[3][1] = 0;
+    dest.elem[3][2] = 0;
+    dest.elem[3][3] = ONE;
 }
 
 void x_quaternion_init_from_euler_angles(X_Quaternion* quat, fp x, fp y, fp z)

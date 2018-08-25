@@ -24,6 +24,7 @@
 #include "system/X_File.h"
 #include "object/X_CameraObject.h"
 #include "util/X_StopWatch.hpp"
+#include "level/X_Portal.hpp"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
 {
@@ -355,32 +356,32 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
         }
 
         auto scheduledPortal = scheduledPortals.allocate();
-        auto nextPortalSpan = Zone::alloc<PortalSpan>(MAX_PORTAL_SPANS);
+        //auto nextPortalSpan = Zone::alloc<PortalSpan>(MAX_PORTAL_SPANS);
 
         scheduledPortal->recursionDepth = recursionDepth;
-        scheduledPortal->spans = nextPortalSpan;
+        //scheduledPortal->spans = nextPortalSpan;
         scheduledPortal->cam = *renderContext.cam;
         scheduledPortal->portal = portal;
 
         auto otherSide = portal->otherSide;
 
         scheduledPortal->cam.viewMatrix = *renderContext.viewMatrix; //otherSide->orientation;
-        scheduledPortal->cam.collider.position = MakeVec3(otherSide->center);
+        scheduledPortal->cam.collider.position = otherSide->center;
 
         X_CameraObject& cam = scheduledPortal->cam;
 
         createCameraFromPerspectiveOfPortal(renderContext, *portal, cam);
 
-        for(auto span = portal->aeSurface->spanHead.next; span != nullptr; span = span->next)
-        {
-            nextPortalSpan->left = span->x1;
-            nextPortalSpan->right = span->x2;
-            nextPortalSpan->y = span->y;
+        // for(auto span = portal->aeSurface->spanHead.next; span != nullptr; span = span->next)
+        // {
+        //     nextPortalSpan->left = span->x1;
+        //     nextPortalSpan->right = span->x2;
+        //     nextPortalSpan->y = span->y;
 
-            ++nextPortalSpan;
-        }
+        //     ++nextPortalSpan;
+        // }
 
-        scheduledPortal->spansEnd = nextPortalSpan;
+        // scheduledPortal->spansEnd = nextPortalSpan;
     }
 }
 
@@ -397,7 +398,7 @@ void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderCont
 
 void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
 {
-    cam.collider.position = MakeVec3(portal.transformPointToOtherSide(MakeVec3fp(renderContext.cam->collider.position)));
+    cam.collider.position = portal.transformPointToOtherSide(renderContext.cam->collider.position);
 
     int leafId = renderContext.level->findLeafPointIsIn(portal.otherSide->center) - renderContext.level->leaves;
     cam.overrideBspLeaf(leafId, renderContext.level);
@@ -410,7 +411,7 @@ void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Porta
     cam.viewMatrix.dropTranslation();
 
     Mat4x4 translation;
-    translation.loadTranslation(-MakeVec3fp(cam.collider.position));
+    translation.loadTranslation(-cam.collider.position);
 
     cam.viewMatrix = cam.viewMatrix * translation;
 }
@@ -431,7 +432,7 @@ void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_Engin
 
     x_ae_context_scan_edges(&activeEdgeContext);
 
-    Zone::free(scheduledPortal->spans);
+    //Zone::free(scheduledPortal->spans);
 
     scheduledPortal->spans = nullptr;
 
@@ -454,7 +455,7 @@ void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContex
 
     x_ae_context_scan_edges(&activeEdgeContext);
 
-    int recursionDepth = 0;
+    int recursionDepth = 1;
 
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
 
@@ -476,7 +477,7 @@ void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContex
     while(!scheduledPortals.isEmpty())
     {
         auto scheduledPortal = scheduledPortals.dequeue();
-        Zone::free(scheduledPortal->spans);
+        //Zone::free(scheduledPortal->spans);
 
         scheduledPortal->spans = nullptr;
     }

@@ -24,6 +24,7 @@
 #include "error/X_error.h"
 #include "geo/X_BoundSphere.h"
 #include "engine/X_EngineContext.h"
+#include "level/X_Portal.hpp"
 
 void X_BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
 {

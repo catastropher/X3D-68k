@@ -31,16 +31,16 @@ X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
 
 void x_gameobject_extract_view_vectors(const X_GameObject* obj, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest)
 {
-    Mat4x4 mat;
-    x_quaternion_to_mat4x4(&obj->orientation, &mat);
+    // Mat4x4 mat;
+    // x_quaternion_to_mat4x4(&obj->orientation, &mat);
 
-    Vec3fp u, r, f;
+    // Vec3fp u, r, f;
 
-    mat.extractViewVectors(f, r, u);
+    // mat.extractViewVectors(f, r, u);
 
-    *forwardDest = MakeVec3(f);
-    *upDest = MakeVec3(u);
-    *rightDest = MakeVec3(r);
+    // *forwardDest = MakeVec3(f);
+    // *upDest = MakeVec3(u);
+    // *rightDest = MakeVec3(r);
 }
 
 void x_gameobject_activate(X_GameObject* obj)

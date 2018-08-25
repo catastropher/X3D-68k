@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <cmath>
+
 #include "math/X_sqrt.h"
 #include "math/X_fix.h"
 #include "math/X_convert.hpp"
@@ -69,7 +71,32 @@ struct Vec3Template
             x * v.y - v.x * y);
     }
 
+    bool operator==(const Vec3Template& v) const
+    {
+        return x == v.x && y == v.y && z == v.z;
+    }
+
+    bool operator!=(const Vec3Template& v) const
+    {
+        return !(*this == v);
+    }
+
+    void print(const char* name) const
+    {
+        printf("%s: %f %f %f\n", name, convert<float>(x), convert<float>(y), convert<float>(z));
+    }
+
     void normalize();
+
+    // FIXME: don't use floats
+    T length()
+    {
+        float xx = convert<float>(x);
+        float yy = convert<float>(y);
+        float zz = convert<float>(z);
+
+        return convert<T>(sqrtf(xx * xx + yy * yy + zz * zz));
+    }
     
     T x;
     T y;

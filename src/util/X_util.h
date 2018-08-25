@@ -90,6 +90,12 @@ T clamp(T val, T min, T max)
     return val;
 }
 
+template<typename T>
+bool inRange(T val, T minValue, T maxValue)
+{
+    return val >= minValue && val <= maxValue;
+}
+
 int x_count_prefix_match_length(const char* a, const char* b);
 void x_strncpy(char* dest, const char* src, size_t lengthToCopy);
 

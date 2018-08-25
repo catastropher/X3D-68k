@@ -45,7 +45,7 @@ void Plane::print() const
 void Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
 {
     Vec3fp temp(normal.x, 0, normal.z);
-    Vec3fp camPos = MakeVec3fp(cam.collider.position);
+    Vec3fp camPos = cam.collider.position;
     
     Mat4x4 mat;
     mat.loadYRotation(X_ANG_270);

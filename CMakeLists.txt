@@ -41,7 +41,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
     #set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -O3 -g")
     
     set(X_WITH_SDL "1")
@@ -98,6 +98,8 @@ set(X_SOURCES
     src/level/X_BspLevelLoader.cpp
     src/level/X_BspModel.cpp
     src/level/X_BspNode.cpp
+    src/level/X_BspRayTracer.cpp
+    src/level/X_CollisionHullBuilder.cpp
     src/level/X_EntityModel.cpp
     src/level/X_EntityModelLoader.cpp
     src/level/X_Portal.cpp
@@ -130,15 +132,19 @@ set(X_SOURCES
 
     # physics
     src/physics/X_BoxCollider.cpp
+    src/physics/X_BoxColliderEngine.cpp
+    src/physics/X_BoxColliderMoveLogic.cpp
 
     # render
     src/render/X_activeedge.cpp
+    src/render/X_Camera.cpp
     src/render/X_Font.cpp
     src/render/X_Palette.cpp
     src/render/X_Renderer.cpp
     src/render/X_Screen.cpp
     src/render/X_span.cpp
     src/render/X_Surface.cpp
+    src/render/X_StatusBar.cpp
     src/render/X_Texture.cpp
     src/render/X_TriangleFiller.cpp
     src/render/X_Viewport.cpp

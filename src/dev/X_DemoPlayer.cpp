@@ -33,8 +33,8 @@ static void read_camera_state(X_CameraObject* cam, X_File* file)
 {
     x_file_read_mat4x4(file, &cam->viewMatrix);
     
-    x_file_read_vec3(file, &cam->collider.position);
-    x_file_read_vec3(file, &cam->collider.velocity);
+    // x_file_read_vec3(file, &cam->collider.position);
+    // x_file_read_vec3(file, &cam->collider.velocity);
     
     cam->angleX = x_file_read_le_int32(file);
     cam->angleY = x_file_read_le_int32(file);

@@ -15,10 +15,12 @@
 
 #pragma once
 
+#include "geo/X_BoundRect.hpp"
 #include "geo/X_Plane.h"
 #include "geo/X_Polygon3.h"
 #include "math/X_Mat4x4.h"
 #include "memory/X_BitSet.hpp"
+#include "level/X_BspLevel.h"
 
 struct X_AE_Surface;
 
@@ -47,16 +49,21 @@ struct Portal
         }
     }
 
-    void updatePoly()
-    {
-        center = poly.calculateCenter();
-    }
+    void updatePoly();
 
     void enableOutline(X_Color color)
     {
         outlineColor = color;
         flags.set(PORTAL_DRAW_OUTLINE);
     }
+
+    bool pointInPortal(Vec3fp& point) const;
+
+    bool pointInBox(const Vec3fp& point);
+
+    Vec2fp projectPointOntoSurface(Vec3fp& point) const;
+
+    Vec3fp& outlinePointWithLargestProjection(const Vec3fp& axis);
 
     Polygon3 poly;
     Vec3fp center;
@@ -68,6 +75,19 @@ struct Portal
     EnumBitSet<PortalFlags> flags;
     X_Color outlineColor;
 
+    fp transformAngleX;
+    fp transformAngleY;
+
+    BoundRect surfaceBoundRect;
+
+    X_BspModel bridgeModel;
+    X_BspPlane bridgePlanes[6];
+    X_BspClipNode bridgeClipNodes[6];
+
+
     Portal* next;
+
+private:
+    void calculateSurfaceBoundRect();
 };
 

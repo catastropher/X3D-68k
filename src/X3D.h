@@ -52,8 +52,10 @@
 // level
 #include "level/X_BspLevel.h"
 #include "level/X_BspLevelLoader.h"
+#include "level/X_BspRayTracer.hpp"
 #include "level/X_EntityModel.h"
 #include "level/X_EntityModelLoader.h"
+#include "level/X_Portal.hpp"
 #include "level/X_RayTracer.h"
 
 // math
@@ -100,6 +102,7 @@
 #include "render/X_Renderer.h"
 #include "render/X_Screen.h"
 #include "render/X_span.h"
+#include "render/X_StatusBar.hpp"
 #include "render/X_Texture.h"
 #include "render/X_Viewport.h"
 

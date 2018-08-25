@@ -15,24 +15,29 @@
 
 #pragma once
 
-#include <utility>
+#include "memory/X_FixedLengthString.hpp"
+#include "memory/X_List.hpp"
 
-template<typename From, typename To>
-void convert(From& from, To& to);
+struct X_Font;
+struct X_Texture;
 
-// No-op if we're converting to the same type
-template<typename T>
-void convert(T& from, T& to)
+struct StatusBarItem
 {
-    to = from;
-}
+    const char* name;
+    FixedLengthString<256> value;
 
-template<typename To, typename From>
-To convert(From from)
+    StatusBarItem* next;
+};
+
+class StatusBar
 {
-    To temp;
-    convert(from, temp);
+public:
+    static void setItem(const char* name, const char* format, ...);
+    static void removeItem(const char* name);
 
-    return std::move(temp);
-}
+    static void render(X_Texture& texture, const X_Font& font);
+
+private:
+    static List<StatusBarItem> items;
+};
 

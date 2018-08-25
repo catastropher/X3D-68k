@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_Portal.hpp"
+#include "level/X_CollisionHullBuilder.hpp"
 
 void Portal::linkTo(Portal* otherSide_)
 {
@@ -24,23 +25,15 @@ void Portal::linkTo(Portal* otherSide_)
         return;
     }
 
-    Mat4x4 rotate180DegreesAroundY;
-    rotate180DegreesAroundY.loadYRotation(0);
+    Mat4x4 otherSideInverse = otherSide->orientation;
+    otherSideInverse.transpose3x3();
 
-    Mat4x4 transpose = orientation;
-    transpose.transpose3x3();
+    Mat4x4 rotate180AroundY;
+    rotate180AroundY.loadYRotation(X_ANG_180);
 
-    transpose.setColumn(0, Vec4(-transpose.getColumn(0).toVec3()));
-    transpose.setColumn(2, Vec4(-transpose.getColumn(2).toVec3()));
+    transformToOtherSide = orientation * rotate180AroundY * otherSideInverse;
 
-    Mat4x4 translation;
-    translation.loadTranslation(-center);
-
-    Mat4x4 othersideFlipped =  otherSide->orientation;
-
-    transformToOtherSide = othersideFlipped * transpose;
-
-    transformToOtherSide.transpose3x3();
+    transformToOtherSide.extractEulerAngles(transformAngleX, transformAngleY);
 }
 
 Vec3fp Portal::transformPointToOtherSide(Vec3fp point)
@@ -52,5 +45,64 @@ Vec3fp Portal::transformPointToOtherSide(Vec3fp point)
     mat.transpose3x3();
 
     return mat.transform(diff) + otherSide->center;
+}
+
+Vec2fp Portal::projectPointOntoSurface(Vec3fp& point) const
+{
+    Vec3fp forward, right, up;
+    orientation.extractViewVectors(forward, right, up);
+
+    return Vec2fp(
+        point.dot(right),
+        point.dot(up));
+}
+
+void Portal::calculateSurfaceBoundRect()
+{
+    surfaceBoundRect.clear();
+
+    for(int i = 0; i < poly.totalVertices; ++i)
+    {
+        Vec2fp pointOnSurface = projectPointOntoSurface(poly.vertices[i]);
+        surfaceBoundRect.addPoint(pointOnSurface);
+    }
+
+    surfaceBoundRect.v[0].print();
+    surfaceBoundRect.v[1].print();
+}
+
+bool Portal::pointInPortal(Vec3fp& point) const
+{
+    Vec2fp pointOnSurface = projectPointOntoSurface(point);
+    return surfaceBoundRect.pointInside(pointOnSurface);
+}
+
+void Portal::updatePoly()
+{
+    center = poly.calculateCenter();
+    calculateSurfaceBoundRect();
+
+    // Create the bridge
+    bridgeModel.planes = bridgePlanes;
+    bridgeModel.clipNodes = bridgeClipNodes;
+    bridgeModel.origin = Vec3(0, 0, 0);
+
+    CollisionHullBuilder collisionHullBuilder(bridgeModel, poly, orientation, fp::fromInt(100), fp::fromFloat(-2));
+    collisionHullBuilder.build();
+
+    x_link_init(&bridgeModel.objectsOnModelHead, &bridgeModel.objectsOnModelTail);
+}
+
+bool Portal::pointInBox(const Vec3fp& point)
+{
+    for(int i = 0; i < 6; ++i)
+    {
+        if(!bridgeModel.planes[i].plane.pointOnNormalFacingSide(point))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 

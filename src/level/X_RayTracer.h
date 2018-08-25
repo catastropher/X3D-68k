@@ -18,6 +18,7 @@
 #include "X_BspLevel.h"
 #include "X_RayTracer.h"
 #include "geo/X_Ray3.h"
+#include "X_BspRayTracer.hpp"
 
 typedef struct X_RayTracer
 {
@@ -29,8 +30,27 @@ typedef struct X_RayTracer
     x_fp16x16 collisionFrac;
     Vec3* modelOrigin;
     X_BspModel* hitModel;
+
+    bool hitSomething;
+    bool useBspTree;
 } X_RayTracer;
+
+template<typename IdType, typename NodeType>
+void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRayTracer, X_RayTracer& dest, X_BspLevel* level)
+{
+    auto& collision = bspRayTracer.getCollision();
+
+    dest.hitModel = collision.hitModel;
+    dest.collisionFrac = collision.location.t.toFp16x16();
+    dest.collisionPlane = collision.plane;
+    dest.collisionPoint = MakeVec3(collision.location.point);
+    //dest.ray = tracerray;
+    dest.level = level;
+}
 
 void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox);
 bool x_raytracer_trace(X_RayTracer* trace);
+
+template<typename IdType, typename NodeType>
+void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRaytracer, X_RayTracer& dest, X_BspLevel* level);
 
