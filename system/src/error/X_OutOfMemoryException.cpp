@@ -21,7 +21,7 @@ namespace X3D
 {
     void OutOfMemoryException::getDetails(char* dest) const
     {
-        sprintf(dest, "Requested %d bytes", allocSize);
+        sprintf(dest, "Requested %d bytes in allocator %s", allocationSize, allocatorName);
     }
 };
 

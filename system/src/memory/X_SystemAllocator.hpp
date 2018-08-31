@@ -17,27 +17,14 @@
 
 namespace X3D
 {
-    class Exception
+    class SystemAllocator
     {
-    public:
-        Exception(const char* message_)
-            : message(message_)
-        {
+        public:
+            void* alloc(int size);
+            void free(void* mem);
 
-        }
+        private:
 
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
-    private:
-        const char* message;
     };
 };
 

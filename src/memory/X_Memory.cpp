@@ -24,108 +24,10 @@
 #include "engine/X_init.h"
 #include "util/X_Json.hpp"
 
-unsigned char* Hunk::memoryStart;
-unsigned char* Hunk::memoryEnd;
-
 unsigned char* Hunk::highMark;
 unsigned char* Hunk::lowMark;
 
 Zone::Block* Zone::rover;
-
-void Hunk::init(int size)
-{
-    Log::logSub("Init hunk size = %d", size);
-
-    memoryStart = (unsigned char *)malloc(size);
-    if(!memoryStart)
-    {
-        x_system_error("Failed to init hunk of size %d - not enough mem", size);
-    }
-
-    memoryEnd = memoryStart + size;
-    
-    lowMark = memoryStart;
-    highMark = memoryEnd;
-}
-
-void Hunk::cleanup()
-{
-    free(memoryStart);
-}
-
-void* Hunk::allocLow(int size, const char* name)
-{
-    // Align to multiple of 16
-    size = nearestPowerOf2(size + sizeof(Header), 16);
-
-    Header* header = (Header*)lowMark;
-
-    lowMark += size;
-    if(lowMark >= highMark)
-    {
-        x_system_error("Can't alloc %d bytes for %s in allocLow", size, name);
-    }
-
-    Cache::freeBelow(lowMark);
-
-    x_strncpy(header->name, name, 8);
-
-    header->size = size;
-    header->sentinel = SENTINEL;
-
-    return header + 1;
-}
-
-void* Hunk::allocHigh(int size, const char* name)
-{
-    // Align to multiple of 16
-    size = nearestPowerOf2(size + sizeof(Header), 16);
-
-    Header* header = (Header*)highMark - sizeof(Header);
-
-    highMark -= size;
-    if(highMark <= lowMark)
-    {
-        x_system_error("Can't alloc %d bytes for %s in allocHigh", size, name);
-    }
-
-    Cache::freeAbove(highMark);
-
-    x_strncpy(header->name, name, 8);
-
-    header->size = size;
-    header->sentinel = SENTINEL;
-
-    return highMark;
-}
-
-void Hunk::print()
-{
-    unsigned char* ptr = memoryStart;
-
-    while(ptr < lowMark)
-    {
-        Header* header = (Header*)ptr;
-        printf("%.8s\t\t%d\t\t%X\n", header->name, header->size, header->sentinel);
-
-        ptr += header->size;
-    }
-
-    printf("-----------------------\n");
-
-    printHighHunk(memoryEnd);
-}
-
-void Hunk::printHighHunk(unsigned char* ptr)
-{
-    if(ptr <= highMark)
-        return;
-
-    Header* header = (Header*)ptr - sizeof(Header);
-    printHighHunk(ptr - header->size);
-
-    printf("%.8s\t\t%d\t\t%X\n", header->name, header->size, header->sentinel);
-}
 
 void Cache::freeBelow(void* ptr)
 {

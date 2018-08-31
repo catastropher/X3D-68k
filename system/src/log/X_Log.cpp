@@ -13,31 +13,36 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <cstdarg>
+#include <cstdio>
+
+#include "X_Log.hpp"
 
 namespace X3D
 {
-    class Exception
+    void Log::info(const char* format, ...)
     {
-    public:
-        Exception(const char* message_)
-            : message(message_)
-        {
+        va_list list;
+        va_start(list, format);
 
-        }
+        printf("[INFO] ");
+        vprintf(format, list);
+        printf("\n");
 
-        const char* getMessage() const
-        {
-            return message;
-        }
+        va_end(list);
+    }
 
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
+    void Log::error(const char* format, ...)
+    {
+        va_list list;
+        va_start(list, format);
 
-    private:
-        const char* message;
-    };
+        printf("[ERR ] ");
+        vprintf(format, list);
+        printf("\n");
+
+        va_end(list);
+    }  
 };
+
 

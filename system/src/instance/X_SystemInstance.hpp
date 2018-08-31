@@ -15,29 +15,20 @@
 
 #pragma once
 
+#include "config/X_SystemConfig.hpp"
+#include "memory/X_MemoryManager.hpp"
+
 namespace X3D
 {
-    class Exception
+    class SystemInstance
     {
     public:
-        Exception(const char* message_)
-            : message(message_)
-        {
+        SystemInstance(SystemConfig& config);
 
-        }
-
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
+        void operator=(const SystemInstance& instance) = delete;
 
     private:
-        const char* message;
+        MemoryManager memoryManager;
     };
 };
 

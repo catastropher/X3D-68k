@@ -13,31 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_MemoryManager.hpp"
+#include "log/X_Log.hpp"
 
 namespace X3D
 {
-    class Exception
+    MemoryManager::MemoryManager(MemoryManagerConfig& config)
+    : linearAllocator(config.linearAllocatorSize, systemAllocator)
     {
-    public:
-        Exception(const char* message_)
-            : message(message_)
-        {
+        Log::info("Initialized memory manager");
+    }
 
-        }
-
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
-    private:
-        const char* message;
-    };
+    MemoryManager::~MemoryManager()
+    {
+        Log::info("Shutdown memory manager");
+    }
 };
 

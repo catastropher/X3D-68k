@@ -15,29 +15,24 @@
 
 #pragma once
 
-namespace X3D
+#include <X3D/X3D-System.hpp>
+
+using namespace X3D;
+
+class MemoryTests
 {
-    class Exception
+public:
+    void run()
     {
-    public:
-        Exception(const char* message_)
-            : message(message_)
+        SystemConfig config = 
         {
+            .memoryManager = 
+            {
+                .linearAllocatorSize = 1000
+            }
+        };
 
-        }
-
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
-    private:
-        const char* message;
-    };
+        auto& instance = System::init(config);
+    }
 };
 

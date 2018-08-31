@@ -13,31 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_SystemInstance.hpp"
 
 namespace X3D
 {
-    class Exception
+    SystemInstance::SystemInstance(SystemConfig& config)
+        : memoryManager(config.memoryManager)
     {
-    public:
-        Exception(const char* message_)
-            : message(message_)
-        {
 
-        }
-
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
-    private:
-        const char* message;
-    };
+    }
 };
 

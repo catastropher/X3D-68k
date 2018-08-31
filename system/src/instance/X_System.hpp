@@ -15,29 +15,19 @@
 
 #pragma once
 
+#include "memory/X_DeferredInitializer.hpp"
+#include "config/X_SystemConfig.hpp"
+#include "X_SystemInstance.hpp"
+
 namespace X3D
 {
-    class Exception
+    class System
     {
     public:
-        Exception(const char* message_)
-            : message(message_)
-        {
-
-        }
-
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
+        static SystemInstance& init(SystemConfig& config);
+        
     private:
-        const char* message;
+        static DeferredInitializer<SystemInstance> instance;
     };
 };
 

@@ -17,27 +17,23 @@
 
 namespace X3D
 {
-    class Exception
+    class Exception;
+
+    class Log
     {
     public:
-        Exception(const char* message_)
-            : message(message_)
-        {
+        static void info(const char* format, ...);
+        static void details(const char* format, ...);
+        
+        static void error(const char* format, ...);
+        static void error(Exception& e, const char* format, ...);
 
-        }
+        static void debug(const char* format, ...);
 
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
+        static void warn(const char* format, ...);
+    
     private:
-        const char* message;
+
     };
 };
 

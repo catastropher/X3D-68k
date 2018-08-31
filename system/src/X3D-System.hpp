@@ -15,29 +15,5 @@
 
 #pragma once
 
-namespace X3D
-{
-    class Exception
-    {
-    public:
-        Exception(const char* message_)
-            : message(message_)
-        {
-
-        }
-
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
-    private:
-        const char* message;
-    };
-};
+#include "instance/X_System.hpp"
 

@@ -13,31 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <cstdlib>
+
+#include "X_SystemAllocator.hpp"
+#include "error/X_OutOfMemoryException.hpp"
 
 namespace X3D
 {
-    class Exception
+    void* SystemAllocator::alloc(int size)
     {
-    public:
-        Exception(const char* message_)
-            : message(message_)
+        void* mem = malloc(size);
+
+        if(!mem)
         {
-
+            throw OutOfMemoryException(size, "system");
         }
+    }
 
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
-    private:
-        const char* message;
-    };
+    void SystemAllocator::free(void* mem)
+    {
+        ::free(mem);
+    }
 };
 

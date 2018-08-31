@@ -15,29 +15,46 @@
 
 #pragma once
 
+#include <new>
+#include <utility>
+
 namespace X3D
 {
-    class Exception
+    template<typename T>
+    class DeferredInitializer
     {
     public:
-        Exception(const char* message_)
-            : message(message_)
+        DeferredInitializer()
+            : wasInitialized(false)
         {
 
         }
 
-        const char* getMessage() const
+        T& getInstance()
         {
-            return message;
+            return (T&)*buf;
         }
 
-        virtual void getDetails(char* dest) const
+        template<typename ...Args>
+        void initialize(Args&&... args)
         {
-            *dest = '\0';
+            wasInitialized = true;
+            new (buf) T(std::forward<Args>(args)...);
+        }
+
+        ~DeferredInitializer()
+        {
+            if(wasInitialized)
+            {
+                getInstance().~T();
+            }
+
+            wasInitialized = false;
         }
 
     private:
-        const char* message;
+        bool wasInitialized;
+        char buf[sizeof(T)];
     };
 };
 

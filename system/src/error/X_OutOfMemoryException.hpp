@@ -21,17 +21,19 @@ namespace X3D
 {
     class OutOfMemoryException : Exception
     {
-        public:
-            OutOfMemoryException(int allocSize)
-                : Exception("Out of memory")
-            {
-                this->allocSize = allocSize;
-            }
+    public:
+        OutOfMemoryException(int allocationSize, const char* allocatorName)
+            : Exception("Out of memory")
+        {
+            this->allocationSize = allocationSize;
+            this->allocatorName = allocatorName;
+        }
 
-            virtual void getDetails(char* dest) const;
+        virtual void getDetails(char* dest) const;
 
-        private:
-            int allocSize;
+    private:
+        int allocationSize;
+        const char* allocatorName; 
     };
 };
 

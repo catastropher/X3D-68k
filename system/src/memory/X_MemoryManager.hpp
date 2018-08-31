@@ -15,29 +15,22 @@
 
 #pragma once
 
+#include "config/X_MemoryManagerConfig.hpp"
+#include "X_SystemAllocator.hpp"
+#include "X_LinearAllocator.hpp"
+
 namespace X3D
 {
-    class Exception
+    class MemoryManager
     {
     public:
-        Exception(const char* message_)
-            : message(message_)
-        {
+        MemoryManager(MemoryManagerConfig& config);
 
-        }
-
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
+        ~MemoryManager();
 
     private:
-        const char* message;
+        SystemAllocator systemAllocator;
+        LinearAllocator linearAllocator;
     };
 };
 
