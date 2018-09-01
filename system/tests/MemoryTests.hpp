@@ -33,6 +33,16 @@ public:
         };
 
         auto& instance = System::init(config);
+        auto& memoryManager = instance.getMemoryManager();
+
+        try
+        {
+            memoryManager.allocLinearVolatile<char>(1000);
+        }
+        catch(const Exception& e)
+        {
+            Log::error(e, "Failed");
+        }
     }
 };
 

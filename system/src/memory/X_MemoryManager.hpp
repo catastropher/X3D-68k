@@ -26,6 +26,12 @@ namespace X3D
     public:
         MemoryManager(MemoryManagerConfig& config);
 
+        template<typename T>
+        T* allocLinearVolatile(int count, const char* name = "unknown")
+        {
+            return (T*)linearAllocator.allocLow(count * sizeof(T), name);
+        }
+
         ~MemoryManager();
 
     private:

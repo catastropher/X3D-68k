@@ -25,6 +25,11 @@ namespace X3D
     public:
         SystemInstance(SystemConfig& config);
 
+        MemoryManager& getMemoryManager()
+        {
+            return memoryManager;
+        }
+
         void operator=(const SystemInstance& instance) = delete;
 
     private:

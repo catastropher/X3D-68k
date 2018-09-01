@@ -20,7 +20,7 @@ namespace X3D
     class Exception
     {
     public:
-        Exception(const char* message_)
+        explicit Exception(const char* message_)
             : message(message_)
         {
 

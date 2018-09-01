@@ -17,6 +17,7 @@
 #include <cstdio>
 
 #include "X_Log.hpp"
+#include "error/X_Exception.hpp"
 
 namespace X3D
 {
@@ -42,7 +43,26 @@ namespace X3D
         printf("\n");
 
         va_end(list);
-    }  
+    }
+
+    void Log::error(const Exception& e, const char* format, ...)
+    {
+        va_list list;
+        va_start(list, format);
+
+        printf("[ERR ] ");
+        vprintf(format, list);
+        printf("\n");
+
+        printf("\t- Exception: %s\n", e.getMessage());
+
+        char details[1024];
+        e.getDetails(details);
+
+        printf("\t- Details: %s\n", details);
+
+        va_end(list);
+    }
 };
 
 

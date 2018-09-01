@@ -26,7 +26,7 @@ namespace X3D
         static void details(const char* format, ...);
         
         static void error(const char* format, ...);
-        static void error(Exception& e, const char* format, ...);
+        static void error(const Exception& e, const char* format, ...);
 
         static void debug(const char* format, ...);
 

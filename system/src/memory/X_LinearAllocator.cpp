@@ -56,7 +56,7 @@ namespace X3D
         lowMark += size;
         if(lowMark >= highMark)
         {
-            Log::error("LinearAllocator: can't allocLow %d bytes for %s", name);
+            Log::error("LinearAllocator: can't allocLow %d bytes for %s", size, name);
             throw OutOfMemoryException(size, "linear");
         }
 
@@ -79,7 +79,7 @@ namespace X3D
         highMark -= size;
         if(highMark <= lowMark)
         {
-            Log::error("LinearAllocator: can't allocHigh %d bytes for %s", name);
+            Log::error("LinearAllocator: can't allocHigh %d bytes for %s", size, name);
             throw OutOfMemoryException(size, "linear");
         }
 

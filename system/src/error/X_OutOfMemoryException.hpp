@@ -19,7 +19,7 @@
 
 namespace X3D
 {
-    class OutOfMemoryException : Exception
+    class OutOfMemoryException : public Exception
     {
     public:
         OutOfMemoryException(int allocationSize, const char* allocatorName)
