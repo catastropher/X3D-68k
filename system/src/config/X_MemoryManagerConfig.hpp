@@ -20,6 +20,7 @@ namespace X3D
     struct MemoryManagerConfig
     {
         int linearAllocatorSize;
+        int zoneAllocatorSize;
     };
 };
 

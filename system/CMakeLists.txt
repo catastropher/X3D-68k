@@ -44,6 +44,7 @@ set(SYSTEM_SOURCE
     src/memory/X_LinearAllocator.cpp
     src/memory/X_MemoryManager.cpp
     src/memory/X_SystemAllocator.cpp
+    src/memory/X_ZoneAllocator.cpp
 )
 
 add_library(X3D-system STATIC ${SYSTEM_SOURCE})

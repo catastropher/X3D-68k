@@ -28,7 +28,8 @@ public:
         {
             .memoryManager = 
             {
-                .linearAllocatorSize = 1000
+                .linearAllocatorSize = 1000,
+                .zoneAllocatorSize = 500
             }
         };
 
@@ -37,7 +38,7 @@ public:
 
         try
         {
-            memoryManager.allocLinearVolatile<char>(1000);
+            memoryManager.allocZone<unsigned char>(600);
         }
         catch(const Exception& e)
         {

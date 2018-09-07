@@ -19,7 +19,8 @@
 namespace X3D
 {
     MemoryManager::MemoryManager(MemoryManagerConfig& config)
-    : linearAllocator(config.linearAllocatorSize, systemAllocator)
+    : linearAllocator(config.linearAllocatorSize, systemAllocator),
+    zoneAllocator(config.zoneAllocatorSize, linearAllocator)
     {
         Log::info("Initialized memory manager");
     }

@@ -18,6 +18,7 @@
 #include "config/X_MemoryManagerConfig.hpp"
 #include "X_SystemAllocator.hpp"
 #include "X_LinearAllocator.hpp"
+#include "X_ZoneAllocator.hpp"
 
 namespace X3D
 {
@@ -32,11 +33,18 @@ namespace X3D
             return (T*)linearAllocator.allocLow(count * sizeof(T), name);
         }
 
+        template<typename T>
+        T* allocZone(int count = 1)
+        {
+            return zoneAllocator.alloc<T>(count);
+        }
+
         ~MemoryManager();
 
     private:
         SystemAllocator systemAllocator;
         LinearAllocator linearAllocator;
+        ZoneAllocator zoneAllocator;
     };
 };
 
