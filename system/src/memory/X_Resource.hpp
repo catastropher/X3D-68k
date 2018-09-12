@@ -15,14 +15,19 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+namespace X3D
+{
+    enum class ResourceLoadPolicy
+    {
+        cache = 0,
+        loadStayResident = 1
+    };
 
-// log
-#include "log/X_Log.hpp"
+    class Resource
+    {
+        const char* filePath;
+        ResourceLoadPolicy loadPolicy;
+    };
+};
 
-// instance
-#include "instance/X_System.hpp"
 

@@ -15,14 +15,14 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+namespace X3D
+{
+    class ResourceManager
+    {
+    public:
 
-// log
-#include "log/X_Log.hpp"
-
-// instance
-#include "instance/X_System.hpp"
+    private:
+        
+    };
+};
 

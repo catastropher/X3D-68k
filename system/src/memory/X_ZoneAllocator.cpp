@@ -17,6 +17,7 @@
 #include "log/X_Log.hpp"
 #include "X_LinearAllocator.hpp"
 #include "error/X_OutOfMemoryException.hpp"
+#include "error/X_RuntimeException.hpp"
 
 namespace X3D
 {
@@ -30,8 +31,10 @@ namespace X3D
     {
         Log::info("Init zone allocator (size = %d)", size);
 
-        unsigned char* mem = (unsigned char*)linearAllocator.allocLow(size, "zone");
-        Block* block = (Block*)(mem + sizeof(Block));
+        regionStart = linearAllocator.allocLow(size, "zone");
+        regionEnd = (unsigned char*)regionStart + size;
+
+        Block* block = (Block*)((unsigned char*)regionStart + sizeof(Block));
 
         block->next = block;
         block->prev = block;
@@ -93,17 +96,20 @@ namespace X3D
 
         Block* block = blockFromChunk(mem);
 
+        if(!memoryInRegion(mem))
+        {
+            throw RuntimeException("Trying to free memory not from zone");
+        }
+
+        if(block->isFree())
+        {
+            throw RuntimeException("Trying to free zone block that is already free");
+        }
+
         block = block->tryMergeWithAdjacentBlocks(rover);
         block->setIsFree(true);
     }
-
-    enum ReallocSource
-    {
-        SOURCE_ZONE = 0,
-        SOURCE_STACK = 1,
-        SOURCE_HEAP = 2
-    };
-
+    
     ZoneAllocator::Block* ZoneAllocator::Block::tryMergeWithAdjacentBlocks(Block*& rover)
     {
         Block* block = this;

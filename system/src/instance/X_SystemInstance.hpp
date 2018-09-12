@@ -17,6 +17,7 @@
 
 #include "config/X_SystemConfig.hpp"
 #include "memory/X_MemoryManager.hpp"
+#include "filesystem/X_FileSystem.hpp"
 
 namespace X3D
 {
@@ -33,6 +34,7 @@ namespace X3D
         void operator=(const SystemInstance& instance) = delete;
 
     private:
+        FileSystem fileSystem;
         MemoryManager memoryManager;
     };
 };

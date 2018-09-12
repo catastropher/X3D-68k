@@ -13,37 +13,50 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
-#ifdef DEBUG_FILE
-
-#define LOG_DEBUG(args...) Log::debug(args)
-
-#else
-
-#define LOG_DEBUG(...)
-
-#endif
-
 namespace X3D
 {
-    class Exception;
-
-    class Log
+    template<typename T>
+    class Flags
     {
     public:
-        static void info(const char* format, ...);
-        static void details(const char* format, ...);
-        
-        static void error(const char* format, ...);
-        static void error(const Exception& e, const char* format, ...);
+        Flags()
+            : flags(0)
+        {
 
-        static void debug(const char* format, ...);
+        }
 
-        static void warn(const char* format, ...);
-    
+        bool hasFlag(T flag)
+        {
+            return (flags & (unsigned int)flag) != 0;
+        }
+
+        void setFlag(T flag)
+        {
+            flags |= (unsigned int)flag;
+        }
+
+        void toggleFlag(T flag)
+        {
+            flags ^= (unsigned int)flag;
+        }
+
+        void clearFlag(T flag)
+        {
+            flags &= (~(unsigned int)flag);
+        }
+
+        void operator=(unsigned int flags_)
+        {
+            flags = flags_;
+        }
+
+        void clear()
+        {
+            flags = 0;
+        }
+
     private:
-
+        unsigned int flags;
     };
-};
+}
 

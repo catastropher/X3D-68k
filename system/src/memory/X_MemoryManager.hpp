@@ -34,9 +34,14 @@ namespace X3D
         }
 
         template<typename T>
-        T* allocZone(int count = 1)
+        T* zoneAlloc(int count = 1)
         {
             return zoneAllocator.alloc<T>(count);
+        }
+
+        void zoneFree(void* mem)
+        {
+            zoneAllocator.free(mem);
         }
 
         ~MemoryManager();

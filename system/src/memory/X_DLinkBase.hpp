@@ -75,3 +75,20 @@ struct DLinkBase
     T* prev;
 };
 
+template<typename T>
+static inline void linkArrayOfDoublyLinkedNodes(T* begin, T* end)
+{
+    T* ptr = begin;
+
+    while(ptr < end)
+    {
+        ptr->prev = ptr - 1;
+        ptr->next = ptr + 1;
+
+        ++ptr;
+    }
+
+    begin->prev = nullptr;
+    (end - 1)->next = nullptr;
+}
+

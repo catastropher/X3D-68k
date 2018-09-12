@@ -13,16 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_FileSystem.hpp"
+#include "X_DirectoryScanner.hpp"
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+namespace X3D
+{
+    FileSystem::FileSystem()
+    {
+        FilePath path("CMakeCache.txt");
 
-// log
-#include "log/X_Log.hpp"
+        for(int i = 0; i < 9; ++i)
+        {
+            fileHandleCache.openFileForReading(path);
+        }
 
-// instance
-#include "instance/X_System.hpp"
+    }
+}
 

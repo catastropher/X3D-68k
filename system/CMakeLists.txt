@@ -33,6 +33,11 @@ set(SYSTEM_SOURCE
     # error
     src/error/X_OutOfMemoryException.cpp
 
+    # filesystem
+    src/filesystem/X_FileHandle.cpp
+    src/filesystem/X_FilePath.cpp
+    src/filesystem/X_FileSystem.cpp
+
     # instance
     src/instance/X_System.cpp
     src/instance/X_SystemInstance.cpp

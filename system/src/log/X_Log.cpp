@@ -33,6 +33,18 @@ namespace X3D
         va_end(list);
     }
 
+    void Log::debug(const char* format, ...)
+    {
+        va_list list;
+        va_start(list, format);
+
+        printf("[DBUG] ");
+        vprintf(format, list);
+        printf("\n");
+
+        va_end(list);
+    }
+
     void Log::error(const char* format, ...)
     {
         va_list list;

@@ -78,6 +78,11 @@ namespace X3D
             unsigned int flags;
         };
 
+        bool memoryInRegion(void* mem)
+        {
+            return mem >= regionStart && mem < regionEnd;
+        }
+
         static Block* blockFromChunk(void* ptr)
         {
             return (Block *)((unsigned char*)ptr - sizeof(Block));
@@ -88,11 +93,13 @@ namespace X3D
             return (void *)((unsigned char*)block + sizeof(Block));
         }
 
-        Block* rover;
-
         void* tryAllocChunk(int size);
         void* allocChunk(int size);
         void* reallocChunk(void* ptr, int newSize);
+
+        Block* rover;
+        void* regionStart;
+        void* regionEnd;
     };
 };
 

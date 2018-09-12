@@ -19,31 +19,83 @@
 
 using namespace X3D;
 
+#define TEST_FAILED(args...) Log::error("Test %s failed: ", __FUNCTION__, #args)
+
 class MemoryTests
 {
 public:
-    void run()
+    MemoryTests()
     {
         SystemConfig config = 
         {
             .memoryManager = 
             {
                 .linearAllocatorSize = 1000,
-                .zoneAllocatorSize = 500
+                .zoneAllocatorSize = ZONE_SIZE
             }
         };
 
         auto& instance = System::init(config);
-        auto& memoryManager = instance.getMemoryManager();
+        memoryManager = &instance.getMemoryManager();
+    }
+
+    void run()
+    {
+        AllocTooMuchFromZone();
+        FreeMemNotFromZone();
+    }
+
+    void AllocTooMuchFromZone()
+    {
+        bool pass = false;
 
         try
         {
-            memoryManager.allocZone<unsigned char>(600);
+            memoryManager->zoneAlloc<unsigned char>(ZONE_SIZE + 1);
         }
-        catch(const Exception& e)
+        catch(const OutOfMemoryException& e)
         {
-            Log::error(e, "Failed");
+            pass = true;
+        }
+        catch(...)
+        {
+        }
+
+        if(!pass)
+        {
+            TEST_FAILED();
         }
     }
+
+    void FreeMemNotFromZone()
+    {
+        bool pass = false;
+
+        try
+        {
+            char mem[128];
+            memoryManager->zoneFree(mem);
+        }
+        catch(const RuntimeException& e)
+        {
+            pass = true;
+        }
+        catch(...)
+        {
+
+        }
+
+        if(!pass)
+        {
+            TEST_FAILED();
+        }
+    }
+
+private:
+
+
+    static const int ZONE_SIZE = 500;
+
+    MemoryManager* memoryManager;
 };
 

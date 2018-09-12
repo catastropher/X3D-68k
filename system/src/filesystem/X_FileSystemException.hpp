@@ -15,14 +15,18 @@
 
 #pragma once
 
-// error
 #include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
 
-// log
-#include "log/X_Log.hpp"
-
-// instance
-#include "instance/X_System.hpp"
+namespace X3D
+{
+    class FileSystemException : public Exception
+    {
+    public:
+        FileSystemException(const char* msg)
+            : Exception(msg)
+        {
+            
+        }
+    };
+};
 

@@ -15,14 +15,20 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+#include <cstdio>
 
-// log
-#include "log/X_Log.hpp"
+#include "X_FileHandle.hpp"
 
-// instance
-#include "instance/X_System.hpp"
+namespace X3D
+{
+    class FileSystem
+    {
+    public:
+        FileSystem();
+
+    private:
+        FileHandleCache fileHandleCache;
+    };
+}
+
 
