@@ -46,6 +46,7 @@ set(SYSTEM_SOURCE
     src/log/X_Log.cpp
 
     # memory
+    src/memory/X_Cache.cpp
     src/memory/X_LinearAllocator.cpp
     src/memory/X_MemoryManager.cpp
     src/memory/X_SystemAllocator.cpp

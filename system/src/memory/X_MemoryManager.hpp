@@ -19,6 +19,7 @@
 #include "X_SystemAllocator.hpp"
 #include "X_LinearAllocator.hpp"
 #include "X_ZoneAllocator.hpp"
+#include "X_Cache.hpp"
 
 namespace X3D
 {
@@ -44,12 +45,17 @@ namespace X3D
             zoneAllocator.free(mem);
         }
 
-        ~MemoryManager();
+        Cache& getCache()
+        {
+            return cache;
+        }
 
-    private:
+        ~MemoryManager();
+        
         SystemAllocator systemAllocator;
         LinearAllocator linearAllocator;
         ZoneAllocator zoneAllocator;
+        Cache cache;
     };
 };
 

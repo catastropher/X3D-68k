@@ -12,23 +12,3 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
-
-#include "X_MemoryManager.hpp"
-#include "log/X_Log.hpp"
-
-namespace X3D
-{
-    MemoryManager::MemoryManager(MemoryManagerConfig& config)
-    : linearAllocator(config.linearAllocatorSize, systemAllocator),
-    zoneAllocator(config.zoneAllocatorSize, linearAllocator),
-    cache(linearAllocator)
-    {
-        Log::info("Initialized memory manager");
-    }
-
-    MemoryManager::~MemoryManager()
-    {
-        Log::info("Shutdown memory manager");
-    }
-};
-

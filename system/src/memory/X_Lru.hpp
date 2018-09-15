@@ -16,6 +16,7 @@
 #pragma once
 
 #include "X_DLinkBase.hpp"
+#include <cstdio>
 
 namespace X3D
 {
@@ -44,26 +45,36 @@ namespace X3D
 
         void markAsLeastRecentlyUsed(T* node)
         {
-            node->unlink();
+            remove(node);
 
             if(head)
             {
-                node->insertBeforeThis(head);
+                head->insertBeforeThis(node);
             }
 
             head = node;
+
+            if(!tail)
+            {
+                tail = node;
+            }
         }
 
         void markAsMostRecentlyUsed(T* node)
         {
-            node->unlink();
+            remove(node);
 
             if(tail)
             {
-                node->insertAfterThis(tail);
+                tail->insertAfterThis(node);
             }
 
             tail = node;
+
+            if(!head)
+            {
+                head = node;
+            }
         }
 
         void remove(T* node)

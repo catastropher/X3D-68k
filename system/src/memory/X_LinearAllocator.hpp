@@ -27,11 +27,19 @@ namespace X3D
         void* allocHigh(int size, const char* name);
         void* allocLow(int size, const char* name);
 
-        void* getHighMark();
-        void freeToHighMark(void* highMark);
+        unsigned char* getHighMark()
+        {
+            return highMark;
+        }
 
-        void* getLowMark();
-        void freeToLowMark(void* lowMark);
+        void freeToHighMark(unsigned char* highMark);
+
+        unsigned char* getLowMark()
+        {
+            return lowMark;
+        }
+
+        void freeToLowMark(unsigned char* lowMark);
 
         void print();
 

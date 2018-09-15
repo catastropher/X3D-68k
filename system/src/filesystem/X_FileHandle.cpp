@@ -65,13 +65,15 @@ namespace X3D
 
         FileHandle* leastRecentlyUsed = fileHandleCache.getLeastRecentlyUsed();
 
-        LOG_DEBUG("Evict handle %d", (int)(leastRecentlyUsed - fileHandles));
-
         bool outOfHandles = (leastRecentlyUsed == nullptr);
         if(outOfHandles)
         {
+            LOG_DEBUG("Out of file handles\n");
+
             throw FileSystemException("Out of file handles");
         }
+
+        LOG_DEBUG("Evict handle %d", (int)(leastRecentlyUsed - fileHandles));
 
         // Out of handles, need to evict whoever was least recently used
         leastRecentlyUsed->forceClose();
@@ -102,5 +104,4 @@ namespace X3D
         }
     }
 }
-
 

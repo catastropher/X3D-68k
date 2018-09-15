@@ -20,13 +20,7 @@ namespace X3D
 {
     FileSystem::FileSystem()
     {
-        FilePath path("CMakeCache.txt");
-
-        for(int i = 0; i < 9; ++i)
-        {
-            fileHandleCache.openFileForReading(path);
-        }
-
+        
     }
 }
 

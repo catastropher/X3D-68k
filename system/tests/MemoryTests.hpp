@@ -41,8 +41,53 @@ public:
 
     void run()
     {
-        AllocTooMuchFromZone();
-        FreeMemNotFromZone();
+        //allocCache();
+        bootOldOutOfCache();
+        //AllocTooMuchFromZone();
+        //FreeMemNotFromZone();
+    }
+
+    void allocCache()
+    {
+        CacheHandle handle[10];
+        memoryManager->cache.tryAlloc(100, handle[0], true, 0);
+        memoryManager->cache.printBlocks();
+
+        printf("\n");
+        memoryManager->cache.tryAlloc(100, handle[1], true, 1);
+        memoryManager->cache.printBlocks();
+
+        printf("\n");
+        memoryManager->cache.tryAlloc(100, handle[2], true, 2);
+        memoryManager->cache.printBlocks();
+        memoryManager->cache.free(handle[1]);
+        memoryManager->cache.printBlocks();
+
+        printf("\n");
+        memoryManager->cache.tryAlloc(50, handle[3], true, 3);
+        memoryManager->cache.printBlocks();
+
+        printf("\n");
+        memoryManager->cache.tryAlloc(50, handle[4], true, 4);
+
+        printf("\n");
+        memoryManager->cache.tryAlloc(8, handle[5], true, 5);
+
+        memoryManager->cache.tryAlloc(5, handle[6], true, 6);
+
+        memoryManager->cache.printBlocks();
+    }
+
+    void bootOldOutOfCache()
+    {
+        CacheHandle handle[50];
+
+        for(int i = 0; i < 10; ++i)
+        {
+            memoryManager->getCache().alloc(100, handle[i], i);
+            memoryManager->getCache().printBlocks();
+            printf("=====================\n");
+        }
     }
 
     void AllocTooMuchFromZone()

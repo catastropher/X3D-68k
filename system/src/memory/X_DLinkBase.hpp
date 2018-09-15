@@ -25,6 +25,7 @@ struct DLinkBase
         
     }
     
+    // Inserts this after link
     void insertAfterThis(T* link)
     {
         link->prev = static_cast<T*>(this);
@@ -69,6 +70,15 @@ struct DLinkBase
         
         next = nullptr;
         prev = nullptr;
+    }
+
+    static void initLink(T* head, T* tail)
+    {
+        head->next = tail;
+        head->prev = nullptr;
+
+        tail->prev = head;
+        tail->next = nullptr;
     }
     
     T* next;
