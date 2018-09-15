@@ -75,7 +75,7 @@ namespace X3D
             strcpy(path, fp.path);
         }
 
-        void getFilename(const char* dest);
+        void getFilename(char* dest) const;
         void splitFilename(const char* nameDest, const char* extensionDest);
         FilePath& replaceFilename(const char* newFileName);
 
@@ -90,6 +90,8 @@ namespace X3D
         FilePath& appendSegment(const char* segment);
 
         FilePath clone();
+
+        bool matchesFileName(const FilePath& path) const;
 
         static const int MAX_LENGTH = 256;
 

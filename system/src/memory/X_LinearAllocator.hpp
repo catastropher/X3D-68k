@@ -28,6 +28,16 @@ namespace X3D
         void* allocHigh(int size, const char* name);
         void* allocLow(int size, const char* name);
 
+        void* allocStable(int size, const char* name)
+        {
+            return allocLow(size, name);
+        }
+
+        void* allocVolatile(int size, const char* name)
+        {
+            return allocHigh(size, name);
+        }
+
         unsigned char* getHighMark()
         {
             return highMark;

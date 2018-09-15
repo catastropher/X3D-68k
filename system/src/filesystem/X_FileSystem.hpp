@@ -18,16 +18,18 @@
 #include <cstdio>
 
 #include "X_FileHandle.hpp"
+#include "X_Pak.hpp"
 
 namespace X3D
 {
     class FileSystem
     {
     public:
-        FileSystem();
+        FileSystem(MemoryManager& cache);
 
     private:
         FileHandleCache fileHandleCache;
+        PakManager pakManager;
     };
 }
 

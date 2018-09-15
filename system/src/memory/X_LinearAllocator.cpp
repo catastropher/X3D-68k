@@ -68,6 +68,8 @@ namespace X3D
         header->size = size;
         header->sentinel = SENTINEL;
 
+        Log::info("AllocLow %d bytes for %s", size, name);
+
         return header + 1;
     }
 
@@ -90,6 +92,8 @@ namespace X3D
         header->name = name;
         header->size = size;
         header->sentinel = SENTINEL;
+
+        Log::info("AllocHigh %d bytes for %s", size, name);
 
         return highMark;
     }

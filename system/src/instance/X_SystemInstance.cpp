@@ -18,7 +18,8 @@
 namespace X3D
 {
     SystemInstance::SystemInstance(SystemConfig& config)
-        : memoryManager(config.memoryManager)
+        : memoryManager(config.memoryManager),
+        fileSystem(memoryManager)
     {
 
     }

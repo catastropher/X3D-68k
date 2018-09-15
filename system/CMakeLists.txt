@@ -37,6 +37,7 @@ set(SYSTEM_SOURCE
     src/filesystem/X_FileHandle.cpp
     src/filesystem/X_FilePath.cpp
     src/filesystem/X_FileSystem.cpp
+    src/filesystem/X_Pak.cpp
 
     # instance
     src/instance/X_System.cpp

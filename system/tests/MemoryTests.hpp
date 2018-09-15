@@ -30,7 +30,7 @@ public:
         {
             .memoryManager = 
             {
-                .linearAllocatorSize = 1000,
+                .linearAllocatorSize = 50000,
                 .zoneAllocatorSize = ZONE_SIZE
             }
         };

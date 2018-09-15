@@ -107,6 +107,11 @@ namespace X3D
             return buf;
         }
 
+        char* getBuf()
+        {
+            return buf;
+        }
+
     private:
         void copyFromCString(const char* str)
         {

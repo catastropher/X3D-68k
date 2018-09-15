@@ -15,27 +15,13 @@
 
 #pragma once
 
-#include "config/X_SystemConfig.hpp"
-#include "memory/X_MemoryManager.hpp"
-#include "filesystem/X_FileSystem.hpp"
-
 namespace X3D
 {
-    class SystemInstance
+    enum class AllocationSource
     {
-    public:
-        SystemInstance(SystemConfig& config);
-
-        MemoryManager& getMemoryManager()
-        {
-            return memoryManager;
-        }
-
-        void operator=(const SystemInstance& instance) = delete;
-
-    private:
-        MemoryManager memoryManager;
-        FileSystem fileSystem;
+        zone,
+        system
     };
-};
+}
+
 

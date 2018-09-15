@@ -15,27 +15,38 @@
 
 #pragma once
 
-#include "config/X_SystemConfig.hpp"
-#include "memory/X_MemoryManager.hpp"
-#include "filesystem/X_FileSystem.hpp"
-
-namespace X3D
+template<typename T>
+class Array
 {
-    class SystemInstance
+public:
+    void set(T* data_, int size_)
     {
-    public:
-        SystemInstance(SystemConfig& config);
+        data = data_;
+        size = size_;
+    }
 
-        MemoryManager& getMemoryManager()
-        {
-            return memoryManager;
-        }
+    int getSize() const
+    {
+        return size;
+    }
 
-        void operator=(const SystemInstance& instance) = delete;
+    T& operator[](int index) const
+    {
+        return data[index];
+    }
 
-    private:
-        MemoryManager memoryManager;
-        FileSystem fileSystem;
-    };
+    T* begin() const
+    {
+        return data;
+    }
+
+    T* end() const
+    {
+        return data + size;
+    }
+
+private:
+    T* data;
+    int size;
 };
 

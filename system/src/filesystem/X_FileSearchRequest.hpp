@@ -15,27 +15,23 @@
 
 #pragma once
 
-#include "config/X_SystemConfig.hpp"
-#include "memory/X_MemoryManager.hpp"
-#include "filesystem/X_FileSystem.hpp"
+#include "memory/X_AllocationSource.hpp"
+#include "X_FilePath.hpp"
 
 namespace X3D
 {
-    class SystemInstance
+    struct FileSearchRequest
     {
-    public:
-        SystemInstance(SystemConfig& config);
-
-        MemoryManager& getMemoryManager()
+        FileSearchRequest(const FilePath& path_, AllocationSource source_)
+            : path(path),
+            source(source_)
         {
-            return memoryManager;
+            
         }
 
-        void operator=(const SystemInstance& instance) = delete;
-
-    private:
-        MemoryManager memoryManager;
-        FileSystem fileSystem;
+        const FilePath& path;
+        AllocationSource source;
     };
-};
+}
+
 

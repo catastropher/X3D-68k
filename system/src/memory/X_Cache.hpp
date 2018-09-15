@@ -40,6 +40,13 @@ namespace X3D
 
     class CacheHandle
     {
+    public:
+        CacheHandle()
+            : mem(nullptr)
+        {
+            
+        }
+
     private:
         CacheBlock* getCacheBlock()
         {

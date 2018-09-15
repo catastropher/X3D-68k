@@ -85,5 +85,27 @@ namespace X3D
         
         *dest = '\0';
     }
+
+    void FilePath::getFilename(char* dest) const
+    {
+        const char* str = path + strlen(path) - 1;
+        while(str >= path && *str != '/')
+        {
+            --str;
+        }
+        
+        strcpy(dest, str + 1);
+    }
+
+    bool FilePath::matchesFileName(const FilePath& path) const
+    {
+        char ourFileName[MAX_LENGTH];
+        this->getFilename(ourFileName);
+
+        char theirFileName[MAX_LENGTH];
+        path.getFilename(theirFileName);
+
+        return strcasecmp(ourFileName, theirFileName) == 0;
+    }
 }
 

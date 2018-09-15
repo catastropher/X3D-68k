@@ -94,6 +94,7 @@ namespace X3D
         Flags<FileHandleFlags> flags;
 
         friend class FileHandleCache;
+        friend class FileReader;
     };
 
     class FileHandleCache

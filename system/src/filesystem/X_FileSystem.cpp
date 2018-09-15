@@ -18,9 +18,14 @@
 
 namespace X3D
 {
-    FileSystem::FileSystem()
+    FileSystem::FileSystem(MemoryManager& memoryManager)
+        : pakManager(memoryManager, fileHandleCache)
     {
-        
+        FilePath path("e1m1.bsp");
+        FileSearchRequest request(path, AllocationSource::zone);
+
+
+        pakManager.locatePakFile(request);
     }
 }
 
