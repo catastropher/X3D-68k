@@ -63,10 +63,13 @@ namespace X3D
         void free(CacheHandle& handle);
         void freeAllMatchingId(int id, int mask = 0x7FFFFFFF);
         void flush();
+        void freeBelowLowMark(unsigned char* lowMark);
+        void freeAboveHighMark(unsigned char* highMark);
 
         void* getCachedData(CacheHandle& handle);
 
         void printBlocks();
+        void printSize();
 
     private:
         void free(CacheBlock* block);

@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#define DEBUG_FILE
-
 #include "X_Cache.hpp"
 #include "X_LinearAllocator.hpp"
 #include "error/X_OutOfMemoryException.hpp"
@@ -33,6 +31,9 @@ namespace X3D
         : linearAllocator(linearAllocator_)
     {
         DLinkBaseAux<CacheBlock>::initLink(&cacheHead, &cacheTail);
+
+        Log::info("Init cache");
+        printSize();
     }
 
     void Cache::alloc(int size, CacheHandle& dest, int id)
@@ -134,7 +135,7 @@ namespace X3D
 
     void Cache::free(CacheBlock* block)
     {
-        LOG_DEBUG("Free block %d\n", block->id);
+        LOG_DEBUG("Free block %d", block->id);
 
         block->unlinkAux();
         cacheLru.remove(block);
@@ -154,7 +155,7 @@ namespace X3D
 
     void Cache::freeAllMatchingId(int id, int mask)
     {
-        CacheBlock* block = cacheHead.next;
+        CacheBlock* block = cacheHead.nextAux;
 
         while(block != &cacheTail)
         {
@@ -172,6 +173,46 @@ namespace X3D
     void Cache::flush()
     {
         freeAllMatchingId(0, 0);
+    }
+
+    void Cache::freeBelowLowMark(unsigned char* lowMark)
+    {
+        CacheBlock* block = cacheHead.nextAux;
+
+        while(block != &cacheTail)
+        {
+            CacheBlock* next = block->nextAux;
+
+            unsigned char* blockStart = (unsigned char*)block;
+            if(blockStart < lowMark)
+            {
+                this->free(block);
+            }
+            else
+            {
+                break;
+            }
+
+            block = next;
+        }
+    }
+
+    void Cache::freeAboveHighMark(unsigned char* highMark)
+    {
+        CacheBlock* block = cacheTail.prevAux;
+
+        while(block != &cacheHead)
+        {
+            CacheBlock* prev = block->prevAux;
+
+            unsigned char* blockEnd = (unsigned char*)block + block->size;
+            if(blockEnd > highMark)
+            {
+                this->free(block);
+            }
+
+            block = prev;
+        }
     }
 
     void Cache::printBlocks()
@@ -199,6 +240,15 @@ namespace X3D
         }
 
         printf("\n");
+    }
+
+    void Cache::printSize()
+    {
+        unsigned char* lowMark = linearAllocator.getLowMark();
+        unsigned char* highMark = linearAllocator.getHighMark();
+
+        int sizeInKilobytes = nearestPowerOf2(highMark - lowMark, 1024) / 1024;
+        Log::info("Current cache size: %dk", sizeInKilobytes);
     }
 }
 

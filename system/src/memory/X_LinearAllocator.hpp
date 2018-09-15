@@ -18,11 +18,12 @@
 namespace X3D
 {
     class SystemAllocator;
+    class Cache;
 
     class LinearAllocator
     {
     public:
-        LinearAllocator(int size, SystemAllocator& sysAllocator_);
+        LinearAllocator(int size, SystemAllocator& sysAllocator_, Cache& cache_);
 
         void* allocHigh(int size, const char* name);
         void* allocLow(int size, const char* name);
@@ -58,6 +59,7 @@ namespace X3D
         static const unsigned int SENTINEL = 0xEC53DB01;
 
         SystemAllocator& sysAllocator;
+        Cache& cache;
 
         unsigned char* memoryStart;
         unsigned char* memoryEnd;

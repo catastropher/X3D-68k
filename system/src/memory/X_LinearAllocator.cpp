@@ -16,6 +16,7 @@
 #include "X_LinearAllocator.hpp"
 #include "X_SystemAllocator.hpp"
 #include "error/X_OutOfMemoryException.hpp"
+#include "X_Cache.hpp"
 
 #include "log/X_Log.hpp"
 
@@ -27,8 +28,9 @@ namespace X3D
         return (x + powerOf2 - 1) & ~(powerOf2 - 1);
     }
 
-    LinearAllocator::LinearAllocator(int size, SystemAllocator& sysAllocator_)
-        : sysAllocator(sysAllocator_)
+    LinearAllocator::LinearAllocator(int size, SystemAllocator& sysAllocator_, Cache& cache_)
+        : sysAllocator(sysAllocator_),
+        cache(cache_)
     {
         Log::info("Init linear allocator (size = %d)", size);
 
@@ -60,7 +62,7 @@ namespace X3D
             throw OutOfMemoryException(size, "linear");
         }
 
-        //Cache::freeBelow(lowMark);
+        cache.freeBelowLowMark(lowMark);
 
         header->name = name;
         header->size = size;
@@ -83,7 +85,7 @@ namespace X3D
             throw OutOfMemoryException(size, "linear");
         }
 
-        //Cache::freeAbove(highMark);
+        cache.freeAboveHighMark(highMark);
 
         header->name = name;
         header->size = size;

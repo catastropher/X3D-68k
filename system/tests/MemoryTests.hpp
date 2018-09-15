@@ -88,6 +88,8 @@ public:
             memoryManager->getCache().printBlocks();
             printf("=====================\n");
         }
+
+        memoryManager->linearAllocator.allocHigh(400, "blah");
     }
 
     void AllocTooMuchFromZone()

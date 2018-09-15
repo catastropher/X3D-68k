@@ -54,8 +54,8 @@ namespace X3D
         
         SystemAllocator systemAllocator;
         LinearAllocator linearAllocator;
-        ZoneAllocator zoneAllocator;
         Cache cache;
+        ZoneAllocator zoneAllocator;
     };
 };
 
