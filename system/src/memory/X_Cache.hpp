@@ -47,6 +47,11 @@ namespace X3D
             
         }
 
+        bool dataInCache() const
+        {
+            return mem != nullptr;
+        }
+
     private:
         CacheBlock* getCacheBlock()
         {

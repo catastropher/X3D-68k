@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include <cstdio>
 
 #include "memory/X_Lru.hpp"
@@ -48,7 +50,7 @@ namespace X3D
 
         void reopen()
         {
-
+            rewind(file);
         }
 
         void forceClose()

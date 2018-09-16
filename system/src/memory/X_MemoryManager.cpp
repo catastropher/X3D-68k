@@ -15,6 +15,7 @@
 
 #include "X_MemoryManager.hpp"
 #include "log/X_Log.hpp"
+#include "error/X_Exception.hpp"
 
 namespace X3D
 {
@@ -24,6 +25,21 @@ namespace X3D
         zoneAllocator(config.zoneAllocatorSize, linearAllocator)
     {
         Log::info("Initialized memory manager");
+    }
+
+    void* MemoryManager::alloc(int size, AllocationSource source)
+    {
+        switch(source)
+        {
+            case AllocationSource::system:
+                return systemAllocator.alloc(size);
+
+            case AllocationSource::zone:
+                return zoneAllocator.alloc<unsigned char>(size);
+
+            default:
+                throw Exception("Unknow allocator type in MemoryManager::alloc");
+        }
     }
 
     MemoryManager::~MemoryManager()

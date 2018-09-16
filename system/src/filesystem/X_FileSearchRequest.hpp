@@ -23,7 +23,7 @@ namespace X3D
     struct FileSearchRequest
     {
         FileSearchRequest(const FilePath& path_, AllocationSource source_)
-            : path(path),
+            : path(path_),
             source(source_)
         {
             

@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(X3D-system CXX)
 
-set(CMAKE_CXX_FLAGS, "-std=c++14")
+set(CMAKE_CXX_FLAGS, "-std=c++14 -Wall")
 
 include_directories(src/)
 

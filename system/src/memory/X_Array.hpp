@@ -15,38 +15,67 @@
 
 #pragma once
 
-template<typename T>
-class Array
+namespace X3D
 {
-public:
-    void set(T* data_, int size_)
+    template<typename T>
+    class Array
     {
-        data = data_;
-        size = size_;
-    }
+    public:
+        Array(T* data_, int size_)
+            : data(data_),
+            size(size_)
+        {
 
-    int getSize() const
+        }
+
+        Array()
+            : data(nullptr),
+            size(0)
+        {
+
+        }
+
+        void set(T* data_, int size_)
+        {
+            data = data_;
+            size = size_;
+        }
+
+        int getSize() const
+        {
+            return size;
+        }
+
+        T& operator[](int index) const
+        {
+            return data[index];
+        }
+
+        T* begin() const
+        {
+            return data;
+        }
+
+        T* end() const
+        {
+            return data + size;
+        }
+        
+        T* data;
+        int size;
+    };
+
+    template<typename T, int Size>
+    class FixedSizeArray : public Array<T>
     {
-        return size;
-    }
+    public:
+        FixedSizeArray()
+            : Array<T>(elem, Size)
+        {
 
-    T& operator[](int index) const
-    {
-        return data[index];
-    }
+        }
 
-    T* begin() const
-    {
-        return data;
-    }
-
-    T* end() const
-    {
-        return data + size;
-    }
-
-private:
-    T* data;
-    int size;
-};
+        T elem[Size];
+    };
+}
 

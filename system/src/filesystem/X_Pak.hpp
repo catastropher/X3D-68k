@@ -25,6 +25,7 @@ namespace X3D
 {
     class MemoryManager;
     class FileHandleCache;
+    class FileHandle;
 
     struct PakEntry
     {
@@ -35,18 +36,15 @@ namespace X3D
         static const int FILE_SIZE = 64;
     };
 
-    struct PakHeader
+    struct PakFileTable
     {
-        int fileTableOffset;
-        int fileTableSize;
         int totalEntries;
         PakEntry entries[];
     };
 
     struct PakFile
     {
-        char* data;
-        int size;
+        Array<char> data;
         int fileOffset;
         int pakFileId;
     };
@@ -56,6 +54,9 @@ namespace X3D
         FilePath path;
         CacheHandle headerHandle;
         int id;
+        int fileTableOffset;
+        int fileTableSize;
+        FileHandle* fileHandle;
     };
 
     class PakManager
@@ -63,13 +64,19 @@ namespace X3D
     public:
         PakManager(MemoryManager& memoryManager_, FileHandleCache& fileHandleCache_);
 
-        bool readPakFile(FileSearchRequest& request);
-        bool locatePakFile(FileSearchRequest& request);
+        bool readPakFile(FileSearchRequest& request, PakFile& dest);
+        bool locatePakFile(FileSearchRequest& request, PakFile& dest);
 
     private:
         void findAllPaks();
+        void readPakHeader(Pak& pak);
+
+        void openPak(Pak& pak);
+        void closePak(Pak& pak);
+
         bool searchInPak(Pak& pak, FileSearchRequest& request, PakFile& dest);
-        PakHeader* getPakHeader(Pak& pak);
+        PakFileTable* getFileTable(Pak& pak);
+        PakFileTable* loadFileTable(Pak& pak);
 
         MemoryManager& memoryManager;
         FileHandleCache& fileHandleCache;

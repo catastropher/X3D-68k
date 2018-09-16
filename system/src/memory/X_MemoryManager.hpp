@@ -20,6 +20,8 @@
 #include "X_LinearAllocator.hpp"
 #include "X_ZoneAllocator.hpp"
 #include "X_Cache.hpp"
+#include "X_AllocationSource.hpp"
+#include "X_Array.hpp"
 
 namespace X3D
 {
@@ -49,6 +51,15 @@ namespace X3D
         {
             return cache;
         }
+
+        template<typename T>
+        void alloc(int count, AllocationSource source, Array<T>& dest)
+        {
+            dest.size = sizeof(T) * count;
+            dest.data = (T*)alloc(dest.size, source);
+        }
+
+        void* alloc(int size, AllocationSource source);
 
         ~MemoryManager();
         

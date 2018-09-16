@@ -16,7 +16,7 @@
 #pragma once
 
 #include "X_FileHandle.hpp"
-#include "memory/X_FixedLengthString.hpp"
+#include "memory/X_Array.hpp"
 
 namespace X3D
 {
@@ -50,86 +50,21 @@ namespace X3D
 
         }
 
-        template<typename T>
-        FileReader& read(T& dest);
-
-        template<int MaxLength>
-        FileReader& read(FixedLengthString<MaxLength>& dest);
-
-        template<typename T>
-        void readArray(T* dest, int count)
+        bool read(Array<char>& dest, int count)
         {
-            for(int i = 0; i < count; ++i)
-            {
-                dest[i] = read<T>();
-            }
+            dest.size = fread(dest.data, 1, count, handle->file);
+
+            return dest.size == count;
         }
 
-        static char* readWholeFile(const char* fileName, int& size);
-
-        ~FileReader();
+        void seek(int offset)
+        {
+            fseek(handle->file, offset, SEEK_SET);
+        }
 
     private:
         FileHandle* handle;
-        void determineSize();
     };
-
-    template<>
-    inline FileReader& FileReader::read(unsigned int& dest)
-    {
-        fread(&dest, 4, 1, handle->file);
-        swapIntBytes(dest);
-
-        return *this;
-    }
-
-    template<>
-    inline FileReader& FileReader::read(int& dest)
-    {
-        fread(&dest, 4, 1, handle->file);
-        swapIntBytes(dest);
-
-        return *this;
-    }
-
-    template<int MaxLength>
-    inline FileReader& FileReader::read(FixedLengthString<MaxLength>& dest)
-    {
-        readArray(dest.getBuf(), MaxLength);
-
-        return *this;
-    }
-
-    // template<>
-    // inline unsigned char FileReader::read()
-    // {
-    //     return fgetc(handle->file);
-    // }
-
-    // template<>
-    // inline char FileReader::read()
-    // {
-    //     return read<unsigned char>();
-    // }
-
-    // template<>
-    // inline unsigned short FileReader::read()
-    // {
-    //     unsigned short result;
-    //     fread(&result, 2, 1, handle->file);
-    //     swapShortBytes(result);
-
-    //     return result;
-    // }
-
-    // template<>
-    // inline short FileReader::read()
-    // {
-    //     return read<unsigned short>();
-    // }
-
-    // template<int T>
-    // inline 
 }
 
 

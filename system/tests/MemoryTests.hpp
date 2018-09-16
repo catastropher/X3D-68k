@@ -42,7 +42,7 @@ public:
     void run()
     {
         //allocCache();
-        bootOldOutOfCache();
+        //bootOldOutOfCache();
         //AllocTooMuchFromZone();
         //FreeMemNotFromZone();
     }

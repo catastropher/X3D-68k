@@ -14,6 +14,8 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_System.hpp"
+#include "error/X_Exception.hpp"
+#include "log/X_Log.hpp"
 
 namespace X3D
 {
@@ -21,7 +23,15 @@ namespace X3D
 
     SystemInstance& System::init(SystemConfig& config)
     {
-        instance.initialize(config);
+        try
+        {
+            instance.initialize(config);
+        }
+        catch(const Exception& e)
+        {
+            Log::error(e, "System startup failed");
+            throw;
+        }
 
         return instance.getInstance();
     }

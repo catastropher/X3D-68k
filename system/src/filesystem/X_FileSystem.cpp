@@ -21,11 +21,14 @@ namespace X3D
     FileSystem::FileSystem(MemoryManager& memoryManager)
         : pakManager(memoryManager, fileHandleCache)
     {
-        FilePath path("e1m1.bsp");
+        FilePath path("quake.rc");
         FileSearchRequest request(path, AllocationSource::zone);
 
+        PakFile pakFile;
 
-        pakManager.locatePakFile(request);
+        printf("Found: %d\n", pakManager.readPakFile(request, pakFile));
+
+        fwrite(pakFile.data.data, 1, pakFile.data.size, stdout);
     }
 }
 
