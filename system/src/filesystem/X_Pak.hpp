@@ -57,6 +57,8 @@ namespace X3D
         int fileTableOffset;
         int fileTableSize;
         FileHandle* fileHandle;
+
+        static const unsigned int MAGIC_NUMBER = (('P') + ('A' << 8) + ('C' << 16) + ('K' << 24));
     };
 
     class PakManager

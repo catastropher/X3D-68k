@@ -17,7 +17,7 @@ cmake_minimum_required(VERSION 3.1)
 
 project(X3D-system CXX)
 
-set(CMAKE_CXX_FLAGS, "-std=c++14 -Wall")
+set(CMAKE_CXX_FLAGS, "-DNDEBUG -g3 -O1")
 
 include_directories(src/)
 
@@ -38,6 +38,7 @@ set(SYSTEM_SOURCE
     src/filesystem/X_FilePath.cpp
     src/filesystem/X_FileSystem.cpp
     src/filesystem/X_Pak.cpp
+    src/filesystem/X_PakWriter.cpp
 
     # instance
     src/instance/X_System.cpp
@@ -48,6 +49,7 @@ set(SYSTEM_SOURCE
 
     # memory
     src/memory/X_Cache.cpp
+    src/memory/X_Crc32.cpp
     src/memory/X_LinearAllocator.cpp
     src/memory/X_MemoryManager.cpp
     src/memory/X_SystemAllocator.cpp

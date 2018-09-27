@@ -42,6 +42,24 @@ namespace X3D
         }
     }
 
+    void MemoryManager::free(void* data, AllocationSource source)
+    {
+        printf("Source: %d\n", (int)source);
+        switch(source)
+        {
+            case AllocationSource::system:
+                systemAllocator.free(data);
+                break;
+
+            case AllocationSource::zone:
+                zoneAllocator.free(data);
+                break;
+
+            default:
+                throw Exception("Unknow allocator type in MemoryManager::free");
+        }
+    }
+
     MemoryManager::~MemoryManager()
     {
         Log::info("Shutdown memory manager");

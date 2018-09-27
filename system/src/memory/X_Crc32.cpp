@@ -13,17 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_SystemInstance.hpp"
-#include "memory/X_Crc32.hpp"
-#include "resource/X_StringId.hpp"
+#include "X_Crc32.hpp"
 
 namespace X3D
 {
-    SystemInstance::SystemInstance(SystemConfig& config)
-        : memoryManager(config.memoryManager),
-        fileSystem(memoryManager)
+    unsigned int crc32(const char* str)
     {
-        
-    }
-};
+        unsigned int crc = 0;
 
+        while(*str)
+        {
+            int byte = *str++;
+            int index = (crc ^ (byte << 24)) >> 24;
+
+            crc = (crc << 8) ^ (unsigned int)(crcTable[index]);
+        }
+
+        return crc;
+    }
+}

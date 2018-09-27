@@ -15,12 +15,36 @@
 
 #pragma once
 
+#include "memory/X_Crc32.hpp"
+
 namespace X3D
 {
-    class StringId
+    struct StringId
     {
+        constexpr StringId(const char* str)
+            : key(crc32Constexpr(str))
+        {
+
+        }
+
+        StringId(unsigned int key_)
+            : key(key_)
+        {
+
+        }
+
+        static StringId fromString(const char* str)
+        {
+            return StringId(crc32(str));
+        }
+
         unsigned int key;
     };
+
+    constexpr StringId operator ""_sid(const char* str, size_t len)
+    {
+        return StringId(str);
+    }
 }
 
 

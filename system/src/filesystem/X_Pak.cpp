@@ -77,15 +77,15 @@ namespace X3D
 
         StreamReader reader(data);
 
+        printf("Blah\n");
+
         unsigned int fileMagicNumber;
         reader
             .read(fileMagicNumber)
             .read(pak.fileTableOffset)
             .read(pak.fileTableSize);
 
-        const unsigned int PAK_MAGIC_NUMBER = (('P') + ('A' << 8) + ('C' << 16) + ('K' << 24));
-
-        if(fileMagicNumber != PAK_MAGIC_NUMBER)
+        if(fileMagicNumber != Pak::MAGIC_NUMBER)
         {
             throw FileSystemException("Invalid PAK file");
         }

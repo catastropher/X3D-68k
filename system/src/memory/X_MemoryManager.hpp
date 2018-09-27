@@ -60,6 +60,7 @@ namespace X3D
         }
 
         void* alloc(int size, AllocationSource source);
+        void free(void* data, AllocationSource source);
 
         ~MemoryManager();
         

@@ -15,6 +15,8 @@
 
 project(X3D-system-test CXX)
 
+set(CMAKE_CXX_FLAGS "-g -std=c++14 --static")
+
 set(TEST_SOURCE
     main.cpp
 )

@@ -141,7 +141,7 @@ public:
 private:
 
 
-    static const int ZONE_SIZE = 500;
+    static const int ZONE_SIZE = 20000;
 
     MemoryManager* memoryManager;
 };
