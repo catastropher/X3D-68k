@@ -21,44 +21,6 @@ struct MemoryConfig;
 
 class Cache;
 
-class Hunk
-{
-public:
-    static void* allocHigh(int size, const char* name);
-    static void* allocLow(int size, const char* name);
-
-    static void* getHighMark();
-    static void freeToHighMark(void* highMark);
-
-    static void* getLowMark();
-    static void freeToLowMark(void* lowMark);
-
-    static void init(int size);
-    static void cleanup();
-
-    static void print();
-
-private:
-    struct Header
-    {
-        int size;
-        unsigned int sentinel;
-        char name[8];
-    };
-
-    static void printHighHunk(unsigned char* ptr);
-
-    static const unsigned int SENTINEL = 0xEC53DB01;
-
-    static unsigned char* memoryStart;
-    static unsigned char* memoryEnd;
-
-    static unsigned char* highMark;
-    static unsigned char* lowMark;
-
-    friend class Cache;    
-};
-
 class CacheEntry
 {
 
