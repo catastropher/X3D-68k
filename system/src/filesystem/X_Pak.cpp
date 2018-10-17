@@ -23,10 +23,11 @@
 
 namespace X3D
 {
-    PakManager::PakManager(MemoryManager& memoryManager_, FileHandleCache& fileHandleCache_)
-        : memoryManager(memoryManager_),
-        fileHandleCache(fileHandleCache_)
+    void PakManager::init()
     {
+        memoryManager = ServiceLocator::get<MemoryManager>();
+        fileHandleCache = ServiceLocator::get<FileHandleCache>();
+
         findAllPaks();
     }
 
@@ -49,7 +50,7 @@ namespace X3D
 
         Log::info("Found %d PAK files", totalPaks);
 
-        Pak* paksMem = (Pak*)memoryManager.linearAllocator.allocStable(sizeof(Pak) * totalPaks, "pakfiles");
+        Pak* paksMem = (Pak*)memoryManager->linearAllocator->allocStable(sizeof(Pak) * totalPaks, "pakfiles");
         paks.set(paksMem, totalPaks);
 
         for(int i = 0; i < totalPaks; ++i)
@@ -93,7 +94,7 @@ namespace X3D
 
     void PakManager::openPak(Pak& pak)
     {
-        FileHandle* handle = fileHandleCache.openFileForReading(pak.path);
+        FileHandle* handle = fileHandleCache->openFileForReading(pak.path);
 
         if(!handle)
         {
@@ -105,7 +106,7 @@ namespace X3D
 
     void PakManager::closePak(Pak& pak)
     {
-        fileHandleCache.closeFile(pak.fileHandle);
+        fileHandleCache->closeFile(pak.fileHandle);
     }
 
     bool PakManager::readPakFile(FileSearchRequest& request, PakFile& dest)
@@ -118,7 +119,7 @@ namespace X3D
         Pak& pak = paks[dest.pakFileId];
         openPak(pak);
 
-        memoryManager.alloc(dest.data.size, request.source, dest.data);
+        memoryManager->alloc(dest.data.size, request.source, dest.data);
 
         FileReader reader(pak.fileHandle);
         reader.seek(dest.fileOffset);
@@ -165,23 +166,23 @@ namespace X3D
 
     PakFileTable* PakManager::getFileTable(Pak& pak)
     {
-        Cache& cache = memoryManager.cache;
+        Cache* cache = memoryManager->cache;
 
         return pak.headerHandle.dataInCache()
-            ? (PakFileTable*)cache.getCachedData(pak.headerHandle)
+            ? (PakFileTable*)cache->getCachedData(pak.headerHandle)
             : loadFileTable(pak);
     }
 
     PakFileTable* PakManager::loadFileTable(Pak& pak)
     {
-        Cache& cache = memoryManager.cache;
+        Cache* cache = memoryManager->cache;
 
-        cache.alloc(
+        cache->alloc(
             sizeof(PakFileTable) + pak.fileTableSize,
             pak.headerHandle,
             0);
 
-        PakFileTable* fileTable = (PakFileTable*)cache.getCachedData(pak.headerHandle);
+        PakFileTable* fileTable = (PakFileTable*)cache->getCachedData(pak.headerHandle);
 
         fileTable->totalEntries = pak.fileTableSize / PakEntry::FILE_SIZE;
 

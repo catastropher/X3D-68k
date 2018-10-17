@@ -64,7 +64,7 @@ namespace X3D
     class PakManager
     {
     public:
-        PakManager(MemoryManager& memoryManager_, FileHandleCache& fileHandleCache_);
+        void init();
 
         bool readPakFile(FileSearchRequest& request, PakFile& dest);
         bool locatePakFile(FileSearchRequest& request, PakFile& dest);
@@ -80,8 +80,8 @@ namespace X3D
         PakFileTable* getFileTable(Pak& pak);
         PakFileTable* loadFileTable(Pak& pak);
 
-        MemoryManager& memoryManager;
-        FileHandleCache& fileHandleCache;
+        MemoryManager* memoryManager;
+        FileHandleCache* fileHandleCache;
 
         Array<Pak> paks;
     };

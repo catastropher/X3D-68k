@@ -13,17 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include "X_FixedLengthString.hpp"
 
 namespace X3D
 {
-    class SystemAllocator;
+    class MemoryManagerConfig;
     class Cache;
+    class SystemAllocator;
 
     class LinearAllocator
     {
     public:
-        LinearAllocator(int size, SystemAllocator& sysAllocator_, Cache& cache_);
+        void init(MemoryManagerConfig& config);
 
         void* allocHigh(int size, const char* name);
         void* allocLow(int size, const char* name);
@@ -54,7 +57,7 @@ namespace X3D
 
         void print();
 
-        ~LinearAllocator();
+        void cleanup();
 
     private:
         struct Header
@@ -68,8 +71,8 @@ namespace X3D
 
         static const unsigned int SENTINEL = 0xEC53DB01;
 
-        SystemAllocator& sysAllocator;
-        Cache& cache;
+        SystemAllocator* sysAllocator;
+        Cache* cache;
 
         unsigned char* memoryStart;
         unsigned char* memoryEnd;

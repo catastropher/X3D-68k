@@ -19,11 +19,13 @@
 
 namespace X3D
 {
-    MemoryManager::MemoryManager(MemoryManagerConfig& config)
-        : linearAllocator(config.linearAllocatorSize, systemAllocator, cache),
-        cache(linearAllocator),
-        zoneAllocator(config.zoneAllocatorSize, linearAllocator)
+    void MemoryManager::init()
     {
+        cache = ServiceLocator::get<Cache>();
+        systemAllocator = ServiceLocator::get<SystemAllocator>();
+        zoneAllocator = ServiceLocator::get<ZoneAllocator>();
+        linearAllocator = ServiceLocator::get<LinearAllocator>();
+
         Log::info("Initialized memory manager");
     }
 
@@ -32,10 +34,10 @@ namespace X3D
         switch(source)
         {
             case AllocationSource::system:
-                return systemAllocator.alloc(size);
+                return systemAllocator->alloc(size);
 
             case AllocationSource::zone:
-                return zoneAllocator.alloc<unsigned char>(size);
+                return zoneAllocator->alloc<unsigned char>(size);
 
             default:
                 throw Exception("Unknow allocator type in MemoryManager::alloc");
@@ -48,11 +50,11 @@ namespace X3D
         switch(source)
         {
             case AllocationSource::system:
-                systemAllocator.free(data);
+                systemAllocator->free(data);
                 break;
 
             case AllocationSource::zone:
-                zoneAllocator.free(data);
+                zoneAllocator->free(data);
                 break;
 
             default:
@@ -60,7 +62,7 @@ namespace X3D
         }
     }
 
-    MemoryManager::~MemoryManager()
+    void MemoryManager::cleanup()
     {
         Log::info("Shutdown memory manager");
     }

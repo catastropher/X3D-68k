@@ -35,8 +35,8 @@ public:
             }
         };
 
-        auto& instance = System::init(config);
-        memoryManager = &instance.getMemoryManager();
+        System::init(config);
+        memoryManager = ServiceLocator::get<MemoryManager>();
     }
 
     void run()
@@ -50,32 +50,32 @@ public:
     void allocCache()
     {
         CacheHandle handle[10];
-        memoryManager->cache.tryAlloc(100, handle[0], true, 0);
-        memoryManager->cache.printBlocks();
+        memoryManager->cache->tryAlloc(100, handle[0], true, 0);
+        memoryManager->cache->printBlocks();
 
         printf("\n");
-        memoryManager->cache.tryAlloc(100, handle[1], true, 1);
-        memoryManager->cache.printBlocks();
+        memoryManager->cache->tryAlloc(100, handle[1], true, 1);
+        memoryManager->cache->printBlocks();
 
         printf("\n");
-        memoryManager->cache.tryAlloc(100, handle[2], true, 2);
-        memoryManager->cache.printBlocks();
-        memoryManager->cache.free(handle[1]);
-        memoryManager->cache.printBlocks();
+        memoryManager->cache->tryAlloc(100, handle[2], true, 2);
+        memoryManager->cache->printBlocks();
+        memoryManager->cache->free(handle[1]);
+        memoryManager->cache->printBlocks();
 
         printf("\n");
-        memoryManager->cache.tryAlloc(50, handle[3], true, 3);
-        memoryManager->cache.printBlocks();
+        memoryManager->cache->tryAlloc(50, handle[3], true, 3);
+        memoryManager->cache->printBlocks();
 
         printf("\n");
-        memoryManager->cache.tryAlloc(50, handle[4], true, 4);
+        memoryManager->cache->tryAlloc(50, handle[4], true, 4);
 
         printf("\n");
-        memoryManager->cache.tryAlloc(8, handle[5], true, 5);
+        memoryManager->cache->tryAlloc(8, handle[5], true, 5);
 
-        memoryManager->cache.tryAlloc(5, handle[6], true, 6);
+        memoryManager->cache->tryAlloc(5, handle[6], true, 6);
 
-        memoryManager->cache.printBlocks();
+        memoryManager->cache->printBlocks();
     }
 
     void bootOldOutOfCache()
@@ -89,7 +89,7 @@ public:
             printf("=====================\n");
         }
 
-        memoryManager->linearAllocator.allocHigh(400, "blah");
+        memoryManager->linearAllocator->allocHigh(400, "blah");
     }
 
     void AllocTooMuchFromZone()

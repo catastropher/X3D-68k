@@ -20,11 +20,12 @@
 namespace X3D
 {
     class LinearAllocator;
+    struct MemoryManagerConfig;
 
     class ZoneAllocator
     {
     public:
-        ZoneAllocator(int size, LinearAllocator& linearAllocator);
+        void init(MemoryManagerConfig& config);
 
         template<typename T>
         T* alloc(int count = 1)

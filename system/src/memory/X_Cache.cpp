@@ -17,6 +17,7 @@
 #include "X_LinearAllocator.hpp"
 #include "error/X_OutOfMemoryException.hpp"
 #include "log/X_Log.hpp"
+#include "service/X_ServiceLocator.hpp"
 
 namespace X3D
 {
@@ -27,9 +28,10 @@ namespace X3D
     }
 
 
-    Cache::Cache(LinearAllocator& linearAllocator_)
-        : linearAllocator(linearAllocator_)
+    void Cache::init()
     {
+        linearAllocator = ServiceLocator::get<LinearAllocator>();
+
         DLinkBaseAux<CacheBlock>::initLink(&cacheHead, &cacheTail);
 
         Log::info("Init cache");
@@ -58,8 +60,8 @@ namespace X3D
 
         LOG_DEBUG("Try alloc %d bytes in cache for block %d", size, id);
 
-        unsigned char* lowMark = linearAllocator.getLowMark();
-        unsigned char* highMark = linearAllocator.getHighMark();
+        unsigned char* lowMark = linearAllocator->getLowMark();
+        unsigned char* highMark = linearAllocator->getHighMark();
 
         CacheBlock* blockToInsertBefore = cacheHead.nextAux;
         CacheBlock* newBlock = (CacheBlock*)lowMark;
@@ -221,7 +223,7 @@ namespace X3D
 
         printf("head");
 
-        unsigned char* lowMark = linearAllocator.getLowMark();
+        unsigned char* lowMark = linearAllocator->getLowMark();
 
         while(block != &cacheTail)
         {
@@ -244,8 +246,8 @@ namespace X3D
 
     void Cache::printSize()
     {
-        unsigned char* lowMark = linearAllocator.getLowMark();
-        unsigned char* highMark = linearAllocator.getHighMark();
+        unsigned char* lowMark = linearAllocator->getLowMark();
+        unsigned char* highMark = linearAllocator->getHighMark();
 
         int sizeInKilobytes = nearestPowerOf2(highMark - lowMark, 1024) / 1024;
         Log::info("Current cache size: %dk", sizeInKilobytes);

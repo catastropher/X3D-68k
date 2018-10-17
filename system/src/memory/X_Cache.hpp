@@ -67,7 +67,7 @@ namespace X3D
     class Cache
     {
     public:
-        Cache(LinearAllocator& linearAllocator_);
+        void init();
         
         void alloc(int size, CacheHandle& dest, int id);
         bool tryAlloc(int size, CacheHandle& dest, bool allowAllocOnBottom, int id);
@@ -86,7 +86,7 @@ namespace X3D
     private:
         void free(CacheBlock* block);
 
-        LinearAllocator& linearAllocator;
+        LinearAllocator* linearAllocator;
         LruList<CacheBlock> cacheLru;
         CacheBlock cacheHead;
         CacheBlock cacheTail;

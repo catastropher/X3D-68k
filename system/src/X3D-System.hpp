@@ -26,3 +26,6 @@
 // instance
 #include "instance/X_System.hpp"
 
+// memory
+#include "memory/X_MemoryManager.hpp"
+

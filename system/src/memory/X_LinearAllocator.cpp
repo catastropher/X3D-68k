@@ -17,6 +17,7 @@
 #include "X_SystemAllocator.hpp"
 #include "error/X_OutOfMemoryException.hpp"
 #include "X_Cache.hpp"
+#include "X_MemoryManager.hpp"
 
 #include "log/X_Log.hpp"
 
@@ -28,24 +29,25 @@ namespace X3D
         return (x + powerOf2 - 1) & ~(powerOf2 - 1);
     }
 
-    LinearAllocator::LinearAllocator(int size, SystemAllocator& sysAllocator_, Cache& cache_)
-        : sysAllocator(sysAllocator_),
-        cache(cache_)
+    void LinearAllocator::init(MemoryManagerConfig& config)
     {
-        Log::info("Init linear allocator (size = %d)", size);
+        sysAllocator = ServiceLocator::get<SystemAllocator>();
+        cache = ServiceLocator::get<Cache>();
 
-        memoryStart = (unsigned char *)sysAllocator.alloc(size);
-        memoryEnd = memoryStart + size;
+        Log::info("Init linear allocator (size = %d)", config.linearAllocatorSize);
+
+        memoryStart = (unsigned char *)sysAllocator->alloc(config.linearAllocatorSize);
+        memoryEnd = memoryStart + config.linearAllocatorSize;
         
         lowMark = memoryStart;
         highMark = memoryEnd;
     }
 
-    LinearAllocator::~LinearAllocator()
+    void LinearAllocator::cleanup()
     {
         Log::info("Cleanup linear allocator");
 
-        sysAllocator.free(memoryStart);    
+        sysAllocator->free(memoryStart);    
     }
 
     void* LinearAllocator::allocLow(int size, const char* name)
@@ -62,7 +64,7 @@ namespace X3D
             throw OutOfMemoryException(size, "linear");
         }
 
-        cache.freeBelowLowMark(lowMark);
+        cache->freeBelowLowMark(lowMark);
 
         header->name = name;
         header->size = size;
@@ -87,7 +89,7 @@ namespace X3D
             throw OutOfMemoryException(size, "linear");
         }
 
-        cache.freeAboveHighMark(highMark);
+        cache->freeAboveHighMark(highMark);
 
         header->name = name;
         header->size = size;

@@ -25,11 +25,11 @@ namespace X3D
     class FileSystem
     {
     public:
-        FileSystem(MemoryManager& cache);
+        void init();
 
     private:
-        FileHandleCache fileHandleCache;
-        PakManager pakManager;
+        FileHandleCache* fileHandleCache;
+        PakManager* pakManager;
     };
 }
 

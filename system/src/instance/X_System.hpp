@@ -17,17 +17,21 @@
 
 #include "memory/X_DeferredInitializer.hpp"
 #include "config/X_SystemConfig.hpp"
-#include "X_SystemInstance.hpp"
 
 namespace X3D
 {
     class System
     {
     public:
-        static SystemInstance& init(SystemConfig& config);
-        
+        static void init(SystemConfig& config);
+        static void cleanup();
+
     private:
-        static DeferredInitializer<SystemInstance> instance;
+        template<typename T, typename ...Args>
+        static void initService(Args&&... args);
+
+        template<typename T>
+        static void cleanupService();
     };
 };
 
