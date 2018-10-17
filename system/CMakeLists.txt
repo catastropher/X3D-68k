@@ -42,7 +42,6 @@ set(SYSTEM_SOURCE
 
     # instance
     src/instance/X_System.cpp
-    src/instance/X_SystemInstance.cpp
 
     # log
     src/log/X_Log.cpp
@@ -54,6 +53,9 @@ set(SYSTEM_SOURCE
     src/memory/X_MemoryManager.cpp
     src/memory/X_SystemAllocator.cpp
     src/memory/X_ZoneAllocator.cpp
+
+    # service
+    src/service/X_Services.cpp
 )
 
 add_library(X3D-system STATIC ${SYSTEM_SOURCE})

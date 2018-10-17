@@ -21,10 +21,9 @@
 
 namespace X3D
 {
-    FileHandleCache::FileHandleCache()
-        : fileHandleCache(fileHandles, fileHandles + MAX_OPEN_FILE_HANDLES)
+    void FileHandleCache::init()
     {
-
+        fileHandleCache.fillWithArrayOfNodes(fileHandles, fileHandles + MAX_OPEN_FILE_HANDLES);
     }
 
     FileHandle* FileHandleCache::openFileForReading(FilePath& path)
@@ -96,7 +95,7 @@ namespace X3D
         fileHandleCache.markAsMostRecentlyUsed(handle);
     }
 
-    FileHandleCache::~FileHandleCache()
+    void FileHandleCache::cleanup()
     {
         for(int i = 0; i < MAX_OPEN_FILE_HANDLES; ++i)
         {

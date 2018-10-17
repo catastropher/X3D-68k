@@ -16,24 +16,57 @@
 #include "X_System.hpp"
 #include "error/X_Exception.hpp"
 #include "log/X_Log.hpp"
+#include "service/X_ServiceLocator.hpp"
+#include "memory/X_MemoryManager.hpp"
+#include "filesystem/X_FileSystem.hpp"
 
 namespace X3D
 {
-    DeferredInitializer<SystemInstance> System::instance;
-
-    SystemInstance& System::init(SystemConfig& config)
+    void System::init(SystemConfig& config)
     {
         try
         {
-            instance.initialize(config);
+            // Init memory services
+            initService<LinearAllocator>(config.memoryManager);
+            initService<Cache>();
+            initService<ZoneAllocator>(config.memoryManager);
+            initService<MemoryManager>();
+
+            // Init filesystem
+            initService<FileHandleCache>();
+            initService<PakManager>();
+            initService<FileSystem>();
         }
         catch(const Exception& e)
         {
             Log::error(e, "System startup failed");
             throw;
         }
+    }
 
-        return instance.getInstance();
+    void System::cleanup()
+    {
+        // Zone and cache all allocate from the memory allocated in the linear allocator,
+        // so only it needs to be cleaned up
+        cleanupService<LinearAllocator>();
+
+        // Cleanup filesystem
+        cleanupService<FileHandleCache>();
+    }
+
+    // Calls the init() function of the given service type T with the given arguments
+    template<typename T, typename ...Args>
+    void System::initService(Args&&... args)
+    {
+        auto service = ServiceLocator::get<T>();
+        service->init(std::forward<Args>(args)...);
+    }
+
+    template<typename T>
+    void System::cleanupService()
+    {
+        auto service = ServiceLocator::get<T>();
+        service->cleanup();
     }
 }
 

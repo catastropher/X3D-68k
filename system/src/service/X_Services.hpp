@@ -13,17 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_SystemInstance.hpp"
-#include "memory/X_Crc32.hpp"
-#include "resource/X_StringId.hpp"
+#pragma once
+
+#include "X_ServiceLocator.hpp"
 
 namespace X3D
 {
-    SystemInstance::SystemInstance(SystemConfig& config)
-        : memoryManager(config.memoryManager),
-        fileSystem(memoryManager)
-    {
-        
-    }
-};
+    struct MemoryManager;
+    struct Cache;
+    struct SystemAllocator;
+    struct LinearAllocator;
+    struct ZoneAllocator;
+
+    template<> MemoryManager* ServiceLocator::get();
+    template<> Cache* ServiceLocator::get();
+    template<> SystemAllocator* ServiceLocator::get();
+    template<> LinearAllocator* ServiceLocator::get();
+    template<> ZoneAllocator* ServiceLocator::get();
+}
 

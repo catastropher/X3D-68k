@@ -35,11 +35,12 @@ namespace X3D
         {
 
         }
-
-        LruList(T* nodeListStart, T* nodeListEnd)
-            : head(nodeListStart),
-            tail(nodeListEnd - 1)
+        
+        void fillWithArrayOfNodes(T* nodeListStart, T* nodeListEnd)
         {
+            head = nodeListStart;
+            tail = nodeListEnd - 1;
+
             linkArrayOfDoublyLinkedNodes(nodeListStart, nodeListEnd);
         }
 

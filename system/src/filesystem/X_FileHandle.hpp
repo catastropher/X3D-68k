@@ -102,12 +102,12 @@ namespace X3D
     class FileHandleCache
     {
     public:
-        FileHandleCache();
+        void init();
 
         FileHandle* openFileForReading(FilePath& path);
         void closeFile(FileHandle* handle);
 
-        ~FileHandleCache();
+        void cleanup();
 
     private:
         FileHandle* findUsableHandle(FilePath& path);

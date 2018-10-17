@@ -18,6 +18,7 @@
 #include "X_LinearAllocator.hpp"
 #include "error/X_OutOfMemoryException.hpp"
 #include "error/X_RuntimeException.hpp"
+#include "X_MemoryManager.hpp"
 
 namespace X3D
 {
@@ -27,18 +28,20 @@ namespace X3D
         return (x + powerOf2 - 1) & ~(powerOf2 - 1);
     }
 
-    ZoneAllocator::ZoneAllocator(int size, LinearAllocator& linearAllocator)
+    void ZoneAllocator::init(MemoryManagerConfig& config)
     {
-        Log::info("Init zone allocator (size = %d)", size);
+        LinearAllocator* linearAllocator = ServiceLocator::get<LinearAllocator>();
 
-        regionStart = linearAllocator.allocLow(size, "zone");
-        regionEnd = (unsigned char*)regionStart + size;
+        Log::info("Init zone allocator (size = %d)", config.zoneAllocatorSize);
+
+        regionStart = linearAllocator->allocLow(config.zoneAllocatorSize, "zone");
+        regionEnd = (unsigned char*)regionStart + config.zoneAllocatorSize;
 
         Block* block = (Block*)((unsigned char*)regionStart + sizeof(Block));
 
         block->next = block;
         block->prev = block;
-        block->setSize(size);
+        block->setSize(config.zoneAllocatorSize);
         block->setIsFree(true);
 
         rover = block;

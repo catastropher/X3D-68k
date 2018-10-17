@@ -22,34 +22,36 @@
 #include "X_Cache.hpp"
 #include "X_AllocationSource.hpp"
 #include "X_Array.hpp"
+#include "service/X_ServiceLocator.hpp"
 
 namespace X3D
 {
     class MemoryManager
     {
     public:
-        MemoryManager(MemoryManagerConfig& config);
+        void init();
+        void cleanup();
 
         template<typename T>
         T* allocLinearVolatile(int count, const char* name = "unknown")
         {
-            return (T*)linearAllocator.allocLow(count * sizeof(T), name);
+            return (T*)linearAllocator->allocLow(count * sizeof(T), name);
         }
 
         template<typename T>
         T* zoneAlloc(int count = 1)
         {
-            return zoneAllocator.alloc<T>(count);
+            return zoneAllocator->alloc<T>(count);
         }
 
         void zoneFree(void* mem)
         {
-            zoneAllocator.free(mem);
+            zoneAllocator->free(mem);
         }
 
         Cache& getCache()
         {
-            return cache;
+            return *cache;
         }
 
         template<typename T>
@@ -61,13 +63,11 @@ namespace X3D
 
         void* alloc(int size, AllocationSource source);
         void free(void* data, AllocationSource source);
-
-        ~MemoryManager();
         
-        SystemAllocator systemAllocator;
-        LinearAllocator linearAllocator;
-        Cache cache;
-        ZoneAllocator zoneAllocator;
+        SystemAllocator* systemAllocator;
+        LinearAllocator* linearAllocator;
+        Cache* cache;
+        ZoneAllocator* zoneAllocator;
     };
 };
 

@@ -19,22 +19,26 @@
 
 namespace X3D
 {
-    FileSystem::FileSystem(MemoryManager& memoryManager)
-        : pakManager(memoryManager, fileHandleCache)
+    void FileSystem::init()
     {
+        fileHandleCache = ServiceLocator::get<FileHandleCache>();
+        pakManager = ServiceLocator::get<PakManager>();
+
+        MemoryManager* memoryManager = ServiceLocator::get<MemoryManager>();
+
     #if 1
         FilePath path("b.txt");
         FileSearchRequest request(path, AllocationSource::zone);
 
         PakFile pakFile;
 
-        printf("Found: %d\n", pakManager.readPakFile(request, pakFile));
+        printf("Found: %d\n", pakManager->readPakFile(request, pakFile));
 
         fwrite(pakFile.data.data, 1, pakFile.data.size, stdout);
     #endif
 
     #if 1
-        PakWriter writer("test.pak", memoryManager, AllocationSource::zone);
+        PakWriter writer("test.pak", *memoryManager, AllocationSource::zone);
 
         char data[] = "Hello world!\n";
 
