@@ -20,6 +20,7 @@
 #include "memory/X_MemoryManager.hpp"
 #include "filesystem/X_FileHandle.hpp"
 #include "filesystem/X_FileSystem.hpp"
+#include "platform/X_Platform.hpp"
 
 namespace X3D
 {
@@ -33,52 +34,36 @@ namespace X3D
     static PakManager g_pakManager;
     static FileSystem g_fileSystem;
 
-    template<>
-    LinearAllocator* ServiceLocator::get()
-    {
-        return &g_linearAllocator;
-    }
+    static Platform g_platform;
 
     template<>
-    Cache* ServiceLocator::get()
-    {
-        return &g_cache;
-    }
+    LinearAllocator* ServiceLocator::get() { return &g_linearAllocator; }
 
     template<>
-    SystemAllocator* ServiceLocator::get()
-    {
-        return &g_systemAllocator;
-    }
+    Cache* ServiceLocator::get() { return &g_cache; }
 
     template<>
-    ZoneAllocator* ServiceLocator::get()
-    {
-        return &g_zoneAllocator;
-    }
+    SystemAllocator* ServiceLocator::get() { return &g_systemAllocator; }
 
     template<>
-    MemoryManager* ServiceLocator::get()
-    {
-        return &g_memoryManager;
-    }
+    ZoneAllocator* ServiceLocator::get() { return &g_zoneAllocator; }
 
     template<>
-    FileHandleCache* ServiceLocator::get()
-    {
-        return &g_fileHandleCache;
-    }
+    MemoryManager* ServiceLocator::get() { return &g_memoryManager; }
 
     template<>
-    PakManager* ServiceLocator::get()
-    {
-        return &g_pakManager;
-    }
+    FileHandleCache* ServiceLocator::get() { return &g_fileHandleCache; }
 
     template<>
-    FileSystem* ServiceLocator::get()
-    {
-        return &g_fileSystem;
-    }
+    PakManager* ServiceLocator::get() { return &g_pakManager; }
+
+    template<>
+    FileSystem* ServiceLocator::get() { return &g_fileSystem; }
+
+    template<>
+    Platform* ServiceLocator::get() { return &g_platform; }
+
+    template<>
+    ScreenDriver* ServiceLocator::get() { return &g_platform.screenDriver; }
 }
 

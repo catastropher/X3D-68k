@@ -19,6 +19,7 @@
 #include "service/X_ServiceLocator.hpp"
 #include "memory/X_MemoryManager.hpp"
 #include "filesystem/X_FileSystem.hpp"
+#include "platform/X_Platform.hpp"
 
 namespace X3D
 {
@@ -36,6 +37,9 @@ namespace X3D
             initService<FileHandleCache>();
             initService<PakManager>();
             initService<FileSystem>();
+
+            // Init platform
+            initService<Platform>();
         }
         catch(const Exception& e)
         {
@@ -46,6 +50,9 @@ namespace X3D
 
     void System::cleanup()
     {
+        // Cleanup platform
+        cleanupService<Platform>();
+        
         // Zone and cache all allocate from the memory allocated in the linear allocator,
         // so only it needs to be cleaned up
         cleanupService<LinearAllocator>();

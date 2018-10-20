@@ -138,6 +138,11 @@ public:
         }
     }
 
+    ~MemoryTests()
+    {
+        System::cleanup();
+    }
+
 private:
 
 
