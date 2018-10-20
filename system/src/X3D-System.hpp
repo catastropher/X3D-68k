@@ -29,3 +29,6 @@
 // memory
 #include "memory/X_MemoryManager.hpp"
 
+// platform
+#include "platform/X_Platform.hpp"
+

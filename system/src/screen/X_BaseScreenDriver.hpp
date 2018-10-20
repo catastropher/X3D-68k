@@ -15,12 +15,38 @@
 
 #pragma once
 
+#include "X_Palette.hpp"
+
 namespace X3D
 {
+    struct ScreenSettings
+    {
+        int w;
+        int h;
+        bool fullscreen;
+    };
+
     template<typename TScreenDriver>
     class BaseScreenDriver
     {
-        
+    public:
+        void openWindow(ScreenSettings& settings);
+        void updateWindow(ScreenSettings& settings);
+
+        void closeWindow();
+
+        void getScreenSettings(ScreenSettings& dest);
+
+        void setTitle(const char* title);
+
+        void setPalette(Palette* palette);
+        Palette* getPalette();
+        void updatePaletteColors(int colorStart, int total);
+
+        void update(byte* buf, int w, int h);
+
+    protected:
+        Palette* currentPalette;
     };
 }
 

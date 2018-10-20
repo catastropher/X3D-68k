@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <SDL/SDL.h>
+
 #include "X_BasePlatform.hpp"
 #include "screen/X_PcScreenDriver.hpp"
 #include "log/X_Log.hpp"
@@ -34,6 +36,17 @@ namespace X3D
         void cleanup()
         {
             cleanupModules();
+
+            SDL_Quit();
+        }
+
+        void update()
+        {
+            SDL_Event event;
+            while(SDL_PollEvent(&event))
+            {
+                
+            }
         }
     };
 }

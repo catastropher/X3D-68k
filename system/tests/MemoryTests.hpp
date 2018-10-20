@@ -41,6 +41,22 @@ public:
 
     void run()
     {
+        ScreenDriver* d = ServiceLocator::get<ScreenDriver>();
+
+        ScreenSettings settings;
+        settings.w = 640;
+        settings.h = 480;
+        settings.fullscreen = false;
+
+        d->openWindow(settings);
+
+        Platform* p = ServiceLocator::get<Platform>();
+
+        do
+        {
+            p->update();
+        } while(true);
+
         //allocCache();
         //bootOldOutOfCache();
         //AllocTooMuchFromZone();

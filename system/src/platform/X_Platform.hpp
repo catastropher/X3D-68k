@@ -26,7 +26,7 @@ namespace X3D
 {
     using Platform = X_PLATFORM;
 
-    using ScreenDriver = typeof(Platform::screenDriver);
+    using ScreenDriver = decltype(Platform::screenDriver);
 }
 
 #undef X_PLATFORM

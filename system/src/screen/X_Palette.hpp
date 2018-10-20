@@ -15,30 +15,16 @@
 
 #pragma once
 
+#include "memory/X_Int.hpp"
+
 namespace X3D
 {
-    template<
-        typename TPlatform,
-        typename TScreenDriver>
-    class BasePlatform
+    class Palette
     {
     public:
-        void init();
-        void cleanup();
-        void update();
-
-        TScreenDriver screenDriver;
-
-    protected:
-        void initModules()
-        {
-            screenDriver.init();
-        }
-
-        void cleanupModules()
-        {
-            screenDriver.cleanup();
-        }
+        static const int TOTAL_COLORS = 256;
+        
+        byte colors[TOTAL_COLORS][3];
     };
 }
 

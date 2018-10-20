@@ -15,30 +15,10 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace X3D
 {
-    template<
-        typename TPlatform,
-        typename TScreenDriver>
-    class BasePlatform
-    {
-    public:
-        void init();
-        void cleanup();
-        void update();
-
-        TScreenDriver screenDriver;
-
-    protected:
-        void initModules()
-        {
-            screenDriver.init();
-        }
-
-        void cleanupModules()
-        {
-            screenDriver.cleanup();
-        }
-    };
+    using byte = uint8_t;
 }
 
