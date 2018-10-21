@@ -15,20 +15,30 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+namespace X3D
+{
+    template<
+        typename TPlatform,
+        typename TScreenDriver>
+    class BasePlatform
+    {
+    public:
+        void init();
+        void cleanup();
+        void update();
 
-// log
-#include "log/X_Log.hpp"
+        TScreenDriver screenDriver;
 
-// instance
-#include "instance/X_System.hpp"
+    protected:
+        void initModules()
+        {
+            screenDriver.init();
+        }
 
-// memory
-#include "memory/X_MemoryManager.hpp"
-
-// platform
-#include "platform/X_Platform.hpp"
+        void cleanupModules()
+        {
+            screenDriver.cleanup();
+        }
+    };
+}
 

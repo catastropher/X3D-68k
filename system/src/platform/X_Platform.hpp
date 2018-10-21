@@ -15,20 +15,19 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+#if defined(__linux__)
+    #include "X_PcPlatform.hpp"
+    #define X_PLATFORM PcPlatform
+#else
+    #error "Unknown platform"
+#endif
 
-// log
-#include "log/X_Log.hpp"
+namespace X3D
+{
+    using Platform = X_PLATFORM;
 
-// instance
-#include "instance/X_System.hpp"
+    using ScreenDriver = decltype(Platform::screenDriver);
+}
 
-// memory
-#include "memory/X_MemoryManager.hpp"
-
-// platform
-#include "platform/X_Platform.hpp"
+#undef X_PLATFORM
 

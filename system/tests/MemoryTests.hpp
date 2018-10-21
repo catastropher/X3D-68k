@@ -41,10 +41,18 @@ public:
 
     void run()
     {
-        //allocCache();
-        //bootOldOutOfCache();
-        //AllocTooMuchFromZone();
-        //FreeMemNotFromZone();
+        ScreenDriver* d = ServiceLocator::get<ScreenDriver>();
+
+        ScreenSettings settings;
+        settings.w = 640;
+        settings.h = 480;
+        settings.fullscreen = false;
+
+        d->openWindow(settings);
+
+        Platform* p = ServiceLocator::get<Platform>();
+
+        d->closeWindow();
     }
 
     void allocCache()
@@ -136,6 +144,11 @@ public:
         {
             TEST_FAILED();
         }
+    }
+
+    ~MemoryTests()
+    {
+        System::cleanup();
     }
 
 private:

@@ -15,7 +15,9 @@
 
 project(X3D-system-test CXX)
 
-set(CMAKE_CXX_FLAGS "-g -std=c++14 --static")
+set(CMAKE_CXX_FLAGS "-g -std=c++14")
+
+find_package(SDL REQUIRED)
 
 set(TEST_SOURCE
     main.cpp
@@ -26,4 +28,4 @@ add_executable(system-tests ${TEST_SOURCE})
 include_directories(/usr/local/include/X3D)
 include_directories(/usr/local/include/X3D/system)
 
-target_link_libraries(system-tests X3D-system)
+target_link_libraries(system-tests X3D-system ${SDL_LIBRARY})

@@ -15,20 +15,16 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+#include "memory/X_Int.hpp"
 
-// log
-#include "log/X_Log.hpp"
-
-// instance
-#include "instance/X_System.hpp"
-
-// memory
-#include "memory/X_MemoryManager.hpp"
-
-// platform
-#include "platform/X_Platform.hpp"
+namespace X3D
+{
+    class Palette
+    {
+    public:
+        static const int TOTAL_COLORS = 256;
+        
+        byte colors[TOTAL_COLORS][3];
+    };
+}
 

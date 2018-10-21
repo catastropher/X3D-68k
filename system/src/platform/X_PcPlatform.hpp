@@ -15,20 +15,39 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+#include <SDL/SDL.h>
 
-// log
+#include "X_BasePlatform.hpp"
+#include "screen/X_PcScreenDriver.hpp"
 #include "log/X_Log.hpp"
 
-// instance
-#include "instance/X_System.hpp"
+namespace X3D
+{
+    class PcPlatform : public BasePlatform<PcPlatform, PcScreenDriver>
+    {
+    public:
+        void init()
+        {
+            Log::info("Init PC");
 
-// memory
-#include "memory/X_MemoryManager.hpp"
+            initModules();
+        }
 
-// platform
-#include "platform/X_Platform.hpp"
+        void cleanup()
+        {
+            cleanupModules();
+
+            SDL_Quit();
+        }
+
+        void update()
+        {
+            SDL_Event event;
+            while(SDL_PollEvent(&event))
+            {
+                
+            }
+        }
+    };
+}
 

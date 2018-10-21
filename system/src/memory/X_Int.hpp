@@ -15,20 +15,10 @@
 
 #pragma once
 
-// error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+#include <cstdint>
 
-// log
-#include "log/X_Log.hpp"
-
-// instance
-#include "instance/X_System.hpp"
-
-// memory
-#include "memory/X_MemoryManager.hpp"
-
-// platform
-#include "platform/X_Platform.hpp"
+namespace X3D
+{
+    using byte = uint8_t;
+}
 
