@@ -15,49 +15,24 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-project(x3d-system LANGUAGES CXX)
+project(x3d-engine LANGUAGES CXX)
 
 set(SOURCE
-    # error
-    src/error/X_OutOfMemoryException.cpp
-
-    # filesystem
-    src/filesystem/X_FileHandle.cpp
-    src/filesystem/X_FilePath.cpp
-    src/filesystem/X_FileSystem.cpp
-    src/filesystem/X_Pak.cpp
-    src/filesystem/X_PakWriter.cpp
-
-    # instance
-    src/instance/X_System.cpp
-
-    # log
-    src/log/X_Log.cpp
-
-    # memory
-    src/memory/X_Cache.cpp
-    src/memory/X_Crc32.cpp
-    src/memory/X_LinearAllocator.cpp
-    src/memory/X_MemoryManager.cpp
-    src/memory/X_SystemAllocator.cpp
-    src/memory/X_ZoneAllocator.cpp
-
-    # service
-    src/service/X_Services.cpp
+    src/engine.cpp
 )
 
-add_library(x3d-system STATIC ${SOURCE})
+add_library(x3d-engine STATIC ${SOURCE})
 
-set_target_properties(x3d-system PROPERTIES EXPORT_NAME system)
+set_target_properties(x3d-engine PROPERTIES EXPORT_NAME engine)
 
 #Set target properties
-target_include_directories(x3d-system
+target_include_directories(x3d-engine
     PUBLIC
-        $<INSTALL_INTERFACE:include/system>
+        $<INSTALL_INTERFACE:include/engine>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-target_compile_options(x3d-system PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wall -std=c++14>)
+target_compile_options(x3d-engine PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wall -std=c++14>)
 
 ##############################################
 # Installation instructions
@@ -65,11 +40,17 @@ target_compile_options(x3d-system PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wall -std=c+
 include(GNUInstallDirs)
 set(INSTALL_CONFIGDIR ${CMAKE_INSTALL_LIBDIR}/cmake/X3D)
 
-install(TARGETS x3d-system
+install(TARGETS x3d-engine
     EXPORT x3d-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/X3D COMPONENT shlib
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/X3D
 )
 
-install(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/X3D/system FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/X3D/engine FILES_MATCHING PATTERN "*.hpp")
+
+
+# Dependencies
+
+target_link_libraries(x3d-engine x3d-system)
+
 
