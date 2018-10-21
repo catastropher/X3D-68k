@@ -16,6 +16,7 @@
 #pragma once
 
 #include <X3D/X3D-System.hpp>
+#include <X3D/engine/engine.hpp>
 
 using namespace X3D;
 
@@ -41,6 +42,8 @@ public:
 
     void run()
     {
+        test();
+        
         ScreenDriver* d = ServiceLocator::get<ScreenDriver>();
 
         ScreenSettings settings;

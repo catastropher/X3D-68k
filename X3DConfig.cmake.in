@@ -13,19 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with X3D. If not, see <http:#www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.1)
+# - Config file for the FooBar package
+# It defines the following variables
+#  X3D_INCLUDE_DIRS - include directories for X3D
+#  X3D_LIBRARIES    - libraries to link against
+#  X3D_EXECUTABLE   - the bar executable
 
-project(X3D-system-test CXX)
+# Compute paths
+get_filename_component(X3D_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 
-set(CMAKE_CXX_FLAGS "-g -std=c++14")
+list(APPEND CMAKE_MODULE_PATH ${X3D_CMAKE_DIR})
 
-find_package(SDL REQUIRED)
-find_package(X3D REQUIRED)
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET X3DTargets)
+  include("${X3D_CMAKE_DIR}/X3DTargets.cmake")
+endif()
 
-set(TEST_SOURCE
-    main.cpp
-)
-
-add_executable(system-tests ${TEST_SOURCE})
-
-target_link_libraries(system-tests X3D::engine ${SDL_LIBRARY})
+# These are IMPORTED targets created by FooBarTargets.cmake
+set(X3D_LIBRARIES x3d-system)
