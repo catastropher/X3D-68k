@@ -52,15 +52,7 @@ public:
 
         Platform* p = ServiceLocator::get<Platform>();
 
-        do
-        {
-            p->update();
-        } while(true);
-
-        //allocCache();
-        //bootOldOutOfCache();
-        //AllocTooMuchFromZone();
-        //FreeMemNotFromZone();
+        d->closeWindow();
     }
 
     void allocCache()
