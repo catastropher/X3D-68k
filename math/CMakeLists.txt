@@ -19,6 +19,7 @@ project(x3d-math LANGUAGES CXX)
 
 set(SOURCE
     src/Sqrt.cpp
+    src/Trig.cpp
 )
 
 add_library(x3d-math STATIC ${SOURCE})

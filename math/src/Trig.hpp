@@ -15,88 +15,89 @@
 
 #pragma once
 
+#include "Fp.hpp"
+
 namespace X3D
 {
-    /// Angle constants for base 256
-    enum Angle
+    class Angle
     {
-        ANG_0 =     0,
-        ANG_30 =    1398101,
-        ANG_45 =    32 * 65536,
-        ANG_60 =    2796202,
-        ANG_90 =    64 * 65536,
-        ANG_180 =   128 * 65536,
-        ANG_270 =   192 * 65536,
-        ANG_360 =   25 * 655366
+    public:
+        static constexpr fp PI = fp(3.1415926 * 65536);
+
+        Angle()
+        {
+
+        }
+
+        constexpr Angle(fp angle_)
+            : angle(angle_)
+        {
+
+        }
+
+        constexpr fp toDegrees()
+        {
+            reduce();
+
+            return angle * 360 / 256;
+        }
+
+        constexpr fp toRadians()
+        {
+            reduce();
+
+            return angle * PI / 128;
+        }
+
+        constexpr fp sin() const;
+        constexpr fp cos() const;
+        constexpr fp tan() const;
+
+        static Angle atan2(fp y, fp x);
+        static Angle acos(fp val);
+        static Angle asin(fp val);
+
+        static constexpr Angle fromDegrees(fp degrees)
+        {
+            return Angle(degrees * 256 / 360);
+        }
+
+        static constexpr Angle fromRadians(fp radians)
+        {
+            return Angle(128 * radians / PI);
+        }
+
+        constexpr Angle operator+(const Angle& ang) const
+        {
+            return Angle(angle + ang.angle);
+        }
+
+        constexpr Angle operator-(const Angle& ang) const
+        {
+            return Angle(angle - ang.angle);
+        }
+
+        constexpr bool operator==(const Angle& ang) const
+        {
+            return angle == ang.angle;
+        }
+
+    private:
+        // Reduces an angle to be in (0, 256]
+        constexpr void reduce()
+        {
+            int angleAsInt = angle.internalValue();
+
+            if(angleAsInt < 0)
+            {
+                // Add enough of a large multiple of 256 to make this positive (hopefully)
+                angleAsInt += (1 << 30);
+            }
+
+            angle = fp(angleAsInt & 0x00FFFFFF);
+        }
+
+        fp angle;
     };
-
-    /// Approximation for the slope of a vertical line (infinity).
-    #define X_VERTICAL_LINE_SLOPE 0x7FFFFFFF
-
-    fp x_sin(fp angle);
-    fp x_asin(fp val);
-    fp x_acos(fp val);
-    fp x_atan2(fp y, fp x);
-
-    ////////////////////////////////////////////////////////////////////////////////
-    /// Calculates the cosine of an angle using a lookup table.
-    ///
-    /// @param angle    - angle in base 256
-    ///
-    /// @return cos(angle) as an x_fp16x16
-    ////////////////////////////////////////////////////////////////////////////////
-    static inline fp x_cos(fp angle)
-    {
-        // FIXME: this will break once the angle constants are converted
-        return x_sin(fp(X_ANG_90 - angle.internalValue()));
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    /// Calculates the tangent of an angle using a lookup table.
-    ///
-    /// @param angle    - angle in base 256
-    ///
-    /// @return tan(angle) as an x_fp16x16
-    ///
-    /// @note This will return @ref X_VERTICAL_LINE_SLOPE if angle == X_ANG_90 ||
-    ///     angle == X_ANG_270.
-    ////////////////////////////////////////////////////////////////////////////////
-    static inline fp x_tan(fp angle)
-    {
-        // Prevent division by 0
-        if(angle == fp(X_ANG_90) || angle == fp(X_ANG_270))
-            return X_VERTICAL_LINE_SLOPE;
-
-        return x_sin(angle) / x_cos(angle);
-    }
-
-    static inline fp angleToRadians(fp angle)
-    {
-        const fp PI = fp::fromFloat(3.14159);
-
-        return angle * PI / 128;
-    }
-
-    static inline fp radiansToAngle(fp radians)
-    {
-        const fp PI = fp::fromFloat(3.14159);
-
-        return 128 * radians / PI;
-    }
-
-    static inline void adjustAngle(fp& angle)
-    {
-        fp unitsInCircle = fp::fromInt(256);
-
-        while(angle >= unitsInCircle)
-        {
-            angle -= unitsInCircle;
-        }
-
-        while(angle < 0)
-        {
-            angle += unitsInCircle;
-        }
-    }
 }
 
