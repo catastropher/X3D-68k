@@ -42,5 +42,6 @@ install(FILES
 
 add_subdirectory(system)
 add_subdirectory(engine)
+add_subdirectory(math)
 
 export(EXPORT x3d-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/X3DTargets.cmake NAMESPACE X3D::)
