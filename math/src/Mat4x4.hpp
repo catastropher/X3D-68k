@@ -17,6 +17,7 @@
 
 #include "Vec3.hpp"
 #include "Vec4.hpp"
+#include "Trig.hpp"
 
 namespace X3D
 {
@@ -30,9 +31,9 @@ namespace X3D
         }
 
         void loadIdentity();
-        void loadXRotation(fp angle);
-        void loadYRotation(fp angle);
-        void loadZRotation(fp angle);
+        void loadXRotation(Angle angle);
+        void loadYRotation(Angle angle);
+        void loadZRotation(Angle angle);
         void loadTranslation(const Vec3& translation);
 
         Vec4 getColumn(int col) const;
@@ -48,7 +49,7 @@ namespace X3D
         void print() const;
 
         void extractViewVectors(Vec3& forwardDest, Vec3& rightDest, Vec3& upDest) const;
-        void extractEulerAngles(fp& xDest, fp& yDest) const;
+        void extractEulerAngles(Angle& xDest, Angle& yDest) const;
 
         void invertDiagonal(Mat4x4 dest) const;
         void transpose3x3();

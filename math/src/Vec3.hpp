@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <cmath>
+
 #include "Fp.hpp"
 #include "Convert.hpp"
 

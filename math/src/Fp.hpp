@@ -76,17 +76,17 @@ namespace X3D
             return val;
         }
         
-        constexpr static fp lerp(fp x0, fp x1, fp t)
+        static constexpr fp lerp(fp x0, fp x1, fp t)
         {
             return x0 + (x1 - x0) * t;
         }
         
-        constexpr static fp fromInt(int value)
+        static constexpr fp fromInt(int value)
         {
             return fp(value << 16);
         }
         
-        constexpr static fp fromFloat(float value)
+        static constexpr fp fromFloat(float value)
         {
             return fp(value * 65536.0);
         }
@@ -97,11 +97,7 @@ namespace X3D
         }
         
         int val;
-
-        static const fp ONE;
     };
-
-    const fp fp::ONE = 1 << 16;
 
     // Addition
     constexpr inline fp operator+(fp a, fp b)

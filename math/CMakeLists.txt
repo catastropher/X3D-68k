@@ -18,6 +18,7 @@ cmake_minimum_required(VERSION 3.5)
 project(x3d-math LANGUAGES CXX)
 
 set(SOURCE
+    src/Mat4x4.cpp
     src/Sqrt.cpp
     src/Trig.cpp
 )

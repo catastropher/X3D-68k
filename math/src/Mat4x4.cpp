@@ -24,76 +24,76 @@ namespace X3D
         static const Mat4x4 identity =
         {
             {
-                { fp::ONE, 0, 0, 0 },
-                { 0, fp::ONE, 0, 0 },
-                { 0, 0, fp::ONE, 0 },
-                { 0, 0, 0, fp::ONE }
+                { fp::fromInt(1), 0, 0, 0 },
+                { 0, fp::fromInt(1), 0, 0 },
+                { 0, 0, fp::fromInt(1), 0 },
+                { 0, 0, 0, fp::fromInt(1) }
             }
         };
         
         *this = identity;
     }
 
-    void Mat4x4::loadXRotation(fp angle) 
+    void Mat4x4::loadXRotation(Angle angle) 
     {
-        x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
-        x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
+        fp cosAngle = angle.cos();
+        fp sinAngle = angle.sin();
         
         Mat4x4 xRotation = {
             {
-                { fp::ONE, 0, 0, 0 },
+                { fp::fromInt(1), 0, 0, 0 },
                 { 0, cosAngle, -sinAngle, 0 },
                 { 0, sinAngle, cosAngle, 0 },
-                { 0, 0, 0, fp::ONE }
+                { 0, 0, 0, fp::fromInt(1) }
             }
         };
         
         *this = xRotation;
     }
 
-    void Mat4x4::loadYRotation(fp angle)
+    void Mat4x4::loadYRotation(Angle angle)
     {
-        fp cosAngle = x_cos(angle);
-        fp sinAngle = x_sin(angle);
+        fp cosAngle = angle.cos();
+        fp sinAngle = angle.sin();
         
         Mat4x4 yRotation = {
             {
                 { cosAngle, 0, sinAngle, 0 },
-                { 0, X_FP16x16_ONE, 0, 0 },
+                { 0, fp::fromInt(1), 0, 0 },
                 { -sinAngle, 0, cosAngle, 0 },
-                { 0, 0, 0, X_FP16x16_ONE }
+                { 0, 0, 0, fp::fromInt(1) }
             }
         };
         
         *this = yRotation;
     }
 
-    void Mat4x4::loadZRotation(fp angle)
+    void Mat4x4::loadZRotation(Angle angle)
     {
-        x_fp16x16 cosAngle = x_cos(angle);
-        x_fp16x16 sinAngle = x_sin(angle);
+        fp cosAngle = angle.cos();
+        fp sinAngle = angle.sin();
         
         Mat4x4 zRotation = {
             {
                 { cosAngle, -sinAngle, 0, 0 },
                 { sinAngle, cosAngle, 0, 0 },
-                { 0, 0, fp::ONE, 0 },
-                { 0, 0, 0, fp::ONE }
+                { 0, 0, fp::fromInt(1), 0 },
+                { 0, 0, 0, fp::fromInt(1) }
             }
         };
         
         *this = zRotation;
     }
 
-    void Mat4x4::loadTranslation(const Vec3fp& translation)
+    void Mat4x4::loadTranslation(const Vec3& translation)
     {
         Mat4x4 translationMatrix = 
         {
             {
-                { X_FP16x16_ONE, 0, 0, translation.x },
-                { 0, X_FP16x16_ONE, 0, translation.y },
-                { 0, 0, X_FP16x16_ONE, translation.z },
-                { 0, 0, 0, X_FP16x16_ONE }
+                { fp::fromInt(1), 0, 0, translation.x },
+                { 0, fp::fromInt(1), 0, translation.y },
+                { 0, 0, fp::fromInt(1), translation.z },
+                { 0, 0, 0, fp::fromInt(1) }
             }
         };
         
@@ -163,26 +163,17 @@ namespace X3D
         return Vec4(res[0], res[1], res[2], res[3]);
     }
 
-    Vec3fp Mat4x4::transform(const Vec3fp& src) const
+    Vec3 Mat4x4::transform(const Vec3& src) const
     {
-        Vec4 v = Vec4(src.x, src.y, src.z, X_FP16x16_ONE);
+        Vec4 v = Vec4(src.x, src.y, src.z, fp::fromInt(1));
         Vec4 transformed = transform(v);
 
         return transformed.toVec3();
-        
-        if(transformed.w != X_FP16x16_ONE)
-            printf("ERROR %d\n", transformed.w);
-        
-        // dest->x = res.x / res.w;
-        // dest->y = res.y / res.w;
-        // dest->z = res.z / res.w;
     }
 
-    Vec3fp Mat4x4::transformNormal(const Vec3fp& normal) const
+    Vec3 Mat4x4::transformNormal(const Vec3& normal) const
     {
-        Vec3 norm = MakeVec3(normal);
-
-        return Vec3fp(
+        return Vec3(
             normal.x * elem[0][0] + normal.y * elem[0][1] + normal.z * elem[0][2],
             normal.x * elem[1][0] + normal.y * elem[1][1] + normal.z * elem[1][2],
             normal.x * elem[2][0] + normal.y * elem[2][1] + normal.z * elem[2][2]);
@@ -203,7 +194,7 @@ namespace X3D
         printf("\n");
     }
 
-    void Mat4x4::extractViewVectors(Vec3fp& forwardDest, Vec3fp& rightDest, Vec3fp& upDest) const
+    void Mat4x4::extractViewVectors(Vec3& forwardDest, Vec3& rightDest, Vec3& upDest) const
     {
         rightDest = getRow(0).toVec3();
         upDest = -getRow(1).toVec3();
@@ -231,51 +222,30 @@ namespace X3D
         }
     }
 
-    void Mat4x4::visualize(Vec3fp position, const X_RenderContext& renderContext) const
-    {
-        const X_Palette* p = x_palette_get_quake_palette();
-        X_Color color[] = { p->brightRed, p->lightGreen, p->lightBlue };
-        
-        for(int i = 0; i < 3; ++i)
-        {
-            Vec4 v = getColumn(i);
-            
-            Vec3fp end = v.toVec3();
-            end = end * 50;
-            end += position;
-            
-            Ray3 r(position, end);
-            r.render(renderContext, color[i]);
-        }
-    }
-
-    void Mat4x4::extractEulerAngles(fp& xDest, fp& yDest) const
+    void Mat4x4::extractEulerAngles(Angle& xDest, Angle& yDest) const
     {
         Mat4x4 mat = *this;
         mat.dropTranslation();
         mat.transpose3x3();
 
-        Vec3fp v(0, 0, fp::fromInt(1));
-        Vec3fp transformed = mat.transform(v);
+        Vec3 v(0, 0, fp::fromInt(1));
+        Vec3 transformed = mat.transform(v);
 
-        Vec3fp up, forward, right;
+        Vec3 up, forward, right;
         mat.extractViewVectors(forward, right, up);
 
         // I found these formulas experimentally...
 
         if(up.y < 0)
         {
-            xDest = x_asin(transformed.y);
-            yDest = x_atan2(transformed.z, transformed.x) - fp(X_ANG_90);
+            xDest = Angle::asin(transformed.y);
+            yDest = Angle::atan2(transformed.z, transformed.x) - Angle::fromDegrees(90);
         }
         else
         {
-            xDest = -x_asin(transformed.y) - fp(X_ANG_180);
-            yDest = x_atan2(transformed.z, transformed.x) + fp(X_ANG_90);
+            xDest = -Angle::asin(transformed.y) - Angle::fromDegrees(180);
+            yDest = Angle::atan2(transformed.z, transformed.x) + Angle::fromDegrees(90);
         }
-
-        adjustAngle(xDest);
-        adjustAngle(yDest);
     }
 }
 
