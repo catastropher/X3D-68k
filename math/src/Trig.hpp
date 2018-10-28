@@ -49,9 +49,9 @@ namespace X3D
             return angle * PI / 128;
         }
 
-        constexpr fp sin() const;
-        constexpr fp cos() const;
-        constexpr fp tan() const;
+        fp sin() const;
+        fp cos() const;
+        fp tan() const;
 
         static Angle atan2(fp y, fp x);
         static Angle acos(fp val);
@@ -80,6 +80,18 @@ namespace X3D
         constexpr bool operator==(const Angle& ang) const
         {
             return angle == ang.angle;
+        }
+
+        constexpr Angle operator-() const
+        {
+            return Angle(-angle);
+        }
+
+        constexpr fp toFp()
+        {
+            reduce();
+
+            return angle;
         }
 
     private:
