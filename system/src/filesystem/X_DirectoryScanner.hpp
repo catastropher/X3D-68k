@@ -19,7 +19,7 @@
 #include <cstdio> 
 
 #include "X_FilePath.hpp"
-#include "X_FileSystemException.hpp"
+#include "error/X_SystemException.hpp"
 #include "log/X_Log.hpp"
 
 namespace X3D
@@ -36,7 +36,7 @@ namespace X3D
             {
                 Log::error("Failed to open directory %s for scanning", path.c_str());
 
-                throw FileSystemException("Couldn't open directory for scanning");
+                throw SystemException(SystemErrorCode::filesystemFileNotFound);
             }
         }
 

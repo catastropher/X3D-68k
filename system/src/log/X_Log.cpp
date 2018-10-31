@@ -66,12 +66,7 @@ namespace X3D
         vprintf(format, list);
         printf("\n");
 
-        printf("\t- Exception: %s\n", e.getMessage());
-
-        char details[1024];
-        e.getDetails(details);
-
-        printf("\t- Details: %s\n", details);
+        printf("\t- Exception: %d\n", e.errorCode);
 
         va_end(list);
     }

@@ -16,7 +16,8 @@
 #include <cstdlib>
 
 #include "X_SystemAllocator.hpp"
-#include "error/X_OutOfMemoryException.hpp"
+#include "error/X_SystemException.hpp"
+#include "log/X_Log.hpp"
 
 namespace X3D
 {
@@ -26,8 +27,11 @@ namespace X3D
 
         if(!mem)
         {
-            throw OutOfMemoryException(size, "system");
+            Log::error("Failed to allocate %d bytes in system allocator", size);
+            throw SystemException(SystemErrorCode::outOfMemory);
         }
+
+        return mem;
     }
 
     void SystemAllocator::free(void* mem)

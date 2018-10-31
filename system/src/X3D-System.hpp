@@ -16,9 +16,7 @@
 #pragma once
 
 // error
-#include "error/X_Exception.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+#include "error/X_SystemException.hpp"
 
 // log
 #include "log/X_Log.hpp"

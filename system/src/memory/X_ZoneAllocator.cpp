@@ -16,8 +16,7 @@
 #include "X_ZoneAllocator.hpp"
 #include "log/X_Log.hpp"
 #include "X_LinearAllocator.hpp"
-#include "error/X_OutOfMemoryException.hpp"
-#include "error/X_RuntimeException.hpp"
+#include "error/X_SystemException.hpp"
 #include "X_MemoryManager.hpp"
 
 namespace X3D
@@ -84,7 +83,8 @@ namespace X3D
 
         if(!chunk)
         {
-            throw OutOfMemoryException(size, "zone");
+            Log::error("Failed to alloc %d bytes from zone", size);
+            throw SystemException(SystemErrorCode::outOfMemory);
         }
 
         return chunk;
@@ -101,12 +101,14 @@ namespace X3D
 
         if(!memoryInRegion(mem))
         {
-            throw RuntimeException("Trying to free memory not from zone");
+            Log::error("Trying to free memory not from zone");
+            throw SystemException(SystemErrorCode::memoryError);
         }
 
         if(block->isFree())
         {
-            throw RuntimeException("Trying to free zone block that is already free");
+            Log::error("Trying to free zone block that is already free");
+            throw SystemException(SystemErrorCode::memoryError);
         }
 
         block = block->tryMergeWithAdjacentBlocks(rover);

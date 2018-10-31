@@ -15,7 +15,7 @@
 
 #include "X_Cache.hpp"
 #include "X_LinearAllocator.hpp"
-#include "error/X_OutOfMemoryException.hpp"
+#include "error/X_SystemException.hpp"
 #include "log/X_Log.hpp"
 #include "service/X_ServiceLocator.hpp"
 
@@ -74,7 +74,7 @@ namespace X3D
             if(highMark - lowMark < size)
             {
                 LOG_DEBUG("Can't fit in linear allocator. Max cache size: %d", (int)(highMark - lowMark));
-                throw OutOfMemoryException(size, "cache");
+                throw SystemException(SystemErrorCode::outOfMemory);
             }
         }
         else

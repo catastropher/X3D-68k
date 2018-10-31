@@ -88,7 +88,7 @@ namespace X3D
 
         if(fileMagicNumber != Pak::MAGIC_NUMBER)
         {
-            throw FileSystemException("Invalid PAK file");
+            throw SystemException(SystemErrorCode::filesystemPakError);
         }
     }
 
@@ -98,7 +98,7 @@ namespace X3D
 
         if(!handle)
         {
-            throw FileSystemException("Failed to open PAK file");
+            throw SystemException(SystemErrorCode::filesystemPakError);
         }
 
         pak.fileHandle = handle;
