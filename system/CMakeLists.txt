@@ -18,9 +18,6 @@ cmake_minimum_required(VERSION 3.5)
 project(x3d-system LANGUAGES CXX)
 
 set(SOURCE
-    # error
-    src/error/X_OutOfMemoryException.cpp
-
     # filesystem
     src/filesystem/X_FileHandle.cpp
     src/filesystem/X_FilePath.cpp

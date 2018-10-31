@@ -13,15 +13,34 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <cstdio>
+#pragma once
 
-#include "X_OutOfMemoryException.hpp"
+#include "X_Exception.hpp"
 
 namespace X3D
 {
-    void OutOfMemoryException::getDetails(char* dest) const
+    enum class SystemErrorCode
     {
-        sprintf(dest, "Requested %d bytes in allocator %s", allocationSize, allocatorName);
-    }
-};
+        outOfMemory = (int)LibraryErrorCodePrefix::system,
+        badAllocator,
+        memoryError,
+
+        filesystemHandleError,
+        filesystemFileNotFound,
+        filesystemCannotOpenWriting,
+        filesystemPakError,
+
+        screenDriverError
+    };
+
+    class SystemException : public Exception
+    {
+    public:
+        SystemException(SystemErrorCode code)
+            : Exception((int)code)
+        {
+
+        }
+    };
+}
 

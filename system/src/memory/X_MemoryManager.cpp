@@ -15,7 +15,7 @@
 
 #include "X_MemoryManager.hpp"
 #include "log/X_Log.hpp"
-#include "error/X_Exception.hpp"
+#include "error/X_SystemException.hpp"
 
 namespace X3D
 {
@@ -40,7 +40,8 @@ namespace X3D
                 return zoneAllocator->alloc<unsigned char>(size);
 
             default:
-                throw Exception("Unknow allocator type in MemoryManager::alloc");
+                Log::error("Unknow allocator type in MemoryManager::alloc");
+                throw SystemException(SystemErrorCode::badAllocator);
         }
     }
 
@@ -58,7 +59,8 @@ namespace X3D
                 break;
 
             default:
-                throw Exception("Unknow allocator type in MemoryManager::free");
+                Log::error("Unknow allocator type in MemoryManager::free");
+                throw SystemException(SystemErrorCode::badAllocator);
         }
     }
 

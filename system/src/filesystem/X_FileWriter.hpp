@@ -19,7 +19,7 @@
 
 #include "memory/X_Array.hpp"
 #include "memory/X_FixedLengthString.hpp"
-#include "error/X_Exception.hpp"
+#include "error/X_SystemException.hpp"
 #include "log/X_Log.hpp"
 #include "X_FilePath.hpp"
 
@@ -42,7 +42,7 @@ namespace X3D
             {
                 Log::error("Failed to open file %s for writing\n", path.c_str());
 
-                throw Exception("Failed to open file for writing");
+                throw SystemException(SystemErrorCode::filesystemCannotOpenWriting);
             }
 
             Log::debug("Opened file %s for writing", path.c_str());

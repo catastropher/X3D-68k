@@ -17,27 +17,22 @@
 
 namespace X3D
 {
+    enum class LibraryErrorCodePrefix
+    {
+        system = (0 << 16),
+        math = (1 << 16)
+    };
+
     class Exception
     {
     public:
-        explicit Exception(const char* message_)
-            : message(message_)
+        Exception(int errorCode_)
+            : errorCode(errorCode_)
         {
 
         }
 
-        const char* getMessage() const
-        {
-            return message;
-        }
-
-        virtual void getDetails(char* dest) const
-        {
-            *dest = '\0';
-        }
-
-    private:
-        const char* message;
+        int errorCode;
     };
-};
+}
 

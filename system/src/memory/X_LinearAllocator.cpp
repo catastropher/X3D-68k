@@ -15,7 +15,7 @@
 
 #include "X_LinearAllocator.hpp"
 #include "X_SystemAllocator.hpp"
-#include "error/X_OutOfMemoryException.hpp"
+#include "error/X_SystemException.hpp"
 #include "X_Cache.hpp"
 #include "X_MemoryManager.hpp"
 
@@ -61,7 +61,7 @@ namespace X3D
         if(lowMark >= highMark)
         {
             Log::error("LinearAllocator: can't allocLow %d bytes for %s", size, name);
-            throw OutOfMemoryException(size, "linear");
+            throw SystemException(SystemErrorCode::outOfMemory);
         }
 
         cache->freeBelowLowMark(lowMark);
@@ -86,7 +86,7 @@ namespace X3D
         if(highMark <= lowMark)
         {
             Log::error("LinearAllocator: can't allocHigh %d bytes for %s", size, name);
-            throw OutOfMemoryException(size, "linear");
+            throw SystemException(SystemErrorCode::outOfMemory);
         }
 
         cache->freeAboveHighMark(highMark);

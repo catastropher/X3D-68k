@@ -16,7 +16,7 @@
 #define DEBUG_FILE
 
 #include "X_FileHandle.hpp"
-#include "X_FileSystemException.hpp"
+#include "error/X_SystemException.hpp"
 #include "log/X_Log.hpp"
 
 namespace X3D
@@ -69,7 +69,7 @@ namespace X3D
         {
             LOG_DEBUG("Out of file handles\n");
 
-            throw FileSystemException("Out of file handles");
+            throw SystemException(SystemErrorCode::filesystemHandleError);
         }
 
         LOG_DEBUG("Evict handle %d", (int)(leastRecentlyUsed - fileHandles));
@@ -86,7 +86,7 @@ namespace X3D
     {
         if(handle->hasAlreadyBeenClosed())
         {
-            throw FileSystemException("Trying to close unopened file handle");
+            throw SystemException(SystemErrorCode::filesystemHandleError);
         }
 
         LOG_DEBUG("Closed file %s\n", handle->path.c_str());

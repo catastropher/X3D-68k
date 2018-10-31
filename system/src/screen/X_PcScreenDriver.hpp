@@ -19,7 +19,7 @@
 
 #include "X_BaseScreenDriver.hpp"
 #include "log/X_Log.hpp"
-#include "error/X_Exception.hpp"
+#include "error/X_SystemException.hpp"
 
 namespace X3D
 {
@@ -32,7 +32,8 @@ namespace X3D
 
             if(SDL_InitSubSystem(SDL_INIT_VIDEO) != 0)
             {
-                throw Exception("Failed to init SDL");
+                Log::error("Failed to init SDL");
+                throw SystemException(SystemErrorCode::screenDriverError);
             }
 
             screenSurface = nullptr;
@@ -56,7 +57,8 @@ namespace X3D
 
             if(!windowIsOpened())
             {
-                throw Exception("Failed to set video mode");
+                Log::error("Failed to set video mode");
+                throw SystemException(SystemErrorCode::screenDriverError);
             }
         }
 
@@ -94,7 +96,8 @@ namespace X3D
 
             if(SDL_SetColors(screenSurface, paletteColors, colorStart, total) != 0)
             {
-                throw Exception("Failed to update palette");
+                Log::error("Failed to update palette");
+                throw SystemException(SystemErrorCode::screenDriverError);
             }
         }
 
@@ -115,7 +118,8 @@ namespace X3D
         {
             if(currentPalette == nullptr)
             {
-                throw Exception("Screen has no palette");
+                Log::error("Screen has no palette");
+                throw SystemException(SystemErrorCode::screenDriverError);
             }
         }
 
