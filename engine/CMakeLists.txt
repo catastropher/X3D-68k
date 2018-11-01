@@ -51,6 +51,8 @@ install(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/X3D/engine FILES_
 
 # Dependencies
 
-target_link_libraries(x3d-engine x3d-system)
+find_package(SDL REQUIRED)
+
+target_link_libraries(x3d-engine x3d-system x3d-graphics ${SDL_LIBRARY})
 
 

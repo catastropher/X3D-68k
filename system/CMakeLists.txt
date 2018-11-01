@@ -21,6 +21,7 @@ set(SOURCE
     # filesystem
     src/filesystem/X_FileHandle.cpp
     src/filesystem/X_FilePath.cpp
+    src/filesystem/X_FileReader.cpp
     src/filesystem/X_FileSystem.cpp
     src/filesystem/X_Pak.cpp
     src/filesystem/X_PakWriter.cpp
@@ -42,6 +43,8 @@ set(SOURCE
     # service
     src/service/X_Services.cpp
 )
+
+find_package(SDL REQUIRED)
 
 add_library(x3d-system STATIC ${SOURCE})
 

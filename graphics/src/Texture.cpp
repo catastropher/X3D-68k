@@ -14,6 +14,9 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "Texture.hpp"
+#include "filesystem/X_FileReader.hpp"
+#include "filesystem/X_FileUtils.hpp"
+#include "log/X_Log.hpp"
 
 namespace X3D
 {
@@ -52,6 +55,39 @@ namespace X3D
 
         auto memoryManager = ServiceLocator::get<MemoryManager>();
         texels = (Color*)memoryManager->alloc(totalTexels() * sizeof(Color), source);
+    }
+
+    void ManagedTexture::readFromFile(FilePath& path)
+    {
+        FileReader reader(path);
+
+        unsigned int magicNumber;
+        reader.read(magicNumber);
+
+        if(magicNumber != FileUtils::fileMagicNumber("XTEX"))
+        {
+            Log::error("Texture missing XTEX magic number");
+            throw SystemException(SystemErrorCode::invalidFile);
+        }
+
+        short texW;
+        short texH;
+
+        reader.read(texW);
+        reader.read(texH);
+
+        if(texW < 0 || texH < 0)
+        {
+            Log::error("Bad texture dimensions");
+            throw SystemException(SystemErrorCode::invalidFile);
+        }
+
+        w = texW;
+        h = texH;
+
+        auto memoryManager = ServiceLocator::get<MemoryManager>();
+
+        texels = (Color*)memoryManager->alloc(w * h * sizeof(Color), source);
     }
 }
 

@@ -13,11 +13,36 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "MemoryTests.hpp"
+#include "X3D-System.hpp"
+#include "X3D-graphics.hpp"
+
+using namespace X3D;
+
+void test()
+{
+    SystemConfig config = 
+    {
+        .memoryManager = 
+        {
+            .linearAllocatorSize = 8 * 1024 * 1024,
+            .zoneAllocatorSize = 1024 * 1024
+        }
+    };
+
+    System::init(config);
+}
 
 int main()
 {
-    MemoryTests().run();
+    test();
+
+    ManagedTexture texture(AllocationSource::zone);
+
+    FilePath path("font.xtex");
+
+    texture.readFromFile(path);
+
+    System::cleanup();
 }
 
 

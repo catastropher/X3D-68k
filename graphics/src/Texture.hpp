@@ -16,6 +16,7 @@
 #pragma once
 
 #include "X3D-System.hpp"
+#include "filesystem/X_FilePath.hpp"
 
 namespace X3D
 {
@@ -103,6 +104,7 @@ namespace X3D
         ManagedTexture(int w_, int h_, AllocationSource source_ = AllocationSource::zone);
 
         void resize(int newW, int newH);
+        void readFromFile(FilePath& path);
 
         ~ManagedTexture();
 

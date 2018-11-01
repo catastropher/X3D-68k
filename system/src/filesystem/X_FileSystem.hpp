@@ -27,6 +27,8 @@ namespace X3D
     public:
         void init();
 
+        FileHandle* openFileForReading(FilePath& path);
+
     private:
         FileHandleCache* fileHandleCache;
         PakManager* pakManager;

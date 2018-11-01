@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#define DEBUG_FILE
+//#define DEBUG_FILE
 
 #include "X_FileHandle.hpp"
 #include "error/X_SystemException.hpp"
