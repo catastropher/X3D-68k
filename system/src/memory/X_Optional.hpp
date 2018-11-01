@@ -13,37 +13,38 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D-System.hpp>
-#include <X3D-graphics.hpp>
-#include <X3D-engine.hpp>
+#pragma once
 
-using namespace X3D;
-
-void test()
+namespace X3D
 {
-    EngineConfig config;
-    EngineConfigBuilder builder;
+    template<typename T>
+    struct Optional
+    {
+        Optional()
+            : hasValue(false)
+        {
 
-    builder
-        .memorySize(8 * 1024 * 1024, 64 * 1024)
-        .defaultScreenSize()
-        .build(config);
+        }
 
-    Engine::init(config);
+        Optional(const T& value_)
+            : value(value_),
+            hasValue(true)
+        {
+
+        }
+
+        void clear()
+        {
+            hasValue = false;
+        }
+
+        bool operator==(const T& val)
+        {
+            return hasValue && value == val;
+        }
+
+        T value;
+        bool hasValue;
+    };
 }
-
-int main()
-{
-    test();
-
-    ManagedTexture texture(AllocationSource::zone);
-
-    FilePath path("font.xtex");
-
-    texture.readFromFile(path);
-
-    System::cleanup();
-}
-
-
 

@@ -18,7 +18,11 @@ cmake_minimum_required(VERSION 3.5)
 project(x3d-engine LANGUAGES CXX)
 
 set(SOURCE
-    src/engine.cpp
+    # config
+    src/config/EngineConfigBuilder.cpp
+
+    # engine
+    src/engine/Engine.cpp
 )
 
 add_library(x3d-engine STATIC ${SOURCE})
