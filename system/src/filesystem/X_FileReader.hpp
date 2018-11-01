@@ -20,21 +20,6 @@
 
 namespace X3D
 {
-    static inline void swapIntBytes(unsigned int& val)
-    {
-        
-    }
-
-    static inline void swapIntBytes(int& val)
-    {
-        
-    }
-
-    static inline void swapShortBytes(unsigned short& val)
-    {
-
-    }
-
     class FileReader
     {
     public:
@@ -50,11 +35,14 @@ namespace X3D
 
         }
 
-        bool read(Array<char>& dest, int count)
-        {
-            dest.size = fread(dest.data, 1, count, handle->file);
+        FileReader(FilePath& path);
 
-            return dest.size == count;
+        template<typename T>
+        bool read(Array<T>& dest, int count)
+        {
+            dest.size = fread(dest.data, sizeof(T), count, handle->file);
+
+            return dest.size == count * sizeof(T);
         }
 
         void seek(int offset)
@@ -62,8 +50,15 @@ namespace X3D
             fseek(handle->file, offset, SEEK_SET);
         }
 
-    private:
+        template<typename T>
+        void read(T& dest)
+        {
+            fread(&dest, sizeof(T), 1, handle->file);
+        }
+
+    protected:
         FileHandle* handle;
+        int fileSize;
     };
 }
 

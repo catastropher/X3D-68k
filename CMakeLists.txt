@@ -39,9 +39,9 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/X3DConfigVersion.cmake
     DESTINATION ${INSTALL_CONFIGDIR}
 )
-
-add_subdirectory(system)
 add_subdirectory(engine)
+add_subdirectory(graphics)
 add_subdirectory(math)
+add_subdirectory(system)
 
 export(EXPORT x3d-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/X3DTargets.cmake NAMESPACE X3D::)

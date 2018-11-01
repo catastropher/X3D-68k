@@ -13,23 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X_FileReader.hpp"
+#include "service/X_ServiceLocator.hpp"
+#include "X_FileSystem.hpp"
 
-// config
-#include "config/X_SystemConfig.hpp"
+#include "X3D-System.hpp"
 
-// error
-#include "error/X_SystemException.hpp"
-
-// log
-#include "log/X_Log.hpp"
-
-// instance
-#include "instance/X_System.hpp"
-
-// memory
-#include "memory/X_MemoryManager.hpp"
-
-// platform
-#include "platform/X_Platform.hpp"
+namespace X3D
+{
+    FileReader::FileReader(FilePath& path)
+    {
+        FileSystem* fileSystem = ServiceLocator::get<FileSystem>();
+        
+        handle = fileSystem->openFileForReading(path);
+    }
+}
 

@@ -28,4 +28,4 @@ set(TEST_SOURCE
 
 add_executable(system-tests ${TEST_SOURCE})
 
-target_link_libraries(system-tests X3D::engine ${SDL_LIBRARY})
+target_link_libraries(system-tests X3D::engine)

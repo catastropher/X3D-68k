@@ -15,21 +15,6 @@
 
 #pragma once
 
-// config
-#include "config/X_SystemConfig.hpp"
-
-// error
-#include "error/X_SystemException.hpp"
-
-// log
-#include "log/X_Log.hpp"
-
-// instance
-#include "instance/X_System.hpp"
-
-// memory
-#include "memory/X_MemoryManager.hpp"
-
-// platform
-#include "platform/X_Platform.hpp"
+// Texture
+#include "Texture.hpp"
 

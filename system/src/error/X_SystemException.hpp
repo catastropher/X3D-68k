@@ -30,7 +30,9 @@ namespace X3D
         filesystemCannotOpenWriting,
         filesystemPakError,
 
-        screenDriverError
+        screenDriverError,
+
+        invalidFile
     };
 
     class SystemException : public Exception

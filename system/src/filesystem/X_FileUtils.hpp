@@ -13,23 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+namespace X3D
+{
+    class FileUtils
+    {
+    public:
+        static constexpr unsigned int fileMagicNumber(const char* str)
+        {
+            unsigned int magicNumber = 0;
+            int shift = 0;
 
-// config
-#include "config/X_SystemConfig.hpp"
+            while(*str)
+            {
+                magicNumber |= (*str) << shift;
 
-// error
-#include "error/X_SystemException.hpp"
+                ++str;
+                shift += 8;
+            }
 
-// log
-#include "log/X_Log.hpp"
-
-// instance
-#include "instance/X_System.hpp"
-
-// memory
-#include "memory/X_MemoryManager.hpp"
-
-// platform
-#include "platform/X_Platform.hpp"
+            return magicNumber;
+        }
+    };
+}
 
