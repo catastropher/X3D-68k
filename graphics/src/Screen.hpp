@@ -15,13 +15,12 @@
 
 #pragma once
 
-#include "Clamp.hpp"
+#include "Texture.hpp"
 
-#include "Fp.hpp"
-#include "Sqrt.hpp"
-#include "Trig.hpp"
-
-#include "Vec2.hpp"
-#include "Vec3.hpp"
-#include "Vec4.hpp"
+namespace X3D
+{
+    class Screen : public Texture
+    {
+    };
+}
 

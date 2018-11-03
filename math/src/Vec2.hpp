@@ -15,13 +15,38 @@
 
 #pragma once
 
-#include "Clamp.hpp"
-
 #include "Fp.hpp"
-#include "Sqrt.hpp"
-#include "Trig.hpp"
 
-#include "Vec2.hpp"
-#include "Vec3.hpp"
-#include "Vec4.hpp"
+namespace X3D
+{
+    template<typename T>
+    struct Vec2Template
+    {
+        Vec2Template(T x_, T y_)
+            : x(x_),
+            y(y_)
+        {
+
+        }
+
+        template<typename U>
+        Vec2Template<U> toVec2()
+        {
+            return Vec2Template<U>(
+                convert<U>(x),
+                convert<U>(y));
+        }
+
+        bool operator==(const Vec2Template& v) const
+        {
+            return x == v.x && y == v.y;
+        }
+
+        T x;
+        T y;
+    };
+
+    using Vec2 = Vec2Template<fp>;
+    using Vec2i = Vec2Template<int>;
+}
 

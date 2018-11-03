@@ -15,13 +15,27 @@
 
 #pragma once
 
-#include "Clamp.hpp"
+namespace X3D
+{
+    template<typename T>
+    T abs(T val)
+    {
+        return val < 0 ? -val : val;
+    }
 
-#include "Fp.hpp"
-#include "Sqrt.hpp"
-#include "Trig.hpp"
+    template<typename T>
+    T clamp(T val, T minVal, T maxVal)
+    {
+        if(val < minVal)
+        {
+            val = minVal;
+        }
+        else if(val >= maxVal)
+        {
+            val = maxVal;
+        }
 
-#include "Vec2.hpp"
-#include "Vec3.hpp"
-#include "Vec4.hpp"
+        return val;
+    }
+}
 

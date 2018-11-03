@@ -15,13 +15,35 @@
 
 #pragma once
 
-#include "Clamp.hpp"
+#include <X3D-math.hpp>
 
-#include "Fp.hpp"
-#include "Sqrt.hpp"
-#include "Trig.hpp"
+#include "Texture.hpp"
 
-#include "Vec2.hpp"
-#include "Vec3.hpp"
-#include "Vec4.hpp"
+namespace X3D
+{
+    class Canvas
+    {
+    public:
+        Canvas(Texture* texture_)
+            : texture(texture_),
+            maxX(fp::fromInt(texture->getW() - 1)),
+            maxY(fp::fromInt(texture->getH() - 1))
+        {
+
+        }
+
+        void clamp(Vec2& v)
+        {
+            v.x = X3D::clamp(v.x, fp(0), maxX);
+            v.y = X3D::clamp(v.y, fp(0), maxY);
+        }
+
+        void drawLine(Vec2 start, Vec2 end, Color color);
+
+    private:
+        Texture* texture;
+        fp maxX;
+        fp maxY;
+    };
+}
 

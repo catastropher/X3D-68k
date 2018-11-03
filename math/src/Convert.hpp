@@ -24,13 +24,13 @@ namespace X3D
 
     // No-op if we're converting to the same type
     template<typename T>
-    void convert(T& from, T& to)
+    constexpr void convert(T& from, T& to)
     {
         to = from;
     }
 
     template<typename To, typename From>
-    To convert(From from)
+    constexpr To convert(From& from)
     {
         To temp;
         convert(from, temp);

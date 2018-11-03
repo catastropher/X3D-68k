@@ -13,15 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <X3D-System.hpp>
 
-#include "Clamp.hpp"
-
-#include "Fp.hpp"
-#include "Sqrt.hpp"
-#include "Trig.hpp"
-
-#include "Vec2.hpp"
-#include "Vec3.hpp"
-#include "Vec4.hpp"
-
+namespace X3D
+{
+    using Color = byte;
+}
