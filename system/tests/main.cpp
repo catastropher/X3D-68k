@@ -30,17 +30,13 @@ void test()
         .build(config);
 
     Engine::init(config);
+
+    SDL_Delay(5000);
 }
 
 int main()
 {
     test();
-
-    ManagedTexture texture(AllocationSource::zone);
-
-    FilePath path("font.xtex");
-
-    texture.readFromFile(path);
 
     System::cleanup();
 }

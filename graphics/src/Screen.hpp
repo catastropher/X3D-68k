@@ -15,12 +15,28 @@
 
 #pragma once
 
-#include "Texture.hpp"
+#include <X3D-System.hpp>
+
+#include "Canvas.hpp"
+#include "config/ScreenConfig.hpp"
 
 namespace X3D
 {
-    class Screen : public Texture
+    class Screen : public Canvas
     {
+    public:
+        Screen()
+            : Canvas(&screenTexture)
+        {
+
+        }
+
+        void init(ScreenConfig& config);
+        void redraw();
+        
+    private:
+        ScreenDriver* screenDriver;
+        Texture screenTexture;
     };
 }
 

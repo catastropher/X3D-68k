@@ -15,13 +15,15 @@
 
 #pragma once
 
-#include "X3D-System.hpp"
+#include <X3D-System.hpp>
+#include <X3D-graphics.hpp>
 
 namespace X3D
 {
     struct EngineConfig
     {
         SystemConfig system;
+        GraphicsConfig graphics;
     };
 }
 

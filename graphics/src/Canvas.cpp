@@ -33,7 +33,7 @@ namespace X3D
 
         int err = (dx > dy ? dx : -dy) / 2;
         
-        Vec2i pos = start.toVec2<int>();
+        Vec2i pos = startPos;
 
         do
         {
@@ -57,5 +57,31 @@ namespace X3D
                 pos.y += sy;
             }
         } while(true);
+    }
+
+    void Canvas::fill(Color color)
+    {
+        memset(texture->getTexels(), color, texture->totalTexels());
+    }
+
+    void Canvas::drawPalette(Palette* palette, int x, int y, int colorSize)
+    {
+        for(int i = 0; i < 16; ++i)
+        {
+            for(int j = 0; j < 16; ++j)
+            {
+                int y = i * colorSize;
+                int x = j * colorSize;
+                Color color = i * 16 + j;
+                
+                for(int k = 0; k < 8; ++k)
+                {
+                    for(int d = 0; d < 8; ++d)
+                    {
+                        texture->setTexel(x + d, y + k, color);
+                    }
+                }
+            }
+        }
     }
 }

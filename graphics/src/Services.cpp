@@ -14,16 +14,17 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <X3D-System.hpp>
-#include <X3D-graphics.hpp>
 
-#include "Engine.hpp"
+#include "Screen.hpp"
 
 namespace X3D
 {
-    void Engine::init(EngineConfig& config)
+    static Screen g_screen;
+
+    template<>
+    Screen* ServiceLocator::get()
     {
-        System::init(config.system);
-        Graphics::init(config.graphics);
+        return &g_screen;
     }
 }
 

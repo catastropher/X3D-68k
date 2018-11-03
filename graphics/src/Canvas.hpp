@@ -25,11 +25,15 @@ namespace X3D
     {
     public:
         Canvas(Texture* texture_)
-            : texture(texture_),
-            maxX(fp::fromInt(texture->getW() - 1)),
-            maxY(fp::fromInt(texture->getH() - 1))
         {
+            setTexture(texture_);
+        }
 
+        void setTexture(Texture* texture_)
+        {
+            texture = texture_;
+            maxX = fp::fromInt(texture->getW() - 1);
+            maxY = fp::fromInt(texture->getH() - 1);
         }
 
         void clamp(Vec2& v)
@@ -39,6 +43,9 @@ namespace X3D
         }
 
         void drawLine(Vec2 start, Vec2 end, Color color);
+        void fill(Color color);
+
+        void drawPalette(Palette* palette, int x, int y, int colorSize);
 
     private:
         Texture* texture;

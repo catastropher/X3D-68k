@@ -15,6 +15,7 @@
 
 #pragma once
 
-// Texture
+#include "Graphics.hpp"
+#include "Screen.hpp"
 #include "Texture.hpp"
 

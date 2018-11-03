@@ -94,11 +94,16 @@ namespace X3D
                 paletteColors[i].b = color[2];
             }
 
-            if(SDL_SetColors(screenSurface, paletteColors, colorStart, total) != 0)
+            if(SDL_SetColors(screenSurface, paletteColors, colorStart, total) != 1)
             {
-                Log::error("Failed to update palette");
+                Log::error("Failed to update palette: %s\n", SDL_GetError());
                 throw SystemException(SystemErrorCode::screenDriverError);
             }
+        }
+
+        void redraw()
+        {
+            SDL_UpdateRect(screenSurface, 0, 0, screenSurface->w, screenSurface->h);
         }
 
         void cleanup()
@@ -106,6 +111,13 @@ namespace X3D
             closeWindow();
 
             SDL_QuitSubSystem(SDL_INIT_VIDEO);
+        }
+
+        void getWindow(byte*& buf, int& w, int& h)
+        {
+            buf = (byte*)screenSurface->pixels;
+            w = screenSurface->w;
+            h = screenSurface->h;
         }
 
     private:

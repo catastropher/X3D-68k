@@ -86,6 +86,13 @@ namespace X3D
             h = newH;
         }
 
+        void setTexels(Color* texels_, int newW, int newH)
+        {
+            texels = texels_;
+            w = newW;
+            h = newH;
+        }
+
     protected:
         constexpr int texelIndex(int x, int y) const
         {

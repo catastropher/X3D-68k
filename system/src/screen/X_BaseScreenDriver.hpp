@@ -43,7 +43,9 @@ namespace X3D
         Palette* getPalette();
         void updatePaletteColors(int colorStart, int total);
 
-        void update(byte* buf, int w, int h);
+        void redraw();
+
+        void getWindow(byte*& buf, int& w, int& h);
 
     protected:
         Palette* currentPalette;

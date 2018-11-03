@@ -23,6 +23,8 @@ namespace X3D
     {
     public:
         static const int TOTAL_COLORS = 256;
+
+        static Palette* getQuakeColorPalette();
         
         byte colors[TOTAL_COLORS][3];
     };

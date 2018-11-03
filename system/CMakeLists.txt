@@ -40,6 +40,9 @@ set(SOURCE
     src/memory/X_SystemAllocator.cpp
     src/memory/X_ZoneAllocator.cpp
 
+    # screen
+    src/screen/X_Palette.cpp
+
     # service
     src/service/X_Services.cpp
 )

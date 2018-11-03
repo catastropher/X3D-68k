@@ -13,50 +13,32 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Graphics.hpp"
+#include "Screen.hpp"
 
 namespace X3D
 {
-    template<typename T>
-    struct Optional
+    void Graphics::init(GraphicsConfig& config)
     {
-        Optional()
-            : hasValue(false)
+        try
         {
+            initService<Screen>(config.screen);
 
+            Log::info("Init graphics library");
         }
-
-        Optional(const T& value_)
-            : value(value_),
-            hasValue(true)
+        catch(const Exception& e)
         {
-
+            Log::error(e, "Graphics startup failed");
+            throw;
         }
+    }
 
-        void operator=(const Optional& val)
-        {
-            value = val.value;
-            hasValue = val.hasValue;
-        }
-
-        void operator=(const T& val)
-        {
-            value = val;
-            hasValue = true;
-        }
-
-        void clear()
-        {
-            hasValue = false;
-        }
-
-        bool operator==(const T& val)
-        {
-            return hasValue && value == val;
-        }
-
-        T value;
-        bool hasValue;
-    };
+    // Calls the init() function of the given service type T with the given arguments
+    template<typename T, typename ...Args>
+    void Graphics::initService(Args&&... args)
+    {
+        auto service = ServiceLocator::get<T>();
+        service->init(std::forward<Args>(args)...);
+    }
 }
 
