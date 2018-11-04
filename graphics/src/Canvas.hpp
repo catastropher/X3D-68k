@@ -18,9 +18,16 @@
 #include <X3D-math.hpp>
 
 #include "Texture.hpp"
+#include "RasterFont.hpp"
+#include "ColorMap.hpp"
 
 namespace X3D
 {
+    struct BlitTexture
+    {
+        // TODO: fill in
+    };
+
     class Canvas
     {
     public:
@@ -42,10 +49,38 @@ namespace X3D
             v.y = X3D::clamp(v.y, fp(0), maxY);
         }
 
-        void drawLine(Vec2 start, Vec2 end, Color color);
+        void clamp(Vec2i& v)
+        {
+            v.x = X3D::clamp(v.x, 0, texture->getW() - 1);
+            v.y = X3D::clamp(v.y, 0, texture->getH() - 1);
+        }
+
         void fill(Color color);
 
+        void drawLine(Vec2i start, Vec2i end, Color color);
+        void drawLineAntiAlias(Vec2 start, Vec2 end, Color color);  // TODO
+        void drawHLine(int x1, int x2, int y);  // TODO
+        void drawVLine(int y1, int y2, int x);  // TODO
+
+        void drawRectFilled(Vec2i topLeft, Vec2i bottomRight, Color color); // TODO
+        void drawRectOutlined(Vec2i topLeft, Vec2i bottomRight, Color color);    // TODO
+
+        void drawCircleFilled(Vec2i center, int radius, Color color);   // TODO
+        void drawCircleOutlined(Vec2i center, int radius, Color color); // TODO
+
+        void drawPoint(Vec2i pos, Color color);     // TODO
+        Color getPoint(Vec2i pos);  // TODO
+
+        void blitTexture(BlitTexture& tex); // TODO
+
+        void drawChar(RasterFont& font, char c);    // TODO
+        void drawString(RasterFont& font, const char* str); // TODO
+
+        void applyColorMap(ColorMap& map, Vec2i topLeft, Vec2i bottomRight);    // TODO
+
         void drawPalette(Palette* palette, int x, int y, int colorSize);
+
+        void saveToFile(FilePath& file);    // TODO
 
     private:
         Texture* texture;

@@ -17,29 +17,31 @@
 
 namespace X3D
 {
-    void Canvas::drawLine(Vec2 start, Vec2 end, Color color)
+    void Canvas::fill(Color color)
+    {
+        memset(texture->getTexels(), color, texture->totalTexels());
+    }
+
+    void Canvas::drawLine(Vec2i start, Vec2i end, Color color)
     {
         clamp(start);
         clamp(end);
 
-        Vec2i startPos = start.toVec2<int>();
-        Vec2i endPos = end.toVec2<int>();
+        int dx = end.x - start.x;
+        int dy = end.y - start.y;
 
-        int dx = endPos.x - startPos.x;
-        int dy = endPos.y - startPos.y;
-
-        int sx = startPos.x < endPos.x ? 1 : -1;
-        int sy = startPos.y < endPos.y ? 1 : -1;
+        int sx = start.x < end.x ? 1 : -1;
+        int sy = start.y < end.y ? 1 : -1;
 
         int err = (dx > dy ? dx : -dy) / 2;
         
-        Vec2i pos = startPos;
+        Vec2i pos = start;
 
         do
         {
             texture->setTexel(pos, color);
 
-            if(pos == endPos)
+            if(pos == end)
             {
                 break;
             }
@@ -57,11 +59,6 @@ namespace X3D
                 pos.y += sy;
             }
         } while(true);
-    }
-
-    void Canvas::fill(Color color)
-    {
-        memset(texture->getTexels(), color, texture->totalTexels());
     }
 
     void Canvas::drawPalette(Palette* palette, int x, int y, int colorSize)

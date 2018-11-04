@@ -43,7 +43,7 @@ namespace X3D
 
             screenDriver->setPalette(Palette::getQuakeColorPalette());
 
-            drawLine({ fp::fromInt(10), fp::fromInt(10) }, { fp::fromInt(200), fp::fromInt(200) }, 255);
+            drawLine({ 10, 10 }, { 200, 200 }, 255);
 
             redraw();
         }
