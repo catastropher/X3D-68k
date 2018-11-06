@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "BoundRect.hpp"
+
 #include "Clamp.hpp"
 
 #include "Fp.hpp"

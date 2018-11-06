@@ -81,4 +81,82 @@ namespace X3D
             }
         }
     }
+
+    void Canvas::drawVLine(int y1, int y2, int x, Color color)
+    {
+        if(x >= texture->getW() || x < 0)
+        {
+            return;
+        }
+        
+        if(y1 > y2)
+        {
+            std::swap(y1, y2);
+        }
+
+        if(y1 < 0)
+        {
+            y1 = 0;
+        }
+
+        if(y2 >= texture->getH())
+        {
+            y2 = texture->getH() - 1;
+        }
+
+        for (int i = y1; i <= y2; ++i)
+        {
+            texture->setTexel(x, i, color);
+        }
+
+    }
+
+    void Canvas::drawHLine(int x1, int x2, int y, Color color)
+    {
+        if(y >= texture->getH() || y < 0)
+        {
+            return;
+        }
+
+        if(x1 > x2)
+        {
+            std::swap(x1, x2);
+        }
+
+        if(x1 < 0)
+        {
+            x1 = 0;
+        }
+
+        if(x2 >= texture->getW())
+        {
+            x2 = texture->getW() - 1;
+        }
+
+        int length = x2 - x1 + 1;
+
+        if(length < 8)
+        {
+            for(int i = x1; i <= x2; ++i)
+            {
+                texture->setTexel(i, y, color);
+            }
+        }
+        else
+        {
+            memset(texture->getRow(y) + x1, color, length);
+        }
+    }
+
+    void Canvas::drawRectOutlined(const BoundRecti& rect, Color color)
+    {
+        drawVLine(rect.topLeft.y, rect.bottomRight.y, rect.topLeft.x, color);
+        drawVLine(rect.topLeft.y, rect.bottomRight.y, rect.bottomRight.x, color);
+        drawHLine(rect.topLeft.x, rect.bottomRight.x, rect.topLeft.y, color);
+        drawHLine(rect.topLeft.x, rect.bottomRight.x, rect.bottomRight.x, color);
+    }
+
+    void Canvas::drawRectFilled(const BoundRecti& rect, Color color)
+    {
+    }
 }

@@ -43,8 +43,6 @@ namespace X3D
 
             screenDriver->setPalette(Palette::getQuakeColorPalette());
 
-            drawLine({ 10, 10 }, { 200, 200 }, 255);
-
             redraw();
         }
     }

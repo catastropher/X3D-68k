@@ -59,11 +59,11 @@ namespace X3D
 
         void drawLine(Vec2i start, Vec2i end, Color color);
         void drawLineAntiAlias(Vec2 start, Vec2 end, Color color);  // TODO
-        void drawHLine(int x1, int x2, int y);  // TODO
-        void drawVLine(int y1, int y2, int x);  // TODO
+        void drawHLine(int x1, int x2, int y, Color color);
+        void drawVLine(int y1, int y2, int x, Color color);
 
-        void drawRectFilled(Vec2i topLeft, Vec2i bottomRight, Color color); // TODO
-        void drawRectOutlined(Vec2i topLeft, Vec2i bottomRight, Color color);    // TODO
+        void drawRectFilled(const BoundRecti& rect, Color color); // TODO
+        void drawRectOutlined(const BoundRecti& rect, Color color);
 
         void drawCircleFilled(Vec2i center, int radius, Color color);   // TODO
         void drawCircleOutlined(Vec2i center, int radius, Color color); // TODO

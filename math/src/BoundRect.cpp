@@ -13,26 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "BoundRect.hpp"
 
 namespace X3D
 {
-    template<typename T>
-    constexpr T maxValue();
 
-    template<typename T>
-    constexpr T minValue();
+    
 
-    template<>
-    inline constexpr int maxValue()
-    {
-        return 0x7FFFFFFF;
-    }
-
-    template<>
-    inline constexpr int minValue()
-    {
-        return -0x7FFFFFFF;
-    }
 }
-

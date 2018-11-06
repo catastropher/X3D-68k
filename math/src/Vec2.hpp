@@ -16,13 +16,14 @@
 #pragma once
 
 #include "Fp.hpp"
+#include "Limits.hpp"
 
 namespace X3D
 {
     template<typename T>
     struct Vec2Template
     {
-        Vec2Template(T x_, T y_)
+        constexpr Vec2Template(T x_, T y_)
             : x(x_),
             y(y_)
         {
@@ -30,7 +31,7 @@ namespace X3D
         }
 
         template<typename U>
-        Vec2Template<U> toVec2()
+        constexpr Vec2Template<U> toVec2()
         {
             return Vec2Template<U>(
                 convert<U>(x),
@@ -48,5 +49,21 @@ namespace X3D
 
     using Vec2 = Vec2Template<fp>;
     using Vec2i = Vec2Template<int>;
+
+    template<typename T>
+    constexpr inline Vec2Template<T> maxValue()
+    {
+        return Vec2Template<T>(
+            maxValue<T>(),
+            maxValue<T>());
+    }
+
+    template<typename T>
+    constexpr inline Vec2Template<T> minValue()
+    {
+        return Vec2Template<T>(
+            minValue<T>(),
+            minValue<T>());
+    }
 }
 
