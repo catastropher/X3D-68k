@@ -13,17 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D-System.hpp>
-#include <X3D-graphics.hpp>
-
-#include "Engine.hpp"
+#include "BoundRect.hpp"
 
 namespace X3D
 {
-    void Engine::init(EngineConfig& config)
-    {
-        System::init(config.system);
-        Graphics::init(config.graphics);
-    }
-}
 
+    
+
+}

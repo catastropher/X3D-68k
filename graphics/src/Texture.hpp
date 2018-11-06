@@ -15,13 +15,14 @@
 
 #pragma once
 
-#include "X3D-System.hpp"
+#include <X3D-System.hpp>
+#include <X3D-math.hpp>
+
 #include "filesystem/X_FilePath.hpp"
+#include "Color.hpp"
 
 namespace X3D
 {
-    using Color = byte;
-
     // Note: a Texture does not own the memory of the texels!
     class Texture
     {
@@ -69,6 +70,11 @@ namespace X3D
             texels[texelIndex(x, y)] = color;
         }
 
+        void setTexel(Vec2i pos, Color color)
+        {
+            texels[texelIndex(pos.x, pos.y)] = color;
+        }
+
         Color getTexel(int x, int y)
         {
             return texels[texelIndex(x, y)];
@@ -76,6 +82,13 @@ namespace X3D
 
         void setDimensions(int newW, int newH)
         {
+            w = newW;
+            h = newH;
+        }
+
+        void setTexels(Color* texels_, int newW, int newH)
+        {
+            texels = texels_;
             w = newW;
             h = newH;
         }

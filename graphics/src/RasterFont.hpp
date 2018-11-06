@@ -17,46 +17,9 @@
 
 namespace X3D
 {
-    template<typename T>
-    struct Optional
+    class RasterFont
     {
-        Optional()
-            : hasValue(false)
-        {
-
-        }
-
-        Optional(const T& value_)
-            : value(value_),
-            hasValue(true)
-        {
-
-        }
-
-        void operator=(const Optional& val)
-        {
-            value = val.value;
-            hasValue = val.hasValue;
-        }
-
-        void operator=(const T& val)
-        {
-            value = val;
-            hasValue = true;
-        }
-
-        void clear()
-        {
-            hasValue = false;
-        }
-
-        bool operator==(const T& val)
-        {
-            return hasValue && value == val;
-        }
-
-        T value;
-        bool hasValue;
+        // TODO
     };
 }
 

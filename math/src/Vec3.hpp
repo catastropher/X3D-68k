@@ -107,6 +107,15 @@ namespace X3D
             return convert<T>(sqrtf(xx * xx + yy * yy + zz * zz));
         }
 
+        template<typename U>
+        Vec3Template<U> toVec3()
+        {
+            return Vec3Template<U>(
+                convert<U>(x),
+                convert<U>(y),
+                convert<U>(z));
+        }
+
         static Vec3Template origin()
         {
             return Vec3Template(0, 0, 0);

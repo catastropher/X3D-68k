@@ -15,8 +15,15 @@
 
 #pragma once
 
+#include "BoundRect.hpp"
+
+#include "Clamp.hpp"
+
 #include "Fp.hpp"
 #include "Sqrt.hpp"
 #include "Trig.hpp"
+
+#include "Vec2.hpp"
 #include "Vec3.hpp"
+#include "Vec4.hpp"
 

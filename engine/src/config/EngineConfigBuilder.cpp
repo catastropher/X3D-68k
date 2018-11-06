@@ -20,12 +20,19 @@ namespace X3D
     void EngineConfigBuilder::build(EngineConfig& dest)
     {
         buildSystem(dest.system);
+        buildGraphics(dest.graphics);
     }
 
     void EngineConfigBuilder::buildSystem(SystemConfig& config)
     {
         config.memoryManager.linearAllocatorSize = linearAllocatorSize;
         config.memoryManager.zoneAllocatorSize = zoneAllocatorSize;
+    }
+
+    void EngineConfigBuilder::buildGraphics(GraphicsConfig& config)
+    {
+        config.screen.w = screenW;
+        config.screen.h = screenH;
     }
 }
 

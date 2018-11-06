@@ -18,45 +18,24 @@
 namespace X3D
 {
     template<typename T>
-    struct Optional
+    T abs(T val)
     {
-        Optional()
-            : hasValue(false)
-        {
+        return val < 0 ? -val : val;
+    }
 
+    template<typename T>
+    T clamp(T val, T minVal, T maxVal)
+    {
+        if(val < minVal)
+        {
+            val = minVal;
+        }
+        else if(val >= maxVal)
+        {
+            val = maxVal;
         }
 
-        Optional(const T& value_)
-            : value(value_),
-            hasValue(true)
-        {
-
-        }
-
-        void operator=(const Optional& val)
-        {
-            value = val.value;
-            hasValue = val.hasValue;
-        }
-
-        void operator=(const T& val)
-        {
-            value = val;
-            hasValue = true;
-        }
-
-        void clear()
-        {
-            hasValue = false;
-        }
-
-        bool operator==(const T& val)
-        {
-            return hasValue && value == val;
-        }
-
-        T value;
-        bool hasValue;
-    };
+        return val;
+    }
 }
 

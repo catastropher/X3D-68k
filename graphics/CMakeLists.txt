@@ -18,6 +18,10 @@ cmake_minimum_required(VERSION 3.5)
 project(x3d-graphics LANGUAGES CXX)
 
 set(SOURCE
+    src/Canvas.cpp
+    src/Graphics.cpp
+    src/Screen.cpp
+    src/Services.cpp
     src/Texture.cpp
 )
 
@@ -36,7 +40,7 @@ target_compile_options(x3d-graphics PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wall -std=
 
 # Dependencies
 
-target_link_libraries(x3d-graphics x3d-system)
+target_link_libraries(x3d-graphics x3d-math x3d-system)
 
 
 ##############################################

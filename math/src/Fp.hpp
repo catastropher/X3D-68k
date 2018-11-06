@@ -19,6 +19,7 @@
 
 #include "Sqrt.hpp"
 #include "Limits.hpp"
+#include "Convert.hpp"
 
 namespace X3D
 {
@@ -218,6 +219,30 @@ namespace X3D
     inline constexpr fp maxValue()
     {
         return fp(maxValue<int>());
+    }
+
+    template<>
+    inline constexpr void convert(fp& from, int& to)
+    {
+        to = from.toInt();
+    }
+
+    template<>
+    inline constexpr void convert(int& from, fp& to)
+    {
+        to = fp::fromInt(from);
+    }
+
+    template<>
+    inline constexpr void convert(fp& from, float& to)
+    {
+        to = from.toFloat();
+    }
+
+    template<>
+    inline constexpr void convert(float& from, fp& to)
+    {
+        to = fp::fromFloat(from);
     }
 }
 

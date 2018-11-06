@@ -44,6 +44,7 @@ namespace X3D
 
     private:
         void buildSystem(SystemConfig& config);
+        void buildGraphics(GraphicsConfig& config);
 
         int linearAllocatorSize = 2 * 1024 * 1024;
         int zoneAllocatorSize = 64 * 1024;
