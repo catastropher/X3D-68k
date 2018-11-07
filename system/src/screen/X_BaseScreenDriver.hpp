@@ -39,7 +39,7 @@ namespace X3D
 
         void setTitle(const char* title);
 
-        void setPalette(Palette* palette);
+        void setPalette(const Palette* palette);
         Palette* getPalette();
         void updatePaletteColors(int colorStart, int total);
 
@@ -48,7 +48,7 @@ namespace X3D
         void getWindow(byte*& buf, int& w, int& h);
 
     protected:
-        Palette* currentPalette;
+        const Palette* currentPalette;
     };
 }
 

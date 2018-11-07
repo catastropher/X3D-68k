@@ -33,6 +33,7 @@ namespace X3D
     {
         config.screen.w = screenW;
         config.screen.h = screenH;
+        config.screen.palette = palette;
     }
 }
 

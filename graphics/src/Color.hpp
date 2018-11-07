@@ -15,7 +15,11 @@
 
 #include <X3D-System.hpp>
 
+#pragma once
+
 namespace X3D
 {
+    const int TOTAL_COLORS = 256;
+
     using Color = byte;
 }

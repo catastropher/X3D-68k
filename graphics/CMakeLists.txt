@@ -20,6 +20,7 @@ project(x3d-graphics LANGUAGES CXX)
 set(SOURCE
     src/Canvas.cpp
     src/Graphics.cpp
+    src/LightingTable.cpp
     src/Screen.cpp
     src/Services.cpp
     src/Texture.cpp

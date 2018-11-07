@@ -51,6 +51,7 @@ namespace X3D
 
         Optional<int> screenW;
         Optional<int> screenH;
+        const Palette* palette = Palette::getQuakeColorPalette();
     };
 }
 
