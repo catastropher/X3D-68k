@@ -15,6 +15,7 @@
 
 #include "Graphics.hpp"
 #include "Screen.hpp"
+#include "LightingTable.hpp"
 
 namespace X3D
 {
@@ -22,6 +23,7 @@ namespace X3D
     {
         try
         {
+            initService<LightingTable>(config.screen.palette);
             initService<Screen>(config.screen);
 
             Log::info("Init graphics library");

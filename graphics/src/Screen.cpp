@@ -21,8 +21,6 @@ namespace X3D
     {
         screenDriver = ServiceLocator::get<ScreenDriver>();
 
-        printf("Settings; %d\n", config.w.value);
-
         if(config.w.hasValue && config.h.hasValue)
         {
             ScreenSettings settings;
@@ -40,11 +38,22 @@ namespace X3D
             screenTexture.setTexels(texels, w, h);
 
             setTexture(&screenTexture);
-
-            screenDriver->setPalette(Palette::getQuakeColorPalette());
-
-            redraw();
         }
+
+        screenDriver->setPalette(config.palette);
+
+        LightingTable* table = ServiceLocator::get<LightingTable>();
+        setLightingTable(table);
+
+        for(int i = 0; i < 256; ++i)
+        {
+            for(int j = 0; j < 64; ++j)
+            {
+                screenTexture.setTexel(i, j, table->table[i][j]);
+            }
+        }
+
+        redraw();
     }
 
     void Screen::redraw()

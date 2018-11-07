@@ -17,13 +17,24 @@
 
 #include <X3D-System.hpp>
 
+#include "Color.hpp"
+
 namespace X3D
 {
-    struct ScreenConfig
+    class LightingTable
     {
-        Optional<int> w;
-        Optional<int> h;
-        const Palette* palette;
+    public:
+        static const int SHADES_PER_COLOR = 64;
+
+        void init(const Palette* palette);
+
+        Color table[TOTAL_COLORS][SHADES_PER_COLOR];
+
+    private:
+        int scaleIntensityByShade(int intensity, int shade)
+        {
+            return (intensity * shade + SHADES_PER_COLOR / 4) / (SHADES_PER_COLOR / 2);
+        }
     };
 }
 

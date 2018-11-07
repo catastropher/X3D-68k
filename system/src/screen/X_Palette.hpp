@@ -24,9 +24,18 @@ namespace X3D
     public:
         static const int TOTAL_COLORS = 256;
 
+        const unsigned char* getRGB(int color) const
+        {
+            return colors[color];
+        }
+
+        int nearestColor(int r, int g, int b) const;
+        int colorDistance(int color, int r, int g, int b) const;
+
         static Palette* getQuakeColorPalette();
         
         byte colors[TOTAL_COLORS][3];
+        int totalFullbrights;
     };
 }
 

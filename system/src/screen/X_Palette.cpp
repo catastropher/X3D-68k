@@ -277,12 +277,43 @@ namespace X3D
             { 255, 247, 199 },
             { 255, 255, 255 },
             { 159,  91,  83 }
-        }
+        },
+        .totalFullbrights = 32
     };
 
     Palette* Palette::getQuakeColorPalette()
     {
         return &quakeColorPalette;
+    }
+
+    int Palette::colorDistance(int color, int r, int g, int b) const
+    {
+        const unsigned char* colorRGB = getRGB(color);
+        
+        int dR = r - colorRGB[0];
+        int dG = g - colorRGB[1];
+        int dB = b - colorRGB[2];
+        
+        return dR * dR + dG * dG + dB * dB;
+    }
+
+    int Palette::nearestColor(int r, int g, int b) const
+    {
+        int minDest = 0x7FFFFFFF;
+        int closestColor = 0;
+
+        for(int i = 0; i < TOTAL_COLORS; ++i)
+        {
+            int dist = colorDistance(i, r, g, b);
+
+            if(dist < minDest)
+            {
+                minDest = dist;
+                closestColor = i;
+            }
+        }
+
+        return closestColor;
     }
 }
 

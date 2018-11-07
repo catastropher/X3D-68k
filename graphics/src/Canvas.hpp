@@ -20,6 +20,7 @@
 #include "Texture.hpp"
 #include "RasterFont.hpp"
 #include "ColorMap.hpp"
+#include "LightingTable.hpp"
 
 namespace X3D
 {
@@ -41,6 +42,11 @@ namespace X3D
             texture = texture_;
             maxX = fp::fromInt(texture->getW() - 1);
             maxY = fp::fromInt(texture->getH() - 1);
+        }
+
+        void setLightingTable(LightingTable* lightingTable_)
+        {
+            lightingTable = lightingTable_;
         }
 
         void clamp(Vec2& v)
@@ -86,6 +92,7 @@ namespace X3D
         Texture* texture;
         fp maxX;
         fp maxY;
+        LightingTable* lightingTable;
     };
 }
 

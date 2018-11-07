@@ -77,7 +77,7 @@ namespace X3D
             openWindow(settings);
         }
 
-        void setPalette(Palette* palette)
+        void setPalette(const Palette* palette)
         {
             currentPalette = palette;
             updatePaletteColors(0, Palette::TOTAL_COLORS);
@@ -87,7 +87,7 @@ namespace X3D
         {
             for(int i = colorStart; i < colorStart + total; ++i)
             {
-                unsigned char* color = currentPalette->colors[i];
+                const unsigned char* color = currentPalette->getRGB(i);
 
                 paletteColors[i].r = color[0];
                 paletteColors[i].g = color[1];

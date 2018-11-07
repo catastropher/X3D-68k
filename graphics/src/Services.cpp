@@ -16,15 +16,23 @@
 #include <X3D-System.hpp>
 
 #include "Screen.hpp"
+#include "LightingTable.hpp"
 
 namespace X3D
 {
     static Screen g_screen;
+    static LightingTable g_lightingTable;
 
     template<>
     Screen* ServiceLocator::get()
     {
         return &g_screen;
+    }
+
+    template<>
+    LightingTable* ServiceLocator::get()
+    {
+        return & g_lightingTable;
     }
 }
 
