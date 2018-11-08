@@ -15,11 +15,37 @@
 
 #pragma once
 
+#include <X3D-System.hpp>
+
+#include "Color.hpp"
+
 namespace X3D
 {
     class RasterFont
     {
-        // TODO
+    public:
+        int getCharW() const
+        {
+            return charW;
+        }
+
+        int getCharH() const
+        {
+            return charH;
+        }
+
+        Color* getCharTexels(int c) const
+        {
+            return fontTexels + c * texelsPerChar;
+        }
+
+        void loadFromFile(FilePath& path);
+
+    public:
+        Color* fontTexels;
+        int charW;
+        int charH;
+        int texelsPerChar;
     };
 }
 

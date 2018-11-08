@@ -45,6 +45,12 @@ namespace X3D
             return dest.size == count * sizeof(T);
         }
 
+        template<typename T>
+        void read(T* dest, int count)
+        {
+            fread(dest, sizeof(T), count, handle->file);
+        }
+
         void seek(int offset)
         {
             fseek(handle->file, offset, SEEK_SET);

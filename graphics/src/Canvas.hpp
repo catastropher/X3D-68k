@@ -77,10 +77,12 @@ namespace X3D
         void drawPoint(Vec2i pos, Color color);     // TODO
         Color getPoint(Vec2i pos);  // TODO
 
-        void blitTexture(BlitTexture& tex); // TODO
+        void blitTexture(const Texture& tex, Vec2i pos);
+        void blitTextureClipped(const Texture& tex, Vec2i pos);
 
         void drawChar(RasterFont& font, char c);    // TODO
-        void drawString(RasterFont& font, const char* str); // TODO
+        void drawString(const char* str, const RasterFont& font, Vec2i pos); // TODO
+
 
         void applyColorMap(ColorMap& map, Vec2i topLeft, Vec2i bottomRight);    // TODO
 

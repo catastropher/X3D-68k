@@ -21,6 +21,9 @@
 // error
 #include "error/X_SystemException.hpp"
 
+// filesystem
+#include "filesystem/X_FilePath.hpp"
+
 // log
 #include "log/X_Log.hpp"
 

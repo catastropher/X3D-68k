@@ -159,4 +159,36 @@ namespace X3D
     void Canvas::drawRectFilled(const BoundRecti& rect, Color color)
     {
     }
+
+    void Canvas::drawString(const char* str, const RasterFont& font, Vec2i pos)
+    {
+        // TODO: maybe implement clipping?
+
+        while(*str != '\0')
+        {
+            Color* charTexels = font.getCharTexels(*str);
+
+            Texture charTexture(font.getCharW(), font.getCharH(), charTexels);
+
+            blitTexture(charTexture, pos);
+
+            pos.x += charTexture.getW();
+
+            ++str;
+        }
+    }
+
+    void Canvas::blitTexture(const Texture& tex, Vec2i pos)
+    {
+        for(int i = 0; i < tex.getH(); ++i)
+        {
+            for(int j = 0; j < tex.getW(); ++j)
+            {
+                texture->setTexel(
+                    j + pos.x,
+                    i + pos.y,
+                    tex.getTexel(j, i));
+            }
+        }
+    }
 }
