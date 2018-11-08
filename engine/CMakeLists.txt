@@ -36,7 +36,7 @@ target_include_directories(x3d-engine
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-target_compile_options(x3d-engine PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wall -std=c++14>)
+target_compile_options(x3d-engine PRIVATE -Wall -std=c++14)
 
 ##############################################
 # Installation instructions
