@@ -21,6 +21,7 @@ set(SOURCE
     src/Canvas.cpp
     src/Graphics.cpp
     src/LightingTable.cpp
+    src/RasterFont.cpp
     src/Screen.cpp
     src/Services.cpp
     src/Texture.cpp

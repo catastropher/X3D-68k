@@ -57,7 +57,7 @@ namespace X3D
         texels = (Color*)memoryManager->alloc(totalTexels() * sizeof(Color), source);
     }
 
-    void ManagedTexture::readFromFile(FilePath& path)
+    void ManagedTexture::loadFromFile(FilePath& path)
     {
         FileReader reader(path);
 
@@ -85,9 +85,13 @@ namespace X3D
         w = texW;
         h = texH;
 
+        printf("Loaded w: %d, h: %d\n", w, h);
+
         auto memoryManager = ServiceLocator::get<MemoryManager>();
 
         texels = (Color*)memoryManager->alloc(w * h * sizeof(Color), source);
+
+        reader.read(texels, w * h);
     }
 }
 

@@ -75,7 +75,7 @@ namespace X3D
             texels[texelIndex(pos.x, pos.y)] = color;
         }
 
-        Color getTexel(int x, int y)
+        Color getTexel(int x, int y) const
         {
             return texels[texelIndex(x, y)];
         }
@@ -117,7 +117,7 @@ namespace X3D
         ManagedTexture(int w_, int h_, AllocationSource source_ = AllocationSource::zone);
 
         void resize(int newW, int newH);
-        void readFromFile(FilePath& path);
+        void loadFromFile(FilePath& path);
 
         ~ManagedTexture();
 

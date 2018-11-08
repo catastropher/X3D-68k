@@ -15,6 +15,8 @@
 
 #include "Screen.hpp"
 
+#include "RasterFont.hpp"
+
 namespace X3D
 {
     void Screen::init(ScreenConfig& config)
@@ -45,15 +47,15 @@ namespace X3D
         LightingTable* table = ServiceLocator::get<LightingTable>();
         setLightingTable(table);
 
-        for(int i = 0; i < 256; ++i)
-        {
-            for(int j = 0; j < 64; ++j)
-            {
-                screenTexture.setTexel(i, j, table->table[i][j]);
-            }
-        }
+        FilePath path("font.xtex");
+
+        RasterFont font;
+        font.loadFromFile(path);
+
+        drawString("Hello world!!!", font, { 100, 100 });
 
         redraw();
+        
     }
 
     void Screen::redraw()
