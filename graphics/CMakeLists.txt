@@ -37,7 +37,7 @@ target_include_directories(x3d-graphics
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
-target_compile_options(x3d-graphics PRIVATE $<$<CXX_COMPILER_ID:GNU>:-Wall -std=c++14>)
+target_compile_options(x3d-graphics PRIVATE -Wall -std=c++14)
 
 # Dependencies
 
