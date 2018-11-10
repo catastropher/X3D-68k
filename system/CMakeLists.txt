@@ -29,6 +29,9 @@ set(SOURCE
     # instance
     src/instance/X_System.cpp
 
+    # keys
+    src/keys/Sdl1KeyboardDriver.cpp
+
     # log
     src/log/X_Log.cpp
 

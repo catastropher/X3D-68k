@@ -65,5 +65,8 @@ namespace X3D
 
     template<>
     ScreenDriver* ServiceLocator::get() { return &g_platform.screenDriver; }
+
+    template<>
+    KeyboardDriver* ServiceLocator::get() { return &g_platform.keyboardDriver; }
 }
 

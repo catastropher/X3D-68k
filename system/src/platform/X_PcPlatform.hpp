@@ -20,10 +20,11 @@
 #include "X_BasePlatform.hpp"
 #include "screen/X_PcScreenDriver.hpp"
 #include "log/X_Log.hpp"
+#include "keys/Sdl1KeyboardDriver.hpp"
 
 namespace X3D
 {
-    class PcPlatform : public BasePlatform<PcPlatform, PcScreenDriver>
+    class PcPlatform : public BasePlatform<PcPlatform, PcScreenDriver, Sdl1KeyboardDriver>
     {
     public:
         void init()
@@ -42,11 +43,7 @@ namespace X3D
 
         void update()
         {
-            SDL_Event event;
-            while(SDL_PollEvent(&event))
-            {
-                
-            }
+            keyboardDriver.update();
         }
     };
 }

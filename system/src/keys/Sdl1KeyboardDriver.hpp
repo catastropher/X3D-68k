@@ -15,34 +15,23 @@
 
 #pragma once
 
+#include "KeyboardInterface.hpp"
+
 namespace X3D
 {
-    template<
-        typename TPlatform,
-        typename TScreenDriver,
-        typename TKeyboardDriver>
-    class BasePlatform
+    class Sdl1KeyboardDriver : public KeyboardInterface
     {
     public:
         void init();
         void cleanup();
+
         void update();
 
-        TScreenDriver screenDriver;
-        TKeyboardDriver keyboardDriver;
+    private:
+        void sendSdlKeyPress(int sdlKey);
+        void sendSdlKeyRelease(int sdlKey);
 
-    protected:
-        void initModules()
-        {
-            screenDriver.init();
-            keyboardDriver.init();
-        }
-
-        void cleanupModules()
-        {
-            screenDriver.cleanup();
-            keyboardDriver.cleanup();
-        }
+        int mapSdlKeyToX3dKey(int sdlKey);
     };
 }
 
