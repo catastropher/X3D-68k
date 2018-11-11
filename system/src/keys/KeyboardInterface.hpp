@@ -15,34 +15,35 @@
 
 #pragma once
 
+#include "KeyState.hpp"
+
 namespace X3D
 {
-    template<
-        typename TPlatform,
-        typename TScreenDriver,
-        typename TKeyboardDriver>
-    class BasePlatform
+    class KeyboardInterface
     {
     public:
         void init();
         void cleanup();
+
+        void sendKeyPress(int key)
+        {
+            keyState.setKey(key);
+        }
+
+        void sendKeyRelease(int key)
+        {
+            keyState.resetKey(key);
+        }
+
+        const KeyState& getKeyState()
+        {
+            return keyState;
+        }
+
         void update();
 
-        TScreenDriver screenDriver;
-        TKeyboardDriver keyboardDriver;
-
     protected:
-        void initModules()
-        {
-            screenDriver.init();
-            keyboardDriver.init();
-        }
-
-        void cleanupModules()
-        {
-            screenDriver.cleanup();
-            keyboardDriver.cleanup();
-        }
+        KeyState keyState;
     };
 }
 

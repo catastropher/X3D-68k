@@ -31,7 +31,31 @@ void test()
 
     Engine::init(config);
 
-    SDL_Delay(5000);
+    auto keyboard = ServiceLocator::get<KeyboardDriver>();
+    auto& state = keyboard->getKeyState();
+
+    auto screen = ServiceLocator::get<Screen>();
+
+    RasterFont font;
+    FilePath path("font.xtex");
+    font.loadFromFile(path);
+
+    while(!state.keyIsSet(KEY_ESCAPE))
+    {
+        screen->fill(0);
+        keyboard->update();
+
+        if(state.keyIsSet(KEY_ENTER))
+        {
+            screen->drawString("Enter is pressed", font, { 0, 0 });
+        }
+        else
+        {
+            screen->drawString("Enter is not pressed", font, { 0, 0 });
+        }
+
+        screen->redraw();
+    }
 }
 
 int main()
