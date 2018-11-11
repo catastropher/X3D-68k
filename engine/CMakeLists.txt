@@ -23,6 +23,12 @@ set(SOURCE
 
     # engine
     src/engine/Engine.cpp
+
+    # game
+    src/game/BaseGame.cpp
+
+    # service
+    src/service/Services.cpp
 )
 
 add_library(x3d-engine STATIC ${SOURCE})

@@ -13,41 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include "X3D-System.hpp"
-#include "X3D-graphics.hpp"
 
 #include "render/Renderer.hpp"
 
 namespace X3D
 {
-    struct EngineRoot
+    static Renderer g_renderer;
+
+    template<>
+    Renderer* ServiceLocator::get()
     {
-        EngineRoot()
-        {
-            // engine
-            renderer = ServiceLocator::get<Renderer>();
-
-            // graphics
-            screen = ServiceLocator::get<Screen>();            
-
-            // system
-            memoryManager = ServiceLocator::get<MemoryManager>();
-            platform = ServiceLocator::get<Platform>();
-            keyboardDriver = ServiceLocator::get<KeyboardDriver>();
-        }
-
-        // engine
-        Renderer* renderer;
-
-        // graphics
-        Screen* screen;
-
-        // system
-        MemoryManager* memoryManager;
-        Platform* platform;
-        KeyboardDriver* keyboardDriver;
-    };
+        return &g_renderer;
+    }
 }
 

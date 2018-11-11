@@ -19,44 +19,31 @@
 
 namespace X3D
 {
-    template<typename TGame>
     class BaseGame : public EngineRoot
     {
     public:
         void run()
         {
-            static_cast<TGame*>(this)->init();
-
+            init();
             gameloop();
-
-            static_cast<TGame*>(this)->cleanup();
-        }
-
-    protected:
-        void init()
-        {
-
-        }
-
-        void cleanup()
-        {
-
-        }
-
-        void gameloop()
-        {
-
-            renderer->renderFrame();
+            cleanup();
         }
 
         void quit()
         {
-            
+            quitOnNextFrame = true;
         }
 
-    private:
-        bool isDone = false;
+    protected:
+        virtual void init() { }
+        virtual void cleanup() { }
+        virtual void renderHud() { }
+        virtual void beginFrame() { }
 
+        void gameloop();
+
+    private:
+        bool quitOnNextFrame = false;
     };
 }
 
