@@ -48,11 +48,16 @@ set(SOURCE
 
     # service
     src/service/X_Services.cpp
+
+    # time
+    src/time/Time.cpp
 )
 
 find_package(SDL REQUIRED)
 
 add_library(x3d-system STATIC ${SOURCE})
+
+target_link_libraries(x3d-system x3d-math)
 
 set_target_properties(x3d-system PROPERTIES EXPORT_NAME system)
 

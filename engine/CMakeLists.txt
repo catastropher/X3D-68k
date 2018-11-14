@@ -21,6 +21,9 @@ set(SOURCE
     # config
     src/config/EngineConfigBuilder.cpp
 
+    # entity
+    src/entity/EntityDictionary.cpp
+
     # engine
     src/engine/Engine.cpp
 

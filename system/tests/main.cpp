@@ -19,6 +19,23 @@
 
 using namespace X3D;
 
+class PlayerEntity : public BaseEntity<PlayerEntity>
+{
+public:
+    StringId getTypeId()
+    {
+        return "player"_sid;
+    }
+};
+
+class EnemyEntity : public BaseEntity<EnemyEntity>
+{
+    StringId getTypeId()
+    {
+        return "enemy"_sid;
+    }
+};
+
 class Game : public BaseGame
 {
 public:
@@ -48,6 +65,11 @@ private:
     RasterFont font;
 };
 
+void printTypeId(IEntity* entity)
+{
+    entity->getTypeId();
+}
+
 void test()
 {
     EngineConfig config;
@@ -63,6 +85,8 @@ void test()
     Game game;
     game.run();
 }
+
+#include <typeinfo>
 
 int main()
 {

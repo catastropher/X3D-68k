@@ -15,16 +15,11 @@
 
 #pragma once
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+namespace X3D
+{
+    static inline void fatalError(const char* str, ...)
+    {
 
-// engine
-#include "engine/Engine.hpp"
-
-// entity
-#include "entity/Entity.hpp"
-
-// game
-#include "game/BaseGame.hpp"
+    }
+}
 

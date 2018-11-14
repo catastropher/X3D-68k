@@ -19,6 +19,7 @@
 #include "config/X_SystemConfig.hpp"
 
 // error
+#include "error/Error.hpp"
 #include "error/X_SystemException.hpp"
 
 // filesystem
@@ -36,4 +37,10 @@
 
 // platform
 #include "platform/X_Platform.hpp"
+
+// resource
+#include "resource/X_StringId.hpp"
+
+// time
+#include "time/Time.hpp"
 
