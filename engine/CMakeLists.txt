@@ -21,8 +21,17 @@ set(SOURCE
     # config
     src/config/EngineConfigBuilder.cpp
 
+    # entity
+    src/entity/EntityDictionary.cpp
+
     # engine
     src/engine/Engine.cpp
+
+    # game
+    src/game/BaseGame.cpp
+
+    # service
+    src/service/Services.cpp
 )
 
 add_library(x3d-engine STATIC ${SOURCE})

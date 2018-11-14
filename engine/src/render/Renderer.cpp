@@ -13,18 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Renderer.hpp"
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+namespace X3D
+{
+    
+}
 
-// engine
-#include "engine/Engine.hpp"
-
-// entity
-#include "entity/Entity.hpp"
-
-// game
-#include "game/BaseGame.hpp"
 

@@ -15,16 +15,35 @@
 
 #pragma once
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+#include "engine/EngineRoot.hpp"
 
-// engine
-#include "engine/Engine.hpp"
+namespace X3D
+{
+    class BaseGame : public EngineRoot
+    {
+    public:
+        void run()
+        {
+            init();
+            gameloop();
+            cleanup();
+        }
 
-// entity
-#include "entity/Entity.hpp"
+        void quit()
+        {
+            quitOnNextFrame = true;
+        }
 
-// game
-#include "game/BaseGame.hpp"
+    protected:
+        virtual void init() { }
+        virtual void cleanup() { }
+        virtual void renderHud() { }
+        virtual void beginFrame() { }
+
+        void gameloop();
+
+    private:
+        bool quitOnNextFrame = false;
+    };
+}
 

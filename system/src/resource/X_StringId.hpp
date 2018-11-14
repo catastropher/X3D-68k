@@ -17,14 +17,18 @@
 
 #include "memory/X_Crc32.hpp"
 
+#define DEBUG_STRING_ID
+
 namespace X3D
 {
     struct StringId
     {
         constexpr StringId(const char* str)
             : key(crc32Constexpr(str))
+#ifdef DEBUG_STRING_ID
+            ,str(str)
+#endif
         {
-
         }
 
         StringId(unsigned int key_)
@@ -33,12 +37,44 @@ namespace X3D
 
         }
 
+        const char* toString()
+        {
+#ifdef DEBUG_STRING_ID
+            return str;
+#else
+            static char str[16];
+            sprintf(str, "%u", key);
+#endif
+        }
+
         static StringId fromString(const char* str)
         {
+#ifdef DEBUG_STRING_ID
+            return StringId(str, crc32(str));
+#else
             return StringId(crc32(str));
+#endif
+        }
+
+        bool operator==(const StringId& id)
+        {
+            return key == id.key;
         }
 
         unsigned int key;
+        
+#ifdef DEBUG_STRING_ID
+        const char* str;
+    private:
+        StringId(const char* str_, unsigned int key_)
+            : key(key_),
+            str(str_)
+        {
+
+        }
+#endif
+
+
     };
 
     constexpr StringId operator ""_sid(const char* str, size_t len)

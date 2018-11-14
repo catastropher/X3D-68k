@@ -19,6 +19,57 @@
 
 using namespace X3D;
 
+class PlayerEntity : public BaseEntity<PlayerEntity>
+{
+public:
+    StringId getTypeId()
+    {
+        return "player"_sid;
+    }
+};
+
+class EnemyEntity : public BaseEntity<EnemyEntity>
+{
+    StringId getTypeId()
+    {
+        return "enemy"_sid;
+    }
+};
+
+class Game : public BaseGame
+{
+public:
+
+private:
+    void init()
+    {
+        FilePath path("font.xtex");
+        font.loadFromFile(path);
+    }
+
+    void renderHud()
+    {
+        screen->drawString("Hello world!", font, { 100, 100 });
+    }
+
+    void beginFrame()
+    {
+        auto& keyState = keyboardDriver->getKeyState();
+
+        if(keyState.keyIsSet(KEY_ESCAPE))
+        {
+            quit();
+        }
+    }
+
+    RasterFont font;
+};
+
+void printTypeId(IEntity* entity)
+{
+    entity->getTypeId();
+}
+
 void test()
 {
     EngineConfig config;
@@ -31,32 +82,11 @@ void test()
 
     Engine::init(config);
 
-    auto keyboard = ServiceLocator::get<KeyboardDriver>();
-    auto& state = keyboard->getKeyState();
-
-    auto screen = ServiceLocator::get<Screen>();
-
-    RasterFont font;
-    FilePath path("font.xtex");
-    font.loadFromFile(path);
-
-    while(!state.keyIsSet(KEY_ESCAPE))
-    {
-        screen->fill(0);
-        keyboard->update();
-
-        if(state.keyIsSet(KEY_ENTER))
-        {
-            screen->drawString("Enter is pressed", font, { 0, 0 });
-        }
-        else
-        {
-            screen->drawString("Enter is not pressed", font, { 0, 0 });
-        }
-
-        screen->redraw();
-    }
+    Game game;
+    game.run();
 }
+
+#include <typeinfo>
 
 int main()
 {

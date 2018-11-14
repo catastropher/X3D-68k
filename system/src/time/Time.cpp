@@ -13,18 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include <ctime>
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+#include "Time.hpp"
 
-// engine
-#include "engine/Engine.hpp"
-
-// entity
-#include "entity/Entity.hpp"
-
-// game
-#include "game/BaseGame.hpp"
+namespace X3D
+{
+    Time Time::now()
+    {
+        // FIXME: will this overflow?
+        return fp(0x10000 * clock() / CLOCKS_PER_SEC);
+    }
+}
 

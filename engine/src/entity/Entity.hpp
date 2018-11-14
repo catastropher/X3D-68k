@@ -15,16 +15,31 @@
 
 #pragma once
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+#include <typeinfo>
 
-// engine
-#include "engine/Engine.hpp"
+#include "X3D-System.hpp"
+#include "X3D-math.hpp"
 
-// entity
-#include "entity/Entity.hpp"
+namespace X3D
+{
+    class IEntity
+    {
+    public:
+        virtual StringId getTypeId() = 0;
 
-// game
-#include "game/BaseGame.hpp"
+    protected:
+        int id;
+
+    private:
+    };
+
+    template<typename TEntity>
+    class BaseEntity : public IEntity
+    {
+    public:
+
+    private:
+        
+    };
+}
 

@@ -65,7 +65,7 @@ namespace X3D
             return *this;
         }
 
-        char operator[](int index) const
+        char& operator[](int index) const
         {
             return buf[index];
         }
@@ -110,6 +110,11 @@ namespace X3D
         char* getBuf()
         {
             return buf;
+        }
+
+        void clear()
+        {
+            buf[0] = '\0';
         }
 
     private:

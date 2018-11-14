@@ -13,18 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "X3D-System.hpp"
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+#include "render/Renderer.hpp"
 
-// engine
-#include "engine/Engine.hpp"
+namespace X3D
+{
+    static Renderer g_renderer;
 
-// entity
-#include "entity/Entity.hpp"
-
-// game
-#include "game/BaseGame.hpp"
+    template<>
+    Renderer* ServiceLocator::get()
+    {
+        return &g_renderer;
+    }
+}
 

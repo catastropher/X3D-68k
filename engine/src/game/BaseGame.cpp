@@ -13,18 +13,23 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "BaseGame.hpp"
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+namespace X3D
+{
+    void BaseGame::gameloop()
+    {
+        while(!quitOnNextFrame)
+        {
+            beginFrame();
 
-// engine
-#include "engine/Engine.hpp"
+            platform->update();
 
-// entity
-#include "entity/Entity.hpp"
+            renderer->renderFrame();
+            renderHud();
 
-// game
-#include "game/BaseGame.hpp"
+            screen->redraw();
+        }
+    }
+}
 

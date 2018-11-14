@@ -15,16 +15,15 @@
 
 #pragma once
 
-// config
-#include "config/EngineConfig.hpp"
-#include "config/EngineConfigBuilder.hpp"
+namespace X3D
+{
+    class GameObjectManager
+    {
+    public:
+        
 
-// engine
-#include "engine/Engine.hpp"
+    private:
 
-// entity
-#include "entity/Entity.hpp"
-
-// game
-#include "game/BaseGame.hpp"
+    };
+};
 
