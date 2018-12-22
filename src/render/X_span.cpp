@@ -176,7 +176,7 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     context->mipLevel = renderContext->cam->viewport.closestMipLevelForZ(fp(surface->closestZ));
     context->viewport = &renderContext->cam->viewport;
 
-    if(surface->flags.isSet(SURFACE_FILL_SOLID))
+    if(surface->flags.hasFlag(SURFACE_FILL_SOLID))
     {
         return;
     }
@@ -380,7 +380,7 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
     return;
  #endif
      
-    if(context->surface->flags.isSet(SURFACE_FILL_SOLID))
+    if(context->surface->flags.hasFlag(SURFACE_FILL_SOLID))
     {
         X_Color fillColor = context->surface->getSolidFillColor();
 

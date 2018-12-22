@@ -57,7 +57,7 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
     
     auto moveFlags = moveLogic.getMovementFlags();
 
-    if(moveFlags.isSet(IT_ON_FLOOR))
+    if(moveFlags.hasFlag(IT_ON_FLOOR))
     {
         applyFriction();
         collider.flags.set(X_BOXCOLLIDER_ON_GROUND);

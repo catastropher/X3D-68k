@@ -70,7 +70,7 @@ public:
 
     bool potentiallyHitStep()
     {
-        return flags.isSet(IT_HIT_VERTICAL_WALL);
+        return flags.hasFlag(IT_HIT_VERTICAL_WALL);
     }
 
 private:

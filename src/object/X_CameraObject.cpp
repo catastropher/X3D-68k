@@ -110,16 +110,9 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     x_assert(renderContext != NULL, "No render context");
     x_assert(renderContext->engineContext != NULL, "No engine context in render context");
     
-    // FIXME: why is this drawn here???
-    if(!x_engine_level_is_loaded(renderContext->engineContext))
-    {
-        renderContext->canvas->drawStr("No level loaded", *renderContext->engineContext->getMainFont(), { 0, 0});
-        return;
-    }
-    
     int currentFrame = x_enginecontext_get_frame(renderContext->engineContext);
     
-    if(!cam->flags.isSet(CAMERA_OVERRIDE_PVS))
+    if(!cam->flags.hasFlag(CAMERA_OVERRIDE_PVS))
     {
         x_cameraobject_determine_current_bspleaf(cam, renderContext);
     }

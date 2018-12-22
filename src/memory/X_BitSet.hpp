@@ -108,7 +108,7 @@ public:
         bitset.setFromMask(set.getMask());
     }
 
-    bool isSet(T flag)
+    bool hasFlag(T flag)
     {
         return bitset.isSetFromMask((int)flag);
     }

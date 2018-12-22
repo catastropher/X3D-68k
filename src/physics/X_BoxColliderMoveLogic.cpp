@@ -36,14 +36,14 @@ bool BoxColliderMoveLogic::tryMoveNormally()
 
     runMoveIterations();
 
-    if(!flags.isSet(IT_MOVE_SUCCESS))
+    if(!flags.hasFlag(IT_MOVE_SUCCESS))
     {
         comeToDeadStop();
     }
     
     tryStickToFloor();
 
-    return flags.isSet(IT_MOVE_SUCCESS);
+    return flags.hasFlag(IT_MOVE_SUCCESS);
 }
 
 bool BoxColliderMoveLogic::tryMoveUpStep()
@@ -56,7 +56,7 @@ bool BoxColliderMoveLogic::tryMoveUpStep()
 
     runMoveIterations();
 
-    bool successfullyClimbedStep = flags.isSet(IT_MOVE_SUCCESS)
+    bool successfullyClimbedStep = flags.hasFlag(IT_MOVE_SUCCESS)
         && tryPushIntoGround(MAX_STEP_SIZE - fp::fromFloat(1))
         && planeIsFloorSurface(lastHitWall.plane);
     
@@ -112,7 +112,7 @@ void BoxColliderMoveLogic::runMoveIterations()
 {
     const int MAX_ITERATIONS = 4;
 
-    for(int i = 0; i < MAX_ITERATIONS && !flags.isSet(IT_MOVE_SUCCESS); ++i)
+    for(int i = 0; i < MAX_ITERATIONS && !flags.hasFlag(IT_MOVE_SUCCESS); ++i)
     {
         moveAndAdjustVelocity();
     }

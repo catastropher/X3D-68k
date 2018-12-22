@@ -875,7 +875,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     for(X_AE_Surface* surface = context->surfaces.begin(); surface != context->surfaces.end(); ++surface)
     {
-        if(surface->flags.isSet(SURFACE_NO_DRAW_SPANS))
+        if(surface->flags.hasFlag(SURFACE_NO_DRAW_SPANS))
         {
             ++count;
             continue;

@@ -160,7 +160,7 @@ void X_BspLevel::renderPortals(X_RenderContext& renderContext)
                 portal->aeSurface->flags.set(SURFACE_NO_DRAW_SPANS);
             }
 
-            if(portal->flags.isSet(PORTAL_DRAW_OUTLINE))
+            if(portal->flags.hasFlag(PORTAL_DRAW_OUTLINE))
             {
                 Vec3fp vertices[16];
                 Polygon3 outline(vertices, 16);
