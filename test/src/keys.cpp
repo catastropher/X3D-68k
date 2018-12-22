@@ -34,65 +34,12 @@ static Context* g_Context;
 
 bool physics = 1;
 
-static void cmd_demo(X_EngineContext* context, int argc, char* argv[])
-{
-    if(argc != 2)
-    {
-        x_console_print(context->getConsole(), "Usage demo [filename] -> begins recording a demo\n");
-        return;
-    }
-    
-    if(x_demorecorder_is_recording(&g_Context->demoRecorder))
-    {
-        x_console_print(context->getConsole(), "A demo is already recording\n");
-        return;
-    }
-    
-    if(!x_demorecorder_record(&g_Context->demoRecorder, argv[1]))
-        x_console_print(context->getConsole(), "Failed to start recording demo");
-    
-    x_keystate_reset_keys(context->getKeyState());
-    x_console_force_close(context->getConsole());
-}
-
-static void cmd_playdemo(X_EngineContext* context, int argc, char* argv[])
-{
-    if(argc < 2)
-    {
-        x_console_print(context->getConsole(), "Usage playdemo [filename] [opt base record filename] -> plays a demo\n");
-        return;
-    }
-    
-    if(x_demorecorder_is_recording(&g_Context->demoRecorder))
-    {
-        x_console_print(context->getConsole(), "A demo is being recorded\n");
-        return;
-    }
-    
-    if(!x_demoplayer_play(&g_Context->demoPlayer, argv[1]))
-        x_console_print(context->getConsole(), "Failed to start playing demo");
-    
-    x_keystate_reset_keys(context->getKeyState());
-    x_console_force_close(context->getConsole());
-    
-    if(argc != 3)
-        return;
-    
-    char recordCmd[X_FILENAME_MAX_LENGTH];
-    sprintf(recordCmd, "record %s 4", argv[2]);
-    
-    x_console_execute_cmd(context->getConsole(), recordCmd);
-}
-
 void init_keys(Context* context)
 {
     g_Context = context;
     
     x_demorecorder_init(&context->demoRecorder, context->cam, context->engineContext->getKeyState());
     x_demoplayer_init(&context->demoPlayer, context->cam, context->engineContext->getKeyState());
-    
-    x_console_register_cmd(context->engineContext->getConsole(), "demo", cmd_demo);
-    x_console_register_cmd(context->engineContext->getConsole(), "playdemo", cmd_playdemo);
     
     x_console_register_var(context->engineContext->getConsole(), &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "3.0", 0);
     x_console_register_var(context->engineContext->getConsole(), &physics, "physics", X_CONSOLEVAR_BOOL, "1", 0);
@@ -103,56 +50,6 @@ void cleanup_keys(Context* context)
     x_demorecorder_cleanup(&context->demoRecorder);
     x_demoplayer_cleanup(&context->demoPlayer);
 }
-
-
-// void handle_key_events(X_EngineContext* context)
-// {
-//     SDL_Event ev;
-//     while(SDL_PollEvent(&ev))
-//     {
-//         if(ev.type == SDL_KEYDOWN)
-//         {
-//             sdlKeyState[ev.key.keysym.sym] = 1;
-//             
-//             int sdlKey;
-//             int unicodeSdlKey;
-//             
-//             int x3dKey;
-//             int unicodeX3dKey;
-//             
-// #ifndef __nspire__
-//             sdlKey = ev.key.keysym.sym;
-//             unicodeSdlKey = ev.key.keysym.unicode;
-//             
-//             if(!isprint(sdlKey))
-//                 unicodeSdlKey = sdlKey;
-//             
-//             x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
-//             unicodeX3dKey = convert_sdl_key_to_x3d_key(unicodeSdlKey);
-// #else
-//             sdlKey = ev.key.keysym.sym;
-//             unicodeSdlKey = sdlKey;
-//             x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
-//             unicodeX3dKey = x3dKey;
-// #endif
-//             
-//             if(x3dKey != INVALID_KEY)
-//                 x_keystate_send_key_press(&context->keystate, x3dKey, unicodeX3dKey);
-//         }
-//         else if(ev.type == SDL_KEYUP)
-//         {
-//             sdlKeyState[ev.key.keysym.sym] = 0;
-//             
-//             int sdlKey = ev.key.keysym.sym;
-//             int x3dKey = convert_sdl_key_to_x3d_key(sdlKey);
-//             
-//             if(x3dKey != INVALID_KEY)
-//                 x_keystate_send_key_release(&context->keystate, x3dKey);
-//         }
-//     }
-//     
-//     x_keystate_handle_key_repeat(&context->keystate, x_enginecontext_get_time(context));
-// }
 
 void handle_console_keys(X_EngineContext* context)
 {
