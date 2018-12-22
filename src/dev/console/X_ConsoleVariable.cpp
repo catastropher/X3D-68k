@@ -19,7 +19,7 @@
 #include "X_ConsoleVariableInt.hpp"
 
 template<typename ClassType, typename VarType>
-void X_Console::createVariable(const char* name, VarType& var)
+void Console::createVariable(const char* name, VarType& var)
 {
     auto cvar = Zone::alloc<ConsoleVariableInt>();
     new (cvar) ConsoleVariableInt(name, var);
@@ -27,7 +27,7 @@ void X_Console::createVariable(const char* name, VarType& var)
 }
 
 template<>
-void X_Console::addVariable(const char* name, int& var)
+void Console::addVariable(const char* name, int& var)
 {
     createVariable<ConsoleVariableInt, int>(name, var);
 }

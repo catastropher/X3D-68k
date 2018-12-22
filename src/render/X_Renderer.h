@@ -104,7 +104,7 @@ static inline X_Color x_renderer_get_shaded_color(X_Renderer* renderer, X_Color 
     return renderer->colorMap[(int)color * X_COLORMAP_SHADES_PER_COLOR + intensity];
 }
 
-void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov);
+void x_renderer_init(X_Renderer* renderer, Console* console, X_Screen* screen, int fov);
 void x_renderer_cleanup(X_Renderer* renderer);
 
 void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen);

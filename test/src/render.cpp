@@ -116,7 +116,7 @@ void render(Context* context)
     x_engine_render_frame(engineContext);
     draw_hud(engineContext);
     
-    if(x_console_is_open(engineContext->getConsole()))
+    //if(x_console_is_open(engineContext->getConsole()))
         x_console_render(engineContext->getConsole());
 }
 

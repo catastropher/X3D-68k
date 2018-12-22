@@ -143,7 +143,7 @@ static void cmd_exec(X_EngineContext* context, int argc, char* argv[])
     }
 }
 
-void x_console_register_builtin_commands(X_Console* console)
+void x_console_register_builtin_commands(Console* console)
 {
     x_console_register_cmd(console, "echo", cmd_echo);    
     x_console_register_cmd(console, "map", cmd_map);    

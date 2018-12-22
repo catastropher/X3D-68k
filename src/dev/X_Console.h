@@ -65,20 +65,11 @@ typedef struct X_ConsoleCmd
     X_ConsoleCmdHandler handler;    
 } X_ConsoleCmd;
 
-
-typedef enum X_ConsoleOpenState
-{
-    X_CONSOLE_STATE_OPEN,
-    X_CONSOLE_STATE_CLOSED,
-    X_CONSOLE_STATE_OPENING,
-    X_CONSOLE_STATE_CLOSING
-} X_ConsoleOpenState;
-
 #define X_CONSOLE_COMMAND_HISTORY_SIZE 10
 
 struct ConsoleVariable;
 
-typedef struct X_Console
+typedef struct Console
 {
     X_ConsoleVar* consoleVars;
     int totalConsoleVars;
@@ -96,19 +87,18 @@ typedef struct X_Console
     X_XString commandHistory[X_CONSOLE_COMMAND_HISTORY_SIZE];
     int commandHistorySize;
     int commandHistoryPos;
-    
-    bool showCursor;
-    X_Time lastCursorBlink;
+
     X_Key lastKeyPressed;
-    
-    X_ConsoleOpenState openState;
-    int renderYOffset;
-    X_Time consoleToggleTime;
 
     template<typename T>
     void addVariable(const char* name, T& var);
 
     ConsoleVariable* varHead;
+
+    const char* getLine(int lineNumber)
+    {
+        return text + lineNumber * (size.x + 1);
+    }
 
 private:
     template<typename ClassType, typename VarType>
@@ -116,35 +106,29 @@ private:
 
     void addVariableToList(ConsoleVariable* var);
 
-} X_Console;
+} Console;
 
-void x_console_open(X_Console* console);
-void x_console_close(X_Console* console);
-void x_console_force_close(X_Console* console);
+void x_console_open(Console* console);
+void x_console_close(Console* console);
+void x_console_force_close(Console* console);
 
-X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName);
-bool x_console_cmd_exists(X_Console* console, const char* cmdName);
-void x_console_register_cmd(X_Console* console, const char* name, X_ConsoleCmdHandler handler);
+X_ConsoleCmd* x_console_get_cmd(Console* console, const char* cmdName);
+bool x_console_cmd_exists(Console* console, const char* cmdName);
+void x_console_register_cmd(Console* console, const char* name, X_ConsoleCmdHandler handler);
 
-void x_console_register_var(X_Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig);
+void x_console_register_var(Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
-void x_console_init(X_Console* console, struct X_EngineContext* engineContext, X_Font* font);
-void x_console_cleanup(X_Console* console);
+void x_console_init(Console* console, struct X_EngineContext* engineContext, X_Font* font);
+void x_console_cleanup(Console* console);
 
-void x_console_clear(X_Console* console);
-bool x_console_var_exists(X_Console* console, const char* name);
-void x_console_print(X_Console* console, const char* str);
-void x_console_printf(X_Console* console, const char* format, ...);
-void x_console_render(X_Console* console);
+void x_console_clear(Console* console);
+bool x_console_var_exists(Console* console, const char* name);
+void x_console_print(Console* console, const char* str);
+void x_console_printf(Console* console, const char* format, ...);
+void x_console_render(Console* console);
 
-void x_console_send_key(X_Console* console, X_Key key);
+void x_console_send_key(Console* console, X_Key key);
 
-void x_console_execute_cmd(X_Console* console, const char* str);
-
-static inline bool x_console_is_open(const X_Console* console)
-{
-    return console->openState != X_CONSOLE_STATE_CLOSED;
-}
-
+void x_console_execute_cmd(Console* console, const char* str);
 

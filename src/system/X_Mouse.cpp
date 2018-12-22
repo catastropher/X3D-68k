@@ -36,19 +36,19 @@ static void cmd_mouselook(X_EngineContext* engineContext, int argc, char* argv[]
     state->offset.y = 0;
 }
 
-static void register_cmds(X_Console* console)
+static void register_cmds(Console* console)
 {
     x_console_register_cmd(console, "mouse.look", cmd_mouselook);
 }
 
-static void register_vars(X_MouseState* state, X_Console* console)
+static void register_vars(X_MouseState* state, Console* console)
 {
     x_console_register_var(console, &state->invert, "mouse.invert", X_CONSOLEVAR_BOOL, "0'", 1);
     x_console_register_var(console, &state->xSpeed, "mouse.xspeed", X_CONSOLEVAR_FP16X16, "1.0'", 1);
     x_console_register_var(console, &state->ySpeed, "mouse.yspeed", X_CONSOLEVAR_FP16X16, "1.0'", 1);
 }
 
-void x_mousestate_init(X_MouseState* state, X_Console* console, X_Screen* screen)
+void x_mousestate_init(X_MouseState* state, Console* console, X_Screen* screen)
 {
     state->screen = screen;
     state->mouseLook = 0;

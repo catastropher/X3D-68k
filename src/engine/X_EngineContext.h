@@ -40,7 +40,7 @@ typedef struct X_EngineContext
         queue = new EngineQueue(this);
         gameObjectFactory = new X_ObjectFactory;
         screen = new X_Screen;
-        console = new X_Console;
+        console = new Console;
         mainFont = new X_Font;
         keystate = new X_KeyState;
         mouseState = new X_MouseState;
@@ -50,7 +50,7 @@ typedef struct X_EngineContext
     
     X_ObjectFactory* getGameObjectFactory() const { return gameObjectFactory; }
     X_Screen* getScreen() const { return screen; }
-    X_Console* getConsole() const { return console; }
+    Console* getConsole() const { return console; }
     X_Font* getMainFont() const { return mainFont; }
     X_KeyState* getKeyState() const { return keystate; }
     X_MouseState* getMouseState() const { return mouseState; }
@@ -74,7 +74,7 @@ typedef struct X_EngineContext
 private:
     X_ObjectFactory* gameObjectFactory;
     X_Screen* screen;
-    X_Console* console;
+    Console* console;
     X_Font* mainFont;
     X_KeyState* keystate;
     X_MouseState* mouseState;

@@ -16,7 +16,7 @@
 #include "X_TokenLexer.h"
 #include "X_Console.h"
 
-void x_tokenlexer_init(X_TokenLexer* lexer, const char* inputStr, char* tokenBuf, int tokenBufSize, char** tokens, int maxTokens, X_Console* console)
+void x_tokenlexer_init(X_TokenLexer* lexer, const char* inputStr, char* tokenBuf, int tokenBufSize, char** tokens, int maxTokens, Console* console)
 {
     lexer->errorOccured = 0;
     lexer->inputStr = inputStr;

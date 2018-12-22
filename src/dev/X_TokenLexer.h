@@ -15,11 +15,11 @@
 
 #pragma once
 
-struct X_Console;
+struct Console;
 
 typedef struct X_TokenLexer
 {
-    struct X_Console* console;
+    struct Console* console;
     const char* inputStr;
     char* tokenBuf;
     char* tokenBufEnd;
@@ -29,6 +29,6 @@ typedef struct X_TokenLexer
     int totalTokens;
 } X_TokenLexer;
 
-void x_tokenlexer_init(X_TokenLexer* lexer, const char* inputStr, char* tokenBuf, int tokenBufSize, char** tokens, int maxTokens, struct X_Console* console);
+void x_tokenlexer_init(X_TokenLexer* lexer, const char* inputStr, char* tokenBuf, int tokenBufSize, char** tokens, int maxTokens, struct Console* console);
 void x_tokenlexer_tokenize(X_TokenLexer* lexer);
 

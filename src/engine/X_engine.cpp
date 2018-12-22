@@ -33,7 +33,7 @@ X_EngineContext* x_engine_get_context()
     return &g_engineContext;
 }
 
-X_Console* x_engine_get_console(void)
+Console* x_engine_get_console(void)
 {
     return g_engineContext.getConsole();
 }

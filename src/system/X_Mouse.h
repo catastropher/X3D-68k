@@ -41,9 +41,9 @@ typedef struct X_MouseState
     bool invert;
 } X_MouseState;
 
-struct X_Console;
+struct Console;
 
-void x_mousestate_init(X_MouseState* state, struct X_Console* console, X_Screen* screen);
+void x_mousestate_init(X_MouseState* state, struct Console* console, X_Screen* screen);
 void x_mousestate_set_pos(X_MouseState* state, X_Vec2 pos);
 void x_mousestate_show_cursor(X_MouseState* state, bool showCursor);
 void x_mousestate_update_pos(X_MouseState* state, X_Vec2 pos);

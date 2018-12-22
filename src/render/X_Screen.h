@@ -25,6 +25,8 @@ struct X_Screen;
 struct X_EngineContext;
 struct X_CameraObject;
 
+struct X_Font;
+
 typedef struct X_ScreenEventHandlers
 {
     void* userData;         // Pointer to user-defined data passed to screen updates
@@ -33,6 +35,8 @@ typedef struct X_ScreenEventHandlers
     void (*cleanupVideo)(struct X_EngineContext* context, void* userData);
     bool (*isValidResolution)(int w, int h);
 } X_ScreenEventHandlers;
+
+
 
 typedef struct X_Screen
 {

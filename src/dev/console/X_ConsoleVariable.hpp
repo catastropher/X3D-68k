@@ -31,5 +31,5 @@ struct ConsoleVariable
 };
 
 template<>
-void X_Console::addVariable(const char* name, int& var);
+void Console::addVariable(const char* name, int& var);
 

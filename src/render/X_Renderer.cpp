@@ -26,7 +26,7 @@
 #include "util/X_StopWatch.hpp"
 #include "level/X_Portal.hpp"
 
-static void x_renderer_init_console_vars(X_Renderer* renderer, X_Console* console)
+static void x_renderer_init_console_vars(X_Renderer* renderer, Console* console)
 {
     x_console_register_var(console, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
     x_console_register_var(console, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
@@ -239,7 +239,7 @@ static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
     renderer->dynamicLightsNeedingUpdated = 0;
 }
 
-static void x_renderer_console_cmds(X_Console* console)
+static void x_renderer_console_cmds(Console* console)
 {
     x_console_register_cmd(console, "res", cmd_res);
     x_console_register_cmd(console, "fov", cmd_fov);
@@ -262,7 +262,7 @@ static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen
     renderer->scaleScreen = 0;
 }
 
-void x_renderer_init(X_Renderer* renderer, X_Console* console, X_Screen* screen, int fov)
+void x_renderer_init(X_Renderer* renderer, Console* console, X_Screen* screen, int fov)
 {
     x_renderer_console_cmds(console);
     x_renderer_init_console_vars(renderer, console);

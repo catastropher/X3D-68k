@@ -28,27 +28,27 @@
 #include "X_TokenLexer.h"
 #include "console/X_ConsoleVariable.hpp"
 
-void  X_Console::addVariableToList(ConsoleVariable* var)
+void Console::addVariableToList(ConsoleVariable* var)
 {
     var->next = varHead;
     varHead = var;
 }
 
-void x_console_open(X_Console* console)
+void x_console_open(Console* console)
 {
-    console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
-    console->openState = X_CONSOLE_STATE_OPENING;
+    // console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
+    // console->openState = X_CONSOLE_STATE_OPENING;
 }
 
-void x_console_close(X_Console* console)
+void x_console_close(Console* console)
 {
-    console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
-    console->openState = X_CONSOLE_STATE_CLOSING;
+    // console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
+    // console->openState = X_CONSOLE_STATE_CLOSING;
 }
 
-void x_console_force_close(X_Console* console)
+void x_console_force_close(Console* console)
 {
-    console->openState = X_CONSOLE_STATE_CLOSED;
+    // console->openState = X_CONSOLE_STATE_CLOSED;
 }
 
 static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig)
@@ -61,7 +61,7 @@ static void x_consolevar_init(X_ConsoleVar* consoleVar, void* var, const char* n
     x_consolevar_set_value(consoleVar, initialValue);
 }
 
-static X_ConsoleVar* x_console_add_var(X_Console* console)
+static X_ConsoleVar* x_console_add_var(Console* console)
 {
     ++console->totalConsoleVars;
     console->consoleVars = (X_ConsoleVar*)x_realloc(console->consoleVars, console->totalConsoleVars * sizeof(X_ConsoleVar));
@@ -69,7 +69,7 @@ static X_ConsoleVar* x_console_add_var(X_Console* console)
     return console->consoleVars + console->totalConsoleVars - 1;    
 }
 
-void x_console_register_var(X_Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig)
+void x_console_register_var(Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig)
 {    
     if(x_console_cmd_exists(console, name))
     {
@@ -87,7 +87,7 @@ void x_console_register_var(X_Console* console, void* var, const char* name, X_C
     x_consolevar_init(consoleVar, var, name, type, initialValue, saveToConfig);
 }
 
-X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName)
+X_ConsoleCmd* x_console_get_cmd(Console* console, const char* cmdName)
 {
     for(int i = 0; i < console->totalConsoleCmds; ++i)
     {
@@ -98,12 +98,12 @@ X_ConsoleCmd* x_console_get_cmd(X_Console* console, const char* cmdName)
     return NULL;
 }
 
-bool x_console_cmd_exists(X_Console* console, const char* cmdName)
+bool x_console_cmd_exists(Console* console, const char* cmdName)
 {
     return x_console_get_cmd(console, cmdName) != NULL;
 }
 
-static X_ConsoleCmd* x_console_add_cmd(X_Console* console)
+static X_ConsoleCmd* x_console_add_cmd(Console* console)
 {
     ++console->totalConsoleCmds;
     console->consoleCmds = (X_ConsoleCmd*)x_realloc(console->consoleCmds, console->totalConsoleCmds * sizeof(X_ConsoleCmd));
@@ -111,7 +111,7 @@ static X_ConsoleCmd* x_console_add_cmd(X_Console* console)
     return console->consoleCmds + console->totalConsoleCmds - 1;
 }
 
-void x_console_register_cmd(X_Console* console, const char* name, X_ConsoleCmdHandler handler)
+void x_console_register_cmd(Console* console, const char* name, X_ConsoleCmdHandler handler)
 {    
     if(x_console_var_exists(console, name))
     {
@@ -130,7 +130,7 @@ void x_console_register_cmd(X_Console* console, const char* name, X_ConsoleCmdHa
     cmd->handler = handler;
 }
 
-static int x_console_bytes_in_line(const X_Console* console)
+static int x_console_bytes_in_line(const Console* console)
 {
     return console->size.x + 1;
 }
@@ -173,20 +173,15 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
     }
 }
 
-void x_console_register_builtin_commands(X_Console* console);
+void x_console_register_builtin_commands(Console* console);
 
-void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* font)
+void x_console_init(Console* console, X_EngineContext* engineContext, X_Font* font)
 {
-    console->openState = X_CONSOLE_STATE_CLOSED;
     console->cursor = x_vec2_make(0, 0);
     console->size.x = x_screen_w(engineContext->getScreen()) / font->getW();
     console->size.y = x_screen_h(engineContext->getScreen()) / font->getH() / 2;
     console->font = font;
     console->engineContext = engineContext;
-    console->renderYOffset = 0;
-    
-    console->lastCursorBlink = x_enginecontext_get_time(engineContext);
-    console->showCursor = 1;
     
     console->text = (char*)x_malloc(x_console_bytes_in_line(console) * console->size.y);
     x_console_clear(console);
@@ -206,7 +201,7 @@ void x_console_init(X_Console* console, X_EngineContext* engineContext, X_Font* 
     x_console_register_builtin_commands(console);
 }
 
-void x_console_clear(X_Console* console)
+void x_console_clear(Console* console)
 {
     for(int i = 0; i < console->size.y; ++i)
         console->text[i * x_console_bytes_in_line(console)] = '\0';
@@ -215,7 +210,7 @@ void x_console_clear(X_Console* console)
     console->input[0] = '\0';
 }
 
-void x_console_cleanup(X_Console* console)
+void x_console_cleanup(Console* console)
 {
     x_free(console->text);
     
@@ -226,7 +221,7 @@ void x_console_cleanup(X_Console* console)
     x_free(console->consoleVars);
 }
 
-X_ConsoleVar* x_console_get_var(X_Console* console, const char* varName)
+X_ConsoleVar* x_console_get_var(Console* console, const char* varName)
 {
     for(int i = 0; i < console->totalConsoleVars; ++i)
     {
@@ -237,30 +232,30 @@ X_ConsoleVar* x_console_get_var(X_Console* console, const char* varName)
     return NULL;
 }
 
-bool x_console_var_exists(X_Console* console, const char* name)
+bool x_console_var_exists(Console* console, const char* name)
 {
     return x_console_get_var(console, name) != NULL;
 }
 
 // Prints a character to the current line (without wrapping) and advances the cursor
-static void x_console_print_char(X_Console* console, char c)
+static void x_console_print_char(Console* console, char c)
 {
     console->text[console->cursor.y * x_console_bytes_in_line(console) + console->cursor.x] = c;
     ++console->cursor.x;
 }
 
 // Prints a characeter to the currentline (without wrapping) without advancing the cursor
-static void x_console_print_char_no_advance(X_Console* console, char c)
+static void x_console_print_char_no_advance(Console* console, char c)
 {
     console->text[console->cursor.y * x_console_bytes_in_line(console) + console->cursor.x] = c;
 }
 
-static char* x_console_start_of_line(X_Console* console, int line)
+static char* x_console_start_of_line(Console* console, int line)
 {
     return console->text + line * x_console_bytes_in_line(console);
 }
 
-static void x_console_scroll_one_line(X_Console* console)
+static void x_console_scroll_one_line(Console* console)
 {
     memmove(console->text, x_console_start_of_line(console, 1), x_console_bytes_in_line(console) * (console->size.y - 1));
     --console->cursor.y;
@@ -268,7 +263,7 @@ static void x_console_scroll_one_line(X_Console* console)
 }
 
 // Moves to the next line, scrolling the console if necessary
-static void x_console_newline(X_Console* console)
+static void x_console_newline(Console* console)
 {
     x_console_print_char(console, '\0');
     
@@ -301,7 +296,7 @@ static const char* find_end_of_word(const char* str)
     return endOfWord;
 }
 
-static bool x_console_word_should_wrap_to_next_line(X_Console* console, const char* wordStart, const char* wordEnd)
+static bool x_console_word_should_wrap_to_next_line(Console* console, const char* wordStart, const char* wordEnd)
 {
     int charsLeftOnCurrentLine = console->size.x - console->cursor.x - 1;
     int wordLength = wordEnd - wordStart;
@@ -309,7 +304,7 @@ static bool x_console_word_should_wrap_to_next_line(X_Console* console, const ch
     return charsLeftOnCurrentLine < wordLength;
 }
 
-static void x_console_print_handle_word_wrap(X_Console* console, const char** wordStart, const char* wordEnd)
+static void x_console_print_handle_word_wrap(Console* console, const char** wordStart, const char* wordEnd)
 {
     bool wrapToNextLine = x_console_word_should_wrap_to_next_line(console, *wordStart, wordEnd);
     if(wrapToNextLine)
@@ -319,7 +314,7 @@ static void x_console_print_handle_word_wrap(X_Console* console, const char** wo
         ++(*wordStart);
 }
 
-static void x_console_print_word(X_Console* console, const char** wordStart)
+static void x_console_print_word(Console* console, const char** wordStart)
 {
     const char* wordEnd = find_end_of_word(*wordStart);
     x_console_print_handle_word_wrap(console, wordStart, wordEnd);
@@ -331,7 +326,7 @@ static void x_console_print_word(X_Console* console, const char** wordStart)
     }
 }
 
-void x_console_print(X_Console* console, const char* str)
+void x_console_print(Console* console, const char* str)
 {
     x_log(str);
     
@@ -350,7 +345,7 @@ void x_console_print(X_Console* console, const char* str)
     x_console_print_char_no_advance(console, '\0');
 }
 
-void x_console_printf(X_Console* console, const char* format, ...)
+void x_console_printf(Console* console, const char* format, ...)
 {
     va_list list;
     
@@ -363,164 +358,17 @@ void x_console_printf(X_Console* console, const char* format, ...)
     va_end(list);
 }
 
-static void x_console_handle_cursor_blinking(X_Console* console)
-{
-    X_Time currentTime = x_enginecontext_get_time(console->engineContext);
-    
-    if(currentTime - console->lastCursorBlink >= X_CONSOLE_CURSOR_BLINK_TIME)
-    {
-        console->showCursor = !console->showCursor;
-        console->lastCursorBlink = currentTime;
-    }
-}
-
-static int x_console_line_y(X_Console* console, int lineNumber)
-{
-    return lineNumber * console->font->getH() + console->renderYOffset;
-}
-
-static void x_console_add_cursor_to_input_buf(X_Console* console)
-{
-    const unsigned char CURSOR_CHAR = 11;
-    console->input[console->inputPos] = CURSOR_CHAR;
-    console->input[console->inputPos + 1] = '\0';
-}
-
-static char* x_console_get_start_of_scrolled_input(X_Console* console)
-{
-    char* input = console->input;
-    int inputLenghtIncludingCursor = console->inputPos + 3; 
-    
-    if(inputLenghtIncludingCursor >= console->size.x)
-    {
-        int charsToScrollHorizontallyBy = inputLenghtIncludingCursor - console->size.x;
-        input += charsToScrollHorizontallyBy;
-    }
-    
-    return input;
-}
-
-static void x_console_remove_cursor_from_input_buf(X_Console* console)
+static void x_console_remove_cursor_from_input_buf(Console* console)
 {
     console->input[console->inputPos] = '\0';
 }
 
-static int x_console_get_next_empty_line(X_Console* console)
-{
-    return console->cursor.y + (console->cursor.x == 0 ? 0 : 1);
-}
-
-static int x_console_h(const X_Console* console)
+static int x_console_h(const Console* console)
 {
     return console->size.y * console->font->getH();
 }
 
-static X_Screen* x_console_get_screen(X_Console* console)
-{
-    return console->engineContext->getScreen();
-}
-
-static X_Texture* x_console_get_canvas(X_Console* console)
-{
-    return &x_console_get_screen(console)->canvas;
-}
-
-static const X_Palette* x_console_get_palette(X_Console* console)
-{
-    return x_console_get_screen(console)->palette;
-}
-
-static void x_console_render_input(X_Console* console)
-{
-    x_console_handle_cursor_blinking(console);
-    
-    if(console->showCursor)
-        x_console_add_cursor_to_input_buf(console);
-        
-    char* scrolledInput = x_console_get_start_of_scrolled_input(console);
-    int inputLineY = x_console_line_y(console, x_console_get_next_empty_line(console));
-    const int CHARS_IN_CURSOR = 2;
-    
-    X_Texture* canvas = x_console_get_canvas(console);
-    canvas->drawChar(']', *console->font, { 0, inputLineY });
-    canvas->drawStr(scrolledInput, *console->font, { console->font->getW() * CHARS_IN_CURSOR, inputLineY });
-    
-    x_console_remove_cursor_from_input_buf(console);
-}
-
-void x_console_render_background(X_Console* console)
-{
-    X_Screen* screen = x_console_get_screen(console);
-    X_Texture* canvas = x_console_get_canvas(console);
-    const X_Palette* palette = x_console_get_palette(console);
-    X_Color backgroundColor = palette->black;
-    X_Color lineColor = palette->darkRed;
-    
-    X_Vec2 topLeft = x_vec2_make(0, x_console_line_y(console, 0));
-    X_Vec2 bottomRight = x_vec2_make(x_screen_w(screen) - 1, x_console_line_y(console, console->size.y));
-    
-    canvas->fillRect(topLeft, bottomRight, backgroundColor);
-    
-    X_Vec2 bottomLeft = x_vec2_make(0, bottomRight.y);
-    canvas->drawLine(bottomLeft, bottomRight, lineColor);
-}
-
-static void x_console_handle_opening_animation(X_Console* console)
-{
-    int timePassed = x_enginecontext_get_time(console->engineContext) - console->consoleToggleTime;
-    int consoleHeight = x_console_h(console);
-    
-    console->renderYOffset = -consoleHeight * (X_CONSOLE_TOGGLE_TIME - timePassed) / X_CONSOLE_TOGGLE_TIME;
-    
-    if(console->renderYOffset >= 0)
-    {
-        console->renderYOffset = 0;
-        console->openState = X_CONSOLE_STATE_OPEN;
-    }
-}
-
-static void x_console_handle_closing_animation(X_Console* console)
-{
-    int timePassed = x_enginecontext_get_time(console->engineContext) - console->consoleToggleTime;
-    int consoleHeight = x_console_h(console);
-    
-    console->renderYOffset = -consoleHeight * timePassed / X_CONSOLE_TOGGLE_TIME;
-    
-    if(console->renderYOffset <= -consoleHeight)
-        console->openState = X_CONSOLE_STATE_CLOSED;
-}
-
-static void x_console_handle_open_state_animation(X_Console* console)
-{
-    if(console->openState == X_CONSOLE_STATE_OPENING)
-        x_console_handle_opening_animation(console);
-    else if(console->openState == X_CONSOLE_STATE_CLOSING)
-        x_console_handle_closing_animation(console);
-}
-
-static void x_console_render_text(X_Console* console)
-{
-    X_Texture* canvas = x_console_get_canvas(console);
-    for(int i = 0; i < console->size.y; ++i)
-    {
-        const char* startOfLine = console->text + i * x_console_bytes_in_line(console);
-       canvas->drawStr(startOfLine, *console->font, { 0, x_console_line_y(console, i) });
-    }
-}
-
-void x_console_render(X_Console* console)
-{
-    x_console_handle_open_state_animation(console);
-    
-    if(!x_console_is_open(console))
-        return;
-    
-    x_console_render_background(console);
-    x_console_render_text(console);
-    x_console_render_input(console);
-}
-
-void x_console_set_var(X_Console* console, const char* varName, const char* varValue)
+void x_console_set_var(Console* console, const char* varName, const char* varValue)
 {
     X_ConsoleVar* var = x_console_get_var(console, varName);
     if(!var)
@@ -532,7 +380,7 @@ void x_console_set_var(X_Console* console, const char* varName, const char* varV
     x_consolevar_set_value(var, varValue);
 }
 
-static void x_console_add_autcomplete_candidates(X_Console* console, X_AutoCompleter* ac)
+static void x_console_add_autcomplete_candidates(Console* console, X_AutoCompleter* ac)
 {
     for(int i = 0; i < console->totalConsoleVars; ++i)
         x_autocompleter_add_match_candidate(ac, console->consoleVars[i].name);
@@ -541,13 +389,13 @@ static void x_console_add_autcomplete_candidates(X_Console* console, X_AutoCompl
         x_autocompleter_add_match_candidate(ac, console->consoleCmds[i].name);
 }
 
-static void x_console_add_trailing_space(X_Console* console)
+static void x_console_add_trailing_space(Console* console)
 {
     console->input[console->inputPos++] = ' ';
     console->input[console->inputPos] = '\0';
 }
 
-static bool x_console_autocomplete(X_Console* console, X_AutoCompleter* ac)
+static bool x_console_autocomplete(Console* console, X_AutoCompleter* ac)
 {
     if(!x_autocompleter_complete_partial_match(ac))
         return 0;
@@ -575,7 +423,7 @@ static void determine_column_widths(const char** items, int totalItems, int tota
     }
 }
 
-static bool row_exceeds_width_of_console(X_Console* console, int row, int totalColumns, int* colWidths, int totalItems, int colSpacing)
+static bool row_exceeds_width_of_console(Console* console, int row, int totalColumns, int* colWidths, int totalItems, int colSpacing)
 {
     int totalWidth = 0;
     for(int col = 0; col < totalColumns; ++col)
@@ -593,7 +441,7 @@ static bool row_exceeds_width_of_console(X_Console* console, int row, int totalC
     return totalWidth >= console->size.x;
 }
 
-static bool columns_widths_exceed_width_of_console(X_Console* console, int totalColumns, int* colWidths, int totalItems, int colSpacing)
+static bool columns_widths_exceed_width_of_console(Console* console, int totalColumns, int* colWidths, int totalItems, int colSpacing)
 {
     int totalRows = (totalItems + totalColumns - 1) / totalColumns;
     for(int row = 0; row < totalRows; ++row)
@@ -605,7 +453,7 @@ static bool columns_widths_exceed_width_of_console(X_Console* console, int total
     return 0;
 }
 
-static int determine_max_number_of_items_per_row(X_Console* console, const char** items, int totalItems, int maxItemsPerRow, int* colWidths, int itemSpacing)
+static int determine_max_number_of_items_per_row(Console* console, const char** items, int totalItems, int maxItemsPerRow, int* colWidths, int itemSpacing)
 {
     int matchesPerRow = maxItemsPerRow;
     
@@ -620,7 +468,7 @@ static int determine_max_number_of_items_per_row(X_Console* console, const char*
     return matchesPerRow;
 }
 
-static void print_items_in_columns(X_Console* console, const char** items, int totalItems, int totalColumns, int* colWidths, int itemSpacing)
+static void print_items_in_columns(Console* console, const char** items, int totalItems, int totalColumns, int* colWidths, int itemSpacing)
 {    
     for(int match = 0; match < totalItems; ++match)
     {
@@ -641,7 +489,7 @@ static void print_items_in_columns(X_Console* console, const char** items, int t
     x_console_print(console, "\n");
 }
 
-static void print_items_in_columns_fit_to_console(X_Console* console, const char** items, int totalItems, int itemSpacing)
+static void print_items_in_columns_fit_to_console(Console* console, const char** items, int totalItems, int itemSpacing)
 {
     const int MAX_MATCHES_PER_ROW = 10;
     int colWidths[MAX_MATCHES_PER_ROW];
@@ -650,7 +498,7 @@ static void print_items_in_columns_fit_to_console(X_Console* console, const char
     print_items_in_columns(console, items, totalItems, itemsPerRow, colWidths, itemSpacing);
 }
 
-static void x_console_print_autocomplete_matches(X_Console* console, X_AutoCompleter* ac)
+static void x_console_print_autocomplete_matches(Console* console, X_AutoCompleter* ac)
 {
     x_autocompleter_sort_matches(ac);
     x_console_printf(console, "] %s\n\n", console->input);
@@ -660,7 +508,7 @@ static void x_console_print_autocomplete_matches(X_Console* console, X_AutoCompl
     x_console_print(console, "\n");
 }
 
-static void handle_backspace_key(X_Console* console)
+static void handle_backspace_key(Console* console)
 {
     if(console->inputPos > 0) {
         --console->inputPos;
@@ -668,7 +516,7 @@ static void handle_backspace_key(X_Console* console)
     }
 }
 
-static void add_input_to_command_history(X_Console* console)
+static void add_input_to_command_history(Console* console)
 {
     if(console->commandHistorySize == X_CONSOLE_COMMAND_HISTORY_SIZE - 1)
     {
@@ -684,7 +532,7 @@ static void add_input_to_command_history(X_Console* console)
     x_string_assign(console->commandHistory + console->commandHistorySize++, console->input);
 }
 
-static void handle_enter_key(X_Console* console)
+static void handle_enter_key(Console* console)
 {
     add_input_to_command_history(console);
     console->commandHistoryPos = console->commandHistorySize;
@@ -720,7 +568,7 @@ static char* find_start_of_current_cmd(char* str, int start, int* len)
     return str;
 }
 
-static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
+static void handle_tab_key(Console* console, X_Key lastKeyPressed)
 {
     const int MAX_MATCHES = 100;
     const char* matches[MAX_MATCHES];
@@ -739,7 +587,7 @@ static void handle_tab_key(X_Console* console, X_Key lastKeyPressed)
     console->lastKeyPressed = (X_Key)0;
 }
 
-static void handle_character_key(X_Console* console, X_Key key)
+static void handle_character_key(Console* console, X_Key key)
 {
     if(console->inputPos + 1 < X_CONSOLE_INPUT_BUF_SIZE)
         console->input[console->inputPos++] = key;
@@ -747,7 +595,7 @@ static void handle_character_key(X_Console* console, X_Key key)
     console->input[console->inputPos] = '\0';
 }
 
-static void handle_up_key(X_Console* console)
+static void handle_up_key(Console* console)
 {
     if(console->commandHistoryPos == 0)
         return;
@@ -761,7 +609,7 @@ static void handle_up_key(X_Console* console)
     console->inputPos = strlen(console->input);
 }
 
-static void handle_down_key(X_Console* console)
+static void handle_down_key(Console* console)
 {
     if(console->commandHistoryPos == console->commandHistorySize)
         return;
@@ -775,7 +623,7 @@ static bool is_character_key(X_Key key)
     return key < 128 && isprint(key);
 }
 
-void x_console_send_key(X_Console* console, X_Key key)
+void x_console_send_key(Console* console, X_Key key)
 {
     X_Key lastKey = console->lastKeyPressed;
     console->lastKeyPressed = key;
@@ -817,7 +665,7 @@ void x_console_send_key(X_Console* console, X_Key key)
     }
 }
 
-static void print_variable_value(X_Console* console, X_ConsoleVar* var)
+static void print_variable_value(Console* console, X_ConsoleVar* var)
 {
     char varValue[1024];
     
@@ -867,7 +715,7 @@ static bool x_tokenlexer_is_valid_console_input(X_TokenLexer* lexer, char** toke
         !token_begins_comment_line(tokens[0]);
 }
 
-static bool x_console_input_try_execute_command(X_Console* console, char** tokens, int totalTokens)
+static bool x_console_input_try_execute_command(Console* console, char** tokens, int totalTokens)
 {
     X_ConsoleCmd* cmd = x_console_get_cmd(console, tokens[0]);
     
@@ -878,7 +726,7 @@ static bool x_console_input_try_execute_command(X_Console* console, char** token
     return 1;
 }
 
-static bool x_console_input_try_set_variable(X_Console* console, char** tokens, int totalTokens)
+static bool x_console_input_try_set_variable(Console* console, char** tokens, int totalTokens)
 {
     X_ConsoleVar* var = x_console_get_var(console, tokens[0]);
     if(!var)
@@ -911,7 +759,7 @@ static int count_tokens_in_cmd(char** tokens, int totalTokens)
     return totalTokens;
 }
 
-static bool try_run_command(X_Console* console, char** tokens, int totalTokens)
+static bool try_run_command(Console* console, char** tokens, int totalTokens)
 {
     if(x_console_input_try_execute_command(console, tokens, totalTokens))
         return 1;
@@ -923,7 +771,7 @@ static bool try_run_command(X_Console* console, char** tokens, int totalTokens)
     return 0;
 }
 
-void x_console_execute_cmd(X_Console* console, const char* str)
+void x_console_execute_cmd(Console* console, const char* str)
 {
     const int MAX_TOKENS = 512;
     char* tokens[MAX_TOKENS];
@@ -951,4 +799,14 @@ void x_console_execute_cmd(X_Console* console, const char* str)
         tokenStart += totalTokens + 1;
     } while(tokensLeft > 0);
 }
+
+#include "console/ConsoleRenderer.hpp"
+
+void x_console_render(Console* console)
+{
+    ConsoleRenderer renderer(*console, *console->engineContext->getScreen(), *console->engineContext->getMainFont());
+
+    renderer.render();
+}
+
 

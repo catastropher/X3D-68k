@@ -183,7 +183,7 @@ static unsigned short oldColorPalette[256];
 //     record = 0;
 // }
 
-void screen_init_console_vars(X_Console* console)
+void screen_init_console_vars(Console* console)
 {
     // x_console_register_cmd(console, "record", cmd_record);    
     // x_console_register_cmd(console, "endrecord", cmd_endrecord);
