@@ -39,7 +39,7 @@ static void read_camera_state(X_CameraObject* cam, X_File* file)
     cam->angleX = x_file_read_le_int32(file);
     cam->angleY = x_file_read_le_int32(file);
     
-    x_cameraobject_update_view(cam);
+    cam->updateView();
 }
 
 static void read_brush_models(X_DemoPlayer* player)

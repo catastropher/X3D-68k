@@ -56,9 +56,7 @@ private:
 
     void renderView()
     {
-        
-
-        x_cameraobject_update_view(cam);
+        cam->updateView();
 
         Vec3fp pos = cam->collider.position;
         Vec3fp vel = cam->collider.velocity;
@@ -167,7 +165,7 @@ private:
         cam->collider.position = Vec3fp(0, fp::fromInt(-50), fp::fromInt(-800));
         cam->collider.velocity = Vec3fp(0, 0, 0);
         
-        x_cameraobject_update_view(cam);
+        cam->updateView();
     }
 
     X_CameraObject* cam;

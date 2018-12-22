@@ -319,7 +319,7 @@ bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* ca
     
     Vec3 movementVector = get_movement_key_vector(cam, keyState, 0);
     cam->collider.position += MakeVec3fp(movementVector);
-    x_cameraobject_update_view(cam);
+    cam->updateView();
     
     return 1;
 }
@@ -340,7 +340,7 @@ void handle_normal_movement(X_EngineContext* engineContext, X_CameraObject* cam)
         printf("Cam hit portal!\n");
     }
     
-    x_cameraobject_update_view(cam);
+    cam->updateView();
 }
 
 void handle_mouse(Context* context)

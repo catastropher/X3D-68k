@@ -36,6 +36,8 @@ typedef struct X_CameraObject
     void updateFrustum();
 
     void overrideBspLeaf(int leafId, X_BspLevel* level);
+    
+    void updateView();
 
     X_GameObject base;
     EnumBitSet<CameraobjectFlags> flags;
@@ -53,7 +55,6 @@ typedef struct X_CameraObject
 } X_CameraObject;
 
 X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
-void x_cameraobject_update_view(X_CameraObject* cam);
 void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderContext);
 
 static inline Vec3 x_cameraobject_get_position(X_CameraObject* cam)
