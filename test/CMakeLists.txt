@@ -60,6 +60,7 @@ add_executable(xtest
     src/render.cpp
     src/screen.cpp
     src/game.cpp
+    src/PlayerMoveLogic.cpp
 )
 
 find_package(SDL REQUIRED)
