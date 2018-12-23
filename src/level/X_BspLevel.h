@@ -82,16 +82,15 @@ typedef enum X_BspSurfaceFlags
 
 struct X_BspSurface
 {
-    void calculatePlaneInViewSpace(Vec3* camPos, Mat4x4* viewMatrix, Vec3* pointOnSurface, Plane* dest)
+    void calculatePlaneInViewSpace(const Vec3fp& camPos, Mat4x4* viewMatrix, Vec3* pointOnSurface, Plane* dest)
     {
-        Vec3fp pointOnSurfaceTemp = MakeVec3fp(*pointOnSurface);
-        Vec3fp camPosTemp = MakeVec3fp(*camPos);
+        Vec3fp pointOnSurfaceTemp = MakeVec3fp(*pointOnSurface);;
 
         dest->normal = viewMatrix->transformNormal(plane->plane.normal);
 
         fp d = -plane->plane.normal.dot(pointOnSurfaceTemp);
 
-        dest->d = d + plane->plane.normal.dot(camPosTemp);
+        dest->d = d + plane->plane.normal.dot(camPos);
     }
     
     int id;     // Just for debugging

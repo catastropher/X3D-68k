@@ -471,10 +471,8 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
     aeSurface->inSubmodel = false;
     aeSurface->closestZ = closestZ.toFp16x16();
-
-    Vec3 camPos = x_cameraobject_get_position(renderContext->cam);
     
-    aeSurface->calculateInverseZGradient(&camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
+    aeSurface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
 }
 
 // TODO: check whether edgeIds is NULL
@@ -501,9 +499,8 @@ void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, Bound
     surface->closestZ = closestZ.toFp16x16();
 
     // FIXME: shouldn't be done this way
-    Vec3 camPos = x_cameraobject_get_position(renderContext->cam);
     
-    surface->calculateInverseZGradient(&camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
+    surface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
     emitEdges(surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 

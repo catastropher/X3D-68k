@@ -34,12 +34,12 @@ void TestGame::shootPortal(Portal* portal)
 
     Vec3 f = MakeVec3(forward);
 
-    Vec3 start = MakeVec3(player.collider.position);
-    Vec3 end = start + f * dist;
+    Vec3fp start = player.collider.position;
+    Vec3fp end = start + forward * dist;
 
     BoundBox box;
 
-    Ray3 ray(MakeVec3fp(start), MakeVec3fp(end));
+    Ray3 ray(start, end);
 
     BspRayTracer<X_BspNode*, X_BspNode*> tracer(ray, level, 0);
 

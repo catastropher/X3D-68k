@@ -41,6 +41,6 @@ typedef struct X_RenderContext
     X_BspLevel* level;
     
     int currentFrame;
-    Vec3 camPos;
+    Vec3fp camPos;
 } X_RenderContext;
 

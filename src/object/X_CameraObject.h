@@ -58,9 +58,9 @@ typedef struct X_CameraObject
 X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
 void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderContext);
 
-static inline Vec3 x_cameraobject_get_position(X_CameraObject* cam)
+static inline Vec3fp x_cameraobject_get_position(X_CameraObject* cam)
 {
-    return MakeVec3(cam->position);
+    return cam->position;
 }
 
 static inline Vec3 x_cameraobject_get_velocity(X_CameraObject* cam)

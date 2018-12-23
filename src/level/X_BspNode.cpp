@@ -104,11 +104,9 @@ void X_BspLeaf::markSurfacesAsVisible(int currentFrame, int bspKey_)
 }
 
 
-void X_BspNode::determineSidesRelativeToCamera(const Vec3* camPos, X_BspNode** frontSideDest, X_BspNode** backSideDest)
+void X_BspNode::determineSidesRelativeToCamera(const Vec3fp& camPos, X_BspNode** frontSideDest, X_BspNode** backSideDest)
 {
-    Vec3fp camPosTemp = MakeVec3fp(*camPos);
-
-    bool onNormalSide = plane->plane.pointOnNormalFacingSide(camPosTemp);
+    bool onNormalSide = plane->plane.pointOnNormalFacingSide(camPos);
     
     if(onNormalSide)
     {
@@ -145,7 +143,7 @@ void X_BspNode::renderRecursive(X_RenderContext& renderContext, BoundBoxFrustumF
     
     X_BspNode* frontSide;
     X_BspNode* backSide;
-    determineSidesRelativeToCamera(&renderContext.camPos, &frontSide, &backSide);
+    determineSidesRelativeToCamera(renderContext.camPos, &frontSide, &backSide);
     
     BoundBoxFrustumFlags geoFlags = geoBoundBox.determineFrustumClipFlags(*renderContext.viewFrustum, nodeFlags);
 
@@ -186,7 +184,7 @@ void X_BspNode::renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFl
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext.currentFrame))
             continue;
         
-        Vec3fp camPosTemp = MakeVec3fp(renderContext.camPos);
+        Vec3fp camPosTemp = renderContext.camPos;
 
         bool onNormalSide = surface->plane->plane.pointOnNormalFacingSide(camPosTemp);
         bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;

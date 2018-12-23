@@ -79,7 +79,8 @@ typedef struct X_BspNode
     X_BspSurface* firstSurface;
     int totalSurfaces;
 private:
-    void determineSidesRelativeToCamera(const Vec3* camPos, X_BspNode** frontSideDest, X_BspNode** backSideDest);
+    
+    void determineSidesRelativeToCamera(const Vec3fp& camPos, X_BspNode** frontSideDest, X_BspNode** backSideDest);
 } X_BspNode;
 
 typedef struct X_BspLeaf

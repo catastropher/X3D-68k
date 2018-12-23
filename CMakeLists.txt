@@ -87,7 +87,6 @@ set(X_SOURCES
 
     # geo
     src/geo/X_BoundBox.cpp
-    src/geo/X_Cube.cpp
     src/geo/X_Frustum.cpp
     src/geo/X_Plane.cpp
     src/geo/X_Polygon3.cpp

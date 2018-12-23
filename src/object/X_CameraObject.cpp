@@ -62,12 +62,8 @@ void X_CameraObject::updateView()
     Mat4x4 rotation = xRotation * yRotation;
     
     Mat4x4 translation;
-    Vec3 position = x_cameraobject_get_position(this);
-    Vec3 negatedPosition = x_vec3_neg(&position);
-
-    Vec3fp negatedPositionTemp = MakeVec3fp(negatedPosition);
-
-    translation.loadTranslation(negatedPositionTemp);
+    
+    translation.loadTranslation(-position);
     
     viewMatrix = rotation * translation;
 
@@ -79,16 +75,12 @@ void X_CameraObject::updateFrustum()
     Vec3fp forward, up, right;
     viewMatrix.extractViewVectors(forward, right, up);
 
-    Vec3 position = x_cameraobject_get_position(this);
-    Vec3fp p = MakeVec3fp(position);
-
-    viewport.updateFrustum(p, forward, right, up);
+    viewport.updateFrustum(position, forward, right, up);
 }
 
 static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
-    Vec3fp position = MakeVec3fp(x_cameraobject_get_position(cam));
-    cam->currentLeaf = renderContext->level->findLeafPointIsIn(position);
+    cam->currentLeaf = renderContext->level->findLeafPointIsIn(cam->position);
 }
 
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)

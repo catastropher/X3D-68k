@@ -145,7 +145,7 @@ void X_BspLevel::renderPortals(X_RenderContext& renderContext)
 
     for(auto portal = portalHead; portal != nullptr; portal = portal->next)
     {
-        if(!portal->plane.pointOnNormalFacingSide(MakeVec3fp(renderContext.camPos)))
+        if(!portal->plane.pointOnNormalFacingSide(renderContext.camPos))
         {
             continue;
         }
