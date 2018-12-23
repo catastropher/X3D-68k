@@ -88,7 +88,7 @@ typedef struct X_BspLoaderPlane
 
 typedef struct X_BspLoaderVertex
 {
-    Vec3 v;
+    Vec3fp v;
 } X_BspLoaderVertex;
 
 typedef struct X_BspLoaderEdge

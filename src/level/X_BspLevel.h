@@ -69,7 +69,7 @@ typedef struct X_BspPlane
 
 typedef struct X_BspVertex
 {
-    Vec3 v;
+    Vec3fp v;
     int cacheOffset;
 } X_BspVertex;
 
@@ -82,13 +82,11 @@ typedef enum X_BspSurfaceFlags
 
 struct X_BspSurface
 {
-    void calculatePlaneInViewSpace(const Vec3fp& camPos, Mat4x4* viewMatrix, Vec3* pointOnSurface, Plane* dest)
+    void calculatePlaneInViewSpace(const Vec3fp& camPos, Mat4x4* viewMatrix, Vec3fp& pointOnSurface, Plane* dest)
     {
-        Vec3fp pointOnSurfaceTemp = MakeVec3fp(*pointOnSurface);;
-
         dest->normal = viewMatrix->transformNormal(plane->plane.normal);
 
-        fp d = -plane->plane.normal.dot(pointOnSurfaceTemp);
+        fp d = -plane->plane.normal.dot(pointOnSurface);
 
         dest->d = d + plane->plane.normal.dot(camPos);
     }
@@ -160,14 +158,14 @@ typedef struct X_BspLevel
 
     void decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
 
-    void getLevelPolygon(X_BspSurface* surface, Vec3* modelOrigin, LevelPolygon3* dest)
+    void getLevelPolygon(X_BspSurface* surface, Vec3fp* modelOrigin, LevelPolygon3* dest)
     {
         dest->edgeIds = surfaceEdgeIds + surface->firstEdgeId;
         dest->totalVertices = surface->totalEdges;
         
         for(int i = 0; i < surface->totalEdges; ++i)
         {   
-            Vec3 v;
+            Vec3fp v;
             
             int edgeId = dest->edgeIds[i];
             bool edgeIsFlipped = (edgeId < 0);
@@ -177,7 +175,7 @@ typedef struct X_BspLevel
             else
                 v = vertices[edges[-edgeId].v[1]].v;
             
-            dest->vertices[i] = MakeVec3fp(v + *modelOrigin);
+            dest->vertices[i] = v + *modelOrigin;
         }
     }
 

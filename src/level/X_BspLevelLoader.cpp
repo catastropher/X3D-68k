@@ -271,15 +271,19 @@ static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader
 static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalVertices; ++i)
+    {
         level->vertices[i].v = loader->vertices.elem[i].v;
+    }
 }
 
-static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, Vec3* v)
+static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, Vec3fp* v)
 {
+    Vec3 vTemp = MakeVec3(*v);
+    
     return x_vec2_make
     (
-        x_vec3_dot(&surface->faceTexture->uOrientation, v) + surface->faceTexture->uOffset,
-        x_vec3_dot(&surface->faceTexture->vOrientation, v) + surface->faceTexture->vOffset
+        x_vec3_dot(&surface->faceTexture->uOrientation, &vTemp) + surface->faceTexture->uOffset,
+        x_vec3_dot(&surface->faceTexture->vOrientation, &vTemp) + surface->faceTexture->vOffset
      );
 }
 
@@ -559,14 +563,16 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspS
     for(int i = 0; i < surface->totalEdges; ++i)
     {
         int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + i];
-        Vec3 v;
+        Vec3fp v;
         
         if(edgeId > 0)
             v = level->vertices[level->edges[edgeId].v[1]].v;
         else
             v = level->vertices[level->edges[-edgeId].v[0]].v;
         
-        node->geoBoundBox.addPoint(x_vec3_to_vec3_int(&v));
+        Vec3Template<int> vInt(v.x.toInt(), v.y.toInt(), v.z.toInt());
+        
+        node->geoBoundBox.addPoint(vInt);
     }
 }
 

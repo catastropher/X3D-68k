@@ -55,8 +55,8 @@ void X_BspNode::renderWireframe(
                 drawnEdges[edgeId / 8] |= 1 << (edgeId & 7);
                 
                 Ray3 ray(
-                    MakeVec3fp(level->vertices[edge->v[0]].v),
-                    MakeVec3fp(level->vertices[edge->v[1]].v));
+                    level->vertices[edge->v[0]].v,
+                    level->vertices[edge->v[1]].v);
                 
                 ray.v[0] += model.origin;
                 ray.v[1] += model.origin;

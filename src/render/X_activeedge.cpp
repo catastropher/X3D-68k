@@ -355,7 +355,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
     fp closestZ = maxValue<fp>();
 
-    Vec3 firstVertex = level->vertices[vertexIds[0]].v;
+    Vec3fp firstVertex = level->vertices[vertexIds[0]].v;
 
     ClipContext context(renderContext->viewFrustum, (int)geoFlags);
 
@@ -370,8 +370,8 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
         int next = (i + 1 < bspSurface->totalEdges ? i + 1 : 0);
 
-        context.ray.v[0] = MakeVec3fp(level->vertices[vertexIds[i]].v);
-        context.ray.v[1] = MakeVec3fp(level->vertices[vertexIds[next]].v);
+        context.ray.v[0] = level->vertices[vertexIds[i]].v;
+        context.ray.v[1] = level->vertices[vertexIds[next]].v;
 
         bool lastWasClipped = context.lastVertexWasClipped();
 
@@ -472,13 +472,13 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
     aeSurface->inSubmodel = false;
     aeSurface->closestZ = closestZ.toFp16x16();
     
-    aeSurface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
+    aeSurface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, firstVertex);
 }
 
 // TODO: check whether edgeIds is NULL
 void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
-    Vec3 firstVertex = MakeVec3(polygon->vertices[0]);
+    Vec3fp firstVertex = polygon->vertices[0];
     
     ++renderContext->renderer->totalSurfacesRendered;
 
@@ -500,7 +500,7 @@ void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, Bound
 
     // FIXME: shouldn't be done this way
     
-    surface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, &firstVertex);
+    surface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, firstVertex);
     emitEdges(surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 
@@ -510,14 +510,14 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
     
     for(int i = 0; i < totalEdges; ++i)
     {
-        Vec3 v;
+        Vec3fp v;
         
         if(!edge_is_flipped(edgeIds[i]))
             v = level->vertices[level->edges[edgeIds[i]].v[0]].v;
         else
             v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
                 
-        dest->vertices[dest->totalVertices++] = MakeVec3fp(v) + *origin;
+        dest->vertices[dest->totalVertices++] = v + *origin;
     }
 }
 
