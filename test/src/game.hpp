@@ -20,6 +20,7 @@
 #include "init.h"
 #include "render.h"
 #include "keys.h"
+#include "Player.hpp"
 
 class TestGame : public Game<TestGame>
 {
@@ -38,16 +39,16 @@ public:
 private:
     void init()
     {
-        createCamera();
-
-        context.cam = cam;
+        setupPlayer();
+        
+        context.player = &player;
         context.engineContext = getInstance();
         
         ::init(&context, nullptr, getConfig());
 
         x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
 
-        x_console_register_var(context.engineContext->getConsole(), &cam->collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
+        x_console_register_var(context.engineContext->getConsole(), &player.collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
 
         x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289,-162,192");
 
@@ -56,10 +57,17 @@ private:
 
     void renderView()
     {
-        cam->updateView();
+        auto& camera = player.getCamera();
+        
+        camera.angleX = player.angleX.toFp16x16();
+        camera.angleY = player.angleY.toFp16x16();
+        
+        camera.position = player.collider.position;
+        
+        camera.updateView();
 
-        Vec3fp pos = cam->collider.position;
-        Vec3fp vel = cam->collider.velocity;
+        Vec3fp pos = player.collider.position;
+        Vec3fp vel = player.collider.velocity;
 
         StatusBar::setItem(
             "position",
@@ -80,32 +88,7 @@ private:
 
     void handleKeys()
     {
-
-        int& a = cam->angleX;
-
-        //a += fp::fromFloat(1).toFp16x16();
-
-        if(a > fp::fromInt(256).toFp16x16())
-        {
-            a -= fp::fromInt(256).toFp16x16();
-        }
-
         ::handle_keys(&context);
-
-        Mat4x4& mat = cam->viewMatrix;
-
-        //printf("Real angle:\t\t %f %f\n", fp(cam->angleX).toFloat(), fp(cam->angleY).toFloat());
-
-        fp x, y;
-        mat.extractEulerAngles(x, y);
-
-        //printf("Diff %f\n", (fp(cam->angleY) - y).toFloat());
-
-        //printf("Calculated angle:\t %f %f\n", x.toFloat(), y.toFloat());
-
-        //rintf("Angle: %f\n", sqrtf(angle.toFloat()) / 2);
-
-        //printf("Axis of rotation: %f %f %f\n", axis.x.toFloat(), axis.y.toFloat(), axis.z.toFloat());
 
         if(x_keystate_key_down(getInstance()->getKeyState(), X_KEY_ESCAPE))
         {
@@ -151,24 +134,20 @@ private:
 
     void shootPortal(Portal* portal);
 
-    void createCamera()
+    void setupPlayer()
     {
         X_EngineContext* engineContext = getInstance();
-
-        cam = x_cameraobject_new(engineContext);
-        cam->viewport.init((X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), fp(X_ANG_60));
-        x_screen_attach_camera(engineContext->getScreen(), cam);
-        //context->cam->screenResizeCallback = cam_screen_size_changed_callback;
         
-        cam->angleX = 0;
-        cam->angleY = 0;
-        cam->collider.position = Vec3fp(0, fp::fromInt(-50), fp::fromInt(-800));
-        cam->collider.velocity = Vec3fp(0, 0, 0);
+        player.camera.viewport.init((X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), fp(X_ANG_60));
+        x_screen_attach_camera(engineContext->getScreen(), &player.getCamera());
         
-        cam->updateView();
+        player.angleX = 0;
+        player.angleY = 0;
+        player.collider.position = Vec3fp(0, fp::fromInt(-50), fp::fromInt(-800));
+        player.collider.velocity = Vec3fp(0, 0, 0);
     }
 
-    X_CameraObject* cam;
+    Player player;
     Context context;
 
     friend class Game<TestGame>;

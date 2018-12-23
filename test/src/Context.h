@@ -24,15 +24,14 @@ typedef enum NetMode
     NET_CLIENT = 2
 } NetMode;
 
+#include "Player.hpp"
+
 typedef struct Context
 {
     SDL_Surface* screen;
     X_EngineContext* engineContext;
-    X_CameraObject* cam;
+    Player* player;
     bool quit;
-    
-    X_DemoRecorder demoRecorder;
-    X_DemoPlayer demoPlayer;
     
     int nativeResolutionW;
     int nativeResolutionH;

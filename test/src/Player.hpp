@@ -36,6 +36,18 @@ using PlayerKeyFlags = EnumBitSet<PlayerKeys>;
 class Player
 {
 public:
+    Player()
+    {
+        // FIXME: need actual bound box
+        static BoundBox box;
+        x_boxcollider_init(&collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+    }
+    
+    X_CameraObject& getCamera()
+    {
+        return camera;
+    }
+    
     X_BoxCollider collider;
     X_CameraObject camera;
     

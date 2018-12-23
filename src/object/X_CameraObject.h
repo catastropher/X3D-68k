@@ -41,7 +41,8 @@ typedef struct X_CameraObject
 
     X_GameObject base;
     EnumBitSet<CameraobjectFlags> flags;
-    X_BoxCollider collider;
+    Vec3fp position;
+    
     Viewport viewport;
     Mat4x4 viewMatrix;
     x_fp16x16 angleX;
@@ -59,12 +60,12 @@ void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderCo
 
 static inline Vec3 x_cameraobject_get_position(X_CameraObject* cam)
 {
-    return MakeVec3(cam->collider.position);
+    return MakeVec3(cam->position);
 }
 
 static inline Vec3 x_cameraobject_get_velocity(X_CameraObject* cam)
 {
-    return MakeVec3(cam->collider.velocity);
+    return Vec3(0, 0, 0); //MakeVec3(cam->collider.velocity);
 }
 
 static inline void x_cameraobject_add_angle(X_CameraObject* cam, X_Vec2_fp16x16 angleOffset)

@@ -48,10 +48,6 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     cam->base.type = &g_cameraObjectType;
     cam->flags.clear();
     
-    // FIXME: need actual bound box
-    static BoundBox box;
-    x_boxcollider_init(&cam->collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
-    
     return cam;
 }
 

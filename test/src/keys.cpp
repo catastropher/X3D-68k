@@ -38,17 +38,13 @@ void init_keys(Context* context)
 {
     g_Context = context;
     
-    x_demorecorder_init(&context->demoRecorder, context->cam, context->engineContext->getKeyState());
-    x_demoplayer_init(&context->demoPlayer, context->cam, context->engineContext->getKeyState());
-    
     x_console_register_var(context->engineContext->getConsole(), &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "3.0", 0);
     x_console_register_var(context->engineContext->getConsole(), &physics, "physics", X_CONSOLEVAR_BOOL, "1", 0);
 }
 
 void cleanup_keys(Context* context)
 {
-    x_demorecorder_cleanup(&context->demoRecorder);
-    x_demoplayer_cleanup(&context->demoPlayer);
+    
 }
 
 void handle_console_keys(X_EngineContext* context)
@@ -89,8 +85,8 @@ bool handle_console(X_EngineContext* engineContext)
 
 void handle_mouse(Context* context)
 {
-    X_MouseState* state = context->engineContext->getMouseState();
-    x_cameraobject_add_angle(context->cam, x_mousestate_get_mouselook_angle_change(state));
+    //X_MouseState* state = context->engineContext->getMouseState();
+    //x_cameraobject_add_angle(context->cam, x_mousestate_get_mouselook_angle_change(state));
 }
 
 #include "Player.hpp"
@@ -146,14 +142,6 @@ PlayerKeyFlags getPlayerKeys(X_KeyState* keyState)
 
 void handle_keys(Context* context)
 {
-    Player player;
-    X_CameraObject* cam = context->cam;
-    
-    player.collider = cam->collider;
-    player.angleX = cam->angleX;
-    player.angleY = cam->angleY;
-    player.camera = *cam;
-    
     x_platform_handle_keys(context->engineContext);
     x_platform_handle_mouse(context->engineContext);
     
@@ -168,17 +156,11 @@ void handle_keys(Context* context)
     
     handle_mouse(context);
     
-    PlayerMoveLogic moveLogic(player, context->moveSpeed);
+    PlayerMoveLogic moveLogic(*context->player, context->moveSpeed);
     
     PlayerKeyFlags keys = getPlayerKeys(keyState);
     
     moveLogic.applyMovement(keys, x_engine_get_current_level(context->engineContext));
-    
-    cam->collider = player.collider;
-    cam->angleX = player.angleX.toFp16x16();
-    cam->angleY = player.angleY.toFp16x16();
-    
-    cam->updateView();
     
     
 //     if(!x_demoplayer_is_playing(&g_Context->demoPlayer))

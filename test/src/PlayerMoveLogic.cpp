@@ -161,6 +161,7 @@ bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* ca
 void PlayerMoveLogic::handleNormalMovement(PlayerKeyFlags keys, X_BspLevel* level)
 {
     Vec3fp movementVector = getMovementVector(keys);
+    
     player.collider.velocity = player.collider.velocity + movementVector;
     x_boxcollider_update(&player.collider, level);
     
