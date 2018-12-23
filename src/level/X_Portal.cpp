@@ -85,7 +85,7 @@ void Portal::updatePoly()
     // Create the bridge
     bridgeModel.planes = bridgePlanes;
     bridgeModel.clipNodes = bridgeClipNodes;
-    bridgeModel.origin = Vec3(0, 0, 0);
+    bridgeModel.origin = Vec3fp(0, 0, 0);
 
     CollisionHullBuilder collisionHullBuilder(bridgeModel, poly, orientation, fp::fromInt(100), fp::fromFloat(-2));
     collisionHullBuilder.build();

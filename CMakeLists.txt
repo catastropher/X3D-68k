@@ -66,8 +66,6 @@ set(X_SOURCES
     src/dev/X_AutoCompleter.cpp
     src/dev/X_conCommands.cpp
     src/dev/X_Console.cpp
-    src/dev/X_DemoPlayer.cpp
-    src/dev/X_DemoRecorder.cpp
     src/dev/X_TokenLexer.cpp
 
     # dev/console

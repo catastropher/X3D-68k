@@ -58,8 +58,8 @@ void X_BspNode::renderWireframe(
                     MakeVec3fp(level->vertices[edge->v[0]].v),
                     MakeVec3fp(level->vertices[edge->v[1]].v));
                 
-                ray.v[0] += MakeVec3fp(model.origin);
-                ray.v[1] += MakeVec3fp(model.origin);
+                ray.v[0] += model.origin;
+                ray.v[1] += model.origin;
                 
                 ray.render(renderContext, color);
 

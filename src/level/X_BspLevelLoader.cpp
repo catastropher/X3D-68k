@@ -434,7 +434,7 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
         model->clipNodeRoots[1] = loadModel->secondRootClipNode;
         model->clipNodeRoots[2] = loadModel->thirdRootClipNode;
         
-        model->origin = convert<Vec3>(loadModel->origin)
+        model->origin = convert<Vec3fp>(loadModel->origin)
             .toX3dCoords();
         
         model->boundBox.v[0].x = x_fp16x16_from_float(loadModel->mins[0]);

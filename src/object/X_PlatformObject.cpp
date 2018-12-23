@@ -57,7 +57,7 @@ void move_platform(X_PlatformObject* platform, x_fp16x16 deltaTime)
         return;
     }
     
-    x_fp16x16 pos = platform->model->origin.y;
+    x_fp16x16 pos = platform->model->origin.y.toFp16x16();
     
     if(platform->state == X_PLATFORMOBJECT_LOWERING)
         pos += offset;
@@ -91,9 +91,9 @@ static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
 {
     X_PlatformObject* platform = (X_PlatformObject*)obj;
     
-    x_fp16x16 oldY = platform->model->origin.y;
+    x_fp16x16 oldY = platform->model->origin.y.toFp16x16();
     move_platform(platform, deltaTime);
-    move_objects_on_platform(platform, platform->model->origin.y - oldY);
+    move_objects_on_platform(platform, platform->model->origin.y.toFp16x16() - oldY);
 }
 
 static void x_platform_trigger(X_GameObject* obj, X_GameObject* trigger, X_GameObjectTriggerType type)

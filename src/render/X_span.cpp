@@ -52,7 +52,7 @@ static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureV
 
 static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3* orientationInEyeSpace, int minTexCoord, int texOffset)
 {
-    Vec3fp inverseModelPos = MakeVec3fp(*context->surface->modelOrigin);
+    Vec3fp inverseModelPos = *context->surface->modelOrigin;
     
     Vec3 inverseModelPosInEyeSpace = MakeVec3(context->renderContext->viewMatrix->transform(inverseModelPos));
     

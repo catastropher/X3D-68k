@@ -119,7 +119,7 @@ struct X_AE_Surface
     
     bool inSubmodel;
     
-    Vec3* modelOrigin;
+    Vec3fp* modelOrigin;
     
     struct X_AE_Surface* next;
     struct X_AE_Surface* prev;

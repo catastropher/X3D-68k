@@ -504,7 +504,7 @@ void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, Bound
     emitEdges(surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 
-static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3* origin)
+static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3fp* origin)
 {
     dest->totalVertices = 0;
     
@@ -517,7 +517,7 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
         else
             v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
                 
-        dest->vertices[dest->totalVertices++] = MakeVec3fp(v + *origin);
+        dest->vertices[dest->totalVertices++] = MakeVec3fp(v) + *origin;
     }
 }
 

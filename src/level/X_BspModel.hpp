@@ -42,7 +42,7 @@ typedef struct X_BspModel
     X_BspSurface* faces;
     int totalFaces;
     
-    Vec3 origin;
+    Vec3fp origin;
     
     X_Link objectsOnModelHead;
     X_Link objectsOnModelTail;
