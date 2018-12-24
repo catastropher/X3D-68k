@@ -28,45 +28,52 @@ static inline int mip_adjust(int val, int mipLevel)
     return val >> mipLevel;
 }
 
-static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* context, Vec3* vecToRotate, Vec3* dest)
+static inline fp mip_adjust(fp val, int mipLevel)
 {
-    Vec3fp vecToRotateTemp = MakeVec3fp(*vecToRotate);
-    *dest = MakeVec3(context->renderContext->viewMatrix->transformNormal(vecToRotateTemp));
+    return fp(val.toFp16x16() >> mipLevel);
 }
 
-static inline void calculate_uv_orientation_steps_in_screen_space(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3* orientationInEyeSpace)
+static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* context, Vec3fp* vecToRotate, Vec3fp* dest)
 {
-    var->uOrientationStep = mip_adjust(orientationInEyeSpace->x / context->viewport->distToNearPlane, context->mipLevel);
-    var->vOrientationStep = mip_adjust(orientationInEyeSpace->y / context->viewport->distToNearPlane, context->mipLevel);
+    *dest = context->renderContext->viewMatrix->transformNormal(*vecToRotate);
 }
 
-static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3* orientationInEyeSpace)
+static inline void calculate_uv_orientation_steps_in_screen_space(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace)
+{
+    var->uOrientationStep = mip_adjust(orientationInEyeSpace->x / context->viewport->distToNearPlane, context->mipLevel).toFp16x16();
+    var->vOrientationStep = mip_adjust(orientationInEyeSpace->y / context->viewport->distToNearPlane, context->mipLevel).toFp16x16();
+}
+
+static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace)
 {
     int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
-    var->origin = mip_adjust(orientationInEyeSpace->z, context->mipLevel) -
+    var->origin = mip_adjust(orientationInEyeSpace->z, context->mipLevel).toFp16x16() -
         centerX * var->uOrientationStep -
         centerY * var->vOrientationStep;
 }
 
-static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3* orientationInEyeSpace, int minTexCoord, int texOffset)
+static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace, int minTexCoord, int texOffset)
 {
     Vec3fp inverseModelPos = *context->surface->modelOrigin;
     
-    Vec3 inverseModelPosInEyeSpace = MakeVec3(context->renderContext->viewMatrix->transform(inverseModelPos));
+    Vec3fp inverseModelPosInEyeSpace = context->renderContext->viewMatrix->transform(inverseModelPos);
     
     int mipLevel = context->mipLevel;
-    inverseModelPosInEyeSpace = x_vec3_shift_right(&inverseModelPosInEyeSpace, mipLevel);
+    inverseModelPosInEyeSpace = Vec3fp(
+        inverseModelPosInEyeSpace.x >> mipLevel,
+        inverseModelPosInEyeSpace.y >> mipLevel,
+        inverseModelPosInEyeSpace.z >> mipLevel);
     
-    var->adjust = -x_vec3_dot(orientationInEyeSpace, &inverseModelPosInEyeSpace) -
+    var->adjust = -orientationInEyeSpace->dot(inverseModelPosInEyeSpace).toFp16x16() -
         mip_adjust(minTexCoord, mipLevel) +
         mip_adjust(texOffset, mipLevel);
 }
 
-static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3* orientationAxis, int minTexCoord, int texOffset)
+static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationAxis, int minTexCoord, int texOffset)
 {
-    Vec3 orientationInEyeSpace;
+    Vec3fp orientationInEyeSpace;
     rotate_vector_into_eye_space(context, orientationAxis, &orientationInEyeSpace);
     
     calculate_uv_orientation_steps_in_screen_space(var, context, &orientationInEyeSpace);
@@ -183,8 +190,12 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     
     X_BspFaceTexture* tex = context->faceTexture;
     X_BspSurface* bspSurface = context->surface->bspSurface;
-    x_ae_texturevar_init(&context->sDivZ, context, &tex->uOrientation, bspSurface->textureMinCoord.x, tex->uOffset);
-    x_ae_texturevar_init(&context->tDivZ, context, &tex->vOrientation, bspSurface->textureMinCoord.y, tex->vOffset);
+    
+    Vec3fp uTemp = MakeVec3fp(tex->uOrientation);
+    Vec3fp vTemp = MakeVec3fp(tex->vOrientation);
+    
+    x_ae_texturevar_init(&context->sDivZ, context, &uTemp, bspSurface->textureMinCoord.x, tex->uOffset);
+    x_ae_texturevar_init(&context->tDivZ, context, &vTemp, bspSurface->textureMinCoord.y, tex->vOffset);
     
     x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, context->mipLevel, renderContext->renderer, &context->surfaceTexture);
     x_ae_surfacerendercontext_setup_constants(context);
@@ -192,7 +203,7 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
 
 static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return  x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin;
+    return x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin;
 }
 
 static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)

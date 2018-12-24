@@ -157,6 +157,16 @@ inline fp& operator-=(fp& a, fp b)
     return a;
 }
 
+inline fp operator<<(fp f, int amount)
+{
+    return fp(f.internalValue() << amount);
+}
+
+inline fp operator>>(fp f, int amount)
+{
+    return fp(f.internalValue() >> amount);
+}
+
 inline fp operator-(fp f)
 {
     return fp(-f.val);
