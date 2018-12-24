@@ -191,11 +191,8 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     X_BspFaceTexture* tex = context->faceTexture;
     X_BspSurface* bspSurface = context->surface->bspSurface;
     
-    Vec3fp uTemp = MakeVec3fp(tex->uOrientation);
-    Vec3fp vTemp = MakeVec3fp(tex->vOrientation);
-    
-    x_ae_texturevar_init(&context->sDivZ, context, &uTemp, bspSurface->textureMinCoord.x, tex->uOffset);
-    x_ae_texturevar_init(&context->tDivZ, context, &vTemp, bspSurface->textureMinCoord.y, tex->vOffset);
+    x_ae_texturevar_init(&context->sDivZ, context, &tex->uOrientation, bspSurface->textureMinCoord.x, tex->uOffset);
+    x_ae_texturevar_init(&context->tDivZ, context, &tex->vOrientation, bspSurface->textureMinCoord.y, tex->vOffset);
     
     x_bspsurface_get_surface_texture_for_mip_level(surface->bspSurface, context->mipLevel, renderContext->renderer, &context->surfaceTexture);
     x_ae_surfacerendercontext_setup_constants(context);

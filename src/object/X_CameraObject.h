@@ -63,11 +63,6 @@ static inline Vec3fp x_cameraobject_get_position(X_CameraObject* cam)
     return cam->position;
 }
 
-static inline Vec3 x_cameraobject_get_velocity(X_CameraObject* cam)
-{
-    return Vec3(0, 0, 0); //MakeVec3(cam->collider.velocity);
-}
-
 static inline void x_cameraobject_add_angle(X_CameraObject* cam, X_Vec2_fp16x16 angleOffset)
 {
     cam->angleX += angleOffset.x;

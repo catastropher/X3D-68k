@@ -49,8 +49,8 @@ typedef struct X_BspTexture
 
 typedef struct X_BspFaceTexture
 {
-    Vec3 uOrientation;    // Orientation of texture in 3D space
-    Vec3 vOrientation;
+    Vec3fp uOrientation;    // Orientation of texture in 3D space
+    Vec3fp vOrientation;
     x_fp16x16 uOffset;
     x_fp16x16 vOffset;
     X_BspTexture* texture;

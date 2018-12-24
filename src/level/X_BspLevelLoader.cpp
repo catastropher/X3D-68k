@@ -276,15 +276,11 @@ static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* 
     }
 }
 
-static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, Vec3fp* v)
-{
-    Vec3 vTemp = MakeVec3(*v);
-    
-    return x_vec2_make
-    (
-        x_vec3_dot(&surface->faceTexture->uOrientation, &vTemp) + surface->faceTexture->uOffset,
-        x_vec3_dot(&surface->faceTexture->vOrientation, &vTemp) + surface->faceTexture->vOffset
-     );
+static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, Vec3fp& v)
+{    
+    return x_vec2_make(
+        surface->faceTexture->uOrientation.dot(v).toFp16x16() + surface->faceTexture->uOffset,
+        surface->faceTexture->vOrientation.dot(v).toFp16x16() + surface->faceTexture->vOffset);
 }
 
 static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspLevel* level)
@@ -302,7 +298,7 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspL
         else
             v = level->vertices + level->edges[-edgeId].v[0];
         
-        X_Vec2 textureCoord = x_bspsurface_calculate_texture_coordinate_of_vertex(surface, &v->v);
+        X_Vec2 textureCoord = x_bspsurface_calculate_texture_coordinate_of_vertex(surface, v->v);
         x_bspboundrect_add_point(&textureCoordsBoundRect, textureCoord);
     }
     

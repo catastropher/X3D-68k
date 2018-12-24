@@ -213,18 +213,16 @@ static void x_surfacebuilder_build_from_combined_lightmap(X_SurfaceBuilder* buil
     }
 }
 
-static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, Vec3* dest, int* distDest)
+static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, Vec3fp* dest, int* distDest)
 {
-    Vec3 lightPos = builder->currentLight->position;
+    Vec3fp lightPos = MakeVec3fp(builder->currentLight->position);
     Plane* plane = &builder->bspSurface->plane->plane;
 
-    Vec3fp lightPosTemp = MakeVec3fp(lightPos);
-
-    int dist = plane->distanceTo(lightPosTemp).toInt();
+    int dist = plane->distanceTo(lightPos).toInt();
     
-    dest->x = lightPos.x - plane->normal.x.toFp16x16() * dist;
-    dest->y = lightPos.y - plane->normal.y.toFp16x16() * dist;
-    dest->z = lightPos.z - plane->normal.z.toFp16x16() * dist;
+    dest->x = lightPos.x - plane->normal.x * dist;
+    dest->y = lightPos.y - plane->normal.y * dist;
+    dest->z = lightPos.z - plane->normal.z * dist;
     
     *distDest = abs(dist);
 }
@@ -232,18 +230,16 @@ static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* bu
 static void x_surfacebuilder_apply_dynamic_light(X_SurfaceBuilder* builder)
 {
     int lightDistToPlane;
-    Vec3 closestPoint;
+    Vec3fp closestPoint;
     x_surfacebuilder_surface_point_closest_to_light(builder, &closestPoint, &lightDistToPlane);
     
     // We use linear falloff
     x_fp24x8 intensityAtClosestPoint = builder->currentLight->intensity - lightDistToPlane;
     
     X_BspFaceTexture* faceTexture = builder->bspSurface->faceTexture;
-    X_Vec2 closestIn2D = x_vec2_make
-    (
-        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->uOrientation) + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x),
-        x_fp16x16_to_int(x_vec3_dot(&closestPoint, &faceTexture->vOrientation) + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y)
-    );
+    X_Vec2 closestIn2D = x_vec2_make(
+        closestPoint.dot(faceTexture->uOrientation).toInt() + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x,
+        closestPoint.dot(faceTexture->vOrientation).toInt() + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y);
     
     for(int i = 0; i < builder->lightmapSize.y; ++i)
     {
