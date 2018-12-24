@@ -109,7 +109,7 @@ private:
     ArenaAllocator<Surface> surfaces;
     ArenaAllocator<EdgeSurfacePair> pairs;
     
-    X_BspLevel* level;
+    BspLevel* level;
     int currentFrame;
     
     X_RenderContext* renderContext;

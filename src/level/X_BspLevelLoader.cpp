@@ -235,7 +235,7 @@ static void x_bsplevelloader_init_collision_hulls(X_BspLevelLoader* loader)
     loader->collisionHulls[3].rootNode = levelModel->thirdRootClipNode;
 }
 
-static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_allocate_memory(BspLevel* level, const X_BspLevelLoader* loader)
 {
     level->totalEdges = loader->edges.count;
     level->edges = (X_BspEdge*)x_malloc(level->totalEdges * sizeof(X_BspEdge));
@@ -268,7 +268,7 @@ static void x_bsplevel_allocate_memory(X_BspLevel* level, const X_BspLevelLoader
     level->faceTextures = (X_BspFaceTexture*)x_malloc(level->totalFaceTextures * sizeof(X_BspFaceTexture));
 }
 
-static void x_bsplevel_init_vertices(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_vertices(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalVertices; ++i)
     {
@@ -283,7 +283,7 @@ static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* 
         surface->faceTexture->vOrientation.dot(v).toFp16x16() + surface->faceTexture->vOffset);
 }
 
-static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspLevel* level)
+static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, BspLevel* level)
 {
     X_BspBoundRect textureCoordsBoundRect;
     x_bspboundrect_init(&textureCoordsBoundRect);
@@ -321,7 +321,7 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, X_BspL
     );    
 }
 
-static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_surfaces(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < loader->faces.count; ++i)
     {
@@ -352,13 +352,13 @@ static void x_bsplevel_init_surfaces(X_BspLevel* level, const X_BspLevelLoader* 
     }
 }
 
-static void x_bsplevel_init_marksurfaces(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_marksurfaces(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalMarkSurfaces; ++i)
         level->markSurfaces[i] = level->surfaces + loader->markSurfaces.elem[i];
 }
 
-static void x_bsplevel_init_planes(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_planes(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalPlanes; ++i)
     {
@@ -370,7 +370,7 @@ static void x_bsplevel_init_planes(X_BspLevel* level, const X_BspLevelLoader* lo
     }
 }
 
-static void x_bsplevel_init_leaves(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_leaves(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalLeaves; ++i)
     {
@@ -406,7 +406,7 @@ static void x_bspnode_assign_parent(X_BspNode* node, X_BspNode* parent)
     x_bspnode_assign_parent(node->backChild, node);
 }
 
-static X_BspNode* x_bsplevel_get_node_from_id(X_BspLevel* level, short id)
+static X_BspNode* x_bsplevel_get_node_from_id(BspLevel* level, short id)
 {
     if(id >= 0)
         return level->nodes + id;
@@ -414,7 +414,7 @@ static X_BspNode* x_bsplevel_get_node_from_id(X_BspLevel* level, short id)
     return (X_BspNode*)(level->leaves + (~id));
 }
 
-static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_models(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalModels; ++i)
     {
@@ -454,7 +454,7 @@ static void x_bsplevel_init_models(X_BspLevel* level, const X_BspLevelLoader* lo
     }
 }
 
-static void x_bsplevel_init_nodes(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_nodes(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalNodes; ++i)
     {
@@ -481,7 +481,7 @@ static void x_bsplevel_init_nodes(X_BspLevel* level, const X_BspLevelLoader* loa
     }
 }
 
-static void x_bsplevel_init_edges(X_BspLevel* level, const X_BspLevelLoader* loader)
+static void x_bsplevel_init_edges(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalEdges; ++i)
     {
@@ -491,21 +491,21 @@ static void x_bsplevel_init_edges(X_BspLevel* level, const X_BspLevelLoader* loa
     }
 }
 
-static void x_bsplevel_init_pvs(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_pvs(BspLevel* level, X_BspLevelLoader* loader)
 {
     // Steal the PVS (no sense in making a copy)
     level->compressedPvsData = loader->compressedPvsData.elem;
     loader->compressedPvsData.elem = NULL;
 }
 
-static void x_bsplevel_init_surfacedgeids(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_surfacedgeids(BspLevel* level, X_BspLevelLoader* loader)
 {
     // Steal the list of surface edges
     level->surfaceEdgeIds = loader->surfaceEdgeIds.elem;
     loader->surfaceEdgeIds.elem = NULL;
 }
 
-static void x_bsplevel_init_textures(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_textures(BspLevel* level, X_BspLevelLoader* loader)
 {
     // Steal the loaded texels
     level->textureTexels = loader->textureTexels;
@@ -536,7 +536,7 @@ static void x_bsplevel_init_textures(X_BspLevel* level, X_BspLevelLoader* loader
     }
 }
 
-static void x_bsplevel_init_facetextures(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_facetextures(BspLevel* level, X_BspLevelLoader* loader)
 {
     for(int i = 0; i < level->totalFaceTextures; ++i)
     {
@@ -554,7 +554,7 @@ static void x_bsplevel_init_facetextures(X_BspLevel* level, X_BspLevelLoader* lo
     }
 }
 
-static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspSurface* surface, X_BspLevel* level)
+static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspSurface* surface, BspLevel* level)
 {
     for(int i = 0; i < surface->totalEdges; ++i)
     {
@@ -572,7 +572,7 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspS
     }
 }
 
-static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
+static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, BspLevel* level)
 {
     if(node->isLeaf())
         return;
@@ -598,13 +598,13 @@ static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, X_BspLevel* level)
     x_bspnode_calculate_geo_boundbox(node->backChild, level);
 }
 
-static void x_bsplevel_init_lightmap_data(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_lightmap_data(BspLevel* level, X_BspLevelLoader* loader)
 {
     level->lightmapData = loader->lightmapData.elem;
     loader->lightmapData.elem = NULL;
 }
 
-static void x_bsplevel_init_clipnodes(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_clipnodes(BspLevel* level, X_BspLevelLoader* loader)
 {
     level->clipNodes = loader->clipNodes.elem;
     level->totalClipNodes = loader->clipNodes.count;
@@ -612,19 +612,19 @@ static void x_bsplevel_init_clipnodes(X_BspLevel* level, X_BspLevelLoader* loade
     loader->clipNodes.elem = nullptr;
 }
 
-static void x_bsplevel_init_collision_hulls(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_collision_hulls(BspLevel* level, X_BspLevelLoader* loader)
 {
     for(int i = 0; i < X_BSPLEVEL_MAX_COLLISION_HULLS; ++i)
         level->collisionHulls[i] = loader->collisionHulls[i];
 }
 
-static void x_bsplevel_init_entity_dictionary(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_entity_dictionary(BspLevel* level, X_BspLevelLoader* loader)
 {
     level->entityDictionary = loader->entityDictionary;
     loader->entityDictionary = NULL;
 }
 
-static void x_bsplevel_init_from_bsplevel_loader(X_BspLevel* level, X_BspLevelLoader* loader)
+static void x_bsplevel_init_from_bsplevel_loader(BspLevel* level, X_BspLevelLoader* loader)
 {
     x_bsplevel_allocate_memory(level, loader);
     
@@ -727,7 +727,7 @@ static void x_bsplevelloader_cleanup(X_BspLevelLoader* level)
     x_file_close(&level->file);
 }
 
-bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName, EngineQueue* engineQueue)
+bool x_bsplevel_load_from_bsp_file(BspLevel* level, const char* fileName, EngineQueue* engineQueue)
 {
     X_BspLevelLoader loader;
     if(!x_bsplevelloader_load_bsp_file(&loader, fileName, engineQueue))

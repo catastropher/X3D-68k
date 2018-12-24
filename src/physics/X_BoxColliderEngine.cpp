@@ -124,7 +124,7 @@ void BoxColliderEngine::applyGravity()
     collider.velocity += *collider.gravity;
 }
 
-void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level)
+void x_boxcollider_update(X_BoxCollider* collider, BspLevel* level)
 {
     BoxColliderEngine engine(*collider, *level);
     engine.runStep();

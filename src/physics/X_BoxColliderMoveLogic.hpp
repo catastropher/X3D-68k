@@ -35,7 +35,7 @@ typedef enum IterationFlags
 class BoxColliderMoveLogic
 {
 public:
-    BoxColliderMoveLogic(X_BoxCollider& collider_, X_BspLevel& level_, Vec3fp& startingPosition_, Vec3fp& velocity_)
+    BoxColliderMoveLogic(X_BoxCollider& collider_, BspLevel& level_, Vec3fp& startingPosition_, Vec3fp& velocity_)
         : collider(collider_),
         level(level_),
         startingPosition(startingPosition_),
@@ -91,7 +91,7 @@ private:
     Portal* findWhichPortalBoxInside();
 
     X_BoxCollider& collider;
-    X_BspLevel& level;
+    BspLevel& level;
 
     RayCollision<int> lastHitWall;
 

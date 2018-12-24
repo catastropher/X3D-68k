@@ -24,7 +24,7 @@ struct X_CameraObject;
 struct X_Frustum;
 struct X_Texture;
 struct Mat4x4;
-struct X_BspLevel;
+struct BspLevel;
 struct X_BspModel;
 struct X_Screen;
 
@@ -38,7 +38,7 @@ typedef struct X_RenderContext
     X_Frustum* viewFrustum;
     Mat4x4* viewMatrix;
     X_EngineContext* engineContext;
-    X_BspLevel* level;
+    BspLevel* level;
     
     int currentFrame;
     Vec3fp camPos;

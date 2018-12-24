@@ -44,7 +44,7 @@ typedef struct X_EngineContext
         mainFont = new X_Font;
         keystate = new X_KeyState;
         mouseState = new X_MouseState;
-        currentLevel = new X_BspLevel;
+        currentLevel = new BspLevel;
         renderer = new X_Renderer(screen);
     }
     
@@ -54,13 +54,13 @@ typedef struct X_EngineContext
     X_Font* getMainFont() const { return mainFont; }
     X_KeyState* getKeyState() const { return keystate; }
     X_MouseState* getMouseState() const { return mouseState; }
-    X_BspLevel* getCurrentLevel() const { return currentLevel; }
+    BspLevel* getCurrentLevel() const { return currentLevel; }
     X_Renderer* getRenderer() const { return renderer; }
     EngineQueue* getEngineQueue() const { return queue; }
 
     Platform* getPlatform() { return &platform; }
 
-    void setCurrentLevel(X_BspLevel* level) { currentLevel = level; }
+    void setCurrentLevel(BspLevel* level) { currentLevel = level; }
 
     X_GameObject activeObjectHead;
     X_GameObject activeObjectTail;
@@ -78,7 +78,7 @@ private:
     X_Font* mainFont;
     X_KeyState* keystate;
     X_MouseState* mouseState;
-    X_BspLevel* currentLevel;
+    BspLevel* currentLevel;
     X_Renderer* renderer;
     EngineQueue* queue;
 

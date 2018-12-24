@@ -217,5 +217,5 @@ typedef struct X_BspLevelLoader
     EngineEvent progressEvent;
 } X_BspLevelLoader;
 
-bool x_bsplevel_load_from_bsp_file(X_BspLevel* level, const char* fileName, EngineQueue* engineQueue);
+bool x_bsplevel_load_from_bsp_file(BspLevel* level, const char* fileName, EngineQueue* engineQueue);
 

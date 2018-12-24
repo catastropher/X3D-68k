@@ -26,7 +26,7 @@
 #include "engine/X_EngineContext.h"
 #include "level/X_Portal.hpp"
 
-void X_BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
+void BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
 {
     unsigned char drawnEdges[8192];
     memset(drawnEdges, 8192, (totalEdges + 7) / 8);
@@ -45,7 +45,7 @@ void X_BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
     renderContext.viewFrustum->totalPlanes = totalPlanes;
 }
 
-X_BspLeaf* X_BspLevel::findLeafPointIsIn(Vec3fp& point)
+X_BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
 {
     X_BspNode* node = x_bsplevel_get_root_node(this);
  
@@ -59,12 +59,12 @@ X_BspLeaf* X_BspLevel::findLeafPointIsIn(Vec3fp& point)
     return node->getLeaf();
 }
 
-void X_BspLevel::markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize)
+void BspLevel::markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize)
 {
     memset(pvs, 0xFF, pvsSize);
 }
 
-void X_BspLevel::decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
+void BspLevel::decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
 {
     unsigned char* decompressedPvsEnd = decompressedPvsDest + pvsSize;
     
@@ -87,7 +87,7 @@ void X_BspLevel::decompressPvs(unsigned char* compressedPvsData, int pvsSize, un
     }
 }
 
-void X_BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
+void BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
 {
     int pvsSize = x_bspfile_node_pvs_size(this);
     unsigned char* pvsData = leaf->compressedPvsData;
@@ -103,7 +103,7 @@ void X_BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompress
     decompressPvs(pvsData, pvsSize, decompressedPvsDest);
 }
 
-int X_BspLevel::countVisibleLeaves(unsigned char* pvs)
+int BspLevel::countVisibleLeaves(unsigned char* pvs)
 {
     int count = 0;
     
@@ -118,12 +118,12 @@ int X_BspLevel::countVisibleLeaves(unsigned char* pvs)
     return count;
 }
 
-void X_BspLevel::initEmpty()
+void BspLevel::initEmpty()
 {    
     flags = (X_BspLevelFlags)0;
 }
 
-void X_BspLevel::markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame)
+void BspLevel::markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame)
 {
     int totalLeaves = x_bsplevel_get_level_model(this)->totalBspLeaves;
     
@@ -139,7 +139,7 @@ void X_BspLevel::markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame)
     }
 }
 
-void X_BspLevel::renderPortals(X_RenderContext& renderContext)
+void BspLevel::renderPortals(X_RenderContext& renderContext)
 {
     BoundBoxFrustumFlags bbFlags = (BoundBoxFrustumFlags)((1 << 4) - 1);
 
@@ -228,12 +228,12 @@ void X_BspLevel::renderPortals(X_RenderContext& renderContext)
 //     x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
 // }
 
-// void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light* light, int currentFrame)
+// void x_bsplevel_mark_surfaces_light_is_close_to(BspLevel* level, const X_Light* light, int currentFrame)
 // {
 //     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 // }
 
-static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
+static void x_bsplevel_render_submodel(BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
 {
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
     
@@ -261,7 +261,7 @@ static void x_bsplevel_render_submodel(X_BspLevel* level, X_BspModel* submodel, 
     }
 }
 
-void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderContext)
+void x_bsplevel_render_submodels(BspLevel* level, X_RenderContext* renderContext)
 {
     BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
     
@@ -269,7 +269,7 @@ void x_bsplevel_render_submodels(X_BspLevel* level, X_RenderContext* renderConte
         x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
 }
 
-void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
+void x_bsplevel_render(BspLevel* level, X_RenderContext* renderContext)
 {
     x_bsplevel_reset_bspkeys(level);
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, x_bsplevel_get_level_model(level));
@@ -283,7 +283,7 @@ void x_bsplevel_render(X_BspLevel* level, X_RenderContext* renderContext)
     level->renderPortals(*renderContext);
 }
 
-void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
+void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
 {
     x_assert(mipMapLevel >= 0 && mipMapLevel < 4, "Bad mip map request");
     x_assert(textureId >= 0 && textureId < level->totalTextures, "Requested invalid texture");
@@ -293,7 +293,7 @@ void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X
     new (dest) X_Texture(bspTex->w >> mipMapLevel,  bspTex->h >> mipMapLevel, bspTex->mipTexels[mipMapLevel]);
 }
 
-void x_bsplevel_cleanup(X_BspLevel* level)
+void x_bsplevel_cleanup(BspLevel* level)
 {
     if(!x_bsplevel_file_is_loaded(level))
         return;
@@ -342,12 +342,12 @@ X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node,
     return nextNodeDest;
 }
 
-int x_bsplevel_find_nodes_intersecting_sphere(X_BspLevel* level, X_BoundSphere* sphere, X_BspNode** dest)
+int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, X_BoundSphere* sphere, X_BspNode** dest)
 {
     return x_bsplevel_find_nodes_intersecting_sphere_recursive(x_bsplevel_get_root_node(level), sphere, dest) - dest;
 }
 
-Portal* X_BspLevel::addPortal()
+Portal* BspLevel::addPortal()
 {
     auto portal = Zone::alloc<Portal>();
 

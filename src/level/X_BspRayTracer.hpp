@@ -46,7 +46,7 @@ template<typename IdType, typename NodeType>
 class BspRayTracer
 {
 public:
-    BspRayTracer(const Ray3& ray_, X_BspLevel* level_, int collisionHullId_)
+    BspRayTracer(const Ray3& ray_, BspLevel* level_, int collisionHullId_)
         : ray(ray_),
         level(level_),
         collisionHullId(collisionHullId_)
@@ -76,7 +76,7 @@ private:
     IdType getRootNode(X_BspModel& model);
 
     Ray3 ray;
-    X_BspLevel* level;
+    BspLevel* level;
     RayCollision<IdType> collision;
     int collisionHullId;
     X_BspModel* currentModel;

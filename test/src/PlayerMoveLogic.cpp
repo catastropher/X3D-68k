@@ -24,7 +24,7 @@ static Vec3fp removeVerticalComponent(Vec3fp v)
     return withoutVertical;
 }
 
-void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, X_BspLevel* level)
+void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, BspLevel* level)
 {
     handleAngleKeys(keys);
     handleNormalMovement(keys, level);
@@ -158,7 +158,7 @@ bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* ca
 //     return 1;
 }
 
-void PlayerMoveLogic::handleNormalMovement(PlayerKeyFlags keys, X_BspLevel* level)
+void PlayerMoveLogic::handleNormalMovement(PlayerKeyFlags keys, BspLevel* level)
 {
     Vec3fp movementVector = getMovementVector(keys);
     

@@ -27,7 +27,7 @@ static X_GameObjectType g_cameraObjectType =
     }
 };
 
-void X_CameraObject::overrideBspLeaf(int leafId, X_BspLevel* level)
+void X_CameraObject::overrideBspLeaf(int leafId, BspLevel* level)
 {
     currentLeaf = level->leaves + leafId;
     lastLeaf = nullptr;

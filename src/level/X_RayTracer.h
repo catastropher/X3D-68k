@@ -22,7 +22,7 @@
 
 typedef struct X_RayTracer
 {
-    X_BspLevel* level;
+    BspLevel* level;
     Ray3 ray;
     int rootClipNode;
     Plane collisionPlane;
@@ -36,7 +36,7 @@ typedef struct X_RayTracer
 } X_RayTracer;
 
 template<typename IdType, typename NodeType>
-void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRayTracer, X_RayTracer& dest, X_BspLevel* level)
+void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRayTracer, X_RayTracer& dest, BspLevel* level)
 {
     auto& collision = bspRayTracer.getCollision();
 
@@ -48,9 +48,9 @@ void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRayTracer,
     dest.level = level;
 }
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox);
+void x_raytracer_init(X_RayTracer* trace, BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox);
 bool x_raytracer_trace(X_RayTracer* trace);
 
 template<typename IdType, typename NodeType>
-void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRaytracer, X_RayTracer& dest, X_BspLevel* level);
+void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRaytracer, X_RayTracer& dest, BspLevel* level);
 

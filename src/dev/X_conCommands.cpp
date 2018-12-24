@@ -42,7 +42,7 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     // FIXME: this doesn't belong here
     x_cache_flush(&context->getRenderer()->surfaceCache);
     
-    X_BspLevel tempLevel;
+    BspLevel tempLevel;
     
     if(!x_bsplevel_load_from_bsp_file(&tempLevel, fileName, context->getEngineQueue()))
     {

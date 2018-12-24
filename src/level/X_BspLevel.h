@@ -147,7 +147,7 @@ typedef struct X_BspCollisionHull
 
 #define X_BSPLEVEL_MAX_NAME_LENGTH 32
 
-typedef struct X_BspLevel
+struct BspLevel
 {
     void initEmpty();
 
@@ -247,59 +247,59 @@ private:
         int parentFlags,
         unsigned char* drawnEdges);
 
-} X_BspLevel;
+};
 
-void x_bsplevel_cleanup(X_BspLevel* level);
+void x_bsplevel_cleanup(BspLevel* level);
 
-void x_bsplevel_render(X_BspLevel* level, struct X_RenderContext* renderContext);
+void x_bsplevel_render(BspLevel* level, struct X_RenderContext* renderContext);
 
-void x_bsplevel_get_texture(X_BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
+void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
 
-void x_bsplevel_mark_surfaces_light_is_close_to(X_BspLevel* level, const X_Light* light, int currentFrame);
+void x_bsplevel_mark_surfaces_light_is_close_to(BspLevel* level, const X_Light* light, int currentFrame);
 
 struct X_BoundSphere;
-int x_bsplevel_find_nodes_intersecting_sphere(X_BspLevel* level, struct X_BoundSphere* sphere, X_BspNode** dest);
+int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, struct X_BoundSphere* sphere, X_BspNode** dest);
 
-void x_bsplevel_render_submodels(X_BspLevel* level, struct X_RenderContext* renderContext);
+void x_bsplevel_render_submodels(BspLevel* level, struct X_RenderContext* renderContext);
 
 //======================== level ========================
 
-static inline bool x_bsplevel_file_is_loaded(const X_BspLevel* level)
+static inline bool x_bsplevel_file_is_loaded(const BspLevel* level)
 {
     return (level->flags & X_BSPLEVEL_LOADED) != 0;
 }
 
-static inline X_BspLeaf* x_bsplevel_get_leaf(const X_BspLevel* level, X_BspLeafId leafId)
+static inline X_BspLeaf* x_bsplevel_get_leaf(const BspLevel* level, X_BspLeafId leafId)
 {
     return level->leaves + leafId;
 }
 
-static inline X_BspModel* x_bsplevel_get_level_model(const X_BspLevel* level)
+static inline X_BspModel* x_bsplevel_get_level_model(const BspLevel* level)
 {
     return level->models + 0;
 }
 
-static inline X_BspNode* x_bsplevel_get_root_node(const X_BspLevel* level)
+static inline X_BspNode* x_bsplevel_get_root_node(const BspLevel* level)
 {
     return x_bsplevel_get_level_model(level)->rootBspNode;
 }
 
-static inline void x_bsplevel_reset_bspkeys(X_BspLevel* level)
+static inline void x_bsplevel_reset_bspkeys(BspLevel* level)
 {
     level->nextBspKey = 1;
 }
 
-static inline void x_bsplevel_next_bspkey(X_BspLevel* level)
+static inline void x_bsplevel_next_bspkey(BspLevel* level)
 {
     ++level->nextBspKey;
 }
 
-static inline int x_bsplevel_current_bspkey(const X_BspLevel* level)
+static inline int x_bsplevel_current_bspkey(const BspLevel* level)
 {
     return level->nextBspKey;
 }
 
-static inline X_BspModel* x_bsplevel_get_model(X_BspLevel* level, int modelId)
+static inline X_BspModel* x_bsplevel_get_model(BspLevel* level, int modelId)
 {
     return level->models + modelId;
 }
@@ -318,7 +318,7 @@ static inline bool x_bspsurface_plane_is_flipped(const X_BspSurface* surface)
 
 //======================== pvs ========================
 
-static inline int x_bspfile_node_pvs_size(const X_BspLevel* level)
+static inline int x_bspfile_node_pvs_size(const BspLevel* level)
 {
     return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
 }

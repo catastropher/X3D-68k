@@ -39,7 +39,7 @@ static inline bool x_engine_level_is_loaded(const X_EngineContext* context)
     return x_bsplevel_file_is_loaded(context->getCurrentLevel());
 }
 
-static inline X_BspLevel* x_engine_get_current_level(X_EngineContext* context)
+static inline BspLevel* x_engine_get_current_level(X_EngineContext* context)
 {
     return context->getCurrentLevel();
 }

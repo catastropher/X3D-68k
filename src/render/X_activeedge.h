@@ -265,8 +265,8 @@ struct X_AE_Context
     X_BspModel* currentModel;
     X_AE_Surface* currentParent;
 
-    void addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
-    void addLevelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
 
     // !-- To be made private --!
     X_AE_Edge* getCachedEdge(X_BspEdge* edge, int currentFrame) const;
@@ -438,7 +438,7 @@ void x_ae_context_begin_render(X_AE_Context* context, X_RenderContext* renderCon
 
 void x_ae_context_scan_edges(X_AE_Context* context);
 
-int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level);
+int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, BspLevel* level);
 
 static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {

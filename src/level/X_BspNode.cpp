@@ -175,7 +175,7 @@ void X_BspNode::renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFl
 
     frustum->head = planePtr;
 
-    X_BspLevel* level = renderContext.level;
+    BspLevel* level = renderContext.level;
     
     for(int i = 0; i < totalSurfaces; ++i)
     {

@@ -68,7 +68,7 @@ typedef struct X_BoxCollider
 } X_BoxCollider;
 
 void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags);
-void x_boxcollider_update(X_BoxCollider* collider, X_BspLevel* level);
+void x_boxcollider_update(X_BoxCollider* collider, BspLevel* level);
 
 static inline bool x_boxcollider_is_on_ground(X_BoxCollider* collider)
 {

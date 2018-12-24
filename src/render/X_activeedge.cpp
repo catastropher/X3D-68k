@@ -504,7 +504,7 @@ void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, Bound
     emitEdges(surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 
-static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3fp* origin)
+static void get_level_polygon_from_edges(BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3fp* origin)
 {
     dest->totalVertices = 0;
     
@@ -521,7 +521,7 @@ static void get_level_polygon_from_edges(X_BspLevel* level, int* edgeIds, int to
     }
 }
 
-void X_AE_Context::addLevelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     x_ae_surface_reset_current_parent(this);
 
@@ -571,7 +571,7 @@ void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* ed
     addSubmodelRecursive(&back, node->backChild, backEdges, bspSurface, geoFlags, bspKey);
 }
 
-void X_AE_Context::addSubmodelPolygon(X_BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     x_ae_surface_reset_current_parent(this);
     
@@ -904,7 +904,7 @@ bool x_ae_surface_point_is_in_surface_spans(X_AE_Surface* surface, int x, int y)
     return false;
 }
 
-int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, X_BspLevel* level)
+int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, BspLevel* level)
 {
     for(X_AE_Surface* s = context->surfaces.begin(); s != context->surfaces.end(); ++s)
     {

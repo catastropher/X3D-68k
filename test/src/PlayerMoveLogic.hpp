@@ -16,7 +16,7 @@
 
 #include "Player.hpp"
 
-struct X_BspLevel;
+struct BspLevel;
 
 class PlayerMoveLogic
 {
@@ -29,7 +29,7 @@ public:
         
     }
     
-    void applyMovement(PlayerKeyFlags keys, X_BspLevel* level);
+    void applyMovement(PlayerKeyFlags keys, BspLevel* level);
     
 private:
     static fp getForwardComponent(PlayerKeyFlags keys);
@@ -38,7 +38,7 @@ private:
     Vec3fp getMovementKeyVector(PlayerKeyFlags keys, bool ignoreVerticalComponent);
     Vec3fp getMovementVector(PlayerKeyFlags keys);
     void handleAngleKeys(PlayerKeyFlags keys);
-    void handleNormalMovement(PlayerKeyFlags flags, X_BspLevel* level);
+    void handleNormalMovement(PlayerKeyFlags flags, BspLevel* level);
     
     Player& player;
     fp moveSpeed;

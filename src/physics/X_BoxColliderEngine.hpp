@@ -41,7 +41,7 @@ struct BoxColliderState
 class BoxColliderEngine
 {
 public:
-    BoxColliderEngine(X_BoxCollider& collider_, X_BspLevel& level_)
+    BoxColliderEngine(X_BoxCollider& collider_, BspLevel& level_)
         : collider(collider_),
         level(level_)
     {
@@ -64,7 +64,7 @@ private:
     void applyFriction();
 
     X_BoxCollider& collider;
-    X_BspLevel& level;
+    BspLevel& level;
 
     Vec3fp finalPosition;
     Vec3fp finalVelocity;

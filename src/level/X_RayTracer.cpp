@@ -16,7 +16,7 @@
 #include "X_RayTracer.h"
 #include "X_BspRayTracer.hpp"
 
-void x_raytracer_init(X_RayTracer* trace, X_BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox)
+void x_raytracer_init(X_RayTracer* trace, BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox)
 {
     Ray3 ray(MakeVec3fp(*start), MakeVec3fp(*end));
 

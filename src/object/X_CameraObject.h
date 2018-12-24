@@ -35,7 +35,7 @@ typedef struct X_CameraObject
 {
     void updateFrustum();
 
-    void overrideBspLeaf(int leafId, X_BspLevel* level);
+    void overrideBspLeaf(int leafId, BspLevel* level);
     
     void updateView();
 
