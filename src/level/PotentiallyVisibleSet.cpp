@@ -29,8 +29,6 @@ void PotentiallyVisibleSet::setCompressedPvsData(unsigned char* compressedPvsDat
     bytesPerEntry = (level.totalNodes + 7) / 8;
 }
 
-
-
 void PotentiallyVisibleSet::markVisibleLeaves(DecompressedLeafVisibleSet& decompressedPvs, int currentFrame)
 {
     int totalLeaves = x_bsplevel_get_level_model(&level)->totalBspLeaves;

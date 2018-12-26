@@ -56,18 +56,18 @@ public:
     {
         int bitIndex = leafId - 1;
         
-        return leafPvs[bitIndex / 8] & (1 << (bitIndex & 7));
+        return leafPvs[bitIndex / 32] & (1 << (bitIndex & 31));
     }
     
     unsigned char* getPvsBytes()
     {
-        return leafPvs;
+        return (unsigned char*)leafPvs;
     }
     
     void markAllLeavesAsVisible(int pvsBytesPerEntry);
     
 private:
-    unsigned char leafPvs[1024];
+    unsigned int leafPvs[1024 / sizeof(unsigned int)];
 };
 
 class CompressedLeafVisibleSet
