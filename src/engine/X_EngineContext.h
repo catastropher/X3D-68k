@@ -44,8 +44,8 @@ typedef struct X_EngineContext
         mainFont = new X_Font;
         keystate = new X_KeyState;
         mouseState = new X_MouseState;
-        currentLevel = new BspLevel;
         renderer = new X_Renderer(screen);
+        currentLevel = nullptr;
     }
     
     X_ObjectFactory* getGameObjectFactory() const { return gameObjectFactory; }

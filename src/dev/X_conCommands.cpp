@@ -42,19 +42,20 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     // FIXME: this doesn't belong here
     x_cache_flush(&context->getRenderer()->surfaceCache);
     
-    BspLevel tempLevel;
+    BspLevel* level = new BspLevel;
     
-    if(!x_bsplevel_load_from_bsp_file(&tempLevel, fileName, context->getEngineQueue()))
+    if(!x_bsplevel_load_from_bsp_file(level, fileName, context->getEngineQueue()))
     {
         x_console_printf(context->getConsole(), "Failed to load map %s\n", fileName);
         return;
     }
     
     if(x_engine_level_is_loaded(context))
+    {
         x_bsplevel_cleanup(context->getCurrentLevel());
+    }
     
-    // FIXME: omg why
-    *context->getCurrentLevel() = tempLevel;
+    context->setCurrentLevel(level);
     
     x_console_printf(context->getConsole(), "Loaded map %s\n", fileName);
 }

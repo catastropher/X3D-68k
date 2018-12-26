@@ -28,6 +28,7 @@
 #include "render/X_Light.h"
 #include "render/X_Texture.h"
 #include "util/X_util.h"
+#include "PotentiallyVisibleSet.hpp"
 
 struct X_RenderContext;
 struct X_AE_Edge;
@@ -149,14 +150,16 @@ typedef struct X_BspCollisionHull
 
 struct BspLevel
 {
+    BspLevel()
+        : pvs(*this)
+    {
+        
+    }
+    
     void initEmpty();
 
     void renderWireframe(X_RenderContext& renderContext, X_Color color);
     X_BspLeaf* findLeafPointIsIn(Vec3fp& point);
-    int countVisibleLeaves(unsigned char* pvs);
-    void markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame);
-
-    void decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest);
 
     void getLevelPolygon(X_BspSurface* surface, Vec3fp* modelOrigin, LevelPolygon3* dest)
     {
@@ -225,7 +228,7 @@ struct BspLevel
     X_BspFaceTexture* faceTextures;
     int totalFaceTextures;
     
-    unsigned char* compressedPvsData;
+    PotentiallyVisibleSet pvs;
     
     unsigned char* lightmapData;
     

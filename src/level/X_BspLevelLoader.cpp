@@ -377,7 +377,7 @@ static void x_bsplevel_init_leaves(BspLevel* level, const X_BspLevelLoader* load
         X_BspLeaf* leaf = level->leaves + i;
         X_BspLoaderLeaf* loadLeaf = loader->leaves.elem + i;
         
-        leaf->compressedPvsData = level->compressedPvsData + loadLeaf->pvsOffset;
+        leaf->pvsFromLeaf.setCompressedBytes(level->pvs.getCompressedPvsData() + loadLeaf->pvsOffset);
         leaf->contents = (X_BspLeafContents)loadLeaf->contents;
         leaf->lastVisibleFrame = 0;
         leaf->firstMarkSurface = level->markSurfaces + loadLeaf->firstMarkSurface;
@@ -494,7 +494,7 @@ static void x_bsplevel_init_edges(BspLevel* level, const X_BspLevelLoader* loade
 static void x_bsplevel_init_pvs(BspLevel* level, X_BspLevelLoader* loader)
 {
     // Steal the PVS (no sense in making a copy)
-    level->compressedPvsData = loader->compressedPvsData.elem;
+    level->pvs.setCompressedPvsData(loader->compressedPvsData.elem);
     loader->compressedPvsData.elem = NULL;
 }
 
@@ -648,12 +648,6 @@ static void x_bsplevel_init_from_bsplevel_loader(BspLevel* level, X_BspLevelLoad
     
     X_BspNode* levelRootNode = x_bsplevel_get_root_node(level);
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
-    
-    printf("Calculated:\n");
-    levelRootNode->frontChild->geoBoundBox.print();
-    
-    printf("Real:\n");
-    levelRootNode->frontChild->nodeBoundBox.print();
 }
 
 static bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName, EngineQueue* engineQueue)

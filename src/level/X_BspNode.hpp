@@ -17,6 +17,7 @@
 
 #include "geo/X_BoundBox.h"
 #include "render/X_Texture.h"
+#include "PotentiallyVisibleSet.hpp"
 
 struct X_RenderContext;
 struct X_BspModel;
@@ -104,6 +105,6 @@ typedef struct X_BspLeaf
     int totalMarkSurfaces;
     int bspKey;
     
-    unsigned char* compressedPvsData;
+    CompressedLeafVisibleSet pvsFromLeaf;
 } X_BspLeaf;
 

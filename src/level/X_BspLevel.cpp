@@ -59,84 +59,9 @@ X_BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
     return node->getLeaf();
 }
 
-void BspLevel::markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize)
-{
-    memset(pvs, 0xFF, pvsSize);
-}
-
-void BspLevel::decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest)
-{
-    unsigned char* decompressedPvsEnd = decompressedPvsDest + pvsSize;
-    
-    while(decompressedPvsDest < decompressedPvsEnd)
-    {
-        if(*compressedPvsData == 0)
-        {
-            ++compressedPvsData;
-            int count = *compressedPvsData++;
-            
-            for(int i = 0; i < count; ++i)
-            {
-                *decompressedPvsDest++ = 0;
-            }
-        }
-        else
-        {
-            *decompressedPvsDest++ = *compressedPvsData++;
-        }
-    }
-}
-
-void BspLevel::decompressPvsForLeaf(X_BspLeaf* leaf, unsigned char* decompressedPvsDest)
-{
-    int pvsSize = x_bspfile_node_pvs_size(this);
-    unsigned char* pvsData = leaf->compressedPvsData;
-
-    bool hasVisibilityInfoForCurrentLeaf = pvsData != nullptr && !leaf->isOutsideLevel();
-    
-    if(!hasVisibilityInfoForCurrentLeaf)
-    {
-        markAllLeavesInPvsAsVisible(decompressedPvsDest, pvsSize);
-        return;
-    }
-    
-    decompressPvs(pvsData, pvsSize, decompressedPvsDest);
-}
-
-int BspLevel::countVisibleLeaves(unsigned char* pvs)
-{
-    int count = 0;
-    
-    for(int i = 0; i < x_bsplevel_get_level_model(this)->totalBspLeaves; ++i)
-    {
-        if(pvs[i / 8] & (1 << (i & 7)))
-        {
-            ++count;
-        }
-    }
-    
-    return count;
-}
-
 void BspLevel::initEmpty()
 {    
     flags = (X_BspLevelFlags)0;
-}
-
-void BspLevel::markVisibleLeavesFromPvs(unsigned char* pvs, int currentFrame)
-{
-    int totalLeaves = x_bsplevel_get_level_model(this)->totalBspLeaves;
-    
-    for(int i = 0; i < totalLeaves; ++i)
-    {
-        bool leafVisible = pvs[i / 8] & (1 << (i & 7));
-        X_BspNode* leafNode = (X_BspNode*)x_bsplevel_get_leaf(this, i + 1);    // PVS excludes leaf 0 so we start at leaf 1
-        
-        if(leafVisible)
-        {
-            leafNode->markAncestorsAsVisible(currentFrame);
-        }
-    }
 }
 
 void BspLevel::renderPortals(X_RenderContext& renderContext)
@@ -298,7 +223,6 @@ void x_bsplevel_cleanup(BspLevel* level)
     if(!x_bsplevel_file_is_loaded(level))
         return;
     
-    x_free(level->compressedPvsData);
     x_free(level->edges);
     x_free(level->faceTextures);
     x_free(level->leaves);

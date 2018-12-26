@@ -19,6 +19,7 @@
 #include "render/X_Viewport.h"
 #include "physics/X_BoxCollider.h"
 #include "memory/X_BitSet.hpp"
+#include "level/PotentiallyVisibleSet.hpp"
 
 struct X_EngineContext;
 struct X_RenderContext;
@@ -50,7 +51,7 @@ typedef struct X_CameraObject
     struct X_CameraObject* nextInCameraList;
     struct X_BspLeaf* currentLeaf;
     struct X_BspLeaf* lastLeaf;
-    unsigned char pvsForCurrentLeaf[256];//X_BSPFILE_PVS_SIZE];
+    DecompressedLeafVisibleSet pvsForCurrentLeaf;
     
     void (*screenResizeCallback)(struct X_CameraObject* cam, struct X_Screen* screen, x_fp16x16 fov);
 } X_CameraObject;

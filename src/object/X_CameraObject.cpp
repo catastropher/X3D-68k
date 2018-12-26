@@ -86,11 +86,13 @@ static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_Rend
 static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
 {
     if(cam->currentLeaf == cam->lastLeaf)
+    {
         return;
+    }
     
     cam->lastLeaf = cam->currentLeaf;
     
-    renderContext->level->decompressPvsForLeaf(cam->currentLeaf, cam->pvsForCurrentLeaf);
+    renderContext->level->pvs.decompressPvsForLeaf(*cam->currentLeaf, cam->pvsForCurrentLeaf);
 }
 
 void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
@@ -106,7 +108,7 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     }
     
     x_cameraobject_load_pvs_for_current_leaf(cam, renderContext);
-    renderContext->level->markVisibleLeavesFromPvs(cam->pvsForCurrentLeaf, currentFrame);
+    renderContext->level->pvs.markVisibleLeaves(cam->pvsForCurrentLeaf, currentFrame);
     
     renderContext->camPos = x_cameraobject_get_position(cam);
     renderContext->currentFrame = currentFrame;

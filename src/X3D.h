@@ -20,13 +20,10 @@
 
 // dev
 #include "dev/X_Console.h"
-#include "dev/X_DemoPlayer.h"
-#include "dev/X_DemoRecorder.h"
 
 // geo
 #include "geo/X_BoundBox.h"
 #include "geo/X_BoundSphere.h"
-#include "geo/X_Cube.h"
 #include "geo/X_Frustum.h"
 #include "geo/X_Plane.h"
 #include "geo/X_Polygon3.h"

@@ -36,7 +36,7 @@ void initSystem(SystemConfig& config);
 
 static inline bool x_engine_level_is_loaded(const X_EngineContext* context)
 {
-    return x_bsplevel_file_is_loaded(context->getCurrentLevel());
+    return context->getCurrentLevel() != nullptr;
 }
 
 static inline BspLevel* x_engine_get_current_level(X_EngineContext* context)

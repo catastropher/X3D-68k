@@ -62,13 +62,6 @@ static inline void init_keystate(X_EngineContext* context)
     x_keystate_init(context->getKeyState());
 }
 
-static inline void init_level(X_EngineContext* context)
-{
-   context->getCurrentLevel()->initEmpty();
-}
-
-
-
 static inline void cleanup_object_factory(X_EngineContext* context)
 {
     x_objectfactory_cleanup(context->getGameObjectFactory());
@@ -108,8 +101,6 @@ void x_enginecontext_init(X_EngineContext* context, X_Config* config)
     init_keystate(context);
     
     x_mousestate_init(context->getMouseState(), context->getConsole(), context->getScreen());
-    
-    init_level(context);
     
     x_renderer_init(context->getRenderer(), context->getConsole(), context->getScreen(), config->screen->fov.toFp16x16());
 }

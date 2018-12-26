@@ -101,6 +101,7 @@ set(X_SOURCES
     src/level/X_EntityModel.cpp
     src/level/X_EntityModelLoader.cpp
     src/level/X_Portal.cpp
+    src/level/PotentiallyVisibleSet.cpp
     src/level/X_RayTracer.cpp
 
     # math
