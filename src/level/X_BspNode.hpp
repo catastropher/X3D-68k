@@ -20,7 +20,7 @@
 #include "PotentiallyVisibleSet.hpp"
 
 struct X_RenderContext;
-struct X_BspModel;
+struct BspModel;
 struct X_BspPlane;
 struct X_BspSurface;
 struct X_BspLeaf;
@@ -60,7 +60,7 @@ typedef struct X_BspNode
     void renderWireframe(
         X_RenderContext& renderContext,
         X_Color color,
-        X_BspModel& model,
+        BspModel& model,
         int parentFlags,
         unsigned char* drawnEdges);
 

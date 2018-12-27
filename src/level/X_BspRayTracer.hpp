@@ -38,7 +38,7 @@ struct RayCollision
 
     RayPoint location;
     Plane plane;
-    X_BspModel* hitModel;
+    BspModel* hitModel;
     NodeId hitNode;
 };
 
@@ -55,7 +55,7 @@ public:
     }
 
     bool trace();
-    bool traceModel(X_BspModel& model);
+    bool traceModel(BspModel& model);
 
     RayCollision<IdType>& getCollision()
     {
@@ -73,12 +73,12 @@ private:
 
     Plane& getNodePlane(NodeType node);
 
-    IdType getRootNode(X_BspModel& model);
+    IdType getRootNode(BspModel& model);
 
     Ray3 ray;
     BspLevel* level;
     RayCollision<IdType> collision;
     int collisionHullId;
-    X_BspModel* currentModel;
+    BspModel* currentModel;
 };
 

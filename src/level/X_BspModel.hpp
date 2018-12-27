@@ -25,7 +25,7 @@ struct X_BspSurface;
 struct X_RenderContext;
 struct X_BspPlane;
 
-typedef struct X_BspModel
+struct BspModel
 {
     BoundBox boundBox;
     X_BspNode* rootBspNode;
@@ -44,5 +44,5 @@ typedef struct X_BspModel
     
     X_Link objectsOnModelHead;
     X_Link objectsOnModelTail;
-} X_BspModel;
+};
 

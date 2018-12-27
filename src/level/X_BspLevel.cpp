@@ -139,7 +139,7 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
 //     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 // }
 
-static void x_bsplevel_render_submodel(BspLevel* level, X_BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
+static void x_bsplevel_render_submodel(BspLevel* level, BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
 {
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
     

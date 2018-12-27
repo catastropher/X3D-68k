@@ -29,7 +29,7 @@ typedef struct X_RayTracer
     Vec3 collisionPoint;
     x_fp16x16 collisionFrac;
     Vec3* modelOrigin;
-    X_BspModel* hitModel;
+    BspModel* hitModel;
 
     bool hitSomething;
     bool useBspTree;
@@ -48,7 +48,7 @@ void x_raytracer_from_bspraytracer(BspRayTracer<IdType, NodeType>& bspRayTracer,
     dest.level = level;
 }
 
-void x_raytracer_init(X_RayTracer* trace, BspLevel* level, X_BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox);
+void x_raytracer_init(X_RayTracer* trace, BspLevel* level, BspModel* model, Vec3* start, Vec3* end, BoundBox* boundBox);
 bool x_raytracer_trace(X_RayTracer* trace);
 
 template<typename IdType, typename NodeType>

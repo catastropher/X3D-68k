@@ -38,7 +38,7 @@ typedef enum X_PlatformObjectMode
 typedef struct X_PlatformObject
 {
     X_GameObject base;
-    X_BspModel* model;
+    BspModel* model;
     x_fp16x16 raiseHeight;
     x_fp16x16 speed;
     X_Time nextTransition;

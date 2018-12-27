@@ -262,7 +262,7 @@ struct X_AE_Context
     X_RenderContext* renderContext;
     X_Screen* screen;
     
-    X_BspModel* currentModel;
+    BspModel* currentModel;
     X_AE_Surface* currentParent;
 
     void addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
@@ -445,7 +445,7 @@ static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X
     return x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin;
 }
 
-static inline void x_ae_context_set_current_model(X_AE_Context* context, X_BspModel* model)
+static inline void x_ae_context_set_current_model(X_AE_Context* context, BspModel* model)
 {
     context->currentModel = model;
 }

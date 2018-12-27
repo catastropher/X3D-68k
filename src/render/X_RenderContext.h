@@ -25,7 +25,7 @@ struct X_Frustum;
 struct X_Texture;
 struct Mat4x4;
 struct BspLevel;
-struct X_BspModel;
+struct BspModel;
 struct X_Screen;
 
 typedef struct X_RenderContext

@@ -148,7 +148,7 @@ bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, R
 }
 
 template<typename IdType, typename NodeType>
-bool BspRayTracer<IdType, NodeType>::traceModel(X_BspModel& model)
+bool BspRayTracer<IdType, NodeType>::traceModel(BspModel& model)
 {
     currentModel = &model;
 
@@ -202,7 +202,7 @@ X_BspLeafContents BspRayTracer<int, X_BspClipNode*>::getLeafContents(int id)
 }
 
 template<>
-int BspRayTracer<int, X_BspClipNode*>::getRootNode(X_BspModel& model)
+int BspRayTracer<int, X_BspClipNode*>::getRootNode(BspModel& model)
 {
     return model.clipNodeRoots[collisionHullId];
 }
@@ -235,7 +235,7 @@ X_BspLeafContents BspRayTracer<X_BspNode*, X_BspNode*>::getLeafContents(X_BspNod
 }
 
 template<>
-X_BspNode* BspRayTracer<X_BspNode*, X_BspNode*>::getRootNode(X_BspModel& model)
+X_BspNode* BspRayTracer<X_BspNode*, X_BspNode*>::getRootNode(BspModel& model)
 {
     return model.rootBspNode;
 }

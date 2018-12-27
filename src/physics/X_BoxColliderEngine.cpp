@@ -114,7 +114,7 @@ void BoxColliderEngine::unlinkFromModelStandingOn()
     x_link_unlink(&collider.objectsOnModel);
 }
 
-void BoxColliderEngine::linkToModelStandingOn(X_BspModel* model)
+void BoxColliderEngine::linkToModelStandingOn(BspModel* model)
 {
     x_link_insert_after(&collider.objectsOnModel, &model->objectsOnModelHead);
 }

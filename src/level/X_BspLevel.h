@@ -125,7 +125,7 @@ typedef struct X_BspEdge
 
 
 struct X_BspLeaf;
-struct X_BspModel;
+struct BspModel;
 
 typedef enum X_BspLevelFlags
 {
@@ -211,7 +211,7 @@ struct BspLevel
     
     X_BspCollisionHull collisionHulls[X_BSPLEVEL_MAX_COLLISION_HULLS];
     
-    X_BspModel* models;
+    BspModel* models;
     int totalModels;
     
     X_BspPlane* planes;
@@ -267,7 +267,7 @@ static inline X_BspLeaf* x_bsplevel_get_leaf(const BspLevel* level, X_BspLeafId 
     return level->leaves + leafId;
 }
 
-static inline X_BspModel* x_bsplevel_get_level_model(const BspLevel* level)
+static inline BspModel* x_bsplevel_get_level_model(const BspLevel* level)
 {
     return level->models + 0;
 }
@@ -292,7 +292,7 @@ static inline int x_bsplevel_current_bspkey(const BspLevel* level)
     return level->nextBspKey;
 }
 
-static inline X_BspModel* x_bsplevel_get_model(BspLevel* level, int modelId)
+static inline BspModel* x_bsplevel_get_model(BspLevel* level, int modelId)
 {
     return level->models + modelId;
 }
@@ -338,12 +338,12 @@ static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, X_Vec2 point)
 
 //======================== model ========================
 
-static inline x_fp16x16 x_bspmodel_height(X_BspModel* model)
+static inline x_fp16x16 x_bspmodel_height(BspModel* model)
 {
     return model->boundBox.v[0].y - model->boundBox.v[1].y;
 }
 
-static inline bool x_bspmodel_has_objects_standing_on(X_BspModel* model)
+static inline bool x_bspmodel_has_objects_standing_on(BspModel* model)
 {
     return model->objectsOnModelHead.next != &model->objectsOnModelTail;
 }

@@ -40,7 +40,7 @@ void WireframeLevelRenderer::render()
     renderContext.viewFrustum->totalPlanes = totalPlanes;
 }
 
-void WireframeLevelRenderer::renderModel(X_BspModel& model, X_Color color)
+void WireframeLevelRenderer::renderModel(BspModel& model, X_Color color)
 {
     int flags = (1 << renderContext.viewFrustum->totalPlanes) - 1;
     

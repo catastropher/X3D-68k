@@ -247,7 +247,7 @@ static void x_bsplevel_allocate_memory(BspLevel* level, const X_BspLevelLoader* 
     level->leaves = (X_BspLeaf*)x_malloc(level->totalLeaves * sizeof(X_BspLeaf));
     
     level->totalModels = loader->models.count;
-    level->models = (X_BspModel*)x_malloc(level->totalModels * sizeof(X_BspModel));
+    level->models = (BspModel*)x_malloc(level->totalModels * sizeof(BspModel));
     
     level->totalNodes = loader->nodes.count;
     level->nodes = (X_BspNode*)x_malloc(level->totalNodes * sizeof(X_BspNode));
@@ -418,7 +418,7 @@ static void x_bsplevel_init_models(BspLevel* level, const X_BspLevelLoader* load
 {
     for(int i = 0; i < level->totalModels; ++i)
     {
-        X_BspModel* model = level->models + i;
+        BspModel* model = level->models + i;
         X_BspLoaderModel* loadModel = loader->models.elem + i;
         
         model->faces = level->surfaces + loadModel->firstFaceId;

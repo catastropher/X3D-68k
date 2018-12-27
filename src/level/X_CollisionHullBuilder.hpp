@@ -19,13 +19,13 @@
 #include "geo/X_Vec3.h"
 
 struct Polygon3;
-struct X_BspModel;
+struct BspModel;
 struct Mat4x4;
 
 class CollisionHullBuilder
 {
 public:
-    CollisionHullBuilder(X_BspModel& model_, Polygon3& polygon_, Mat4x4& orientation_, fp frontDepth_, fp backDepth_)
+    CollisionHullBuilder(BspModel& model_, Polygon3& polygon_, Mat4x4& orientation_, fp frontDepth_, fp backDepth_)
         : model(model_),
         polygon(polygon_),
         orientation(orientation_),
@@ -60,7 +60,7 @@ private:
         return totalPlanes++;
     }
 
-    X_BspModel& model;
+    BspModel& model;
     Polygon3& polygon;
     Mat4x4& orientation;
     fp frontDepth;

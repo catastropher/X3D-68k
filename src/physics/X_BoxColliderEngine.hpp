@@ -58,7 +58,7 @@ private:
     void resetCollisionState();
 
     void unlinkFromModelStandingOn();
-    void linkToModelStandingOn(X_BspModel* model);
+    void linkToModelStandingOn(BspModel* model);
 
     void applyGravity();
     void applyFriction();

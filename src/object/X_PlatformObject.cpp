@@ -78,7 +78,7 @@ void move_platform(X_PlatformObject* platform, x_fp16x16 deltaTime)
 
 static void move_objects_on_platform(X_PlatformObject* platform, x_fp16x16 dY)
 {
-    X_BspModel* model = platform->model;
+    BspModel* model = platform->model;
     for(X_Link* link = model->objectsOnModelHead.next; link != &model->objectsOnModelTail; link = link->next)
     {
         X_BoxCollider* collider = (X_BoxCollider*)((unsigned char*)link - offsetof(X_BoxCollider, objectsOnModel));

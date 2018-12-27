@@ -18,7 +18,7 @@
 #include "X_RenderContext.h"
 #include "X_Texture.h"
 
-struct X_BspModel;
+struct BspModel;
 class X_BspNode;
 
 class WireframeLevelRenderer
@@ -46,7 +46,7 @@ private:
         drawnEdges[edgeId / 8] |= 1 << (edgeId & 7);
     }
     
-    void renderModel(X_BspModel& model, X_Color color);
+    void renderModel(BspModel& model, X_Color color);
     void renderNode(X_BspNode& node, int parentFlags);
     
     X_RenderContext& renderContext;

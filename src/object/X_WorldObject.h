@@ -21,7 +21,7 @@
 typedef struct X_WorldObject
 {
     X_GameObject base;
-    X_BspModel* model;
+    BspModel* model;
 } X_WorldObject;
 
 struct X_ObjectFactory;

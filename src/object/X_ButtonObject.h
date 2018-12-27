@@ -33,7 +33,7 @@ typedef enum X_ButtonObjectState
 typedef struct X_ButtonObject
 {
     X_GameObject base;
-    X_BspModel* model;
+    BspModel* model;
     int pushAngle;
     x_fp16x16 modelHeight;
     x_fp16x16 speed;
