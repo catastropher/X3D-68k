@@ -57,7 +57,7 @@ void move_platform(X_PlatformObject* platform, x_fp16x16 deltaTime)
         return;
     }
     
-    x_fp16x16 pos = platform->model->origin.y.toFp16x16();
+    x_fp16x16 pos = platform->model->center.y.toFp16x16();
     
     if(platform->state == X_PLATFORMOBJECT_LOWERING)
         pos += offset;
@@ -71,7 +71,7 @@ void move_platform(X_PlatformObject* platform, x_fp16x16 deltaTime)
         platform->nextTransition = time + platform->waitTime;
     }
     
-    platform->model->origin.y = pos;
+    platform->model->center.y = pos;
 }
 
 #include <stddef.h>
@@ -91,9 +91,9 @@ static void x_platformobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
 {
     X_PlatformObject* platform = (X_PlatformObject*)obj;
     
-    x_fp16x16 oldY = platform->model->origin.y.toFp16x16();
+    x_fp16x16 oldY = platform->model->center.y.toFp16x16();
     move_platform(platform, deltaTime);
-    move_objects_on_platform(platform, platform->model->origin.y.toFp16x16() - oldY);
+    move_objects_on_platform(platform, platform->model->center.y.toFp16x16() - oldY);
 }
 
 static void x_platform_trigger(X_GameObject* obj, X_GameObject* trigger, X_GameObjectTriggerType type)
@@ -154,7 +154,7 @@ X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edic
     obj->mode = (X_PlatformObjectMode)mode;
     
     x_edict_get_fp16x16(edict, "height", modelHeight, &obj->raiseHeight);
-    obj->model->origin.y = obj->raiseHeight;
+    obj->model->center.y = obj->raiseHeight;
     
     x_gameobject_activate(&obj->base);
     

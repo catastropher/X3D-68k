@@ -44,7 +44,7 @@ void WireframeLevelRenderer::renderModel(BspModel& model, X_Color color)
 {
     int flags = (1 << renderContext.viewFrustum->totalPlanes) - 1;
     
-    currentModelCenter = model.origin;
+    currentModelCenter = model.center;
     currentColor = color;
     
     renderNode(*model.rootBspNode, flags);

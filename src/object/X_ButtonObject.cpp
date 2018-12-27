@@ -30,7 +30,7 @@ static X_GameObjectType g_buttonObjectType =
 
 static bool is_down(X_ButtonObject* button)
 {
-    return button->model->origin.y == button->modelHeight;
+    return button->model->center.y == button->modelHeight;
 }
 
 static void x_buttonobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
@@ -44,15 +44,15 @@ static void x_buttonobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
     
     if(!hasObjectOnButton)
     {
-        button->model->origin.y -= moveOffset;
+        button->model->center.y -= moveOffset;
         
-        if(button->model->origin.y < 0)
+        if(button->model->center.y < 0)
         {
-            button->model->origin.y = 0;
+            button->model->center.y = 0;
         }
     }
-    else if(button->model->origin.y < button->modelHeight)
-        button->model->origin.y = X_MIN(button->model->origin.y + moveOffset, button->modelHeight);
+    else if(button->model->center.y < button->modelHeight)
+        button->model->center.y = X_MIN(button->model->center.y + moveOffset, button->modelHeight);
     
     bool isDown = is_down(button);
     

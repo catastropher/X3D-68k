@@ -102,7 +102,7 @@ bool BspRayTracer<IdType, NodeType>::exploreBothSidesOfNode(IdType nodeId, RayPo
     collision.hitNode = nodeId;
 
     // Move the plane relative to the origin of the object
-    collision.location.point = collision.location.point + currentModel->origin;
+    collision.location.point = collision.location.point + currentModel->center;
     collision.plane.d = -collision.plane.normal.dot(collision.location.point);
     
     return 0;
@@ -152,8 +152,8 @@ bool BspRayTracer<IdType, NodeType>::traceModel(BspModel& model)
 {
     currentModel = &model;
 
-    RayPoint start(ray.v[0] - model.origin, 0);
-    RayPoint end(ray.v[1] - model.origin, fp::fromInt(1));
+    RayPoint start(ray.v[0] - model.center, 0);
+    RayPoint end(ray.v[1] - model.center, fp::fromInt(1));
 
     bool hitSomething = !visitNode(getRootNode(model), start, end);        
     

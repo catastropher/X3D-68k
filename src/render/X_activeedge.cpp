@@ -98,7 +98,7 @@ X_AE_Surface* X_AE_Context::createSurface(X_BspSurface* bspSurface, int bspKey)
     surface->bspSurface = bspSurface;
     surface->crossCount = 0;
     surface->closestZ = 0x7FFFFFFF;
-    surface->modelOrigin = &currentModel->origin;
+    surface->modelOrigin = &currentModel->center;
     surface->flags.clear();
     
     if(currentParent == NULL)
@@ -536,7 +536,7 @@ void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges
     // FIXME: why is this here?
     polygon.totalVertices = 0;
 
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon, &currentModel->origin);
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon, &currentModel->center);
 
     addPolygon(&polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
@@ -576,7 +576,7 @@ void X_AE_Context::addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEd
     x_ae_surface_reset_current_parent(this);
     
     InternalPolygon3 poly;
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly, &currentModel->origin);
+    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly, &currentModel->center);
     
     addSubmodelRecursive(&poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
 }

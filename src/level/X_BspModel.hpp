@@ -40,7 +40,7 @@ struct BspModel
     X_BspSurface* faces;
     int totalFaces;
     
-    Vec3fp origin;
+    Vec3fp center;
     
     X_Link objectsOnModelHead;
     X_Link objectsOnModelTail;
