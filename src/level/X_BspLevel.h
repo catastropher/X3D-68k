@@ -158,7 +158,6 @@ struct BspLevel
     
     void initEmpty();
 
-    void renderWireframe(X_RenderContext& renderContext, X_Color color);
     X_BspLeaf* findLeafPointIsIn(Vec3fp& point);
 
     void getLevelPolygon(X_BspSurface* surface, Vec3fp* modelOrigin, LevelPolygon3* dest)
@@ -241,15 +240,6 @@ struct BspLevel
 private:
     static void markAllLeavesInPvsAsVisible(unsigned char* pvs, int pvsSize);
     static void decompressPvs(unsigned char* compressedPvsData, int pvsSize, unsigned char* decompressedPvsDest);
-
-    void renderNodeWireframeRecursive(
-        X_BspNode* node,
-        X_RenderContext* renderContext,
-        X_Color color,
-        X_BspModel* model,
-        int parentFlags,
-        unsigned char* drawnEdges);
-
 };
 
 void x_bsplevel_cleanup(BspLevel* level);

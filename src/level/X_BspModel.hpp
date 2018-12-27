@@ -27,8 +27,6 @@ struct X_BspPlane;
 
 typedef struct X_BspModel
 {
-    void renderWireframe(X_RenderContext& renderContext, X_Color color, unsigned char* drawnEdges);
-
     BoundBox boundBox;
     X_BspNode* rootBspNode;
 

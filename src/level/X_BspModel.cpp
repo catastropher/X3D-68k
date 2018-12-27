@@ -17,10 +17,3 @@
 #include "level/X_BspLevel.h"
 #include "render/X_RenderContext.h"
 
-void X_BspModel::renderWireframe(X_RenderContext& renderContext, X_Color color, unsigned char* drawnEdges)
-{
-    int flags = (1 << renderContext.viewFrustum->totalPlanes) - 1;
-
-    rootBspNode->renderWireframe(renderContext, color, *this, flags, drawnEdges);
-}
-

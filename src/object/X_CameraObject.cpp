@@ -17,6 +17,7 @@
 #include "engine/X_Engine.h"
 #include "render/X_RenderContext.h"
 #include "error/X_error.h"
+#include "render/WireframeLevelRenderer.hpp"
 
 static X_GameObjectType g_cameraObjectType = 
 {
@@ -119,7 +120,9 @@ void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
     }
     else
     {
-        renderContext->level->renderWireframe(*renderContext, 5 * 16 - 1);
+        WireframeLevelRenderer wireFrameLevelRenderer(*renderContext, 5 * 16 - 1, 15);
+        
+        wireFrameLevelRenderer.render();
     }
 }
 

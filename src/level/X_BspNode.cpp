@@ -20,60 +20,6 @@
 #include "render/X_RenderContext.h"
 #include "render/X_Renderer.h"
 
-void X_BspNode::renderWireframe(
-    X_RenderContext& renderContext,
-    X_Color color,
-    X_BspModel& model,
-    int parentFlags,
-    unsigned char* drawnEdges)
-{
-    auto level = renderContext.level;
-
-    BoundBoxFrustumFlags nodeFlags = nodeBoundBox.determineFrustumClipFlags(*renderContext.viewFrustum, (BoundBoxFrustumFlags)parentFlags);
-
-    if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
-        return;
-
-    if(isLeaf())
-    {
-        auto leaf = getLeaf();
-        
-        for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
-        {
-            X_BspSurface* s = leaf->firstMarkSurface[i];
-            
-            for(int j = 0; j < s->totalEdges; ++j)
-            {
-                int edgeId = abs(level->surfaceEdgeIds[s->firstEdgeId + j]);
-                X_BspEdge* edge = level->edges + edgeId;
-
-                if(drawnEdges[edgeId / 8] & (1 << (edgeId & 7)))
-                {
-                    continue;
-                }
-
-                drawnEdges[edgeId / 8] |= 1 << (edgeId & 7);
-                
-                Ray3 ray(
-                    level->vertices[edge->v[0]].v,
-                    level->vertices[edge->v[1]].v);
-                
-                ray.v[0] += model.origin;
-                ray.v[1] += model.origin;
-                
-                ray.render(renderContext, color);
-
-                //ray.renderShaded(renderContext, color, fp::fromInt(1000));
-            }
-        }
-        
-        return;
-    }
-    
-    frontChild->renderWireframe(renderContext, color, model, nodeFlags, drawnEdges);
-    backChild->renderWireframe(renderContext, color, model, nodeFlags, drawnEdges);
-}
-
 void X_BspNode::markAncestorsAsVisible(int currentFrame)
 {
     auto node = this;

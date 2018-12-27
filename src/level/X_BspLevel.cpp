@@ -26,25 +26,6 @@
 #include "engine/X_EngineContext.h"
 #include "level/X_Portal.hpp"
 
-void BspLevel::renderWireframe(X_RenderContext& renderContext, X_Color color)
-{
-    unsigned char drawnEdges[8192];
-    memset(drawnEdges, 8192, (totalEdges + 7) / 8);
-
-    int totalPlanes = renderContext.viewFrustum->totalPlanes;
-
-    renderContext.viewFrustum->totalPlanes = 6;
-
-    models[0].renderWireframe(renderContext, color, drawnEdges);
-
-    for(int i = 1; i < totalModels; ++i)
-    {
-        models[i].renderWireframe(renderContext, 15, drawnEdges);
-    }
-
-    renderContext.viewFrustum->totalPlanes = totalPlanes;
-}
-
 X_BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
 {
     X_BspNode* node = x_bsplevel_get_root_node(this);

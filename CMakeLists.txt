@@ -135,6 +135,7 @@ set(X_SOURCES
     src/physics/X_BoxColliderMoveLogic.cpp
 
     # render
+    src/render/WireframeLevelRenderer.cpp
     src/render/X_activeedge.cpp
     src/render/X_Camera.cpp
     src/render/X_Font.cpp
