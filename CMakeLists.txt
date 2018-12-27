@@ -94,7 +94,7 @@ set(X_SOURCES
     # level
     src/level/X_BspLevel.cpp
     src/level/X_BspLevelLoader.cpp
-    src/level/X_BspModel.cpp
+    src/level/BspModel.cpp
     src/level/X_BspNode.cpp
     src/level/X_BspRayTracer.cpp
     src/level/X_CollisionHullBuilder.cpp

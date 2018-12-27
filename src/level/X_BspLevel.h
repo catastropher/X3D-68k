@@ -20,7 +20,7 @@
 #include "geo/X_Polygon2.hpp"
 #include "geo/X_Polygon3.h"
 #include "geo/X_Vec3.h"
-#include "level/X_BspModel.hpp"
+#include "level/BspModel.hpp"
 #include "level/X_BspNode.hpp"
 #include "math/X_Mat4x4.h"
 #include "memory/X_Cache.h"
