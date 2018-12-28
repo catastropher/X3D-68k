@@ -56,6 +56,6 @@ private:
     
     Vec3fp currentModelCenter;
     X_Color currentColor;
-    unsigned char drawnEdges[8192 / 8];
+    unsigned char drawnEdges[2048];
 };
 

@@ -41,6 +41,8 @@ public:
     void decompressPvsForLeaf(X_BspLeaf& leaf, DecompressedLeafVisibleSet& dest);
     void markVisibleLeaves(DecompressedLeafVisibleSet& decompressedPvs, int currentFrame);
     
+    void updatePvsData();
+    
     ~PotentiallyVisibleSet();
     
 private:

@@ -119,7 +119,7 @@ template<typename T>
 void X_BspLevelLoader::loadLump(int lumpId, Array<T>& dest, const char* name)
 {
     X_BspLoaderLump& lump = header.lumps[lumpId];
-
+    
     dest.count = lump.length / sizeInFile<T>();
     dest.elem = (T*)x_malloc(dest.count * sizeof(T));
 
@@ -648,6 +648,8 @@ static void x_bsplevel_init_from_bsplevel_loader(BspLevel* level, X_BspLevelLoad
     
     X_BspNode* levelRootNode = x_bsplevel_get_root_node(level);
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
+    
+    level->pvs.updatePvsData();
 }
 
 static bool x_bsplevelloader_load_bsp_file(X_BspLevelLoader* loader, const char* fileName, EngineQueue* engineQueue)

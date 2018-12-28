@@ -19,7 +19,6 @@
 
 void PotentiallyVisibleSet::decompressPvsForLeaf(X_BspLeaf& leaf, DecompressedLeafVisibleSet& dest)
 {
-    // TODO: int pvsSize = x_bspfile_node_pvs_size(this);
     auto& pvsFromLeaf = leaf.pvsFromLeaf;
     bool hasVisibilityInfoForCurrentLeaf = pvsFromLeaf.hasPvsData() && !leaf.isOutsideLevel();
     
@@ -41,7 +40,11 @@ PotentiallyVisibleSet::PotentiallyVisibleSet(BspLevel& level_)
 void PotentiallyVisibleSet::setCompressedPvsData(unsigned char* compressedPvsData)
 {
     pvs = compressedPvsData;
-    bytesPerEntry = (level.totalNodes + 7) / 8;
+}
+
+void PotentiallyVisibleSet::updatePvsData()
+{
+    bytesPerEntry = (x_bsplevel_get_level_model(&level)->totalBspLeaves + 7) / 8;
 }
 
 void PotentiallyVisibleSet::markVisibleLeaves(DecompressedLeafVisibleSet& decompressedPvs, int currentFrame)
