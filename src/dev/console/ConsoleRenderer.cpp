@@ -2,65 +2,69 @@
 #include "../X_Console.h"
 #include "ConsoleRenderer.hpp"
 #include "render/X_Font.h"
+#include "engine/X_EngineContext.h"
 
-// static X_Screen* x_console_get_screen(X_Console* console)
-// {
-//     return console->engineContext->getScreen();
-// }
+void ConsoleRenderer::show()
+{
+    consoleToggleTime = getCurrentTime();
+    openState = X_CONSOLE_STATE_OPENING;
+}
 
-// static X_Texture* x_console_get_canvas(X_Console* console)
-// {
-//     return &x_console_get_screen(console)->canvas;
-// }
+void ConsoleRenderer::hide()
+{
+    consoleToggleTime = getCurrentTime();
+    openState = X_CONSOLE_STATE_CLOSING;
+}
 
-// static const X_Palette* x_console_get_palette(X_Console* console)
-// {
-//     return x_console_get_screen(console)->palette;
-// }
-
-// static void x_console_handle_cursor_blinking(X_Console* console)
-// {
-//     X_Time currentTime = x_enginecontext_get_time(console->engineContext);
+void ConsoleRenderer::handleCursorBlinking()
+{
+    X_Time currentTime = getCurrentTime();
     
-//     if(currentTime - console->lastCursorBlink >= X_CONSOLE_CURSOR_BLINK_TIME)
-//     {
-//         console->showCursor = !console->showCursor;
-//         console->lastCursorBlink = currentTime;
-//     }
-// }
+    if(currentTime - lastCursorBlink >= X_CONSOLE_CURSOR_BLINK_TIME)
+    {
+        showCursor = !showCursor;
+        lastCursorBlink = currentTime;
+    }
+}
 
-// static void x_console_handle_opening_animation(X_Console* console)
-// {
-//     int timePassed = x_enginecontext_get_time(console->engineContext) - console->consoleToggleTime;
-//     int consoleHeight = x_console_h(console);
+void ConsoleRenderer::handleOpeningAnimation()
+{
+    int timePassed = getCurrentTime() - consoleToggleTime;
+    int consoleHeight = getConsoleHeight();
     
-//     console->renderYOffset = -consoleHeight * (X_CONSOLE_TOGGLE_TIME - timePassed) / X_CONSOLE_TOGGLE_TIME;
+    renderYOffset = -consoleHeight * (X_CONSOLE_TOGGLE_TIME - timePassed) / X_CONSOLE_TOGGLE_TIME;
     
-//     if(console->renderYOffset >= 0)
-//     {
-//         console->renderYOffset = 0;
-//         console->openState = X_CONSOLE_STATE_OPEN;
-//     }
-// }
+    if(renderYOffset >= 0)
+    {
+        renderYOffset = 0;
+        openState = X_CONSOLE_STATE_OPEN;
+    }
+}
 
-// static void x_console_handle_closing_animation(X_Console* console)
-// {
-//     int timePassed = x_enginecontext_get_time(console->engineContext) - console->consoleToggleTime;
-//     int consoleHeight = x_console_h(console);
+void ConsoleRenderer::handleClosingAnimation()
+{
+    int timePassed = getCurrentTime() - consoleToggleTime;
+    int consoleHeight = getConsoleHeight();
     
-//     console->renderYOffset = -consoleHeight * timePassed / X_CONSOLE_TOGGLE_TIME;
+    renderYOffset = -consoleHeight * timePassed / X_CONSOLE_TOGGLE_TIME;
     
-//     if(console->renderYOffset <= -consoleHeight)
-//         console->openState = X_CONSOLE_STATE_CLOSED;
-// }
+    if(renderYOffset <= -consoleHeight)
+    {
+        openState = X_CONSOLE_STATE_CLOSED;
+    }
+}
 
-// static void x_console_handle_open_state_animation(X_Console* console)
-// {
-//     if(console->openState == X_CONSOLE_STATE_OPENING)
-//         x_console_handle_opening_animation(console);
-//     else if(console->openState == X_CONSOLE_STATE_CLOSING)
-//         x_console_handle_closing_animation(console);
-// }
+void ConsoleRenderer::handleStateAnimations()
+{
+    if(openState == X_CONSOLE_STATE_OPENING)
+    {
+        handleOpeningAnimation();
+    }
+    else if(openState == X_CONSOLE_STATE_CLOSING)
+    {
+        handleClosingAnimation();
+    }
+}
 
 void ConsoleRenderer::renderOutput()
 {
@@ -69,7 +73,10 @@ void ConsoleRenderer::renderOutput()
         screen.canvas.drawStr(
             console.getLine(i),
             font,
-            { 0, getLineY(i) });
+            {
+                0,
+                getLineY(i)
+            });
     }
 }
 
@@ -77,6 +84,12 @@ int ConsoleRenderer::getLineY(int lineNumber)
 {
     return lineNumber * console.font->getH() + renderYOffset;
 }
+
+int ConsoleRenderer::getConsoleHeight()
+{
+    return console.size.y * font.getH();
+}
+
 
 void ConsoleRenderer::renderBackground()
 {
@@ -103,13 +116,6 @@ void ConsoleRenderer::renderBackground()
     screen.canvas.drawLine(bottomLeft, bottomRight, lineColor);
 }
 
-static void x_console_add_cursor_to_input_buf(Console* console)
-{
-    const unsigned char CURSOR_CHAR = 11;
-    console->input[console->inputPos] = CURSOR_CHAR;
-    console->input[console->inputPos + 1] = '\0';
-}
-
 char* ConsoleRenderer::getStartOfScrolledInput()
 {
     char* input = console.input;
@@ -129,13 +135,25 @@ int ConsoleRenderer::getNextEmptyLine()
     return console.cursor.y + (console.cursor.x == 0 ? 0 : 1);
 }
 
+void ConsoleRenderer::removeCursorFromInputBuf()
+{
+    console.input[console.inputPos] = '\0';
+}
+
+void ConsoleRenderer::addCursorToInputBuf()
+{
+    const unsigned char CURSOR_CHAR = 11;
+    console.input[console.inputPos] = CURSOR_CHAR;
+    console.input[console.inputPos + 1] = '\0';
+}
+
 void ConsoleRenderer::renderInput()
 {
-    //x_console_handle_cursor_blinking(console);
+    handleCursorBlinking();
     
     if(showCursor)
     {
-        //x_console_add_cursor_to_input_buf(console);
+        addCursorToInputBuf();
     }
         
     char* scrolledInput = getStartOfScrolledInput();
@@ -143,23 +161,35 @@ void ConsoleRenderer::renderInput()
     int inputLineY = getLineY(nextEmptyLine);
     const int CHARS_IN_CURSOR = 2;
 
-    //canvas->drawChar(']', *console->font, { 0, inputLineY });
-    //canvas->drawStr(scrolledInput, *console->font, { console->font->getW() * CHARS_IN_CURSOR, inputLineY });
+    screen.canvas.drawChar(']', font, { 0, inputLineY });
     
-    //x_console_remove_cursor_from_input_buf(console);
+    screen.canvas.drawStr(
+        scrolledInput,
+        font,
+        {
+            font.getW() * CHARS_IN_CURSOR,
+            inputLineY
+        });
+    
+    removeCursorFromInputBuf();
 }
 
 void ConsoleRenderer::render()
 {
-    // x_console_handle_open_state_animation(console);
+    handleStateAnimations();
     
-    // if(!isVisible())
-    // {
-    //     return;
-    // }
+    if(!isVisible())
+    {
+        return;
+    }
     
     renderBackground();
     renderOutput();
-    // x_console_render_input(console);
+    renderInput();
+}
+
+X_Time ConsoleRenderer::getCurrentTime()
+{
+    return x_enginecontext_get_time(console.engineContext);
 }
 

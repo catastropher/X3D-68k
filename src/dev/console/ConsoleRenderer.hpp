@@ -1,3 +1,5 @@
+#pragma once
+
 struct Console;
 struct X_Screen;
 struct X_Font;
@@ -20,19 +22,40 @@ public:
     {
         openState = X_CONSOLE_STATE_CLOSED;
         renderYOffset = 0;
-        lastCursorBlink = 0; //FIXME: x_enginecontext_get_time(engineContext);
+        lastCursorBlink = getCurrentTime();
         showCursor = true;
     }
-
-
-
-    void render();
-
-private:
-    bool isVisible()
+    
+    bool isVisible() const
     {
         return openState != X_CONSOLE_STATE_CLOSED;
     }
+    
+    void render();
+    void show();
+    void hide();
+
+private:
+    
+    int getConsoleHeight();
+    
+    int getLineY(int lineNumber);
+    char* getStartOfScrolledInput();
+    int getNextEmptyLine();
+    
+    void renderBackground();
+    void renderOutput();
+    void renderInput();
+    
+    void handleCursorBlinking();
+    void addCursorToInputBuf();
+    void removeCursorFromInputBuf();
+    
+    void handleStateAnimations();
+    void handleOpeningAnimation();
+    void handleClosingAnimation();
+    
+    X_Time getCurrentTime();
 
     Console& console;
     X_Screen& screen;
@@ -45,12 +68,4 @@ private:
     X_Time consoleToggleTime;
 
     X_Font& font;
-
-    int getLineY(int lineNumber);
-    char* getStartOfScrolledInput();
-    int getNextEmptyLine();
-
-    void renderBackground();
-    void renderOutput();
-    void renderInput();
 };

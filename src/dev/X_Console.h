@@ -23,6 +23,7 @@
 #include "render/X_Screen.h"
 #include "system/X_Keys.h"
 #include "system/X_Time.h"
+#include "console/ConsoleRenderer.hpp"
 
 typedef enum X_ConsoleVarType
 {
@@ -71,6 +72,9 @@ struct ConsoleVariable;
 
 typedef struct Console
 {
+    ConsoleRenderer* renderer;
+    
+    
     X_ConsoleVar* consoleVars;
     int totalConsoleVars;
     
@@ -98,6 +102,11 @@ typedef struct Console
     const char* getLine(int lineNumber)
     {
         return text + lineNumber * (size.x + 1);
+    }
+    
+    bool isOpen() const
+    {
+        return renderer->isVisible();
     }
 
 private:

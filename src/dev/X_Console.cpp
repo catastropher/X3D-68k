@@ -36,14 +36,12 @@ void Console::addVariableToList(ConsoleVariable* var)
 
 void x_console_open(Console* console)
 {
-    // console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
-    // console->openState = X_CONSOLE_STATE_OPENING;
+    console->renderer->show();
 }
 
 void x_console_close(Console* console)
 {
-    // console->consoleToggleTime = x_enginecontext_get_time(console->engineContext);
-    // console->openState = X_CONSOLE_STATE_CLOSING;
+    console->renderer->hide();
 }
 
 void x_console_force_close(Console* console)
@@ -199,6 +197,8 @@ void x_console_init(Console* console, X_EngineContext* engineContext, X_Font* fo
         x_string_init(console->commandHistory + i, "");
     
     x_console_register_builtin_commands(console);
+    
+    console->renderer = new ConsoleRenderer(*console, *console->engineContext->getScreen(), *console->engineContext->getMainFont());
 }
 
 void x_console_clear(Console* console)
@@ -356,11 +356,6 @@ void x_console_printf(Console* console, const char* format, ...)
     x_console_print(console, buf);
     
     va_end(list);
-}
-
-static void x_console_remove_cursor_from_input_buf(Console* console)
-{
-    console->input[console->inputPos] = '\0';
 }
 
 static int x_console_h(const Console* console)
@@ -804,9 +799,7 @@ void x_console_execute_cmd(Console* console, const char* str)
 
 void x_console_render(Console* console)
 {
-    ConsoleRenderer renderer(*console, *console->engineContext->getScreen(), *console->engineContext->getMainFont());
-
-    renderer.render();
+    console->renderer->render();
 }
 
 

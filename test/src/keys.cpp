@@ -66,11 +66,11 @@ void handle_console_keys(X_EngineContext* context)
 
 bool handle_console(X_EngineContext* engineContext)
 {
-    // if(x_console_is_open(engineContext->getConsole()))
-    // {
-    //     handle_console_keys(engineContext);
-    //     return 1;
-    // }
+    if(engineContext->getConsole()->isOpen())
+    {
+        handle_console_keys(engineContext);
+        return 1;
+    }
     
     if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_OPEN_CONSOLE))
     {
