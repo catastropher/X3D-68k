@@ -13,33 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-
 #pragma once
 
-#include "X_Allocator.hpp"
-
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
-
-template<typename T>
-struct Array
+enum class BuiltinComponents
 {
-    Array(T* elem_, int count_)
-        : elem(elem_),
-        count(count_)
-    {
-        
-    }
-    
-    Array()
-        : elem(nullptr),
-        count(0)
-    {
-        
-    }
-    
-    T* elem;
-    int count;
+    transform,
+    boxCollider
 };
 

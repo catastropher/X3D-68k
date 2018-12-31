@@ -13,33 +13,51 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-
 #pragma once
 
-#include "X_Allocator.hpp"
+#include "Component.hpp"
 
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
+class EntityManager;
 
-template<typename T>
-struct Array
+class Entity
 {
-    Array(T* elem_, int count_)
-        : elem(elem_),
-        count(count_)
+public:
+    int getId() const
+    {
+        return id;
+    }
+    
+    template<typename TComponent>
+    TComponent* getComponent()
+    {
+        return componentManager.getComponent<TComponent>();
+    }
+    
+protected:
+    Entity()
     {
         
     }
     
-    Array()
-        : elem(nullptr),
-        count(0)
+    template<typename TComponent>
+    TComponent* addComponent()
     {
+        TComponent* component =  componentManager.add<TComponent>();
         
+        component->owner = this;
+        
+        return component;
     }
     
-    T* elem;
-    int count;
+private:
+    void setId(int id_)
+    {
+        id = id_;
+    }
+    
+    int id;
+    ComponentManager componentManager;
+    
+    friend class EntityManager;
 };
 

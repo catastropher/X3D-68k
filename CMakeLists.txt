@@ -78,6 +78,9 @@ set(X_SOURCES
     src/engine/X_EngineContext.cpp
     src/engine/X_EngineQueue.cpp
     src/engine/X_init.cpp
+    
+    # entity
+    src/entity/Component.cpp
 
     # error
     src/error/X_error.cpp

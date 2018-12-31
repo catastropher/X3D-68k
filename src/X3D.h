@@ -38,6 +38,11 @@
 #include "engine/X_EngineContext.h"
 #include "engine/X_init.h"
 
+// entity
+#include "entity/BoxColliderComponent.hpp"
+#include "entity/Entity.hpp"
+#include "entity/TransformComponent.hpp"
+
 // error
 #include "error/X_error.h"
 #include "error/X_log.h"

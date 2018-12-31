@@ -13,33 +13,11 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-
 #pragma once
 
-#include "X_Allocator.hpp"
+#include "physics/X_BoxCollider.h"
+#include "ComponentDefs.hpp"
+#include "Component.hpp"
 
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
-
-template<typename T>
-struct Array
-{
-    Array(T* elem_, int count_)
-        : elem(elem_),
-        count(count_)
-    {
-        
-    }
-    
-    Array()
-        : elem(nullptr),
-        count(0)
-    {
-        
-    }
-    
-    T* elem;
-    int count;
-};
+using BoxColliderComponent = Component<X_BoxCollider, (int)BuiltinComponents::boxCollider>;
 

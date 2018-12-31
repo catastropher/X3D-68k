@@ -33,12 +33,15 @@ enum class PlayerKeys
 
 using PlayerKeyFlags = EnumBitSet<PlayerKeys>;
 
-class Player
+class Player : Entity
 {
 public:
     Player()
     {
         // FIXME: need actual bound box
+        
+        addComponent<BoxColliderComponent>();
+        
         static BoundBox box;
         x_boxcollider_init(&collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
     }

@@ -13,33 +13,32 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-
 #pragma once
 
-#include "X_Allocator.hpp"
+#include <vector>
+#include <type_traits>
 
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
+#include "Entity.hpp"
 
-template<typename T>
-struct Array
+class EntityManager
 {
-    Array(T* elem_, int count_)
-        : elem(elem_),
-        count(count_)
+public:
+    template<typename TEntity, typename ...ConstructorArgs>
+    static TEntity* createEntity(ConstructorArgs&& ...args)
     {
+        static_assert(std::is_base_of<Entity, TEntity>::value, "TEntity must derive from Entity");
         
+        TEntity* entity = new TEntity(std::forward<ConstructorArgs>(args)...);
+        
+        int id = entities.size();
+        entities.push_back(entity);
+        
+        entity->setId(id);
+        
+        return entity;
     }
     
-    Array()
-        : elem(nullptr),
-        count(0)
-    {
-        
-    }
-    
-    T* elem;
-    int count;
+private:
+    static std::vector<Entity*> entities;
 };
 
