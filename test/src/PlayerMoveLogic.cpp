@@ -32,7 +32,7 @@ void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, BspLevel* level)
 
 Vec3fp PlayerMoveLogic::getMovementVector(PlayerKeyFlags keys)
 {
-    if(!x_boxcollider_is_on_ground(&player.collider))
+    if(!x_boxcollider_is_on_ground(&player.getCollider()))
     {
         return Vec3fp(0, 0, 0);
     }
@@ -162,8 +162,7 @@ void PlayerMoveLogic::handleNormalMovement(PlayerKeyFlags keys, BspLevel* level)
 {
     Vec3fp movementVector = getMovementVector(keys);
     
-    player.collider.velocity = player.collider.velocity + movementVector;
-    x_boxcollider_update(&player.collider, level);
+    player.getCollider().velocity += movementVector;
     
 #if false
     if(cam->collider.collisionInfo.type == BOXCOLLIDER_COLLISION_PORTAL)

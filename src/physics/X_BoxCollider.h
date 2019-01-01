@@ -19,6 +19,7 @@
 #include "level/X_BspLevel.h"
 #include "memory/X_Link.h"
 #include "memory/X_BitSet.hpp"
+#include "entity/Component.hpp"
 
 struct X_RayTracer;
 
@@ -46,29 +47,37 @@ struct BoxColliderCollisionInfo
     };
 };
 
-typedef struct X_BoxCollider
+struct X_BoxCollider;
+
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags);
+
+struct X_BoxCollider
 {
+    X_BoxCollider()
+    {
+        static BoundBox box;
+        x_boxcollider_init(this, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+    }
+    
     bool traceRay(X_RayTracer& tracer);
 
     EnumBitSet<X_BoxColliderFlags> flags;
 
     BoundBox boundBox;
     int levelCollisionHull;
-    Vec3fp position;
     Vec3fp velocity;
     Vec3fp* gravity;
     fp bounceCoefficient;
     fp frictionCoefficient;
     fp maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
-
+    int transformComponentId = COMPONENT_INVALID_ID;
+    
+    
     Portal* currentPortal;
     
     X_Link objectsOnModel;
-} X_BoxCollider;
-
-void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags);
-void x_boxcollider_update(X_BoxCollider* collider, BspLevel* level);
+};
 
 static inline bool x_boxcollider_is_on_ground(X_BoxCollider* collider)
 {

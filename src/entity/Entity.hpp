@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Component.hpp"
+#include "TransformComponent.hpp"
 
 class EntityManager;
 
@@ -33,10 +34,16 @@ public:
         return componentManager.getComponent<TComponent>();
     }
     
+    template<typename TComponent>
+    int getComponentId()
+    {
+        return componentManager.getComponentId<TComponent>();
+    }
+    
 protected:
     Entity()
     {
-        
+        addComponent<TransformComponent>();
     }
     
     template<typename TComponent>

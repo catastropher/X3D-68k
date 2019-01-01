@@ -133,6 +133,7 @@ set(X_SOURCES
     src/object/X_WorldObject.cpp
 
     # physics
+    src/physics/PhysicsEngine.cpp
     src/physics/X_BoxCollider.cpp
     src/physics/X_BoxColliderEngine.cpp
     src/physics/X_BoxColliderMoveLogic.cpp

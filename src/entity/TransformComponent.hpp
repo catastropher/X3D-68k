@@ -47,6 +47,11 @@ namespace internal
             dest = translation * rotation;
         }
         
+        Vec3fp getPosition()
+        {
+            return position;
+        }
+        
     private:
         Vec3fp position;
         Quaternion orientation;

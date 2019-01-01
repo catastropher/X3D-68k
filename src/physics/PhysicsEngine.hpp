@@ -15,13 +15,13 @@
 
 #pragma once
 
-class PhysicsComponent
-{
-
-};
+class BspLevel;
 
 class PhysicsEngine
 {
-
+public:
+    static void step(BspLevel& level);
+    
+private:
 };
 

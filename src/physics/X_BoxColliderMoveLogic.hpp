@@ -35,7 +35,7 @@ typedef enum IterationFlags
 class BoxColliderMoveLogic
 {
 public:
-    BoxColliderMoveLogic(X_BoxCollider& collider_, BspLevel& level_, Vec3fp& startingPosition_, Vec3fp& velocity_)
+    BoxColliderMoveLogic(X_BoxCollider& collider_, BspLevel& level_, const Vec3fp& startingPosition_, const Vec3fp& velocity_)
         : collider(collider_),
         level(level_),
         startingPosition(startingPosition_),

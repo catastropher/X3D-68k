@@ -14,9 +14,22 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_BoxColliderEngine.hpp"
+#include "entity/Entity.hpp"
 
 void BoxColliderEngine::runStep()
 {
+    if(collider.transformComponentId == COMPONENT_INVALID_ID)
+    {
+        collider.transformComponentId = collider.owner->getComponentId<TransformComponent>();
+    }
+    
+    transformComponent = TransformComponent::getById(collider.transformComponentId);
+    
+    if(transformComponent == nullptr)
+    {
+        return;
+    }
+    
     resetCollisionState();
     applyGravity();
     tryMove();
@@ -27,7 +40,7 @@ void BoxColliderEngine::tryMove()
     BoxColliderMoveLogic moveLogic(
         collider,
         level,
-        collider.position,
+        transformComponent->getPosition(),
         collider.velocity);
 
     moveLogic.tryMoveNormally();
@@ -37,7 +50,7 @@ void BoxColliderEngine::tryMove()
         BoxColliderMoveLogic stepMoveLogic(
             collider,
             level,
-            collider.position,
+            transformComponent->getPosition(),
             collider.velocity);
 
         if(stepMoveLogic.tryMoveUpStep())
@@ -52,7 +65,7 @@ void BoxColliderEngine::tryMove()
 
 void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
 {
-    collider.position = moveLogic.getFinalPosition();
+    transformComponent->setPosition(moveLogic.getFinalPosition());
     collider.velocity = moveLogic.getFinalVelocity();
     
     auto moveFlags = moveLogic.getMovementFlags();
@@ -123,11 +136,4 @@ void BoxColliderEngine::applyGravity()
 {
     collider.velocity += *collider.gravity;
 }
-
-void x_boxcollider_update(X_BoxCollider* collider, BspLevel* level)
-{
-    BoxColliderEngine engine(*collider, *level);
-    engine.runStep();
-}
-
 

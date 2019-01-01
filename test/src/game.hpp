@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#pragma once
+
 #include <X3D/X3D.h>
 #include <cmath>
 
@@ -48,7 +50,7 @@ private:
 
         x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
 
-        x_console_register_var(context.engineContext->getConsole(), &player.collider.position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
+        //x_console_register_var(context.engineContext->getConsole(), &player.getCollider().position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
 
         x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289,-162,192");
         
@@ -63,12 +65,12 @@ private:
         camera.angleX = player.angleX.toFp16x16();
         camera.angleY = player.angleY.toFp16x16();
         
-        camera.position = player.collider.position;
+        camera.position = player.getTransform().getPosition();
         
         camera.updateView();
 
-        Vec3fp pos = player.collider.position;
-        Vec3fp vel = player.collider.velocity;
+        Vec3fp pos = player.getTransform().getPosition();
+        Vec3fp vel = player.getCollider().velocity;
 
         StatusBar::setItem(
             "position",
@@ -144,8 +146,8 @@ private:
         
         player.angleX = 0;
         player.angleY = 0;
-        player.collider.position = Vec3fp(0, fp::fromInt(-50), fp::fromInt(-800));
-        player.collider.velocity = Vec3fp(0, 0, 0);
+        player.getTransform().setPosition(Vec3fp(0, fp::fromInt(-50), fp::fromInt(-800)));
+        player.getCollider().velocity = Vec3fp(0, 0, 0);
     }
 
     Player player;

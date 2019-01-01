@@ -13,43 +13,19 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
+#include "PhysicsEngine.hpp"
+#include "entity/BoxColliderComponent.hpp"
+#include "X_BoxColliderEngine.hpp"
 
-#pragma once
-
-#include "X_Allocator.hpp"
-
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
-
-template<typename T>
-struct Array
+void PhysicsEngine::step(BspLevel& level)
 {
-    Array(T* elem_, int count_)
-        : elem(elem_),
-        count(count_)
-    {
-        
-    }
+    auto boxColliders = BoxColliderComponent::getAll();
     
-    Array()
-        : elem(nullptr),
-        count(0)
+    for(auto& collider : boxColliders)
     {
-        
+        BoxColliderEngine engine(collider, level);
+        engine.runStep();
     }
-    
-    T* begin()
-    {
-        return elem;
-    }
-    
-    T* end()
-    {
-        return elem + count;
-    }
-    
-    T* elem;
-    int count;
-};
+}
+
 

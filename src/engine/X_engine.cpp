@@ -24,6 +24,7 @@
 #include "memory/X_Memory.hpp"
 #include "util/X_JsonParser.hpp"
 #include "system/X_FileSystem.hpp"
+#include "physics/PhysicsEngine.hpp"
 
 static bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -107,6 +108,8 @@ void x_engine_render_frame(X_EngineContext* engineContext)
 {
     x_renderer_render_frame(engineContext);
     x_engine_update_objects(engineContext);     // FIXME: should not be done here
+    
+    PhysicsEngine::step(*engineContext->getCurrentLevel()); // FIXME: should not be done here
 }
 
 void x_engine_update_objects(X_EngineContext* engineContext)

@@ -15,10 +15,11 @@
 
 #pragma once
 
-#include "X_BoxCollider.h"
 #include "level/X_BspRayTracer.hpp"
 #include "geo/X_Vec3.h"
 #include "X_BoxColliderMoveLogic.hpp"
+#include "entity/TransformComponent.hpp"
+#include "entity/BoxColliderComponent.hpp"
 
 class BoxColliderMoveLogic;
 
@@ -41,7 +42,7 @@ struct BoxColliderState
 class BoxColliderEngine
 {
 public:
-    BoxColliderEngine(X_BoxCollider& collider_, BspLevel& level_)
+    BoxColliderEngine(BoxColliderComponent& collider_, BspLevel& level_)
         : collider(collider_),
         level(level_)
     {
@@ -63,11 +64,12 @@ private:
     void applyGravity();
     void applyFriction();
 
-    X_BoxCollider& collider;
+    BoxColliderComponent& collider;
     BspLevel& level;
 
     Vec3fp finalPosition;
     Vec3fp finalVelocity;
     EnumBitSet<IterationFlags> moveFlags;
+    TransformComponent* transformComponent;
 };
 

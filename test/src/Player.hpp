@@ -38,12 +38,7 @@ class Player : Entity
 public:
     Player()
     {
-        // FIXME: need actual bound box
-        
-        addComponent<BoxColliderComponent>();
-        
-        static BoundBox box;
-        x_boxcollider_init(&collider, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+        auto collider = addComponent<BoxColliderComponent>();
     }
     
     X_CameraObject& getCamera()
@@ -51,7 +46,16 @@ public:
         return camera;
     }
     
-    X_BoxCollider collider;
+    BoxColliderComponent& getCollider()
+    {
+        return *getComponent<BoxColliderComponent>();
+    }
+    
+    TransformComponent& getTransform()
+    {
+        return *getComponent<TransformComponent>();
+    }
+    
     X_CameraObject camera;
     
     fp angleX;

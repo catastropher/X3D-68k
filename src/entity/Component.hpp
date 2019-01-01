@@ -16,6 +16,7 @@
 #pragma once
 
 #include <vector>
+#include <new>
 
 #include "memory/X_BitSet.hpp"
 #include "memory/X_Array.hpp"
@@ -24,6 +25,8 @@ enum class ComponentFlags
 {
     inUse = 1
 };
+
+const int COMPONENT_INVALID_ID = -1;
 
 struct ComponentHandle
 {
@@ -57,11 +60,18 @@ public:
         
         components.push_back(Component());
         
+        new (&components[id]) Component();
+        
         return id;
     }
     
     static Component* getById(int id)
     {
+        if(id < 0 || id >= components.size())
+        {
+            return nullptr;
+        }
+        
         return &components[id];
     }
     
@@ -113,6 +123,20 @@ public:
         }
         
         return nullptr;
+    }
+    
+    template<typename TComponent>
+    int getComponentId()
+    {
+        for(int i = 0; i < totalHandles; ++i)
+        {
+            if(handles[i].typeId == TComponent::TYPE_ID)
+            {
+                return handles[i].id;
+            }
+        }
+        
+        return COMPONENT_INVALID_ID;
     }
     
 private:
