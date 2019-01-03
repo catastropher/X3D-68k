@@ -69,7 +69,7 @@ X_GameObject* x_objectfactory_create_object_from_edict(X_ObjectFactory* factory,
     X_GameObjectType* type = x_objectfactory_get_type_by_name(factory, classname->value);
     if(!type)
     {
-        x_log("Warning: unknown object type %s; skipping object creation");
+        x_log("Warning: unknown object type %s; skipping object creation", classname->value);
         return NULL;
     }
     

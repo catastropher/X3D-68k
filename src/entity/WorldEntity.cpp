@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "WorldEntity.hpp"
+#include "EntityManager.hpp"
 
-enum class BuiltinComponents
+WorldEntity* WorldEntity::createFromEdict(X_Edict& edict)
 {
-    transform,
-    boxCollider,
-    brushModel
-};
+    return EntityManager::createEntity<WorldEntity>();
+}
+
 

@@ -20,6 +20,7 @@
 
 #include "memory/X_BitSet.hpp"
 #include "memory/X_Array.hpp"
+#include "ComponentDefs.hpp"
 
 enum class ComponentFlags
 {

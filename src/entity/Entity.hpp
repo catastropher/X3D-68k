@@ -23,6 +23,8 @@ class EntityManager;
 class Entity
 {
 public:
+    void operator=(const Entity&) = delete;
+    
     int getId() const
     {
         return id;

@@ -15,34 +15,18 @@
 
 #pragma once
 
-#include <vector>
-#include <type_traits>
-
 #include "Entity.hpp"
+#include "BrushModelComponent.hpp"
+#include "object/X_GameObjectLoader.h"  // FIXME
 
-struct X_Edict;
-
-class EntityManager
+class WorldEntity : public Entity
 {
 public:
-    template<typename TEntity, typename ...ConstructorArgs>
-    static TEntity* createEntity(ConstructorArgs&& ...args)
+    WorldEntity()
     {
-        static_assert(std::is_base_of<Entity, TEntity>::value, "TEntity must derive from Entity");
-        
-        TEntity* entity = new TEntity(std::forward<ConstructorArgs>(args)...);
-        
-        int id = entities.size();
-        entities.push_back(entity);
-        
-        entity->setId(id);
-        
-        return entity;
+        addComponent<BrushModelComponent>();
     }
     
-    static Entity* createEntityFromEdict(X_Edict& edict);
-    
-private:
-    static std::vector<Entity*> entities;
+    static WorldEntity* createFromEdict(X_Edict& edict);
 };
 

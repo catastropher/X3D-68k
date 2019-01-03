@@ -20,6 +20,7 @@
 #include "X_GameObjectLoader.h"
 #include "error/X_error.h"
 #include "X_PlatformObject.h"
+#include "entity/EntityManager.hpp"
 
 X_EdictAttribute* x_edict_get_attribute(X_Edict* edict, const char* name)
 {
@@ -156,6 +157,7 @@ void x_gameobjectloader_load_objects(X_EngineContext* engineContext, const char*
         X_EdictAttribute* att = x_edict_get_attribute(&edict, "classname");
         if(att)
         {
+#if false
             printf("Loaded object of type '%s'\n", att->value);
             for(int i = 0; i < edict.totalAttributes; ++i)
             {
@@ -163,6 +165,10 @@ void x_gameobjectloader_load_objects(X_EngineContext* engineContext, const char*
             }
             
             x_objectfactory_create_object_from_edict(engineContext->getGameObjectFactory(), &edict);
+#endif
+            
+            EntityManager::createEntityFromEdict(edict);
+            
         }
     }
 }

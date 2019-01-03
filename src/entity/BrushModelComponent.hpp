@@ -15,10 +15,20 @@
 
 #pragma once
 
-enum class BuiltinComponents
+#include "Component.hpp"
+
+class BspModel;
+
+namespace internal
 {
-    transform,
-    boxCollider,
-    brushModel
-};
+    class BrushModel
+    {
+    public:
+        BspModel* model;
+        
+    private:
+    };
+}
+
+using BrushModelComponent = Component<internal::BrushModel, (int)BuiltinComponents::brushModel>;
 

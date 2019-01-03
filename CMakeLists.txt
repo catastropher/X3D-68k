@@ -81,6 +81,8 @@ set(X_SOURCES
     
     # entity
     src/entity/Component.cpp
+    src/entity/EntityManager.cpp
+    src/entity/WorldEntity.cpp
 
     # error
     src/error/X_error.cpp

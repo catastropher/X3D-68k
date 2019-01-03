@@ -13,12 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "EntityManager.hpp"
+#include "object/X_GameObjectLoader.h"  // FIXME
+#include "WorldEntity.hpp"
 
-enum class BuiltinComponents
+std::vector<Entity*> EntityManager::entities;
+
+Entity* EntityManager::createEntityFromEdict(X_Edict& edict)
 {
-    transform,
-    boxCollider,
-    brushModel
-};
+    X_EdictAttribute* classname = x_edict_get_attribute(&edict, "classname");
+    if(classname == nullptr)
+    {
+        x_system_error("Edict missing classname");
+    }
+    
+    if(strcmp(classname->value, "worldspawn") == 0)
+    {
+        return WorldEntity::createFromEdict(edict);
+    }
+    
+    return nullptr;
+}
+
 
