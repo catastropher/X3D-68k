@@ -89,3 +89,5 @@ void TestGame::shootPortal(Portal* portal)
     portal->updatePoly();
 }
 
+Player* TestGame::gplayer;
+

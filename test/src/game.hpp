@@ -42,6 +42,7 @@ private:
     void init()
     {
         setupPlayer();
+        gplayer = &player;
         
         context.player = &player;
         context.engineContext = getInstance();
@@ -50,12 +51,30 @@ private:
 
         x_console_register_cmd(context.engineContext->getConsole(), "stopwatch", StopWatch::stopwatchCmd);
 
-        //x_console_register_var(context.engineContext->getConsole(), &player.getCollider().position, "cam.pos", X_CONSOLEVAR_VEC3, "0 0 0", false);
+        x_console_register_cmd(context.engineContext->getConsole(), "cam.pos", cmdPos);
 
-        x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289,-162,192");
+        x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289 -162 192");
         
 
         x_gameobjectloader_load_objects(getInstance(), getInstance()->getCurrentLevel()->entityDictionary);
+    }
+    
+    static void cmdPos(X_EngineContext* engineContext, int argc, char* argv[])
+    {
+        if(argc != 4)
+        {
+            return;
+        }
+        
+        float x = atoi(argv[1]);
+        float y = atoi(argv[2]);
+        float z = atoi(argv[3]);
+        
+        gplayer->getTransform().setPosition(
+            Vec3fp(
+                fp::fromFloat(x),
+                fp::fromFloat(y),
+                fp::fromFloat(z)));
     }
 
     void renderView()
@@ -154,5 +173,7 @@ private:
     Context context;
 
     friend class Game<TestGame>;
+    
+    static Player* gplayer;
 };
 
