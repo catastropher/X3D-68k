@@ -83,10 +83,25 @@ bool handle_console(X_EngineContext* engineContext)
     return 0;
 }
 
+void mouseLook(Player* player, X_Vec2_fp16x16 angleOffset)
+{
+    player->angleX += angleOffset.x;
+    player->angleY += angleOffset.y;
+    
+    fp x(player->angleX);
+    adjustAngle(x);
+    
+    fp y(player->angleY);
+    adjustAngle(y);
+    
+    player->angleX = x.toFp16x16();
+    player->angleY = y.toFp16x16();
+}
+
 void handle_mouse(Context* context)
 {
-    //X_MouseState* state = context->engineContext->getMouseState();
-    //x_cameraobject_add_angle(context->cam, x_mousestate_get_mouselook_angle_change(state));
+    X_MouseState* state = context->engineContext->getMouseState();
+    mouseLook(context->player, x_mousestate_get_mouselook_angle_change(state));
 }
 
 #include "Player.hpp"

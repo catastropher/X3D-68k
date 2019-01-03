@@ -25,6 +25,7 @@
 #include "geo/X_BoundSphere.h"
 #include "engine/X_EngineContext.h"
 #include "level/X_Portal.hpp"
+#include "entity/BrushModelComponent.hpp"
 
 X_BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
 {
@@ -171,8 +172,15 @@ void x_bsplevel_render_submodels(BspLevel* level, X_RenderContext* renderContext
 {
     BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
     
-    for(int i = 1; i < level->totalModels; ++i)
-        x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
+    auto allBrushModels = BrushModelComponent::getAll();
+    
+    for(auto brushModel : allBrushModels)
+    {
+        
+    }
+    
+    //for(int i = 1; i < level->totalModels; ++i)
+    //    x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
 }
 
 void x_bsplevel_render(BspLevel* level, X_RenderContext* renderContext)

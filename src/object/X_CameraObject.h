@@ -64,19 +64,4 @@ static inline Vec3fp x_cameraobject_get_position(X_CameraObject* cam)
     return cam->position;
 }
 
-static inline void x_cameraobject_add_angle(X_CameraObject* cam, X_Vec2_fp16x16 angleOffset)
-{
-    cam->angleX += angleOffset.x;
-    cam->angleY += angleOffset.y;
-
-    fp x(cam->angleX);
-    adjustAngle(x);
-
-    fp y(cam->angleY);
-    adjustAngle(y);
-
-    cam->angleX = x.toFp16x16();
-    cam->angleY = y.toFp16x16();
-}
-
 
