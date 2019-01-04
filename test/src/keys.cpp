@@ -171,7 +171,7 @@ void handle_keys(Context* context)
     
     handle_mouse(context);
     
-    PlayerMoveLogic moveLogic(*context->player, context->moveSpeed);
+    PlayerMoveLogic moveLogic(*context->player, context->moveSpeed, physics);
     
     PlayerKeyFlags keys = getPlayerKeys(keyState);
     

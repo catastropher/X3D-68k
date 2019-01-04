@@ -21,10 +21,10 @@ struct BspLevel;
 class PlayerMoveLogic
 {
 public:
-    PlayerMoveLogic(Player& player_, fp moveSpeed_)
+    PlayerMoveLogic(Player& player_, fp moveSpeed_, bool enablePhysics_)
         : player(player_),
         moveSpeed(moveSpeed_),
-        enablePhysics(true)
+        enablePhysics(enablePhysics_)
     {
         
     }
@@ -34,7 +34,7 @@ public:
 private:
     static fp getForwardComponent(PlayerKeyFlags keys);
     static fp getStrafeComponent(PlayerKeyFlags keys);
-    static Vec3fp getJumpVector(PlayerKeyFlags keys);
+    Vec3fp getJumpVector(PlayerKeyFlags keys);
     Vec3fp getMovementKeyVector(PlayerKeyFlags keys, bool ignoreVerticalComponent);
     Vec3fp getMovementVector(PlayerKeyFlags keys);
     void handleAngleKeys(PlayerKeyFlags keys);

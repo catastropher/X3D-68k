@@ -134,6 +134,9 @@ void BoxColliderEngine::linkToModelStandingOn(BspModel* model)
 
 void BoxColliderEngine::applyGravity()
 {
-    collider.velocity += *collider.gravity;
+    if(collider.flags.hasFlag(X_BOXCOLLIDER_APPLY_GRAVITY))
+    {
+        collider.velocity += *collider.gravity;
+    }
 }
 

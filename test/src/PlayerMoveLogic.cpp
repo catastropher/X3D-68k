@@ -26,6 +26,20 @@ static Vec3fp removeVerticalComponent(Vec3fp v)
 
 void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, BspLevel* level)
 {
+    if(!enablePhysics)
+    {
+        player.getCollider().flags.reset(X_BOXCOLLIDER_APPLY_GRAVITY);
+        player.getCollider().velocity = Vec3fp(0, 0, 0);
+        
+        Vec3fp movementVector = getMovementVector(keys);
+        
+        player.getTransform().setPosition(player.getTransform().getPosition() + movementVector);
+    }
+    else
+    {
+        player.getCollider().flags.set(X_BOXCOLLIDER_APPLY_GRAVITY);
+    }
+    
     handleAngleKeys(keys);
     handleNormalMovement(keys, level);
 }
@@ -37,7 +51,7 @@ Vec3fp PlayerMoveLogic::getMovementVector(PlayerKeyFlags keys)
         return Vec3fp(0, 0, 0);
     }
     
-    Vec3fp moveVelocity = getMovementKeyVector(keys, true);
+    Vec3fp moveVelocity = getMovementKeyVector(keys, enablePhysics);
     Vec3fp jumpVelocity = getJumpVector(keys);
     
     return moveVelocity + jumpVelocity;
@@ -103,6 +117,11 @@ fp PlayerMoveLogic::getStrafeComponent(PlayerKeyFlags keys)
 
 Vec3fp PlayerMoveLogic::getJumpVector(PlayerKeyFlags keys)
 {
+    if(!enablePhysics)
+    {
+        return Vec3fp(0, 0, 0);
+    }
+    
     // TODO: this should be configurable
     fp jumpVelocity = fp::fromFloat(-6.0);
     

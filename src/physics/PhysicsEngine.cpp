@@ -17,8 +17,16 @@
 #include "entity/BoxColliderComponent.hpp"
 #include "X_BoxColliderEngine.hpp"
 
+// FIXME
+extern bool physics;
+
 void PhysicsEngine::step(BspLevel& level)
 {
+    if(!physics)
+    {
+        return;
+    }
+    
     auto boxColliders = BoxColliderComponent::getAll();
     
     for(auto& collider : boxColliders)
