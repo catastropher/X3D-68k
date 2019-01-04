@@ -16,6 +16,7 @@
 #include "EntityManager.hpp"
 #include "object/X_GameObjectLoader.h"  // FIXME
 #include "WorldEntity.hpp"
+#include "PlatformEntity.hpp"
 
 std::vector<Entity*> EntityManager::entities;
 
@@ -30,6 +31,11 @@ Entity* EntityManager::createEntityFromEdict(X_Edict& edict)
     if(strcmp(classname->value, "worldspawn") == 0)
     {
         return WorldEntity::createFromEdict(edict);
+    }
+    
+    if(strcmp(classname->value, "func_plat") == 0)
+    {
+        return PlatformEntity::createFromEdict(edict);
     }
     
     return nullptr;

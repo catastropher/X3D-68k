@@ -13,32 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "PlatformEntity.hpp"
+#include "EntityManager.hpp"
+#include "object/X_GameObjectLoader.h"
 
-#include "Component.hpp"
-
-class BspModel;
-struct BspLevel;
-struct X_Edict;
-
-namespace internal
+PlatformEntity* PlatformEntity::createFromEdict(X_Edict& edict)
 {
-    class BrushModel
-    {
-    public:
-        BrushModel()
-            : model(nullptr)
-        {
-            
-        }
-        
-        BspModel* model;
-        
-        void initFromEdict(X_Edict& edict, BspLevel& level);
-        
-    private:
-    };
+    auto platform =  EntityManager::createEntity<PlatformEntity>();
+    auto brushModel = platform->getComponent<BrushModelComponent>();
+    
+    brushModel->initFromEdict(edict, platform->getLevel());
+    
+    return platform;
 }
-
-using BrushModelComponent = Component<internal::BrushModel, (int)BuiltinComponents::brushModel>;
-

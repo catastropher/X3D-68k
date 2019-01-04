@@ -15,30 +15,22 @@
 
 #pragma once
 
-#include "Component.hpp"
+#include "Entity.hpp"
+#include "BrushModelComponent.hpp"
 
-class BspModel;
-struct BspLevel;
 struct X_Edict;
 
-namespace internal
+class PlatformEntity : public Entity
 {
-    class BrushModel
+public:
+    PlatformEntity()
     {
-    public:
-        BrushModel()
-            : model(nullptr)
-        {
-            
-        }
-        
-        BspModel* model;
-        
-        void initFromEdict(X_Edict& edict, BspLevel& level);
-        
-    private:
-    };
-}
-
-using BrushModelComponent = Component<internal::BrushModel, (int)BuiltinComponents::brushModel>;
+        addComponent<BrushModelComponent>();
+    }
+    
+    static PlatformEntity* createFromEdict(X_Edict& edict);
+    
+private:
+    
+};
 

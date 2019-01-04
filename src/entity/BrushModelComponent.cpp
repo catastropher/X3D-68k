@@ -13,32 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include "Component.hpp"
-
-class BspModel;
-struct BspLevel;
-struct X_Edict;
+#include "BrushModelComponent.hpp"
+#include "object/X_GameObjectLoader.h"
 
 namespace internal
 {
-    class BrushModel
+    void BrushModel::initFromEdict(X_Edict& edict, BspLevel& level)
     {
-    public:
-        BrushModel()
-            : model(nullptr)
-        {
-            
-        }
+        int modelId = x_edict_get_model_id(&edict, "model");
         
-        BspModel* model;
-        
-        void initFromEdict(X_Edict& edict, BspLevel& level);
-        
-    private:
-    };
+        model = x_bsplevel_get_model(&level, modelId);
+    }
 }
-
-using BrushModelComponent = Component<internal::BrushModel, (int)BuiltinComponents::brushModel>;
 

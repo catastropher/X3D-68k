@@ -19,6 +19,7 @@
 #include <type_traits>
 
 #include "Entity.hpp"
+#include "engine/X_Engine.h"
 
 struct X_Edict;
 
@@ -35,7 +36,11 @@ public:
         int id = entities.size();
         entities.push_back(entity);
         
-        entity->setId(id);
+        entity->id = id;
+        
+        // FIXME: the level should be a dependency instead of looking it up with the context
+        auto context = x_engine_get_context();
+        entity->level = x_engine_get_current_level(context);
         
         return entity;
     }

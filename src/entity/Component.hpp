@@ -68,7 +68,7 @@ public:
     
     static Component* getById(int id)
     {
-        if(id < 0 || id >= components.size())
+        if(id < 0 || id >= (int)components.size())
         {
             return nullptr;
         }

@@ -174,9 +174,12 @@ void x_bsplevel_render_submodels(BspLevel* level, X_RenderContext* renderContext
     
     auto allBrushModels = BrushModelComponent::getAll();
     
-    for(auto brushModel : allBrushModels)
+    for(auto& brushModel : allBrushModels)
     {
-        
+        if(brushModel.model != nullptr)
+        {
+            x_bsplevel_render_submodel(level, brushModel.model, renderContext, enableAllPlanes);
+        }
     }
     
     //for(int i = 1; i < level->totalModels; ++i)

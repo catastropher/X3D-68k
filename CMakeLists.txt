@@ -80,8 +80,10 @@ set(X_SOURCES
     src/engine/X_init.cpp
     
     # entity
+    src/entity/BrushModelComponent.cpp
     src/entity/Component.cpp
     src/entity/EntityManager.cpp
+    src/entity/PlatformEntity.cpp
     src/entity/WorldEntity.cpp
 
     # error

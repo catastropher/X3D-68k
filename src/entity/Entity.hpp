@@ -19,6 +19,7 @@
 #include "TransformComponent.hpp"
 
 class EntityManager;
+struct BspLevel;
 
 class Entity
 {
@@ -58,14 +59,15 @@ protected:
         return component;
     }
     
-private:
-    void setId(int id_)
+    BspLevel& getLevel()
     {
-        id = id_;
+        return *level;
     }
     
+private:    
     int id;
     ComponentManager componentManager;
+    BspLevel* level;
     
     friend class EntityManager;
 };
