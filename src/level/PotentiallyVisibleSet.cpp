@@ -53,7 +53,7 @@ void PotentiallyVisibleSet::markVisibleLeaves(DecompressedLeafVisibleSet& decomp
     
     // We skip leaf 0 because it represents outside the level and should never be potentially visible.
     // Note that the PVS excludes leaf 0 for this reason.
-    for(int i = 1; i < totalLeaves; ++i)
+    for(int i = 1; i <= totalLeaves; ++i)
     {
         X_BspNode* leafNode = (X_BspNode*)x_bsplevel_get_leaf(&level, i);
         

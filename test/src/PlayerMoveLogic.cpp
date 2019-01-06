@@ -46,7 +46,7 @@ void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, BspLevel* level)
 
 Vec3fp PlayerMoveLogic::getMovementVector(PlayerKeyFlags keys)
 {
-    if(!x_boxcollider_is_on_ground(&player.getCollider()))
+    if(!x_boxcollider_is_on_ground(&player.getCollider()) && enablePhysics)
     {
         return Vec3fp(0, 0, 0);
     }
