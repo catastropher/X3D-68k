@@ -28,7 +28,7 @@ void init(Context* context, const char* programPath, X_Config& config)
     screen_set_callbacks(context, *config.screen);
     
     x_console_execute_cmd(context->engineContext->getConsole(), "searchpath ..");
-    x_console_execute_cmd(context->engineContext->getConsole(), "exec ../engine.cfg");
+    x_console_execute_cmd(context->engineContext->getConsole(), "exec ../engine.cfg;exec engine.cfg");
     
     screen_init_console_vars(context->engineContext->getConsole());
     

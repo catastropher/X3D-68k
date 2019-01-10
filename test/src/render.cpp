@@ -105,7 +105,7 @@ static void draw_hud(X_EngineContext* engineContext)
     auto& canvas = engineContext->getScreen()->canvas;
     auto& font = *engineContext->getMainFont();
 
-    StatusBar::render(canvas, font);
+    //StatusBar::render(canvas, font);
 }
 
 void render(Context* context)

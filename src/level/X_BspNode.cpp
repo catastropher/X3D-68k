@@ -49,23 +49,6 @@ void X_BspLeaf::markSurfacesAsVisible(int currentFrame, int bspKey_)
     bspKey = bspKey_;
 }
 
-
-void X_BspNode::determineSidesRelativeToCamera(const Vec3fp& camPos, X_BspNode** frontSideDest, X_BspNode** backSideDest)
-{
-    bool onNormalSide = plane->plane.pointOnNormalFacingSide(camPos);
-    
-    if(onNormalSide)
-    {
-        *frontSideDest = frontChild;
-        *backSideDest = backChild;
-    }
-    else
-    {
-        *frontSideDest = backChild;
-        *backSideDest = frontChild;
-    }
-}
-
 void X_BspNode::renderRecursive(X_RenderContext& renderContext, BoundBoxFrustumFlags parentNodeFlags)
 {
     if(!isVisibleThisFrame(renderContext.currentFrame))
@@ -87,23 +70,31 @@ void X_BspNode::renderRecursive(X_RenderContext& renderContext, BoundBoxFrustumF
         return;
     }
     
-    X_BspNode* frontSide;
-    X_BspNode* backSide;
-    determineSidesRelativeToCamera(renderContext.camPos, &frontSide, &backSide);
+    X_BspNode* frontSideRelativeToCamera;
+    X_BspNode* backSideRelativeToCamera;
     
-    BoundBoxFrustumFlags geoFlags = geoBoundBox.determineFrustumClipFlags(*renderContext.viewFrustum, nodeFlags);
-
-    frontSide->renderRecursive(renderContext, nodeFlags);
+    fp distanceToPlane = plane->plane.distanceTo(renderContext.camPos);
+    bool onNormalSide = distanceToPlane > 0;
     
-    if(geoFlags != X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
+    if(onNormalSide)
     {
-        renderSurfaces(renderContext, geoFlags);
+        frontSideRelativeToCamera = frontChild;
+        backSideRelativeToCamera = backChild;
+    }
+    else
+    {
+        frontSideRelativeToCamera = backChild;
+        backSideRelativeToCamera = frontChild;
     }
     
-    backSide->renderRecursive(renderContext, nodeFlags);
+    frontSideRelativeToCamera->renderRecursive(renderContext, nodeFlags);
+    
+    renderSurfaces(renderContext, nodeFlags, distanceToPlane);
+    
+    backSideRelativeToCamera->renderRecursive(renderContext, nodeFlags);
 }
 
-void X_BspNode::renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags)
+void X_BspNode::renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags, fp distanceToPlane)
 {
     // Stitch the frustum planes together
     X_Frustum* frustum = renderContext.viewFrustum;
@@ -130,9 +121,7 @@ void X_BspNode::renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFl
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext.currentFrame))
             continue;
         
-        Vec3fp camPosTemp = renderContext.camPos;
-
-        bool onNormalSide = surface->plane->plane.pointOnNormalFacingSide(camPosTemp);
+        bool onNormalSide = distanceToPlane > 0;
         bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
         
         if((!onNormalSide) ^ planeFlipped)

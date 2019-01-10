@@ -55,7 +55,7 @@ typedef struct X_BspNode
 
     void markAncestorsAsVisible(int currentFrame);
     void renderRecursive(X_RenderContext& renderContext, BoundBoxFrustumFlags parentNodeFlags);
-    void renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags);
+    void renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags, fp distanceToPlane);
 
     void renderWireframe(
         X_RenderContext& renderContext,
@@ -80,8 +80,6 @@ typedef struct X_BspNode
     X_BspSurface* firstSurface;
     int totalSurfaces;
 private:
-    
-    void determineSidesRelativeToCamera(const Vec3fp& camPos, X_BspNode** frontSideDest, X_BspNode** backSideDest);
 } X_BspNode;
 
 typedef struct X_BspLeaf

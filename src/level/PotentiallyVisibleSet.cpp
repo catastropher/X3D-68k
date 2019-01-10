@@ -22,7 +22,7 @@ void PotentiallyVisibleSet::decompressPvsForLeaf(X_BspLeaf& leaf, DecompressedLe
     auto& pvsFromLeaf = leaf.pvsFromLeaf;
     bool hasVisibilityInfoForCurrentLeaf = pvsFromLeaf.hasPvsData() && !leaf.isOutsideLevel();
     
-    if(!hasVisibilityInfoForCurrentLeaf)
+    if(!hasVisibilityInfoForCurrentLeaf || true)
     {
         dest.markAllLeavesAsVisible(bytesPerEntry);
         return;

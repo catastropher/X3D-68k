@@ -77,8 +77,6 @@ int main(int argc, char* argv[])
 
     initSystem(sysConfig);
 
-    Log::info("Hello world!!!!!!!!!!!!!!\n");
-
     // int size;
     // char* data = FileReader::readWholeFile("../settings.json", size);
 
