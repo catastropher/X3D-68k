@@ -31,9 +31,12 @@ void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, BspLevel* level)
         player.getCollider().flags.reset(X_BOXCOLLIDER_APPLY_GRAVITY);
         player.getCollider().velocity = Vec3fp(0, 0, 0);
         
-        Vec3fp movementVector = getMovementVector(keys);
+        Vec3fp impulseVelocity;
+        Vec3fp frameVelocity;
         
-        player.getTransform().setPosition(player.getTransform().getPosition() + movementVector);
+        getMovementVector(keys, impulseVelocity, frameVelocity);
+        
+        player.getTransform().setPosition(player.getTransform().getPosition() + frameVelocity);
     }
     else
     {
@@ -44,17 +47,18 @@ void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, BspLevel* level)
     handleNormalMovement(keys, level);
 }
 
-Vec3fp PlayerMoveLogic::getMovementVector(PlayerKeyFlags keys)
+void PlayerMoveLogic::getMovementVector(PlayerKeyFlags keys, Vec3fp& impulseVelocityDest, Vec3fp& frameVelocityDest)
 {
     if(!x_boxcollider_is_on_ground(&player.getCollider()) && enablePhysics)
     {
-        return Vec3fp(0, 0, 0);
+        impulseVelocityDest = Vec3fp(0, 0, 0);
+        frameVelocityDest = Vec3fp(0, 0, 0);
+        
+        return;
     }
     
-    Vec3fp moveVelocity = getMovementKeyVector(keys, enablePhysics);
-    Vec3fp jumpVelocity = getJumpVector(keys);
-    
-    return moveVelocity + jumpVelocity;
+    frameVelocityDest = getMovementKeyVector(keys, enablePhysics);
+    impulseVelocityDest = getJumpVector(keys);   
 }
 
 Vec3fp PlayerMoveLogic::getMovementKeyVector(PlayerKeyFlags keys, bool ignoreVerticalComponent)
@@ -179,9 +183,15 @@ bool handle_no_collision_keys(X_EngineContext* engineContext, X_CameraObject* ca
 
 void PlayerMoveLogic::handleNormalMovement(PlayerKeyFlags keys, BspLevel* level)
 {
-    Vec3fp movementVector = getMovementVector(keys);
+    Vec3fp impulseVelocity;
+    Vec3fp frameVelocity;
     
-    player.getCollider().velocity += movementVector;
+    getMovementVector(keys, impulseVelocity, frameVelocity);
+    
+    auto& collider = player.getCollider();
+    
+    collider.applyFrameVelocity(frameVelocity);
+    collider.applyImpulseVelocity(impulseVelocity);
     
 #if false
     if(cam->collider.collisionInfo.type == BOXCOLLIDER_COLLISION_PORTAL)

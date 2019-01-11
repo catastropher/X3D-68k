@@ -20,6 +20,29 @@
 // FIXME
 extern bool physics;
 
+X_Time PhysicsEngine::lastUpdate;
+
+void PhysicsEngine::update(BspLevel& level, X_Time currentTime)
+{
+    const int TIME_PER_STEP = 1000 / UPDATE_FREQUENCY;
+    int updateCount = 0;
+    
+    while(lastUpdate + TIME_PER_STEP <= currentTime)
+    {
+        step(level);
+        lastUpdate += TIME_PER_STEP;
+        ++updateCount;
+    }
+    
+    auto boxColliders = BoxColliderComponent::getAll();
+    
+    for(auto& collider : boxColliders)
+    {
+        collider.frameVelocity = Vec3fp(0, 0, 0);
+    }
+}
+
+
 void PhysicsEngine::step(BspLevel& level)
 {
     if(!physics)
@@ -31,8 +54,12 @@ void PhysicsEngine::step(BspLevel& level)
     
     for(auto& collider : boxColliders)
     {
+        collider.velocity += collider.impulseVelocity + collider.frameVelocity;
+        
         BoxColliderEngine engine(collider, level);
         engine.runStep();
+        
+        collider.impulseVelocity = Vec3fp(0, 0, 0);
     }
 }
 

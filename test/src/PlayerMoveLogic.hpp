@@ -36,7 +36,7 @@ private:
     static fp getStrafeComponent(PlayerKeyFlags keys);
     Vec3fp getJumpVector(PlayerKeyFlags keys);
     Vec3fp getMovementKeyVector(PlayerKeyFlags keys, bool ignoreVerticalComponent);
-    Vec3fp getMovementVector(PlayerKeyFlags keys);
+    void getMovementVector(PlayerKeyFlags keys, Vec3fp& impulseVelocityDest, Vec3fp& frameVelocityDest);
     void handleAngleKeys(PlayerKeyFlags keys);
     void handleNormalMovement(PlayerKeyFlags flags, BspLevel* level);
     

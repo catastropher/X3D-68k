@@ -34,6 +34,7 @@ static void x_renderer_init_console_vars(X_Renderer* renderer, Console* console)
     x_console_register_var(console, &renderer->mipLevel, "mipLevel", X_CONSOLEVAR_INT, "0", 0);
     x_console_register_var(console, &renderer->renderMode, "rendermode", X_CONSOLEVAR_INT, "3", 0);
     x_console_register_var(console, &renderer->wireframe, "wireframe", X_CONSOLEVAR_BOOL, "0", 0);
+    x_console_register_var(console, &renderer->maxFramesPerSecond, "maxFps", X_CONSOLEVAR_INT, "60", 0);
 }
 
 static void cmd_res(X_EngineContext* context, int argc, char* argv[])
@@ -260,6 +261,7 @@ static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen
     renderer->fov = fov;
     renderer->enableLighting = 1;
     renderer->scaleScreen = 0;
+    renderer->maxFramesPerSecond = 60;
 }
 
 void x_renderer_init(X_Renderer* renderer, Console* console, X_Screen* screen, int fov)

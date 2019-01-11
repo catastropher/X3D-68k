@@ -162,6 +162,7 @@ set(X_SOURCES
     src/server/X_ServerPackets.cpp
 
     # system
+    src/system/Clock.cpp
     src/system/X_File.cpp
     src/system/X_FilePath.cpp
     src/system/X_FileReader.cpp

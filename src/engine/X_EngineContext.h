@@ -69,6 +69,8 @@ typedef struct X_EngineContext
     X_Time frameStart;
     X_Time lastFrameStart;
     
+    fp estimatedFramesPerSecond;
+    
     void* userData;
 
 private:

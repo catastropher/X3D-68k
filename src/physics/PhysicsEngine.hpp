@@ -15,13 +15,20 @@
 
 #pragma once
 
+#include "system/X_Time.h"
+
 class BspLevel;
 
 class PhysicsEngine
 {
 public:
-    static void step(BspLevel& level);
+    static const int UPDATE_FREQUENCY = 30;
+    
+    static void update(BspLevel& level, X_Time currentTime);
     
 private:
+    static void step(BspLevel& level);
+    
+    static X_Time lastUpdate;
 };
 

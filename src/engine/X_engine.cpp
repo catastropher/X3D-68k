@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <unistd.h>
+
 #include "X_Engine.h"
 #include "error/X_error.h"
 #include "system/X_File.h"
@@ -25,6 +27,7 @@
 #include "util/X_JsonParser.hpp"
 #include "system/X_FileSystem.hpp"
 #include "physics/PhysicsEngine.hpp"
+#include "system/Clock.hpp"
 
 static bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -74,10 +77,7 @@ X_EngineContext* x_engine_init(X_Config* config)
     x_filesystem_add_search_path("../assets");
     
     X_EngineContext* engineContext = x_engine_get_context();
-
     
-
-
     x_platform_init(engineContext, config);
     x_enginecontext_init(engineContext, config);
 
@@ -106,10 +106,38 @@ void x_engine_cleanup(void)
 
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
+    engineContext->frameStart = Clock::getTicks();
+    
+    PhysicsEngine::update(*engineContext->getCurrentLevel(), Clock::getTicks()); // FIXME: should not be done here
+    
     x_renderer_render_frame(engineContext);
     x_engine_update_objects(engineContext);     // FIXME: should not be done here
     
-    PhysicsEngine::step(*engineContext->getCurrentLevel()); // FIXME: should not be done here
+    int diff = Clock::getTicks() - engineContext->frameStart;
+    
+    if(diff == 0)
+    {
+        engineContext->estimatedFramesPerSecond = fp::fromInt(1000);
+    }
+    else
+    {
+        engineContext->estimatedFramesPerSecond = fp::fromInt(1000) / diff;
+        
+        fp maxFramesPerSecond = fp::fromInt(engineContext->getRenderer()->maxFramesPerSecond);
+        
+        if(engineContext->estimatedFramesPerSecond > maxFramesPerSecond)
+        {
+            fp millisecondsPerFrame = fp::fromInt(1000) / engineContext->estimatedFramesPerSecond;
+            fp targetMillisecondsPerFrame = fp::fromInt(1000) / engineContext->getRenderer()->maxFramesPerSecond;
+            
+            fp sleepMilliseconds = targetMillisecondsPerFrame - millisecondsPerFrame;
+            
+            Clock::delay(sleepMilliseconds.toInt());
+            
+            diff = Clock::getTicks() - engineContext->frameStart;
+            engineContext->estimatedFramesPerSecond = fp::fromInt(1000) / diff;
+        }
+    }
 }
 
 void x_engine_update_objects(X_EngineContext* engineContext)

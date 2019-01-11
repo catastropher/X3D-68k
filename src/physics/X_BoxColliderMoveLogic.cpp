@@ -122,7 +122,8 @@ bool BoxColliderMoveLogic::onFloor()
 {
     const fp MAX_FLOOR_DISTANCE_EPSILON = fp::fromFloat(3.0);
 
-    return tryPushIntoGround(MAX_FLOOR_DISTANCE_EPSILON)
+    return velocity.y >= 0
+        && tryPushIntoGround(MAX_FLOOR_DISTANCE_EPSILON)
         && planeIsFloorSurface(lastHitWall.plane);
 }
 

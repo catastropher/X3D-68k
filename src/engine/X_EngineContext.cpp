@@ -25,6 +25,7 @@
 #include "X_EngineContext.h"
 #include "error/X_error.h"
 #include "render/X_RenderContext.h"
+#include "system/Clock.hpp"
 
 static inline void init_object_factory(X_EngineContext* context)
 {
@@ -141,12 +142,7 @@ void x_enginecontext_cleanup(X_EngineContext* context)
 void x_enginecontext_update_time(X_EngineContext* context)
 {
     context->lastFrameStart = context->frameStart;
-    
-#ifndef X_GET_TIME_USING_SDL
-    context->frameStart = clock() * 1000 / CLOCKS_PER_SEC;
-#else
-    context->frameStart = SDL_GetTicks();
-#endif
+    context->frameStart = Clock::getTicks();
 }
 
 X_Time x_enginecontext_get_time(const X_EngineContext* context)

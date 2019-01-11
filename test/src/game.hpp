@@ -54,6 +54,7 @@ private:
         x_console_register_cmd(context.engineContext->getConsole(), "cam.pos", cmdPos);
 
         x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289 -162 192");
+        x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -12.899673 663.968750 128.273361");
         
 
         x_gameobjectloader_load_objects(getInstance(), getInstance()->getCurrentLevel()->entityDictionary);
@@ -63,6 +64,9 @@ private:
     {
         if(argc != 4)
         {
+            Vec3fp camPos = gplayer->getTransform().getPosition();
+            x_console_printf(engineContext->getConsole(), "%f %f %f", camPos.x.toFloat(), camPos.y.toFloat(), camPos.z.toFloat());
+            
             return;
         }
         

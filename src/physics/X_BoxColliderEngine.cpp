@@ -108,10 +108,13 @@ void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<
     collider->boundBox = *boundBox;
     collider->flags = flags;
     collider->gravity = &gravity;
-    collider->frictionCoefficient = x_fp16x16_from_float(4.0);
+    collider->frictionCoefficient = x_fp16x16_from_float(5.0);
     collider->maxSpeed = x_fp16x16_from_float(20.0);
     collider->bounceCoefficient = X_FP16x16_ONE;
     collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
+    collider->velocity = Vec3fp(0, 0, 0);
+    collider->impulseVelocity = Vec3fp(0, 0, 0);
+    collider->frameVelocity = Vec3fp(0, 0, 0);
     
     x_link_init_self(&collider->objectsOnModel);
 }

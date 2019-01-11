@@ -20,6 +20,7 @@
 #include "level/X_BspLevel.h"
 #include "level/X_BspRayTracer.hpp"
 #include "memory/X_BitSet.hpp"
+#include "PhysicsEngine.hpp"
 
 typedef enum IterationFlags
 {

@@ -60,19 +60,30 @@ struct X_BoxCollider
     }
     
     bool traceRay(X_RayTracer& tracer);
+    
+    void applyFrameVelocity(const Vec3fp& velocity_)
+    {
+        frameVelocity = velocity_;
+    }
+    
+    void applyImpulseVelocity(const Vec3fp& velocity_)
+    {
+        impulseVelocity = velocity_;
+    }
 
     EnumBitSet<X_BoxColliderFlags> flags;
 
     BoundBox boundBox;
     int levelCollisionHull;
     Vec3fp velocity;
+    Vec3fp frameVelocity;       // Velocity for the entire duration of the frame
+    Vec3fp impulseVelocity;     // Single time applied velocity
     Vec3fp* gravity;
     fp bounceCoefficient;
     fp frictionCoefficient;
     fp maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
     int transformComponentId = COMPONENT_INVALID_ID;
-    
     
     Portal* currentPortal;
     
