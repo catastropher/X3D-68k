@@ -21,10 +21,11 @@ struct BspLevel;
 class PlayerMoveLogic
 {
 public:
-    PlayerMoveLogic(Player& player_, fp moveSpeed_, bool enablePhysics_)
+    PlayerMoveLogic(Player& player_, fp moveSpeed_, bool enablePhysics_, fp timeDelta_)
         : player(player_),
         moveSpeed(moveSpeed_),
-        enablePhysics(enablePhysics_)
+        enablePhysics(enablePhysics_),
+        timeDelta(timeDelta_)
     {
         
     }
@@ -43,4 +44,5 @@ private:
     Player& player;
     fp moveSpeed;
     bool enablePhysics;
+    fp timeDelta;
 };

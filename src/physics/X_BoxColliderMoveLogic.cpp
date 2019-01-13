@@ -32,7 +32,7 @@ static bool planeIsVertical(const Plane& plane)
 
 bool BoxColliderMoveLogic::tryMoveNormally()
 {
-    newPosition = startingPosition + velocity;
+    newPosition = startingPosition + velocity * dt;
 
     runMoveIterations();
 
@@ -94,7 +94,7 @@ void BoxColliderMoveLogic::moveAndAdjustVelocity()
     
     slideAlongWall();
 
-    newPosition = lastHitWall.location.point + velocity;
+    newPosition = lastHitWall.location.point + velocity * dt;
 }
 
 void BoxColliderMoveLogic::slideAlongWall()

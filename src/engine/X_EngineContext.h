@@ -70,6 +70,7 @@ typedef struct X_EngineContext
     X_Time lastFrameStart;
     
     fp estimatedFramesPerSecond;
+    fp timeDelta;
     
     void* userData;
 
@@ -89,7 +90,6 @@ private:
 
 void x_enginecontext_init(X_EngineContext* context, X_Config* config);
 void x_enginecontext_cleanup(X_EngineContext* context);
-void x_enginecontext_update_time(X_EngineContext* context);
 X_Time x_enginecontext_get_time(const X_EngineContext* context);
 void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, X_CameraObject* cam, struct X_RenderContext* dest);
 

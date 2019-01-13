@@ -41,7 +41,8 @@ void BoxColliderEngine::tryMove()
         collider,
         level,
         transformComponent->getPosition(),
-        collider.velocity);
+        collider.velocity,
+        dt);
 
     moveLogic.tryMoveNormally();
 
@@ -51,7 +52,8 @@ void BoxColliderEngine::tryMove()
             collider,
             level,
             transformComponent->getPosition(),
-            collider.velocity);
+            collider.velocity,
+            dt);
 
         if(stepMoveLogic.tryMoveUpStep())
         {
@@ -93,7 +95,7 @@ void BoxColliderEngine::applyFriction()
         return;
     }
     
-    fp newSpeed = currentSpeed - collider.frictionCoefficient;
+    fp newSpeed = currentSpeed - collider.frictionCoefficient * dt;
     newSpeed = clamp(newSpeed, fp::fromInt(0), collider.maxSpeed);
     
     newSpeed = newSpeed / currentSpeed;
@@ -103,12 +105,12 @@ void BoxColliderEngine::applyFriction()
 
 void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags)
 {
-    static Vec3fp gravity = { 0, fp::fromFloat(0.25), 0 };
+    static Vec3fp gravity = { 0, fp::fromFloat(300), 0 };
     
     collider->boundBox = *boundBox;
     collider->flags = flags;
     collider->gravity = &gravity;
-    collider->frictionCoefficient = x_fp16x16_from_float(5.0);
+    collider->frictionCoefficient = x_fp16x16_from_float(30.0);
     collider->maxSpeed = x_fp16x16_from_float(20.0);
     collider->bounceCoefficient = X_FP16x16_ONE;
     collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
@@ -139,7 +141,7 @@ void BoxColliderEngine::applyGravity()
 {
     if(collider.flags.hasFlag(X_BOXCOLLIDER_APPLY_GRAVITY))
     {
-        collider.velocity += *collider.gravity;
+        collider.velocity += *collider.gravity * dt;
     }
 }
 

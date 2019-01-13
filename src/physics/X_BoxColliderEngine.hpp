@@ -42,9 +42,10 @@ struct BoxColliderState
 class BoxColliderEngine
 {
 public:
-    BoxColliderEngine(BoxColliderComponent& collider_, BspLevel& level_)
+    BoxColliderEngine(BoxColliderComponent& collider_, BspLevel& level_, fp dt_)
         : collider(collider_),
-        level(level_)
+        level(level_),
+        dt(dt_)
     {
 
     }
@@ -71,5 +72,6 @@ private:
     Vec3fp finalVelocity;
     EnumBitSet<IterationFlags> moveFlags;
     TransformComponent* transformComponent;
+    fp dt;
 };
 

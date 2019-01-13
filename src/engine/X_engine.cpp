@@ -106,9 +106,11 @@ void x_engine_cleanup(void)
 
 void x_engine_render_frame(X_EngineContext* engineContext)
 {
+    engineContext->lastFrameStart = engineContext->frameStart;
     engineContext->frameStart = Clock::getTicks();
+    engineContext->timeDelta = fp::fromInt(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
     
-    PhysicsEngine::update(*engineContext->getCurrentLevel(), Clock::getTicks()); // FIXME: should not be done here
+    PhysicsEngine::update(*engineContext->getCurrentLevel(), engineContext->timeDelta);
     
     x_renderer_render_frame(engineContext);
     x_engine_update_objects(engineContext);     // FIXME: should not be done here

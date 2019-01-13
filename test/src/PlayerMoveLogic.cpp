@@ -127,7 +127,7 @@ Vec3fp PlayerMoveLogic::getJumpVector(PlayerKeyFlags keys)
     }
     
     // TODO: this should be configurable
-    fp jumpVelocity = fp::fromFloat(-6.0);
+    fp jumpVelocity = fp::fromFloat(-210.0);
     
     if(keys.hasFlag(PlayerKeys::jump))
     {
@@ -141,7 +141,7 @@ Vec3fp PlayerMoveLogic::getJumpVector(PlayerKeyFlags keys)
 void PlayerMoveLogic::handleAngleKeys(PlayerKeyFlags keys)
 {
     // TODO: configure
-    fp dAngle = fp::fromFloat(2.0);
+    fp dAngle = fp::fromFloat(60.0) * timeDelta;
     
     if(keys.hasFlag(PlayerKeys::lookUp))
     {

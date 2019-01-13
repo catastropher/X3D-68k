@@ -92,7 +92,6 @@ static inline void cleanup_console(X_EngineContext* context)
 void x_enginecontext_init(X_EngineContext* context, X_Config* config)
 {
     context->frameCount = 1;
-    x_enginecontext_update_time(context);
     context->lastFrameStart = context->frameStart;
     
     init_object_factory(context);
@@ -137,12 +136,6 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     x_renderer_cleanup(context->getRenderer());
     
     context->getScreen()->handlers.cleanupVideo(context, context->getScreen()->handlers.userData);
-}
-
-void x_enginecontext_update_time(X_EngineContext* context)
-{
-    context->lastFrameStart = context->frameStart;
-    context->frameStart = Clock::getTicks();
 }
 
 X_Time x_enginecontext_get_time(const X_EngineContext* context)

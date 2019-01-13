@@ -293,7 +293,6 @@ void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
 static void x_engine_begin_frame(X_EngineContext* context)
 {
     ++context->frameCount;
-    x_enginecontext_update_time(context);
 }
 
 static void mark_lights(X_EngineContext* context)

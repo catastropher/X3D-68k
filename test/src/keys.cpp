@@ -38,7 +38,7 @@ void init_keys(Context* context)
 {
     g_Context = context;
     
-    x_console_register_var(context->engineContext->getConsole(), &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "5.0", 0);
+    x_console_register_var(context->engineContext->getConsole(), &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "150.0", 0);
     x_console_register_var(context->engineContext->getConsole(), &physics, "physics", X_CONSOLEVAR_BOOL, "1", 0);
 }
 
@@ -83,10 +83,10 @@ bool handle_console(X_EngineContext* engineContext)
     return 0;
 }
 
-void mouseLook(Player* player, X_Vec2_fp16x16 angleOffset)
+void mouseLook(Player* player, X_Vec2_fp16x16 angleOffset, fp timeDelta)
 {
-    player->angleX += angleOffset.x;
-    player->angleY += angleOffset.y;
+    player->angleX += fp(angleOffset.x);
+    player->angleY += fp(angleOffset.y);
     
     fp x(player->angleX);
     adjustAngle(x);
@@ -101,7 +101,10 @@ void mouseLook(Player* player, X_Vec2_fp16x16 angleOffset)
 void handle_mouse(Context* context)
 {
     X_MouseState* state = context->engineContext->getMouseState();
-    mouseLook(context->player, x_mousestate_get_mouselook_angle_change(state));
+    mouseLook(
+        context->player,
+        x_mousestate_get_mouselook_angle_change(state),
+        context->engineContext->timeDelta);
 }
 
 #include "Player.hpp"
@@ -171,7 +174,7 @@ void handle_keys(Context* context)
     
     handle_mouse(context);
     
-    PlayerMoveLogic moveLogic(*context->player, context->moveSpeed, physics);
+    PlayerMoveLogic moveLogic(*context->player, context->moveSpeed, physics, context->engineContext->timeDelta);
     
     PlayerKeyFlags keys = getPlayerKeys(keyState);
     
