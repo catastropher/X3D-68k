@@ -13,12 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_BoxCollider.h"
-#include "level/X_RayTracer.h"
-#include "level/X_BspRayTracer.hpp"
-#include "level/X_Portal.hpp"
+#pragma once
 
-static bool frameByFrame = false;
-static bool lastDown = false;
+#include "geo/X_Vec3.h"
+#include "geo/X_BoundBox.h"
 
-#include <SDL/SDL.h>
+struct CollisionHull
+{
+    struct X_BspClipNode* clipNodes;
+    BoundBox boundBox;
+    int firstClipNode;
+    int lastClipNode;
+};
+

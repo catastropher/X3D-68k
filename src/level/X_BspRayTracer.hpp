@@ -42,7 +42,6 @@ struct RayCollision
     NodeId hitNode;
 };
 
-template<typename IdType, typename NodeType>
 class BspRayTracer
 {
 public:
@@ -57,27 +56,44 @@ public:
     bool trace();
     bool traceModel(BspModel& model);
 
-    RayCollision<IdType>& getCollision()
+    RayCollision<int>& getCollision()
     {
         return collision;
     }
 
 private:
-    NodeType getNodeFromId(IdType id);
-    X_BspLeafContents getNodeContents(IdType id, Vec3fp& v);
-    bool exploreBothSidesOfNode(IdType nodeId, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist);
-    bool visitNode(IdType nodeId, RayPoint& start, RayPoint& end);
-    X_BspLeafContents getLeafContents(IdType type);
-
-    static bool nodeIsLeaf(IdType id);
-
-    Plane& getNodePlane(NodeType node);
-
-    IdType getRootNode(BspModel& model);
+    Plane& getNodePlane(X_BspClipNode* node)
+    {
+        return currentModel->planes[node->planeId].plane;
+    }
+    
+    static bool nodeIsLeaf(int clipNodeId)
+    {
+        return clipNodeId < 0;
+    }
+    
+    X_BspClipNode* getNodeFromId(int id)
+    {
+        return currentModel->clipNodes + id;
+    }
+    
+    X_BspLeafContents getLeafContents(int id)
+    {
+        return (X_BspLeafContents)id;
+    }
+    
+    int getRootNode(BspModel& model)
+    {
+        return model.clipNodeRoots[collisionHullId];
+    }
+    
+    bool exploreBothSidesOfNode(int nodeId, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist);
+    bool visitNode(int nodeId, RayPoint& start, RayPoint& end);
+    X_BspLeafContents getNodeContents(int id, Vec3fp& v);
 
     Ray3 ray;
     BspLevel* level;
-    RayCollision<IdType> collision;
+    RayCollision<int> collision;
     int collisionHullId;
     BspModel* currentModel;
 };

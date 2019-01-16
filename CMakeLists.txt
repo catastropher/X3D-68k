@@ -109,7 +109,6 @@ set(X_SOURCES
     src/level/X_EntityModelLoader.cpp
     src/level/X_Portal.cpp
     src/level/PotentiallyVisibleSet.cpp
-    src/level/X_RayTracer.cpp
 
     # math
     src/math/X_Mat4x4.cpp
@@ -138,7 +137,6 @@ set(X_SOURCES
 
     # physics
     src/physics/PhysicsEngine.cpp
-    src/physics/X_BoxCollider.cpp
     src/physics/X_BoxColliderEngine.cpp
     src/physics/X_BoxColliderMoveLogic.cpp
 

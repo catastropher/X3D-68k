@@ -17,7 +17,7 @@
 #include "level/X_BspLevel.h"
 #include "level/X_Portal.hpp"
 
-using BoxRayTracer = BspRayTracer<int, X_BspClipNode*>;
+using BoxRayTracer = BspRayTracer;
 
 static bool planeIsFloorSurface(const Plane& plane)
 {

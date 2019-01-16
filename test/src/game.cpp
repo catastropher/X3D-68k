@@ -17,6 +17,7 @@
 
 void TestGame::shootPortal(Portal* portal)
 {
+#if 0
     auto engineContext = getInstance();
     auto level = engineContext->getCurrentLevel();
 
@@ -87,6 +88,7 @@ void TestGame::shootPortal(Portal* portal)
     portal->poly.reverse();
 
     portal->updatePoly();
+#endif
 }
 
 Player* TestGame::gplayer;

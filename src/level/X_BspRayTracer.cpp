@@ -15,9 +15,6 @@
 
 #include "X_BspRayTracer.hpp"
 
-template class BspRayTracer<int, X_BspClipNode*>;
-template class BspRayTracer<X_BspNode*, X_BspNode*>;
-
 static fp calculateIntersectionT(fp startDist, fp endDist)
 {
     const fp DISTANCE_EPSILON = fp::fromFloat(0.03125);
@@ -33,8 +30,7 @@ static fp calculateIntersectionT(fp startDist, fp endDist)
     return clamp(t, fp::fromInt(0), fp::fromInt(1));
 }
 
-template<typename IdType, typename NodeType>
-X_BspLeafContents BspRayTracer<IdType, NodeType>::getNodeContents(IdType id, Vec3fp& v)
+X_BspLeafContents BspRayTracer::getNodeContents(int id, Vec3fp& v)
 {
     while(!nodeIsLeaf(id))
     {
@@ -54,17 +50,16 @@ X_BspLeafContents BspRayTracer<IdType, NodeType>::getNodeContents(IdType id, Vec
     return getLeafContents(id);
 }
 
-template<typename IdType, typename NodeType>
-bool BspRayTracer<IdType, NodeType>::exploreBothSidesOfNode(IdType nodeId, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist)
+bool BspRayTracer::exploreBothSidesOfNode(int nodeId, RayPoint& start, RayPoint& end, fp intersectionT, fp startDist)
 {
-    NodeType node = getNodeFromId(nodeId);
+    X_BspClipNode* node = getNodeFromId(nodeId);
 
     Ray3 ray(start.point, end.point);
  
     RayPoint intersection(ray.lerp(intersectionT), intersectionT);
     
-    IdType startChildNode;
-    IdType endChildNode;
+    int startChildNode;
+    int endChildNode;
     
     if(startDist >= 0)
     {
@@ -118,8 +113,7 @@ static bool both_points_on_back_side(fp startDist, fp endDist)
     return startDist < 0 && endDist < 0;
 }
 
-template<typename IdType, typename NodeType>
-bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, RayPoint& end)
+bool BspRayTracer::visitNode(int nodeId, RayPoint& start, RayPoint& end)
 {
     if(nodeIsLeaf(nodeId))
     {
@@ -147,8 +141,7 @@ bool BspRayTracer<IdType, NodeType>::visitNode(IdType nodeId, RayPoint& start, R
     return exploreBothSidesOfNode(nodeId, start, end, intersectionT, startDist);
 }
 
-template<typename IdType, typename NodeType>
-bool BspRayTracer<IdType, NodeType>::traceModel(BspModel& model)
+bool BspRayTracer::traceModel(BspModel& model)
 {
     currentModel = &model;
 
@@ -160,8 +153,7 @@ bool BspRayTracer<IdType, NodeType>::traceModel(BspModel& model)
     return hitSomething;
 }
 
-template<typename IdType, typename NodeType>
-bool BspRayTracer<IdType, NodeType>::trace()
+bool BspRayTracer::trace()
 {
     collision.location.t = maxValue<fp>();
 
@@ -175,68 +167,4 @@ bool BspRayTracer<IdType, NodeType>::trace()
     return hitSomething;
 }
 
-// Specializations for clip nodes
-
-template<>
-Plane& BspRayTracer<int, X_BspClipNode*>::getNodePlane(X_BspClipNode* node)
-{
-    return currentModel->planes[node->planeId].plane;
-}
-
-template<>
-bool BspRayTracer<int, X_BspClipNode*>::nodeIsLeaf(int clipNodeId)
-{
-    return clipNodeId < 0;
-}
-
-template<>
-X_BspClipNode* BspRayTracer<int, X_BspClipNode*>::getNodeFromId(int id)
-{
-    return currentModel->clipNodes + id;
-}
-
-template<>
-X_BspLeafContents BspRayTracer<int, X_BspClipNode*>::getLeafContents(int id)
-{
-    return (X_BspLeafContents)id;
-}
-
-template<>
-int BspRayTracer<int, X_BspClipNode*>::getRootNode(BspModel& model)
-{
-    return model.clipNodeRoots[collisionHullId];
-}
-
-// Specializations for bsp nodes
-
-template<>
-Plane& BspRayTracer<X_BspNode*, X_BspNode*>::getNodePlane(X_BspNode* node)
-{
-    return node->plane->plane;
-}
-
-template<>
-bool BspRayTracer<X_BspNode*, X_BspNode*>::nodeIsLeaf(X_BspNode* node)
-{
-    return node->isLeaf();
-}
-
-template<>
-X_BspNode* BspRayTracer<X_BspNode*, X_BspNode*>::getNodeFromId(X_BspNode* node)
-{
-    return node;
-}
-
-
-template<>
-X_BspLeafContents BspRayTracer<X_BspNode*, X_BspNode*>::getLeafContents(X_BspNode* id)
-{
-    return (X_BspLeafContents)id->contents;
-}
-
-template<>
-X_BspNode* BspRayTracer<X_BspNode*, X_BspNode*>::getRootNode(BspModel& model)
-{
-    return model.rootBspNode;
-}
 
