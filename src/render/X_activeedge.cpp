@@ -849,7 +849,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
     context->resetBackgroundSurface();
 
     // Don't bother removing the edges from the last scanline
-    context->newEdges[x_screen_h(context->screen) - 1].deleteHead = NULL;
+    context->newEdges[context->screen->getH() - 1].deleteHead = NULL;
 
     StopWatch::start("scan-active-edge");
     

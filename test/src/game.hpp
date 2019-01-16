@@ -164,8 +164,10 @@ private:
     {
         X_EngineContext* engineContext = getInstance();
         
-        player.camera.viewport.init((X_Vec2) { 0, 0 }, x_screen_w(engineContext->getScreen()), x_screen_h(engineContext->getScreen()), fp(X_ANG_60));
-        x_screen_attach_camera(engineContext->getScreen(), &player.getCamera());
+        X_Screen* screen = engineContext->getScreen();
+        
+        player.camera.viewport.init((X_Vec2) { 0, 0 }, screen->getW(), screen->getH(), fp(X_ANG_60));
+        engineContext->getScreen()->attachCamera(&player.getCamera());
         
         player.angleX = 0;
         player.angleY = 0;

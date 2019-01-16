@@ -176,8 +176,10 @@ void x_console_register_builtin_commands(Console* console);
 void x_console_init(Console* console, X_EngineContext* engineContext, X_Font* font)
 {
     console->cursor = x_vec2_make(0, 0);
-    console->size.x = x_screen_w(engineContext->getScreen()) / font->getW();
-    console->size.y = x_screen_h(engineContext->getScreen()) / font->getH() / 2;
+    
+    X_Screen* screen = engineContext->getScreen();
+    console->size.x = screen->getW() / font->getW();
+    console->size.y = screen->getH() / font->getH() / 2;
     console->font = font;
     console->engineContext = engineContext;
     

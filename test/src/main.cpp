@@ -26,9 +26,6 @@
 
 #include "game.hpp"
 
-Vec3fp position = Vec3fp(0, 0, 0);
-Mat4x4 orientation;
-
 TestGame* game;
 
 void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext)
@@ -41,44 +38,11 @@ void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* rende
 
 int main(int argc, char* argv[])
 {
-    // int val = 581.641052 * 65536;
-    // int orig = val;
-
-    // int shift = 0;
-
-    // while(val >= 65536)
-    // {
-    //     val >>= 1;
-    //     ++shift;
-    // }
-
-    // printf("Shifted down: %d, shift = %d\n", val, shift);
-
-    // int real = (1.0 / orig) * 65536 * 65536;
-
-    // printf("Answer: %d\n", real);
-
-    // int shiftUp;
-    // int r = x_fastrecip_unshift(val, shiftUp);
-
-    // printf("Shift up: %d\n", shiftUp);
-
-    // printf("R: %d\n", r >> shift);
-
-
-    Vec3Template<fp> v;
-    Quaternion q1 = Quaternion::fromAxisAngle(v, fp(0));
-
-    auto q2 = q1 * q1;
-
     SystemConfig sysConfig;
 
     sysConfig.programPath = argv[0];
 
     initSystem(sysConfig);
-
-    // int size;
-    // char* data = FileReader::readWholeFile("../settings.json", size);
 
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");

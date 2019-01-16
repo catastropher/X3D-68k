@@ -370,7 +370,7 @@ private:
         newRightEdge.next = &newRightEdge;    // Loop back around
         
         // TODO: we can probably reset these as we sort in the new edges for each scanline
-        for(int i = 0; i < x_screen_h(screen); ++i)
+        for(int i = 0; i < screen->getH(); ++i)
         {
             newEdges[i].next = (X_AE_Edge*)&newRightEdge;
             newEdges[i].x = x_fp16x16_from_float(-1000);

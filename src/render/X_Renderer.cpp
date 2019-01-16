@@ -105,37 +105,16 @@ static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
 
 #include "error/X_log.h"
 
-static void cmd_spanProfile(X_EngineContext* context, int argc, char* argv[])
-{
-//     int count[640] = { 0 };
-//     
-//     for(int j = 0; j < context->renderer.activeEdgeContext.nextAvailableSurface - context->renderer.activeEdgeContext.surfacePool; ++j)
-//     {
-//         X_AE_Surface* surface = context->renderer.activeEdgeContext.surfacePool + j;
-//         
-//         for(int i = 0; i < surface->totalSpans; ++i)
-//         {
-//             X_AE_Span* span = surface->spans + i;
-//             ++count[span->x2 - span->x1];
-//         }
-//     }
-//     
-//     for(int i = 0; i < x_screen_w(&context->screen); ++i)
-//     {
-//         x_log("%d:   %d", i, count[i]);
-//     }
-}    
-
 // Prints the ID of the surface we're currently looking at
 static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
 {
     // Render a frame so we can get the span data
     //x_engine_render_frame(context);
     
-    int centerX = x_screen_w(context->getScreen()) / 2;
-    int centerY = x_screen_h(context->getScreen()) / 2;
+    X_Screen* screen = context->getScreen();
+    X_Vec2 center = screen->getCenter();
     
-    int surfaceId = x_ae_context_find_surface_point_is_in(&context->getRenderer()->activeEdgeContext, centerX, centerY, context->getCurrentLevel());
+    int surfaceId = x_ae_context_find_surface_point_is_in(&context->getRenderer()->activeEdgeContext, center.x, center.y, context->getCurrentLevel());
     
     if(surfaceId != -1)
         x_console_printf(context->getConsole(), "Looking at surface #%d\n", surfaceId);
@@ -248,14 +227,13 @@ static void x_renderer_console_cmds(Console* console)
     x_console_register_cmd(console, "fullscreen", cmd_fullscreen);    
     x_console_register_cmd(console, "surfid", cmd_surfid);    
     x_console_register_cmd(console, "lighting", cmd_lighting);
-    x_console_register_cmd(console, "spanprofile", cmd_spanProfile);
     x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
 }
 
 static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen, int fov)
 {
-    renderer->screenW = x_screen_w(screen);
-    renderer->screenH = x_screen_h(screen);
+    renderer->screenW = screen->getW();
+    renderer->screenH = screen->getH();
     renderer->videoInitialized = 0;
     renderer->fullscreen = 0;
     renderer->fov = fov;
@@ -331,7 +309,7 @@ void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* rende
 
 static void clear_zbuffer(X_EngineContext* engineContext)
 {
-    x_screen_zbuf_clear(engineContext->getScreen());
+    engineContext->getScreen()->clearZBuf();
 }
 
 void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth)

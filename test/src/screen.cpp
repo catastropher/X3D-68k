@@ -202,44 +202,7 @@ static bool is_valid_resolution_callback(int w, int h)
 
 static void video_restart_callback(X_EngineContext* engineContext, void* userData)
 {
-//     Context* context = (Context*)userData;
-//     X_Screen* screen = engineContext->getScreen();
-    
-//     if(!engineContext->getRenderer()->videoInitialized)
-//     {
-//         if(SDL_Init(SDL_INIT_VIDEO) != 0)
-//             x_system_error("Failed to initialize SDL");
-        
-//         // Grab the native desktop resolution
-//         const SDL_VideoInfo* info = SDL_GetVideoInfo();
-        
-//         context->nativeResolutionW = info->current_w;
-//         context->nativeResolutionH = info->current_h;
-        
-// #ifdef __nspire__
-//         int type = lcd_type();
-        
-//         if(type != SCR_320x240_4)
-//         {
-//             lcd_init(SCR_320x240_8);
-//             memset(REAL_SCREEN_BASE_ADDRESS, 0, 320 * 240);     // Prevent the screen from flashing when we switch palettes
-//             save_old_palette();
-//             set_palette(engineContext->screen.palette);
-//         }
-// #endif
-//     }
 
-// #ifndef __nspire__
-//     int flags = SDL_SWSURFACE;
-    
-//     if(engineContext->getRenderer()->fullscreen)
-//         flags |= SDL_FULLSCREEN;
-    
-//     context->screen = SDL_SetVideoMode(x_screen_w(screen), x_screen_h(screen), 32, flags);
-    
-//     if(!context->screen)
-//         x_system_error("Failed to set video mode");
-// #endif
 }
 
 static void cleanup_video_callback(X_EngineContext* context, void* userData)

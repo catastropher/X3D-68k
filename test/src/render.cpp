@@ -22,7 +22,10 @@ static void draw_fps(X_EngineContext* context)
     char fpsStr[20];
     sprintf(fpsStr, "%d", context->estimatedFramesPerSecond.toInt());
     
-    X_Vec2 pos = x_vec2_make(x_screen_w(context->getScreen()) - context->getMainFont()->calcWidthOfStr(fpsStr), 0);
+    X_Vec2 pos = x_vec2_make(
+        context->getScreen()->getW() - context->getMainFont()->calcWidthOfStr(fpsStr),
+        0);
+    
     context->getScreen()->canvas.drawStr(fpsStr, *context->getMainFont(), pos);
 }
 

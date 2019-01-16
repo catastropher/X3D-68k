@@ -30,7 +30,7 @@ static void cmd_mouselook(X_EngineContext* engineContext, int argc, char* argv[]
     
     state->mouseLook = atoi(argv[1]);
     x_mousestate_show_cursor(state, !state->mouseLook);
-    x_mousestate_set_pos(state, x_screen_center(engineContext->getScreen()));
+    x_mousestate_set_pos(state, engineContext->getScreen()->getCenter());
     
     state->offset.x = 0;
     state->offset.y = 0;
@@ -76,7 +76,7 @@ void x_mousestate_update_pos(X_MouseState* state, X_Vec2 pos)
     if(!state->mouseLook)
         return;
     
-    X_Vec2 center = x_screen_center(state->screen);
+    X_Vec2 center = state->screen->getCenter();
     state->offset = x_vec2_sub(&pos, &center);
     
     x_mousestate_set_pos(state, center);

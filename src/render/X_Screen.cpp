@@ -16,47 +16,55 @@
 #include "X_Screen.h"
 #include "object/X_CameraObject.h"
 
-void x_screen_attach_camera(X_Screen* screen, X_CameraObject* camera)
+void X_Screen::attachCamera(X_CameraObject* camera)
 {
     camera->nextInCameraList = NULL;
     
-    if(!screen->cameraListHead)
+    if(!cameraListHead)
     {
-        screen->cameraListHead = camera;
+        cameraListHead = camera;
         return;
     }
     
-    X_CameraObject* currentCam = screen->cameraListHead;
+    X_CameraObject* currentCam = cameraListHead;
     while(currentCam->nextInCameraList)
+    {
         currentCam = currentCam->nextInCameraList;
+    }
     
     currentCam->nextInCameraList = camera;
 }
 
-void x_screen_detach_camera(X_Screen* screen, X_CameraObject* camera)
+void X_Screen::detachCamera(X_CameraObject* camera)
 {
-    X_CameraObject* currentCam = screen->cameraListHead;
+    X_CameraObject* currentCam = cameraListHead;
     while(currentCam && currentCam->nextInCameraList != camera)
+    {
         currentCam = currentCam->nextInCameraList;
+    }
     
-    bool camWasInList = currentCam != NULL;
+    bool camWasInList = currentCam != nullptr;
     if(!camWasInList)
+    {
         return;
+    }
     
     currentCam->nextInCameraList = currentCam->nextInCameraList->nextInCameraList;
 }
 
-void x_screen_restart_video(X_Screen* screen, int newW, int newH, x_fp16x16 newFov)
+void X_Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
 {
-    screen->canvas.resize(newW, newH);
+    canvas.resize(newW, newH);
     
-    x_free(screen->zbuf);
-    screen->zbuf = (x_fp0x16*)x_malloc(x_screen_zbuf_size(screen));
+    x_free(zbuf);
+    zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
     
     // Broadcast to cameras the change so they can update their viewports
-    for(X_CameraObject* cam = screen->cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    for(X_CameraObject* cam = cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
-        if(cam->screenResizeCallback != NULL)
-            cam->screenResizeCallback(cam, screen, newFov);
+        if(cam->screenResizeCallback != nullptr)
+        {
+            cam->screenResizeCallback(cam, this, newFov);
+        }
     }
 }

@@ -42,8 +42,14 @@ static inline void init_object_factory(X_EngineContext* context)
 
 static inline void init_screen(X_EngineContext* context, X_Config* config)
 {
-    x_screen_init(context->getScreen(), config->screen->w, config->screen->h, &config->screen->screenHandlers);
-    x_screen_set_palette(context->getScreen(), config->screen->palette);
+    context->screen = new X_Screen(
+        config->screen->w,
+        config->screen->h,
+        config->screen->screenHandlers);
+    
+    context->screen->setPalette(config->screen->palette);
+    
+    context->renderer = new X_Renderer(context->screen);
 }
 
 static inline void init_main_font(X_EngineContext* context, const char* fontFileName, int fontW, int fontH)
@@ -70,7 +76,7 @@ static inline void cleanup_object_factory(X_EngineContext* context)
 
 static inline void cleanup_screen(X_EngineContext* context)
 {
-    x_screen_cleanup(context->getScreen());
+    //x_screen_cleanup(context->getScreen());
 }
 
 
@@ -114,7 +120,7 @@ void x_enginecontext_restart_video(X_EngineContext* context)
     if(context->getScreen()->handlers.restartVideo == NULL)
         x_system_error("No restart video callback");
     
-    x_screen_restart_video(context->getScreen(), newW, newH, newFov);
+    context->getScreen()->restartVideo(newW, newH, newFov);
     x_renderer_restart_video(context->getRenderer(), context->getScreen());
     
     context->getScreen()->handlers.restartVideo(context, context->getScreen()->handlers.userData);

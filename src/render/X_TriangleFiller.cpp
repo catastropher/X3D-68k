@@ -33,8 +33,8 @@ static void fill_solid_span(X_TriangleFiller* filler)
     x_fp16x16 z = left->z;
     x_fp16x16 dZ = (right->z - left->z) / dx;
     
-    int screenW = x_screen_w(renderContext->screen);
-    int screenH = x_screen_h(renderContext->screen);
+    int screenW = renderContext->screen->getW();
+    int screenH = renderContext->screen->getH();
     
     x_fp0x16* zbuf = renderContext->zbuf + y * screenW;
     
@@ -80,8 +80,8 @@ static void fill_textured_span(X_TriangleFiller* filler)
     x_fp16x16 v = left->v;
     x_fp16x16 dV = (right->v - left->v) / dx;
     
-    int screenW = x_screen_w(renderContext->screen);
-    int screenH = x_screen_h(renderContext->screen);
+    int screenW = renderContext->screen->getW();
+    int screenH = renderContext->screen->getH();
     
     x_fp0x16* zbuf = renderContext->zbuf + y * screenW;
     
@@ -124,8 +124,8 @@ static void fill_transparent_span(X_TriangleFiller* filler)
     x_fp16x16 z = left->z;
     x_fp16x16 dZ = (right->z - left->z) / dx;
     
-    int screenW = x_screen_w(renderContext->screen);
-    int screenH = x_screen_h(renderContext->screen);
+    int screenW = renderContext->screen->getW();
+    int screenH = renderContext->screen->getH();
     
     x_fp0x16* zbuf = renderContext->zbuf + y * screenW;
     

@@ -39,12 +39,10 @@ typedef struct X_EngineContext
     {
         queue = new EngineQueue(this);
         gameObjectFactory = new X_ObjectFactory;
-        screen = new X_Screen;
         console = new Console;
         mainFont = new X_Font;
         keystate = new X_KeyState;
         mouseState = new X_MouseState;
-        renderer = new X_Renderer(screen);
         currentLevel = nullptr;
     }
     
@@ -74,15 +72,16 @@ typedef struct X_EngineContext
     
     void* userData;
 
+    X_Screen* screen;   // FIXME: just exposing to set up DI
+    X_Renderer* renderer;
+    
 private:
     X_ObjectFactory* gameObjectFactory;
-    X_Screen* screen;
     Console* console;
     X_Font* mainFont;
     X_KeyState* keystate;
     X_MouseState* mouseState;
     BspLevel* currentLevel;
-    X_Renderer* renderer;
     EngineQueue* queue;
 
     Platform platform;

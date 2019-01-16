@@ -106,7 +106,7 @@ void ConsoleRenderer::renderBackground()
 
     X_Vec2 bottomRight =
     {
-        x_screen_w(&screen) - 1,
+        screen.getW() - 1,
         getLineY(console.size.y)
     };
     
