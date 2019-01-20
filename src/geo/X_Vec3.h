@@ -29,8 +29,8 @@
 template<typename T>
 struct Vec3Template
 {
-    Vec3Template(T x_, T y_, T z_) : x(x_), y(y_), z(z_) { }
-    Vec3Template() : x(0), y(0), z(0) { }
+    constexpr Vec3Template(T x_, T y_, T z_) : x(x_), y(y_), z(z_) { }
+    constexpr Vec3Template() : x(0), y(0), z(0) { }
     
     Vec3Template operator+(const Vec3Template& v) const
     {

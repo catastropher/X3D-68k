@@ -24,6 +24,8 @@ struct BspLevel;
 class Entity
 {
 public:
+    Entity(const Entity&) = delete;
+    
     void operator=(const Entity&) = delete;
     
     int getId() const

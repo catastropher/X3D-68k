@@ -99,6 +99,7 @@ set(X_SOURCES
     src/geo/X_Vec3.cpp
 
     # level
+    src/level/BrushModelBuilder.cpp
     src/level/X_BspLevel.cpp
     src/level/X_BspLevelLoader.cpp
     src/level/BspModel.cpp

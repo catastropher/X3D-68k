@@ -154,7 +154,7 @@ bool BoxColliderMoveLogic::tryPushIntoGround(fp distance)
     return traceRay(movementRay, lastHitWall);
 }
 
-bool BoxColliderMoveLogic::traceRay(const Ray3& ray, RayCollision<int>& collision)
+bool BoxColliderMoveLogic::traceRay(const Ray3& ray, RayCollision& collision)
 {
     BoxRayTracer tracer(ray, &level, 0);
 

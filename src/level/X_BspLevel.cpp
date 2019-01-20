@@ -160,7 +160,7 @@ static void x_bsplevel_render_submodel(BspLevel* level, BspModel* submodel, X_Re
         
         renderContext->renderer->activeEdgeContext.addSubmodelPolygon(
             renderContext->level,
-            level->surfaceEdgeIds + surface->firstEdgeId,
+            submodel->surfaceEdgeIds + surface->firstEdgeId,
             surface->totalEdges,
             surface,
             geoFlags,

@@ -55,6 +55,7 @@ namespace internal
     private:
         Vec3fp position;
         Quaternion orientation;
+        int standingOnBrushComponent;
     };
 }
 

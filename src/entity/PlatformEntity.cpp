@@ -17,12 +17,25 @@
 #include "EntityManager.hpp"
 #include "object/X_GameObjectLoader.h"
 
+#include "level/BrushModelBuilder.hpp"
+
 PlatformEntity* PlatformEntity::createFromEdict(X_Edict& edict)
 {
     auto platform =  EntityManager::createEntity<PlatformEntity>();
     auto brushModel = platform->getComponent<BrushModelComponent>();
     
     brushModel->initFromEdict(edict, platform->getLevel());
+    
+    BrushModelBuilderOptions options;
+    
+    options.origin = Vec3fp(
+        fp::fromFloat(159.377563),
+        fp::fromFloat(64.371002),
+        fp::fromFloat(-822.340271));
+    
+    BrushModelBuilder builder(options, *brushModel->model);
+    
+    builder.build();
     
     return platform;
 }

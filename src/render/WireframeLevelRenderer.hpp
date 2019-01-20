@@ -56,6 +56,7 @@ private:
     
     Vec3fp currentModelCenter;
     X_Color currentColor;
+    BspModel* currentModel;
     unsigned char drawnEdges[2048];
 };
 

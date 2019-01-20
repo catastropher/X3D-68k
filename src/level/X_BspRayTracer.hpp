@@ -28,7 +28,6 @@ struct RayPoint
     fp t;
 };
 
-template<typename NodeId>
 struct RayCollision
 {
     bool isCloserThan(const RayCollision& collision) const
@@ -39,7 +38,7 @@ struct RayCollision
     RayPoint location;
     Plane plane;
     BspModel* hitModel;
-    NodeId hitNode;
+    int hitNode;
 };
 
 class BspRayTracer
@@ -56,7 +55,7 @@ public:
     bool trace();
     bool traceModel(BspModel& model);
 
-    RayCollision<int>& getCollision()
+    RayCollision& getCollision()
     {
         return collision;
     }
@@ -93,7 +92,7 @@ private:
 
     Ray3 ray;
     BspLevel* level;
-    RayCollision<int> collision;
+    RayCollision collision;
     int collisionHullId;
     BspModel* currentModel;
 };

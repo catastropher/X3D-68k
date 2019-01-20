@@ -65,7 +65,7 @@ public:
         return velocity;
     }
 
-    RayCollision<int> getLastHitWall()
+    RayCollision getLastHitWall()
     {
         return lastHitWall;
     }
@@ -88,14 +88,14 @@ private:
     bool tryPushIntoGround(fp distance);
     bool onFloor();
 
-    bool traceRay(const Ray3& ray, RayCollision<int>& collision);
+    bool traceRay(const Ray3& ray, RayCollision& collision);
 
     Portal* findWhichPortalBoxInside();
 
     X_BoxCollider& collider;
     BspLevel& level;
 
-    RayCollision<int> lastHitWall;
+    RayCollision lastHitWall;
 
     Vec3fp startingPosition;
     Vec3fp newPosition;

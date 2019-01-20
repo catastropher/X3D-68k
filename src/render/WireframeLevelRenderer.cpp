@@ -19,6 +19,7 @@
 #include "geo/X_Frustum.h"
 #include "level/X_BspLevel.h"
 #include "geo/X_Ray3.h"
+#include "entity/BrushModelComponent.hpp"
 
 void WireframeLevelRenderer::render()
 {
@@ -28,13 +29,19 @@ void WireframeLevelRenderer::render()
     
     memset(drawnEdges, 0, (totalEdges + 7) / 8);
     
-    renderContext.viewFrustum->totalPlanes = 6;
+    //renderContext.viewFrustum->totalPlanes = 6;
     
-    renderModel(level.models[0], levelColor);
+    //renderModel(level.models[0], levelColor);
     
-    for(int i = 1; i < level.totalModels; ++i)
+    auto brushModels = BrushModelComponent::getAll();
+    
+    for(auto& brushModel : brushModels)
     {
-        renderModel(level.models[i], modelColor);
+        if(brushModel.model != nullptr)
+        {
+            memset(drawnEdges, 0, (totalEdges + 7) / 8);
+            renderModel(*brushModel.model, modelColor);
+        }
     }
     
     renderContext.viewFrustum->totalPlanes = totalPlanes;
@@ -46,6 +53,7 @@ void WireframeLevelRenderer::renderModel(BspModel& model, X_Color color)
     
     currentModelCenter = model.center;
     currentColor = color;
+    currentModel = &model;
     
     renderNode(*model.rootBspNode, flags);
 }
@@ -57,8 +65,10 @@ void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
     
     if(nodeFlags == X_BOUNDBOX_TOTALLY_OUTSIDE_FRUSTUM)
     {
-        return;
+        //return;
     }
+    
+    nodeFlags = (BoundBoxFrustumFlags)parentFlags;
     
     if(node.isLeaf())
     {
@@ -70,25 +80,26 @@ void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
             
             for(int j = 0; j < s->totalEdges; ++j)
             {
-                int edgeId = abs(level.surfaceEdgeIds[s->firstEdgeId + j]);
+                int edgeId = abs(currentModel->surfaceEdgeIds[s->firstEdgeId + j]);
                 
                 if(edgeHasAlreadyBeenDrawn(edgeId))
                 {
                     continue;
                 }
                 
-                X_BspEdge* edge = level.edges + edgeId;
+                X_BspEdge* edge = currentModel->edges + edgeId;
                 
                 Ray3 ray(
-                    level.vertices[edge->v[0]].v,
-                    level.vertices[edge->v[1]].v);
+                    currentModel->vertices[edge->v[0]].v,
+                    currentModel->vertices[edge->v[1]].v);
                 
                 ray.v[0] += currentModelCenter;
                 ray.v[1] += currentModelCenter;
                 
                 markEdgeAsAlreadyDrawn(edgeId);
                 
-                ray.renderShaded(renderContext, currentColor, fp::fromInt(1000));
+                //ray.renderShaded(renderContext, currentColor, fp::fromInt(1000));
+                ray.render(renderContext, currentColor);
             }
         }
         

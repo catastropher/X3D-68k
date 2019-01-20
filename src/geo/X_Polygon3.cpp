@@ -290,6 +290,12 @@ void Polygon3::rotateRelateToCenter(Mat4x4& transform)
     }
 }
 
+void Polygon3::calculatePlaneEquation(Plane& dest)
+{
+    dest = Plane(vertices[0], vertices[1], vertices[2]);
+}
+
+
 void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color)
 {
 //     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];

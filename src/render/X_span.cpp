@@ -388,9 +388,9 @@ void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRen
     return;
  #endif
      
-    if(context->surface->flags.hasFlag(SURFACE_FILL_SOLID))
+    if(context->surface->flags.hasFlag(SURFACE_FILL_SOLID) || true)
     {
-        X_Color fillColor = context->surface->getSolidFillColor();
+        X_Color fillColor = context->surface->bspSurface->color; // context->surface->getSolidFillColor();
 
         for(X_AE_Span* span = context->surface->spanHead.next; span != NULL; span = span->next)
         {

@@ -423,6 +423,7 @@ static void x_bsplevel_init_models(BspLevel* level, const X_BspLevelLoader* load
         
         model->faces = level->surfaces + loadModel->firstFaceId;
         model->totalFaces = loadModel->totalFaces;
+        model->surfaceEdgeIds = level->surfaceEdgeIds;
         
         model->rootBspNode = x_bsplevel_get_node_from_id(level, loadModel->rootBspNode);
         model->totalBspLeaves = loadModel->totalBspLeaves;
@@ -444,6 +445,9 @@ static void x_bsplevel_init_models(BspLevel* level, const X_BspLevelLoader* load
         model->boundBox.v[1].x = x_fp16x16_from_float(loadModel->maxs[0]);
         model->boundBox.v[1].y = x_fp16x16_from_float(loadModel->maxs[1]);
         model->boundBox.v[1].z = x_fp16x16_from_float(loadModel->maxs[2]);
+        
+        model->edges = level->edges;
+        model->vertices = level->vertices;
         
         x_link_init(&model->objectsOnModelHead, &model->objectsOnModelTail);
         
@@ -638,8 +642,8 @@ static void x_bsplevel_init_from_bsplevel_loader(BspLevel* level, X_BspLevelLoad
     x_bsplevel_init_leaves(level, loader);
     x_bsplevel_init_nodes(level, loader);
     x_bsplevel_init_clipnodes(level, loader);
-    x_bsplevel_init_models(level, loader);
     x_bsplevel_init_surfacedgeids(level, loader);
+    x_bsplevel_init_models(level, loader);
     x_bsplevel_init_textures(level, loader);
     x_bsplevel_init_facetextures(level, loader);
     x_bsplevel_init_surfaces(level, loader);

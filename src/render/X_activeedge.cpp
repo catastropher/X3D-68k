@@ -116,7 +116,7 @@ void X_AE_Context::emitEdges(X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int tot
     for(int i = 0; i < totalVertices; ++i)
     {
         int edgeId = abs(clippedEdgeIds[i]);
-        X_BspEdge* bspEdge = renderContext->level->edges + edgeId;
+        X_BspEdge* bspEdge = currentModel->edges + edgeId;
 
         if(edgeId != 0)
         {
@@ -342,20 +342,19 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
                                   int bspKey,
                                   bool inSubmodel)
 {
-    auto level = renderContext->level;
     auto aeSurface = createSurface(bspSurface, bspKey); 
 
     int vertexIds[32];
 
     for(int i = 0; i < bspSurface->totalEdges; ++i)
     {
-        if(!edge_is_flipped(edgeIds[i]))    vertexIds[i] = level->edges[edgeIds[i]].v[0];
-        else                                vertexIds[i] = level->edges[-edgeIds[i]].v[1];
+        if(!edge_is_flipped(edgeIds[i]))    vertexIds[i] = currentModel->edges[edgeIds[i]].v[0];
+        else                                vertexIds[i] = currentModel->edges[-edgeIds[i]].v[1];
     }
 
     fp closestZ = maxValue<fp>();
 
-    Vec3fp firstVertex = level->vertices[vertexIds[0]].v;
+    Vec3fp firstVertex = currentModel->vertices[vertexIds[0]].v;
 
     ClipContext context(renderContext->viewFrustum, (int)geoFlags);
 
@@ -366,12 +365,12 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
 
     for(int i = 0; i < bspSurface->totalEdges; ++i)
     {
-        auto bspEdge = renderContext->level->edges + abs(edgeIds[i]);
+        auto bspEdge = currentModel->edges + abs(edgeIds[i]);
 
         int next = (i + 1 < bspSurface->totalEdges ? i + 1 : 0);
 
-        context.ray.v[0] = level->vertices[vertexIds[i]].v;
-        context.ray.v[1] = level->vertices[vertexIds[next]].v;
+        context.ray.v[0] = currentModel->vertices[vertexIds[i]].v;
+        context.ray.v[1] = currentModel->vertices[vertexIds[next]].v;
 
         bool lastWasClipped = context.lastVertexWasClipped();
 
@@ -403,6 +402,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
             }
         }
 
+        // TODO: is there a reason we can't share clipped edges?
         if(context.clipFlags == 3)
         {
             auto cachedEdge = getCachedEdge(bspEdge, renderContext->currentFrame);
@@ -446,7 +446,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
                 closestZ = std::min(closestZ, ray.v[i].z);
             }
 
-            addEdgeFromClippedRay(ray, aeSurface, level->edges + 0, true, lastProjected);
+            addEdgeFromClippedRay(ray, aeSurface, currentModel->edges + 0, true, lastProjected);
         }
     }
 
@@ -475,9 +475,9 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
     aeSurface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, firstVertex);
 }
 
-// TODO: check whether edgeIds is NULL
 void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
+    
     Vec3fp firstVertex = polygon->vertices[0];
     
     ++renderContext->renderer->totalSurfacesRendered;
@@ -504,7 +504,7 @@ void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, Bound
     emitEdges(surface, v2d, poly2d.totalVertices, poly2d.edgeIds);
 }
 
-static void get_level_polygon_from_edges(BspLevel* level, int* edgeIds, int totalEdges, Polygon3* dest, Vec3fp* origin)
+static void get_model_polygon_from_edges(BspModel* model, int* edgeIds, int totalEdges, Polygon3* dest, Vec3fp* origin)
 {
     dest->totalVertices = 0;
     
@@ -513,9 +513,9 @@ static void get_level_polygon_from_edges(BspLevel* level, int* edgeIds, int tota
         Vec3fp v;
         
         if(!edge_is_flipped(edgeIds[i]))
-            v = level->vertices[level->edges[edgeIds[i]].v[0]].v;
+            v = model->vertices[model->edges[edgeIds[i]].v[0]].v;
         else
-            v = level->vertices[level->edges[-edgeIds[i]].v[1]].v;
+            v = model->vertices[model->edges[-edgeIds[i]].v[1]].v;
                 
         dest->vertices[dest->totalVertices++] = v + *origin;
     }
@@ -536,7 +536,7 @@ void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges
     // FIXME: why is this here?
     polygon.totalVertices = 0;
 
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &polygon, &currentModel->center);
+    get_model_polygon_from_edges(currentModel, edgeIds, totalEdges, &polygon, &currentModel->center);
 
     addPolygon(&polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
@@ -576,7 +576,7 @@ void X_AE_Context::addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEd
     x_ae_surface_reset_current_parent(this);
     
     InternalPolygon3 poly;
-    get_level_polygon_from_edges(level, edgeIds, totalEdges, &poly, &currentModel->center);
+    get_model_polygon_from_edges(currentModel, edgeIds, totalEdges, &poly, &currentModel->center);
     
     addSubmodelRecursive(&poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
 }
