@@ -52,7 +52,7 @@ bool BoxColliderMoveLogic::tryMoveUpStep()
     const fp MAX_STEP_SIZE = fp::fromFloat(18.0);
 
     startingPosition = startingPosition - Vec3fp(0, MAX_STEP_SIZE, 0);
-    newPosition = startingPosition + velocity;
+    newPosition = startingPosition + velocity * dt;
 
     runMoveIterations();
 
