@@ -34,7 +34,7 @@
 enum SurfaceFlags
 {
     SURFACE_NO_DRAW_SPANS = 1,
-    SURFACE_FILL_SOLID
+    SURFACE_FILL_SOLID = 2
 };
 
 struct X_AE_Surface

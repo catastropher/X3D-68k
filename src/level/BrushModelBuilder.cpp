@@ -17,6 +17,7 @@
 #include "X_BspLevel.h"
 #include "memory/X_Memory.hpp"
 #include "math/X_trig.h"
+#include "render/X_activeedge.h"
 
 static void buildFace(X_BspSurface& face, int firstEdgeId, int totalEdges, X_BspPlane* plane)
 {
@@ -31,32 +32,6 @@ static void buildFace(X_BspSurface& face, int firstEdgeId, int totalEdges, X_Bsp
     face.flags = (X_BspSurfaceFlags)0;
     face.plane = plane;
     face.color = rand() % 256;
-}
-
-static void getModelPolygon(BspModel* model, int surfaceId, Polygon3* dest)
-{
-    dest->totalVertices = 0;
-    
-    X_BspSurface* surface = model->faces + surfaceId;
-    int totalEdges = surface->totalEdges;
-    int* edgeIds = model->surfaceEdgeIds + surface->firstEdgeId;
-    
-    for(int i = 0; i < totalEdges; ++i)
-    {
-        Vec3fp v;
-        bool edgeIsFlipped = edgeIds[i] < 0;
-        
-        if(edgeIsFlipped)
-        {
-            v = model->vertices[model->edges[edgeIds[i]].v[0]].v;
-        }
-        else
-        {
-            v = model->vertices[model->edges[-edgeIds[i]].v[1]].v;
-        }
-                
-        dest->vertices[dest->totalVertices++] = v;
-    }
 }
 
 void BrushModelBuilder::build()
@@ -74,6 +49,7 @@ void BrushModelBuilder::build()
     }
     
     dest.totalFaces = 2;
+    dest.flags = SURFACE_FILL_SOLID | (255 << 24);
 }
 
 void BrushModelBuilder::allocateMemory()
@@ -128,7 +104,7 @@ void BrushModelBuilder::addBases()
     int topVertices[32];
     for(int i = 0; i < options.sidesInBase; ++i)
     {
-        topVertices[i] = i;
+        topVertices[i] = options.sidesInBase - i - 1;
     }
     
     prism.addFace(topVertices, options.sidesInBase);
@@ -136,7 +112,7 @@ void BrushModelBuilder::addBases()
     int bottomVertices[32];
     for(int i = 0; i < options.sidesInBase; ++i)
     {
-        bottomVertices[i] = options.sidesInBase * 2 - i - 1;
+        bottomVertices[i] = options.sidesInBase + i;
     }
     
     prism.addFace(bottomVertices, options.sidesInBase);

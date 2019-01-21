@@ -47,6 +47,8 @@ struct BspModel
     
     Vec3fp center;
     
+    unsigned int flags;
+    
     X_Link objectsOnModelHead;
     X_Link objectsOnModelTail;
 };

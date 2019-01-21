@@ -448,6 +448,7 @@ static void x_bsplevel_init_models(BspLevel* level, const X_BspLevelLoader* load
         
         model->edges = level->edges;
         model->vertices = level->vertices;
+        model->flags = 0;
         
         x_link_init(&model->objectsOnModelHead, &model->objectsOnModelTail);
         
