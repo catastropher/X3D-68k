@@ -20,7 +20,6 @@
 
 #include "memory/X_BitSet.hpp"
 #include "memory/X_Array.hpp"
-#include "ComponentDefs.hpp"
 
 enum class ComponentFlags
 {
@@ -29,6 +28,12 @@ enum class ComponentFlags
 
 const int COMPONENT_INVALID_ID = -1;
 
+struct ComponentType
+{
+    void (*deleteComponent)(int id);
+    void (*deleteAll)();
+};
+
 struct ComponentHandle
 {
     ComponentHandle()
@@ -36,34 +41,49 @@ struct ComponentHandle
         
     }
     
-    ComponentHandle(int id_, int typeId_)
+    ComponentHandle(int id_, ComponentType* type_)
         : id(id_),
-        typeId(typeId_)
+        type(type_)
     {
         
     }
     
     int id;
-    int typeId;
+    ComponentType* type;
 };
 
 class Entity;
 
-template<typename TComponent, int TypeId>
+template<typename TComponent>
 class Component : public TComponent
 {
 public:
     Entity* owner;
     
-    static int add()
+    static Component* add(ComponentHandle& dest)
     {
         int id = components.size();
         
         components.push_back(Component());
         
-        new (&components[id]) Component();
+        Component* component = &components[id];
         
-        return id;
+        new (component) Component();
+        
+        dest.id = id;
+        dest.type = &type;
+        
+        return component;
+    }
+    
+    static void deleteComponent(int id)
+    {
+        components[id].owner = nullptr;
+    }
+    
+    static void deleteAll()
+    {
+        components.clear();
     }
     
     static Component* getById(int id)
@@ -81,14 +101,25 @@ public:
         return Array<Component>(&components[0], components.size());
     }
     
-    static const int TYPE_ID = TypeId;
+    static ComponentType* getType()
+    {
+        return &type;
+    }
 
 private:
     static std::vector<Component> components;
+    static ComponentType type;
 };
 
-template<typename TComponent, int TypeId>
-std::vector<Component<TComponent, TypeId>> Component<TComponent, TypeId>::components;
+template<typename TComponent>
+std::vector<Component<TComponent>> Component<TComponent>::components;
+
+template<typename TComponent>
+ComponentType Component<TComponent>::type = 
+{
+    deleteComponent,
+    deleteAll
+};
 
 class ComponentManager
 {
@@ -103,21 +134,17 @@ public:
     TComponent* add()
     {
         // TODO: check whether that component already exists
-        handles[totalHandles] = createComponent<TComponent>();
-        
-        TComponent* component = TComponent::getById(handles[totalHandles].id);
-        
-        ++totalHandles;
-        
-        return component;
+       return TComponent::add(handles[totalHandles++]);
     }
     
     template<typename TComponent>
     TComponent* getComponent()
     {
+        ComponentType* type = TComponent::getType();
+        
         for(int i = 0; i < totalHandles; ++i)
         {
-            if(handles[i].typeId == TComponent::TYPE_ID)
+            if(handles[i].type == type)
             {
                 return TComponent::getById(handles[i].id);
             }
@@ -129,9 +156,11 @@ public:
     template<typename TComponent>
     int getComponentId()
     {
+        ComponentType* type = TComponent::getType();
+        
         for(int i = 0; i < totalHandles; ++i)
         {
-            if(handles[i].typeId == TComponent::TYPE_ID)
+            if(handles[i].type == type)
             {
                 return handles[i].id;
             }
@@ -140,16 +169,19 @@ public:
         return COMPONENT_INVALID_ID;
     }
     
+    ~ComponentManager()
+    {
+        for(int i = 0; i < totalHandles; ++i)
+        {
+            if(handles[i].type != nullptr)
+            {
+                handles[i].type->deleteComponent(handles[i].id);
+            }
+        }
+    }
+    
 private:
     static const int MAX_COMPONENTS = 10;
-    
-    template<typename TComponent>
-    static ComponentHandle createComponent()
-    {
-        int id = TComponent::add();
-        
-        return ComponentHandle(id, TComponent::TYPE_ID);
-    }
     
     ComponentHandle handles[MAX_COMPONENTS];
     int totalHandles;

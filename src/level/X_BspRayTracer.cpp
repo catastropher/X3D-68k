@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_BspRayTracer.hpp"
+#include "entity/BrushModelComponent.hpp"
 
 static fp calculateIntersectionT(fp startDist, fp endDist)
 {
@@ -158,10 +159,18 @@ bool BspRayTracer::trace()
     collision.location.t = maxValue<fp>();
 
     // FIXME: this is not a good way to handle this
-    bool hitSomething = false;
-    for(int i = 0; i < level->totalModels; ++i)
+    
+    auto brushModels = BrushModelComponent::getAll();
+    
+    bool hitSomething = traceModel(*x_bsplevel_get_level_model(level));
+    
+    
+    for(auto& brushModel : brushModels)
     {
-        hitSomething |= traceModel(level->models[i]);
+        if(brushModel.model != nullptr)
+        {
+            hitSomething |= traceModel(*brushModel.model);
+        }
     }
     
     return hitSomething;

@@ -40,5 +40,5 @@ namespace internal
     };
 }
 
-using BrushModelComponent = Component<internal::BrushModel, (int)BuiltinComponents::brushModel>;
+using BrushModelComponent = Component<internal::BrushModel>;
 

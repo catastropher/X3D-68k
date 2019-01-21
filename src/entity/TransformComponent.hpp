@@ -19,7 +19,6 @@
 #include "math/X_Quaternion.h"
 
 #include "Component.hpp"
-#include "ComponentDefs.hpp"
 
 namespace internal
 {
@@ -59,5 +58,5 @@ namespace internal
     };
 }
 
-using TransformComponent = Component<internal::Transform, (int)BuiltinComponents::transform>;
+using TransformComponent = Component<internal::Transform>;
 

@@ -28,6 +28,8 @@ PlatformEntity* PlatformEntity::createFromEdict(X_Edict& edict)
     
     BrushModelBuilderOptions options;
     
+    options.sidesInBase = 5;
+    
     options.origin = Vec3fp(
         fp::fromFloat(159.377563),
         fp::fromFloat(64.371002),

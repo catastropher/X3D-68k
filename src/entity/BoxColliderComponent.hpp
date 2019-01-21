@@ -16,8 +16,7 @@
 #pragma once
 
 #include "physics/X_BoxCollider.h"
-#include "ComponentDefs.hpp"
 #include "Component.hpp"
 
-using BoxColliderComponent = Component<X_BoxCollider, (int)BuiltinComponents::boxCollider>;
+using BoxColliderComponent = Component<X_BoxCollider>;
 
