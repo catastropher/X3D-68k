@@ -42,7 +42,8 @@ public:
         startingPosition(startingPosition_),
         velocity(velocity_),
         flags(0),
-        dt(dt_)
+        dt(dt_),
+        standingOnEntity(nullptr)
     {
 
     }
@@ -75,6 +76,11 @@ public:
         return flags.hasFlag(IT_HIT_VERTICAL_WALL);
     }
 
+    Entity* getStandingOnEntity() const
+    {
+        return standingOnEntity;
+    }
+
 private:
     void moveAndAdjustVelocity();
 
@@ -102,4 +108,5 @@ private:
     Vec3fp velocity;
     EnumBitSet<IterationFlags> flags;
     fp dt;
+    Entity* standingOnEntity;
 };

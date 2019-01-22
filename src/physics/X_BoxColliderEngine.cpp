@@ -18,6 +18,9 @@
 
 void BoxColliderEngine::runStep()
 {
+    // Unlink from whatever we're standing on
+    collider.standingOnEntity = nullptr;
+
     if(collider.transformComponentId == COMPONENT_INVALID_ID)
     {
         collider.transformComponentId = collider.owner->getComponentId<TransformComponent>();
@@ -80,6 +83,8 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
         auto lastHitWall = moveLogic.getLastHitWall();
 
         linkToModelStandingOn(lastHitWall.hitModel);
+
+        collider.standingOnEntity = lastHitWall.entity;
     }
     else
     {
@@ -115,7 +120,7 @@ void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<
     collider->bounceCoefficient = X_FP16x16_ONE;
     collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
     collider->velocity = Vec3fp(0, 0, 0);
-    collider->impulseVelocity = Vec3fp(0, 0, 0);
+    collider->impulseVelocity = Vec3fp(0, 0, 0);    // TODO: remove
     collider->frameVelocity = Vec3fp(0, 0, 0);
     
     x_link_init_self(&collider->objectsOnModel);

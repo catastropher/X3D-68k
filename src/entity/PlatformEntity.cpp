@@ -37,7 +37,17 @@ PlatformEntity* PlatformEntity::createFromEdict(X_Edict& edict)
     
     BrushModelBuilder builder(options, *brushModel->model);
     
-    builder.build();
+    //builder.build();
     
     return platform;
+}
+
+void PlatformEntity::update(X_Time currentTime)
+{
+    printf("Receive update!\n");
+    setNextUpdateTime(currentTime + 500);
+
+    BrushModelComponent* brushModel = getComponent<BrushModelComponent>();
+
+    //brushModel->model->center.y -= fp::fromInt(10);
 }

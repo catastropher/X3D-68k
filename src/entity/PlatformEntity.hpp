@@ -27,6 +27,8 @@ public:
     {
         addComponent<BrushModelComponent>();
     }
+
+    void update(X_Time currentTime);
     
     static PlatformEntity* createFromEdict(X_Edict& edict);
     

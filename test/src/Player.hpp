@@ -55,6 +55,20 @@ public:
     {
         return *getComponent<TransformComponent>();
     }
+
+    void update(X_Time currentTime)
+    {
+        auto collider = getComponent<BoxColliderComponent>();
+
+        int id = -1;
+
+        if(collider->standingOnEntity != nullptr)
+        {
+            id = collider->standingOnEntity->getId();
+        }
+
+        StatusBar::setItem("Standing on", "%d", id);
+    }
     
     X_CameraObject camera;
     

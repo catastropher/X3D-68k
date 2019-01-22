@@ -18,7 +18,12 @@
 
 WorldEntity* WorldEntity::createFromEdict(X_Edict& edict)
 {
-    return EntityManager::createEntity<WorldEntity>();
+    auto worldEntity = EntityManager::createEntity<WorldEntity>();
+    auto brushModel = worldEntity->getComponent<BrushModelComponent>();
+
+    brushModel->model = x_bsplevel_get_level_model(&worldEntity->getLevel());
+
+    return worldEntity;
 }
 
 

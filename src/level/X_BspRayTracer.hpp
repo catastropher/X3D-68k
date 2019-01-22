@@ -15,9 +15,12 @@
 
 #pragma once
 
+#include "entity/BrushModelComponent.hpp"
 #include "math/X_fix.h"
 #include "level/X_BspLevel.h"
 #include "geo/X_Ray3.h"
+
+class Entity;
 
 struct RayPoint
 {
@@ -39,6 +42,7 @@ struct RayCollision
     Plane plane;
     BspModel* hitModel;
     int hitNode;
+    Entity* entity;
 };
 
 class BspRayTracer
@@ -53,7 +57,7 @@ public:
     }
 
     bool trace();
-    bool traceModel(BspModel& model);
+    bool traceModel(BrushModelComponent& brushModel);
 
     RayCollision& getCollision()
     {
@@ -95,5 +99,6 @@ private:
     RayCollision collision;
     int collisionHullId;
     BspModel* currentModel;
+    Entity* currentModelOwner;
 };
 

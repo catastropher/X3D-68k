@@ -41,4 +41,15 @@ Entity* EntityManager::createEntityFromEdict(X_Edict& edict)
     return nullptr;
 }
 
+void EntityManager::updateEntities(X_Time currentTime)
+{
+    for(Entity* entity : entities)
+    {
+        if(entity != nullptr && currentTime >= entity->nextUpdate)
+        {
+            entity->update(currentTime);
+        }
+    }
+}
+
 

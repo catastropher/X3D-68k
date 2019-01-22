@@ -17,8 +17,8 @@
 
 #include "Component.hpp"
 #include "TransformComponent.hpp"
+#include "system/X_Time.h"
 
-class EntityManager;
 struct BspLevel;
 
 class Entity
@@ -45,8 +45,14 @@ public:
         return componentManager.getComponentId<TComponent>();
     }
     
+    virtual void update(X_Time currentTime)
+    {
+        
+    }
+    
 protected:
     Entity()
+        : nextUpdate(0)
     {
         addComponent<TransformComponent>();
     }
@@ -66,10 +72,16 @@ protected:
         return *level;
     }
     
+    void setNextUpdateTime(X_Time nextUpdate)
+    {
+        this->nextUpdate = nextUpdate;
+    }
+    
 private:    
     int id;
     ComponentManager componentManager;
     BspLevel* level;
+    X_Time nextUpdate;
     
     friend class EntityManager;
 };

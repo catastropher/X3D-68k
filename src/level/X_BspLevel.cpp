@@ -178,6 +178,12 @@ void x_bsplevel_render_submodels(BspLevel* level, X_RenderContext* renderContext
     {
         if(brushModel.model != nullptr)
         {
+            // FIXME: need a way to exclude the level model
+            if(brushModel.model == x_bsplevel_get_level_model(level))
+            {
+                continue;
+            }
+
             x_bsplevel_render_submodel(level, brushModel.model, renderContext, enableAllPlanes);
         }
     }

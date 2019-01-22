@@ -45,6 +45,8 @@ public:
         return entity;
     }
     
+    static void updateEntities(X_Time currentTime);
+    
     static Entity* createEntityFromEdict(X_Edict& edict);
     
 private:

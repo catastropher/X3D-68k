@@ -22,6 +22,7 @@
 #include "entity/Component.hpp"
 
 struct X_RayTracer;
+struct Entity;
 
 typedef enum X_BoxColliderFlags
 {
@@ -54,9 +55,12 @@ void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<
 struct X_BoxCollider
 {
     X_BoxCollider()
+        : standingOnEntity(nullptr)
     {
         static BoundBox box;
         x_boxcollider_init(this, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
+
+
     }
     
     bool traceRay(X_RayTracer& tracer);
@@ -84,10 +88,12 @@ struct X_BoxCollider
     fp maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
     int transformComponentId = COMPONENT_INVALID_ID;
+
+    Entity* standingOnEntity;
     
     Portal* currentPortal;
     
-    X_Link objectsOnModel;
+    X_Link objectsOnModel;  // TODO: this should be deleted
 };
 
 static inline bool x_boxcollider_is_on_ground(X_BoxCollider* collider)

@@ -96,6 +96,7 @@ bool BspRayTracer::exploreBothSidesOfNode(int nodeId, RayPoint& start, RayPoint&
     collision.location = intersection;
     collision.hitModel = currentModel;
     collision.hitNode = nodeId;
+    collision.entity = currentModelOwner;
 
     // Move the plane relative to the origin of the object
     collision.location.point = collision.location.point + currentModel->center;
@@ -142,14 +143,15 @@ bool BspRayTracer::visitNode(int nodeId, RayPoint& start, RayPoint& end)
     return exploreBothSidesOfNode(nodeId, start, end, intersectionT, startDist);
 }
 
-bool BspRayTracer::traceModel(BspModel& model)
+bool BspRayTracer::traceModel(BrushModelComponent& brushModel)
 {
-    currentModel = &model;
+    currentModel = brushModel.model;
+    currentModelOwner = brushModel.owner;
 
-    RayPoint start(ray.v[0] - model.center, 0);
-    RayPoint end(ray.v[1] - model.center, fp::fromInt(1));
+    RayPoint start(ray.v[0] - brushModel.model->center, 0);
+    RayPoint end(ray.v[1] - brushModel.model->center, fp::fromInt(1));
 
-    bool hitSomething = !visitNode(getRootNode(model), start, end);        
+    bool hitSomething = !visitNode(getRootNode(*brushModel.model), start, end);
     
     return hitSomething;
 }
@@ -158,18 +160,17 @@ bool BspRayTracer::trace()
 {
     collision.location.t = maxValue<fp>();
 
-    // FIXME: this is not a good way to handle this
+    // FIXME: this could very easily be optimized
     
     auto brushModels = BrushModelComponent::getAll();
     
-    bool hitSomething = traceModel(*x_bsplevel_get_level_model(level));
-    
+    bool hitSomething = false;
     
     for(auto& brushModel : brushModels)
     {
         if(brushModel.model != nullptr)
         {
-            hitSomething |= traceModel(*brushModel.model);
+            hitSomething |= traceModel(brushModel);
         }
     }
     

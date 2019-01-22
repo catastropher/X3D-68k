@@ -108,7 +108,9 @@ private:
             vel.x.toFloat(),
             vel.y.toFloat(),
             vel.z.toFloat());
-        
+
+        player.update(0);
+
         ::render(&context);
     }
 

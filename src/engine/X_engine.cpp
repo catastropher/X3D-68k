@@ -28,6 +28,7 @@
 #include "system/X_FileSystem.hpp"
 #include "physics/PhysicsEngine.hpp"
 #include "system/Clock.hpp"
+#include "entity/EntityManager.hpp"
 
 static bool g_engineInitialized = 0;
 static X_EngineContext g_engineContext;
@@ -111,9 +112,9 @@ void x_engine_render_frame(X_EngineContext* engineContext)
     engineContext->timeDelta = fp::fromInt(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
     
     PhysicsEngine::update(*engineContext->getCurrentLevel(), engineContext->timeDelta);
+    EntityManager::updateEntities(Clock::getTicks());
     
     x_renderer_render_frame(engineContext);
-    x_engine_update_objects(engineContext);     // FIXME: should not be done here
     
     int diff = Clock::getTicks() - engineContext->frameStart;
     
