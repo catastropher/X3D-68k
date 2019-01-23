@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <X3D/X3D.h>
+#include <X3D/X3D.hpp>
 
 enum class PlayerKeys
 {

@@ -16,7 +16,7 @@
 #pragma once
 
 #include <SDL/SDL.h>
-#include <X3D/X3D.h>
+#include <X3D/X3D.hpp>
 
 typedef enum NetMode
 {

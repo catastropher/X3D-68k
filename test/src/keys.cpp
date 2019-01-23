@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <SDL/SDL.h>
-#include <X3D/X3D.h>
+#include <X3D/X3D.hpp>
 
 #include "Context.h"
 

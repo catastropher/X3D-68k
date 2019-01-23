@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "X_alloc.h" 
+#include "Alloc.h"
 
 template<typename T>
 T* xalloc(size_t count)

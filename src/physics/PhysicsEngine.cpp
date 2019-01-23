@@ -15,7 +15,7 @@
 
 #include "PhysicsEngine.hpp"
 #include "entity/BoxColliderComponent.hpp"
-#include "X_BoxColliderEngine.hpp"
+#include "BoxColliderEngine.hpp"
 
 // FIXME
 extern bool physics;

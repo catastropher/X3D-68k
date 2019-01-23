@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include <X3D/X3D.h>
+#include <X3D/X3D.hpp>
 #include <cmath>
 
 #include "Context.h"

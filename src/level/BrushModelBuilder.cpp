@@ -14,10 +14,10 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BrushModelBuilder.hpp"
-#include "X_BspLevel.h"
-#include "memory/X_Memory.hpp"
-#include "math/X_trig.h"
-#include "render/X_activeedge.h"
+#include "BspLevel.hpp"
+#include "memory/Memory.hpp"
+#include "math/Trig.hpp"
+#include "render/ActiveEdge.hpp"
 
 static void buildFace(X_BspSurface& face, int firstEdgeId, int totalEdges, X_BspPlane* plane)
 {

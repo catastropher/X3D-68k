@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "geo/X_Vec3.h"
-#include "geo/X_BoundBox.h"
+#include "geo/Vec3.hpp"
+#include "geo/BoundBox.hpp"
 
 struct CollisionHull
 {

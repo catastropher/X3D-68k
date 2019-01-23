@@ -16,10 +16,10 @@
 #include <new>
 #include <algorithm>
 
-#include "level/X_BspLevel.h"
-#include "geo/X_Polygon3.h"
-#include "geo/X_Polygon2.hpp"
-#include "render/X_activeedge.h"
+#include "level/BspLevel.hpp"
+#include "geo/Polygon3.hpp"
+#include "geo/Polygon2.hpp"
+#include "render/ActiveEdge.hpp"
 
 static ArenaAllocator<X_AE_Edge> edgePool(1000, "NewEdgePool");
 
@@ -360,8 +360,8 @@ void testNewRenderer(X_RenderContext* renderContext)
     return;
 }
 
-#include "engine/X_EngineContext.h"
-#include <object/X_CameraObject.h>
+#include "engine/EngineContext.hpp"
+#include <object/CameraObject.hpp>
 
 void cmd_draw(X_EngineContext* context, int argc, char* argv[])
 {

@@ -14,8 +14,8 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "PotentiallyVisibleSet.hpp"
-#include "X_BspNode.hpp"
-#include "X_BspLevel.h"
+#include "BspNode.hpp"
+#include "BspLevel.hpp"
 
 void PotentiallyVisibleSet::decompressPvsForLeaf(X_BspLeaf& leaf, DecompressedLeafVisibleSet& dest)
 {

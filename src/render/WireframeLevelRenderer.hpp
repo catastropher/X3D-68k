@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "X_RenderContext.h"
-#include "X_Texture.h"
+#include "RenderContext.hpp"
+#include "Texture.hpp"
 
 struct BspModel;
 class X_BspNode;

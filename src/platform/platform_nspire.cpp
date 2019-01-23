@@ -15,8 +15,8 @@
 
 #include <libndls.h>
 
-#include "X_Platform.h"
-#include "X_SDL.h"
+#include "Platform.hpp"
+#include "SDL.h"
 #include "socket_nspire.h"
 
 static void init_net()

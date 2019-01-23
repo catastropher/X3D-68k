@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_util.h"
+#include "Util.hpp"
 
 int x_count_prefix_match_length(const char* a, const char* b)
 {

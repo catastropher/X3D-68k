@@ -19,7 +19,7 @@
 #include <type_traits>
 
 #include "Entity.hpp"
-#include "engine/X_Engine.h"
+#include "engine/Engine.hpp"
 
 struct X_Edict;
 

@@ -17,7 +17,7 @@
 
 #include "Entity.hpp"
 #include "BrushModelComponent.hpp"
-#include "object/X_GameObjectLoader.h"  // FIXME
+#include "object/GameObjectLoader.hpp"  // FIXME
 
 class WorldEntity : public Entity
 {

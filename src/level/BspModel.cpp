@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "geo/X_Frustum.h"
-#include "level/X_BspLevel.h"
-#include "render/X_RenderContext.h"
+#include "geo/Frustum.hpp"
+#include "level/BspLevel.hpp"
+#include "render/RenderContext.hpp"
 

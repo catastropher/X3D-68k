@@ -21,11 +21,11 @@
 #include <sys/time.h>
 #include <errno.h>
 
-#include "net/X_net.h"
-#include "error/X_log.h"
-#include "error/X_error.h"
-#include "memory/X_Link.h"
-#include "memory/X_alloc.h"
+#include "net/Net.hpp"
+#include "error/Log.hpp"
+#include "error/Error.hpp"
+#include "memory/OldLink.hpp"
+#include "memory/Alloc.h"
 
 typedef struct ConnectionAddress
 {
@@ -42,8 +42,8 @@ typedef struct ConnectionRequest
 
 typedef struct PcSocket
 {
-    X_Link connectionHead;
-    X_Link connectionTail;
+    OldLink connectionHead;
+    OldLink connectionTail;
     
     int socketFd;
     struct sockaddr_in socketAddress;
@@ -53,7 +53,7 @@ typedef struct PcSocket
 
 typedef struct Connection
 {
-    X_Link link;
+    OldLink link;
     
     X_Socket* x3dSocket;
     ConnectionAddress recvAddress;
@@ -161,7 +161,7 @@ static void enqueue_packet(X_Socket* socket, unsigned char* data, int dataSize)
 
 static void forward_data_to_x3d_socket(PcSocket* sock, unsigned char* data, int dataSize, ConnectionAddress* address)
 {
-    for(X_Link* link = sock->connectionHead.next; link != &sock->connectionTail; link = link->next)
+    for(OldLink* link = sock->connectionHead.next; link != &sock->connectionTail; link = link->next)
     {
         Connection* con = (Connection*)link;
         

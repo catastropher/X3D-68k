@@ -17,7 +17,7 @@
 
 #include "Component.hpp"
 #include "TransformComponent.hpp"
-#include "system/X_Time.h"
+#include "system/Time.hpp"
 
 struct BspLevel;
 

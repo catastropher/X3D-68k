@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "EntityManager.hpp"
-#include "object/X_GameObjectLoader.h"  // FIXME
+#include "object/GameObjectLoader.hpp"  // FIXME
 #include "WorldEntity.hpp"
 #include "PlatformEntity.hpp"
 

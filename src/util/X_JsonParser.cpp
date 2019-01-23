@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "X_JsonParser.hpp"
-#include "error/X_error.h"
+#include "error/Error.hpp"
 
 JsonValue* JsonParser::parse()
 {

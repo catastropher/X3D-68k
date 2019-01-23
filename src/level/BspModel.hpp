@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "geo/X_BoundBox.h"
-#include "memory/X_Link.h"
-#include "render/X_Texture.h"
+#include "geo/BoundBox.hpp"
+#include "memory/OldLink.hpp"
+#include "render/Texture.hpp"
 
 struct X_BspNode;
 struct X_BspClipNode;
@@ -49,7 +49,7 @@ struct BspModel
     
     unsigned int flags;
     
-    X_Link objectsOnModelHead;
-    X_Link objectsOnModelTail;
+    OldLink objectsOnModelHead;
+    OldLink objectsOnModelTail;
 };
 

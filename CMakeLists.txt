@@ -60,24 +60,22 @@ include_directories(src/)
 
 set(X_SOURCES
     # client
-    src/client/X_Client.cpp
+        src/client/Client.cpp
 
     # dev
-    src/dev/X_AutoCompleter.cpp
-    src/dev/X_conCommands.cpp
-    src/dev/X_Console.cpp
-    src/dev/X_TokenLexer.cpp
+        src/dev/console/AutoCompleter.cpp
+        src/dev/console/DefaultCommands.cpp
+        src/dev/console/Console.cpp
+        src/dev/console/TokenLexer.cpp
 
     # dev/console
         src/dev/console/ConsoleRenderer.cpp
-        src/dev/console/X_ConsoleVariable.cpp
-        src/dev/console/X_ConsoleVariableInt.cpp
 
-    # engine
-    src/engine/X_engine.cpp
-    src/engine/X_EngineContext.cpp
-    src/engine/X_EngineQueue.cpp
-    src/engine/X_init.cpp
+        # engine
+        src/engine/Engine.cpp
+        src/engine/EngineContext.cpp
+        src/engine/EngineQueue.cpp
+        src/engine/Init.cpp
     
     # entity
     src/entity/BrushModelComponent.cpp
@@ -87,93 +85,92 @@ set(X_SOURCES
     src/entity/WorldEntity.cpp
 
     # error
-    src/error/X_error.cpp
-    src/error/X_log.cpp
+        src/error/Error.cpp
+        src/error/Log.cpp
 
     # geo
-    src/geo/X_BoundBox.cpp
-    src/geo/X_Frustum.cpp
-    src/geo/X_Plane.cpp
-    src/geo/X_Polygon3.cpp
-    src/geo/X_Ray3.cpp
-    src/geo/X_Vec3.cpp
+        src/geo/BoundBox.cpp
+        src/geo/Frustum.cpp
+        src/geo/Plane.cpp
+        src/geo/Polygon3.cpp
+        src/geo/Ray3.cpp
+        src/geo/Vec3.cpp
 
     # level
     src/level/BrushModelBuilder.cpp
-    src/level/X_BspLevel.cpp
-    src/level/X_BspLevelLoader.cpp
+        src/level/BspLevel.cpp
+        src/level/BspLevelLoader.cpp
     src/level/BspModel.cpp
-    src/level/X_BspNode.cpp
-    src/level/X_BspRayTracer.cpp
-    src/level/X_CollisionHullBuilder.cpp
-    src/level/X_EntityModel.cpp
-    src/level/X_EntityModelLoader.cpp
-    src/level/X_Portal.cpp
+        src/level/BspNode.cpp
+        src/level/BspRayTracer.cpp
+        src/level/CollisionHullBuilder.cpp
+        src/level/EntityModel.cpp
+        src/level/EntityModelLoader.cpp
+        src/level/Portal.cpp
     src/level/PotentiallyVisibleSet.cpp
 
     # math
-    src/math/X_Mat4x4.cpp
-    src/math/X_Quaternion.cpp
-    src/math/X_sqrt.cpp
-    src/math/X_trig.cpp
+        src/math/Mat4x4.cpp
+        src/math/Quaternion.cpp
+        src/math/FastSqrt.cpp
+        src/math/Trig.cpp
 
     # memory
-    src/memory/X_alloc.cpp
-    src/memory/X_Cache.cpp
-    src/memory/X_Memory.cpp
-    src/memory/X_Factory.cpp
-    src/memory/X_String.cpp
+        src/memory/Alloc.cpp
+        src/memory/Cache.cpp
+        src/memory/Memory.cpp
+        src/memory/Factory.cpp
+        src/memory/String.cpp
 
     # net
-    src/net/X_net.cpp
+        src/net/Net.cpp
     
     # object
-    src/object/X_ButtonObject.cpp
-    src/object/X_CameraObject.cpp
-    src/object/X_GameObject.cpp
-    src/object/X_GameObjectLoader.cpp
-    src/object/X_ObjectFactory.cpp
-    src/object/X_PlatformObject.cpp
-    src/object/X_WorldObject.cpp
+        src/object/ButtonObject.cpp
+        src/object/CameraObject.cpp
+        src/object/GameObject.cpp
+        src/object/GameObjectLoader.cpp
+        src/object/ObjectFactory.cpp
+        src/object/PlatformObject.cpp
+        src/object/WorldObject.cpp
 
     # physics
     src/physics/PhysicsEngine.cpp
-    src/physics/X_BoxColliderEngine.cpp
-    src/physics/X_BoxColliderMoveLogic.cpp
+        src/physics/BoxColliderEngine.cpp
+        src/physics/BoxColliderMoveLogic.cpp
 
     # render
     src/render/WireframeLevelRenderer.cpp
-    src/render/X_activeedge.cpp
-    src/render/X_Camera.cpp
-    src/render/X_Font.cpp
-    src/render/X_Palette.cpp
-    src/render/X_Renderer.cpp
-    src/render/X_Screen.cpp
-    src/render/X_span.cpp
-    src/render/X_Surface.cpp
-    src/render/X_StatusBar.cpp
-    src/render/X_Texture.cpp
-    src/render/X_TriangleFiller.cpp
-    src/render/X_Viewport.cpp
+        src/render/ActiveEdge.cpp
+        src/render/Font.cpp
+        src/render/Palette.cpp
+        src/render/Renderer.cpp
+        src/render/Screen.cpp
+        src/render/Span.cpp
+        src/render/Surface.cpp
+        src/render/StatusBar.cpp
+        src/render/Texture.cpp
+        src/render/TriangleFiller.cpp
+        src/render/Viewport.cpp
     
     # server
-    src/server/X_Server.cpp
-    src/server/X_ServerPackets.cpp
+        src/server/Server.cpp
+        src/server/ServerPackets.cpp
 
     # system
     src/system/Clock.cpp
-    src/system/X_File.cpp
-    src/system/X_FilePath.cpp
-    src/system/X_FileReader.cpp
-    src/system/X_FileSystem.cpp
-    src/system/X_Keys.cpp
-    src/system/X_Mouse.cpp
-    src/system/X_PackFile.cpp
+        src/system/File.cpp
+        src/system/FilePath.cpp
+        src/system/FileReader.cpp
+        src/system/FileSystem.cpp
+        src/system/Keys.cpp
+        src/system/Mouse.cpp
+        src/system/PackFile.cpp
 
     # util
-    src/util/X_Json.cpp
+        src/util/Json.cpp
     src/util/X_JsonParser.cpp
-    src/util/X_StopWatch.cpp
+        src/util/StopWatch.cpp
     src/util/X_util.cpp
 )
 
@@ -204,10 +201,10 @@ endif()
 
 if(${XTARGET} STREQUAL "nspire")
     set(X_SOURCES ${X_SOURCES}
-        src/render/X_span_arm.s
+            src/render/span-arm.s
         src/platform/platform_nspire.cpp
         src/platform/socket_nspire.cpp
-        src/platform/nspire/X_NspireScreenDriver.cpp
+            src/platform/nspire/NspireScreenDriver.cpp
     )
 endif()
 
@@ -218,8 +215,8 @@ if(DEFINED X_WITH_SDL)
     include_directories(SDL_INCLUDE_DIR)
     
     set(X_SOURCES ${X_SOURCES}
-        src/platform/X_SDL.cpp
-        src/platform/SDL/X_SdlScreenDriver.cpp
+            src/platform/SDL.cpp
+            src/platform/SDL/SdlScreenDriver.cpp
     )
 endif()
 

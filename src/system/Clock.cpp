@@ -16,7 +16,7 @@
 #include <unistd.h>
 
 #include "Clock.hpp"
-#include "engine/X_config.h"
+#include "engine/Config.hpp"
 
 int Clock::lastRecordedClock;
 int Clock::currentTick;

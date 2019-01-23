@@ -15,7 +15,7 @@
 
 #include "PlatformEntity.hpp"
 #include "EntityManager.hpp"
-#include "object/X_GameObjectLoader.h"
+#include "object/GameObjectLoader.hpp"
 
 #include "level/BrushModelBuilder.hpp"
 

@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "X_Platform.h"
-#include "X_SDL.h"
+#include "Platform.hpp"
+#include "SDL.h"
 
 void x_platform_init(X_EngineContext* engineContext, X_Config* config)
 {

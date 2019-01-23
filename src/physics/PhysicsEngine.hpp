@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "system/X_Time.h"
-#include "math/X_fix.h"
+#include "system/Time.hpp"
+#include "math/FixedPoint.hpp"
 
 class BspLevel;
 

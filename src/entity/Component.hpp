@@ -18,8 +18,8 @@
 #include <vector>
 #include <new>
 
-#include "memory/X_BitSet.hpp"
-#include "memory/X_Array.hpp"
+#include "memory/BitSet.hpp"
+#include "memory/Array.hpp"
 
 enum class ComponentFlags
 {

@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "geo/X_Vec3.h"
-#include "math/X_Quaternion.h"
+#include "geo/Vec3.hpp"
+#include "math/Quaternion.hpp"
 
 #include "Component.hpp"
 

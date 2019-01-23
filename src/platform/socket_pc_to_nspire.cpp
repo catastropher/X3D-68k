@@ -28,10 +28,10 @@ extern "C"
 #include <pthread.h>
 #include <unistd.h>
 
-#include "net/X_net.h"
-#include "error/X_log.h"
-#include "error/X_error.h"
-#include "memory/X_alloc.h"
+#include "net/Net.hpp"
+#include "error/Log.hpp"
+#include "error/Error.hpp"
+#include "memory/Alloc.h"
 
 #include "nsp_vpkt.h"
 #include "nsp_cmd.h"

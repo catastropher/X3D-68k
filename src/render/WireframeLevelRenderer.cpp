@@ -16,9 +16,9 @@
 #include <cstring>
 
 #include "WireframeLevelRenderer.hpp"
-#include "geo/X_Frustum.h"
-#include "level/X_BspLevel.h"
-#include "geo/X_Ray3.h"
+#include "geo/Frustum.hpp"
+#include "level/BspLevel.hpp"
+#include "geo/Ray3.hpp"
 #include "entity/BrushModelComponent.hpp"
 
 void WireframeLevelRenderer::render()

@@ -1,8 +1,8 @@
-#include "render/X_Screen.h"
-#include "../X_Console.h"
+#include "render/Screen.hpp"
+#include "Console.hpp"
 #include "ConsoleRenderer.hpp"
-#include "render/X_Font.h"
-#include "engine/X_EngineContext.h"
+#include "render/Font.hpp"
+#include "engine/EngineContext.hpp"
 
 void ConsoleRenderer::show()
 {

@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BrushModelComponent.hpp"
-#include "object/X_GameObjectLoader.h"
+#include "object/GameObjectLoader.hpp"
 
 namespace internal
 {

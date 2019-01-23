@@ -14,5 +14,5 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "Component.hpp"
-#include "physics/X_BoxCollider.h"
+#include "physics/BoxCollider.hpp"
 

@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "math/X_fix.h"
-#include "geo/X_Vec3.h"
-#include "level/X_BspLevel.h"
+#include "math/FixedPoint.hpp"
+#include "geo/Vec3.hpp"
+#include "level/BspLevel.hpp"
 
 struct BspModel;
 

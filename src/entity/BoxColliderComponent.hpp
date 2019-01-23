@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "physics/X_BoxCollider.h"
+#include "physics/BoxCollider.hpp"
 #include "Component.hpp"
 
 using BoxColliderComponent = Component<X_BoxCollider>;
