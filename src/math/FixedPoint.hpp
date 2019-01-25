@@ -374,6 +374,12 @@ inline void convert(fp& from, x_fp16x16& to)
     to = from.internalValue();
 }
 
+template<>
+inline void convert(int& from, fp& to)
+{
+    to = fp::fromInt(from);
+}
+
 inline fp abs(fp val)
 {
     return val < 0 ? -val : val;

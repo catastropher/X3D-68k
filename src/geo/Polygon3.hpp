@@ -25,13 +25,12 @@ struct Plane;
 
 struct Polygon3
 {
-    Polygon3(Vec3* vertices_, int totalVertices_) :
-        vertices((Vec3fp*)vertices_),
-        totalVertices(totalVertices_) { }
+    Polygon3(Vec3fp* vertices_, int totalVertices_)
+        : vertices(vertices_),
+        totalVertices(totalVertices_)
+    {
 
-    Polygon3(Vec3fp* vertices_, int totalVertices_) :
-        vertices(vertices_),
-        totalVertices(totalVertices_) { }
+    }
         
     bool clipToPlane(const Plane& plane, Polygon3& dest) const;
     bool clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, int* edgeIds, int* edgeIdsDest) const;
@@ -61,18 +60,17 @@ public:
     InternalPolygon3() : Polygon3(internalVertices, X_POLYGON3_MAX_VERTS) { }
     
 private:
-    Vec3 internalVertices[X_POLYGON3_MAX_VERTS];
+    Vec3fp internalVertices[X_POLYGON3_MAX_VERTS];
 };
 
 struct LevelPolygon3 : Polygon3
 {
-    LevelPolygon3(Vec3* vertices_, int totalVertices_, int* edgeIds_)
-    : Polygon3(vertices_, totalVertices_),
-    edgeIds(edgeIds_) { }
-
     LevelPolygon3(Vec3fp* vertices_, int totalVertices_, int* edgeIds_)
-    : Polygon3(vertices_, totalVertices_),
-    edgeIds(edgeIds_) { } 
+        : Polygon3(vertices_, totalVertices_),
+        edgeIds(edgeIds_)
+    {
+
+    }
 
     int* edgeIds;
 };

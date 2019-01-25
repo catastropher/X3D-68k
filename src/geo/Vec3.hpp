@@ -97,6 +97,15 @@ struct Vec3Template
 
         return convert<T>(sqrtf(xx * xx + yy * yy + zz * zz));
     }
+
+    template<typename U>
+    Vec3Template<U> toVec3()
+    {
+        return Vec3Template<U>(
+            convert<U>(x),
+            convert<U>(y),
+            convert<U>(z));
+    }
     
     T x;
     T y;
@@ -104,6 +113,7 @@ struct Vec3Template
 };
 
 using Vec3fp = Vec3Template<fp>;
+using Vec3i = Vec3Template<int>;
 
 template<typename T, typename U>
 inline Vec3Template<T> operator*(const Vec3Template<T>& a, const U& b)
@@ -249,15 +259,6 @@ static inline Vec3 x_vec3_scale(const Vec3* v, x_fp16x16 scale)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Negates a 3D vector (flips its direction).
-/// @return -v
-////////////////////////////////////////////////////////////////////////////////
-static inline Vec3 x_vec3_neg(const Vec3* v)
-{
-    return Vec3(-v->x, -v->y, -v->z);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 /// Determines whether two 3D vectors are equal.
 /// @return a == b
 ////////////////////////////////////////////////////////////////////////////////
@@ -271,37 +272,9 @@ static inline x_fp16x16 x_vec3_dot(const Vec3* a, const Vec3* b)
     return x_fp16x16_mul(a->x, b->x) + x_fp16x16_mul(a->y, b->y) + x_fp16x16_mul(a->z, b->z);
 }
 
-
-static inline Vec3 x_vec3_cross(const Vec3* a, const Vec3* b)
-{
-    return Vec3(
-        x_fp16x16_mul(a->y, b->z) - x_fp16x16_mul(b->y, a->z),
-        x_fp16x16_mul(a->z, b->x) - x_fp16x16_mul(b->z, a->x),
-        x_fp16x16_mul(a->x, b->y) - x_fp16x16_mul(b->x, a->y)
-    );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Determines whether two 3D vectors are orthogonal (perpendicular) to each
-///     other.
-///
-/// @return a is perpendicular to b
-////////////////////////////////////////////////////////////////////////////////
-static inline bool x_vec3_is_orthogonal_to(const Vec3* a, const Vec3* b)
-{
-    return x_vec3_dot(a, b) == 0;
-}
-
-
 static inline x_fp16x16 x_vec3_length(const Vec3* v)
 {
     return x_sqrt(x_fp16x16_mul(v->x, v->x) + x_fp16x16_mul(v->y, v->y) + x_fp16x16_mul(v->z, v->z)) << 8;
-}
-
-
-static inline X_Vec3_float x_vec3_float_make(float x, float y, float z)
-{
-    return (X_Vec3_float) { x, y, z };
 }
 
 static inline X_Vec3_int x_vec3_to_vec3_int(const Vec3* src)
@@ -312,11 +285,6 @@ static inline X_Vec3_int x_vec3_to_vec3_int(const Vec3* src)
 static inline Vec3 x_vec3_int_to_vec3(const X_Vec3_int* src)
 {
     return Vec3(src->x << 16, src->y << 16, src->z << 16);
-}
-
-static inline Vec3 x_vec3_float_to_vec3_int(const X_Vec3_float* v)
-{
-    return (X_Vec3_int) { (int)v->x, (int)v->y, (int)v->z };
 }
 
 static inline Vec3 x_vec3_float_to_vec3(const X_Vec3_float* v)

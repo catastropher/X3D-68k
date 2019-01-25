@@ -136,7 +136,7 @@ void X_AE_Context::emitEdges(X_AE_Surface* surface, Vec2_fp16x16* v2d, int total
 
 bool projectAndClipBspPolygon(LevelPolygon3* poly, X_RenderContext* renderContext, BoundBoxFrustumFlags clipFlags, LevelPolygon2* dest, fp& closestZ)
 {
-    Vec3 clippedV[X_POLYGON3_MAX_VERTS];
+    Vec3fp clippedV[X_POLYGON3_MAX_VERTS];
     LevelPolygon3 clipped(clippedV, X_POLYGON3_MAX_VERTS, dest->edgeIds);
     
     if(clipFlags == X_BOUNDBOX_TOTALLY_INSIDE_FRUSTUM)

@@ -237,34 +237,44 @@ void x_bsplevel_cleanup(BspLevel* level)
     x_free(level->clipNodes);
 }
 
-X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node, X_BoundSphere* sphere, X_BspNode** nextNodeDest)
+X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node, BoundSphere* sphere, X_BspNode** nextNodeDest)
 {
     if(node->isLeaf())
+    {
         return nextNodeDest;
-    
-    Vec3fp sphereCenterTemp = MakeVec3fp(sphere->center);
+    }
 
-    x_fp16x16 dist = node->plane->plane.distanceTo(sphereCenterTemp).toFp16x16();
-    bool exploreFront = 1;
-    bool exploreBack = 1;
+    fp dist = node->plane->plane.distanceTo(sphere->center);
+    bool exploreFront = true;
+    bool exploreBack = true;
     
     if(dist > sphere->radius)
-        exploreBack = 0;
+    {
+        exploreBack = false;
+    }
     else if(dist < -sphere->radius)
-        exploreFront = 0;
+    {
+        exploreFront = false;
+    }
     else
+    {
         *nextNodeDest++ = node;
+    }
     
     if(exploreFront)
+    {
         nextNodeDest = x_bsplevel_find_nodes_intersecting_sphere_recursive(node->frontChild, sphere, nextNodeDest);
-    
+    }
+
     if(exploreBack)
+    {
         nextNodeDest = x_bsplevel_find_nodes_intersecting_sphere_recursive(node->backChild, sphere, nextNodeDest);
-    
+    }
+
     return nextNodeDest;
 }
 
-int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, X_BoundSphere* sphere, X_BspNode** dest)
+int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, BoundSphere* sphere, X_BspNode** dest)
 {
     return x_bsplevel_find_nodes_intersecting_sphere_recursive(x_bsplevel_get_root_node(level), sphere, dest) - dest;
 }

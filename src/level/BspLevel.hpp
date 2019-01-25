@@ -246,8 +246,8 @@ void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_T
 
 void x_bsplevel_mark_surfaces_light_is_close_to(BspLevel* level, const X_Light* light, int currentFrame);
 
-struct X_BoundSphere;
-int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, struct X_BoundSphere* sphere, X_BspNode** dest);
+struct BoundSphere;
+int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, struct BoundSphere* sphere, X_BspNode** dest);
 
 void x_bsplevel_render_submodels(BspLevel* level, struct X_RenderContext* renderContext);
 

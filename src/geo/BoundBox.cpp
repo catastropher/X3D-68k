@@ -23,11 +23,11 @@ BoundBoxPlaneFlags BoundBox::determinePlaneClipFlags(const Plane& plane) const
     int px = (plane.normal.x > 0 ? 1 : 0);
     int py = (plane.normal.y > 0 ? 1 : 0);
     int pz = (plane.normal.z > 0 ? 1 : 0);
-    
-    Vec3 furthestPointAlongNormal = Vec3(v[px].x, v[py].y, v[pz].z);
-    Vec3fp furthestPointAlongNormalTemp = MakeVec3fp(furthestPointAlongNormal);
 
-    if(!plane.pointOnNormalFacingSide(furthestPointAlongNormalTemp))
+    // FIXME: this only works because the bound box is really storing a Vec3fp as a Vec3i
+    Vec3fp furthestPointAlongNormal = Vec3fp(v[px].x, v[py].y, v[pz].z);
+
+    if(!plane.pointOnNormalFacingSide(furthestPointAlongNormal))
     {
         return X_BOUNDBOX_OUTSIDE_PLANE;
     }
@@ -78,7 +78,7 @@ BoundBoxFrustumFlags BoundBox::determineFrustumClipFlags(const X_Frustum& frustu
 template<>
 void BoundBox::print() const
 {
-    x_vec3_fp16x16_print(v + 0, "Mins");
-    x_vec3_fp16x16_print(v + 1, "Maxs");
+    v[0].print("Min");
+    v[1].print("Max");
 }
 

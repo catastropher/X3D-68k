@@ -36,3 +36,15 @@ To convert(From from)
     return std::move(temp);
 }
 
+template<>
+inline void convert(int& from, float& to)
+{
+    to = from;
+}
+
+template<>
+inline void convert(float& from, int& to)
+{
+    to = from;
+}
+

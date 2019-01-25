@@ -17,9 +17,15 @@
 
 #include "Vec3.hpp"
 
-typedef struct X_BoundSphere
+struct BoundSphere
 {
-    Vec3 center;
-    x_fp16x16 radius;
-} X_BoundSphere;
+    BoundSphere(const Vec3fp& center, fp radius)
+    {
+        this->center = center;
+        this->radius = radius;
+    }
+
+    Vec3fp center;
+    fp radius;
+};
 
