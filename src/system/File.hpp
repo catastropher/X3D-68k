@@ -77,7 +77,7 @@ void x_file_read_vec3(X_File* file, Vec3* dest);
 void x_file_read_vec3_float(X_File* file, X_Vec3_float* dest);
 void x_file_read_vec3_float_as_vec3(X_File* file, Vec3* dest);
 
-void x_file_read_vec2(X_File* file, X_Vec2* dest);
+void x_file_read_vec2(X_File* file, Vec2* dest);
 void x_file_read_mat4x4(X_File* file, struct Mat4x4* mat);
 
 bool x_file_open_writing(X_File* file, const char* fileName);

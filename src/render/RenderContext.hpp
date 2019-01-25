@@ -20,19 +20,19 @@
 
 struct X_EngineContext;
 struct X_Renderer;
-struct X_CameraObject;
+struct CameraObject;
 struct X_Frustum;
 struct X_Texture;
 struct Mat4x4;
 struct BspLevel;
 struct BspModel;
-struct X_Screen;
+struct Screen;
 
 typedef struct X_RenderContext
 {
     X_Renderer* renderer;
-    X_CameraObject* cam;
-    X_Screen* screen;
+    CameraObject* cam;
+    Screen* screen;
     X_Texture* canvas;
     x_fp0x16* zbuf;
     X_Frustum* viewFrustum;

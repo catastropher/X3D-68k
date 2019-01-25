@@ -36,7 +36,7 @@ void Viewport::initMipDistances()
     }
 }
 
-void Viewport::init(X_Vec2 screenPos_, int w_, int h_, fp fieldOfView)
+void Viewport::init(Vec2 screenPos_, int w_, int h_, fp fieldOfView)
 {
     screenPos = screenPos_;
     w = w_;
@@ -115,7 +115,7 @@ fp recip(fp x)
     return sum;
 }
 
-void Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
+void Viewport::project(const Vec3fp& src, Vec2_fp16x16& dest)
 {
 #if 0
     Vec3fp low(0, 0, 0);
@@ -249,7 +249,7 @@ void Viewport::project(const Vec3fp& src, X_Vec2_fp16x16& dest)
     }
 }
 
-void Viewport::clamp(X_Vec2& v)
+void Viewport::clamp(Vec2& v)
 {
     v.x = std::max(v.x, screenPos.x);
     v.x = std::min(v.x, screenPos.x + w - 1);
@@ -258,7 +258,7 @@ void Viewport::clamp(X_Vec2& v)
     v.y = std::min(v.y, screenPos.y + h - 1);
 }
 
-void Viewport::clampfp(X_Vec2_fp16x16& v)
+void Viewport::clampfp(Vec2_fp16x16& v)
 {
     fp x = fp(v.x);
     fp y = fp(v.y);
@@ -275,7 +275,7 @@ void Viewport::clampfp(X_Vec2_fp16x16& v)
 
 #include "geo/Ray3.hpp"
 
-void Viewport::projectBisect(const Vec3fp& src, X_Vec2_fp16x16& dest)
+void Viewport::projectBisect(const Vec3fp& src, Vec2_fp16x16& dest)
 {
 #if 0
     fp dist = fp::fromFloat(1.0);

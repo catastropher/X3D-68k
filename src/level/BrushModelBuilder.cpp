@@ -19,7 +19,7 @@
 #include "math/Trig.hpp"
 #include "render/ActiveEdge.hpp"
 
-static void buildFace(X_BspSurface& face, int firstEdgeId, int totalEdges, X_BspPlane* plane)
+static void buildFace(BspSurface& face, int firstEdgeId, int totalEdges, BspPlane* plane)
 {
     for(int i = 0; i < 4; ++i)
     {
@@ -55,19 +55,19 @@ void BrushModelBuilder::build()
 void BrushModelBuilder::allocateMemory()
 {
     int totalVertices = options.sidesInBase * 2;
-    dest.vertices = Zone::alloc<X_BspVertex>(totalVertices);
+    dest.vertices = Zone::alloc<BspVertex>(totalVertices);
     
     int totalEdges = options.sidesInBase * 3 + 1;   // Need an extra edge for edge 0
-    dest.edges = Zone::alloc<X_BspEdge>(totalEdges);
+    dest.edges = Zone::alloc<BspEdge>(totalEdges);
     dest.surfaceEdgeIds = Zone::alloc<int>(totalEdges);
     
-    dest.faces = Zone::alloc<X_BspSurface>(totalSurfaces);
-    dest.planes = Zone::alloc<X_BspPlane>(totalSurfaces);
+    dest.faces = Zone::alloc<BspSurface>(totalSurfaces);
+    dest.planes = Zone::alloc<BspPlane>(totalSurfaces);
     
     nodes = Zone::alloc<X_BspNode>(totalSurfaces);
     leaf = Zone::alloc<X_BspLeaf>();
     
-    markSurfaces = Zone::alloc<X_BspSurface*>(totalSurfaces);
+    markSurfaces = Zone::alloc<BspSurface*>(totalSurfaces);
 }
 
 void BrushModelBuilder::buildGeometry()

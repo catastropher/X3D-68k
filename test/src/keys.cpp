@@ -83,7 +83,7 @@ bool handle_console(X_EngineContext* engineContext)
     return 0;
 }
 
-void mouseLook(Player* player, X_Vec2_fp16x16 angleOffset, fp timeDelta)
+void mouseLook(Player* player, Vec2_fp16x16 angleOffset, fp timeDelta)
 {
     player->angleX += fp(angleOffset.x);
     player->angleY += fp(angleOffset.y);

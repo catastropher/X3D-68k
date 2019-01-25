@@ -93,7 +93,7 @@ struct Prism
     int edges[128][2];
     int totalEdges;
     
-    X_BspVertex* vertices;
+    BspVertex* vertices;
     
     Face faces[32];
     int totalFaces;
@@ -129,6 +129,6 @@ private:
     
     X_BspLeaf* leaf;
     X_BspNode* nodes;
-    X_BspSurface** markSurfaces;
+    BspSurface** markSurfaces;
     Prism prism;
 };

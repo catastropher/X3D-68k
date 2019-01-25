@@ -332,7 +332,7 @@ void x_file_read_vec3_float_as_vec3(X_File* file, Vec3* dest)
     *dest = x_vec3_float_to_vec3(&v);
 }
 
-void x_file_read_vec2(X_File* file, X_Vec2* dest)
+void x_file_read_vec2(X_File* file, Vec2* dest)
 {
     dest->x = x_file_read_le_int32(file);
     dest->y = x_file_read_le_int32(file);

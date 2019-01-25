@@ -126,7 +126,7 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
         X_Vec3_int v[3];
         Polygon3 poly(v, 3);
         X_EntityTriangle* tri = model->triangles + i;
-        X_Vec2 textureCoords[3];
+        Vec2 textureCoords[3];
         
         for(int j = 0; j < 3; ++j)
         {

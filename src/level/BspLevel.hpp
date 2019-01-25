@@ -33,6 +33,8 @@
 struct X_RenderContext;
 struct X_AE_Edge;
 struct Portal;
+struct X_BspLeaf;
+struct BspModel;
 
 typedef int X_BspVertexId;
 typedef int X_BspEdgeId;
@@ -40,39 +42,38 @@ typedef int X_BspLeafId;
 
 #define X_BSPTEXTURE_MIP_LEVELS 4
 
-typedef struct X_BspTexture
+struct BspTexture
 {
     char name[16];
     unsigned int w;
     unsigned int h;
     unsigned char* mipTexels[X_BSPTEXTURE_MIP_LEVELS];
-} X_BspTexture;
+};
 
-typedef struct X_BspFaceTexture
+struct BspFaceTexture
 {
     Vec3fp uOrientation;    // Orientation of texture in 3D space
     Vec3fp vOrientation;
     x_fp16x16 uOffset;
     x_fp16x16 vOffset;
-    X_BspTexture* texture;
+    BspTexture* texture;
     int flags;
-} X_BspFaceTexture;
+};
 
 typedef struct X_BspBoundRect
 {
-    X_Vec2 v[2];
+    Vec2 v[2];
 } X_BspBoundRect;
 
-typedef struct X_BspPlane
+struct BspPlane
 {
     Plane plane;
-} X_BspPlane;
+};
 
-typedef struct X_BspVertex
+struct BspVertex
 {
     Vec3fp v;
-    int cacheOffset;
-} X_BspVertex;
+};
 
 typedef enum X_BspSurfaceFlags
 {
@@ -81,7 +82,7 @@ typedef enum X_BspSurfaceFlags
 
 #define X_BSPSURFACE_MAX_LIGHTMAPS 4
 
-struct X_BspSurface
+struct BspSurface
 {
     void calculatePlaneInViewSpace(const Vec3fp& camPos, Mat4x4* viewMatrix, Vec3fp& pointOnSurface, Plane* dest)
     {
@@ -94,7 +95,7 @@ struct X_BspSurface
     
     int id;     // Just for debugging
     int lastVisibleFrame;
-    X_BspPlane* plane;
+    BspPlane* plane;
     
     int firstEdgeId;
     int totalEdges;
@@ -102,10 +103,10 @@ struct X_BspSurface
     X_BspSurfaceFlags flags;
     
     X_Color color;
-    X_BspFaceTexture* faceTexture;
+    BspFaceTexture* faceTexture;
     
-    X_Vec2 textureMinCoord;
-    X_Vec2 textureExtent;
+    Vec2 textureMinCoord;
+    Vec2 textureExtent;
     
     unsigned char* lightmapData;
     unsigned char lightmapStyles[X_BSPSURFACE_MAX_LIGHTMAPS];
@@ -116,16 +117,11 @@ struct X_BspSurface
     X_CacheEntry cachedSurfaces[X_BSPTEXTURE_MIP_LEVELS];   // Cached surface for each mipmap level
 };
 
-typedef struct X_BspEdge
+struct BspEdge
 {
     unsigned short v[2];
     unsigned int cachedEdgeOffset;
-} X_BspEdge;
-
-
-
-struct X_BspLeaf;
-struct BspModel;
+};
 
 typedef enum X_BspLevelFlags
 {
@@ -160,7 +156,7 @@ struct BspLevel
 
     X_BspLeaf* findLeafPointIsIn(Vec3fp& point);
 
-    void getLevelPolygon(X_BspSurface* surface, Vec3fp* modelOrigin, LevelPolygon3* dest)
+    void getLevelPolygon(BspSurface* surface, Vec3fp* modelOrigin, LevelPolygon3* dest)
     {
         dest->edgeIds = surfaceEdgeIds + surface->firstEdgeId;
         dest->totalVertices = surface->totalEdges;
@@ -188,16 +184,16 @@ struct BspLevel
     X_BspLevelFlags flags;
     char name[X_BSPLEVEL_MAX_NAME_LENGTH];
     
-    X_BspVertex* vertices;
+    BspVertex* vertices;
     int totalVertices;
     
-    X_BspEdge* edges;
+    BspEdge* edges;
     int totalEdges;
     
-    X_BspSurface* surfaces;
+    BspSurface* surfaces;
     int totalSurfaces;
     
-    X_BspSurface** markSurfaces;
+    BspSurface** markSurfaces;
     int totalMarkSurfaces;
     
     X_BspLeaf* leaves;
@@ -214,17 +210,17 @@ struct BspLevel
     BspModel* models;
     int totalModels;
     
-    X_BspPlane* planes;
+    BspPlane* planes;
     int totalPlanes;
     
     int* surfaceEdgeIds;
     int totalSurfaceEdgeIds;
     
     X_Color* textureTexels;
-    X_BspTexture* textures;
+    BspTexture* textures;
     int totalTextures;
     
-    X_BspFaceTexture* faceTextures;
+    BspFaceTexture* faceTextures;
     int totalFaceTextures;
     
     PotentiallyVisibleSet pvs;
@@ -299,12 +295,12 @@ static inline BspModel* x_bsplevel_get_model(BspLevel* level, int modelId)
 
 //======================== surface ========================
 
-static inline bool x_bspsurface_is_visible_this_frame(const X_BspSurface* surface, int currentFrame)
+static inline bool x_bspsurface_is_visible_this_frame(const BspSurface* surface, int currentFrame)
 {
     return surface->lastVisibleFrame == currentFrame;
 }
 
-static inline bool x_bspsurface_plane_is_flipped(const X_BspSurface* surface)
+static inline bool x_bspsurface_plane_is_flipped(const BspSurface* surface)
 {
     return surface->flags & X_BSPSURFACE_FLIPPED;
 }
@@ -327,7 +323,7 @@ static inline void x_bspboundrect_init(X_BspBoundRect* rect)
     rect->v[1].y = -0x7FFFFFFF;
 }
 
-static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, X_Vec2 point)
+static inline void x_bspboundrect_add_point(X_BspBoundRect* rect, Vec2 point)
 {
     rect->v[0].x = X_MIN(rect->v[0].x, point.x);
     rect->v[0].y = X_MIN(rect->v[0].y, point.y);

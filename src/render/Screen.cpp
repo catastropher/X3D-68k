@@ -16,7 +16,7 @@
 #include "Screen.hpp"
 #include "object/CameraObject.hpp"
 
-void X_Screen::attachCamera(X_CameraObject* camera)
+void Screen::attachCamera(CameraObject* camera)
 {
     camera->nextInCameraList = NULL;
     
@@ -26,7 +26,7 @@ void X_Screen::attachCamera(X_CameraObject* camera)
         return;
     }
     
-    X_CameraObject* currentCam = cameraListHead;
+    CameraObject* currentCam = cameraListHead;
     while(currentCam->nextInCameraList)
     {
         currentCam = currentCam->nextInCameraList;
@@ -35,9 +35,9 @@ void X_Screen::attachCamera(X_CameraObject* camera)
     currentCam->nextInCameraList = camera;
 }
 
-void X_Screen::detachCamera(X_CameraObject* camera)
+void Screen::detachCamera(CameraObject* camera)
 {
-    X_CameraObject* currentCam = cameraListHead;
+    CameraObject* currentCam = cameraListHead;
     while(currentCam && currentCam->nextInCameraList != camera)
     {
         currentCam = currentCam->nextInCameraList;
@@ -52,7 +52,7 @@ void X_Screen::detachCamera(X_CameraObject* camera)
     currentCam->nextInCameraList = currentCam->nextInCameraList->nextInCameraList;
 }
 
-void X_Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
+void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
 {
     canvas.resize(newW, newH);
     
@@ -60,7 +60,7 @@ void X_Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
     zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
     
     // Broadcast to cameras the change so they can update their viewports
-    for(X_CameraObject* cam = cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    for(CameraObject* cam = cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
         if(cam->screenResizeCallback != nullptr)
         {

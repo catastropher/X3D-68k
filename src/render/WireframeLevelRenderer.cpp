@@ -76,7 +76,7 @@ void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
         
         for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
         {
-            X_BspSurface* s = leaf->firstMarkSurface[i];
+            BspSurface* s = leaf->firstMarkSurface[i];
             
             for(int j = 0; j < s->totalEdges; ++j)
             {
@@ -87,7 +87,7 @@ void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
                     continue;
                 }
                 
-                X_BspEdge* edge = currentModel->edges + edgeId;
+                BspEdge* edge = currentModel->edges + edgeId;
                 
                 Ray3 ray(
                     currentModel->vertices[edge->v[0]].v,

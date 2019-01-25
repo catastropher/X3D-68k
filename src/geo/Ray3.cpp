@@ -96,7 +96,7 @@ void Ray3::render(const X_RenderContext& renderContext, X_Color color) const
     //     return;
     // }
     
-    X_Vec2 projected[2];
+    Vec2 projected[2];
     for(int i = 0; i < 2; ++i)
     {
         renderContext.cam->viewport.project(transformed.v[i], projected[i]);
@@ -128,7 +128,7 @@ void Ray3::renderShaded(const X_RenderContext& renderContext, X_Color color, fp 
         return;
     }
     
-    X_Vec2 projected[2];
+    Vec2 projected[2];
     fp intensity[2];
 
     for(int i = 0; i < 2; ++i)

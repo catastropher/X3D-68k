@@ -42,7 +42,7 @@ static inline void init_object_factory(X_EngineContext* context)
 
 static inline void init_screen(X_EngineContext* context, X_Config* config)
 {
-    context->screen = new X_Screen(
+    context->screen = new Screen(
         config->screen->w,
         config->screen->h,
         config->screen->screenHandlers);
@@ -149,7 +149,7 @@ X_Time x_enginecontext_get_time(const X_EngineContext* context)
     return context->frameStart;
 }
 
-void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, X_CameraObject* cam, X_RenderContext* dest)
+void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, CameraObject* cam, X_RenderContext* dest)
 {
     dest->cam = cam;
     dest->camPos = x_cameraobject_get_position(cam);

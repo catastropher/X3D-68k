@@ -37,11 +37,11 @@ void X_BspNode::markAncestorsAsVisible(int currentFrame)
 
 void X_BspLeaf::markSurfacesAsVisible(int currentFrame, int bspKey_)
 {
-    X_BspSurface** nextSurface = firstMarkSurface;
+    BspSurface** nextSurface = firstMarkSurface;
     
     for(int i = 0; i < totalMarkSurfaces; ++i)
     {
-        X_BspSurface* surface = *nextSurface;        
+        BspSurface* surface = *nextSurface;        
         surface->lastVisibleFrame = currentFrame;
         ++nextSurface;
     }
@@ -116,7 +116,7 @@ void X_BspNode::renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFl
     
     for(int i = 0; i < totalSurfaces; ++i)
     {
-        X_BspSurface* surface = firstSurface + i;
+        BspSurface* surface = firstSurface + i;
         
         if(!x_bspsurface_is_visible_this_frame(surface, renderContext.currentFrame))
             continue;

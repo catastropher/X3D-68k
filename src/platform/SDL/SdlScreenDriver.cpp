@@ -55,7 +55,7 @@ void SdlScreenDriver::cleanup()
     SDL_SetVideoMode(nativeResolutionW, nativeResolutionH, 32, 0);
 }
 
-void SdlScreenDriver::update(X_Screen* screen)
+void SdlScreenDriver::update(Screen* screen)
 {
     x_texture_to_sdl_surface(&screen->canvas, screen->palette, surface);
     SDL_Flip(surface);

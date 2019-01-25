@@ -22,7 +22,7 @@ static void draw_fps(X_EngineContext* context)
     char fpsStr[20];
     sprintf(fpsStr, "%d", context->estimatedFramesPerSecond.toInt());
     
-    X_Vec2 pos = x_vec2_make(
+    Vec2 pos = Vec2(
         context->getScreen()->getW() - context->getMainFont()->calcWidthOfStr(fpsStr),
         0);
     
@@ -62,7 +62,7 @@ static void update_dynamic_lights(X_EngineContext* engineContext)
 {
     bool down = x_keystate_key_down(engineContext->getKeyState(), (X_Key)'q');
     static bool lastDown;
-    X_CameraObject* cam = engineContext->getScreen()->cameraListHead;
+    CameraObject* cam = engineContext->getScreen()->cameraListHead;
     
     if(down && !lastDown)
     {

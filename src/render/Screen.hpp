@@ -21,27 +21,27 @@
 
 #define X_ZBUF_FURTHEST_VALUE 0
 
-class X_Screen;
+class Screen;
 struct X_EngineContext;
-struct X_CameraObject;
+struct CameraObject;
 
 struct X_Font;
 
-typedef struct X_ScreenEventHandlers
+struct ScreenEventHandlers
 {
     void* userData;         // Pointer to user-defined data passed to screen updates
-    void (*displayFrame)(struct X_Screen* screen, void* userData);
+    void (*displayFrame)(struct Screen* screen, void* userData);
     void (*restartVideo)(struct X_EngineContext* context, void* userData);
     void (*cleanupVideo)(struct X_EngineContext* context, void* userData);
     bool (*isValidResolution)(int w, int h);
-} X_ScreenEventHandlers;
+};
 
 
 
-class X_Screen
+class Screen
 {
 public:
-    X_Screen(int w, int h, X_ScreenEventHandlers& handlers)
+    Screen(int w, int h, ScreenEventHandlers& handlers)
     {
         canvas.resize(w, h);
         zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
@@ -70,16 +70,16 @@ public:
         memset(zbuf, X_ZBUF_FURTHEST_VALUE, calculateZBufSize());
     }
     
-    X_Vec2 getCenter()
+    Vec2 getCenter()
     {
-        return x_vec2_make(getW() / 2, getH() / 2);
+        return Vec2(getW() / 2, getH() / 2);
     }
     
-    void attachCamera(X_CameraObject* camera);
-    void detachCamera(X_CameraObject* camera);
+    void attachCamera(CameraObject* camera);
+    void detachCamera(CameraObject* camera);
     void restartVideo(int newW, int newH, x_fp16x16 newFov);
     
-    ~X_Screen()
+    ~Screen()
     {
         x_free(zbuf);
     }
@@ -87,9 +87,9 @@ public:
     X_Texture canvas;
     x_fp0x16* zbuf;
     
-    struct X_CameraObject* cameraListHead;
+    struct CameraObject* cameraListHead;
     const X_Palette* palette;
-    X_ScreenEventHandlers handlers;
+    ScreenEventHandlers handlers;
     
 private:
     int calculateZBufSize() const

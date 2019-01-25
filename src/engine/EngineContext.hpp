@@ -47,7 +47,7 @@ typedef struct X_EngineContext
     }
     
     X_ObjectFactory* getGameObjectFactory() const { return gameObjectFactory; }
-    X_Screen* getScreen() const { return screen; }
+    Screen* getScreen() const { return screen; }
     Console* getConsole() const { return console; }
     X_Font* getMainFont() const { return mainFont; }
     X_KeyState* getKeyState() const { return keystate; }
@@ -72,7 +72,7 @@ typedef struct X_EngineContext
     
     void* userData;
 
-    X_Screen* screen;   // FIXME: just exposing to set up DI
+    Screen* screen;   // FIXME: just exposing to set up DI
     X_Renderer* renderer;
     
 private:
@@ -90,7 +90,7 @@ private:
 void x_enginecontext_init(X_EngineContext* context, X_Config* config);
 void x_enginecontext_cleanup(X_EngineContext* context);
 X_Time x_enginecontext_get_time(const X_EngineContext* context);
-void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, X_CameraObject* cam, struct X_RenderContext* dest);
+void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, CameraObject* cam, struct X_RenderContext* dest);
 
 void x_enginecontext_restart_video(X_EngineContext* context);
 

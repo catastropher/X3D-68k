@@ -45,7 +45,7 @@ static void cmd_res(X_EngineContext* context, int argc, char* argv[])
         return;
     }
     
-    X_Screen* screen = context->getScreen();
+    Screen* screen = context->getScreen();
     
     if(screen->handlers.isValidResolution == NULL)
         x_system_error("No screen valid resolution checking callback");
@@ -111,8 +111,8 @@ static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
     // Render a frame so we can get the span data
     //x_engine_render_frame(context);
     
-    X_Screen* screen = context->getScreen();
-    X_Vec2 center = screen->getCenter();
+    Screen* screen = context->getScreen();
+    Vec2 center = screen->getCenter();
     
     int surfaceId = x_ae_context_find_surface_point_is_in(&context->getRenderer()->activeEdgeContext, center.x, center.y, context->getCurrentLevel());
     
@@ -147,7 +147,7 @@ static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
     return;
 #endif
     
-    X_CameraObject* cam = context->getScreen()->cameraListHead;
+    CameraObject* cam = context->getScreen()->cameraListHead;
     int w;
     int h;
     
@@ -165,7 +165,7 @@ static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
     }
     
     // FIXME: don't hardcode angle
-    cam->viewport.init(x_vec2_make(0, 0), w, h, fp(X_ANG_60));
+    cam->viewport.init(Vec2(0, 0), w, h, fp(X_ANG_60));
 }
 
 #define MAX_SURFACES 300
@@ -230,7 +230,7 @@ static void x_renderer_console_cmds(Console* console)
     x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
 }
 
-static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen, int fov)
+static void x_renderer_set_default_values(X_Renderer* renderer, Screen* screen, int fov)
 {
     renderer->screenW = screen->getW();
     renderer->screenH = screen->getH();
@@ -242,7 +242,7 @@ static void x_renderer_set_default_values(X_Renderer* renderer, X_Screen* screen
     renderer->maxFramesPerSecond = 60;
 }
 
-void x_renderer_init(X_Renderer* renderer, Console* console, X_Screen* screen, int fov)
+void x_renderer_init(X_Renderer* renderer, Console* console, Screen* screen, int fov)
 {
     x_renderer_console_cmds(console);
     x_renderer_init_console_vars(renderer, console);
@@ -260,7 +260,7 @@ void x_renderer_cleanup(X_Renderer* renderer)
     x_free(renderer->colorMap);
 }
 
-void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen)
+void x_renderer_restart_video(X_Renderer* renderer, Screen* screen)
 {
     // FIXME: need to reconstruct object
     
@@ -347,7 +347,7 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
         scheduledPortal->cam.viewMatrix = *renderContext.viewMatrix; //otherSide->orientation;
         scheduledPortal->cam.position = otherSide->center;
 
-        X_CameraObject& cam = scheduledPortal->cam;
+        CameraObject& cam = scheduledPortal->cam;
 
         createCameraFromPerspectiveOfPortal(renderContext, *portal, cam);
 
@@ -364,7 +364,7 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
     }
 }
 
-void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& dest)
+void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& dest)
 {
     calculateCameraPositionOnOtherSideOfPortal(renderContext, portal, dest);
     calculateCameraViewMatrix(renderContext, portal, dest);
@@ -375,7 +375,7 @@ void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderCont
     dest.updateFrustum();
 }
 
-void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
+void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& cam)
 {
     cam.position = portal.transformPointToOtherSide(renderContext.cam->position);
 
@@ -383,7 +383,7 @@ void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& ren
     cam.overrideBspLeaf(leafId, renderContext.level);
 }
 
-void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam)
+void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, CameraObject& cam)
 {
     cam.viewMatrix = *renderContext.viewMatrix * portal.transformToOtherSide;
 
@@ -418,7 +418,7 @@ void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_Engin
     renderContext->renderer->wireframe = wireframe;
 }
 
-void X_Renderer::renderCamera(X_CameraObject* cam, X_EngineContext* engineContext)
+void X_Renderer::renderCamera(CameraObject* cam, X_EngineContext* engineContext)
 {
     X_RenderContext renderContext;
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
@@ -475,7 +475,7 @@ void x_renderer_render_frame(X_EngineContext* engineContext)
         return;
     }
     
-    for(X_CameraObject* cam = engineContext->getScreen()->cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    for(CameraObject* cam = engineContext->getScreen()->cameraListHead; cam != NULL; cam = cam->nextInCameraList)
     {
         engineContext->getRenderer()->renderCamera(cam, engineContext);
     }

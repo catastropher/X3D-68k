@@ -27,9 +27,9 @@ typedef enum X_MouseButton
 
 typedef struct X_MouseState
 {
-    X_Vec2 pos;
-    X_Screen* screen;
-    X_Vec2 offset;
+    Vec2 pos;
+    Screen* screen;
+    Vec2 offset;
     
     bool buttonDown[2];
     bool buttonPressed[2];
@@ -43,11 +43,11 @@ typedef struct X_MouseState
 
 struct Console;
 
-void x_mousestate_init(X_MouseState* state, struct Console* console, X_Screen* screen);
-void x_mousestate_set_pos(X_MouseState* state, X_Vec2 pos);
+void x_mousestate_init(X_MouseState* state, struct Console* console, Screen* screen);
+void x_mousestate_set_pos(X_MouseState* state, Vec2 pos);
 void x_mousestate_show_cursor(X_MouseState* state, bool showCursor);
-void x_mousestate_update_pos(X_MouseState* state, X_Vec2 pos);
-X_Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(X_MouseState* state);
+void x_mousestate_update_pos(X_MouseState* state, Vec2 pos);
+Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(X_MouseState* state);
 
 static inline void x_mousestate_send_button_press(X_MouseState* state, X_MouseButton button)
 {
@@ -72,7 +72,7 @@ static inline bool x_mousestate_button_pressed(X_MouseState* state, X_MouseButto
     return wasPressed;
 }
 
-static inline X_Vec2 x_mousestate_pos(X_MouseState* state)
+static inline Vec2 x_mousestate_pos(X_MouseState* state)
 {
     return state->pos;
 }

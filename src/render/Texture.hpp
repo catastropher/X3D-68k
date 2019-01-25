@@ -64,18 +64,18 @@ public:
         flags &= (~TEXTURE_ALLOCED);
     }
 
-    int texelIndex(X_Vec2i pos) const
+    int texelIndex(Vec2i pos) const
         { return pos.y * w + pos.x; }
 
     X_Color* getRow(int row) const
         { return texels + row * w; }
 
-    void setTexel(X_Vec2i pos, X_Color color)
+    void setTexel(Vec2i pos, X_Color color)
     {
         texels[texelIndex(pos)] = color;
     }
 
-    X_Color getTexel(X_Vec2i pos) const
+    X_Color getTexel(Vec2i pos) const
         { return texels[texelIndex(pos)]; }
 
     void resize(int newW, int newH)
@@ -99,15 +99,15 @@ public:
     bool saveToFile(const char* fileName);
     bool loadFromFile(const char* fileName);
 
-    void clampVec2i(X_Vec2i& v);
-    void drawLine(X_Vec2i start, X_Vec2i end, X_Color color);
-    void drawLineShaded(X_Vec2i start, X_Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable);
-    void blit(const X_Texture& tex, X_Vec2i pos);
-    void drawChar(int c, const X_Font& font, X_Vec2i pos);
-    void drawStr(const char* str, const X_Font& font, X_Vec2i pos);
-    void fillRect(X_Vec2i topLeft, X_Vec2i bottomRight, X_Color color);
+    void clampVec2i(Vec2i& v);
+    void drawLine(Vec2i start, Vec2i end, X_Color color);
+    void drawLineShaded(Vec2i start, Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable);
+    void blit(const X_Texture& tex, Vec2i pos);
+    void drawChar(int c, const X_Font& font, Vec2i pos);
+    void drawStr(const char* str, const X_Font& font, Vec2i pos);
+    void fillRect(Vec2i topLeft, Vec2i bottomRight, X_Color color);
     void fill(X_Color color);
-    void drawDecal(X_Texture& decal, X_Vec2i pos, X_Vec2fp& uOrientation, X_Vec2fp& vOrientation, X_Color transparency);
+    void drawDecal(X_Texture& decal, Vec2i pos, Vec2fp& uOrientation, Vec2fp& vOrientation, X_Color transparency);
 
     ~X_Texture()
     {

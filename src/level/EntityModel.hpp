@@ -32,7 +32,7 @@ typedef struct X_EntitySkin
 
 typedef struct X_EntityTextureCoord
 {
-    X_Vec2 coord;
+    Vec2 coord;
     bool onSeam;
 } X_EntityTextureCoord;
 

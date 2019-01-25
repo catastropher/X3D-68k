@@ -48,7 +48,7 @@ static void register_vars(X_MouseState* state, Console* console)
     x_console_register_var(console, &state->ySpeed, "mouse.yspeed", X_CONSOLEVAR_FP16X16, "1.0'", 1);
 }
 
-void x_mousestate_init(X_MouseState* state, Console* console, X_Screen* screen)
+void x_mousestate_init(X_MouseState* state, Console* console, Screen* screen)
 {
     state->screen = screen;
     state->mouseLook = 0;
@@ -58,7 +58,7 @@ void x_mousestate_init(X_MouseState* state, Console* console, X_Screen* screen)
     register_cmds(console);
 }
 
-void x_mousestate_set_pos(X_MouseState* state, X_Vec2 pos)
+void x_mousestate_set_pos(X_MouseState* state, Vec2 pos)
 {
     x_platform_mouse_set_position(pos);
     state->pos = pos;
@@ -69,20 +69,20 @@ void x_mousestate_show_cursor(X_MouseState* state, bool showCursor)
     x_platform_mouse_show_cursor(showCursor);
 }
 
-void x_mousestate_update_pos(X_MouseState* state, X_Vec2 pos)
+void x_mousestate_update_pos(X_MouseState* state, Vec2 pos)
 {
     state->pos = pos;
     
     if(!state->mouseLook)
         return;
     
-    X_Vec2 center = state->screen->getCenter();
-    state->offset = x_vec2_sub(&pos, &center);
+    Vec2 center = state->screen->getCenter();
+    state->offset = pos - center;
     
     x_mousestate_set_pos(state, center);
 }
 
-X_Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(X_MouseState* state)
+Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(X_MouseState* state)
 {
     x_fp16x16 baseSpeed = x_fp16x16_from_float(0.1);
     x_fp16x16 dx = x_fp16x16_mul(baseSpeed, state->xSpeed) * state->offset.x;
@@ -91,6 +91,6 @@ X_Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(X_MouseState* state)
     if(state->invert)
         dy = -dy;
     
-    return x_vec2_make(dy, -dx);
+    return Vec2(dy, -dx);
 }
 

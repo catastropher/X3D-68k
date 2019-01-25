@@ -111,7 +111,7 @@ private:
         strncpy(buf, str, MaxLength);
 
         // Always append a null terminator just to be safe
-        str[MaxLength - 1] = '\0';
+        buf[MaxLength - 1] = '\0';
     }
 
     char buf[MaxLength];

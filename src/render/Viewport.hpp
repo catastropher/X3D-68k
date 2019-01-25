@@ -22,13 +22,13 @@
 class Viewport
 {
 public:
-    void init(X_Vec2 screenPos, int w, int h, fp fieldOfView);
+    void init(Vec2 screenPos, int w, int h, fp fieldOfView);
     void updateFrustum(const Vec3fp& camPos, const Vec3fp& forward, const Vec3fp& right, const Vec3fp& up);
-    void project(const Vec3fp& src, X_Vec2_fp16x16& dest);
-    void clamp(X_Vec2& v);
-    void clampfp(X_Vec2_fp16x16& v);
+    void project(const Vec3fp& src, Vec2_fp16x16& dest);
+    void clamp(Vec2& v);
+    void clampfp(Vec2_fp16x16& v);
 
-    void projectBisect(const Vec3fp& src, X_Vec2_fp16x16& dest);
+    void projectBisect(const Vec3fp& src, Vec2_fp16x16& dest);
 
     int closestMipLevelForZ(fp z)
     {
@@ -41,7 +41,7 @@ public:
         return 3;
     }
 
-    X_Vec2 screenPos;
+    Vec2 screenPos;
     int w;
     int h;
     int distToNearPlane;

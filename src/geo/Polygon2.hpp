@@ -19,17 +19,17 @@
 
 struct Polygon2
 {
-    Polygon2(X_Vec2* vertices_, int totalVertices_) :
+    Polygon2(Vec2* vertices_, int totalVertices_) :
         vertices(vertices_),
         totalVertices(totalVertices_) { }
     
-    X_Vec2* vertices;
+    Vec2* vertices;
     int totalVertices;
 };
 
 struct LevelPolygon2 : Polygon2
 {
-    LevelPolygon2(X_Vec2* vertices_, int totalVertices_, int* edgeIds_)
+    LevelPolygon2(Vec2* vertices_, int totalVertices_, int* edgeIds_)
     : Polygon2(vertices_, totalVertices_),
     edgeIds(edgeIds_) { }
     

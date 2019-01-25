@@ -116,10 +116,10 @@ void x_sdl_handle_mouse(X_EngineContext* engineContext)
     int x, y;
     SDL_GetMouseState(&x, &y);
     
-    x_mousestate_update_pos(state, x_vec2_make(x, y));
+    x_mousestate_update_pos(state, Vec2(x, y));
 }
 
-void x_sdl_mouse_set_position(X_Vec2 pos)
+void x_sdl_mouse_set_position(Vec2 pos)
 {
     SDL_WarpMouse(pos.x, pos.y);
 }

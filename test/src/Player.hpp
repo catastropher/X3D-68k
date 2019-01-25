@@ -41,7 +41,7 @@ public:
         auto collider = addComponent<BoxColliderComponent>();
     }
     
-    X_CameraObject& getCamera()
+    CameraObject& getCamera()
     {
         return camera;
     }
@@ -70,7 +70,7 @@ public:
         StatusBar::setItem("Standing on", "%d", id);
     }
     
-    X_CameraObject camera;
+    CameraObject camera;
     
     fp angleX;
     fp angleY;

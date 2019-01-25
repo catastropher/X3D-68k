@@ -28,7 +28,7 @@ static X_GameObjectType g_cameraObjectType =
     }
 };
 
-void X_CameraObject::overrideBspLeaf(int leafId, BspLevel* level)
+void CameraObject::overrideBspLeaf(int leafId, BspLevel* level)
 {
     currentLeaf = level->leaves + leafId;
     lastLeaf = nullptr;
@@ -39,9 +39,9 @@ void X_CameraObject::overrideBspLeaf(int leafId, BspLevel* level)
 /// Creates a new camera object.
 /// @todo Determine how to best initialize a camera
 ////////////////////////////////////////////////////////////////////////////////
-X_CameraObject* x_cameraobject_new(X_EngineContext* context)
+CameraObject* x_cameraobject_new(X_EngineContext* context)
 {
-    X_CameraObject* cam = (X_CameraObject*)x_gameobject_new(context, sizeof(X_CameraObject));
+    CameraObject* cam = (CameraObject*)x_gameobject_new(context, sizeof(CameraObject));
     
     cam->lastLeaf = NULL;
     cam->screenResizeCallback = NULL;
@@ -52,7 +52,7 @@ X_CameraObject* x_cameraobject_new(X_EngineContext* context)
     return cam;
 }
 
-void X_CameraObject::updateView()
+void CameraObject::updateView()
 {
     Mat4x4 xRotation;
     xRotation.loadXRotation(angleX);
@@ -71,7 +71,7 @@ void X_CameraObject::updateView()
     updateFrustum();
 }
 
-void X_CameraObject::updateFrustum()
+void CameraObject::updateFrustum()
 {
     Vec3fp forward, up, right;
     viewMatrix.extractViewVectors(forward, right, up);
@@ -79,12 +79,12 @@ void X_CameraObject::updateFrustum()
     viewport.updateFrustum(position, forward, right, up);
 }
 
-static void x_cameraobject_determine_current_bspleaf(X_CameraObject* cam, X_RenderContext* renderContext)
+static void x_cameraobject_determine_current_bspleaf(CameraObject* cam, X_RenderContext* renderContext)
 {
     cam->currentLeaf = renderContext->level->findLeafPointIsIn(cam->position);
 }
 
-static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_RenderContext* renderContext)
+static void x_cameraobject_load_pvs_for_current_leaf(CameraObject* cam, X_RenderContext* renderContext)
 {
     if(cam->currentLeaf == cam->lastLeaf)
     {
@@ -96,7 +96,7 @@ static void x_cameraobject_load_pvs_for_current_leaf(X_CameraObject* cam, X_Rend
     renderContext->level->pvs.decompressPvsForLeaf(*cam->currentLeaf, cam->pvsForCurrentLeaf);
 }
 
-void x_cameraobject_render(X_CameraObject* cam, X_RenderContext* renderContext)
+void x_cameraobject_render(CameraObject* cam, X_RenderContext* renderContext)
 {
     x_assert(renderContext != NULL, "No render context");
     x_assert(renderContext->engineContext != NULL, "No engine context in render context");

@@ -352,7 +352,7 @@ const X_Palette* x_palette_get_quake_palette(void)
     return &quakeColorPalette;
 }
 
-void x_palette_visualize(X_Screen* screen)
+void x_palette_visualize(Screen* screen)
 {
     int size = 8;
     for(int i = 0; i < 16; ++i)

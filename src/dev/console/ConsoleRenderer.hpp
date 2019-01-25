@@ -1,7 +1,7 @@
 #pragma once
 
 struct Console;
-struct X_Screen;
+struct Screen;
 struct X_Font;
 
 typedef enum X_ConsoleOpenState
@@ -15,7 +15,7 @@ typedef enum X_ConsoleOpenState
 class ConsoleRenderer
 {
 public:
-    ConsoleRenderer(Console& console_, X_Screen& screen_, X_Font& font_)
+    ConsoleRenderer(Console& console_, Screen& screen_, X_Font& font_)
         : console(console_),
         screen(screen_),
         font(font_)
@@ -58,7 +58,7 @@ private:
     X_Time getCurrentTime();
 
     Console& console;
-    X_Screen& screen;
+    Screen& screen;
 
     bool showCursor;
     X_Time lastCursorBlink;

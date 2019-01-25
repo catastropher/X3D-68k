@@ -65,7 +65,7 @@ bool X_Texture::loadFromFile(const char* fileName)
     return 1;
 }
 
-void X_Texture::clampVec2i(X_Vec2i& v)
+void X_Texture::clampVec2i(Vec2i& v)
 {
     v.x = std::max(v.x, 0);
     v.x = std::min(v.x, w - 1);
@@ -79,7 +79,7 @@ static int signof(int x)
     return x < 0 ? -1 : 1;
 }
 
-void X_Texture::drawLine(X_Vec2i start, X_Vec2i end, X_Color color)
+void X_Texture::drawLine(Vec2i start, Vec2i end, X_Color color)
 {
     clampVec2i(start);
     clampVec2i(end);
@@ -89,14 +89,16 @@ void X_Texture::drawLine(X_Vec2i start, X_Vec2i end, X_Color color)
     int dy = abs(end.y - start.y);
     int sy = start.y < end.y ? 1 : -1;
     int err = (dx > dy ? dx : -dy) / 2;
-    X_Vec2i pos = start;
+    Vec2i pos = start;
 
     while(1)
     {
         setTexel(pos, color);
 
-        if(x_vec2_equal(&pos, &end))
+        if(pos == end)
+        {
             break;
+        }
 
         int old_err = err;
         if (old_err > -dx)
@@ -113,7 +115,7 @@ void X_Texture::drawLine(X_Vec2i start, X_Vec2i end, X_Color color)
     }
 }
 
-void X_Texture::drawLineShaded(X_Vec2i start, X_Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable)
+void X_Texture::drawLineShaded(Vec2i start, Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable)
 {
     clampVec2i(start);
     clampVec2i(end);
@@ -123,7 +125,7 @@ void X_Texture::drawLineShaded(X_Vec2i start, X_Vec2i end, X_Color color, fp sta
     int dy = abs(end.y - start.y);
     int sy = start.y < end.y ? 1 : -1;
     int err = (dx > dy ? dx : -dy) / 2;
-    X_Vec2i pos = start;
+    Vec2i pos = start;
 
     int totalPixels = std::max(dx, dy) + 1;
 
@@ -135,8 +137,10 @@ void X_Texture::drawLineShaded(X_Vec2i start, X_Vec2i end, X_Color color, fp sta
         fp clamped = clamp(intensity, fp::fromInt(0), fp::fromInt(X_COLORMAP_SHADES_PER_COLOR - 1));
         setTexel(pos, colorTable[color * X_COLORMAP_SHADES_PER_COLOR + clamped.toInt()]);
 
-        if(x_vec2_equal(&pos, &end))
+        if(pos == end)
+        {
             break;
+        }
 
         int old_err = err;
         if (old_err > -dx)
@@ -155,7 +159,7 @@ void X_Texture::drawLineShaded(X_Vec2i start, X_Vec2i end, X_Color color, fp sta
     }
 }
 
-void X_Texture::blit(const X_Texture& tex, X_Vec2i pos)
+void X_Texture::blit(const X_Texture& tex, Vec2i pos)
 {
     int endX = std::min(pos.x + tex.w, w);
     int endY = std::min(pos.y + tex.h, h);
@@ -169,17 +173,17 @@ void X_Texture::blit(const X_Texture& tex, X_Vec2i pos)
     }
 }
 
-void X_Texture::drawChar(int c, const X_Font& font, X_Vec2i pos)
+void X_Texture::drawChar(int c, const X_Font& font, Vec2i pos)
 {
     const X_Color* charPixels = font.getCharacterPixels(c);
 
-    X_Vec2 clippedTopLeft
+    Vec2 clippedTopLeft
     {
         std::max(0, pos.x) - pos.x,
         std::max(0, pos.y) - pos.y
     };
 
-    X_Vec2 clippedBottomRight
+    Vec2 clippedBottomRight
     {
         std::min(w, pos.x + font.getW()) - pos.x,
         std::min(h, pos.y + font.getH()) - pos.y
@@ -194,9 +198,9 @@ void X_Texture::drawChar(int c, const X_Font& font, X_Vec2i pos)
     }
 }
 
-void X_Texture::drawStr(const char* str, const X_Font& font, X_Vec2i pos)
+void X_Texture::drawStr(const char* str, const X_Font& font, Vec2i pos)
 {
-    X_Vec2 currentPos = pos;
+    Vec2 currentPos = pos;
     
     while(*str)
     {
@@ -215,7 +219,7 @@ void X_Texture::drawStr(const char* str, const X_Font& font, X_Vec2i pos)
     }
 }
 
-void X_Texture::fillRect(X_Vec2i topLeft, X_Vec2i bottomRight, X_Color color)
+void X_Texture::fillRect(Vec2i topLeft, Vec2i bottomRight, X_Color color)
 {
     clampVec2i(topLeft);
     clampVec2i(bottomRight);
@@ -234,7 +238,7 @@ void X_Texture::fill(X_Color fillColor)
     memset(texels, fillColor, totalTexels());
 }
 
-// static void construct_vertices_of_decal_polygon(X_Vec2_fp16x16* dest, X_Texture* decal, X_Vec2 pos, X_Vec2_fp16x16* uOrientation, X_Vec2_fp16x16* vOrientation)
+// static void construct_vertices_of_decal_polygon(Vec2_fp16x16* dest, X_Texture* decal, Vec2 pos, Vec2_fp16x16* uOrientation, Vec2_fp16x16* vOrientation)
 // {
 //     int w = decal.w / 2;
 //     int h = decal.h / 2;
@@ -246,14 +250,14 @@ void X_Texture::fill(X_Color fillColor)
     
 //     for(int i = 0; i < 4; ++i)
 //     {
-//         X_Vec2 v = dest[i];
+//         Vec2 v = dest[i];
         
 //         dest[i].x = v.x * uOrientation.x + v.y * uOrientation.y + x_fp16x16_from_int(pos.x);
 //         dest[i].y = v.x * vOrientation.x + v.y * vOrientation.y + x_fp16x16_from_int(pos.y);
 //     }
 // }
 
-// static void calculate_texture_coordinates(X_Vec2_fp16x16* dest, X_Texture* decal)
+// static void calculate_texture_coordinates(Vec2_fp16x16* dest, X_Texture* decal)
 // {
 //     x_fp16x16 w = x_fp16x16_from_int(decal.w - 1);
 //     x_fp16x16 h = x_fp16x16_from_int(decal.h - 1);
@@ -306,7 +310,7 @@ void X_Texture::fill(X_Color fillColor)
         
 // }
 
-// static bool x_decaledge_init(X_DecalEdge* edge, X_Vec2_fp16x16* v, X_Vec2_fp16x16* texCoords, int aIndex, int bIndex, x_fp16x16 canvasHeight)
+// static bool x_decaledge_init(X_DecalEdge* edge, Vec2_fp16x16* v, Vec2_fp16x16* texCoords, int aIndex, int bIndex, x_fp16x16 canvasHeight)
 // {
 //     x_fp16x16 aY = x_fp16x16_ceil(v[aIndex].y);
 //     x_fp16x16 bY = x_fp16x16_ceil(v[bIndex].y);
@@ -356,7 +360,7 @@ void X_Texture::fill(X_Color fillColor)
 //     head.next = edge;
 // }
 
-// static void add_edges(X_DecalEdge* edges, X_Vec2_fp16x16* v, X_Vec2_fp16x16* texCoords, X_DecalEdge* leftHead, X_DecalEdge* rightHead, x_fp16x16 canvasHeight)
+// static void add_edges(X_DecalEdge* edges, Vec2_fp16x16* v, Vec2_fp16x16* texCoords, X_DecalEdge* leftHead, X_DecalEdge* rightHead, x_fp16x16 canvasHeight)
 // {    
 //     for(int i = 0; i < 4; ++i)
 //     {
@@ -434,7 +438,7 @@ void X_Texture::fill(X_Color fillColor)
 //     } while((*nextAdvance).next != NULL);   
 // }
 
-// void x_texture_draw_decal(X_Texture* canvas, X_Texture* decal, X_Vec2 pos, X_Vec2_fp16x16* uOrientation, X_Vec2_fp16x16* vOrientation, X_Color transparency)
+// void x_texture_draw_decal(X_Texture* canvas, X_Texture* decal, Vec2 pos, Vec2_fp16x16* uOrientation, Vec2_fp16x16* vOrientation, X_Color transparency)
 // {
 //     X_DecalEdge leftHead, leftTail;
 //     init_sentinel_edges(&leftHead, &leftTail);
@@ -442,10 +446,10 @@ void X_Texture::fill(X_Color fillColor)
 //     X_DecalEdge rightHead, rightTail;
 //     init_sentinel_edges(&rightHead, &rightTail);
     
-//     X_Vec2_fp16x16 v[4];
+//     Vec2_fp16x16 v[4];
 //     construct_vertices_of_decal_polygon(v, decal, pos, uOrientation, vOrientation);
     
-//     X_Vec2_fp16x16 texCoords[4];
+//     Vec2_fp16x16 texCoords[4];
 //     calculate_texture_coordinates(texCoords, decal);
     
 //     X_DecalEdge edges[4];

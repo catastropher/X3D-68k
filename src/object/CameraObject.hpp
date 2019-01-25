@@ -23,7 +23,7 @@
 
 struct X_EngineContext;
 struct X_RenderContext;
-struct X_Screen;
+struct Screen;
 struct X_BspLeaf;
 
 enum CameraobjectFlags
@@ -32,7 +32,7 @@ enum CameraobjectFlags
 };
 
 
-typedef struct X_CameraObject
+typedef struct CameraObject
 {
     void updateFrustum();
 
@@ -48,18 +48,18 @@ typedef struct X_CameraObject
     Mat4x4 viewMatrix;
     x_fp16x16 angleX;
     x_fp16x16 angleY;
-    struct X_CameraObject* nextInCameraList;
+    struct CameraObject* nextInCameraList;
     struct X_BspLeaf* currentLeaf;
     struct X_BspLeaf* lastLeaf;
     DecompressedLeafVisibleSet pvsForCurrentLeaf;
     
-    void (*screenResizeCallback)(struct X_CameraObject* cam, struct X_Screen* screen, x_fp16x16 fov);
+    void (*screenResizeCallback)(struct CameraObject* cam, struct Screen* screen, x_fp16x16 fov);
 } X_CameraObject;
 
-X_CameraObject* x_cameraobject_new(struct X_EngineContext* context);
-void x_cameraobject_render(X_CameraObject* cam, struct X_RenderContext* renderContext);
+CameraObject* x_cameraobject_new(struct X_EngineContext* context);
+void x_cameraobject_render(CameraObject* cam, struct X_RenderContext* renderContext);
 
-static inline Vec3fp x_cameraobject_get_position(X_CameraObject* cam)
+static inline Vec3fp x_cameraobject_get_position(CameraObject* cam)
 {
     return cam->position;
 }

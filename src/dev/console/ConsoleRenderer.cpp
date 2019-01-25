@@ -98,13 +98,13 @@ void ConsoleRenderer::renderBackground()
     X_Color backgroundColor = palette->black;
     X_Color lineColor = palette->darkRed;
     
-    X_Vec2 topLeft =
+    Vec2 topLeft =
     {
         0,
         getLineY(0)
     };
 
-    X_Vec2 bottomRight =
+    Vec2 bottomRight =
     {
         screen.getW() - 1,
         getLineY(console.size.y)
@@ -112,7 +112,7 @@ void ConsoleRenderer::renderBackground()
     
     screen.canvas.fillRect(topLeft, bottomRight, backgroundColor);
     
-    X_Vec2 bottomLeft = x_vec2_make(0, bottomRight.y);
+    Vec2 bottomLeft = Vec2(0, bottomRight.y);
     screen.canvas.drawLine(bottomLeft, bottomRight, lineColor);
 }
 

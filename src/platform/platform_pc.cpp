@@ -49,7 +49,7 @@ void x_platform_sdl_extract_key_from_event(SDL_Event* ev, SDLKey* key, SDLKey* u
         *unicodeCharacter = *key;    
 }
 
-void x_platform_mouse_set_position(X_Vec2 pos)
+void x_platform_mouse_set_position(Vec2 pos)
 {
     x_sdl_mouse_set_position(pos);
 }

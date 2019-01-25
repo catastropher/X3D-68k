@@ -17,5 +17,5 @@
 
 #include "level/BspLevel.hpp"
 
-void x_bspsurface_get_surface_texture_for_mip_level(X_BspSurface* surface, int mipLevel, X_Renderer* renderer, X_Texture* dest);
+void x_bspsurface_get_surface_texture_for_mip_level(BspSurface* surface, int mipLevel, X_Renderer* renderer, X_Texture* dest);
 

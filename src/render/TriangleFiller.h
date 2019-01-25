@@ -28,10 +28,10 @@ typedef enum X_TriangleFillerType
 
 typedef struct X_TriangleFillerVertex
 {
-    X_Vec2 v;
+    Vec2 v;
     x_fp16x16 z;
     
-    X_Vec2 textureCoord;
+    Vec2 textureCoord;
 } X_TriangleFillerVertex;
 
 typedef struct X_TriangleFillerEdge
@@ -85,13 +85,13 @@ void x_trianglefiller_init(X_TriangleFiller* filler, X_RenderContext* renderCont
 
 #define X_TRIANGLEFILLER_EXTRA_PRECISION 4
 
-static inline void x_trianglefiller_set_flat_shaded_vertex(X_TriangleFiller* filler, int vertexId, X_Vec2 vertex, int z)
+static inline void x_trianglefiller_set_flat_shaded_vertex(X_TriangleFiller* filler, int vertexId, Vec2 vertex, int z)
 {
     filler->vertices[vertexId].v = vertex;
     filler->vertices[vertexId].z = (X_FP16x16_ONE << X_TRIANGLEFILLER_EXTRA_PRECISION) / z;
 }
 
-static inline void x_trianglefiller_set_textured_vertex(X_TriangleFiller* filler, int vertexId, X_Vec2 vertex, int z, X_Vec2 textureCoord)
+static inline void x_trianglefiller_set_textured_vertex(X_TriangleFiller* filler, int vertexId, Vec2 vertex, int z, Vec2 textureCoord)
 {
     filler->vertices[vertexId].v = vertex;
     filler->vertices[vertexId].z = (X_FP16x16_ONE << X_TRIANGLEFILLER_EXTRA_PRECISION) / z;

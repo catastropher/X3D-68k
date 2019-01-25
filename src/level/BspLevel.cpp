@@ -93,7 +93,7 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
 // {
 //     for(int i = 0; i < node->totalSurfaces; ++i)
 //     {
-//         X_BspSurface* surface = node->firstSurface + i;
+//         BspSurface* surface = node->firstSurface + i;
         
 //         if(surface->lastLightUpdateFrame != currentFrame)
 //         {
@@ -146,7 +146,7 @@ static void x_bsplevel_render_submodel(BspLevel* level, BspModel* submodel, X_Re
     
     for(int i = 0; i < submodel->totalFaces; ++i)
     {        
-        X_BspSurface* surface = submodel->faces + i;
+        BspSurface* surface = submodel->faces + i;
      
         
         // FIXME: figure out how to do backface culling for submodels, since they can move
@@ -211,7 +211,7 @@ void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_T
     x_assert(mipMapLevel >= 0 && mipMapLevel < 4, "Bad mip map request");
     x_assert(textureId >= 0 && textureId < level->totalTextures, "Requested invalid texture");
     
-    X_BspTexture* bspTex = level->textures + textureId;
+    BspTexture* bspTex = level->textures + textureId;
     
     new (dest) X_Texture(bspTex->w >> mipMapLevel,  bspTex->h >> mipMapLevel, bspTex->mipTexels[mipMapLevel]);
 }

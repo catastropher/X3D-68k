@@ -48,7 +48,7 @@ static bool edge_is_flipped(int edgeId)
     return edgeId < 0;
 }
 
-X_AE_Edge* X_AE_Context::getCachedEdge(X_BspEdge* edge, int currentFrame) const
+X_AE_Edge* X_AE_Context::getCachedEdge(BspEdge* edge, int currentFrame) const
 {
     X_AE_Edge* aeEdge = (X_AE_Edge*)((unsigned char*)edges.begin() + edge->cachedEdgeOffset);
 
@@ -89,7 +89,7 @@ static bool project_polygon3(Polygon3* poly, Mat4x4* viewMatrix, Viewport* viewp
     return 1;
 }
 
-X_AE_Surface* X_AE_Context::createSurface(X_BspSurface* bspSurface, int bspKey)
+X_AE_Surface* X_AE_Context::createSurface(BspSurface* bspSurface, int bspKey)
 {
     X_AE_Surface* surface = surfaces.alloc();
 
@@ -111,12 +111,12 @@ X_AE_Surface* X_AE_Context::createSurface(X_BspSurface* bspSurface, int bspKey)
     return surface;
 }
 
-void X_AE_Context::emitEdges(X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
+void X_AE_Context::emitEdges(X_AE_Surface* surface, Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds)
 {
     for(int i = 0; i < totalVertices; ++i)
     {
         int edgeId = abs(clippedEdgeIds[i]);
-        X_BspEdge* bspEdge = currentModel->edges + edgeId;
+        BspEdge* bspEdge = currentModel->edges + edgeId;
 
         if(edgeId != 0)
         {
@@ -297,7 +297,7 @@ struct ClipContext
 
     int geoFlags;
 
-    X_Vec2 lastProjected;
+    Vec2 lastProjected;
     int clipFlags;
 
     fp dist[2][4];
@@ -314,9 +314,9 @@ Vec3fp transform(Mat4x4& mat, Vec3fp v)
         mat.elem[2][0] * v.x + mat.elem[2][1] * v.y + mat.elem[2][2] * v.z + mat.elem[2][3]);
 }
 
-X_AE_Edge* X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected)
+X_AE_Edge* X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, BspEdge* bspEdge, bool lastWasClipped, Vec2& lastProjected)
 {
-    X_Vec2_fp16x16 projected[2];
+    Vec2_fp16x16 projected[2];
 
     if(!lastWasClipped)
     {
@@ -336,7 +336,7 @@ X_AE_Edge* X_AE_Context::addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSu
     return addEdge(projected + 0, projected + 1, aeSurface, bspEdge);
 }
 
-void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
+void X_AE_Context::processPolygon(BspSurface* bspSurface,
                                   BoundBoxFrustumFlags geoFlags,
                                   int* edgeIds,
                                   int bspKey,
@@ -359,7 +359,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
     ClipContext context(renderContext->viewFrustum, (int)geoFlags);
 
     Vec3fp lastTransformed;
-    X_Vec2 lastProjected;
+    Vec2 lastProjected;
 
     const fp minZ = fp::fromFloat(0.5);
 
@@ -475,7 +475,7 @@ void X_AE_Context::processPolygon(X_BspSurface* bspSurface,
     aeSurface->calculateInverseZGradient(renderContext->camPos, &renderContext->cam->viewport, renderContext->viewMatrix, firstVertex);
 }
 
-void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
+void X_AE_Context::addPolygon(Polygon3* polygon, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel)
 {
     
     Vec3fp firstVertex = polygon->vertices[0];
@@ -486,7 +486,7 @@ void X_AE_Context::addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, Bound
     
     LevelPolygon3 levelPoly(polygon->vertices, polygon->totalVertices, edgeIds);
 
-    X_Vec2_fp16x16 v2d[X_POLYGON3_MAX_VERTS];
+    Vec2_fp16x16 v2d[X_POLYGON3_MAX_VERTS];
     LevelPolygon2 poly2d(v2d, X_POLYGON3_MAX_VERTS, clippedEdgeIds);
     
     fp closestZ;
@@ -521,7 +521,7 @@ static void get_model_polygon_from_edges(BspModel* model, int* edgeIds, int tota
     }
 }
 
-void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     x_ae_surface_reset_current_parent(this);
 
@@ -541,7 +541,7 @@ void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges
     addPolygon(&polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
 
-void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     if(!node->isVisibleThisFrame(renderContext->currentFrame))
         return;
@@ -571,7 +571,7 @@ void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* ed
     addSubmodelRecursive(&back, node->backChild, backEdges, bspSurface, geoFlags, bspKey);
 }
 
-void X_AE_Context::addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEdges, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     x_ae_surface_reset_current_parent(this);
     
@@ -587,10 +587,10 @@ X_AE_Surface* X_AE_Context::addBrushPolygon(Polygon3& polygon, Plane& polygonPla
 
     int edgeIds[32] = { 0 };
 
-    X_BspPlane bspPlane;
+    BspPlane bspPlane;
     bspPlane.plane = polygonPlane;
 
-    X_BspSurface bspSurface;
+    BspSurface bspSurface;
     bspSurface.plane = &bspPlane;
 
     addSubmodelRecursive(&polygon, x_bsplevel_get_root_node(renderContext->level), edgeIds, &bspSurface, geoFlags, bspKey);
@@ -822,15 +822,15 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
     //     if((edge->surfaces[0] == NULL) ^ (edge->surfaces[1] == NULL))
     //     {
     //         x_texture_draw_line(&context->screen->canvas,
-    //                             X_Vec2(edge->x >> 16, edge->startY),
-    //                             X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
+    //                             Vec2(edge->x >> 16, edge->startY),
+    //                             Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
     //                             context->screen->palette->brightRed);
     //     }
     //     else
     //     {
     //         x_texture_draw_line(&context->screen->canvas,
-    //                             X_Vec2(edge->x >> 16, edge->startY),
-    //                             X_Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
+    //                             Vec2(edge->x >> 16, edge->startY),
+    //                             Vec2((edge->x + edge->xSlope * (edge->endY - edge->startY)) >> 16, edge->endY),
     //                             context->screen->palette->darkGreen);
     //     }
     // }

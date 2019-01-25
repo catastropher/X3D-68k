@@ -21,7 +21,7 @@
 struct X_AE_Surface;
 struct Viewport;
 struct X_RenderContext;
-struct X_BspFaceTexture;
+struct BspFaceTexture;
 
 typedef struct X_AE_Span
 {
@@ -81,7 +81,7 @@ typedef struct X_AE_SurfaceRenderContext
     struct X_AE_Surface* surface;
     struct Viewport* viewport;
     struct X_RenderContext* renderContext;
-    struct X_BspFaceTexture* faceTexture;
+    struct BspFaceTexture* faceTexture;
     int mipLevel;
     
     X_Texture surfaceTexture;

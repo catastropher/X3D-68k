@@ -81,8 +81,8 @@ typedef struct Console
     X_ConsoleCmd* consoleCmds;
     int totalConsoleCmds;
     
-    X_Vec2 cursor;
-    X_Vec2 size;
+    Vec2 cursor;
+    Vec2 size;
     const X_Font* font;
     struct X_EngineContext* engineContext;
     char* text;

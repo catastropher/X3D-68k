@@ -21,8 +21,8 @@
 
 struct X_RenderContext;
 struct BspModel;
-struct X_BspPlane;
-struct X_BspSurface;
+struct BspPlane;
+struct BspSurface;
 struct X_BspLeaf;
 
 typedef enum X_BspLeafContents
@@ -72,12 +72,12 @@ typedef struct X_BspNode
     X_BspNode* parent;
     
     // Unique elements for node
-    X_BspPlane* plane;
+    BspPlane* plane;
     
     X_BspNode* frontChild;
     X_BspNode* backChild;
     
-    X_BspSurface* firstSurface;
+    BspSurface* firstSurface;
     int totalSurfaces;
 private:
 } X_BspNode;
@@ -99,7 +99,7 @@ typedef struct X_BspLeaf
     struct X_BspNode* parent;
     
     // Unique elements for leaf
-    X_BspSurface** firstMarkSurface;
+    BspSurface** firstMarkSurface;
     int totalMarkSurfaces;
     int bspKey;
     

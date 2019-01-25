@@ -42,7 +42,7 @@ void Plane::print() const
     printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, dd);
 }
 
-void Plane::getOrientation(X_CameraObject& cam, Mat4x4& dest) const
+void Plane::getOrientation(CameraObject& cam, Mat4x4& dest) const
 {
     Vec3fp temp(normal.x, 0, normal.z);
     Vec3fp camPos = cam.position;

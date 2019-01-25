@@ -81,7 +81,7 @@ struct Portal
     BoundRect surfaceBoundRect;
 
     BspModel bridgeModel;
-    X_BspPlane bridgePlanes[6];
+    BspPlane bridgePlanes[6];
     X_BspClipNode bridgeClipNodes[6];
 
 

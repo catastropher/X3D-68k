@@ -39,17 +39,17 @@ struct ScheduledPortal
     PortalSpan* spans;
     PortalSpan* spansEnd;
 
-    X_CameraObject cam;
+    CameraObject cam;
     int recursionDepth;
 };
 
 typedef struct X_Renderer
 {
-    X_Renderer(X_Screen* screen) : activeEdgeContext(2000, 1000, 20000, screen) { }
+    X_Renderer(Screen* screen) : activeEdgeContext(2000, 1000, 20000, screen) { }
 
     void scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth);
     void renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext);
-    void renderCamera(X_CameraObject* cam, X_EngineContext* engineContext);
+    void renderCamera(CameraObject* cam, X_EngineContext* engineContext);
     
     X_AE_Context activeEdgeContext;
     X_Cache surfaceCache;
@@ -92,10 +92,10 @@ typedef struct X_Renderer
     CircularQueue<ScheduledPortal, 10> scheduledPortals;
 
 private:
-    static void createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& dest);
-    static void calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam);
+    static void createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& dest);
+    static void calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, CameraObject& cam);
 
-    static void calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, X_CameraObject& cam);
+    static void calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& cam);
 
 } X_Renderer;
 
@@ -106,10 +106,10 @@ static inline X_Color x_renderer_get_shaded_color(X_Renderer* renderer, X_Color 
     return renderer->colorMap[(int)color * X_COLORMAP_SHADES_PER_COLOR + intensity];
 }
 
-void x_renderer_init(X_Renderer* renderer, Console* console, X_Screen* screen, int fov);
+void x_renderer_init(X_Renderer* renderer, Console* console, Screen* screen, int fov);
 void x_renderer_cleanup(X_Renderer* renderer);
 
-void x_renderer_restart_video(X_Renderer* renderer, X_Screen* screen);
+void x_renderer_restart_video(X_Renderer* renderer, Screen* screen);
 
 void x_renderer_render_frame(struct X_EngineContext* engineContext);
 

@@ -21,11 +21,11 @@
 
 struct X_BspNode;
 struct X_BspClipNode;
-struct X_BspSurface;
+struct BspSurface;
 struct X_RenderContext;
-struct X_BspPlane;
-struct X_BspVertex;
-struct X_BspEdge;
+struct BspPlane;
+struct BspVertex;
+struct BspEdge;
 
 struct BspModel
 {
@@ -35,14 +35,14 @@ struct BspModel
     X_BspClipNode* clipNodes;
     int clipNodeRoots[3];
 
-    X_BspPlane* planes;
-    X_BspVertex* vertices;
-    X_BspEdge* edges;
+    BspPlane* planes;
+    BspVertex* vertices;
+    BspEdge* edges;
     int* surfaceEdgeIds;
     
     int totalBspLeaves;
     
-    X_BspSurface* faces;
+    BspSurface* faces;
     int totalFaces;
     
     Vec3fp center;

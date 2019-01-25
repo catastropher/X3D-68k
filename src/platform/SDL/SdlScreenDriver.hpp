@@ -27,7 +27,7 @@ public:
     void cleanup();
 
     void setVideoMode(int screenW, int screenH, bool fullscreen);
-    void update(X_Screen* screen);
+    void update(Screen* screen);
 
 private:
     int nativeResolutionW;

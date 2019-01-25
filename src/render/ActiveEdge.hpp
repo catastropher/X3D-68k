@@ -107,7 +107,7 @@ struct X_AE_Surface
     int crossCount;
     int xStart;
     
-    X_BspSurface* bspSurface;
+    BspSurface* bspSurface;
     X_AE_Span spanHead;
     X_AE_Span* last;
     
@@ -136,7 +136,7 @@ typedef struct X_AE_Edge
 {
     X_AE_Edge() { }
     
-    X_AE_Edge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge_, int currentFrame, X_AE_Edge* edgeStart)
+    X_AE_Edge(Vec2_fp16x16* a, Vec2_fp16x16* b, X_AE_Surface* surface, BspEdge* bspEdge_, int currentFrame, X_AE_Edge* edgeStart)
     {
         int aY = x_fp16x16_ceil(a->y) >> 16;
         int bY = x_fp16x16_ceil(b->y) >> 16;
@@ -171,7 +171,7 @@ typedef struct X_AE_Edge
         endY = x_fp16x16_to_int(x_fp16x16_ceil(b->y)) - 1;
     }
     
-    void initDeltas(X_Vec2_fp16x16* top, X_Vec2_fp16x16* bottom)
+    void initDeltas(Vec2_fp16x16* top, Vec2_fp16x16* bottom)
     {
         xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
         
@@ -206,7 +206,7 @@ typedef struct X_AE_Edge
     bool isLeadingEdge;
     bool isHorizontal;
     
-    X_BspEdge* bspEdge;
+    BspEdge* bspEdge;
     int frameCreated;
     
     struct X_AE_Edge* nextDelete;
@@ -228,7 +228,7 @@ typedef struct X_AE_DummyEdge
 
 struct X_AE_Context
 {
-    X_AE_Context(int maxEdges, int maxSurfaces, int maxSpans, X_Screen* screen_)
+    X_AE_Context(int maxEdges, int maxSurfaces, int maxSpans, Screen* screen_)
         : edges(maxEdges, "EdgeArena"),
         surfaces(maxSurfaces, "SurfaceArena"),
         spans(maxSpans, "SpanArena"),
@@ -255,32 +255,32 @@ struct X_AE_Context
     X_AE_Edge rightEdge;
     
     X_AE_Surface background;
-    X_BspSurface backgroundBspSurface;
+    BspSurface backgroundBspSurface;
     
     X_AE_Surface foreground;
     
     X_RenderContext* renderContext;
-    X_Screen* screen;
+    Screen* screen;
     
     BspModel* currentModel;
     X_AE_Surface* currentParent;
 
-    void addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
-    void addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEdges, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
 
     // !-- To be made private --!
-    X_AE_Edge* getCachedEdge(X_BspEdge* edge, int currentFrame) const;
-    X_AE_Surface* createSurface(X_BspSurface* bspSurface, int bspKey);
-    void emitEdges(X_AE_Surface* surface, X_Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
-    void addPolygon(Polygon3* polygon, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel);
-    void addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, X_BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    X_AE_Edge* getCachedEdge(BspEdge* edge, int currentFrame) const;
+    X_AE_Surface* createSurface(BspSurface* bspSurface, int bspKey);
+    void emitEdges(X_AE_Surface* surface, Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
+    void addPolygon(Polygon3* polygon, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel);
+    void addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
     void emitSpan(int left, int right, int y, X_AE_Surface* surface);
 
     void processEdge(X_AE_Edge* edge, int y);
     void addActiveEdge(X_AE_Edge* edge, int y);
     void processEdges(int y);
 
-    void processPolygon(X_BspSurface* bspSurface,
+    void processPolygon(BspSurface* bspSurface,
                         BoundBoxFrustumFlags geoFlags,
                         int* edgeIds,
                         int bspKey,
@@ -288,7 +288,7 @@ struct X_AE_Context
 
     X_AE_Surface* addBrushPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey);
 
-    X_AE_Edge* addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, X_BspEdge* bspEdge, bool lastWasClipped, X_Vec2& lastProjected);
+    X_AE_Edge* addEdgeFromClippedRay(Ray3& clipped, X_AE_Surface* aeSurface, BspEdge* bspEdge, bool lastWasClipped, Vec2& lastProjected);
 
 private:
     
@@ -409,7 +409,7 @@ private:
         return true;
     }
     
-    X_AE_Edge* addEdge(X_Vec2_fp16x16* a, X_Vec2_fp16x16* b, X_AE_Surface* surface, X_BspEdge* bspEdge)
+    X_AE_Edge* addEdge(Vec2_fp16x16* a, Vec2_fp16x16* b, X_AE_Surface* surface, BspEdge* bspEdge)
     {
         X_AE_Edge* edge = edges.alloc();
         

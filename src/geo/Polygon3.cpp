@@ -317,7 +317,7 @@ void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContex
 //         X_Vec3 transformed;
 //         x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
 //         
-//         X_Vec2 projected;
+//         Vec2 projected;
 //         x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, &projected);
 //         
 //         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);
@@ -332,7 +332,7 @@ void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContex
 //     x_trianglefiller_fill_flat_shaded(&filler, color);
 }
 
-void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, X_Vec2 textureCoords[3])
+void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, Vec2 textureCoords[3])
 {
 //     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
 //     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
@@ -352,7 +352,7 @@ void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, 
 //         X_Vec3 transformed;
 //         x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
 //         
-//         X_Vec2 projected;
+//         Vec2 projected;
 //         x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, &projected);
 //         
 //         x_trianglefiller_set_textured_vertex(&filler, i, projected, transformed.z, textureCoords[i]);
@@ -388,7 +388,7 @@ void x_polygon3_render_transparent(Polygon3* poly, X_RenderContext* renderContex
 //         X_Vec3 transformed;
 //         x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
 //         
-//         X_Vec2 projected;
+//         Vec2 projected;
 //         x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, &projected);
 //         
 //         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);

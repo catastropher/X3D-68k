@@ -159,7 +159,7 @@ static void x_bsplevelloader_load_textures(X_BspLevelLoader* loader)
     x_bsploadermiptexturelump_read_from_file(&mipLump, &loader->file);
     
     loader->totalTextures = mipLump.totalMipTextures;
-    loader->textures = (X_BspLoaderTexture*)x_malloc(loader->totalTextures * sizeof(X_BspTexture));
+    loader->textures = (X_BspLoaderTexture*)x_malloc(loader->totalTextures * sizeof(BspTexture));
     
     int totalTexels = 0;
     
@@ -238,10 +238,10 @@ static void x_bsplevelloader_init_collision_hulls(X_BspLevelLoader* loader)
 static void x_bsplevel_allocate_memory(BspLevel* level, const X_BspLevelLoader* loader)
 {
     level->totalEdges = loader->edges.count;
-    level->edges = (X_BspEdge*)x_malloc(level->totalEdges * sizeof(X_BspEdge));
+    level->edges = (BspEdge*)x_malloc(level->totalEdges * sizeof(BspEdge));
     
     level->totalSurfaces = loader->faces.count;
-    level->surfaces = (X_BspSurface*)x_malloc(level->totalSurfaces * sizeof(X_BspSurface));
+    level->surfaces = (BspSurface*)x_malloc(level->totalSurfaces * sizeof(BspSurface));
     
     level->totalLeaves = loader->leaves.count;
     level->leaves = (X_BspLeaf*)x_malloc(level->totalLeaves * sizeof(X_BspLeaf));
@@ -253,19 +253,19 @@ static void x_bsplevel_allocate_memory(BspLevel* level, const X_BspLevelLoader* 
     level->nodes = (X_BspNode*)x_malloc(level->totalNodes * sizeof(X_BspNode));
     
     level->totalVertices = loader->vertices.count;
-    level->vertices = (X_BspVertex*)x_malloc(level->totalVertices * sizeof(X_BspVertex));
+    level->vertices = (BspVertex*)x_malloc(level->totalVertices * sizeof(BspVertex));
     
     level->totalPlanes = loader->planes.count;
-    level->planes = (X_BspPlane*)x_malloc(level->totalPlanes * sizeof(X_BspPlane));
+    level->planes = (BspPlane*)x_malloc(level->totalPlanes * sizeof(BspPlane));
     
     level->totalMarkSurfaces = loader->markSurfaces.count;
-    level->markSurfaces = (X_BspSurface**)x_malloc(level->totalMarkSurfaces * sizeof(X_BspSurface*));
+    level->markSurfaces = (BspSurface**)x_malloc(level->totalMarkSurfaces * sizeof(BspSurface*));
     
     level->totalTextures = loader->totalTextures;
-    level->textures = (X_BspTexture*)x_malloc(level->totalTextures * sizeof(X_BspTexture));
+    level->textures = (BspTexture*)x_malloc(level->totalTextures * sizeof(BspTexture));
     
     level->totalFaceTextures = loader->totalFaceTextures;
-    level->faceTextures = (X_BspFaceTexture*)x_malloc(level->totalFaceTextures * sizeof(X_BspFaceTexture));
+    level->faceTextures = (BspFaceTexture*)x_malloc(level->totalFaceTextures * sizeof(BspFaceTexture));
 }
 
 static void x_bsplevel_init_vertices(BspLevel* level, const X_BspLevelLoader* loader)
@@ -276,21 +276,21 @@ static void x_bsplevel_init_vertices(BspLevel* level, const X_BspLevelLoader* lo
     }
 }
 
-static X_Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(X_BspSurface* surface, Vec3fp& v)
+static Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(BspSurface* surface, Vec3fp& v)
 {    
-    return x_vec2_make(
+    return Vec2(
         surface->faceTexture->uOrientation.dot(v).toFp16x16() + surface->faceTexture->uOffset,
         surface->faceTexture->vOrientation.dot(v).toFp16x16() + surface->faceTexture->vOffset);
 }
 
-static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, BspLevel* level)
+static void x_bspsurface_calculate_texture_extents(BspSurface* surface, BspLevel* level)
 {
     X_BspBoundRect textureCoordsBoundRect;
     x_bspboundrect_init(&textureCoordsBoundRect);
     
     for(int i = 0; i < surface->totalEdges; ++i)
     {
-        X_BspVertex* v;
+        BspVertex* v;
         int edgeId = level->surfaceEdgeIds[surface->firstEdgeId + i];
         
         if(edgeId >= 0)
@@ -298,7 +298,7 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, BspLev
         else
             v = level->vertices + level->edges[-edgeId].v[0];
         
-        X_Vec2 textureCoord = x_bspsurface_calculate_texture_coordinate_of_vertex(surface, v->v);
+        Vec2 textureCoord = x_bspsurface_calculate_texture_coordinate_of_vertex(surface, v->v);
         x_bspboundrect_add_point(&textureCoordsBoundRect, textureCoord);
     }
     
@@ -308,24 +308,20 @@ static void x_bspsurface_calculate_texture_extents(X_BspSurface* surface, BspLev
     textureCoordsBoundRect.v[1].x = ceil((float)textureCoordsBoundRect.v[1].x / (16 * 65536));
     textureCoordsBoundRect.v[1].y = ceil((float)textureCoordsBoundRect.v[1].y / (16 * 65536));
     
-    surface->textureMinCoord = x_vec2_make
-    (
+    surface->textureMinCoord = Vec2(
         textureCoordsBoundRect.v[0].x * 16 * 65536,
-        textureCoordsBoundRect.v[0].y * 16 * 65536
-    );
+        textureCoordsBoundRect.v[0].y * 16 * 65536);
         
-    surface->textureExtent = x_vec2_make
-    (
+    surface->textureExtent = Vec2(
         (textureCoordsBoundRect.v[1].x - textureCoordsBoundRect.v[0].x) * 16 * 65536,
-        (textureCoordsBoundRect.v[1].y - textureCoordsBoundRect.v[0].y) * 16 * 65536
-    );    
+        (textureCoordsBoundRect.v[1].y - textureCoordsBoundRect.v[0].y) * 16 * 65536);
 }
 
 static void x_bsplevel_init_surfaces(BspLevel* level, const X_BspLevelLoader* loader)
 {
     for(int i = 0; i < loader->faces.count; ++i)
     {
-        X_BspSurface* surface = level->surfaces + i;
+        BspSurface* surface = level->surfaces + i;
         X_BspLoaderFace* face = loader->faces.elem + i;
         
         surface->id = i;
@@ -518,7 +514,7 @@ static void x_bsplevel_init_textures(BspLevel* level, X_BspLevelLoader* loader)
     
     for(int i = 0; i < level->totalTextures; ++i)
     {
-        X_BspTexture* tex = level->textures + i;
+        BspTexture* tex = level->textures + i;
         X_BspLoaderTexture* loadTex = loader->textures + i;
     
         const int INVALID_TEXTURE_OFFSET = -1;
@@ -545,7 +541,7 @@ static void x_bsplevel_init_facetextures(BspLevel* level, X_BspLevelLoader* load
 {
     for(int i = 0; i < level->totalFaceTextures; ++i)
     {
-        X_BspFaceTexture* tex = level->faceTextures + i;
+        BspFaceTexture* tex = level->faceTextures + i;
         X_BspLoaderFaceTexture* loadTex = loader->faceTextures + i;
         
         tex->uOrientation = loadTex->uOrientation;
@@ -559,7 +555,7 @@ static void x_bsplevel_init_facetextures(BspLevel* level, X_BspLevelLoader* load
     }
 }
 
-static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, X_BspSurface* surface, BspLevel* level)
+static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, BspSurface* surface, BspLevel* level)
 {
     for(int i = 0; i < surface->totalEdges; ++i)
     {

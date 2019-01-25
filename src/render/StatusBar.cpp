@@ -47,7 +47,7 @@ void StatusBar::removeItem(const char* name)
 
 void StatusBar::render(X_Texture& texture, const X_Font& font)
 {
-    X_Vec2i pos = { 0, 0 };
+    Vec2i pos = { 0, 0 };
 
     for(auto item = items.head; item != nullptr; item = item->next)
     {

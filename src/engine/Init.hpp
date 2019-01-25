@@ -171,7 +171,7 @@ struct ScreenConfig
         fullscreen = false;
     }
 
-    ScreenConfig& displayFrameCallback(void (*callback)(struct X_Screen* screen, void* userData))
+    ScreenConfig& displayFrameCallback(void (*callback)(struct Screen* screen, void* userData))
     {
         screenHandlers.displayFrame = callback;
 
@@ -248,7 +248,7 @@ struct ScreenConfig
     bool fullscreen;
     const X_Palette* palette;
 
-    X_ScreenEventHandlers screenHandlers;
+    ScreenEventHandlers screenHandlers;
 };
 
 struct X_Config
