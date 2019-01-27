@@ -15,5 +15,8 @@
 
 #pragma once
 
-void x_socket_nspire_register_interface(void);
+#include "Component.hpp"
+#include "object/CameraObject.hpp"
+
+using CameraComponent = Component<CameraObject>;
 

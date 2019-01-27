@@ -31,6 +31,7 @@
 
 X_EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
+bool Engine::isDone = false;
 
 static void initSystem(SystemConfig& config)
 {
@@ -74,6 +75,11 @@ void Engine::shutdownEngine()
     x_log_cleanup();
 }
 
+void Engine::quit()
+{
+    isDone = true;
+}
+
 static void lockToFrameRate(X_EngineContext* engineContext)
 {
     int diff = Clock::getTicks() - engineContext->frameStart;
@@ -105,6 +111,13 @@ static void lockToFrameRate(X_EngineContext* engineContext)
 
 static void runFrame(X_EngineContext* engineContext)
 {
+    x_platform_handle_keys(engineContext);
+
+    if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_ESCAPE))
+    {
+        Engine::quit();
+    }
+
     engineContext->lastFrameStart = engineContext->frameStart;
     engineContext->frameStart = Clock::getTicks();
     engineContext->timeDelta = fp::fromInt(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
@@ -115,6 +128,8 @@ static void runFrame(X_EngineContext* engineContext)
     lockToFrameRate(engineContext);
 
     x_renderer_render_frame(engineContext);
+
+    engineContext->getPlatform()->getScreenDriver().update(engineContext->getScreen());
 }
 
 void Engine::run()

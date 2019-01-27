@@ -25,6 +25,9 @@
 #include "object/CameraObject.hpp"
 #include "util/StopWatch.hpp"
 #include "level/Portal.hpp"
+#include "entity/CameraComponent.hpp"
+#include "entity/TransformComponent.hpp"
+#include "entity/Entity.hpp"
 
 static void x_renderer_init_console_vars(X_Renderer* renderer, Console* console)
 {
@@ -147,25 +150,25 @@ static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
     return;
 #endif
     
-    CameraObject* cam = context->getScreen()->cameraListHead;
-    int w;
-    int h;
-    
-    context->getRenderer()->scaleScreen = atoi(argv[1]) != 0;
-    
-    if(context->getRenderer()->scaleScreen)
-    {
-        w = 320 / 2;
-        h = 240 / 2;
-    }
-    else
-    {
-        w = 320;
-        h = 240;
-    }
-    
-    // FIXME: don't hardcode angle
-    cam->viewport.init(Vec2(0, 0), w, h, fp(X_ANG_60));
+//    CameraObject* cam = context->getScreen()->cameraListHead;
+//    int w;
+//    int h;
+//
+//    context->getRenderer()->scaleScreen = atoi(argv[1]) != 0;
+//
+//    if(context->getRenderer()->scaleScreen)
+//    {
+//        w = 320 / 2;
+//        h = 240 / 2;
+//    }
+//    else
+//    {
+//        w = 320;
+//        h = 240;
+//    }
+//
+//    // FIXME: don't hardcode angle
+//    cam->viewport.init(Vec2(0, 0), w, h, fp(X_ANG_60));
 }
 
 #define MAX_SURFACES 300
@@ -304,9 +307,6 @@ static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engine
     renderer->maxPortalDepth = 1;
 }
 
-// FIXME: just for testing...
-void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext);
-
 static void clear_zbuffer(X_EngineContext* engineContext)
 {
     engineContext->getScreen()->clearZBuf();
@@ -430,8 +430,6 @@ void X_Renderer::renderCamera(CameraObject* cam, X_EngineContext* engineContext)
     x_cameraobject_render(cam, &renderContext);
     StopWatch::stop("traverse-level");
 
-    customRenderCallback(engineContext, &renderContext);
-
     x_ae_context_scan_edges(&activeEdgeContext);
 
     int recursionDepth = 1;
@@ -470,14 +468,27 @@ void x_renderer_render_frame(X_EngineContext* engineContext)
     fill_with_background_color(engineContext);
     mark_lights(engineContext);
 
-    if(!x_engine_level_is_loaded(engineContext))
+
+    if(engineContext->getCurrentLevel() == nullptr)
     {
         return;
     }
+
+    Array<CameraComponent> cameras = CameraComponent::getAll();
     
-    for(CameraObject* cam = engineContext->getScreen()->cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+    for(auto& camera : cameras)
     {
-        engineContext->getRenderer()->renderCamera(cam, engineContext);
+        TransformComponent* transformComponent = camera.owner->getComponent<TransformComponent>();
+
+        camera.position = transformComponent->getPosition();
+
+        // FIXME: remove angles from camera
+        camera.angleX = 0;
+        camera.angleY = 0;
+        camera.updateView();
+        transformComponent->toMat4x4(camera.viewMatrix);
+
+        engineContext->getRenderer()->renderCamera(&camera, engineContext);
     }
 }
 

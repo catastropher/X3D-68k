@@ -54,13 +54,10 @@ include_directories(${X_HEADER_PATH}/X3D)
 include_directories(${X_HEADER_PATH})
 
 add_executable(xtest
-    src/init.cpp
-    src/keys.cpp
+        src/keys.cpp
     src/main.cpp
     src/render.cpp
-    src/screen.cpp
-    src/game.cpp
-    src/PlayerMoveLogic.cpp
+        src/PlayerMoveLogic.cpp
 )
 
 find_package(SDL REQUIRED)

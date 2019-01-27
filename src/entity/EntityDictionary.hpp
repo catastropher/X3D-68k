@@ -44,11 +44,11 @@ struct X_EdictAttribute
     char* value;
 };
 
+template<typename T>
+void edictParseAttribute(const char* value, T& outValue);
+
 struct X_Edict
 {
-    template<typename T>
-    bool getValue(const char* name, T& outValue);
-
     template<typename T>
     bool getValueOrDefault(const char* name, T& outValue, const T& defaultValue)
     {
@@ -81,6 +81,23 @@ struct X_Edict
         if(!getValue(name, outValue))
         {
             x_system_error("Missing required value: %s.", name);
+        }
+    }
+
+    template<typename T>
+    bool getValue(const char *name, T &outValue)
+    {
+        X_EdictAttribute* attribute = getAttribute(name);
+
+        if(attribute == nullptr)
+        {
+            return false;
+        }
+        else
+        {
+            edictParseAttribute(attribute->value, outValue);
+
+            return true;
         }
     }
 

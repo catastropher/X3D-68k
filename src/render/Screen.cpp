@@ -16,42 +16,6 @@
 #include "Screen.hpp"
 #include "object/CameraObject.hpp"
 
-void Screen::attachCamera(CameraObject* camera)
-{
-    camera->nextInCameraList = NULL;
-    
-    if(!cameraListHead)
-    {
-        cameraListHead = camera;
-        return;
-    }
-    
-    CameraObject* currentCam = cameraListHead;
-    while(currentCam->nextInCameraList)
-    {
-        currentCam = currentCam->nextInCameraList;
-    }
-    
-    currentCam->nextInCameraList = camera;
-}
-
-void Screen::detachCamera(CameraObject* camera)
-{
-    CameraObject* currentCam = cameraListHead;
-    while(currentCam && currentCam->nextInCameraList != camera)
-    {
-        currentCam = currentCam->nextInCameraList;
-    }
-    
-    bool camWasInList = currentCam != nullptr;
-    if(!camWasInList)
-    {
-        return;
-    }
-    
-    currentCam->nextInCameraList = currentCam->nextInCameraList->nextInCameraList;
-}
-
 void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
 {
     canvas.resize(newW, newH);
@@ -59,12 +23,12 @@ void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
     x_free(zbuf);
     zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
     
-    // Broadcast to cameras the change so they can update their viewports
-    for(CameraObject* cam = cameraListHead; cam != NULL; cam = cam->nextInCameraList)
-    {
-        if(cam->screenResizeCallback != nullptr)
-        {
-            cam->screenResizeCallback(cam, this, newFov);
-        }
-    }
+    // FIXME: Broadcast to cameras the change so they can update their viewports
+//    for(CameraObject* cam = cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+//    {
+//        if(cam->screenResizeCallback != nullptr)
+//        {
+//            cam->screenResizeCallback(cam, this, newFov);
+//        }
+//    }
 }

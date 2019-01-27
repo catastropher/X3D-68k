@@ -35,22 +35,6 @@ void CameraObject::overrideBspLeaf(int leafId, BspLevel* level)
     flags.set(CAMERA_OVERRIDE_PVS);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Creates a new camera object.
-/// @todo Determine how to best initialize a camera
-////////////////////////////////////////////////////////////////////////////////
-CameraObject* x_cameraobject_new(X_EngineContext* context)
-{
-    CameraObject* cam = (CameraObject*)x_gameobject_new(context, sizeof(CameraObject));
-    
-    cam->lastLeaf = NULL;
-    cam->screenResizeCallback = NULL;
-    cam->base.velocity = x_vec3_origin();
-    cam->base.type = &g_cameraObjectType;
-    cam->flags.clear();
-    
-    return cam;
-}
 
 void CameraObject::updateView()
 {

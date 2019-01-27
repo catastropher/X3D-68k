@@ -46,7 +46,6 @@ public:
         canvas.resize(w, h);
         zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
         
-        cameraListHead = NULL;
         this->handlers = handlers;
     }
     
@@ -75,8 +74,6 @@ public:
         return Vec2(getW() / 2, getH() / 2);
     }
     
-    void attachCamera(CameraObject* camera);
-    void detachCamera(CameraObject* camera);
     void restartVideo(int newW, int newH, x_fp16x16 newFov);
     
     ~Screen()
@@ -87,7 +84,6 @@ public:
     X_Texture canvas;
     x_fp0x16* zbuf;
     
-    struct CameraObject* cameraListHead;
     const X_Palette* palette;
     ScreenEventHandlers handlers;
     

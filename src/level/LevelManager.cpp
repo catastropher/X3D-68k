@@ -17,7 +17,7 @@
 #include "BspLevelLoader.hpp"
 #include "entity/EntityManager.hpp"
 
-void LevelManager::switchLevel(const char *fileName)
+void LevelManager::switchLevel(const char* fileName)
 {
     if(currentLevel != nullptr)
     {
@@ -27,7 +27,7 @@ void LevelManager::switchLevel(const char *fileName)
     currentLevel = loadLevel(fileName);
 }
 
-void LevelManager::unloadLevel(BspLevel *level)
+void LevelManager::unloadLevel(BspLevel* level)
 {
     entityManager.destroyAllEntities();
 }
@@ -41,3 +41,4 @@ BspLevel *LevelManager::loadLevel(const char *fileName)
 
     return newLevel;
 }
+

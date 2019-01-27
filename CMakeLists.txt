@@ -59,9 +59,6 @@ endif()
 include_directories(src/)
 
 set(X_SOURCES
-    # client
-        src/client/Client.cpp
-
     # dev
         src/dev/console/AutoCompleter.cpp
         src/dev/console/DefaultCommands.cpp
@@ -124,17 +121,8 @@ set(X_SOURCES
         src/memory/Factory.cpp
         src/memory/String.cpp
 
-    # net
-        src/net/Net.cpp
-    
     # object
-#        src/object/ButtonObject.cpp
-#        src/object/CameraObject.cpp
-#        src/object/GameObject.cpp
-#        src/object/GameObjectLoader.cpp
-#        src/object/ObjectFactory.cpp
-#        src/object/PlatformObject.cpp
-#        src/object/WorldObject.cpp
+        src/object/CameraObject.cpp
 
     # physics
     src/physics/PhysicsEngine.cpp
@@ -154,10 +142,6 @@ set(X_SOURCES
         src/render/Texture.cpp
         src/render/TriangleFiller.cpp
         src/render/Viewport.cpp
-    
-    # server
-        src/server/Server.cpp
-        src/server/ServerPackets.cpp
 
     # system
     src/system/Clock.cpp
@@ -179,8 +163,7 @@ set(X_SOURCES
 if(${XTARGET} STREQUAL "pc")
     set(X_SOURCES ${X_SOURCES}
         src/platform/platform_pc.cpp
-        src/platform/socket_pc.cpp
-    )
+            )
     
     if(${USE_TILIBS} STREQUAL "1")
         message("Building with tilibs")
@@ -205,7 +188,6 @@ if(${XTARGET} STREQUAL "nspire")
     set(X_SOURCES ${X_SOURCES}
             src/render/span-arm.s
         src/platform/platform_nspire.cpp
-        src/platform/socket_nspire.cpp
             src/platform/nspire/NspireScreenDriver.cpp
     )
 endif()
@@ -219,7 +201,7 @@ if(DEFINED X_WITH_SDL)
     set(X_SOURCES ${X_SOURCES}
             src/platform/SDL.cpp
             src/platform/SDL/SdlScreenDriver.cpp
-            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/render/IRenderer.hpp src/render/Renderer.cpp src/render/Renderer.hpp)
+            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/render/IRenderer.hpp src/render/Renderer.cpp src/render/Renderer.hpp src/entity/CameraComponent.hpp)
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})

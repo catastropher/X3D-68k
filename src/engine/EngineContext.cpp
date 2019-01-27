@@ -31,15 +31,11 @@
 
 static inline void init_object_factory(X_EngineContext* context)
 {
-    x_objectfactory_init(context->getGameObjectFactory(), context);
-    
     context->activeObjectHead.nextActive = &context->activeObjectTail;
     context->activeObjectHead.prevActive = NULL;
     
     context->activeObjectTail.nextActive = NULL;
     context->activeObjectTail.prevActive = &context->activeObjectHead;
-    
-    x_gameobject_register_default_types(context->getGameObjectFactory());
 }
 
 static inline void init_screen(X_EngineContext* context, X_Config* config)
@@ -73,7 +69,7 @@ static inline void init_keystate(X_EngineContext* context)
 
 static inline void cleanup_object_factory(X_EngineContext* context)
 {
-    x_objectfactory_cleanup(context->getGameObjectFactory());
+
 }
 
 static inline void cleanup_screen(X_EngineContext* context)

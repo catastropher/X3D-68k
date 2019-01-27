@@ -24,7 +24,7 @@ Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
     Entity* entity = tryCreateEntity(edict, level);
     if(!entity)
     {
-        Log::error("Failed to create entity of type ");
+        return nullptr;
     }
 
     registerEntity(entity);
@@ -52,8 +52,15 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 
     if(createEntityCallback != nullptr)
     {
-        return createEntityCallback(edict, level);
+        return createEntityCallback(classname->value, edict, level);
     }
+
+    if(strcmp(classname->value, "info_player_start") == 0)
+    {
+        x_system_error("Game does not implement entity info_player_start");
+    }
+
+    Log::error("Failed to create entity of type %s", classname->value);
 
     return nullptr;
 }
@@ -81,4 +88,30 @@ void EntityManager::updateEntities(X_Time currentTime)
     }
 }
 
+void EntityManager::destroyEntity(Entity* entity)
+{
+    // TODO: method to check if an entity is currently registered
+    if(entity->id != -1)
+    {
+        entities[entity->id] = nullptr;
+
+        while(entities.size() != 0 && entities[entities.size() - 1] == nullptr)
+        {
+            entities.pop_back();
+        }
+    }
+
+    delete entity;
+}
+
+void EntityManager::destroyAllEntities()
+{
+    for(int i = 0; i < (int)entities.size(); ++i)
+    {
+        if(entities[i] != nullptr)
+        {
+            destroyEntity(entities[i]);
+        }
+    }
+}
 

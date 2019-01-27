@@ -15,9 +15,6 @@
 
 #pragma once
 
-// client
-#include "client/Client.hpp"
-
 // dev
 #include "dev/console/Console.hpp"
 
@@ -40,15 +37,15 @@
 
 // entity
 #include "entity/BoxColliderComponent.hpp"
+#include "entity/CameraComponent.hpp"
 #include "entity/Entity.hpp"
+#include "entity/EntityDictionary.hpp"
+#include "entity/EntityManager.hpp"
 #include "entity/TransformComponent.hpp"
 
 // error
 #include "error/Error.hpp"
 #include "error/Log.hpp"
-
-// game
-#include "game/Game.hpp"
 
 // level
 #include "level/BspLevel.hpp"
@@ -56,6 +53,7 @@
 #include "level/BspRayTracer.hpp"
 #include "level/EntityModel.hpp"
 #include "level/EntityModelLoader.hpp"
+#include "level/LevelManager.hpp"
 #include "level/Portal.hpp"
 
 // math
@@ -75,9 +73,6 @@
 #include "memory/OldLink.hpp"
 #include "memory/Memory.hpp"
 #include "memory/String.h"
-
-// net
-#include "net/Net.hpp"
 
 // object
 #include "object/ButtonObject.hpp"
@@ -105,9 +100,6 @@
 #include "render/StatusBar.hpp"
 #include "render/Texture.hpp"
 #include "render/Viewport.hpp"
-
-// server
-#include "server/Server.hpp"
 
 // system
 #include "system/File.hpp"

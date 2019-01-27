@@ -34,8 +34,13 @@ namespace internal
         {
             orientation = orientation_;
         }
+
+        void getOrientation(Quaternion& outOrientation) const
+        {
+            outOrientation = orientation;
+        }
         
-        void toMat4x4(Mat4x4& dest) const
+        void toMat4x4(Mat4x4& outMat4x4) const
         {
             Mat4x4 rotation;
             orientation.toMat4x4(rotation);
@@ -43,7 +48,7 @@ namespace internal
             Mat4x4 translation;
             translation.loadTranslation(position);
             
-            dest = translation * rotation;
+            outMat4x4 = translation * rotation;
         }
         
         Vec3fp getPosition()

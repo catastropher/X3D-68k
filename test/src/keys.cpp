@@ -16,8 +16,6 @@
 #include <SDL/SDL.h>
 #include <X3D/X3D.hpp>
 
-#include "Context.h"
-
 #ifdef __nspire__
 
 #define KEY_FORWARD '7'
@@ -30,22 +28,7 @@
 
 #endif
 
-static Context* g_Context;
-
 bool physics = 1;
-
-void init_keys(Context* context)
-{
-    g_Context = context;
-    
-    x_console_register_var(context->engineContext->getConsole(), &g_Context->moveSpeed, "moveSpeed", X_CONSOLEVAR_FP16X16, "150.0", 0);
-    x_console_register_var(context->engineContext->getConsole(), &physics, "physics", X_CONSOLEVAR_BOOL, "1", 0);
-}
-
-void cleanup_keys(Context* context)
-{
-    
-}
 
 void handle_console_keys(X_EngineContext* context)
 {
@@ -83,29 +66,29 @@ bool handle_console(X_EngineContext* engineContext)
     return 0;
 }
 
-void mouseLook(Player* player, Vec2_fp16x16 angleOffset, fp timeDelta)
-{
-    player->angleX += fp(angleOffset.x);
-    player->angleY += fp(angleOffset.y);
-    
-    fp x(player->angleX);
-    adjustAngle(x);
-    
-    fp y(player->angleY);
-    adjustAngle(y);
-    
-    player->angleX = x.toFp16x16();
-    player->angleY = y.toFp16x16();
-}
+//void mouseLook(Player* player, Vec2_fp16x16 angleOffset, fp timeDelta)
+//{
+//    player->angleX += fp(angleOffset.x);
+//    player->angleY += fp(angleOffset.y);
+//
+//    fp x(player->angleX);
+//    adjustAngle(x);
+//
+//    fp y(player->angleY);
+//    adjustAngle(y);
+//
+//    player->angleX = x.toFp16x16();
+//    player->angleY = y.toFp16x16();
+//}
 
-void handle_mouse(Context* context)
-{
-    X_MouseState* state = context->engineContext->getMouseState();
-    mouseLook(
-        context->player,
-        x_mousestate_get_mouselook_angle_change(state),
-        context->engineContext->timeDelta);
-}
+//void handle_mouse(Context* context)
+//{
+//    X_MouseState* state = context->engineContext->getMouseState();
+//    mouseLook(
+//        context->player,
+//        x_mousestate_get_mouselook_angle_change(state),
+//        context->engineContext->timeDelta);
+//}
 
 #include "Player.hpp"
 #include "PlayerMoveLogic.hpp"
@@ -158,35 +141,26 @@ PlayerKeyFlags getPlayerKeys(X_KeyState* keyState)
     return keys;
 }
 
-void handle_keys(Context* context)
+void handle_keys()
 {
-    x_platform_handle_keys(context->engineContext);
-    x_platform_handle_mouse(context->engineContext);
-    
-    if(x_keystate_key_down(context->engineContext->getKeyState(), X_KEY_ESCAPE))
-        context->quit = 1;
-    
-    if(handle_console(context->engineContext))
-        return;
-    
-    X_KeyState* keyState = context->engineContext->getKeyState();
-
-    
-    handle_mouse(context);
-    
-    PlayerMoveLogic moveLogic(*context->player, context->moveSpeed, physics, context->engineContext->timeDelta);
-    
-    PlayerKeyFlags keys = getPlayerKeys(keyState);
-    
-    moveLogic.applyMovement(keys, x_engine_get_current_level(context->engineContext));
-    
-    
-//     if(!x_demoplayer_is_playing(&g_Context->demoPlayer))
-//       handle_angle_keys(context->cam, keyState);
-//     
-//     if(handle_no_collision_keys(context->engineContext, context->cam, keyState))
-//         return;
-//     
-//     handle_normal_movement(context->engineContext, context->cam);
+//    x_platform_handle_keys(context->engineContext);
+//    x_platform_handle_mouse(context->engineContext);
+//
+//    if(x_keystate_key_down(context->engineContext->getKeyState(), X_KEY_ESCAPE))
+//        context->quit = 1;
+//
+//    if(handle_console(context->engineContext))
+//        return;
+//
+//    X_KeyState* keyState = context->engineContext->getKeyState();
+//
+//
+//    handle_mouse(context);
+//
+//    PlayerMoveLogic moveLogic(*context->player, context->moveSpeed, physics, context->engineContext->timeDelta);
+//
+//    PlayerKeyFlags keys = getPlayerKeys(keyState);
+//
+//    moveLogic.applyMovement(keys, x_engine_get_current_level(context->engineContext));
 }
 

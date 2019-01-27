@@ -33,13 +33,22 @@ enum class PlayerKeys
 
 using PlayerKeyFlags = EnumBitSet<PlayerKeys>;
 
-class Player : Entity
+class Player : public Entity
 {
 public:
     Player(X_Edict& edict, BspLevel& level)
         : Entity(level)
     {
-        auto collider = addComponent<BoxColliderComponent>();
+        //auto collider = addComponent<BoxColliderComponent>();
+
+        Vec3fp position;
+        edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0));
+
+        getTransform().setPosition(position);
+
+        CameraComponent* cam = addComponent<CameraComponent>();
+
+        cam->viewport.init(Vec2(0, 0), 640, 480, X_ANG_60);
     }
     
     CameraObject& getCamera()
@@ -59,16 +68,7 @@ public:
 
     void update(X_Time currentTime)
     {
-        auto collider = getComponent<BoxColliderComponent>();
 
-        int id = -1;
-
-        if(collider->standingOnEntity != nullptr)
-        {
-            id = collider->standingOnEntity->getId();
-        }
-
-        StatusBar::setItem("Standing on", "%d", id);
     }
     
     CameraObject camera;

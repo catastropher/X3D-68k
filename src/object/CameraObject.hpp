@@ -48,7 +48,6 @@ typedef struct CameraObject
     Mat4x4 viewMatrix;
     x_fp16x16 angleX;
     x_fp16x16 angleY;
-    struct CameraObject* nextInCameraList;
     struct X_BspLeaf* currentLeaf;
     struct X_BspLeaf* lastLeaf;
     DecompressedLeafVisibleSet pvsForCurrentLeaf;
@@ -56,7 +55,6 @@ typedef struct CameraObject
     void (*screenResizeCallback)(struct CameraObject* cam, struct Screen* screen, x_fp16x16 fov);
 } X_CameraObject;
 
-CameraObject* x_cameraobject_new(struct X_EngineContext* context);
 void x_cameraobject_render(CameraObject* cam, struct X_RenderContext* renderContext);
 
 static inline Vec3fp x_cameraobject_get_position(CameraObject* cam)

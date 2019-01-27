@@ -23,7 +23,7 @@
 
 struct X_Edict;
 
-using CreateEntityCallback = Entity* (*)(X_Edict& edict, BspLevel& level);
+using CreateEntityCallback = Entity* (*)(const char* name, X_Edict& edict, BspLevel& level);
 
 class EntityManager
 {

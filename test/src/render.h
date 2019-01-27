@@ -15,7 +15,3 @@
 
 #pragma once
 
-#include "Context.h"
-
-void render(Context* context);
-

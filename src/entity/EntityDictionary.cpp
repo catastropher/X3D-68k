@@ -1,6 +1,7 @@
 #include "EntityDictionary.hpp"
 #include "geo/Vec3.hpp"
 
+template<>
 void edictParseAttribute(const char *value, bool &outValue)
 {
     if(strcmp(value, "true") == 0)
@@ -17,11 +18,13 @@ void edictParseAttribute(const char *value, bool &outValue)
     }
 }
 
+template<>
 void edictParseAttribute(const char* value, int& outValue)
 {
     outValue = atoi(value);
 }
 
+template<>
 void edictParseAttribute(const char* value, BrushModelId& outValue)
 {
     // Skip over '*' character
@@ -36,6 +39,7 @@ void edictParseAttribute(const char* value, char* outValue)
     strcpy(outValue, value);
 }
 
+template<>
 void edictParseAttribute(const char* value, Vec3fp& dest)
 {
     Vec3f v;
@@ -44,20 +48,22 @@ void edictParseAttribute(const char* value, Vec3fp& dest)
     dest = v.toVec3<fp>();
 }
 
-template<typename T>
-bool X_Edict::getValue(const char *name, T &outValue)
+X_EdictAttribute *X_Edict::getAttribute(const char *name)
 {
-    X_EdictAttribute* attribute = getAttribute(name);
-
-    if(attribute == nullptr)
+    for(int i = 0; i < totalAttributes; ++i)
     {
-        return false;
+        if(strcmp(name, attributes[i].name) == 0)
+        {
+            return attributes + i;
+        }
     }
-    else
-    {
-        edictParseAttribute(attribute->value, outValue);
 
-        return true;
-    }
+    return nullptr;
 }
+
+bool X_Edict::hasAttribute(const char *name)
+{
+    return getAttribute(name) != nullptr;
+}
+
 

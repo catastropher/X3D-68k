@@ -18,35 +18,22 @@
 #include <unistd.h>
 #include <math.h>
 
-#include "Context.h"
-#include "screen.h"
 #include "keys.h"
-#include "init.h"
 #include "render.h"
+#include "Player.hpp"
 
-#include "game.hpp"
-
-TestGame* game;
-
-void customRenderCallback(X_EngineContext* engineContext, X_RenderContext* renderContext)
+static Entity* createEntityCallback(const char* entityType, X_Edict& edict, BspLevel& level)
 {
+    if(strcmp(entityType, "info_player_start") == 0)
+    {
+        return new Player(edict, level);
+    }
 
- //   polygon.renderWireframe(*renderContext, 255);
-    
-  //  engineContext->getRenderer()->activeEdgeContext.addPortalPolygon(polygon, tracer.collisionPlane, BoundBoxFrustumFlags((1 << 4) - 1), 0);
+    return nullptr;
 }
 
 int main(int argc, char* argv[])
 {
-    SystemConfig sysConfig;
-
-    sysConfig.programPath = argv[0];
-
-    initSystem(sysConfig);
-
-    FileSystem::addSearchPath("../assets");
-    FileSystem::addSearchPath("../maps");
-
 #ifdef __nspire__
     int screenW = 320;
     int screenH = 240;
@@ -59,18 +46,23 @@ int main(int argc, char* argv[])
         .fieldOfView(X_ANG_60)
         .resolution(screenW, screenH)
         .useQuakeColorPalette();
-    
+
     X_Config config = X_Config()
         .programPath(argv[0])
-        .defaultFont("font.xtex")
+        .defaultFont("../assets/font.xtex")
         .screenConfig(screenConfig);
 
-    TestGame game(config);
-    ::game = &game;
-    game.run();
+    config.systemConfig.programPath = argv[0];
 
-    MemoryManager::cleanup();
+    X_EngineContext* engineContext = Engine::init(config);
 
-    x_log_cleanup();
+    FileSystem::addSearchPath("../assets");
+    FileSystem::addSearchPath("../maps");
+
+    engineContext->entityManager->setCreateEntityCallback(createEntityCallback);
+
+    x_console_execute_cmd(engineContext->getConsole(), "exec engine.cfg;exec ../engine.cfg");
+
+    Engine::run();
 }
 
