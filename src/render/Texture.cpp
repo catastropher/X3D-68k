@@ -21,7 +21,7 @@
 #include "util/Util.hpp"
 #include "Font.hpp"
 #include "system/File.hpp"
-#include "render/Renderer.hpp"
+#include "render/OldRenderer.hpp"
 
 bool X_Texture::saveToFile(const char* fileName)
 {

@@ -51,16 +51,18 @@ public:
     }
     
 protected:
-    Entity()
-        : nextUpdate(0)
+    explicit Entity(BspLevel& level_)
+        : id(-1),
+        level(level_),
+        nextUpdate(0)
     {
         addComponent<TransformComponent>();
     }
     
-    template<typename TComponent>
-    TComponent* addComponent()
+    template<typename TComponent, typename ...Args>
+    TComponent* addComponent(Args&&... args)
     {
-        TComponent* component =  componentManager.add<TComponent>();
+        TComponent* component =  componentManager.add<TComponent>(std::forward<Args>(args)...);
         
         component->owner = this;
         
@@ -69,7 +71,7 @@ protected:
     
     BspLevel& getLevel()
     {
-        return *level;
+        return level;
     }
     
     void setNextUpdateTime(X_Time nextUpdate)
@@ -80,7 +82,7 @@ protected:
 private:    
     int id;
     ComponentManager componentManager;
-    BspLevel* level;
+    BspLevel& level;
     X_Time nextUpdate;
     
     friend class EntityManager;

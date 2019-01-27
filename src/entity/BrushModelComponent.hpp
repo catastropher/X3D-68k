@@ -26,15 +26,15 @@ namespace internal
     class BrushModel
     {
     public:
-        BrushModel()
-            : model(nullptr)
+        BrushModel(BspModel* model_)
+            : model(model_)
         {
             
         }
-        
+
+        BrushModel(const X_Edict& edict, const BspLevel& level);
+
         BspModel* model;
-        
-        void initFromEdict(X_Edict& edict, BspLevel& level);
         
     private:
     };

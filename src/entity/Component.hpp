@@ -31,7 +31,6 @@ const int COMPONENT_INVALID_ID = -1;
 struct ComponentType
 {
     void (*deleteComponent)(int id);
-    void (*deleteAll)();
 };
 
 struct ComponentHandle
@@ -58,17 +57,23 @@ template<typename TComponent>
 class Component : public TComponent
 {
 public:
+    template<typename ...Args>
+    Component(Args&&... args)
+        : TComponent(std::forward<Args>(args)...)
+    {
+
+    }
+
     Entity* owner;
-    
-    static Component* add(ComponentHandle& dest)
+
+    template<typename ...Args>
+    static Component* add(ComponentHandle& dest, Args&&... args)
     {
         int id = components.size();
         
-        components.push_back(Component());
+        components.push_back(Component(std::forward<Args>(args)...));
         
         Component* component = &components[id];
-        
-        new (component) Component();
         
         dest.id = id;
         dest.type = &type;
@@ -81,11 +86,6 @@ public:
         components[id].owner = nullptr;
     }
     
-    static void deleteAll()
-    {
-        components.clear();
-    }
-    
     static Component* getById(int id)
     {
         if(id < 0 || id >= (int)components.size())
@@ -96,17 +96,18 @@ public:
         return &components[id];
     }
     
-    static Array<Component> getAll()
-    {
-        return Array<Component>(&components[0], components.size());
-    }
-    
     static ComponentType* getType()
     {
         return &type;
     }
 
+    static Array<Component> getAll()
+    {
+        return Array<Component>(&components[0], components.size());
+    }
+
 private:
+
     static std::vector<Component> components;
     static ComponentType type;
 };
@@ -117,8 +118,7 @@ std::vector<Component<TComponent>> Component<TComponent>::components;
 template<typename TComponent>
 ComponentType Component<TComponent>::type = 
 {
-    deleteComponent,
-    deleteAll
+    deleteComponent
 };
 
 class ComponentManager
@@ -130,11 +130,11 @@ public:
         
     }
     
-    template<typename TComponent>
-    TComponent* add()
+    template<typename TComponent, typename ...Args>
+    TComponent* add(Args&... args)
     {
         // TODO: check whether that component already exists
-       return TComponent::add(handles[totalHandles++]);
+       return TComponent::add(handles[totalHandles++], std::forward<Args>(args)...);
     }
     
     template<typename TComponent>

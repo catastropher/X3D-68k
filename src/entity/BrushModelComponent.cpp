@@ -14,15 +14,19 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BrushModelComponent.hpp"
-#include "object/GameObjectLoader.hpp"
+#include "EntityDictionary.hpp"
+#include "level/BspLevel.hpp"
 
 namespace internal
 {
-    void BrushModel::initFromEdict(X_Edict& edict, BspLevel& level)
+    BrushModel::BrushModel(const X_Edict& edict, const BspLevel& level)
     {
-        int modelId = x_edict_get_model_id(&edict, "model");
-        
-        model = x_bsplevel_get_model(&level, modelId);
+        return;
+
+//        BrushModelId id;
+//        edict.getValue("model", id);
+//
+//        model = x_bsplevel_get_model(&level, id.id);
     }
 }
 

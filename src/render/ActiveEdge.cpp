@@ -21,7 +21,7 @@
 #include "geo/Polygon3.hpp"
 #include "geo/Polygon2.hpp"
 #include "Span.hpp"
-#include "render/Renderer.hpp"
+#include "render/OldRenderer.hpp"
 #include "engine/EngineContext.hpp"
 #include "object/CameraObject.hpp"
 #include "util/StopWatch.hpp"

@@ -36,7 +36,8 @@ using PlayerKeyFlags = EnumBitSet<PlayerKeys>;
 class Player : Entity
 {
 public:
-    Player()
+    Player(X_Edict& edict, BspLevel& level)
+        : Entity(level)
     {
         auto collider = addComponent<BoxColliderComponent>();
     }

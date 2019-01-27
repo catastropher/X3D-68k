@@ -55,9 +55,6 @@ private:
 
         x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -289 -162 192");
         x_console_execute_cmd(context.engineContext->getConsole(), "cam.pos -12.899673 663.968750 128.273361");
-        
-
-        x_gameobjectloader_load_objects(getInstance(), getInstance()->getCurrentLevel()->entityDictionary);
     }
     
     static void cmdPos(X_EngineContext* engineContext, int argc, char* argv[])

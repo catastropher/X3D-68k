@@ -15,6 +15,7 @@
 
 #include "Config.hpp"
 #include "object/CameraObject.hpp"
+#include "entity/EntityManager.hpp"
 
 #include <time.h>
 
@@ -26,6 +27,7 @@
 #include "error/Error.hpp"
 #include "render/RenderContext.hpp"
 #include "system/Clock.hpp"
+#include "level/LevelManager.hpp"
 
 static inline void init_object_factory(X_EngineContext* context)
 {
@@ -105,6 +107,9 @@ void x_enginecontext_init(X_EngineContext* context, X_Config* config)
     init_main_font(context, config->font, 8, 8);     // TODO: this should be configurable
     init_console(context);
     init_keystate(context);
+
+    context->entityManager = new EntityManager;
+    context->levelManager = new LevelManager(*context->getEngineQueue(), *context->entityManager);
     
     x_mousestate_init(context->getMouseState(), context->getConsole(), context->getScreen());
     
@@ -118,7 +123,7 @@ void x_enginecontext_restart_video(X_EngineContext* context)
     x_fp16x16 newFov = context->getRenderer()->fov;
     
     if(context->getScreen()->handlers.restartVideo == NULL)
-        x_system_error("No restart video callback");
+        x_system_error("No restart video createEntityCallback");
     
     context->getScreen()->restartVideo(newW, newH, newFov);
     x_renderer_restart_video(context->getRenderer(), context->getScreen());
@@ -165,3 +170,7 @@ void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext
     dest->renderer = engineContext->getRenderer();
 }
 
+BspLevel* X_EngineContext::getCurrentLevel() const
+{
+    return levelManager->getCurrentLevel();
+}

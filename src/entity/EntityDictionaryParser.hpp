@@ -13,14 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "WorldEntity.hpp"
-#include "EntityManager.hpp"
+#pragma once
 
-WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
-    : Entity(level)
-{
-    BspModel* worldModel = x_bsplevel_get_level_model(&getLevel());
-    addComponent<BrushModelComponent>(worldModel);
-}
+class X_Edict;
 
-
+const char* parseEdict(const char* nextEntry, char* valueData, X_Edict* dest);

@@ -16,7 +16,7 @@
 #include "Ray3.hpp"
 #include "Plane.hpp"
 #include "render/RenderContext.hpp"
-#include "render/Renderer.hpp"
+#include "render/OldRenderer.hpp"
 #include "Frustum.hpp"
 #include "math/Mat4x4.hpp"
 #include "object/CameraObject.hpp"

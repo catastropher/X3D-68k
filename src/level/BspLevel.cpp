@@ -18,7 +18,7 @@
 #include "geo/Ray3.hpp"
 #include "render/ActiveEdge.hpp"
 #include "render/RenderContext.hpp"
-#include "render/Renderer.hpp"
+#include "render/OldRenderer.hpp"
 #include "BspLevel.hpp"
 #include "BspLevelLoader.hpp"
 #include "error/Error.hpp"

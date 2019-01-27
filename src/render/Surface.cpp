@@ -16,7 +16,7 @@
 #include <new>
 
 #include "level/BspLevel.hpp"
-#include "Renderer.hpp"
+#include "OldRenderer.hpp"
 #include "Surface.h"
 
 #define X_LIGHTMAP_MAX_SIZE 64

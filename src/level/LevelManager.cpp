@@ -13,14 +13,31 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "WorldEntity.hpp"
-#include "EntityManager.hpp"
+#include "LevelManager.hpp"
+#include "BspLevelLoader.hpp"
+#include "entity/EntityManager.hpp"
 
-WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
-    : Entity(level)
+void LevelManager::switchLevel(const char *fileName)
 {
-    BspModel* worldModel = x_bsplevel_get_level_model(&getLevel());
-    addComponent<BrushModelComponent>(worldModel);
+    if(currentLevel != nullptr)
+    {
+        unloadLevel(currentLevel);
+    }
+
+    currentLevel = loadLevel(fileName);
 }
 
+void LevelManager::unloadLevel(BspLevel *level)
+{
+    entityManager.destroyAllEntities();
+}
 
+BspLevel *LevelManager::loadLevel(const char *fileName)
+{
+    BspLevel* newLevel = new BspLevel;  // FIXME: better memory management
+    x_bsplevel_load_from_bsp_file(newLevel, fileName, &engineQueue);
+
+    entityManager.createEntitesInLevel(*newLevel);
+
+    return newLevel;
+}

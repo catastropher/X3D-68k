@@ -23,14 +23,9 @@ struct X_Edict;
 class PlatformEntity : public Entity
 {
 public:
-    PlatformEntity()
-    {
-        addComponent<BrushModelComponent>();
-    }
+    PlatformEntity(X_Edict& edict, BspLevel& level);
 
     void update(X_Time currentTime);
-    
-    static PlatformEntity* createFromEdict(X_Edict& edict);
     
 private:
     

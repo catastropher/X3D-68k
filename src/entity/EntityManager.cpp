@@ -14,31 +14,60 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "EntityManager.hpp"
-#include "object/GameObjectLoader.hpp"  // FIXME
+#include "EntityDictionary.hpp"
 #include "WorldEntity.hpp"
 #include "PlatformEntity.hpp"
+#include "EntityDictionaryParser.hpp"
 
-std::vector<Entity*> EntityManager::entities;
-
-Entity* EntityManager::createEntityFromEdict(X_Edict& edict)
+Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 {
-    X_EdictAttribute* classname = x_edict_get_attribute(&edict, "classname");
+    Entity* entity = tryCreateEntity(edict, level);
+    if(!entity)
+    {
+        Log::error("Failed to create entity of type ");
+    }
+
+    registerEntity(entity);
+
+    return entity;
+}
+
+Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
+{
+    X_EdictAttribute* classname = edict.getAttribute("classname");
     if(classname == nullptr)
     {
         x_system_error("Edict missing classname");
     }
-    
+
     if(strcmp(classname->value, "worldspawn") == 0)
     {
-        return WorldEntity::createFromEdict(edict);
+        return new WorldEntity(edict, level);
     }
-    
+
     if(strcmp(classname->value, "func_plat") == 0)
     {
-        return PlatformEntity::createFromEdict(edict);
+        return new PlatformEntity(edict, level);
     }
-    
+
+    if(createEntityCallback != nullptr)
+    {
+        return createEntityCallback(edict, level);
+    }
+
     return nullptr;
+}
+
+void EntityManager::createEntitesInLevel(BspLevel& level)
+{
+    const char* nextEntry = level.entityDictionary;
+    char valueData[4096];
+    X_Edict edict;
+
+    while((nextEntry = parseEdict(nextEntry, valueData, &edict)) != nullptr)
+    {
+        createEntityFromEdict(edict, level);
+    }
 }
 
 void EntityManager::updateEntities(X_Time currentTime)

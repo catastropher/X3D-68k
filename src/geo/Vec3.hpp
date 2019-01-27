@@ -135,7 +135,7 @@ inline void convert(Vec3Template<From>& from, Vec3Template<To>& to)
     convert(from.z, to.z);
 }
 
-// FIXME: need specialization becuase Vec3 can't use fp yet
+// FIXME: need specialization because Vec3 can't use fp yet
 template<>
 inline void convert(Vec3Template<float>& from, Vec3Template<x_fp16x16>& to)
 {

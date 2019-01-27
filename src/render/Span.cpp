@@ -18,7 +18,7 @@
 #include "math/Mat4x4.hpp"
 #include "RenderContext.hpp"
 #include "ActiveEdge.hpp"
-#include "Renderer.hpp"
+#include "OldRenderer.hpp"
 #include "Surface.h"
 #include "object/CameraObject.hpp"
 

@@ -13,37 +13,42 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <cstring>
+#pragma once
 
-#include "Renderer.hpp"
-#include "error/Log.hpp"
+#include "engine/EngineQueue.hpp"
 
-void Renderer::render()
+class BspLevel;
+class EntityManager;
+
+class LevelManager
 {
-    if(currentRenderer != nullptr)
+public:
+    LevelManager(EngineQueue &engineQueue_, EntityManager &entityManager)
+        : engineQueue(engineQueue_),
+          entityManager(entityManager),
+          currentLevel(nullptr)
     {
 
     }
-}
 
-bool Renderer::switchRenderer(const char *name)
-{
-    for(RendererOption &option : renderers)
+    BspLevel* getCurrentLevel() const
     {
-        if(strcmp(option.name, name) == 0)
-        {
-            currentRenderer = option.renderer;
-
-            return true;
-        }
+        return currentLevel;
     }
 
-    Log::error("No such renderer %s", name);
+    bool levelIsLoaded() const
+    {
+        return currentLevel != nullptr;
+    }
 
-    return false;
-}
+    void switchLevel(const char* fileName);
 
-void Renderer::addRenderer(IRenderer *renderer, const char* name)
-{
-    renderers.push_back(RendererOption(renderer, name));
-}
+private:
+    void unloadLevel(BspLevel* level);
+    BspLevel* loadLevel(const char* fileName);
+
+    EngineQueue& engineQueue;
+    EntityManager& entityManager;
+
+    BspLevel* currentLevel;
+};

@@ -251,6 +251,15 @@ struct ScreenConfig
     ScreenEventHandlers screenHandlers;
 };
 
+struct SystemConfig
+{
+    const char* programPath = nullptr;
+    const char* logFile = "engine.log";
+    int hunkSize = 4 * 1024 * 1024;
+    int zoneSize = 1024 * 1024;
+    bool enableLogging = true;
+};
+
 struct X_Config
 {
     X_Config()
@@ -294,6 +303,7 @@ struct X_Config
     const char* font;
     ScreenConfig* screen;
     ConfigurationFile configFile;
+    SystemConfig systemConfig;
 };
 
 void x_config_init(X_Config* config);

@@ -17,7 +17,7 @@
 #include "engine/Engine.hpp"
 #include "util/Util.hpp"
 #include "system/PackFile.hpp"
-#include "level/BspLevelLoader.hpp"
+#include "level/LevelManager.hpp"
 
 static void cmd_echo(X_EngineContext* context, int argc, char* argv[])
 {
@@ -42,20 +42,7 @@ static void cmd_map(X_EngineContext* context, int argc, char* argv[])
     // FIXME: this doesn't belong here
     x_cache_flush(&context->getRenderer()->surfaceCache);
     
-    BspLevel* level = new BspLevel;
-    
-    if(!x_bsplevel_load_from_bsp_file(level, fileName, context->getEngineQueue()))
-    {
-        x_console_printf(context->getConsole(), "Failed to load map %s\n", fileName);
-        return;
-    }
-    
-    if(x_engine_level_is_loaded(context))
-    {
-        x_bsplevel_cleanup(context->getCurrentLevel());
-    }
-    
-    context->setCurrentLevel(level);
+    context->levelManager->switchLevel(fileName);
     
     x_console_printf(context->getConsole(), "Loaded map %s\n", fileName);
 }

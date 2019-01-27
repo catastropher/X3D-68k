@@ -1,5 +1,3 @@
-// This file is part of X3D.
-//
 // X3D is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -13,14 +11,15 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "WorldEntity.hpp"
-#include "EntityManager.hpp"
+#pragma once
 
-WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
-    : Entity(level)
+#include "memory/Array.hpp"
+
+class BrushModelComponent;
+
+struct IRenderer
 {
-    BspModel* worldModel = x_bsplevel_get_level_model(&getLevel());
-    addComponent<BrushModelComponent>(worldModel);
-}
-
+    virtual void renderLevel(const BrushModelComponent& level) = 0;
+    virtual void renderBrushModels(const Array<const BrushModelComponent>& components) = 0;
+};
 

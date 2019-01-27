@@ -23,33 +23,51 @@
 
 struct X_Edict;
 
+using CreateEntityCallback = Entity* (*)(X_Edict& edict, BspLevel& level);
+
 class EntityManager
 {
 public:
-    template<typename TEntity, typename ...ConstructorArgs>
-    static TEntity* createEntity(ConstructorArgs&& ...args)
+    EntityManager()
+        : createEntityCallback(nullptr)
     {
-        static_assert(std::is_base_of<Entity, TEntity>::value, "TEntity must derive from Entity");
-        
-        TEntity* entity = new TEntity(std::forward<ConstructorArgs>(args)...);
-        
-        int id = entities.size();
+
+    }
+
+    void registerEntity(Entity* entity)
+    {
         entities.push_back(entity);
-        
-        entity->id = id;
-        
-        // FIXME: the level should be a dependency instead of looking it up with the context
-        auto context = x_engine_get_context();
-        entity->level = x_engine_get_current_level(context);
-        
-        return entity;
+        entity->id = entities.size() - 1;
+    }
+
+    void unregisterEntity(Entity* entity)
+    {
+        if(entity->id == -1)
+        {
+            return;
+        }
+
+        entities[entity->id] = nullptr;
+        entity->id = -1;
+    }
+
+    void setCreateEntityCallback(CreateEntityCallback createEntityCallback)
+    {
+        this->createEntityCallback = createEntityCallback;
     }
     
-    static void updateEntities(X_Time currentTime);
+    void updateEntities(X_Time currentTime);
     
-    static Entity* createEntityFromEdict(X_Edict& edict);
+    Entity* createEntityFromEdict(X_Edict& edict, BspLevel& level);
+    void createEntitesInLevel(BspLevel& level);
+
+    void destroyEntity(Entity* entity);
+    void destroyAllEntities();
     
 private:
-    static std::vector<Entity*> entities;
+    Entity* tryCreateEntity(X_Edict& edict, BspLevel& level);
+
+    std::vector<Entity*> entities;
+    CreateEntityCallback createEntityCallback;
 };
 

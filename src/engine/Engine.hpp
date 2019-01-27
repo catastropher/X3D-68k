@@ -21,26 +21,23 @@
 #define X_MINOR_VERSION 1
 #define X_VERSION (X_MAJOR_VERSION * 1000 + X_MINOR_VERSION)
 
-X_EngineContext* x_engine_init(X_Config* config);
-void x_engine_cleanup(void);
-void x_engine_render_frame(X_EngineContext* engineContext);
-void x_engine_update_objects(X_EngineContext* engineContext);
-
-X_EngineContext* x_engine_get_context();
-
-Console* x_engine_get_console(void);
-
-struct Config;
-
-void initSystem(SystemConfig& config);
-
-static inline bool x_engine_level_is_loaded(const X_EngineContext* context)
+class Engine
 {
-    return context->getCurrentLevel() != nullptr;
-}
+public:
+    static X_EngineContext* init(X_Config& config);
+    static void quit();
+    static void run();
 
-static inline BspLevel* x_engine_get_current_level(X_EngineContext* context)
-{
-    return context->getCurrentLevel();
-}
+    X_EngineContext* getInstance()
+    {
+        return &instance;
+    }
+
+private:
+    static void shutdownEngine();
+
+    static X_EngineContext instance;
+    static bool wasInitialized;
+    static bool isDone;
+};
 

@@ -22,13 +22,15 @@
 #include "render/Font.hpp"
 #include "system/Time.hpp"
 #include "level/BspLevel.hpp"
-#include "render/Renderer.hpp"
+#include "render/OldRenderer.hpp"
 #include "Init.hpp"
 #include "system/Mouse.hpp"
 #include "object/ObjectFactory.hpp"
 #include "EngineQueue.hpp"
 
 struct X_RenderContext;
+class EntityManager;
+class LevelManager;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
@@ -43,7 +45,6 @@ typedef struct X_EngineContext
         mainFont = new X_Font;
         keystate = new X_KeyState;
         mouseState = new X_MouseState;
-        currentLevel = nullptr;
     }
     
     X_ObjectFactory* getGameObjectFactory() const { return gameObjectFactory; }
@@ -52,13 +53,12 @@ typedef struct X_EngineContext
     X_Font* getMainFont() const { return mainFont; }
     X_KeyState* getKeyState() const { return keystate; }
     X_MouseState* getMouseState() const { return mouseState; }
-    BspLevel* getCurrentLevel() const { return currentLevel; }
+    BspLevel* getCurrentLevel() const;
     X_Renderer* getRenderer() const { return renderer; }
     EngineQueue* getEngineQueue() const { return queue; }
 
-    Platform* getPlatform() { return &platform; }
 
-    void setCurrentLevel(BspLevel* level) { currentLevel = level; }
+    Platform* getPlatform() { return &platform; }
 
     X_GameObject activeObjectHead;
     X_GameObject activeObjectTail;
@@ -74,6 +74,8 @@ typedef struct X_EngineContext
 
     Screen* screen;   // FIXME: just exposing to set up DI
     X_Renderer* renderer;
+    EntityManager* entityManager;
+    LevelManager* levelManager;
     
 private:
     X_ObjectFactory* gameObjectFactory;
@@ -81,7 +83,6 @@ private:
     X_Font* mainFont;
     X_KeyState* keystate;
     X_MouseState* mouseState;
-    BspLevel* currentLevel;
     EngineQueue* queue;
 
     Platform platform;

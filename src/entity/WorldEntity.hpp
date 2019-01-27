@@ -22,11 +22,6 @@
 class WorldEntity : public Entity
 {
 public:
-    WorldEntity()
-    {
-        addComponent<BrushModelComponent>();
-    }
-    
-    static WorldEntity* createFromEdict(X_Edict& edict);
+    WorldEntity(X_Edict& edict, BspLevel& level);
 };
 

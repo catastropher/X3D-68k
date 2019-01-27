@@ -80,6 +80,8 @@ set(X_SOURCES
     # entity
     src/entity/BrushModelComponent.cpp
     src/entity/Component.cpp
+    src/entity/EntityDictionary.cpp
+    src/entity/EntityDictionaryParser.cpp
     src/entity/EntityManager.cpp
     src/entity/PlatformEntity.cpp
     src/entity/WorldEntity.cpp
@@ -126,13 +128,13 @@ set(X_SOURCES
         src/net/Net.cpp
     
     # object
-        src/object/ButtonObject.cpp
-        src/object/CameraObject.cpp
-        src/object/GameObject.cpp
-        src/object/GameObjectLoader.cpp
-        src/object/ObjectFactory.cpp
-        src/object/PlatformObject.cpp
-        src/object/WorldObject.cpp
+#        src/object/ButtonObject.cpp
+#        src/object/CameraObject.cpp
+#        src/object/GameObject.cpp
+#        src/object/GameObjectLoader.cpp
+#        src/object/ObjectFactory.cpp
+#        src/object/PlatformObject.cpp
+#        src/object/WorldObject.cpp
 
     # physics
     src/physics/PhysicsEngine.cpp
@@ -144,7 +146,7 @@ set(X_SOURCES
         src/render/ActiveEdge.cpp
         src/render/Font.cpp
         src/render/Palette.cpp
-        src/render/Renderer.cpp
+        src/render/OldRenderer.cpp
         src/render/Screen.cpp
         src/render/Span.cpp
         src/render/Surface.cpp
@@ -217,7 +219,7 @@ if(DEFINED X_WITH_SDL)
     set(X_SOURCES ${X_SOURCES}
             src/platform/SDL.cpp
             src/platform/SDL/SdlScreenDriver.cpp
-    )
+            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/render/IRenderer.hpp src/render/Renderer.cpp src/render/Renderer.hpp)
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})

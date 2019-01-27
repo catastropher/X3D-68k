@@ -15,31 +15,14 @@
 
 #include "PlatformEntity.hpp"
 #include "EntityManager.hpp"
-#include "object/GameObjectLoader.hpp"
+#include "BrushModelComponent.hpp"
 
 #include "level/BrushModelBuilder.hpp"
 
-PlatformEntity* PlatformEntity::createFromEdict(X_Edict& edict)
+PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
+    : Entity(level)
 {
-    auto platform =  EntityManager::createEntity<PlatformEntity>();
-    auto brushModel = platform->getComponent<BrushModelComponent>();
-    
-    brushModel->initFromEdict(edict, platform->getLevel());
-    
-    BrushModelBuilderOptions options;
-    
-    options.sidesInBase = 5;
-    
-    options.origin = Vec3fp(
-        fp::fromFloat(159.377563),
-        fp::fromFloat(64.371002),
-        fp::fromFloat(-822.340271));
-    
-    BrushModelBuilder builder(options, *brushModel->model);
-    
-    //builder.build();
-    
-    return platform;
+    addComponent<BrushModelComponent>(edict, level);
 }
 
 void PlatformEntity::update(X_Time currentTime)
@@ -47,7 +30,7 @@ void PlatformEntity::update(X_Time currentTime)
     printf("Receive update!\n");
     setNextUpdateTime(currentTime + 500);
 
-    BrushModelComponent* brushModel = getComponent<BrushModelComponent>();
+    //BrushModelComponent* brushModel = getComponent<BrushModelComponent>();
 
     //brushModel->model->center.y -= fp::fromInt(10);
 }

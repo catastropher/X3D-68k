@@ -99,7 +99,7 @@
 #include "render/Font.hpp"
 #include "render/Palette.hpp"
 #include "render/RenderContext.hpp"
-#include "render/Renderer.hpp"
+#include "render/OldRenderer.hpp"
 #include "render/Screen.hpp"
 #include "render/Span.hpp"
 #include "render/StatusBar.hpp"

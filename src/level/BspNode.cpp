@@ -18,7 +18,7 @@
 #include "level/BspLevel.hpp"
 #include "level/BspNode.hpp"
 #include "render/RenderContext.hpp"
-#include "render/Renderer.hpp"
+#include "render/OldRenderer.hpp"
 
 void X_BspNode::markAncestorsAsVisible(int currentFrame)
 {

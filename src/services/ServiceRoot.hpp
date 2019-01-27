@@ -15,8 +15,27 @@
 
 #pragma once
 
+class EntityManager;
+class LevelManager;
+class Console;
+class PhysicsEngine;
+class Renderer;
+class Clock;
+class InputManager;     // TODO
+class Screen;
+
+// Things to add in the future:
+//      Memory manager, filesystem
+
 struct ServiceRoot
 {
-    
+    EntityManager* entityManager;
+    LevelManager* levelManager;
+    Console* console;
+    PhysicsEngine* physicsEngine;
+    Renderer* renderer;
+    Clock* clock;
+    InputManager* inputManager;
+    Screen* screen;
 };
 
