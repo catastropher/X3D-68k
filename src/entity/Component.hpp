@@ -84,6 +84,11 @@ public:
     static void deleteComponent(int id)
     {
         components[id].owner = nullptr;
+
+        while(components.size() > 0 && components[components.size() - 1].owner == nullptr)
+        {
+            components.pop_back();
+        }
     }
     
     static Component* getById(int id)
