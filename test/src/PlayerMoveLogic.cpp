@@ -68,8 +68,9 @@ Vec3fp PlayerMoveLogic::getMovementKeyVector(PlayerKeyFlags keys, bool ignoreVer
     
     Vec3fp forward, right, up;
     
-    // TODO: should not use camera
-    player.camera.viewMatrix.extractViewVectors(forward, right, up);
+    Mat4x4 orientation;
+    player.getTransform().toMat4x4(orientation);
+    orientation.extractViewVectors(forward, right, up);
     
     if(ignoreVerticalComponent)
     {

@@ -14,12 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <X3D/X3D.hpp>
-#include <SDL/SDL.h>
-#include <unistd.h>
-#include <math.h>
 
-#include "keys.h"
-#include "render.h"
 #include "Player.hpp"
 
 static Entity* createEntityCallback(const char* entityType, X_Edict& edict, BspLevel& level)

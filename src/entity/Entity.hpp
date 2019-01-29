@@ -20,6 +20,22 @@
 #include "system/Time.hpp"
 
 struct BspLevel;
+class X_EngineContext;
+
+struct EntityUpdate
+{
+    EntityUpdate(X_Time currentTime_, fp deltaTime_, X_EngineContext* engineContext_)
+        : currentTime(currentTime_),
+        deltaTime(deltaTime_),
+        engineContext(engineContext_)
+    {
+
+    }
+
+    X_Time currentTime;
+    fp deltaTime;
+    X_EngineContext* engineContext;
+};
 
 class Entity
 {
@@ -45,7 +61,7 @@ public:
         return componentManager.getComponentId<TComponent>();
     }
     
-    virtual void update(X_Time currentTime)
+    virtual void update(const EntityUpdate& update)
     {
         
     }

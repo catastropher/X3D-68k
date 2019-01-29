@@ -22,7 +22,7 @@ template<typename T>
 struct Vec4Template
 {
     Vec4Template() { }
-    Vec4Template(T x_, T y_, T z_, T w_)
+    constexpr Vec4Template(T x_, T y_, T z_, T w_)
         : x(x_),
         y(y_),
         z(z_),
@@ -31,7 +31,7 @@ struct Vec4Template
 
     }
 
-    Vec4Template(const Vec3Template<T>& v)
+    constexpr Vec4Template(const Vec3Template<T>& v)
     {
         x = v.x;
         y = v.y;
@@ -39,7 +39,7 @@ struct Vec4Template
         w = 0;
     }
 
-    Vec3Template<T> toVec3() const
+    constexpr Vec3Template<T> toVec3() const
     {
         return Vec3Template<T>(x, y, z);
     }

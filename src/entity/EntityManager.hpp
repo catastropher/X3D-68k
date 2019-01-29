@@ -56,7 +56,7 @@ public:
         this->createEntityCallback = createEntityCallback;
     }
     
-    void updateEntities(X_Time currentTime);
+    void updateEntities(X_Time currentTime, fp deltaTime, X_EngineContext* engineContext);
     
     Entity* createEntityFromEdict(X_Edict& edict, BspLevel& level);
     void createEntitesInLevel(BspLevel& level);

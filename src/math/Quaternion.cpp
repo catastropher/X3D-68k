@@ -22,7 +22,7 @@ template struct QuaternionTemplate<fp>;
 template struct QuaternionTemplate<float>;
 
 template<typename T>
-QuaternionTemplate<T> QuaternionTemplate<T>::fromAxisAngle(Vec3Template<T>& axis, fp angle)
+QuaternionTemplate<T> QuaternionTemplate<T>::fromAxisAngle(const Vec3Template<T>& axis, fp angle)
 {
     QuaternionTemplate<T> q;
 
@@ -107,22 +107,18 @@ void QuaternionTemplate<T>::toMat4x4(Mat4x4& dest) const
     dest.elem[3][3] = ONE;
 }
 
-void x_quaternion_init_from_euler_angles(X_Quaternion* quat, fp x, fp y, fp z)
+template<typename T>
+QuaternionTemplate<T> QuaternionTemplate<T>::fromEulerAngles(fp x, fp y, fp z)
 {
-    y = X_ANG_180 - y;
-    z = X_ANG_180 - z;
-    
-    x_fp16x16 t0 = x_cos(x / 2).toFp16x16();
-    x_fp16x16 t1 = x_sin(x / 2).toFp16x16();
-    x_fp16x16 t2 = x_cos(z / 2).toFp16x16();
-    x_fp16x16 t3 = x_sin(z / 2).toFp16x16();
-    x_fp16x16 t4 = x_cos(y / 2).toFp16x16();
-    x_fp16x16 t5 = x_sin(y / 2).toFp16x16();
-    
-    quat->x = x_fp16x16_mul_three(t0, t2, t4) + x_fp16x16_mul_three(t1, t3, t5);
-    quat->y = x_fp16x16_mul_three(t0, t3, t4) - x_fp16x16_mul_three(t1, t2, t5);
-    quat->z = x_fp16x16_mul_three(t0, t2, t5) + x_fp16x16_mul_three(t1, t3, t4);
-    quat->w = x_fp16x16_mul_three(t1, t2, t4) - x_fp16x16_mul_three(t0, t3, t5);
+    T one = convert<T>(1.0f);
+
+    Vec3Template<T> xAxis(one, 0, 0);
+    QuaternionTemplate<T> xRotation = QuaternionTemplate<T>::fromAxisAngle(xAxis, x);
+
+    Vec3Template<T> yAxis(0, one, 0);
+    QuaternionTemplate<T> yRotation = QuaternionTemplate<T>::fromAxisAngle(yAxis, y);
+
+    return xRotation * yRotation;
 }
 
 void x_quaternion_normalize(X_Quaternion* quat)

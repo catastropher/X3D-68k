@@ -109,10 +109,52 @@ static void lockToFrameRate(X_EngineContext* engineContext)
     }
 }
 
+void handle_console_keys(X_EngineContext* context)
+{
+    X_Key key;
+    while(x_keystate_dequeue(context->getKeyState(), &key))
+    {
+        if(key == X_KEY_OPEN_CONSOLE)
+        {
+            x_console_close(context->getConsole());
+            x_keystate_reset_keys(context->getKeyState());
+            x_keystate_disable_text_input(context->getKeyState());
+
+            return;
+        }
+
+        x_console_send_key(context->getConsole(), key);
+    }
+}
+
+bool handle_console(X_EngineContext* engineContext)
+{
+    if(engineContext->getConsole()->isOpen())
+    {
+        handle_console_keys(engineContext);
+
+        return true;
+    }
+
+    if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_OPEN_CONSOLE))
+    {
+        x_console_open(engineContext->getConsole());
+        x_keystate_reset_keys(engineContext->getKeyState());
+        x_keystate_enable_text_input(engineContext->getKeyState());
+
+        return false;
+    }
+
+    return false;
+}
+
 static void runFrame(X_EngineContext* engineContext)
 {
+    // FIXME: why is this function responsible for this?
     x_platform_handle_keys(engineContext);
+    x_platform_handle_mouse(engineContext);
 
+    // FIXME: temp until we figure out where this should be done
     if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_ESCAPE))
     {
         Engine::quit();
@@ -123,7 +165,7 @@ static void runFrame(X_EngineContext* engineContext)
     engineContext->timeDelta = fp::fromInt(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
 
     PhysicsEngine::update(*engineContext->getCurrentLevel(), engineContext->timeDelta);
-    engineContext->entityManager->updateEntities(Clock::getTicks());
+    engineContext->entityManager->updateEntities(Clock::getTicks(), engineContext->timeDelta, engineContext);
 
     lockToFrameRate(engineContext);
 

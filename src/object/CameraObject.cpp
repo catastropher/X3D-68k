@@ -35,26 +35,6 @@ void CameraObject::overrideBspLeaf(int leafId, BspLevel* level)
     flags.set(CAMERA_OVERRIDE_PVS);
 }
 
-
-void CameraObject::updateView()
-{
-    Mat4x4 xRotation;
-    xRotation.loadXRotation(angleX);
-    
-    Mat4x4 yRotation;
-    yRotation.loadYRotation(angleY);
-    
-    Mat4x4 rotation = xRotation * yRotation;
-    
-    Mat4x4 translation;
-    
-    translation.loadTranslation(-position);
-    
-    viewMatrix = rotation * translation;
-
-    updateFrustum();
-}
-
 void CameraObject::updateFrustum()
 {
     Vec3fp forward, up, right;

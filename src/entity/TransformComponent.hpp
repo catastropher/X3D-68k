@@ -46,9 +46,9 @@ namespace internal
             orientation.toMat4x4(rotation);
             
             Mat4x4 translation;
-            translation.loadTranslation(position);
+            translation.loadTranslation(-position);
             
-            outMat4x4 = translation * rotation;
+            outMat4x4 = rotation * translation;
         }
         
         Vec3fp getPosition()

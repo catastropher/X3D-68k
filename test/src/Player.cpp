@@ -13,57 +13,57 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <SDL/SDL.h>
-#include <X3D/X3D.hpp>
+#include "Player.hpp"
 
-#ifdef __nspire__
+// FIXME: move into physics engine
+bool physics = true ;
 
-#define KEY_FORWARD '7'
-#define KEY_BACKWARD '4'
-
-#else
-
-#define KEY_FORWARD 'w'
-#define KEY_BACKWARD 's'
-
-#endif
-
-bool physics = 1;
-
-void handle_console_keys(X_EngineContext* context)
+PlayerKeyFlags getPlayerKeys(X_KeyState* keyState)
 {
-    X_Key key;
-    while(x_keystate_dequeue(context->getKeyState(), &key))
-    {
-        if(key == X_KEY_OPEN_CONSOLE)
-        {
-            x_console_close(context->getConsole());
-            x_keystate_reset_keys(context->getKeyState());
-            x_keystate_disable_text_input(context->getKeyState());
-            return;
-        }
-        
-        x_console_send_key(context->getConsole(), key);
-    }
-}
+    PlayerKeyFlags keys = 0;
 
-bool handle_console(X_EngineContext* engineContext)
-{
-    if(engineContext->getConsole()->isOpen())
+    if(x_keystate_key_down(keyState, X_KEY_LEFT))
     {
-        handle_console_keys(engineContext);
-        return 1;
+        keys.set(PlayerKeys::lookLeft);
     }
-    
-    if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_OPEN_CONSOLE))
+    else if(x_keystate_key_down(keyState, X_KEY_RIGHT))
     {
-        x_console_open(engineContext->getConsole());
-        x_keystate_reset_keys(engineContext->getKeyState());
-        x_keystate_enable_text_input(engineContext->getKeyState());
-        return 1;
+        keys.set(PlayerKeys::lookRight);
     }
-    
-    return 0;
+
+    if(x_keystate_key_down(keyState, X_KEY_UP))
+    {
+        keys.set(PlayerKeys::lookUp);
+    }
+    else if(x_keystate_key_down(keyState, X_KEY_DOWN))
+    {
+        keys.set(PlayerKeys::lookDown);
+    }
+
+    if(x_keystate_key_down(keyState, (X_Key)' '))
+    {
+        keys.set(PlayerKeys::jump);
+    }
+
+    if(x_keystate_key_down(keyState, (X_Key)'w'))
+    {
+        keys.set(PlayerKeys::forward);
+    }
+    else if(x_keystate_key_down(keyState, (X_Key)'s'))
+    {
+        keys.set(PlayerKeys::backward);
+    }
+
+    if(x_keystate_key_down(keyState, (X_Key)'a'))
+    {
+        keys.set(PlayerKeys::strafeLeft);
+    }
+    else if(x_keystate_key_down(keyState, (X_Key)'d'))
+    {
+        keys.set(PlayerKeys::strafeRight);
+    }
+
+    return keys;
 }
 
 //void mouseLook(Player* player, Vec2_fp16x16 angleOffset, fp timeDelta)
@@ -93,54 +93,6 @@ bool handle_console(X_EngineContext* engineContext)
 #include "Player.hpp"
 #include "PlayerMoveLogic.hpp"
 
-PlayerKeyFlags getPlayerKeys(X_KeyState* keyState)
-{
-    PlayerKeyFlags keys = 0;
-    
-    if(x_keystate_key_down(keyState, X_KEY_LEFT))
-    {
-        keys.set(PlayerKeys::lookLeft);
-    }
-    else if(x_keystate_key_down(keyState, X_KEY_RIGHT))
-    {
-        keys.set(PlayerKeys::lookRight);
-    }
-    
-    if(x_keystate_key_down(keyState, X_KEY_UP))
-    {
-        keys.set(PlayerKeys::lookUp);
-    }
-    else if(x_keystate_key_down(keyState, X_KEY_DOWN))
-    {
-        keys.set(PlayerKeys::lookDown);
-    }
-    
-    if(x_keystate_key_down(keyState, (X_Key)' '))
-    {
-        keys.set(PlayerKeys::jump);
-    }
-    
-    if(x_keystate_key_down(keyState, (X_Key)'w'))
-    {
-        keys.set(PlayerKeys::forward);
-    }
-    else if(x_keystate_key_down(keyState, (X_Key)'s'))
-    {
-        keys.set(PlayerKeys::backward);
-    }
-    
-    if(x_keystate_key_down(keyState, (X_Key)'a'))
-    {
-        keys.set(PlayerKeys::strafeLeft);
-    }
-    else if(x_keystate_key_down(keyState, (X_Key)'d'))
-    {
-        keys.set(PlayerKeys::strafeRight);
-    }
-    
-    return keys;
-}
-
 void handle_keys()
 {
 //    x_platform_handle_keys(context->engineContext);
@@ -162,5 +114,17 @@ void handle_keys()
 //    PlayerKeyFlags keys = getPlayerKeys(keyState);
 //
 //    moveLogic.applyMovement(keys, x_engine_get_current_level(context->engineContext));
+}
+
+void Player::update(const EntityUpdate& update)
+{
+    PlayerMoveLogic moveLogic(*this, fp::fromFloat(100), true, update.deltaTime);
+    PlayerKeyFlags keys = getPlayerKeys(update.engineContext->getKeyState());
+
+    moveLogic.applyMovement(keys, &getLevel());
+
+    Quaternion newOrientation = Quaternion::fromEulerAngles(angleX, angleY, 0);
+
+    getTransform().setOrientation(newOrientation);
 }
 

@@ -25,11 +25,28 @@ typedef X_Vec4_fp16x16 X_Quaternion;
 template<typename T>
 struct QuaternionTemplate : public Vec4Template<T>
 {
+    constexpr QuaternionTemplate(T x, T y, T z, T w)
+        : Vec4Template<T>(x, y, z, w)
+    {
+
+    }
+
+    QuaternionTemplate()
+    {
+        *this = identity();
+    }
+
     void toMat4x4(Mat4x4& dest) const;
 
     QuaternionTemplate<T> operator*(QuaternionTemplate<T>& q) const;
 
-    static QuaternionTemplate fromAxisAngle(Vec3Template<T>& axis, fp angle);
+    static constexpr QuaternionTemplate identity()
+    {
+        return QuaternionTemplate(0, 0, 0, convert<T>(1.0f));
+    }
+
+    static QuaternionTemplate fromAxisAngle(const Vec3Template<T>& axis, fp angle);
+    static QuaternionTemplate fromEulerAngles(fp x, fp y, fp z);
 };
 
 using Quaternion = QuaternionTemplate<fp>;

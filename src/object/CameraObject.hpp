@@ -32,13 +32,11 @@ enum CameraobjectFlags
 };
 
 
-typedef struct CameraObject
+struct CameraObject
 {
     void updateFrustum();
 
     void overrideBspLeaf(int leafId, BspLevel* level);
-    
-    void updateView();
 
     X_GameObject base;
     EnumBitSet<CameraobjectFlags> flags;
@@ -53,7 +51,7 @@ typedef struct CameraObject
     DecompressedLeafVisibleSet pvsForCurrentLeaf;
     
     void (*screenResizeCallback)(struct CameraObject* cam, struct Screen* screen, x_fp16x16 fov);
-} X_CameraObject;
+};
 
 void x_cameraobject_render(CameraObject* cam, struct X_RenderContext* renderContext);
 

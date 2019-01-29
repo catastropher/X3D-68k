@@ -483,10 +483,8 @@ void x_renderer_render_frame(X_EngineContext* engineContext)
         camera.position = transformComponent->getPosition();
 
         // FIXME: remove angles from camera
-        camera.angleX = 0;
-        camera.angleY = 0;
-        camera.updateView();
         transformComponent->toMat4x4(camera.viewMatrix);
+        camera.updateFrustum();
 
         engineContext->getRenderer()->renderCamera(&camera, engineContext);
     }
