@@ -41,6 +41,7 @@
 #include "entity/Entity.hpp"
 #include "entity/EntityDictionary.hpp"
 #include "entity/EntityManager.hpp"
+#include "entity/InputComponent.hpp"
 #include "entity/TransformComponent.hpp"
 
 // error

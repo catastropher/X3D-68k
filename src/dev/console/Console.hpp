@@ -92,7 +92,7 @@ typedef struct Console
     int commandHistorySize;
     int commandHistoryPos;
 
-    X_Key lastKeyPressed;
+    KeyCode lastKeyPressed;
 
     template<typename T>
     void addVariable(const char* name, T& var);
@@ -133,7 +133,7 @@ void x_console_print(Console* console, const char* str);
 void x_console_printf(Console* console, const char* format, ...);
 void x_console_render(Console* console);
 
-void x_console_send_key(Console* console, X_Key key);
+void x_console_send_key(Console* console, KeyCode key);
 
 void x_console_execute_cmd(Console* console, const char* str);
 

@@ -40,9 +40,14 @@ public:
         : Entity(level)
     {
         auto collider = addComponent<BoxColliderComponent>();
+        auto input = addComponent<InputComponent>(handleKeys);
+
+
 
         Vec3fp position;
         edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0));
+
+        position.y -= fp::fromInt(30);
 
         getTransform().setPosition(position);
 
@@ -64,7 +69,9 @@ public:
         return *getComponent<TransformComponent>();
     }
 
-    void update(const EntityUpdate& update);
+    void handleMovement(const InputUpdate& update);
+
+    static bool handleKeys(Entity* entity, const InputUpdate& update);
     
     fp angleX;
     fp angleY;

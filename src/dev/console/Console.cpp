@@ -558,7 +558,7 @@ static char* find_start_of_current_cmd(char* str, int start, int* len)
     return str;
 }
 
-static void handle_tab_key(Console* console, X_Key lastKeyPressed)
+static void handle_tab_key(Console* console, KeyCode lastKeyPressed)
 {
     const int MAX_MATCHES = 100;
     const char* matches[MAX_MATCHES];
@@ -570,17 +570,21 @@ static void handle_tab_key(Console* console, X_Key lastKeyPressed)
     x_autocompleter_init(&ac, currentCmd, cmdLength, matches, MAX_MATCHES);
     x_console_add_autcomplete_candidates(console, &ac);
     
-    if(x_console_autocomplete(console, &ac) || lastKeyPressed != '\t')
+    if(x_console_autocomplete(console, &ac) || lastKeyPressed != KeyCode::tab)
+    {
         return;
+    }
         
     x_console_print_autocomplete_matches(console, &ac);
-    console->lastKeyPressed = (X_Key)0;
+    console->lastKeyPressed = KeyCode::invalid;
 }
 
-static void handle_character_key(Console* console, X_Key key)
+static void handle_character_key(Console* console, KeyCode key)
 {
     if(console->inputPos + 1 < X_CONSOLE_INPUT_BUF_SIZE)
-        console->input[console->inputPos++] = key;
+    {
+        console->input[console->inputPos++] = keyCodeToChar(key);
+    }
     
     console->input[console->inputPos] = '\0';
 }
@@ -593,7 +597,9 @@ static void handle_up_key(Console* console)
     bool onCurrentInput = console->commandHistoryPos == console->commandHistorySize;
     
     if(onCurrentInput)
+    {
         x_string_assign(console->commandHistory + console->commandHistorySize, console->input);
+    }
     
     strcpy(console->input, console->commandHistory[--console->commandHistoryPos].data);
     console->inputPos = strlen(console->input);
@@ -602,50 +608,47 @@ static void handle_up_key(Console* console)
 static void handle_down_key(Console* console)
 {
     if(console->commandHistoryPos == console->commandHistorySize)
+    {
         return;
+    }
     
     strcpy(console->input, console->commandHistory[++console->commandHistoryPos].data);
     console->inputPos = strlen(console->input);
 }
 
-static bool is_character_key(X_Key key)
+static bool is_character_key(KeyCode key)
 {
-    return key < 128 && isprint(key);
+    int k = (int)key;
+
+    return k < 128 && isprint(k);
 }
 
-void x_console_send_key(Console* console, X_Key key)
+void x_console_send_key(Console* console, KeyCode key)
 {
-    X_Key lastKey = console->lastKeyPressed;
+    KeyCode lastKey = console->lastKeyPressed;
     console->lastKeyPressed = key;
-    
-    if(key == '\b')
+
+    switch(key)
     {
-        handle_backspace_key(console);
-        return;
-    }
-    
-    if(key == '\n')
-    {
-        handle_enter_key(console);
-        return;
-    }
-    
-    if(key == '\t')
-    {
-        handle_tab_key(console, lastKey);
-        return;
-    }
-    
-    if(key == X_KEY_UP)
-    {
-        handle_up_key(console);
-        return;
-    }
-    
-    if(key == X_KEY_DOWN)
-    {
-        handle_down_key(console);
-        return;
+        case KeyCode::backspace:
+            handle_backspace_key(console);
+            return;
+
+        case KeyCode::enter:
+            handle_enter_key(console);
+            return;
+
+        case KeyCode::tab:
+            handle_tab_key(console, lastKey);
+            return;
+
+        case KeyCode::up:
+            handle_up_key(console);
+            return;
+
+        case KeyCode::down:
+            handle_down_key(console);
+            return;
     }
     
     if(is_character_key(key))

@@ -28,6 +28,7 @@
 #include "physics/PhysicsEngine.hpp"
 #include "system/Clock.hpp"
 #include "entity/EntityManager.hpp"
+#include "entity/InputComponent.hpp"
 
 X_EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -111,10 +112,10 @@ static void lockToFrameRate(X_EngineContext* engineContext)
 
 void handle_console_keys(X_EngineContext* context)
 {
-    X_Key key;
+    KeyCode key;
     while(x_keystate_dequeue(context->getKeyState(), &key))
     {
-        if(key == X_KEY_OPEN_CONSOLE)
+        if(key == KeyCode::backtick)
         {
             x_console_close(context->getConsole());
             x_keystate_reset_keys(context->getKeyState());
@@ -136,7 +137,7 @@ bool handle_console(X_EngineContext* engineContext)
         return true;
     }
 
-    if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_OPEN_CONSOLE))
+    if(x_keystate_key_down(engineContext->getKeyState(), KeyCode::backtick))
     {
         x_console_open(engineContext->getConsole());
         x_keystate_reset_keys(engineContext->getKeyState());
@@ -148,6 +149,22 @@ bool handle_console(X_EngineContext* engineContext)
     return false;
 }
 
+void sendInputUpdate(const InputUpdate& update)
+{
+    auto inputComponents = InputComponent::getAll();
+
+    for(auto& inputComponent : inputComponents)
+    {
+        if(inputComponent.handler != nullptr)
+        {
+            if(inputComponent.handler(inputComponent.owner, update))
+            {
+                break;
+            }
+        }
+    }
+}
+
 static void runFrame(X_EngineContext* engineContext)
 {
     // FIXME: why is this function responsible for this?
@@ -155,7 +172,7 @@ static void runFrame(X_EngineContext* engineContext)
     x_platform_handle_mouse(engineContext);
 
     // FIXME: temp until we figure out where this should be done
-    if(x_keystate_key_down(engineContext->getKeyState(), X_KEY_ESCAPE))
+    if(x_keystate_key_down(engineContext->getKeyState(), KeyCode::escape))
     {
         Engine::quit();
     }
@@ -169,7 +186,20 @@ static void runFrame(X_EngineContext* engineContext)
 
     lockToFrameRate(engineContext);
 
+    Console* console = engineContext->getConsole();
+
     x_renderer_render_frame(engineContext);
+
+    if(console->isOpen())
+    {
+        x_console_render(console);
+    }
+
+    if(!handle_console(engineContext))
+    {
+        InputUpdate update(engineContext->getKeyState(), engineContext->frameStart, engineContext->timeDelta);
+        sendInputUpdate(update);
+    }
 
     engineContext->getPlatform()->getScreenDriver().update(engineContext->getScreen());
 }

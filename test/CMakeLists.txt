@@ -55,8 +55,7 @@ include_directories(${X_HEADER_PATH})
 
 add_executable(xtest
         src/main.cpp
-    src/render.cpp
-    src/PlayerMoveLogic.cpp
+        src/PlayerMoveLogic.cpp
     src/Player.cpp
 )
 

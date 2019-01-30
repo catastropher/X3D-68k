@@ -42,19 +42,19 @@ static void build_key_map(void)
     
     keyMap[SDLK_SPACE] = ' ';
     
-    keyMap[SDLK_LSHIFT] = keyMap[SDLK_RSHIFT] = X_KEY_SHIFT;
-    keyMap[SDLK_RETURN] = '\n';
-    keyMap[SDLK_ESCAPE] = X_KEY_ESCAPE;
-    keyMap[SDLK_BACKSPACE] = '\b';
-    keyMap[SDLK_TAB] = '\t';
+    keyMap[SDLK_LSHIFT] = keyMap[SDLK_RSHIFT] = (int)KeyCode::shift;
+    keyMap[SDLK_RETURN] = (int)KeyCode::enter;
+    keyMap[SDLK_ESCAPE] = (int)KeyCode::escape;
+    keyMap[SDLK_BACKSPACE] = (int)KeyCode::backspace;
+    keyMap[SDLK_TAB] = (int)KeyCode::tab;
     
     const int AZERTY_SUPERSCRIPT_2 = 178;
-    keyMap[SDLK_BACKQUOTE] = keyMap['9'] = keyMap['~'] = keyMap[AZERTY_SUPERSCRIPT_2] = X_KEY_OPEN_CONSOLE;
+    keyMap[SDLK_BACKQUOTE] = keyMap['9'] = keyMap['~'] = keyMap[AZERTY_SUPERSCRIPT_2] = (int)KeyCode::backtick;
     
-    keyMap[SDLK_UP] = X_KEY_UP;
-    keyMap[SDLK_DOWN] = X_KEY_DOWN;
-    keyMap[SDLK_LEFT] = X_KEY_LEFT;
-    keyMap[SDLK_RIGHT] = X_KEY_RIGHT;
+    keyMap[SDLK_UP] = (int)KeyCode::up;
+    keyMap[SDLK_DOWN] = (int)KeyCode::down;
+    keyMap[SDLK_LEFT] = (int)KeyCode::left;
+    keyMap[SDLK_RIGHT] = (int)KeyCode::right;
 
     const char symbols[] = "!@#$%^&*()[]{}\\|:;'\",.<>/?-_=+";
     for(int i = 0; i < (int)strlen(symbols); ++i)
@@ -96,7 +96,7 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
             int x3dUnicodeCharacter = translate_sdl_key_to_x3d_key(unicodeCharacter);
             
             if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_press(engineContext->getKeyState(), (X_Key)x3dKey, (X_Key)x3dUnicodeCharacter);
+                x_keystate_send_key_press(engineContext->getKeyState(), (KeyCode)x3dKey, (KeyCode)x3dUnicodeCharacter);
         }
         else if(ev.type == SDL_KEYUP)
         {
@@ -104,7 +104,7 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
             int x3dKey = translate_sdl_key_to_x3d_key((SDLKey)sdlKey);
             
             if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_release(engineContext->getKeyState(), (X_Key)x3dKey);
+                x_keystate_send_key_release(engineContext->getKeyState(), (KeyCode)x3dKey);
         }
     }
 }

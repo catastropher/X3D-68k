@@ -43,7 +43,7 @@ typedef struct X_EngineContext
         gameObjectFactory = new X_ObjectFactory;
         console = new Console;
         mainFont = new X_Font;
-        keystate = new X_KeyState;
+        keystate = new KeyState;
         mouseState = new X_MouseState;
     }
     
@@ -51,7 +51,7 @@ typedef struct X_EngineContext
     Screen* getScreen() const { return screen; }
     Console* getConsole() const { return console; }
     X_Font* getMainFont() const { return mainFont; }
-    X_KeyState* getKeyState() const { return keystate; }
+    KeyState* getKeyState() const { return keystate; }
     X_MouseState* getMouseState() const { return mouseState; }
     BspLevel* getCurrentLevel() const;
     X_Renderer* getRenderer() const { return renderer; }
@@ -81,7 +81,7 @@ private:
     X_ObjectFactory* gameObjectFactory;
     Console* console;
     X_Font* mainFont;
-    X_KeyState* keystate;
+    KeyState* keystate;
     X_MouseState* mouseState;
     EngineQueue* queue;
 

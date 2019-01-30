@@ -18,47 +18,47 @@
 // FIXME: move into physics engine
 bool physics = true ;
 
-PlayerKeyFlags getPlayerKeys(X_KeyState* keyState)
+PlayerKeyFlags getPlayerKeys(KeyState* keyState)
 {
     PlayerKeyFlags keys = 0;
 
-    if(x_keystate_key_down(keyState, X_KEY_LEFT))
+    if(x_keystate_key_down(keyState, KeyCode::left))
     {
         keys.set(PlayerKeys::lookLeft);
     }
-    else if(x_keystate_key_down(keyState, X_KEY_RIGHT))
+    else if(x_keystate_key_down(keyState, KeyCode::right))
     {
         keys.set(PlayerKeys::lookRight);
     }
 
-    if(x_keystate_key_down(keyState, X_KEY_UP))
+    if(x_keystate_key_down(keyState, KeyCode::up))
     {
         keys.set(PlayerKeys::lookUp);
     }
-    else if(x_keystate_key_down(keyState, X_KEY_DOWN))
+    else if(x_keystate_key_down(keyState, KeyCode::down))
     {
         keys.set(PlayerKeys::lookDown);
     }
 
-    if(x_keystate_key_down(keyState, (X_Key)' '))
+    if(x_keystate_key_down(keyState, (KeyCode)' '))
     {
         keys.set(PlayerKeys::jump);
     }
 
-    if(x_keystate_key_down(keyState, (X_Key)'w'))
+    if(x_keystate_key_down(keyState, (KeyCode)'w'))
     {
         keys.set(PlayerKeys::forward);
     }
-    else if(x_keystate_key_down(keyState, (X_Key)'s'))
+    else if(x_keystate_key_down(keyState, (KeyCode)'s'))
     {
         keys.set(PlayerKeys::backward);
     }
 
-    if(x_keystate_key_down(keyState, (X_Key)'a'))
+    if(x_keystate_key_down(keyState, (KeyCode)'a'))
     {
         keys.set(PlayerKeys::strafeLeft);
     }
-    else if(x_keystate_key_down(keyState, (X_Key)'d'))
+    else if(x_keystate_key_down(keyState, (KeyCode)'d'))
     {
         keys.set(PlayerKeys::strafeRight);
     }
@@ -98,13 +98,13 @@ void handle_keys()
 //    x_platform_handle_keys(context->engineContext);
 //    x_platform_handle_mouse(context->engineContext);
 //
-//    if(x_keystate_key_down(context->engineContext->getKeyState(), X_KEY_ESCAPE))
+//    if(x_keystate_key_down(context->engineContext->getKeyState(), escape))
 //        context->quit = 1;
 //
 //    if(handle_console(context->engineContext))
 //        return;
 //
-//    X_KeyState* keyState = context->engineContext->getKeyState();
+//    KeyState* keyState = context->engineContext->getKeyState();
 //
 //
 //    handle_mouse(context);
@@ -116,10 +116,10 @@ void handle_keys()
 //    moveLogic.applyMovement(keys, x_engine_get_current_level(context->engineContext));
 }
 
-void Player::update(const EntityUpdate& update)
+void Player::handleMovement(const InputUpdate& update)
 {
     PlayerMoveLogic moveLogic(*this, fp::fromFloat(100), true, update.deltaTime);
-    PlayerKeyFlags keys = getPlayerKeys(update.engineContext->getKeyState());
+    PlayerKeyFlags keys = getPlayerKeys(update.keyState);
 
     moveLogic.applyMovement(keys, &getLevel());
 
@@ -127,4 +127,14 @@ void Player::update(const EntityUpdate& update)
 
     getTransform().setOrientation(newOrientation);
 }
+
+bool Player::handleKeys(Entity* entity, const InputUpdate& update)
+{
+    Player* player = static_cast<Player*>(entity);
+
+    player->handleMovement(update);
+
+    return true;
+}
+
 
