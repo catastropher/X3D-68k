@@ -48,7 +48,7 @@ void BrushModelBuilder::build()
         markSurfaces[i] = &dest.faces[i];
     }
     
-    dest.totalFaces = 2;
+    dest.totalFaces = totalSurfaces;
     dest.flags = SURFACE_FILL_SOLID | (255 << 24);
 }
 
@@ -59,7 +59,7 @@ void BrushModelBuilder::allocateMemory()
     
     int totalEdges = options.sidesInBase * 3 + 1;   // Need an extra edge for edge 0
     dest.edges = Zone::alloc<BspEdge>(totalEdges);
-    dest.surfaceEdgeIds = Zone::alloc<int>(totalEdges);
+    dest.surfaceEdgeIds = Zone::alloc<int>(options.sidesInBase * 2 + 4 * options.sidesInBase);
     
     dest.faces = Zone::alloc<BspSurface>(totalSurfaces);
     dest.planes = Zone::alloc<BspPlane>(totalSurfaces);
@@ -80,7 +80,7 @@ void BrushModelBuilder::buildGeometry()
     // All the points of the prism lie on a circle with some radius because it's a regular polygon.
     // The radius of that circle is sqrt(2) * sideLength
     const fp SQUARE_ROOT_OF_2 = fp::fromFloat(1.414213);
-    fp radius = options.sideLength * SQUARE_ROOT_OF_2;
+    fp radius = options.sideLength  * SQUARE_ROOT_OF_2 / 2;
     
     // Build the vertices
     for(int i = 0; i < options.sidesInBase; ++i)
@@ -116,6 +116,18 @@ void BrushModelBuilder::addBases()
     }
     
     prism.addFace(bottomVertices, options.sidesInBase);
+
+    int sideVertices[4];
+    for(int i = 0; i < options.sidesInBase; ++i)
+    {
+        int next = (i + 1) % options.sidesInBase;
+        sideVertices[0] = i;
+        sideVertices[1] = next;
+        sideVertices[2] = next + options.sidesInBase;
+        sideVertices[3] = i + options.sidesInBase;
+
+        prism.addFace(sideVertices, 4);
+    }
 }
 
 void BrushModelBuilder::buildBspTree()
@@ -127,12 +139,12 @@ void BrushModelBuilder::buildBspTree()
         nodes[i].contents = X_BSPLEAF_NODE;
     }
     
-    nodes[1].frontChild = (X_BspNode*)leaf;
+    nodes[totalSurfaces - 1].frontChild = (X_BspNode*)leaf;
     
-    leaf->contents = X_BSPLEAF_REGULAR;
+    leaf->contents = X_BSPLEAF_SOLID;
     
     leaf->firstMarkSurface = markSurfaces;
-    leaf->totalMarkSurfaces = 2;
+    leaf->totalMarkSurfaces = totalSurfaces;
     
     dest.rootBspNode = &nodes[0];
 }
@@ -154,7 +166,7 @@ void BrushModelBuilder::buildEdges()
 
 void BrushModelBuilder::buildFaces()
 {
-    for(int i = 0; i < 2; ++i)
+    for(int i = 0; i < totalSurfaces; ++i)
     {
         dest.planes[i].plane = prism.faces[i].plane;
         buildFace(dest.faces[i], prism.faces[i].edgeListId, prism.faces[i].totalEdges, &dest.planes[i]);

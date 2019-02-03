@@ -135,7 +135,7 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
 //     x_bspnode_mark_surfaces_light_is_close_to(node->backChild, light, currentFrame);
 // }
 
-// void x_bsplevel_mark_surfaces_light_is_close_to(BspLevel* level, const X_Light* light, int currentFrame)
+// void x_bsplevel_mark_surfaces_light_is_close_to(BspLevel* level, const X_Light* lights, int currentFrame)
 // {
 //     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 // }
@@ -145,7 +145,7 @@ static void x_bsplevel_render_submodel(BspLevel* level, BspModel* submodel, X_Re
     x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
     
     for(int i = 0; i < submodel->totalFaces; ++i)
-    {        
+    {
         BspSurface* surface = submodel->faces + i;
      
         

@@ -16,13 +16,28 @@
 #include "PlatformEntity.hpp"
 #include "EntityManager.hpp"
 #include "BrushModelComponent.hpp"
+#include "BoxColliderComponent.hpp"
 
 #include "level/BrushModelBuilder.hpp"
 
 PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
     : Entity(level)
 {
-    addComponent<BrushModelComponent>(edict, level);
+    //addComponent<BrushModelComponent>(edict, level);
+
+    BrushModelBuilderOptions options;
+    options.sideLength = fp::fromInt(50);
+    options.height = fp::fromInt(50);
+
+    BspModel* model = new BspModel;
+    BrushModelBuilder builder(options, *model);
+
+    builder.build();
+
+    addComponent<BrushModelComponent>(model);
+    auto box = addComponent<BoxColliderComponent>();
+
+    box->maxSpeed = fp::fromInt(300);
 }
 
 void PlatformEntity::update(X_Time currentTime)

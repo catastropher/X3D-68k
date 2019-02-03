@@ -30,6 +30,7 @@
 #include "entity/EntityManager.hpp"
 #include "entity/InputComponent.hpp"
 #include "render/StatusBar.hpp"
+#include "entity/BrushModelComponent.hpp"
 
 X_EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -184,6 +185,16 @@ static void runFrame(X_EngineContext* engineContext)
 
     PhysicsEngine::update(*engineContext->getCurrentLevel(), engineContext->timeDelta);
     engineContext->entityManager->updateEntities(Clock::getTicks(), engineContext->timeDelta, engineContext);
+
+    // Move the brush models to where their transform says they are
+    // Fixme: need way to broadcast moves to all components
+    auto brushModels = BrushModelComponent::getAll();
+
+    for(auto& brushModel : brushModels)
+    {
+        brushModel.model->center = brushModel.owner->getComponent<TransformComponent>()->getPosition();
+    }
+
 
     lockToFrameRate(engineContext);
 

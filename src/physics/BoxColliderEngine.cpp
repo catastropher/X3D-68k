@@ -130,12 +130,12 @@ void BoxColliderEngine::applyFriction()
 
 void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags)
 {
-    static Vec3fp gravity = { 0, fp::fromFloat(300), 0 };
+    static Vec3fp gravity = { 0, fp::fromFloat(320), 0 };
     
     collider->boundBox = *boundBox;
     collider->flags = flags;
     collider->gravity = &gravity;
-    collider->frictionCoefficient = x_fp16x16_from_float(30.0);
+    collider->frictionCoefficient = x_fp16x16_from_float(50.0);
     collider->maxSpeed = x_fp16x16_from_float(20.0);
     collider->bounceCoefficient = X_FP16x16_ONE;
     collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
