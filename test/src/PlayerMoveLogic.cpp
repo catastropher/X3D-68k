@@ -16,6 +16,8 @@
 
 #include "PlayerMoveLogic.hpp"
 
+extern fp jump;
+
 static Vec3fp removeVerticalComponent(Vec3fp v)
 {
     Vec3fp withoutVertical = Vec3fp(v.x, 0, v.z);
@@ -128,7 +130,7 @@ Vec3fp PlayerMoveLogic::getJumpVector(PlayerKeyFlags keys)
     }
     
     // TODO: this should be configurable
-    fp jumpVelocity = fp::fromFloat(-210.0);
+    fp jumpVelocity = -jump;
     
     if(keys.hasFlag(PlayerKeys::jump))
     {

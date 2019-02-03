@@ -29,6 +29,7 @@
 #include "system/Clock.hpp"
 #include "entity/EntityManager.hpp"
 #include "entity/InputComponent.hpp"
+#include "render/StatusBar.hpp"
 
 X_EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -189,6 +190,8 @@ static void runFrame(X_EngineContext* engineContext)
     Console* console = engineContext->getConsole();
 
     x_renderer_render_frame(engineContext);
+
+    StatusBar::render(engineContext->getScreen()->canvas, *engineContext->getMainFont());
 
     if(console->isOpen())
     {

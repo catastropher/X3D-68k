@@ -28,7 +28,7 @@ public:
     static void quit();
     static void run();
 
-    X_EngineContext* getInstance()
+    static X_EngineContext* getInstance()
     {
         return &instance;
     }

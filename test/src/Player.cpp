@@ -16,7 +16,25 @@
 #include "Player.hpp"
 
 // FIXME: move into physics engine
-bool physics = true ;
+bool physics = true;
+
+fp moveSpeed;
+fp gravity;
+fp friction;
+fp jump;
+fp maxSpeed;
+
+void Player::registerVars()
+{
+    X_EngineContext* engineContext = Engine::getInstance();
+    Console* console = engineContext->getConsole();
+
+    x_console_register_var(console, &moveSpeed, "player.speed", X_CONSOLEVAR_FP16X16, "100", false);
+    x_console_register_var(console, &gravity, "player.gravity", X_CONSOLEVAR_FP16X16, "100", false);
+    x_console_register_var(console, &friction, "player.friction", X_CONSOLEVAR_FP16X16, "100", false);
+    x_console_register_var(console, &jump, "player.jump", X_CONSOLEVAR_FP16X16, "100", false);
+    x_console_register_var(console, &maxSpeed, "player.maxspeed", X_CONSOLEVAR_FP16X16, "100", false);
+}
 
 PlayerKeyFlags getPlayerKeys(KeyState* keyState)
 {
@@ -66,29 +84,27 @@ PlayerKeyFlags getPlayerKeys(KeyState* keyState)
     return keys;
 }
 
-//void mouseLook(Player* player, Vec2_fp16x16 angleOffset, fp timeDelta)
-//{
-//    player->angleX += fp(angleOffset.x);
-//    player->angleY += fp(angleOffset.y);
-//
-//    fp x(player->angleX);
-//    adjustAngle(x);
-//
-//    fp y(player->angleY);
-//    adjustAngle(y);
-//
-//    player->angleX = x.toFp16x16();
-//    player->angleY = y.toFp16x16();
-//}
+void mouseLook(Player* player, Vec2_fp16x16 angleOffset)
+{
+    player->angleX += fp(angleOffset.x);
+    player->angleY += fp(angleOffset.y);
 
-//void handle_mouse(Context* context)
-//{
-//    X_MouseState* state = context->engineContext->getMouseState();
-//    mouseLook(
-//        context->player,
-//        x_mousestate_get_mouselook_angle_change(state),
-//        context->engineContext->timeDelta);
-//}
+    fp x(player->angleX);
+    adjustAngle(x);
+
+    fp y(player->angleY);
+    adjustAngle(y);
+
+    player->angleX = x.toFp16x16();
+    player->angleY = y.toFp16x16();
+}
+
+void handle_mouse(Player* player, X_MouseState* mouseState)
+{
+    mouseLook(
+        player,
+        x_mousestate_get_mouselook_angle_change(mouseState));
+}
 
 #include "Player.hpp"
 #include "PlayerMoveLogic.hpp"
@@ -118,8 +134,17 @@ void handle_keys()
 
 void Player::handleMovement(const InputUpdate& update)
 {
-    PlayerMoveLogic moveLogic(*this, fp::fromFloat(100), true, update.deltaTime);
+    PlayerMoveLogic moveLogic(*this, moveSpeed, true, update.deltaTime);
     PlayerKeyFlags keys = getPlayerKeys(update.keyState);
+
+    auto& collider = getCollider();
+
+    collider.maxSpeed = maxSpeed;
+    collider.frictionCoefficient = friction;
+    collider.gravity->y = gravity;
+
+    StatusBar::setItem("Velocity", "%f %f %f", collider.velocity.x.toFloat(), collider.velocity.y.toFloat(), collider.velocity.z.toFloat());
+    StatusBar::setItem("Friction", "%f", collider.frictionCoefficient.toFloat());
 
     moveLogic.applyMovement(keys, &getLevel());
 
@@ -132,6 +157,7 @@ bool Player::handleKeys(Entity* entity, const InputUpdate& update)
 {
     Player* player = static_cast<Player*>(entity);
 
+    handle_mouse(player, Engine::getInstance()->getMouseState());
     player->handleMovement(update);
 
     return true;

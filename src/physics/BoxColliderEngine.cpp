@@ -15,9 +15,29 @@
 
 #include "BoxColliderEngine.hpp"
 #include "entity/Entity.hpp"
+#include "render/StatusBar.hpp"
 
 void BoxColliderEngine::runStep()
 {
+    if(collider.flags.hasFlag(X_BOXCOLLIDER_ON_GROUND) && collider.velocity.y >= fp::fromInt(0))
+    {
+        applyFriction();
+    }
+
+    fp currentSpeed = collider.velocity.length();
+
+    if(currentSpeed != 0)
+    {
+        fp clampedSpeed = clamp(currentSpeed, fp(0), collider.maxSpeed);
+        fp t = clampedSpeed / currentSpeed;
+
+        collider.velocity = collider.velocity * t;
+
+        currentSpeed = clampedSpeed;
+    }
+
+    StatusBar::setItem("Current speed", "%f", currentSpeed.toFloat());
+
     // Unlink from whatever we're standing on
     collider.standingOnEntity = nullptr;
 
@@ -77,7 +97,6 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
 
     if(moveFlags.hasFlag(IT_ON_FLOOR))
     {
-        applyFriction();
         collider.flags.set(X_BOXCOLLIDER_ON_GROUND);
 
         auto lastHitWall = moveLogic.getLastHitWall();
@@ -99,10 +118,11 @@ void BoxColliderEngine::applyFriction()
     {
         return;
     }
-    
-    fp newSpeed = currentSpeed - collider.frictionCoefficient * dt;
+
+
+    fp newSpeed = currentSpeed - currentSpeed * collider.frictionCoefficient * dt;
     newSpeed = clamp(newSpeed, fp::fromInt(0), collider.maxSpeed);
-    
+
     newSpeed = newSpeed / currentSpeed;
 
     collider.velocity = collider.velocity * newSpeed;

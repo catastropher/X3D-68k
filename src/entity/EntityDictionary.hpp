@@ -50,7 +50,7 @@ void edictParseAttribute(const char* value, T& outValue);
 struct X_Edict
 {
     template<typename T>
-    bool getValueOrDefault(const char* name, T& outValue, const T& defaultValue)
+    bool getValueOrDefault(const char* name, T& outValue, const T& defaultValue) const
     {
 
         if(getValue(name, outValue))
@@ -63,7 +63,7 @@ struct X_Edict
         return false;
     }
 
-    bool getValueOrDefault(const char* name, char* outValue, const char* defaultValue)
+    bool getValueOrDefault(const char* name, char* outValue, const char* defaultValue) const
     {
         if(!getValue(name, outValue))
         {
@@ -76,7 +76,7 @@ struct X_Edict
     }
 
     template<typename T>
-    void getRequiredValue(const char* name, T& outValue)
+    void getRequiredValue(const char* name, T& outValue) const
     {
         if(!getValue(name, outValue))
         {
@@ -85,7 +85,7 @@ struct X_Edict
     }
 
     template<typename T>
-    bool getValue(const char *name, T &outValue)
+    bool getValue(const char *name, T &outValue) const
     {
         X_EdictAttribute* attribute = getAttribute(name);
 
@@ -101,10 +101,10 @@ struct X_Edict
         }
     }
 
-    X_EdictAttribute* getAttribute(const char* name);
-    bool hasAttribute(const char* name);
+    X_EdictAttribute* getAttribute(const char* name) const;
+    bool hasAttribute(const char* name) const;
 
-    X_EdictAttribute attributes[X_EDICT_MAX_ATTRIBUTES];
+    mutable X_EdictAttribute attributes[X_EDICT_MAX_ATTRIBUTES];
     int totalAttributes;
 };
 

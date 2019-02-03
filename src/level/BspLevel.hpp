@@ -288,7 +288,7 @@ static inline int x_bsplevel_current_bspkey(const BspLevel* level)
     return level->nextBspKey;
 }
 
-static inline BspModel* x_bsplevel_get_model(BspLevel* level, int modelId)
+static inline BspModel* x_bsplevel_get_model(const BspLevel* level, int modelId)
 {
     return level->models + modelId;
 }

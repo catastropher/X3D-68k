@@ -57,7 +57,11 @@ public:
 
         angleX = 0;
         angleY = 0;
+
+        registerVars();
     }
+
+    void registerVars();
     
     BoxColliderComponent& getCollider()
     {

@@ -52,7 +52,7 @@ public:
     {
         return arenaStart;
     }
-    
+
     T* end() const
     {
         return nextAlloc;

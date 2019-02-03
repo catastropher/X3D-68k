@@ -98,8 +98,8 @@ void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
                 
                 markEdgeAsAlreadyDrawn(edgeId);
                 
-                //ray.renderShaded(renderContext, currentColor, fp::fromInt(1000));
-                ray.render(renderContext, currentColor);
+                ray.renderShaded(renderContext, currentColor, fp::fromInt(1000));
+                //ray.render(renderContext, currentColor);
             }
         }
         

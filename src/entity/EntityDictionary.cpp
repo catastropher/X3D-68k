@@ -48,7 +48,7 @@ void edictParseAttribute(const char* value, Vec3fp& dest)
     dest = v.toVec3<fp>();
 }
 
-X_EdictAttribute *X_Edict::getAttribute(const char *name)
+X_EdictAttribute *X_Edict::getAttribute(const char *name) const
 {
     for(int i = 0; i < totalAttributes; ++i)
     {
@@ -61,7 +61,7 @@ X_EdictAttribute *X_Edict::getAttribute(const char *name)
     return nullptr;
 }
 
-bool X_Edict::hasAttribute(const char *name)
+bool X_Edict::hasAttribute(const char *name) const
 {
     return getAttribute(name) != nullptr;
 }

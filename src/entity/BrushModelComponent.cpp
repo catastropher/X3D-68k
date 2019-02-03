@@ -21,12 +21,10 @@ namespace internal
 {
     BrushModel::BrushModel(const X_Edict& edict, const BspLevel& level)
     {
-        return;
+        BrushModelId id;
+        edict.getValue("model", id);
 
-//        BrushModelId id;
-//        edict.getValue("model", id);
-//
-//        model = x_bsplevel_get_model(&level, id.id);
+        model = x_bsplevel_get_model(&level, id.id);
     }
 }
 
