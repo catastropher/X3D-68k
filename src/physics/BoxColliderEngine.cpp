@@ -38,9 +38,6 @@ void BoxColliderEngine::runStep()
 
     StatusBar::setItem("Current speed", "%f", currentSpeed.toFloat());
 
-    // Unlink from whatever we're standing on
-    collider.standingOnEntity = nullptr;
-
     if(collider.transformComponentId == COMPONENT_INVALID_ID)
     {
         collider.transformComponentId = collider.owner->getComponentId<TransformComponent>();
@@ -108,6 +105,8 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
     else
     {
         collider.flags.reset(X_BOXCOLLIDER_ON_GROUND);
+
+        collider.standingOnEntity = nullptr;
     }
 }
 

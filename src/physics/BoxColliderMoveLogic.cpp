@@ -120,7 +120,7 @@ void BoxColliderMoveLogic::runMoveIterations()
 
 bool BoxColliderMoveLogic::onFloor()
 {
-    const fp MAX_FLOOR_DISTANCE_EPSILON = fp::fromFloat(3.0);
+    const fp MAX_FLOOR_DISTANCE_EPSILON = fp::fromFloat(1.0);
 
     return velocity.y >= 0
         && tryPushIntoGround(MAX_FLOOR_DISTANCE_EPSILON)

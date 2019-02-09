@@ -38,7 +38,7 @@ void PlayerMoveLogic::applyMovement(PlayerKeyFlags keys, BspLevel* level)
         
         getMovementVector(keys, impulseVelocity, frameVelocity);
         
-        player.getTransform().setPosition(player.getTransform().getPosition() + frameVelocity);
+        player.getTransform().setPosition(player.getTransform().getPosition() + frameVelocity / 100);
     }
     else
     {

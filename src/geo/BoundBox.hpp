@@ -50,6 +50,12 @@ struct BoundBoxTemplate
         v[1].z = minValue<T>();
     }
 
+    BoundBoxTemplate(const Vec3Template<T>& mins, const Vec3Template<fp>& maxs)
+        : v({ mins, maxs })
+    {
+
+    }
+
     void addPoint(const Vec3Template<T>& point)
     {
         v[0].x = std::min(v[0].x, point.x);

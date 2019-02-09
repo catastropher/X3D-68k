@@ -59,6 +59,13 @@ public:
         angleY = 0;
 
         registerVars();
+
+        //, {16,16,24} },
+        Vec3i mins(-16, -32, -16);
+        Vec3i maxs(16, 24, 16);
+
+        auto transform = getTransform();
+        transform.setBoundBox(BoundBoxTemplate<fp>(mins.toVec3<fp>(), maxs.toVec3<fp>()));
     }
 
     void registerVars();

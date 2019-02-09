@@ -17,6 +17,7 @@
 
 #include "geo/Vec3.hpp"
 #include "math/Quaternion.hpp"
+#include "geo/BoundBox.hpp"
 
 #include "Component.hpp"
 
@@ -55,11 +56,21 @@ namespace internal
         {
             return position;
         }
+
+        const BoundBoxTemplate<fp>& getBoundBox() const
+        {
+            return boundBox;
+        }
+
+        void setBoundBox(const BoundBoxTemplate<fp>& newBoundBox)
+        {
+            boundBox = newBoundBox;
+        }
         
     private:
         Vec3fp position;
         Quaternion orientation;
-        int standingOnBrushComponent;
+        BoundBoxTemplate<fp> boundBox;
     };
 }
 

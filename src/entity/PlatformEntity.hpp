@@ -25,7 +25,8 @@ class PlatformEntity : public Entity
 public:
     PlatformEntity(X_Edict& edict, BspLevel& level);
 
-    void update(X_Time currentTime);
+    void update(const EntityUpdate& update);
+    void move(const Vec3fp& movement);
     
 private:
     

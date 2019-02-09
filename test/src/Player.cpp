@@ -24,6 +24,8 @@ fp friction;
 fp jump;
 fp maxSpeed;
 
+bool playerPhysics = true;
+
 void Player::registerVars()
 {
     X_EngineContext* engineContext = Engine::getInstance();
@@ -34,6 +36,8 @@ void Player::registerVars()
     x_console_register_var(console, &friction, "player.friction", X_CONSOLEVAR_FP16X16, "50", false);
     x_console_register_var(console, &jump, "player.jump", X_CONSOLEVAR_FP16X16, "160", false);
     x_console_register_var(console, &maxSpeed, "player.maxspeed", X_CONSOLEVAR_FP16X16, "300", false);
+
+    x_console_register_var(console, &playerPhysics, "player.physics", X_CONSOLEVAR_BOOL, "1", true);
 }
 
 PlayerKeyFlags getPlayerKeys(KeyState* keyState)
@@ -134,7 +138,7 @@ void handle_keys()
 
 void Player::handleMovement(const InputUpdate& update)
 {
-    PlayerMoveLogic moveLogic(*this, moveSpeed, true, update.deltaTime);
+    PlayerMoveLogic moveLogic(*this, moveSpeed, playerPhysics, update.deltaTime);
     PlayerKeyFlags keys = getPlayerKeys(update.keyState);
 
     auto& collider = getCollider();
