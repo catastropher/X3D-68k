@@ -183,6 +183,8 @@ static void runFrame(X_EngineContext* engineContext)
     engineContext->frameStart = Clock::getTicks();
     engineContext->timeDelta = fp::fromInt(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
 
+    printf("Time delta: %f\n", engineContext->timeDelta.toFloat());
+
     PhysicsEngine::update(*engineContext->getCurrentLevel(), engineContext->timeDelta);
     engineContext->entityManager->updateEntities(Clock::getTicks(), engineContext->timeDelta, engineContext);
 

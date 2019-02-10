@@ -37,12 +37,8 @@ void PhysicsEngine::step(BspLevel& level, fp dt)
     
     for(auto& collider : boxColliders)
     {
-        collider.velocity += collider.impulseVelocity + collider.frameVelocity;
-        
         BoxColliderEngine engine(collider, level, dt);
         engine.runStep();
-        
-        collider.impulseVelocity = Vec3fp(0, 0, 0);
     }
 }
 

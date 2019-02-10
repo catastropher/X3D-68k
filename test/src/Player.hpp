@@ -45,7 +45,10 @@ public:
 
 
         Vec3fp position;
-        edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0));
+        if(!edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0)))
+        {
+            x_system_error("No player start");
+        }
 
         position.y -= fp::fromInt(30);
 

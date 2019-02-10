@@ -45,7 +45,7 @@ struct ScheduledPortal
 
 typedef struct X_Renderer
 {
-    X_Renderer(Screen* screen) : activeEdgeContext(2000, 1000, 20000, screen) { }
+    X_Renderer(Screen* screen) : activeEdgeContext(6000, 6000, 30000, screen) { }
 
     void scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth);
     void renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext);

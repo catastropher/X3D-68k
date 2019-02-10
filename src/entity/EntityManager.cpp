@@ -52,7 +52,12 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 
     if(createEntityCallback != nullptr)
     {
-        return createEntityCallback(classname->value, edict, level);
+        Entity* entity = createEntityCallback(classname->value, edict, level);
+
+        if(entity != nullptr)
+        {
+            return entity;
+        }
     }
 
     if(strcmp(classname->value, "info_player_start") == 0)

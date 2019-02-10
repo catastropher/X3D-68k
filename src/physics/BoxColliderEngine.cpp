@@ -119,7 +119,12 @@ void BoxColliderEngine::applyFriction()
     }
 
 
-    fp newSpeed = currentSpeed - currentSpeed * collider.frictionCoefficient * dt;
+    fp newSpeed = currentSpeed - currentSpeed * dt * collider.frictionCoefficient;
+
+    printf("Old speed: %f\n", currentSpeed.toFloat());
+    printf("New speed: %f\n", newSpeed.toFloat());
+    printf("dt: %f\n", dt.toFloat() );
+
     newSpeed = clamp(newSpeed, fp::fromInt(0), collider.maxSpeed);
 
     newSpeed = newSpeed / currentSpeed;
@@ -139,9 +144,7 @@ void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<
     collider->bounceCoefficient = X_FP16x16_ONE;
     collider->collisionInfo.type = BOXCOLLIDER_COLLISION_NONE;
     collider->velocity = Vec3fp(0, 0, 0);
-    collider->impulseVelocity = Vec3fp(0, 0, 0);    // TODO: remove
-    collider->frameVelocity = Vec3fp(0, 0, 0);
-    
+
     x_link_init_self(&collider->objectsOnModel);
 }
 

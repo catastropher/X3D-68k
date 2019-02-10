@@ -45,7 +45,9 @@ void edictParseAttribute(const char* value, Vec3fp& dest)
     Vec3f v;
     sscanf(value, "%f %f %f", &v.x, &v.y, &v.z);
 
-    dest = v.toVec3<fp>();
+    dest = v
+        .toVec3<fp>()
+        .toX3dCoords();
 }
 
 X_EdictAttribute *X_Edict::getAttribute(const char *name) const
