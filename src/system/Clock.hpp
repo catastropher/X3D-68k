@@ -15,11 +15,13 @@
 
 #pragma once
 
+#include "Time.hpp"
+
 class Clock
 {
 public:
-    static int getTicks();
-    static void delay(int milliseconds);
+    static Time getTicks();
+    static void delay(Duration duration);
     
 private:
     static int currentTick;

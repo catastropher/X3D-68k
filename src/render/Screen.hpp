@@ -41,13 +41,7 @@ struct ScreenEventHandlers
 class Screen
 {
 public:
-    Screen(int w, int h, ScreenEventHandlers& handlers)
-    {
-        canvas.resize(w, h);
-        zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
-        
-        this->handlers = handlers;
-    }
+    Screen(int w, int h, ScreenEventHandlers& handlers);
     
     void setPalette(const X_Palette* palette)
     {

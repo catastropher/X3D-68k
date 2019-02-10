@@ -43,6 +43,7 @@ typedef struct X_Palette
 
 X_Color x_palette_get_closest_color_from_rgb(const X_Palette* palette, unsigned char r, unsigned char g, unsigned char b);
 const X_Palette* x_palette_get_quake_palette(void);
+void x_palette_correct_gamma(X_Palette* palette, fp gamma);
 
 void x_palette_visualize(struct Screen* screen);
 

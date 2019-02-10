@@ -76,7 +76,7 @@ void PlatformEntity::move(const Vec3fp &movement)
 
 void PlatformEntity::update(const EntityUpdate& update)
 {
-    setNextUpdateTime(update.currentTime + 10);
+    setNextUpdateTime(update.currentTime + Duration::fromMilliseconds(10));
 
     Vec3fp movement(0, fp::fromInt(-100) * update.deltaTime, 0);
 

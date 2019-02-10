@@ -15,6 +15,8 @@
 
 #include "Screen.hpp"
 #include "object/CameraObject.hpp"
+#include "dev/console/Console.hpp"
+#include "engine/Engine.hpp"
 
 void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
 {
@@ -31,4 +33,12 @@ void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
 //            cam->screenResizeCallback(cam, this, newFov);
 //        }
 //    }
+}
+
+Screen::Screen(int w, int h, ScreenEventHandlers& handlers)
+{
+    canvas.resize(w, h);
+    zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
+
+    this->handlers = handlers;
 }

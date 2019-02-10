@@ -1,5 +1,7 @@
 #pragma once
 
+#include "system/Clock.hpp"
+
 struct Console;
 struct Screen;
 struct X_Font;
@@ -22,7 +24,7 @@ public:
     {
         openState = X_CONSOLE_STATE_CLOSED;
         renderYOffset = 0;
-        lastCursorBlink = getCurrentTime();
+        lastCursorBlink = Clock::getTicks();
         showCursor = true;
     }
     
@@ -55,17 +57,15 @@ private:
     void handleOpeningAnimation();
     void handleClosingAnimation();
     
-    X_Time getCurrentTime();
-
     Console& console;
     Screen& screen;
 
     bool showCursor;
-    X_Time lastCursorBlink;
+    Time lastCursorBlink;
     
     X_ConsoleOpenState openState;
     int renderYOffset;
-    X_Time consoleToggleTime;
+    Time consoleToggleTime;
 
     X_Font& font;
 };

@@ -24,7 +24,7 @@ class X_EngineContext;
 
 struct EntityUpdate
 {
-    EntityUpdate(X_Time currentTime_, fp deltaTime_, X_EngineContext* engineContext_)
+    EntityUpdate(Time currentTime_, fp deltaTime_, X_EngineContext* engineContext_)
         : currentTime(currentTime_),
         deltaTime(deltaTime_),
         engineContext(engineContext_)
@@ -32,7 +32,7 @@ struct EntityUpdate
 
     }
 
-    X_Time currentTime;
+    Time currentTime;
     fp deltaTime;
     X_EngineContext* engineContext;
 };
@@ -74,8 +74,7 @@ public:
 protected:
     explicit Entity(BspLevel& level_)
         : id(-1),
-        level(level_),
-        nextUpdate(0)
+        level(level_)
     {
         addComponent<TransformComponent>();
     }
@@ -95,7 +94,7 @@ protected:
         return level;
     }
     
-    void setNextUpdateTime(X_Time nextUpdate)
+    void setNextUpdateTime(Time nextUpdate)
     {
         this->nextUpdate = nextUpdate;
     }
@@ -104,7 +103,7 @@ private:
     int id;
     ComponentManager componentManager;
     BspLevel& level;
-    X_Time nextUpdate;
+    Time nextUpdate;
     
     friend class EntityManager;
 };

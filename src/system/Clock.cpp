@@ -21,7 +21,7 @@
 int Clock::lastRecordedClock;
 int Clock::currentTick;
 
-int Clock::getTicks()
+Time Clock::getTicks()
 {
     int tick;
     
@@ -34,11 +34,13 @@ int Clock::getTicks()
     currentTick += (tick - lastRecordedClock);
     lastRecordedClock = tick;
     
-    return currentTick;
+    return Time::fromMilliseconds(currentTick);
 }
 
-void Clock::delay(int milliseconds)
+void Clock::delay(Duration duration)
 {
+    int milliseconds = duration.toMilliseconds();
+
     currentTick += milliseconds;
     
     usleep(milliseconds * 1000);

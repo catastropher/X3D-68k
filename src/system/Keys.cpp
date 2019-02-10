@@ -78,7 +78,7 @@ void x_keystate_send_key_press(KeyState* state, KeyCode key, KeyCode unicodeKey)
         x_keystate_enqueue(state, unicodeKey);
         state->lastKeyPressed = key;
         state->keyToRepeat = unicodeKey;
-        state->nextKeyRepeat = state->currentTime + X_KEY_REPEAT_INITIAL_TIME;
+        state->nextKeyRepeat = state->currentTime + Duration::fromMilliseconds(500);
     }
     
     state->keyDown[(int)key] = 1;
@@ -90,7 +90,7 @@ void x_keystate_send_key_release(KeyState* state, KeyCode key)
     state->keyToRepeat = KeyCode::invalid;
 }
 
-void x_keystate_handle_key_repeat(KeyState* state, X_Time currentTime)
+void x_keystate_handle_key_repeat(KeyState* state, Time currentTime)
 {
     if(!state->textInputMode)
         return;
@@ -102,6 +102,6 @@ void x_keystate_handle_key_repeat(KeyState* state, X_Time currentTime)
         return;
     
     x_keystate_enqueue(state, state->keyToRepeat);
-    state->nextKeyRepeat = currentTime + X_KEY_REPEAT_TIME;
+    state->nextKeyRepeat = currentTime + Duration::fromMilliseconds(100);
 }
 

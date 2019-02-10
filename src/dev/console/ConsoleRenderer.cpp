@@ -1,26 +1,30 @@
+#include "system/Clock.hpp"
 #include "render/Screen.hpp"
 #include "Console.hpp"
 #include "ConsoleRenderer.hpp"
 #include "render/Font.hpp"
 #include "engine/EngineContext.hpp"
 
+const Duration toggleTime = Duration::fromMilliseconds(250);
+const Duration cursorBlinkTime = Duration::fromMilliseconds(250);
+
 void ConsoleRenderer::show()
 {
-    consoleToggleTime = getCurrentTime();
+    consoleToggleTime = Clock::getTicks();
     openState = X_CONSOLE_STATE_OPENING;
 }
 
 void ConsoleRenderer::hide()
 {
-    consoleToggleTime = getCurrentTime();
+    consoleToggleTime = Clock::getTicks();
     openState = X_CONSOLE_STATE_CLOSING;
 }
 
 void ConsoleRenderer::handleCursorBlinking()
 {
-    X_Time currentTime = getCurrentTime();
+    Time currentTime = Clock::getTicks();
     
-    if(currentTime - lastCursorBlink >= X_CONSOLE_CURSOR_BLINK_TIME)
+    if(currentTime - lastCursorBlink >= cursorBlinkTime)
     {
         showCursor = !showCursor;
         lastCursorBlink = currentTime;
@@ -29,10 +33,10 @@ void ConsoleRenderer::handleCursorBlinking()
 
 void ConsoleRenderer::handleOpeningAnimation()
 {
-    int timePassed = getCurrentTime() - consoleToggleTime;
+    Duration timePassed = Clock::getTicks() - consoleToggleTime;
     int consoleHeight = getConsoleHeight();
-    
-    renderYOffset = -consoleHeight * (X_CONSOLE_TOGGLE_TIME - timePassed) / X_CONSOLE_TOGGLE_TIME;
+
+    renderYOffset = (-consoleHeight * ((toggleTime - timePassed) / toggleTime)).toInt();
     
     if(renderYOffset >= 0)
     {
@@ -43,10 +47,10 @@ void ConsoleRenderer::handleOpeningAnimation()
 
 void ConsoleRenderer::handleClosingAnimation()
 {
-    int timePassed = getCurrentTime() - consoleToggleTime;
+    Duration timePassed = Clock::getTicks() - consoleToggleTime;
     int consoleHeight = getConsoleHeight();
-    
-    renderYOffset = -consoleHeight * timePassed / X_CONSOLE_TOGGLE_TIME;
+
+    renderYOffset = -(consoleHeight * (timePassed / toggleTime)).toInt();
     
     if(renderYOffset <= -consoleHeight)
     {
@@ -186,10 +190,5 @@ void ConsoleRenderer::render()
     renderBackground();
     renderOutput();
     renderInput();
-}
-
-X_Time ConsoleRenderer::getCurrentTime()
-{
-    return x_enginecontext_get_time(console.engineContext);
 }
 

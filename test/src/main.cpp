@@ -17,6 +17,27 @@
 
 #include "Player.hpp"
 
+fp g_gamma = fp::fromInt(1);
+
+void cmdGamma(X_EngineContext* engineContext, int argc, char* argv[])
+{
+    if(argc != 2)
+    {
+        x_console_printf(engineContext->getConsole(), "Gamma is currently %f\n", g_gamma.toFloat());
+
+        return;
+    }
+
+    g_gamma = fp::fromFloat(atof(argv[1]));
+
+    X_Palette* newPalette = new X_Palette;
+
+    *newPalette = *x_palette_get_quake_palette();
+    x_palette_correct_gamma(newPalette, g_gamma);
+
+    Engine::getInstance()->getScreen()->palette = newPalette;
+}
+
 static Entity* createEntityCallback(const char* entityType, X_Edict& edict, BspLevel& level)
 {
     if(strcmp(entityType, "info_player_start") == 0)
@@ -57,6 +78,8 @@ int main(int argc, char* argv[])
     engineContext->entityManager->setCreateEntityCallback(createEntityCallback);
 
     x_console_execute_cmd(engineContext->getConsole(), "exec engine.cfg;exec ../engine.cfg");
+
+    x_console_register_cmd(engineContext->getConsole(), "screen.gamma", cmdGamma);
 
     Engine::run();
 }

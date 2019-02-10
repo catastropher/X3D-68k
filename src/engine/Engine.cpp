@@ -85,35 +85,36 @@ void Engine::quit()
 
 static void lockToFrameRate(X_EngineContext* engineContext)
 {
-    int diff = Clock::getTicks() - engineContext->frameStart;
+    Duration frameDuration = Clock::getTicks() - engineContext->frameStart;
 
-    if(diff == 0)
+    if(frameDuration == Duration::fromSeconds(0))
     {
         engineContext->estimatedFramesPerSecond = fp::fromInt(1000);
 
         return;
     }
 
-    engineContext->estimatedFramesPerSecond = fp::fromInt(1000) / diff;
+    engineContext->estimatedFramesPerSecond = fp::fromInt(1) / frameDuration.toSeconds();
 
     fp maxFramesPerSecond = fp::fromInt(engineContext->getRenderer()->maxFramesPerSecond);
 
     if(engineContext->estimatedFramesPerSecond > maxFramesPerSecond)
     {
-        fp millisecondsPerFrame = fp::fromInt(1000) / engineContext->estimatedFramesPerSecond;
-        fp targetMillisecondsPerFrame = fp::fromInt(1000) / engineContext->getRenderer()->maxFramesPerSecond;
+        Duration targetFrameLength =  Duration::fromSeconds(fp::fromInt(1) / engineContext->getRenderer()->maxFramesPerSecond);
 
-        fp sleepMilliseconds = targetMillisecondsPerFrame - millisecondsPerFrame;
+        Duration sleepMilliseconds = targetFrameLength - frameDuration;
 
-        Clock::delay(sleepMilliseconds.toInt());
+        Clock::delay(sleepMilliseconds);
 
-        diff = Clock::getTicks() - engineContext->frameStart;
-        engineContext->estimatedFramesPerSecond = fp::fromInt(1000) / diff;
+        frameDuration = Clock::getTicks() - engineContext->frameStart;
+        engineContext->estimatedFramesPerSecond = fp::fromInt(1) / frameDuration.toSeconds();
     }
 }
 
 void handle_console_keys(X_EngineContext* context)
 {
+    x_keystate_handle_key_repeat(context->getKeyState(), context->frameStart);
+
     KeyCode key;
     while(x_keystate_dequeue(context->getKeyState(), &key))
     {
@@ -181,9 +182,7 @@ static void runFrame(X_EngineContext* engineContext)
 
     engineContext->lastFrameStart = engineContext->frameStart;
     engineContext->frameStart = Clock::getTicks();
-    engineContext->timeDelta = fp::fromInt(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
-
-    printf("Time delta: %f\n", engineContext->timeDelta.toFloat());
+    engineContext->timeDelta = (engineContext->frameStart - engineContext->lastFrameStart).toSeconds();
 
     PhysicsEngine::update(*engineContext->getCurrentLevel(), engineContext->timeDelta);
     engineContext->entityManager->updateEntities(Clock::getTicks(), engineContext->timeDelta, engineContext);

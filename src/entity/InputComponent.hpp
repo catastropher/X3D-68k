@@ -21,7 +21,7 @@
 
 struct InputUpdate
 {
-    InputUpdate(class KeyState* keyState, X_Time currentTime, fp deltaTime)
+    InputUpdate(class KeyState* keyState, Time currentTime, fp deltaTime)
         : keyState(keyState),
           currentTime(currentTime),
           deltaTime(deltaTime)
@@ -30,7 +30,7 @@ struct InputUpdate
     }
 
     class KeyState* keyState;
-    X_Time currentTime;
+    Time currentTime;
     fp deltaTime;
 };
 

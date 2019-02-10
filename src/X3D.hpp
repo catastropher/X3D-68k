@@ -27,7 +27,7 @@
 #include "geo/Ray3.hpp"
 #include "geo/Vec2.hpp"
 #include "geo/Vec3.hpp"
-#include "geo/Vec4.hpp"
+#include "geo/Vec4.hpp"X_KEY_REPEAT_INITIAL_TIME
 
 // engine
 #include "engine/Config.hpp"
@@ -76,13 +76,7 @@
 #include "memory/String.h"
 
 // object
-#include "object/ButtonObject.hpp"
 #include "object/CameraObject.hpp"
-#include "object/GameObject.hpp"
-#include "object/GameObjectLoader.hpp"
-#include "object/ObjectFactory.hpp"
-#include "object/PlatformObject.hpp"
-#include "object/WorldObject.hpp"
 
 // physics
 #include "physics/BoxCollider.hpp"

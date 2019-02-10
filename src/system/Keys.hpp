@@ -59,8 +59,8 @@ struct KeyState
     int keyQueueTail;
     unsigned char keyshift[X_TOTAL_KEYS];
 
-    X_Time currentTime;
-    X_Time nextKeyRepeat;
+    Time currentTime;
+    Time nextKeyRepeat;
     KeyCode lastKeyPressed;
     KeyCode keyToRepeat;
 };
@@ -71,7 +71,7 @@ bool x_keystate_queue_empty(const KeyState* state);
 bool x_keystate_dequeue(KeyState* state, KeyCode* dest);
 void x_keystate_send_key_press(KeyState* state, KeyCode key, KeyCode unicodeKey);
 void x_keystate_send_key_release(KeyState* state, KeyCode key);
-void x_keystate_handle_key_repeat(KeyState* state, X_Time currentTime);
+void x_keystate_handle_key_repeat(KeyState* state, Time currentTime);
 
 static inline bool x_keystate_key_down(const KeyState* keystate, KeyCode key)
 {

@@ -64,12 +64,12 @@ typedef struct X_EngineContext
     X_GameObject activeObjectTail;
 
     int frameCount;     // TODO Where should this go?
-    X_Time frameStart;
-    X_Time lastFrameStart;
+    Time frameStart;
+    Time lastFrameStart;
     
     fp estimatedFramesPerSecond;
     fp timeDelta;
-    
+
     void* userData;
 
     Screen* screen;   // FIXME: just exposing to set up DI
@@ -90,7 +90,7 @@ private:
 
 void x_enginecontext_init(X_EngineContext* context, X_Config* config);
 void x_enginecontext_cleanup(X_EngineContext* context);
-X_Time x_enginecontext_get_time(const X_EngineContext* context);
+Time x_enginecontext_get_time(const X_EngineContext* context);
 void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, CameraObject* cam, struct X_RenderContext* dest);
 
 void x_enginecontext_restart_video(X_EngineContext* context);
@@ -99,9 +99,3 @@ static inline int x_enginecontext_get_frame(const X_EngineContext* context)
 {
     return context->frameCount;
 }
-
-static inline x_fp16x16 x_enginecontext_get_time_delta(X_EngineContext* engineContext)
-{
-    return x_fp16x16_from_int(engineContext->frameStart - engineContext->lastFrameStart) / 1000;
-}
-

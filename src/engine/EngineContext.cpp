@@ -145,7 +145,7 @@ void x_enginecontext_cleanup(X_EngineContext* context)
     context->getScreen()->handlers.cleanupVideo(context, context->getScreen()->handlers.userData);
 }
 
-X_Time x_enginecontext_get_time(const X_EngineContext* context)
+Time x_enginecontext_get_time(const X_EngineContext* context)
 {
     return context->frameStart;
 }

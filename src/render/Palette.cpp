@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <cmath>
+
 #include "Palette.hpp"
 #include "Screen.hpp"
 #include "util/Util.hpp"
@@ -370,6 +372,27 @@ void x_palette_visualize(Screen* screen)
                     screen->canvas.setTexel({ x + d, y + k }, color);
                 }
             }
+        }
+    }
+}
+
+static int correctGamma(int component, float gamma)
+{
+    float value = 255 * pow((float)component / 255, 1.0 / gamma);
+
+
+    return clamp(value, 0.0f, 255.0f);
+}
+
+void x_palette_correct_gamma(X_Palette* palette, fp gamma)
+{
+    //255 * (Image/255)^(1/2.2)
+
+    for(int i = 0; i < 256; ++i)
+    {
+        for(int j = 0; j < 3; ++j)
+        {
+            palette->colorRGB[i][j] = correctGamma(palette->colorRGB[i][j], gamma.toFloat());
         }
     }
 }

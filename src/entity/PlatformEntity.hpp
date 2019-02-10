@@ -29,6 +29,6 @@ public:
     void move(const Vec3fp& movement);
     
 private:
-    
+    int height;
 };
 
