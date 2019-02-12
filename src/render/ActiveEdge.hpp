@@ -138,8 +138,8 @@ typedef struct X_AE_Edge
     
     X_AE_Edge(Vec2_fp16x16* a, Vec2_fp16x16* b, X_AE_Surface* surface, BspEdge* bspEdge_, int currentFrame, X_AE_Edge* edgeStart)
     {
-        int aY = x_fp16x16_ceil(a->y) >> 16;
-        int bY = x_fp16x16_ceil(b->y) >> 16;
+        int aY = fp(a->y).ceil().toFp16x16() >> 16;
+        int bY = fp(b->y).ceil().toFp16x16() >> 16;
         
         int height = bY - aY;
         
@@ -167,15 +167,15 @@ typedef struct X_AE_Edge
         
         initDeltas(a, b);
         
-        startY = x_fp16x16_to_int(x_fp16x16_ceil(a->y));
-        endY = x_fp16x16_to_int(x_fp16x16_ceil(b->y)) - 1;
+        startY = x_fp16x16_to_int(fp(a->y).ceil().toFp16x16());
+        endY = x_fp16x16_to_int(fp(b->y).ceil().toFp16x16()) - 1;
     }
     
     void initDeltas(Vec2_fp16x16* top, Vec2_fp16x16* bottom)
     {
         xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
         
-        x_fp16x16 topY = x_fp16x16_ceil(top->y);
+        x_fp16x16 topY = fp(top->y).ceil().toFp16x16();
         x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, xSlope);
         
         x = top->x - errorCorrection;

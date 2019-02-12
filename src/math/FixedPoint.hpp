@@ -108,6 +108,11 @@ struct fp
         return fp(x_sqrt(val) << 8);
     }
 
+    constexpr fp ceil() const
+    {
+        return fp((val & 0xFFFF0000) + ((val & 0x0000FFFF) != 0 ? fp::fromInt(1).val : 0));
+    }
+
     constexpr int asRightShiftedInteger(int rightShift) const
     {
        return val >> rightShift;
@@ -115,6 +120,12 @@ struct fp
     
     int val;
 };
+
+constexpr fp operator "" _fp(long double val)
+{
+    return fp::fromFloat((float)val);
+}
+
 
 // Addition
 inline constexpr fp operator+(fp a, fp b)
@@ -248,11 +259,6 @@ static inline int x_fp16x16_to_int(x_fp16x16 val)
     return val >> 16;
 }
 
-static inline x_fp16x16 x_fp16x16_ceil(x_fp16x16 val)
-{
-    return (val & 0xFFFF0000) + ((val & 0x0000FFFF) != 0 ? X_FP16x16_ONE : 0);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Divides two @ref x_fp16x16 numbers.
 ///
@@ -275,21 +281,6 @@ static inline x_fp16x16 x_fp16x16_mul(x_fp16x16 a, x_fp16x16 b)
     return ((x_fp32x32)a * b) >> 16;
 }
 
-static inline x_fp16x16 x_fp16x16_mul_three(x_fp16x16 a, x_fp16x16 b, x_fp16x16 c)
-{
-    return x_fp16x16_mul(a, x_fp16x16_mul(b, c));
-}
-
-static inline int x_int_lerp(int x0, int x1, x_fp16x16 t)
-{
-    return x0 + (((x1 - x0) * t) >> 16);
-}
-
-static inline x_fp16x16 x_fp16x16_lerp(x_fp16x16 x0, x_fp16x16 x1, x_fp16x16 t)
-{
-    return x0 + x_fp16x16_mul(x1 - x0, t);
-}
-
 static inline float x_fp16x16_to_float(x_fp16x16 val)
 {
     return val / 65536.0;
@@ -298,16 +289,6 @@ static inline float x_fp16x16_to_float(x_fp16x16 val)
 static inline x_fp16x16 x_fp16x16_from_float(float val)
 {
     return val * 65536;
-}
-
-static inline x_fp16x16 x_fp16x16_clamp(x_fp16x16 val, x_fp16x16 minValue, x_fp16x16 maxValue)
-{
-    if(val < minValue)
-        val = minValue;
-    else if(val > maxValue)
-        val = maxValue;
-
-    return val;
 }
 
 static inline x_fp16x16 x_int_div_as_fp16x16(int a, int b)
