@@ -33,7 +33,7 @@ void Player::registerVars()
 
     x_console_register_var(console, &moveSpeed, "player.speed", X_CONSOLEVAR_FP16X16, "200", false);
     x_console_register_var(console, &gravity, "player.gravity", X_CONSOLEVAR_FP16X16, "320", false);
-    x_console_register_var(console, &friction, "player.friction", X_CONSOLEVAR_FP16X16, "50", false);
+    x_console_register_var(console, &friction, "player.friction", X_CONSOLEVAR_FP16X16, "20", false);
     x_console_register_var(console, &jump, "player.jump", X_CONSOLEVAR_FP16X16, "160", false);
     x_console_register_var(console, &maxSpeed, "player.maxspeed", X_CONSOLEVAR_FP16X16, "300", false);
 
