@@ -48,13 +48,13 @@ static void register_vars(X_MouseState* state, Console* console)
     x_console_register_var(console, &state->ySpeed, "mouse.yspeed", X_CONSOLEVAR_FP16X16, "1.0'", 1);
 }
 
-void x_mousestate_init(X_MouseState* state, Console* console, Screen* screen)
+X_MouseState::X_MouseState(Console* console, Screen* screen)
 {
-    state->screen = screen;
-    state->mouseLook = 0;
+    this->screen = screen;
+    mouseLook = false;
     
-    x_mousestate_clear(state);
-    register_vars(state, console);
+    x_mousestate_clear(this);
+    register_vars(this, console);
     register_cmds(console);
 }
 

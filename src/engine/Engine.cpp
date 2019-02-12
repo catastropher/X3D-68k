@@ -31,16 +31,65 @@
 #include "entity/InputComponent.hpp"
 #include "render/StatusBar.hpp"
 #include "entity/BrushModelComponent.hpp"
+#include "level/LevelManager.hpp"
 
 X_EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
 bool Engine::isDone = false;
+
+void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, CameraObject* cam, X_RenderContext* dest)
+{
+    dest->cam = cam;
+    dest->camPos = x_cameraobject_get_position(cam);
+    dest->canvas = &engineContext->getScreen()->canvas;
+    dest->zbuf = engineContext->getScreen()->zbuf;
+    dest->currentFrame = x_enginecontext_get_frame(engineContext);
+    dest->engineContext = engineContext;
+    dest->level = engineContext->getCurrentLevel();
+    dest->renderer = engineContext->getRenderer();
+    dest->screen = engineContext->getScreen();
+    dest->viewFrustum = &cam->viewport.viewFrustum;
+    dest->viewMatrix = &cam->viewMatrix;
+    dest->renderer = engineContext->getRenderer();
+}
 
 static void initSystem(SystemConfig& config)
 {
     FileSystem::init(config.programPath);
     Log::init(config.logFile, config.enableLogging);
     MemoryManager::init(config.hunkSize, config.zoneSize);
+}
+
+void initEngineContext(X_EngineContext* context, X_Config& config)
+{
+    context->queue = new EngineQueue(context);
+    context->mainFont = new X_Font;
+    context->keystate = new KeyState;
+
+    context->frameCount = 1;    // TODO: belongs in the renderer
+    context->lastFrameStart = context->frameStart;
+
+    context->screen = new Screen(
+        config.screen->w,
+        config.screen->h,
+        config.screen->screenHandlers,
+        config.screen->palette);
+
+    if(!context->getMainFont()->loadFromFile(config.font))
+    {
+        x_system_error("Failed to load font");
+    }
+
+    context->console = new Console(context, context->mainFont);
+    context->renderer = new X_Renderer(
+        context->screen,
+        context->console,
+        config.screen->fov.toFp16x16());
+
+    context->entityManager = new EntityManager;
+    context->levelManager = new LevelManager(*context->getEngineQueue(), *context->entityManager);
+
+    context->mouseState = new X_MouseState(context->console, context->screen);
 }
 
 X_EngineContext* Engine::init(X_Config& config)
@@ -52,14 +101,12 @@ X_EngineContext* Engine::init(X_Config& config)
 
     initSystem(config.systemConfig);
 
-    instance.init();
-
     x_memory_init();
     x_filesystem_init(config.path);
     x_filesystem_add_search_path("../assets");
 
     x_platform_init(&instance, &config);
-    x_enginecontext_init(&instance, &config);
+    initEngineContext(&instance, config);
 
     auto platform = instance.getPlatform();
     platform->init(config);
@@ -72,7 +119,6 @@ X_EngineContext* Engine::init(X_Config& config)
 void Engine::shutdownEngine()
 {
     x_platform_cleanup(&instance);
-    x_enginecontext_cleanup(&instance);
     x_filesystem_cleanup();
     x_memory_free_all();
     x_log_cleanup();

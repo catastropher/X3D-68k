@@ -51,6 +51,8 @@ struct KeyBind
 
 struct KeyState
 {
+    KeyState();
+
     bool keyDown[X_TOTAL_KEYS];
     
     bool textInputMode;

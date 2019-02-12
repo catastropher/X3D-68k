@@ -90,7 +90,7 @@ static void cmd_fov(X_EngineContext* context, int argc, char* argv[])
 
 static void cmd_vidrestart(X_EngineContext* context, int argc, char* argv[])
 {
-    x_enginecontext_restart_video(context);
+    //x_enginecontext_restart_video(context);
 }
 
 static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
@@ -245,15 +245,16 @@ static void x_renderer_set_default_values(X_Renderer* renderer, Screen* screen, 
     renderer->maxFramesPerSecond = 60;
 }
 
-void x_renderer_init(X_Renderer* renderer, Console* console, Screen* screen, int fov)
+X_Renderer::X_Renderer(Screen* screen, Console* console, int fov)
+    : activeEdgeContext(8000, 8000, 30000, screen)
 {
     x_renderer_console_cmds(console);
-    x_renderer_init_console_vars(renderer, console);
-    x_renderer_set_default_values(renderer, screen, fov);
+    x_renderer_init_console_vars(this, console);
+    x_renderer_set_default_values(this, screen, fov);
     
-    x_cache_init(&renderer->surfaceCache, 500000 * 4, "surfacecache");     // TODO: this size should be configurable
-    x_renderer_init_colormap(renderer, screen->palette);
-    x_renderer_init_dynamic_lights(renderer);
+    x_cache_init(&surfaceCache, 500000 * 4, "surfacecache");     // TODO: this size should be configurable
+    x_renderer_init_colormap(this, screen->palette);
+    x_renderer_init_dynamic_lights(this);
 }
 
 void x_renderer_cleanup(X_Renderer* renderer)

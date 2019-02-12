@@ -35,19 +35,8 @@ class LevelManager;
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
 ////////////////////////////////////////////////////////////////////////////////
-typedef struct X_EngineContext
+struct X_EngineContext
 {
-    void init()
-    {
-        queue = new EngineQueue(this);
-        gameObjectFactory = new X_ObjectFactory;
-        console = new Console;
-        mainFont = new X_Font;
-        keystate = new KeyState;
-        mouseState = new X_MouseState;
-    }
-    
-    X_ObjectFactory* getGameObjectFactory() const { return gameObjectFactory; }
     Screen* getScreen() const { return screen; }
     Console* getConsole() const { return console; }
     X_Font* getMainFont() const { return mainFont; }
@@ -60,9 +49,6 @@ typedef struct X_EngineContext
 
     Platform* getPlatform() { return &platform; }
 
-    X_GameObject activeObjectHead;
-    X_GameObject activeObjectTail;
-
     int frameCount;     // TODO Where should this go?
     Time frameStart;
     Time lastFrameStart;
@@ -72,13 +58,11 @@ typedef struct X_EngineContext
 
     void* userData;
 
-    Screen* screen;   // FIXME: just exposing to set up DI
+    Screen* screen;
     X_Renderer* renderer;
     EntityManager* entityManager;
     LevelManager* levelManager;
-    
-private:
-    X_ObjectFactory* gameObjectFactory;
+
     Console* console;
     X_Font* mainFont;
     KeyState* keystate;
@@ -86,9 +70,8 @@ private:
     EngineQueue* queue;
 
     Platform platform;
-} X_EngineContext;
+};
 
-void x_enginecontext_init(X_EngineContext* context, X_Config* config);
 void x_enginecontext_cleanup(X_EngineContext* context);
 Time x_enginecontext_get_time(const X_EngineContext* context);
 void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, CameraObject* cam, struct X_RenderContext* dest);

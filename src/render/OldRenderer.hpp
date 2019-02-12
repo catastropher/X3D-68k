@@ -45,7 +45,7 @@ struct ScheduledPortal
 
 typedef struct X_Renderer
 {
-    X_Renderer(Screen* screen) : activeEdgeContext(8000, 8000, 30000, screen) { }
+    X_Renderer(Screen* screen, Console* console, int fov);
 
     void scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth);
     void renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext);
@@ -106,7 +106,6 @@ static inline X_Color x_renderer_get_shaded_color(X_Renderer* renderer, X_Color 
     return renderer->colorMap[(int)color * X_COLORMAP_SHADES_PER_COLOR + intensity];
 }
 
-void x_renderer_init(X_Renderer* renderer, Console* console, Screen* screen, int fov);
 void x_renderer_cleanup(X_Renderer* renderer);
 
 void x_renderer_restart_video(X_Renderer* renderer, Screen* screen);

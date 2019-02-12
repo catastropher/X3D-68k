@@ -35,7 +35,8 @@ void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
 //    }
 }
 
-Screen::Screen(int w, int h, ScreenEventHandlers& handlers)
+Screen::Screen(int w, int h, ScreenEventHandlers& handlers, const X_Palette* palette_)
+    : palette(palette_)
 {
     canvas.resize(w, h);
     zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());

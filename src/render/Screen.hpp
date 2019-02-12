@@ -41,7 +41,7 @@ struct ScreenEventHandlers
 class Screen
 {
 public:
-    Screen(int w, int h, ScreenEventHandlers& handlers);
+    Screen(int w, int h, ScreenEventHandlers& handlers, const X_Palette* palette_);
     
     void setPalette(const X_Palette* palette)
     {

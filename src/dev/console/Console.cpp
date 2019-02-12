@@ -166,34 +166,34 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
 
 void x_console_register_builtin_commands(Console* console);
 
-void x_console_init(Console* console, X_EngineContext* engineContext, X_Font* font)
+Console::Console(X_EngineContext* engineContext, X_Font* font)
 {
-    console->cursor = Vec2(0, 0);
+    cursor = Vec2(0, 0);
     
     Screen* screen = engineContext->getScreen();
-    console->size.x = screen->getW() / font->getW();
-    console->size.y = screen->getH() / font->getH() / 2;
-    console->font = font;
-    console->engineContext = engineContext;
+    size.x = screen->getW() / font->getW();
+    size.y = screen->getH() / font->getH() / 2;
+    this->font = font;
+    this->engineContext = engineContext;
     
-    console->text = (char*)x_malloc(x_console_bytes_in_line(console) * console->size.y);
-    x_console_clear(console);
+    text = (char*)x_malloc(x_console_bytes_in_line(this) * size.y);
+    x_console_clear(this);
     
-    console->consoleCmds = NULL;
-    console->totalConsoleCmds = 0;
+    consoleCmds = NULL;
+    totalConsoleCmds = 0;
     
-    console->consoleVars = NULL;
-    console->totalConsoleVars = 0;
+    consoleVars = NULL;
+    totalConsoleVars = 0;
     
-    console->commandHistorySize = 0;
-    console->commandHistoryPos = 0;
+    commandHistorySize = 0;
+    commandHistoryPos = 0;
     
     for(int i = 0; i < X_CONSOLE_COMMAND_HISTORY_SIZE; ++i)
-        x_string_init(console->commandHistory + i, "");
+        x_string_init(commandHistory + i, "");
     
-    x_console_register_builtin_commands(console);
+    x_console_register_builtin_commands(this);
     
-    console->renderer = new ConsoleRenderer(*console, *console->engineContext->getScreen(), *console->engineContext->getMainFont());
+    renderer = new ConsoleRenderer(*this, *engineContext->getScreen(), *engineContext->getMainFont());
 }
 
 void x_console_clear(Console* console)

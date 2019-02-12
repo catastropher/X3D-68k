@@ -27,6 +27,8 @@ typedef enum X_MouseButton
 
 typedef struct X_MouseState
 {
+    X_MouseState(struct Console* console, Screen* screen);
+
     Vec2 pos;
     Screen* screen;
     Vec2 offset;
@@ -43,7 +45,6 @@ typedef struct X_MouseState
 
 struct Console;
 
-void x_mousestate_init(X_MouseState* state, struct Console* console, Screen* screen);
 void x_mousestate_set_pos(X_MouseState* state, Vec2 pos);
 void x_mousestate_show_cursor(X_MouseState* state, bool showCursor);
 void x_mousestate_update_pos(X_MouseState* state, Vec2 pos);

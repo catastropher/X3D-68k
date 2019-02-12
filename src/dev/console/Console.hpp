@@ -72,6 +72,8 @@ struct ConsoleVariable;
 
 typedef struct Console
 {
+    Console(struct X_EngineContext* engineContext, X_Font* font);
+
     ConsoleRenderer* renderer;
     
     
@@ -124,7 +126,6 @@ void x_console_register_cmd(Console* console, const char* name, X_ConsoleCmdHand
 void x_console_register_var(Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
-void x_console_init(Console* console, struct X_EngineContext* engineContext, X_Font* font);
 void x_console_cleanup(Console* console);
 
 void x_console_clear(Console* console);
