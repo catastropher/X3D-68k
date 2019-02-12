@@ -101,6 +101,8 @@ struct X_Edict
         }
     }
 
+    void print();
+
     X_EdictAttribute* getAttribute(const char* name) const;
     bool hasAttribute(const char* name) const;
 

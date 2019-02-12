@@ -78,6 +78,15 @@ struct BoundBoxTemplate
         dest.v[1].z = std::max(v[1].z, box.v[1].z);
     }
 
+    bool overlapsWith(const BoundBoxTemplate& box) const
+    {
+        printf("X: %d, %d\n", v[0].y, v[1].y);
+
+        return (v[0].x <= box.v[1].x && v[1].x >= box.v[0].x)
+            && (v[0].y <= box.v[1].y && v[1].y >= box.v[0].y)
+            && (v[0].z <= box.v[1].z && v[1].z >= box.v[0].z);
+    }
+
     BoundBoxPlaneFlags determinePlaneClipFlags(const Plane& plane) const;
     BoundBoxFrustumFlags determineFrustumClipFlags(const X_Frustum& frustum, BoundBoxFrustumFlags parentFlags) const;
 

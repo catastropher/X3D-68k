@@ -13,48 +13,21 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-
 #pragma once
 
-#include "StdAllocator.hpp"
+#include "Entity.hpp"
+#include "BrushModelComponent.hpp"
 
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
-
-template<typename T>
-struct Array
+class DoorEntity : public Entity
 {
-    Array(T* elem_, int count_)
-        : elem(elem_),
-        count(count_)
-    {
-        
-    }
-    
-    Array()
-        : elem(nullptr),
-        count(0)
-    {
-        
-    }
+public:
+    DoorEntity(X_Edict& edict, BspLevel& level);
 
-    T& operator[](int index)
-    {
-        return elem[index];
-    }
-    
-    T* begin()
-    {
-        return elem;
-    }
-    
-    T* end()
-    {
-        return elem + count;
-    }
-    
-    T* elem;
-    int count;
+    void update(const EntityUpdate& update);
+
+    static void linkDoors(Array<DoorEntity*>& doorsInLevel);
+
+private:
+    Vec3fp openDirection;
 };
 

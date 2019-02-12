@@ -450,6 +450,10 @@ static void x_bsplevel_init_models(BspLevel* level, const X_BspLevelLoader* load
         
         for(int i = 0; i < 2; ++i)
             model->boundBox.v[i] = x_vec3_convert_quake_coord_to_x3d_coord(model->boundBox.v + i);
+
+        // The extents get swapped because of the coordinate shift
+        std::swap(model->boundBox.v[0].y, model->boundBox.v[1].y);
+        std::swap(model->boundBox.v[0].z, model->boundBox.v[1].z);
         
         x_bspnode_assign_parent(model->rootBspNode, NULL);
     }

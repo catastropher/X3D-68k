@@ -68,4 +68,14 @@ bool X_Edict::hasAttribute(const char *name) const
     return getAttribute(name) != nullptr;
 }
 
+void X_Edict::print()
+{
+    printf("============Edict\"============\n");
+
+    for(int i = 0; i < totalAttributes; ++i)
+    {
+        printf("%.32s: %s\n", attributes[i].name, attributes[i].value);
+    }
+}
+
 

@@ -63,6 +63,22 @@ public:
 
     void destroyEntity(Entity* entity);
     void destroyAllEntities();
+
+    template<typename T>
+    void getAllEntitiesOfType(Array<T*>& outArray)
+    {
+        int count = 0;
+        for(Entity* entity : entities)
+        {
+            T* e;
+            if((e = dynamic_cast<T*>(entity)) != nullptr)
+            {
+                outArray[count++] = e;
+            }
+        }
+
+        outArray.count = count;
+    }
     
 private:
     Entity* tryCreateEntity(X_Edict& edict, BspLevel& level);
