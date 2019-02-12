@@ -81,40 +81,40 @@ static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext
     calculate_texture_adjustment(var, context, &orientationInEyeSpace, minTexCoord, texOffset);
 }
 
-const x_fp16x16 recip_tab[32] = 
+const fp recip_tab[32] =
 {
-    0,
-    X_FP16x16_ONE / 1,
-    X_FP16x16_ONE / 2,
-    X_FP16x16_ONE / 3,
-    X_FP16x16_ONE / 4,
-    X_FP16x16_ONE / 5,
-    X_FP16x16_ONE / 6,
-    X_FP16x16_ONE / 7,
-    X_FP16x16_ONE / 8,
-    X_FP16x16_ONE / 9,
-    X_FP16x16_ONE / 10,
-    X_FP16x16_ONE / 11,
-    X_FP16x16_ONE / 12,
-    X_FP16x16_ONE / 13,
-    X_FP16x16_ONE / 14,
-    X_FP16x16_ONE / 15,
-    X_FP16x16_ONE / 16,
-    X_FP16x16_ONE / 17,
-    X_FP16x16_ONE / 18,
-    X_FP16x16_ONE / 19,
-    X_FP16x16_ONE / 20,
-    X_FP16x16_ONE / 21,
-    X_FP16x16_ONE / 22,
-    X_FP16x16_ONE / 23,
-    X_FP16x16_ONE / 24,
-    X_FP16x16_ONE / 25,
-    X_FP16x16_ONE / 26,
-    X_FP16x16_ONE / 27,
-    X_FP16x16_ONE / 28,
-    X_FP16x16_ONE / 29,
-    X_FP16x16_ONE / 30,
-    X_FP16x16_ONE / 31,
+    fp(0),
+    fp(X_FP16x16_ONE / 1),
+    fp(X_FP16x16_ONE / 2),
+    fp(X_FP16x16_ONE / 3),
+    fp(X_FP16x16_ONE / 4),
+    fp(X_FP16x16_ONE / 5),
+    fp(X_FP16x16_ONE / 6),
+    fp(X_FP16x16_ONE / 7),
+    fp(X_FP16x16_ONE / 8),
+    fp(X_FP16x16_ONE / 9),
+    fp(X_FP16x16_ONE / 10),
+    fp(X_FP16x16_ONE / 11),
+    fp(X_FP16x16_ONE / 12),
+    fp(X_FP16x16_ONE / 13),
+    fp(X_FP16x16_ONE / 14),
+    fp(X_FP16x16_ONE / 15),
+    fp(X_FP16x16_ONE / 16),
+    fp(X_FP16x16_ONE / 17),
+    fp(X_FP16x16_ONE / 18),
+    fp(X_FP16x16_ONE / 19),
+    fp(X_FP16x16_ONE / 20),
+    fp(X_FP16x16_ONE / 21),
+    fp(X_FP16x16_ONE / 22),
+    fp(X_FP16x16_ONE / 23),
+    fp(X_FP16x16_ONE / 24),
+    fp(X_FP16x16_ONE / 25),
+    fp(X_FP16x16_ONE / 26),
+    fp(X_FP16x16_ONE / 27),
+    fp(X_FP16x16_ONE / 28),
+    fp(X_FP16x16_ONE / 29),
+    fp(X_FP16x16_ONE / 30),
+    fp(X_FP16x16_ONE / 31),
 };
 
 static inline void setup_inv_z_step(X_AE_SurfaceRenderContext* context)
@@ -198,14 +198,14 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     x_ae_surfacerendercontext_setup_constants(context);
 }
 
-static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
+static inline fp calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return (x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin).toFp16x16();
+    return (x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin);
 }
 
-static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
+static inline fp calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return (x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin).toFp16x16();
+    return (x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin);
 }
 
 static inline void clamp_texture_coord(const X_AE_SurfaceRenderContext* context, fp* u, fp* v)
@@ -285,8 +285,8 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     X_Color* scanline = screenTex->getRow(span->y);
     //x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
     
-    x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y) >> 10;
-    x_fp16x16 dInvZ = context->surface->zInverseXStep >> 10;
+    fp invZ = fp(x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y)) >> 10;
+    fp dInvZ = context->surface->zInverseXStep >> 10;
     
     fp u, v;
     calculate_u_and_v_at_screen_point(context, span->x1, y, &u, &v);

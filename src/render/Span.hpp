@@ -72,7 +72,7 @@ typedef struct X_AE_SurfaceRenderContext
     
     X_Color* surfaceTexels; // 72 (36)
     
-    const int* recipTab;    // 76 (40)
+    const fp* recipTab;    // 76 (40)
     
     
     X_AE_TextureVar sDivZ;

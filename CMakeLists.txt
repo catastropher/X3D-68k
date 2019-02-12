@@ -139,7 +139,6 @@ set(X_SOURCES
         src/render/Surface.cpp
         src/render/StatusBar.cpp
         src/render/Texture.cpp
-        src/render/TriangleFiller.cpp
         src/render/Viewport.cpp
 
     # system
