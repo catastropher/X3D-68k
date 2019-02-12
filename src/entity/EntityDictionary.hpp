@@ -25,6 +25,7 @@
 struct BrushModelId
 {
     BrushModelId()
+        : id(-1)
     {
 
     }

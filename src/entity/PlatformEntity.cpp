@@ -37,41 +37,7 @@ PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
 
 void PlatformEntity::move(const Vec3fp &movement)
 {
-    auto pos = getComponent<TransformComponent>();
 
-    auto boxCollider = BoxColliderComponent::getAll();
-    for(auto& collider : boxCollider)
-    {
-        auto transform = collider.owner->getComponent<TransformComponent>();
-
-        if(collider.standingOnEntity == static_cast<Entity*>(this))
-        {
-            // Move the object along with us
-
-            transform->setPosition(transform->getPosition() + movement);
-        }
-        else
-        {
-            // Try moving the object into us in the reverse direction that we're moving
-            Vec3fp position = transform->getPosition();
-            Ray3 ray(position, position - movement);
-
-            // For now, we are using hull 0, which is wrong
-            BspRayTracer tracer(ray, &getLevel(), 0);
-
-            if(tracer.trace() && tracer.getCollision().entity == this)
-            {
-                Vec3fp newPosition = tracer.getCollision().location.point + movement;
-                transform->setPosition(newPosition);
-
-                collider.standingOnEntity = this;
-            }
-        }
-    }
-
-    pos->setPosition(pos->getPosition() + movement);
-
-    getComponent<BrushModelComponent>()->model->center = pos->getPosition();
 }
 
 void PlatformEntity::update(const EntityUpdate& update)

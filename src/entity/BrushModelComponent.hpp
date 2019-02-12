@@ -16,6 +16,8 @@
 #pragma once
 
 #include "Component.hpp"
+#include "geo/Vec3.hpp"
+#include "system/Time.hpp"
 
 class BspModel;
 struct BspLevel;
@@ -23,6 +25,18 @@ struct X_Edict;
 
 namespace internal
 {
+    using BrushModelReachedDestinationHandler = void (*)(Entity* entity);
+
+    struct BrushModelMovement
+    {
+        Vec3fp direction;
+        Vec3fp finalPosition;
+        Time endTime;
+        bool isMoving = false;
+
+        BrushModelReachedDestinationHandler onArriveHandler;
+    };
+
     class BrushModel
     {
     public:
@@ -34,9 +48,10 @@ namespace internal
 
         BrushModel(const X_Edict& edict, const BspLevel& level);
 
+        void initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive = nullptr);
+
         BspModel* model;
-        
-    private:
+        BrushModelMovement movement;
     };
 }
 

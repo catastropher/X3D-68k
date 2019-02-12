@@ -17,7 +17,9 @@
 
 #include "system/Time.hpp"
 #include "math/FixedPoint.hpp"
+#include "geo/Vec3.hpp"
 
+class Entity;
 class BspLevel;
 
 class PhysicsEngine
@@ -26,6 +28,8 @@ public:
     static void update(BspLevel& level, fp timeDelta);
     
 private:
-    static void step(BspLevel& level, fp dt);    
+    static void step(BspLevel& level, fp dt);
+    static void moveBrushModels(BspLevel& level, fp dt);
+    static void pushBrushEntity(Entity* brushEntity, const Vec3fp& movement, BspLevel& level);
 };
 

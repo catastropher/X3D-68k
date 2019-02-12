@@ -16,6 +16,8 @@
 #include "PhysicsEngine.hpp"
 #include "entity/BoxColliderComponent.hpp"
 #include "BoxColliderEngine.hpp"
+#include "entity/Entity.hpp"
+#include "system/Clock.hpp"
 
 // FIXME
 extern bool physics;
@@ -23,6 +25,7 @@ extern bool physics;
 void PhysicsEngine::update(BspLevel& level, fp timeDelta)
 {
     step(level, timeDelta);
+    moveBrushModels(level, timeDelta);
 }
 
 
@@ -42,4 +45,76 @@ void PhysicsEngine::step(BspLevel& level, fp dt)
     }
 }
 
+void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
+{
+    auto brushModels = BrushModelComponent::getAll();
+    Time currentTime = Clock::getTicks();
+
+    for(auto& brushModel : brushModels)
+    {
+        auto& movement = brushModel.movement;
+        if(!movement.isMoving)
+        {
+            continue;
+        }
+
+        auto transform = brushModel.owner->getComponent<TransformComponent>();
+        Vec3fp pushVector;
+
+        if(currentTime >= movement.endTime)
+        {
+            pushVector = movement.finalPosition - transform->getPosition();
+            movement.isMoving = false;
+
+            if(movement.onArriveHandler != nullptr)
+            {
+                movement.onArriveHandler(brushModel.owner);
+            }
+        }
+        else
+        {
+            pushVector = movement.direction * dt;
+        }
+
+        pushBrushEntity(brushModel.owner, pushVector, level);
+    }
+}
+
+void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement, BspLevel& level)
+{
+    auto pos = brushEntity->getComponent<TransformComponent>();
+
+    auto boxCollider = BoxColliderComponent::getAll();
+    for(auto& collider : boxCollider)
+    {
+        auto transform = collider.owner->getComponent<TransformComponent>();
+
+        if(collider.standingOnEntity == brushEntity)
+        {
+            // Move the object along with us
+            transform->setPosition(transform->getPosition() + movement);
+        }
+        else
+        {
+            // Try moving the object into us in the reverse direction that we're moving
+            Vec3fp position = transform->getPosition();
+            Ray3 ray(position, position - movement);
+
+            // For now, we are using hull 0, which is wrong
+            BspRayTracer tracer(ray, &level, 0);
+
+            if(tracer.trace() && tracer.getCollision().entity == brushEntity)
+            {
+                Vec3fp newPosition = tracer.getCollision().location.point + movement;
+                transform->setPosition(newPosition);
+
+                collider.standingOnEntity = brushEntity;
+            }
+        }
+    }
+
+    pos->setPosition(pos->getPosition() + movement);
+
+    brushEntity->getComponent<BrushModelComponent>()->model->center = pos->getPosition();
+}
 

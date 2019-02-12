@@ -29,11 +29,13 @@ static void door(X_EngineContext* engineContext, int argc, char* argv[])
 DoorEntity::DoorEntity(X_Edict &edict, BspLevel &level)
     : Entity(level)
 {
-    addComponent<BrushModelComponent>(edict, level);
+    auto brushModel = addComponent<BrushModelComponent>(edict, level);
     x_console_register_cmd(Engine::getInstance()->getConsole(), "door", door);
 
     int angle;
     edict.getValueOrDefault("angle", angle, -1);
+
+    edict.print();
 
     if(angle == -1)
     {
@@ -51,6 +53,29 @@ DoorEntity::DoorEntity(X_Edict &edict, BspLevel &level)
         openDirection.y = 0;
         openDirection.z = x_sin(openAngle);
     }
+
+    BoundBox& box = brushModel->model->boundBox;
+    Vec3 size = box.v[1] - box.v[0];
+
+    Vec3fp bounds = Vec3fp(fp(size.x), fp(size.y), fp(size.z));
+
+    openPosition = openDirection * abs(openDirection.dot(bounds));
+
+    doorCloseCallback(this);
+}
+
+
+
+void DoorEntity::doorOpenCallback(Entity* entity)
+{
+    DoorEntity* door = static_cast<DoorEntity*>(entity);
+    door->getComponent<BrushModelComponent>()->initiateMoveTo(Vec3fp(0, 0, 0), Duration::fromSeconds(fp::fromInt(5)), doorCloseCallback);
+}
+
+void DoorEntity::doorCloseCallback(Entity* entity)
+{
+    DoorEntity* door = static_cast<DoorEntity*>(entity);
+    door->getComponent<BrushModelComponent>()->initiateMoveTo(door->openPosition, Duration::fromSeconds(fp::fromInt(5)), doorOpenCallback);
 }
 
 void DoorEntity::linkDoors(Array<DoorEntity*>& doorsInLevel)
@@ -80,9 +105,26 @@ void DoorEntity::update(const EntityUpdate& update)
 {
     if(allowOpen)
     {
-        auto transform = getComponent<TransformComponent>();
+        if(closed)
+        {
+            closed = false;
+            transitionTime = update.currentTime;
+        }
+        else
+        {
+            auto transform = getComponent<TransformComponent>();
 
-        transform->setPosition(transform->getPosition() + openDirection);
+            fp time = (Clock::getTicks() - transitionTime).toSeconds();
+
+            if(time > fp::fromFloat(0.75))
+            {
+                return;
+            }
+
+            Ray3 ray(Vec3fp(0, 0, 0), openPosition);
+
+            transform->setPosition(ray.lerp(time));
+        }
     }
 
     setNextUpdateTime(update.currentTime + Duration::fromMilliseconds(10));
