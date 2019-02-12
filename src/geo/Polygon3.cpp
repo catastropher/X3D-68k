@@ -25,7 +25,7 @@ bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
+    fp dot = plane.normal.dot(vertices[0]);
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -33,17 +33,19 @@ bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
         int next = (i + 1 < totalVertices ? i + 1 : 0);
         
         if(in)
+        {
             dest.vertices[dest.totalVertices++] = vertices[i];
+        }
         
-        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
+        fp nextDot = plane.normal.dot(vertices[next]);
         bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+        fp dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
+            fp scale = (-plane.d - dot) / dotDiff;
             Ray3 ray(vertices[i], vertices[next]);
-            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
+            dest.vertices[dest.totalVertices] = ray.lerp(scale);
             
             ++dest.totalVertices;
         }
@@ -59,7 +61,7 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, in
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
+    fp dot = plane.normal.dot(vertices[0]);
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -72,20 +74,24 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, in
             *edgeIdsDest++ = edgeIds[i];
         }
         
-        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
+        fp nextDot = plane.normal.dot(vertices[next]);
         bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+        fp dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
+            fp scale = (-plane.d - dot) / dotDiff;
             Ray3 ray(vertices[i], vertices[next]);
-            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
+            dest.vertices[dest.totalVertices] = ray.lerp(scale);
             
             if(in)
+            {
                 *edgeIdsDest++ = 0;    // Create a new edge
+            }
             else
+            {
                 *edgeIdsDest++ = edgeIds[i];
+            }
             
             ++dest.totalVertices;
         }
