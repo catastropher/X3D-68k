@@ -33,10 +33,10 @@ typedef struct X_AE_Span
 
 typedef struct X_AE_TextureVar
 {
-    x_fp16x16 uOrientationStep;
-    x_fp16x16 vOrientationStep;
-    x_fp16x16 origin;
-    x_fp16x16 adjust;
+    fp uOrientationStep;
+    fp vOrientationStep;
+    fp origin;
+    fp adjust;
 } X_AE_TextureVar;
 
 typedef struct X_AE_SurfaceRenderContext

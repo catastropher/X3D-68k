@@ -40,8 +40,8 @@ static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* conte
 
 static inline void calculate_uv_orientation_steps_in_screen_space(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace)
 {
-    var->uOrientationStep = mip_adjust(orientationInEyeSpace->x / context->viewport->distToNearPlane, context->mipLevel).toFp16x16();
-    var->vOrientationStep = mip_adjust(orientationInEyeSpace->y / context->viewport->distToNearPlane, context->mipLevel).toFp16x16();
+    var->uOrientationStep = mip_adjust(orientationInEyeSpace->x / context->viewport->distToNearPlane, context->mipLevel);
+    var->vOrientationStep = mip_adjust(orientationInEyeSpace->y / context->viewport->distToNearPlane, context->mipLevel);
 }
 
 static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace)
@@ -49,9 +49,9 @@ static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureV
     int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
-    var->origin = mip_adjust(orientationInEyeSpace->z, context->mipLevel).toFp16x16() -
-        centerX * var->uOrientationStep -
-        centerY * var->vOrientationStep;
+    var->origin = mip_adjust(orientationInEyeSpace->z, context->mipLevel)
+        - centerX * var->uOrientationStep
+        - centerY * var->vOrientationStep;
 }
 
 static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace, int minTexCoord, int texOffset)
@@ -131,18 +131,18 @@ static inline void setup_inv_z_step(X_AE_SurfaceRenderContext* context)
 
 static inline void setup_u_step(X_AE_SurfaceRenderContext* context)
 {
-    context->uStepX = context->sDivZ.uOrientationStep;
-    context->uStepY = context->sDivZ.vOrientationStep;
-    context->uOrigin = context->sDivZ.origin;
-    context->uAdjust = context->sDivZ.adjust;
+    context->uStepX = context->sDivZ.uOrientationStep.toFp16x16();
+    context->uStepY = context->sDivZ.vOrientationStep.toFp16x16();
+    context->uOrigin = context->sDivZ.origin.toFp16x16();
+    context->uAdjust = context->sDivZ.adjust.toFp16x16();
 }
 
 static inline void setup_v_step(X_AE_SurfaceRenderContext* context)
 {
-    context->vStepX = context->tDivZ.uOrientationStep;
-    context->vStepY = context->tDivZ.vOrientationStep;
-    context->vStepOrigin = context->tDivZ.origin;
-    context->vAdjust = context->tDivZ.adjust;
+    context->vStepX = context->tDivZ.uOrientationStep.toFp16x16();
+    context->vStepY = context->tDivZ.vOrientationStep.toFp16x16();
+    context->vStepOrigin = context->tDivZ.origin.toFp16x16();
+    context->vAdjust = context->tDivZ.adjust.toFp16x16();
 }
 
 static inline void setup_surface(X_AE_SurfaceRenderContext* context)
@@ -200,12 +200,12 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
 
 static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin;
+    return (x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin).toFp16x16();
 }
 
 static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin;
+    return (x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin).toFp16x16();
 }
 
 static inline void clamp_texture_coord(const X_AE_SurfaceRenderContext* context, x_fp16x16* u, x_fp16x16* v)
@@ -231,8 +231,8 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
     
     int z = calculate_z_at_screen_point(context, x, y);
     
-    *u = uDivZ * z + context->sDivZ.adjust;
-    *v = vDivZ * z + context->tDivZ.adjust;
+    *u = uDivZ * z + context->sDivZ.adjust.toFp16x16();
+    *v = vDivZ * z + context->tDivZ.adjust.toFp16x16();
     
     clamp_texture_coord(context, u, v);
 }
