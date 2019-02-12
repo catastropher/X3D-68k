@@ -23,7 +23,7 @@
 #include "Span.hpp"
 #include "render/OldRenderer.hpp"
 #include "engine/EngineContext.hpp"
-#include "object/Camera.hpp"
+#include "Camera.hpp"
 #include "util/StopWatch.hpp"
 #include "geo/Ray3.hpp"
 

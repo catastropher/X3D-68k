@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "Screen.hpp"
-#include "object/Camera.hpp"
+#include "Camera.hpp"
 #include "dev/console/Console.hpp"
 #include "engine/Engine.hpp"
 

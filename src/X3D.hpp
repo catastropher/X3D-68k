@@ -27,7 +27,7 @@
 #include "geo/Ray3.hpp"
 #include "geo/Vec2.hpp"
 #include "geo/Vec3.hpp"
-#include "geo/Vec4.hpp"X_KEY_REPEAT_INITIAL_TIME
+#include "geo/Vec4.hpp"
 
 // engine
 #include "engine/Config.hpp"
@@ -70,13 +70,12 @@
 #include "memory/Array.hpp"
 #include "memory/Cache.h"
 #include "memory/CircularQueue.hpp"
-#include "memory/Factory.h"
 #include "memory/OldLink.hpp"
 #include "memory/Memory.hpp"
 #include "memory/String.h"
 
 // object
-#include "object/Camera.hpp"
+#include "render/Camera.hpp"
 
 // physics
 #include "physics/BoxCollider.hpp"

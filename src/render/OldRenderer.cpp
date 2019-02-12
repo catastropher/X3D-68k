@@ -22,7 +22,7 @@
 #include "error/Error.hpp"
 #include "engine/Engine.hpp"
 #include "system/File.hpp"
-#include "object/Camera.hpp"
+#include "Camera.hpp"
 #include "util/StopWatch.hpp"
 #include "level/Portal.hpp"
 #include "entity/CameraComponent.hpp"

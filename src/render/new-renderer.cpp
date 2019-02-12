@@ -361,7 +361,7 @@ void testNewRenderer(X_RenderContext* renderContext)
 }
 
 #include "engine/EngineContext.hpp"
-#include <object/Camera.hpp>
+#include <render/Camera.hpp>
 
 void cmd_draw(EngineContext* context, int argc, char* argv[])
 {

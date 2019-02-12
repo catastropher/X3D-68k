@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "TriangleFiller.h"
-#include "object/Camera.hpp"
+#include "Camera.hpp"
 
 static void fill_solid_span(X_TriangleFiller* filler)
 {

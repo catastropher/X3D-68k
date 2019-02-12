@@ -16,7 +16,6 @@
 #pragma once
 
 #include "engine/Config.hpp"
-#include "memory/Factory.h"
 #include "render/Screen.hpp"
 #include "dev/console/Console.hpp"
 #include "render/Font.hpp"
@@ -25,7 +24,6 @@
 #include "render/OldRenderer.hpp"
 #include "Init.hpp"
 #include "system/Mouse.hpp"
-#include "object/ObjectFactory.hpp"
 #include "EngineQueue.hpp"
 
 struct X_RenderContext;

@@ -118,11 +118,10 @@ set(X_SOURCES
         src/memory/Alloc.cpp
         src/memory/Cache.cpp
         src/memory/Memory.cpp
-        src/memory/Factory.cpp
         src/memory/String.cpp
 
     # object
-        src/object/Camera.cpp
+        src/render/Camera.cpp
 
     # physics
     src/physics/PhysicsEngine.cpp

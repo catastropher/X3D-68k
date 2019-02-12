@@ -20,7 +20,7 @@
 #include "ActiveEdge.hpp"
 #include "OldRenderer.hpp"
 #include "Surface.h"
-#include "object/Camera.hpp"
+#include "Camera.hpp"
 
 // Scales a value down based on the current mip map level
 static inline int mip_adjust(int val, int mipLevel)

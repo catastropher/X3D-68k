@@ -19,15 +19,6 @@
 #include "error/Error.hpp"
 #include "render/WireframeLevelRenderer.hpp"
 
-static X_GameObjectType g_cameraObjectType = 
-{
-    0,
-    "camera",
-    {
-        .update = NULL
-    }
-};
-
 void Camera::overrideBspLeaf(int leafId, BspLevel* level)
 {
     currentLeaf = level->leaves + leafId;

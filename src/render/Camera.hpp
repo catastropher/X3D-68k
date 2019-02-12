@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "GameObject.hpp"
 #include "render/Viewport.hpp"
 #include "physics/BoxCollider.hpp"
 #include "memory/BitSet.hpp"
@@ -35,10 +34,8 @@ enum CameraobjectFlags
 struct Camera
 {
     void updateFrustum();
-
     void overrideBspLeaf(int leafId, BspLevel* level);
 
-    X_GameObject base;
     EnumBitSet<CameraobjectFlags> flags;
     Vec3fp position;
     

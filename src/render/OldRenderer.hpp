@@ -20,7 +20,7 @@
 #include "ActiveEdge.hpp"
 #include "Light.hpp"
 #include "memory/CircularQueue.hpp"
-#include "object/Camera.hpp"
+#include "Camera.hpp"
 
 #define X_RENDERER_FILL_DISABLED -1
 

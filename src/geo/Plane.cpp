@@ -17,7 +17,7 @@
 
 #include "Plane.hpp"
 #include "math/FixedPoint.hpp"
-#include "object/Camera.hpp"
+#include "render/Camera.hpp"
 
 Plane::Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
 {
