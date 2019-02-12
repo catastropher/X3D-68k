@@ -37,7 +37,7 @@ typedef enum X_ConsoleVarType
 
 #define X_CONSOLE_INPUT_BUF_SIZE 512
 
-struct X_EngineContext;
+struct EngineContext;
 
 typedef struct X_ConsoleVar
 {
@@ -58,7 +58,7 @@ typedef struct X_ConsoleVar
 } X_ConsoleVar;
 
 
-typedef void (*X_ConsoleCmdHandler)(struct X_EngineContext* context, int argc, char* argv[]);
+typedef void (*X_ConsoleCmdHandler)(struct EngineContext* context, int argc, char* argv[]);
 
 typedef struct X_ConsoleCmd
 {
@@ -72,7 +72,7 @@ struct ConsoleVariable;
 
 typedef struct Console
 {
-    Console(struct X_EngineContext* engineContext, X_Font* font);
+    Console(struct EngineContext* engineContext, Font* font);
 
     ConsoleRenderer* renderer;
     
@@ -85,8 +85,8 @@ typedef struct Console
     
     Vec2 cursor;
     Vec2 size;
-    const X_Font* font;
-    struct X_EngineContext* engineContext;
+    const Font* font;
+    struct EngineContext* engineContext;
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;

@@ -122,7 +122,7 @@ set(X_SOURCES
         src/memory/String.cpp
 
     # object
-        src/object/CameraObject.cpp
+        src/object/Camera.cpp
 
     # physics
     src/physics/PhysicsEngine.cpp

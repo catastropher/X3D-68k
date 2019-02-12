@@ -19,7 +19,7 @@
 #include "math/FixedPoint.hpp"
 
 struct Mat4x4;
-struct CameraObject;
+struct Camera;
 
 struct Plane
 {
@@ -50,7 +50,7 @@ struct Plane
     }
 
     void print() const;
-    void getOrientation(CameraObject& cam, Mat4x4& dest) const;
+    void getOrientation(Camera& cam, Mat4x4& dest) const;
 
     Vec3fp normal;
     fp d;

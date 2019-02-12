@@ -46,7 +46,7 @@ typedef struct X_SurfaceBuilder
     Vec2 textureOffset;
     Vec2 textureMask;
     
-    X_Renderer* renderer;
+    OldRenderer* renderer;
     
     int mipLevel;
     
@@ -286,7 +286,7 @@ static void x_surfacebuilder_build_with_lighting(X_SurfaceBuilder* builder)
     x_surfacebuilder_build_from_combined_lightmap(builder);
 }
 
-static void x_surfacebuilder_init(X_SurfaceBuilder* builder, BspSurface* surface, int mipLevel, X_Renderer* renderer)
+static void x_surfacebuilder_init(X_SurfaceBuilder* builder, BspSurface* surface, int mipLevel, OldRenderer* renderer)
 {
     builder->renderer = renderer;
     builder->mipLevel = mipLevel;
@@ -313,7 +313,7 @@ static void x_surfacebuilder_init(X_SurfaceBuilder* builder, BspSurface* surface
     x_surfacebuilder_calculate_texture_offset(builder);
 }
 
-static void __attribute__((hot)) x_bspsurface_rebuild(BspSurface* surface, int mipLevel, X_Renderer* renderer)
+static void __attribute__((hot)) x_bspsurface_rebuild(BspSurface* surface, int mipLevel, OldRenderer* renderer)
 {
     X_SurfaceBuilder builder;
     x_surfacebuilder_init(&builder, surface, mipLevel, renderer);
@@ -324,13 +324,13 @@ static void __attribute__((hot)) x_bspsurface_rebuild(BspSurface* surface, int m
         x_surfacebuilder_build_without_lighting(&builder);
 }
 
-static bool x_bspsurface_need_to_rebuild_because_lights_changed(BspSurface* surface, X_Renderer* renderer)
+static bool x_bspsurface_need_to_rebuild_because_lights_changed(BspSurface* surface, OldRenderer* renderer)
 {
     return surface->lastLightUpdateFrame == renderer->currentFrame &&
         (surface->lightsTouchingSurface & renderer->dynamicLightsNeedingUpdated) != 0;
 }
 
-void x_bspsurface_get_surface_texture_for_mip_level(BspSurface* surface, int mipLevel, X_Renderer* renderer, X_Texture* dest)
+void x_bspsurface_get_surface_texture_for_mip_level(BspSurface* surface, int mipLevel, OldRenderer* renderer, X_Texture* dest)
 {
     if(!x_cachentry_is_in_cache(surface->cachedSurfaces + mipLevel) || x_bspsurface_need_to_rebuild_because_lights_changed(surface, renderer))
         x_bspsurface_rebuild(surface, mipLevel, renderer);

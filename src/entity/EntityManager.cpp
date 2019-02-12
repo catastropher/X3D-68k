@@ -88,7 +88,7 @@ void EntityManager::createEntitesInLevel(BspLevel& level)
     }
 }
 
-void EntityManager::updateEntities(Time currentTime, fp deltaTime, X_EngineContext* engineContext)
+void EntityManager::updateEntities(Time currentTime, fp deltaTime, EngineContext* engineContext)
 {
     EntityUpdate update(currentTime, deltaTime, engineContext);
 

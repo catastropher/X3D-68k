@@ -25,9 +25,9 @@ typedef enum X_MouseButton
     X_MOUSE_RIGHT = 1
 } X_MouseButton;
 
-typedef struct X_MouseState
+struct MouseState
 {
-    X_MouseState(struct Console* console, Screen* screen);
+    MouseState(struct Console* console, Screen* screen);
 
     Vec2 pos;
     Screen* screen;
@@ -41,44 +41,44 @@ typedef struct X_MouseState
     x_fp16x16 ySpeed;
     
     bool invert;
-} X_MouseState;
+};
 
 struct Console;
 
-void x_mousestate_set_pos(X_MouseState* state, Vec2 pos);
-void x_mousestate_show_cursor(X_MouseState* state, bool showCursor);
-void x_mousestate_update_pos(X_MouseState* state, Vec2 pos);
-Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(X_MouseState* state);
+void x_mousestate_set_pos(MouseState* state, Vec2 pos);
+void x_mousestate_show_cursor(MouseState* state, bool showCursor);
+void x_mousestate_update_pos(MouseState* state, Vec2 pos);
+Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(MouseState* state);
 
-static inline void x_mousestate_send_button_press(X_MouseState* state, X_MouseButton button)
+static inline void x_mousestate_send_button_press(MouseState* state, X_MouseButton button)
 {
     state->buttonDown[button] = 1;
     state->buttonPressed[button] = 1;
 }
 
-static inline void x_mousestate_send_button_release(X_MouseState* state, X_MouseButton button)
+static inline void x_mousestate_send_button_release(MouseState* state, X_MouseButton button)
 {
     state->buttonDown[button] = 0;
 }
 
-static inline bool x_mousestate_button_down(X_MouseState* state, X_MouseButton button)
+static inline bool x_mousestate_button_down(MouseState* state, X_MouseButton button)
 {
     return state->buttonDown[button];
 }
 
-static inline bool x_mousestate_button_pressed(X_MouseState* state, X_MouseButton button)
+static inline bool x_mousestate_button_pressed(MouseState* state, X_MouseButton button)
 {
     bool wasPressed = state->buttonPressed[button];
     state->buttonPressed[button] = 0;
     return wasPressed;
 }
 
-static inline Vec2 x_mousestate_pos(X_MouseState* state)
+static inline Vec2 x_mousestate_pos(MouseState* state)
 {
     return state->pos;
 }
 
-static inline void x_mousestate_clear(X_MouseState* state)
+static inline void x_mousestate_clear(MouseState* state)
 {
     for(int i = 0; i < 2; ++i)
     {

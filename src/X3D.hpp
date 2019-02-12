@@ -76,7 +76,7 @@
 #include "memory/String.h"
 
 // object
-#include "object/CameraObject.hpp"
+#include "object/Camera.hpp"
 
 // physics
 #include "physics/BoxCollider.hpp"

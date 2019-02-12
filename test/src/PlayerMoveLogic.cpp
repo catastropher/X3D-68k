@@ -162,7 +162,7 @@ void PlayerMoveLogic::handleAngleKeys(PlayerKeyFlags keys)
     }
 }
 
-bool handle_no_collision_keys(X_EngineContext* engineContext, CameraObject* cam, KeyState* keyState)
+bool handle_no_collision_keys(EngineContext* engineContext, Camera* cam, KeyState* keyState)
 {
     return false;
     

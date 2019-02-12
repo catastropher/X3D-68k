@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <engine/EngineContext.hpp>
 #include "Player.hpp"
 
 // FIXME: move into physics engine
@@ -28,8 +29,8 @@ bool playerPhysics = true;
 
 void Player::registerVars()
 {
-    X_EngineContext* engineContext = Engine::getInstance();
-    Console* console = engineContext->getConsole();
+    EngineContext* engineContext = Engine::getInstance();
+    Console* console = engineContext->console;
 
     x_console_register_var(console, &moveSpeed, "player.speed", X_CONSOLEVAR_FP16X16, "200", false);
     x_console_register_var(console, &gravity, "player.gravity", X_CONSOLEVAR_FP16X16, "320", false);
@@ -103,7 +104,7 @@ void mouseLook(Player* player, Vec2_fp16x16 angleOffset)
     player->angleY = y.toFp16x16();
 }
 
-void handle_mouse(Player* player, X_MouseState* mouseState)
+void handle_mouse(Player* player, MouseState* mouseState)
 {
     mouseLook(
         player,
@@ -161,7 +162,7 @@ bool Player::handleKeys(Entity* entity, const InputUpdate& update)
 {
     Player* player = static_cast<Player*>(entity);
 
-    handle_mouse(player, Engine::getInstance()->getMouseState());
+    handle_mouse(player, Engine::getInstance()->mouseState);
     player->handleMovement(update);
 
     return true;

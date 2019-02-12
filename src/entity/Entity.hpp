@@ -20,11 +20,11 @@
 #include "system/Time.hpp"
 
 struct BspLevel;
-class X_EngineContext;
+class EngineContext;
 
 struct EntityUpdate
 {
-    EntityUpdate(Time currentTime_, fp deltaTime_, X_EngineContext* engineContext_)
+    EntityUpdate(Time currentTime_, fp deltaTime_, EngineContext* engineContext_)
         : currentTime(currentTime_),
         deltaTime(deltaTime_),
         engineContext(engineContext_)
@@ -34,7 +34,7 @@ struct EntityUpdate
 
     Time currentTime;
     fp deltaTime;
-    X_EngineContext* engineContext;
+    EngineContext* engineContext;
 };
 
 class Entity

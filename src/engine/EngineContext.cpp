@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "Config.hpp"
-#include "object/CameraObject.hpp"
+#include "object/Camera.hpp"
 #include "entity/EntityManager.hpp"
 
 #include <time.h>
@@ -29,7 +29,3 @@
 #include "system/Clock.hpp"
 #include "level/LevelManager.hpp"
 
-BspLevel* X_EngineContext::getCurrentLevel() const
-{
-    return levelManager->getCurrentLevel();
-}

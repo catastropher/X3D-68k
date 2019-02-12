@@ -20,7 +20,7 @@
 #include "ActiveEdge.hpp"
 #include "Light.hpp"
 #include "memory/CircularQueue.hpp"
-#include "object/CameraObject.hpp"
+#include "object/Camera.hpp"
 
 #define X_RENDERER_FILL_DISABLED -1
 
@@ -39,17 +39,17 @@ struct ScheduledPortal
     PortalSpan* spans;
     PortalSpan* spansEnd;
 
-    CameraObject cam;
+    Camera cam;
     int recursionDepth;
 };
 
-typedef struct X_Renderer
+struct OldRenderer
 {
-    X_Renderer(Screen* screen, Console* console, int fov);
+    OldRenderer(Screen* screen, Console* console, int fov);
 
     void scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth);
-    void renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext);
-    void renderCamera(CameraObject* cam, X_EngineContext* engineContext);
+    void renderScheduledPortal(ScheduledPortal* scheduledPortal, EngineContext& engineContext, X_RenderContext* renderContext);
+    void renderCamera(Camera* cam, EngineContext* engineContext);
     
     X_AE_Context activeEdgeContext;
     X_Cache surfaceCache;
@@ -92,23 +92,23 @@ typedef struct X_Renderer
     CircularQueue<ScheduledPortal, 10> scheduledPortals;
 
 private:
-    static void createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& dest);
-    static void calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, CameraObject& cam);
+    static void createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, Camera& dest);
+    static void calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, Camera& cam);
 
-    static void calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& cam);
+    static void calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, Camera& cam);
 
-} X_Renderer;
+};
 
 #define X_COLORMAP_SHADES_PER_COLOR 64
 
-static inline X_Color x_renderer_get_shaded_color(X_Renderer* renderer, X_Color color, int intensity)
+static inline X_Color x_renderer_get_shaded_color(OldRenderer* renderer, X_Color color, int intensity)
 {
     return renderer->colorMap[(int)color * X_COLORMAP_SHADES_PER_COLOR + intensity];
 }
 
-void x_renderer_cleanup(X_Renderer* renderer);
+void x_renderer_cleanup(OldRenderer* renderer);
 
-void x_renderer_restart_video(X_Renderer* renderer, Screen* screen);
+void x_renderer_restart_video(OldRenderer* renderer, Screen* screen);
 
-void x_renderer_render_frame(struct X_EngineContext* engineContext);
+void x_renderer_render_frame(struct EngineContext* engineContext);
 

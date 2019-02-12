@@ -14,16 +14,17 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <X3D/X3D.hpp>
+#include <engine/EngineContext.hpp>
 
 #include "Player.hpp"
 
 fp g_gamma = fp::fromInt(1);
 
-void cmdGamma(X_EngineContext* engineContext, int argc, char* argv[])
+void cmdGamma(EngineContext* engineContext, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_printf(engineContext->getConsole(), "Gamma is currently %f\n", g_gamma.toFloat());
+        x_console_printf(engineContext->console, "Gamma is currently %f\n", g_gamma.toFloat());
 
         return;
     }
@@ -35,7 +36,7 @@ void cmdGamma(X_EngineContext* engineContext, int argc, char* argv[])
     *newPalette = *x_palette_get_quake_palette();
     x_palette_correct_gamma(newPalette, g_gamma);
 
-    Engine::getInstance()->getScreen()->palette = newPalette;
+    Engine::getInstance()->screen->palette = newPalette;
 }
 
 static Entity* createEntityCallback(const char* entityType, X_Edict& edict, BspLevel& level)
@@ -70,16 +71,16 @@ int main(int argc, char* argv[])
 
     config.systemConfig.programPath = argv[0];
 
-    X_EngineContext* engineContext = Engine::init(config);
+    EngineContext* engineContext = Engine::init(config);
 
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");
 
     engineContext->entityManager->setCreateEntityCallback(createEntityCallback);
 
-    x_console_execute_cmd(engineContext->getConsole(), "exec engine.cfg;exec ../engine.cfg");
+    x_console_execute_cmd(engineContext->console, "exec engine.cfg;exec ../engine.cfg");
 
-    x_console_register_cmd(engineContext->getConsole(), "screen.gamma", cmdGamma);
+    x_console_register_cmd(engineContext->console, "screen.gamma", cmdGamma);
 
     Engine::run();
 }

@@ -21,7 +21,7 @@
 #include "memory/BitSet.hpp"
 #include "level/PotentiallyVisibleSet.hpp"
 
-struct X_EngineContext;
+struct EngineContext;
 struct X_RenderContext;
 struct Screen;
 struct X_BspLeaf;
@@ -32,7 +32,7 @@ enum CameraobjectFlags
 };
 
 
-struct CameraObject
+struct Camera
 {
     void updateFrustum();
 
@@ -50,12 +50,12 @@ struct CameraObject
     struct X_BspLeaf* lastLeaf;
     DecompressedLeafVisibleSet pvsForCurrentLeaf;
     
-    void (*screenResizeCallback)(struct CameraObject* cam, struct Screen* screen, x_fp16x16 fov);
+    void (*screenResizeCallback)(struct Camera* cam, struct Screen* screen, x_fp16x16 fov);
 };
 
-void x_cameraobject_render(CameraObject* cam, struct X_RenderContext* renderContext);
+void x_cameraobject_render(Camera* cam, struct X_RenderContext* renderContext);
 
-static inline Vec3fp x_cameraobject_get_position(CameraObject* cam)
+static inline Vec3fp x_cameraobject_get_position(Camera* cam)
 {
     return cam->position;
 }

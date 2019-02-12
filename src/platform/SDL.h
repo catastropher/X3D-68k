@@ -21,11 +21,11 @@
 
 #define X_SDL_REQUIRED
 
-void x_sdl_init_keys(X_EngineContext* engineContext, bool enableUnicode);
-void x_sdl_cleanup_keys(X_EngineContext* engineContext);
-void x_sdl_handle_keys(X_EngineContext* engineContext);
+void x_sdl_init_keys(EngineContext* engineContext, bool enableUnicode);
+void x_sdl_cleanup_keys(EngineContext* engineContext);
+void x_sdl_handle_keys(EngineContext* engineContext);
 
-void x_sdl_handle_mouse(X_EngineContext* engineContext);
+void x_sdl_handle_mouse(EngineContext* engineContext);
 void x_sdl_mouse_set_position(Vec2 pos);
 void x_sdl_mouse_show_cursor(bool showCursor);
 

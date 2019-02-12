@@ -173,7 +173,7 @@ void X_Texture::blit(const X_Texture& tex, Vec2i pos)
     }
 }
 
-void X_Texture::drawChar(int c, const X_Font& font, Vec2i pos)
+void X_Texture::drawChar(int c, const Font& font, Vec2i pos)
 {
     const X_Color* charPixels = font.getCharacterPixels(c);
     int endY = std::min(pos.y + font.getH(), h);
@@ -200,7 +200,7 @@ void X_Texture::drawChar(int c, const X_Font& font, Vec2i pos)
     }
 }
 
-void X_Texture::drawStr(const char* str, const X_Font& font, Vec2i pos)
+void X_Texture::drawStr(const char* str, const Font& font, Vec2i pos)
 {
     Vec2 currentPos = pos;
     

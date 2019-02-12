@@ -55,7 +55,7 @@ void EngineQueue::flush()
     }
 }
 
-void EngineQueue::addHandler(const char* name, bool (*handler)(EngineEvent& event, X_EngineContext* engineContext), int priority)
+void EngineQueue::addHandler(const char* name, bool (*handler)(EngineEvent& event, EngineContext* engineContext), int priority)
 {
     auto eventHandler = Zone::alloc<EngineEventHandler>();
     new (eventHandler) EngineEventHandler(name, handler, priority);
@@ -111,7 +111,7 @@ void EngineQueue::removeHandler(const char* name)
 
 #include <cstdio>
 
-bool EngineQueue::systemHandler(EngineEvent& event, X_EngineContext* engineContext)
+bool EngineQueue::systemHandler(EngineEvent& event, EngineContext* engineContext)
 {
     switch(event.type)
     {

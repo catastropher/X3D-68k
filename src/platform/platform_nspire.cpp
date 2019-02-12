@@ -24,7 +24,7 @@ static void init_net()
     //x_socket_nspire_register_interface();
 }
 
-void x_platform_init(X_EngineContext* engineContext, X_Config* config)
+void x_platform_init(EngineContext* engineContext, X_Config* config)
 {
     x_sdl_init_keys(engineContext, 0);
     init_net();
@@ -32,27 +32,27 @@ void x_platform_init(X_EngineContext* engineContext, X_Config* config)
     Log::info("Initialized nspire\n");
 }
 
-void x_platform_cleanup(X_EngineContext* engineContext)
+void x_platform_cleanup(EngineContext* engineContext)
 {
     x_sdl_cleanup_keys(engineContext);
 }
 
-void x_platform_handle_keys(X_EngineContext* engineContext)
+void x_platform_handle_keys(EngineContext* engineContext)
 {
     x_sdl_handle_keys(engineContext);
 }
 
-void x_platform_handle_mouse(X_EngineContext* engineContext)
+void x_platform_handle_mouse(EngineContext* engineContext)
 {
-    X_MouseState* state = engineContext->getMouseState();
+    MouseState* state = engineContext->mouseState;
     touchpad_report_t report;
     touchpad_info_t* info = touchpad_getinfo();
     
     _Bool success = info && touchpad_scan(&report) == 0;
     if(!success)
         return;
-    
-    X_Vec2 center = x_screen_center(engineContext->getScreen());
+
+    X_Vec2 center = x_screen_center(engineContext->screen);
     
     if(!report.contact)
     {

@@ -22,7 +22,7 @@
 #include "memory/OldLink.hpp"
 
 struct X_GameObject;
-struct X_EngineContext;
+struct EngineContext;
 struct X_Edict;
 
 typedef enum X_GameObjectTriggerType
@@ -34,7 +34,7 @@ typedef enum X_GameObjectTriggerType
 typedef struct X_GameObjectEventHandlers
 {
     void (*update)(struct X_GameObject* obj, x_fp16x16 deltaTime);
-    struct X_GameObject* (*createNew)(struct X_EngineContext* engineContext, struct X_Edict* edict);
+    struct X_GameObject* (*createNew)(struct EngineContext* engineContext, struct X_Edict* edict);
     void (*trigger)(struct X_GameObject* obj, struct X_GameObject* trigger, X_GameObjectTriggerType type);
 } X_GameObjectEventHandlers;
 
@@ -59,7 +59,7 @@ typedef struct X_GameObject
     struct X_GameObject* nextActive;
     struct X_GameObject* prevActive;
     
-    struct X_EngineContext* engineContext;
+    struct EngineContext* engineContext;
 } X_GameObject;
 
 
@@ -68,12 +68,12 @@ class GameObject
     
 };
 
-struct X_EngineContext;
+struct EngineContext;
 struct X_ObjectFactory;
 
 void x_gameobject_register_default_types(struct X_ObjectFactory* factory);
 
-X_GameObject* x_gameobject_new(struct X_EngineContext* context, size_t objectSize);
+X_GameObject* x_gameobject_new(struct EngineContext* context, size_t objectSize);
 void x_gameobject_extract_view_vectors(const X_GameObject* obj, Vec3* forwardDest, Vec3* rightDest, Vec3* upDest);
 
 void x_gameobject_activate(X_GameObject* obj);

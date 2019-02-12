@@ -16,7 +16,7 @@
 #include "ButtonObject.hpp"
 
 static void x_buttonobject_update(X_GameObject* obj, x_fp16x16 deltaTime);
-X_GameObject* x_buttonobject_new(X_EngineContext* engineContext, X_Edict* edict);
+X_GameObject* x_buttonobject_new(EngineContext* engineContext, X_Edict* edict);
 
 static X_GameObjectType g_buttonObjectType = 
 {
@@ -62,12 +62,12 @@ static void x_buttonobject_update(X_GameObject* obj, x_fp16x16 deltaTime)
         x_gameobject_trigger(obj, button->trigger, X_GAMEOBJECT_TRIGGER_ACTIVATE);
 }
 
-X_GameObject* x_buttonobject_new(X_EngineContext* engineContext, X_Edict* edict)
+X_GameObject* x_buttonobject_new(EngineContext* engineContext, X_Edict* edict)
 {
     X_ButtonObject* obj = (X_ButtonObject*)x_gameobject_new(engineContext, sizeof(X_ButtonObject));
     
     x_edict_get_int(edict, "angle", 0, &obj->pushAngle);
-    obj->model = x_bsplevel_get_model(engineContext->getCurrentLevel(), x_edict_get_model_id(edict, "model"));
+    obj->model = x_bsplevel_get_model(engineContext->levelManager->getCurrentLevel(), x_edict_get_model_id(edict, "model"));
     obj->modelHeight = x_bspmodel_height(obj->model);
     obj->base.type = &g_buttonObjectType;
     

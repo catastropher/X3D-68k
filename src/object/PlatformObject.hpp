@@ -47,6 +47,6 @@ typedef struct X_PlatformObject
     X_PlatformObjectMode mode;
 } X_PlatformObject;
 
-X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edict);
+X_GameObject* x_platformobject_new(EngineContext* engineContext, X_Edict* edict);
 void x_platformobject_register_type(X_ObjectFactory* factory);
 

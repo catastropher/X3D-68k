@@ -19,7 +19,7 @@
 #include "WorldObject.hpp"
 #include "ButtonObject.hpp"
 
-X_GameObject* x_gameobject_new(X_EngineContext* context, size_t objectSize)
+X_GameObject* x_gameobject_new(EngineContext* context, size_t objectSize)
 {
     int objectHandle;
     X_GameObject* newObject = (X_GameObject*)x_factory_alloc(&context->getGameObjectFactory()->objectFactory, objectSize, &objectHandle);
@@ -66,7 +66,7 @@ void x_gameobject_trigger(X_GameObject* triggerSource, const char* name, X_GameO
     if(name[0] == '\0')
         return;
     
-    X_EngineContext* engineContext = triggerSource->engineContext;
+    EngineContext* engineContext = triggerSource->engineContext;
     for(X_GameObject* obj = engineContext->activeObjectHead.nextActive; obj != &engineContext->activeObjectTail; obj = obj->nextActive)
     {
         if(strcmp(obj->triggerName, name) == 0 && obj->type->handlers.trigger)

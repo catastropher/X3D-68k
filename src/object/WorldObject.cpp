@@ -28,11 +28,11 @@ static X_GameObjectType g_worldObjectType =
     }
 };
 
-X_GameObject* x_worldobject_new(X_EngineContext* engineContext, X_Edict* edict)
+X_GameObject* x_worldobject_new(EngineContext* engineContext, X_Edict* edict)
 {
     X_WorldObject* obj = (X_WorldObject*)x_gameobject_new(engineContext, sizeof(X_WorldObject));
-    
-    obj->model = x_bsplevel_get_level_model(engineContext->getCurrentLevel());
+
+    obj->model = x_bsplevel_get_level_model(engineContext->levelManager->getCurrentLevel());
     
     return (X_GameObject*)obj;
 }

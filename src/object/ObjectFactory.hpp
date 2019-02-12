@@ -20,17 +20,17 @@
 
 struct X_GameObjectType;
 struct X_GameObject;
-struct X_EngineContext;
+struct EngineContext;
 
 typedef struct X_ObjectFactory
 {
-    struct X_EngineContext* engineContext;
+    struct EngineContext* engineContext;
     X_GameObjectType* typeHead;
     
     X_Factory objectFactory;
 } X_ObjectFactory;
 
-void x_objectfactory_init(X_ObjectFactory* factory, struct X_EngineContext* engineContext);
+void x_objectfactory_init(X_ObjectFactory* factory, struct EngineContext* engineContext);
 void x_objectfactory_cleanup(X_ObjectFactory* factory);
 
 void x_objectfactory_register_type(X_ObjectFactory* factory, X_GameObjectType* type);

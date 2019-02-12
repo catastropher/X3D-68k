@@ -22,14 +22,15 @@
 #include "error/Error.hpp"
 #include "engine/Engine.hpp"
 #include "system/File.hpp"
-#include "object/CameraObject.hpp"
+#include "object/Camera.hpp"
 #include "util/StopWatch.hpp"
 #include "level/Portal.hpp"
 #include "entity/CameraComponent.hpp"
 #include "entity/TransformComponent.hpp"
 #include "entity/Entity.hpp"
+#include "level/LevelManager.hpp"
 
-static void x_renderer_init_console_vars(X_Renderer* renderer, Console* console)
+static void x_renderer_init_console_vars(OldRenderer* renderer, Console* console)
 {
     x_console_register_var(console, &renderer->fillColor, "render.fillColor", X_CONSOLEVAR_INT, "0", 0);
     x_console_register_var(console, &renderer->showFps, "render.showFps", X_CONSOLEVAR_BOOL, "0", 0);
@@ -40,15 +41,15 @@ static void x_renderer_init_console_vars(X_Renderer* renderer, Console* console)
     x_console_register_var(console, &renderer->maxFramesPerSecond, "maxFps", X_CONSOLEVAR_INT, "60", 0);
 }
 
-static void cmd_res(X_EngineContext* context, int argc, char* argv[])
+static void cmd_res(EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(context->getConsole(), "Usage: res [WxH] -> changes screen resolution\n");
+        x_console_print(context->console, "Usage: res [WxH] -> changes screen resolution\n");
         return;
     }
-    
-    Screen* screen = context->getScreen();
+
+    Screen* screen = context->screen;
     
     if(screen->handlers.isValidResolution == NULL)
         x_system_error("No screen valid resolution checking createEntityCallback");
@@ -58,21 +59,21 @@ static void cmd_res(X_EngineContext* context, int argc, char* argv[])
     
     if(!screen->handlers.isValidResolution(w, h))
     {
-        x_console_print(context->getConsole(), "Invalid resolution for platform\n");
+        x_console_print(context->console, "Invalid resolution for platform\n");
         return;
     }
-    
-    context->getRenderer()->screenW = w;
-    context->getRenderer()->screenH = h;
-    
-    x_console_printf(context->getConsole(), "Effect will take place on next vidrestart\n");
+
+    context->renderer->screenW = w;
+    context->renderer->screenH = h;
+
+    x_console_printf(context->console, "Effect will take place on next vidrestart\n");
 }
 
-static void cmd_fov(X_EngineContext* context, int argc, char* argv[])
+static void cmd_fov(EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(context->getConsole(), "Usage: fov [angle] -> changes field of view\n");
+        x_console_print(context->console, "Usage: fov [angle] -> changes field of view\n");
         return;
     }
     
@@ -80,77 +81,82 @@ static void cmd_fov(X_EngineContext* context, int argc, char* argv[])
     
     if(fov == 0)
     {
-        x_console_print(context->getConsole(), "Invalid angle\n");
+        x_console_print(context->console, "Invalid angle\n");
         return;
     }
-    
-    context->getRenderer()->fov = fov;
-    x_console_printf(context->getConsole(), "Effect will take place on next vidrestart\n");
+
+    context->renderer->fov = fov;
+    x_console_printf(context->console, "Effect will take place on next vidrestart\n");
 }
 
-static void cmd_vidrestart(X_EngineContext* context, int argc, char* argv[])
+static void cmd_vidrestart(EngineContext* context, int argc, char* argv[])
 {
     //x_enginecontext_restart_video(context);
 }
 
-static void cmd_fullscreen(X_EngineContext* context, int argc, char* argv[])
+static void cmd_fullscreen(EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(context->getConsole(), "Usage: fullscreen [WxH] -> enables/disables fullscreen mode\n");
+        x_console_print(context->console, "Usage: fullscreen [WxH] -> enables/disables fullscreen mode\n");
         return;
     }
-    
-    context->getRenderer()->fullscreen = atoi(argv[1]);
-    
-    x_console_printf(context->getConsole(), "Effect will take place on next vidrestart\n");;
+
+    context->renderer->fullscreen = atoi(argv[1]);
+
+    x_console_printf(context->console, "Effect will take place on next vidrestart\n");;
 }
 
 #include "error/Log.hpp"
 
 // Prints the ID of the surface we're currently looking at
-static void cmd_surfid(X_EngineContext* context, int argc, char* argv[])
+static void cmd_surfid(EngineContext* context, int argc, char* argv[])
 {
     // Render a frame so we can get the span data
     //x_engine_render_frame(context);
-    
-    Screen* screen = context->getScreen();
+
+    Screen* screen = context->screen;
     Vec2 center = screen->getCenter();
-    
-    int surfaceId = x_ae_context_find_surface_point_is_in(&context->getRenderer()->activeEdgeContext, center.x, center.y, context->getCurrentLevel());
+
+    int surfaceId = x_ae_context_find_surface_point_is_in(&context->renderer->activeEdgeContext, center.x, center.y,
+                                                          context->levelManager->getCurrentLevel());
     
     if(surfaceId != -1)
-        x_console_printf(context->getConsole(), "Looking at surface #%d\n", surfaceId);
+    {
+        x_console_printf(context->console, "Looking at surface #%d\n", surfaceId);
+    }
     else
-        x_console_print(context->getConsole(), "Not looking at a surface\n");
+    {
+        x_console_print(context->console, "Not looking at a surface\n");
+    }
 }
 
-static void cmd_lighting(X_EngineContext* context, int argc, char* argv[])
+static void cmd_lighting(EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_print(context->getConsole(), "Usage: lighting [1/0] -> enables/disables lighting");
+        x_console_print(context->console, "Usage: lighting [1/0] -> enables/disables lighting");
         return;
     }
-    
-    context->getRenderer()->enableLighting = atoi(argv[1]);
-    x_cache_flush(&context->getRenderer()->surfaceCache);
+
+    context->renderer->enableLighting = atoi(argv[1]);
+    x_cache_flush(&context->renderer->surfaceCache);
 }
 
-static void cmd_scalescreen(X_EngineContext* context, int argc, char* argv[])
+static void cmd_scalescreen(EngineContext* context, int argc, char* argv[])
 {
     if(argc != 2)
     {
-        x_console_printf(context->getConsole(), "Usage: %s [0/1] - enables/disables screen scaling", argv[0]);
+        x_console_printf(context->console, "Usage: %s [0/1] - enables/disables screen scaling", argv[0]);
         return;
     }
     
 #ifndef __nspire__
-    x_console_print(context->getConsole(), "Screen scaling only available on Nspire\n");
+    x_console_print(context->console, "Screen scaling only available on Nspire\n");
     return;
 #endif
     
-//    CameraObject* cam = context->getScreen()->cameraListHead;
+//    Camera* cam = context->getScreen()->cameraListHead;
 //    int w;
 //    int h;
 //
@@ -195,7 +201,7 @@ static void init_color_shade(X_Color* colorMap, const X_Palette* palette, X_Colo
     }
 }
 
-static void x_renderer_init_colormap(X_Renderer* renderer, const X_Palette* palette)
+static void x_renderer_init_colormap(OldRenderer* renderer, const X_Palette* palette)
 {
     renderer->colorMap = (X_Color*)x_malloc(256 * X_COLORMAP_SHADES_PER_COLOR * sizeof(X_Color));
     
@@ -211,7 +217,7 @@ static void x_renderer_init_colormap(X_Renderer* renderer, const X_Palette* pale
     }    
 }
 
-static void x_renderer_init_dynamic_lights(X_Renderer* renderer)
+static void x_renderer_init_dynamic_lights(OldRenderer* renderer)
 {
     for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
     {
@@ -233,7 +239,7 @@ static void x_renderer_console_cmds(Console* console)
     x_console_register_cmd(console, "scalescreen", cmd_scalescreen);
 }
 
-static void x_renderer_set_default_values(X_Renderer* renderer, Screen* screen, int fov)
+static void x_renderer_set_default_values(OldRenderer* renderer, Screen* screen, int fov)
 {
     renderer->screenW = screen->getW();
     renderer->screenH = screen->getH();
@@ -245,7 +251,7 @@ static void x_renderer_set_default_values(X_Renderer* renderer, Screen* screen, 
     renderer->maxFramesPerSecond = 60;
 }
 
-X_Renderer::X_Renderer(Screen* screen, Console* console, int fov)
+OldRenderer::OldRenderer(Screen* screen, Console* console, int fov)
     : activeEdgeContext(8000, 8000, 30000, screen)
 {
     x_renderer_console_cmds(console);
@@ -257,14 +263,14 @@ X_Renderer::X_Renderer(Screen* screen, Console* console, int fov)
     x_renderer_init_dynamic_lights(this);
 }
 
-void x_renderer_cleanup(X_Renderer* renderer)
+void x_renderer_cleanup(OldRenderer* renderer)
 {
     x_cache_cleanup(&renderer->surfaceCache);
     
     x_free(renderer->colorMap);
 }
 
-void x_renderer_restart_video(X_Renderer* renderer, Screen* screen)
+void x_renderer_restart_video(OldRenderer* renderer, Screen* screen)
 {
     // FIXME: need to reconstruct object
     
@@ -272,32 +278,34 @@ void x_renderer_restart_video(X_Renderer* renderer, Screen* screen)
     //x_ae_context_init(&renderer->activeEdgeContext, screen, MAX_ACTIVE_EDGES, MAX_EDGES, MAX_SURFACES);
 }
 
-static void x_engine_begin_frame(X_EngineContext* context)
+static void x_engine_begin_frame(EngineContext* context)
 {
     ++context->frameCount;
 }
 
-static void mark_lights(X_EngineContext* context)
+static void mark_lights(EngineContext* context)
 {
     return;
-    
-    X_Light* lights = context->getRenderer()->dynamicLights;
+
+    X_Light* lights = context->renderer->dynamicLights;
     for(int i = 0; i < X_RENDERER_MAX_LIGHTS; ++i)
     {
         if(!x_light_is_free(lights + i))
         {
-            x_bsplevel_mark_surfaces_light_is_close_to(context->getCurrentLevel(), lights + i, context->frameCount);
+            x_bsplevel_mark_surfaces_light_is_close_to(context->levelManager->getCurrentLevel(), lights + i, context->frameCount);
         }
     }
 }
 
-static void fill_with_background_color(X_EngineContext* engineContext)
+static void fill_with_background_color(EngineContext* engineContext)
 {
-    if(engineContext->getRenderer()->fillColor != X_RENDERER_FILL_DISABLED)
-        engineContext->getScreen()->canvas.fill(engineContext->getRenderer()->fillColor);
+    if(engineContext->renderer->fillColor != X_RENDERER_FILL_DISABLED)
+    {
+        engineContext->screen->canvas.fill(engineContext->renderer->fillColor);
+    }
 }
 
-static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engineContext)
+static void x_renderer_begin_frame(OldRenderer* renderer, EngineContext* engineContext)
 {
     renderer->totalSurfacesRendered = 0;
     renderer->currentFrame = engineContext->frameCount;
@@ -308,12 +316,12 @@ static void x_renderer_begin_frame(X_Renderer* renderer, X_EngineContext* engine
     renderer->maxPortalDepth = 1;
 }
 
-static void clear_zbuffer(X_EngineContext* engineContext)
+static void clear_zbuffer(EngineContext* engineContext)
 {
-    engineContext->getScreen()->clearZBuf();
+    engineContext->screen->clearZBuf();
 }
 
-void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth)
+void OldRenderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int recursionDepth)
 {
     if(recursionDepth > maxPortalDepth)
     {
@@ -348,7 +356,7 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
         scheduledPortal->cam.viewMatrix = *renderContext.viewMatrix; //otherSide->orientation;
         scheduledPortal->cam.position = otherSide->center;
 
-        CameraObject& cam = scheduledPortal->cam;
+        Camera& cam = scheduledPortal->cam;
 
         createCameraFromPerspectiveOfPortal(renderContext, *portal, cam);
 
@@ -365,7 +373,7 @@ void X_Renderer::scheduleNextLevelOfPortals(X_RenderContext& renderContext, int 
     }
 }
 
-void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& dest)
+void OldRenderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderContext, Portal& portal, Camera& dest)
 {
     calculateCameraPositionOnOtherSideOfPortal(renderContext, portal, dest);
     calculateCameraViewMatrix(renderContext, portal, dest);
@@ -376,7 +384,7 @@ void X_Renderer::createCameraFromPerspectiveOfPortal(X_RenderContext& renderCont
     dest.updateFrustum();
 }
 
-void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, CameraObject& cam)
+void OldRenderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& renderContext, Portal& portal, Camera& cam)
 {
     cam.position = portal.transformPointToOtherSide(renderContext.cam->position);
 
@@ -384,7 +392,7 @@ void X_Renderer::calculateCameraPositionOnOtherSideOfPortal(X_RenderContext& ren
     cam.overrideBspLeaf(leafId, renderContext.level);
 }
 
-void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, CameraObject& cam)
+void OldRenderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Portal& portal, Camera& cam)
 {
     cam.viewMatrix = *renderContext.viewMatrix * portal.transformToOtherSide;
 
@@ -396,7 +404,7 @@ void X_Renderer::calculateCameraViewMatrix(X_RenderContext& renderContext, Porta
     cam.viewMatrix = cam.viewMatrix * translation;
 }
 
-void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_EngineContext& engineContext, X_RenderContext* renderContext)
+void OldRenderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, EngineContext& engineContext, X_RenderContext* renderContext)
 {
 
     bool wireframe = renderContext->renderer->wireframe;
@@ -419,7 +427,7 @@ void X_Renderer::renderScheduledPortal(ScheduledPortal* scheduledPortal, X_Engin
     renderContext->renderer->wireframe = wireframe;
 }
 
-void X_Renderer::renderCamera(CameraObject* cam, X_EngineContext* engineContext)
+void OldRenderer::renderCamera(Camera* cam, EngineContext* engineContext)
 {
     X_RenderContext renderContext;
     x_enginecontext_get_rendercontext_for_camera(engineContext, cam, &renderContext);
@@ -461,16 +469,16 @@ void X_Renderer::renderCamera(CameraObject* cam, X_EngineContext* engineContext)
     }
 }
 
-void x_renderer_render_frame(X_EngineContext* engineContext)
+void x_renderer_render_frame(EngineContext* engineContext)
 {
     x_engine_begin_frame(engineContext);
-    x_renderer_begin_frame(engineContext->getRenderer(), engineContext);
+    x_renderer_begin_frame(engineContext->renderer, engineContext);
     clear_zbuffer(engineContext);
     fill_with_background_color(engineContext);
     mark_lights(engineContext);
 
 
-    if(engineContext->getCurrentLevel() == nullptr)
+    if(engineContext->levelManager->getCurrentLevel() == nullptr)
     {
         return;
     }
@@ -487,7 +495,7 @@ void x_renderer_render_frame(X_EngineContext* engineContext)
         transformComponent->toMat4x4(camera.viewMatrix);
         camera.updateFrustum();
 
-        engineContext->getRenderer()->renderCamera(&camera, engineContext);
+        engineContext->renderer->renderCamera(&camera, engineContext);
     }
 }
 

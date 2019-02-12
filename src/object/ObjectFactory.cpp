@@ -19,7 +19,7 @@
 #include "error/Error.hpp"
 #include "error/Log.hpp"
 
-void x_objectfactory_init(X_ObjectFactory* factory, X_EngineContext* engineContext)
+void x_objectfactory_init(X_ObjectFactory* factory, EngineContext* engineContext)
 {
     x_factory_init(&factory->objectFactory, 20, 5);
     

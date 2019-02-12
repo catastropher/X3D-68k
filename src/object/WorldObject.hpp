@@ -26,8 +26,8 @@ typedef struct X_WorldObject
 
 struct X_ObjectFactory;
 struct X_Edict;
-struct X_EngineContext;
+struct EngineContext;
 
-X_GameObject* x_worldobject_new(struct X_EngineContext* engineContext, struct X_Edict* edict);
+X_GameObject* x_worldobject_new(struct EngineContext* engineContext, struct X_Edict* edict);
 void x_worldobject_register_type(struct X_ObjectFactory* factory);
 

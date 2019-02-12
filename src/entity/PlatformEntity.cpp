@@ -23,7 +23,7 @@
 
 bool allowMove = false;
 
-static void plat(X_EngineContext* engineContext, int argc, char* argv[])
+static void plat(EngineContext* engineContext, int argc, char* argv[])
 {
     allowMove = true;
 }
@@ -32,7 +32,8 @@ PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
     : Entity(level)
 {
     addComponent<BrushModelComponent>(edict, level);
-    x_console_register_cmd(Engine::getInstance()->getConsole(), "plat", plat);
+    EngineContext* receiver = Engine::getInstance();
+    x_console_register_cmd(receiver->console, "plat", plat);
 }
 
 void PlatformEntity::move(const Vec3fp &movement)

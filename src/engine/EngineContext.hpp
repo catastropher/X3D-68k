@@ -35,18 +35,8 @@ class LevelManager;
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
 ////////////////////////////////////////////////////////////////////////////////
-struct X_EngineContext
+struct EngineContext
 {
-    Screen* getScreen() const { return screen; }
-    Console* getConsole() const { return console; }
-    X_Font* getMainFont() const { return mainFont; }
-    KeyState* getKeyState() const { return keystate; }
-    X_MouseState* getMouseState() const { return mouseState; }
-    BspLevel* getCurrentLevel() const;
-    X_Renderer* getRenderer() const { return renderer; }
-    EngineQueue* getEngineQueue() const { return queue; }
-
-
     Platform* getPlatform() { return &platform; }
 
     int frameCount;     // TODO Where should this go?
@@ -56,29 +46,27 @@ struct X_EngineContext
     fp estimatedFramesPerSecond;
     fp timeDelta;
 
-    void* userData;
-
     Screen* screen;
-    X_Renderer* renderer;
+    OldRenderer* renderer;
     EntityManager* entityManager;
     LevelManager* levelManager;
 
     Console* console;
-    X_Font* mainFont;
-    KeyState* keystate;
-    X_MouseState* mouseState;
+    Font* mainFont;
+    KeyState* keyState;
+    MouseState* mouseState;
     EngineQueue* queue;
 
     Platform platform;
 };
 
-void x_enginecontext_cleanup(X_EngineContext* context);
-Time x_enginecontext_get_time(const X_EngineContext* context);
-void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, CameraObject* cam, struct X_RenderContext* dest);
+void x_enginecontext_cleanup(EngineContext* context);
+Time x_enginecontext_get_time(const EngineContext* context);
+void x_enginecontext_get_rendercontext_for_camera(EngineContext* engineContext, Camera* cam, struct X_RenderContext* dest);
 
-void x_enginecontext_restart_video(X_EngineContext* context);
+void x_enginecontext_restart_video(EngineContext* context);
 
-static inline int x_enginecontext_get_frame(const X_EngineContext* context)
+static inline int x_enginecontext_get_frame(const EngineContext* context)
 {
     return context->frameCount;
 }

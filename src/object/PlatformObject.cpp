@@ -132,14 +132,14 @@ void x_platformobject_register_type(X_ObjectFactory* factory)
     x_objectfactory_register_type(factory, &g_platformObjectType);
 }
 
-X_GameObject* x_platformobject_new(X_EngineContext* engineContext, X_Edict* edict)
+X_GameObject* x_platformobject_new(EngineContext* engineContext, X_Edict* edict)
 {
     printf("Created platform object\n");
     
     X_PlatformObject* obj = (X_PlatformObject*)x_gameobject_new(engineContext, sizeof(X_PlatformObject));
     
     int modelId = x_edict_get_model_id(edict, "model");
-    obj->model = x_bsplevel_get_model(engineContext->getCurrentLevel(), modelId);
+    obj->model = x_bsplevel_get_model(engineContext->levelManager->getCurrentLevel(), modelId);
     
     x_fp16x16 modelHeight = x_bspmodel_height(obj->model);
     

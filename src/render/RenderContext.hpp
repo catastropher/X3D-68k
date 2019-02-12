@@ -18,9 +18,9 @@
 #include "geo/Vec3.hpp"
 
 
-struct X_EngineContext;
-struct X_Renderer;
-struct CameraObject;
+struct EngineContext;
+struct OldRenderer;
+struct Camera;
 struct X_Frustum;
 struct X_Texture;
 struct Mat4x4;
@@ -30,14 +30,14 @@ struct Screen;
 
 typedef struct X_RenderContext
 {
-    X_Renderer* renderer;
-    CameraObject* cam;
+    OldRenderer* renderer;
+    Camera* cam;
     Screen* screen;
     X_Texture* canvas;
     x_fp0x16* zbuf;
     X_Frustum* viewFrustum;
     Mat4x4* viewMatrix;
-    X_EngineContext* engineContext;
+    EngineContext* engineContext;
     BspLevel* level;
     
     int currentFrame;

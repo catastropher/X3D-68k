@@ -22,17 +22,17 @@
 #define X_ZBUF_FURTHEST_VALUE 0
 
 class Screen;
-struct X_EngineContext;
-struct CameraObject;
+struct EngineContext;
+struct Camera;
 
-struct X_Font;
+struct Font;
 
 struct ScreenEventHandlers
 {
     void* userData;         // Pointer to user-defined data passed to screen updates
     void (*displayFrame)(struct Screen* screen, void* userData);
-    void (*restartVideo)(struct X_EngineContext* context, void* userData);
-    void (*cleanupVideo)(struct X_EngineContext* context, void* userData);
+    void (*restartVideo)(struct EngineContext* context, void* userData);
+    void (*cleanupVideo)(struct EngineContext* context, void* userData);
     bool (*isValidResolution)(int w, int h);
 };
 

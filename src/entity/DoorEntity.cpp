@@ -20,7 +20,7 @@
 
 static bool allowOpen = false;
 
-static void door(X_EngineContext* engineContext, int argc, char* argv[])
+static void door(EngineContext* engineContext, int argc, char* argv[])
 {
     allowOpen = true;
 }
@@ -30,7 +30,8 @@ DoorEntity::DoorEntity(X_Edict &edict, BspLevel &level)
     : Entity(level)
 {
     auto brushModel = addComponent<BrushModelComponent>(edict, level);
-    x_console_register_cmd(Engine::getInstance()->getConsole(), "door", door);
+    EngineContext* receiver = Engine::getInstance();
+    x_console_register_cmd(receiver->console, "door", door);
 
     int angle;
     edict.getValueOrDefault("angle", angle, -1);

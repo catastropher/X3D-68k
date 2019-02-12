@@ -61,7 +61,7 @@ static void build_key_map(void)
         keyMap[(int)symbols[i]] = symbols[i];
 }
 
-void x_sdl_init_keys(X_EngineContext* engineContext, bool enableUnicode)
+void x_sdl_init_keys(EngineContext* engineContext, bool enableUnicode)
 {
     build_key_map();
     
@@ -69,7 +69,7 @@ void x_sdl_init_keys(X_EngineContext* engineContext, bool enableUnicode)
         SDL_EnableUNICODE(SDL_ENABLE);
 }
 
-void x_sdl_cleanup_keys(X_EngineContext* engineContext)
+void x_sdl_cleanup_keys(EngineContext* engineContext)
 {
     
 }
@@ -82,7 +82,7 @@ static int translate_sdl_key_to_x3d_key(SDLKey key)
     return x3dKeyMap[key];
 }
 
-void x_sdl_handle_keys(X_EngineContext* engineContext)
+void x_sdl_handle_keys(EngineContext* engineContext)
 {
     SDL_Event ev;
     while(SDL_PollEvent(&ev))
@@ -96,7 +96,9 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
             int x3dUnicodeCharacter = translate_sdl_key_to_x3d_key(unicodeCharacter);
             
             if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_press(engineContext->getKeyState(), (KeyCode)x3dKey, (KeyCode)x3dUnicodeCharacter);
+            {
+                x_keystate_send_key_press(engineContext->keyState, (KeyCode)x3dKey, (KeyCode)x3dUnicodeCharacter);
+            }
         }
         else if(ev.type == SDL_KEYUP)
         {
@@ -104,14 +106,16 @@ void x_sdl_handle_keys(X_EngineContext* engineContext)
             int x3dKey = translate_sdl_key_to_x3d_key((SDLKey)sdlKey);
             
             if(x3dKey != INVALID_KEY)
-                x_keystate_send_key_release(engineContext->getKeyState(), (KeyCode)x3dKey);
+            {
+                x_keystate_send_key_release(engineContext->keyState, (KeyCode)x3dKey);
+            }
         }
     }
 }
 
-void x_sdl_handle_mouse(X_EngineContext* engineContext)
+void x_sdl_handle_mouse(EngineContext* engineContext)
 {
-    X_MouseState* state = engineContext->getMouseState();
+    MouseState* state = engineContext->mouseState;
     
     int x, y;
     SDL_GetMouseState(&x, &y);

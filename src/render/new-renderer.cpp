@@ -361,9 +361,9 @@ void testNewRenderer(X_RenderContext* renderContext)
 }
 
 #include "engine/EngineContext.hpp"
-#include <object/CameraObject.hpp>
+#include <object/Camera.hpp>
 
-void cmd_draw(X_EngineContext* context, int argc, char* argv[])
+void cmd_draw(EngineContext* context, int argc, char* argv[])
 {
     int surf = x_ae_context_find_surface_point_is_in(&context->renderer.activeEdgeContext, 320, 240, &context->currentLevel);
     

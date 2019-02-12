@@ -45,7 +45,7 @@ void StatusBar::removeItem(const char* name)
     items.deleteWhere([name](auto item) { return item.name == name; });
 }
 
-void StatusBar::render(X_Texture& texture, const X_Font& font)
+void StatusBar::render(X_Texture& texture, const Font& font)
 {
     Vec2i pos = { 0, 0 };
 

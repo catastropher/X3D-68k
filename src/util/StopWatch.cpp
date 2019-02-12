@@ -73,7 +73,7 @@ StopWatchEntry* StopWatch::getEntry(const char* name)
     return nullptr;
 }
 
-void StopWatch::stopwatchCmd(X_EngineContext* engineContext, int argc, char* argv[])
+void StopWatch::stopwatchCmd(EngineContext* engineContext, int argc, char* argv[])
 {
     StopWatchEntry* total = getEntry("total");
 
@@ -85,7 +85,7 @@ void StopWatch::stopwatchCmd(X_EngineContext* engineContext, int argc, char* arg
 
     if(total == nullptr)
     {
-        x_console_printf(engineContext->getConsole(), "No 'total' entry\n");
+        x_console_printf(engineContext->console, "No 'total' entry\n");
 
         return;
     }
@@ -95,7 +95,7 @@ void StopWatch::stopwatchCmd(X_EngineContext* engineContext, int argc, char* arg
 
 
         x_console_printf(
-            engineContext->getConsole(),
+            engineContext->console,
             "%s   %.3f%%\n",
             entries[i].name,
             (float)entries[i].totalTicks / total->totalTicks * 100);

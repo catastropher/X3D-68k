@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "CameraObject.hpp"
+#include "Camera.hpp"
 #include "engine/Engine.hpp"
 #include "render/RenderContext.hpp"
 #include "error/Error.hpp"
@@ -28,14 +28,14 @@ static X_GameObjectType g_cameraObjectType =
     }
 };
 
-void CameraObject::overrideBspLeaf(int leafId, BspLevel* level)
+void Camera::overrideBspLeaf(int leafId, BspLevel* level)
 {
     currentLeaf = level->leaves + leafId;
     lastLeaf = nullptr;
     flags.set(CAMERA_OVERRIDE_PVS);
 }
 
-void CameraObject::updateFrustum()
+void Camera::updateFrustum()
 {
     Vec3fp forward, up, right;
     viewMatrix.extractViewVectors(forward, right, up);
@@ -43,12 +43,12 @@ void CameraObject::updateFrustum()
     viewport.updateFrustum(position, forward, right, up);
 }
 
-static void x_cameraobject_determine_current_bspleaf(CameraObject* cam, X_RenderContext* renderContext)
+static void x_cameraobject_determine_current_bspleaf(Camera* cam, X_RenderContext* renderContext)
 {
     cam->currentLeaf = renderContext->level->findLeafPointIsIn(cam->position);
 }
 
-static void x_cameraobject_load_pvs_for_current_leaf(CameraObject* cam, X_RenderContext* renderContext)
+static void x_cameraobject_load_pvs_for_current_leaf(Camera* cam, X_RenderContext* renderContext)
 {
     if(cam->currentLeaf == cam->lastLeaf)
     {
@@ -60,7 +60,7 @@ static void x_cameraobject_load_pvs_for_current_leaf(CameraObject* cam, X_Render
     renderContext->level->pvs.decompressPvsForLeaf(*cam->currentLeaf, cam->pvsForCurrentLeaf);
 }
 
-void x_cameraobject_render(CameraObject* cam, X_RenderContext* renderContext)
+void x_cameraobject_render(Camera* cam, X_RenderContext* renderContext)
 {
     x_assert(renderContext != NULL, "No render context");
     x_assert(renderContext->engineContext != NULL, "No engine context in render context");

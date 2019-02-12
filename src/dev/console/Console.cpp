@@ -166,15 +166,15 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
 
 void x_console_register_builtin_commands(Console* console);
 
-Console::Console(X_EngineContext* engineContext, X_Font* font)
+Console::Console(EngineContext* engineContext, Font* font)
 {
     cursor = Vec2(0, 0);
-    
-    Screen* screen = engineContext->getScreen();
+
+    Screen* screen = engineContext->screen;
     size.x = screen->getW() / font->getW();
     size.y = screen->getH() / font->getH() / 2;
-    this->font = font;
-    this->engineContext = engineContext;
+    Console::font = font;
+    Console::engineContext = engineContext;
     
     text = (char*)x_malloc(x_console_bytes_in_line(this) * size.y);
     x_console_clear(this);
@@ -192,8 +192,8 @@ Console::Console(X_EngineContext* engineContext, X_Font* font)
         x_string_init(commandHistory + i, "");
     
     x_console_register_builtin_commands(this);
-    
-    renderer = new ConsoleRenderer(*this, *engineContext->getScreen(), *engineContext->getMainFont());
+
+    renderer = new ConsoleRenderer(*this, *engineContext->screen, *engineContext->mainFont);
 }
 
 void x_console_clear(Console* console)
