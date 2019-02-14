@@ -119,7 +119,7 @@ struct X_AE_Surface
     fp zInverseYStep;
     fp zInverseOrigin;
     
-    x_fp16x16 closestZ;
+    fp closestZ;
     
     bool inSubmodel;
     
@@ -222,7 +222,7 @@ typedef struct X_AE_Edge
 typedef struct X_AE_DummyEdge
 {
     // Attributes shared with X_AE_Edge (do not reorder!)
-    x_fp16x16 x;
+    fp x;
     struct X_AE_Edge* next;
     
     struct X_AE_Edge* deleteHead;

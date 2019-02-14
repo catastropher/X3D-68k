@@ -20,8 +20,6 @@
 #include "math/Angle.hpp"
 #include "math/Mat4x4.hpp"
 
-typedef X_Vec4_fp16x16 X_Quaternion;
-
 template<typename T>
 struct QuaternionTemplate : public Vec4Template<T>
 {

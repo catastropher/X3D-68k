@@ -180,7 +180,7 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     context->surface = surface;
     context->faceTexture = context->surface->bspSurface->faceTexture;
     context->renderContext = renderContext;
-    context->mipLevel = renderContext->cam->viewport.closestMipLevelForZ(fp(surface->closestZ));
+    context->mipLevel = renderContext->cam->viewport.closestMipLevelForZ(surface->closestZ);
     context->viewport = &renderContext->cam->viewport;
 
     if(surface->flags.hasFlag(SURFACE_FILL_SOLID))
