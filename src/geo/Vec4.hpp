@@ -51,4 +51,4 @@ struct Vec4Template
 };
 
 using Vec4 = Vec4Template<fp>;
-using Vec416x16 = Vec4Template<x_fp16x16>;
+

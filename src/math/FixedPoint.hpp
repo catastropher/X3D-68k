@@ -259,23 +259,6 @@ static inline int x_fp16x16_to_int(x_fp16x16 val)
     return val >> 16;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-/// Divides two @ref x_fp16x16 numbers.
-///
-/// @param n    - numerator
-/// @param d    - denominator
-///
-/// @return n / d as an x_fp16x16.
-///
-/// @note Be wary of overflow.
-/// @note This will cause division by zero if d == 0.
-/// @note This is a fairly expensive operation as it involves 64-bit division.
-////////////////////////////////////////////////////////////////////////////////
-static inline x_fp16x16 x_fp16x16_div(x_fp16x16 n, x_fp16x16 d)
-{
-    return ((x_fp32x32)n << 16) / d;
-}
-
 static inline x_fp16x16 x_fp16x16_mul(x_fp16x16 a, x_fp16x16 b)
 {
     return ((x_fp32x32)a * b) >> 16;
@@ -291,26 +274,21 @@ static inline x_fp16x16 x_fp16x16_from_float(float val)
     return val * 65536;
 }
 
-static inline x_fp16x16 x_int_div_as_fp16x16(int a, int b)
-{
-    return (a << 16) / b;
-}
-
 // Calculates the reciprocal of a number in the range 1...65536
-static inline x_fp16x16 x_fastrecip(unsigned int val)
+static inline int x_fastrecip(unsigned int val)
 {
     int shiftUp = __builtin_clz(val) - 16;
-    val <<= shiftUp;
+    fp newVal = (val << shiftUp);
 
-    const unsigned int ADD = (48 << 16) / 17;
+    const fp ADD = 48.0_fp / 17;
 
-    unsigned int x = ADD - (val << 1);
+    fp x = ADD - (newVal << 1);
 
-    x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
-    x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
-    x = x + x_fp16x16_mul(x, X_FP16x16_ONE - x_fp16x16_mul(val, x));
+    x = x + x * (1.0_fp - newVal * x);
+    x = x + x * (1.0_fp - newVal * x);
+    x = x + x * (1.0_fp - newVal * x);
 
-    return x >> (16 - shiftUp);
+    return x.asRightShiftedInteger(16 - shiftUp);
 }
 
 static inline int mul(int a, int b)

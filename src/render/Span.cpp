@@ -231,9 +231,9 @@ static inline void clamp_texture_coord(const X_AE_SurfaceRenderContext* context,
 
 static int calculate_z_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    x_fp2x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y));
+    x_fp2x30 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y).internalValue();
     
-    return x_fastrecip(invZ >> 10);
+    return x_fastrecip(invZ >> 10); 
 }
 
 static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y, fp* u, fp* v)

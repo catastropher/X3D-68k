@@ -446,9 +446,9 @@ void x_ae_context_scan_edges(X_AE_Context* context);
 
 int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, BspLevel* level);
 
-static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
+static inline fp x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {
-    return (x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin).toFp16x16();
+    return x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin;
 }
 
 static inline void x_ae_context_set_current_model(X_AE_Context* context, BspModel* model)
