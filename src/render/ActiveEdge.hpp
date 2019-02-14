@@ -39,20 +39,24 @@ enum SurfaceFlags
 
 struct X_AE_Surface
 {
-    x_fp16x16 inverseZAtScreenPoint(x_fp16x16 x, int y) const
+    fp inverseZAtScreenPoint(fp x, int y) const
     {
-        return x_fp16x16_mul(x, zInverseXStep) + y * zInverseYStep + zInverseOrigin;
+        return x * zInverseXStep + y * zInverseYStep + zInverseOrigin;
     }
     
-    bool isCloserThan(const X_AE_Surface* surface, x_fp16x16 x, int y) const
+    bool isCloserThan(const X_AE_Surface* surface, fp x, int y) const
     {
         if(bspKey != surface->bspKey)
+        {
             return bspKey < surface->bspKey;
+        }
         
         if(inSubmodel ^ surface->inSubmodel)
+        {
             return inSubmodel;
+        }
         
-        return inverseZAtScreenPoint(x + X_FP16x16_ONE * 7, y) >= surface->inverseZAtScreenPoint(x + X_FP16x16_ONE * 7 , y);
+        return inverseZAtScreenPoint(x + 7.0_fp, y) >= surface->inverseZAtScreenPoint(x + 7.0_fp, y);
     }
     
     void calculateInverseZGradient(Vec3fp& camPos, Viewport* viewport, Mat4x4* viewMatrix, Vec3fp& pointOnSurface)
@@ -67,18 +71,18 @@ struct X_AE_Surface
         
         //x_fp16x16 invDistTimesScale = //x_fp16x16_div(X_FP16x16_ONE << 10, distTimesScale) >> 6;
         
-        x_fp16x16 invDist = x_fp16x16_div(X_FP16x16_ONE << 10, dist);
-        x_fp16x16 invScale = (1 << 26) / scale;
+        fp invDist = 1024.0_fp / fp(dist);
+        fp invScale = fp((1 << 26) / scale);
         
-        x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
+        fp invDistTimesScale = (invDist * invScale) >> 10;
         
-        zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x.toFp16x16());
-        zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y.toFp16x16());
+        zInverseXStep = invDistTimesScale * planeInViewSpace.normal.x;
+        zInverseYStep = invDistTimesScale * planeInViewSpace.normal.y;
         
         int centerX = viewport->screenPos.x + viewport->w / 2;
         int centerY = viewport->screenPos.y + viewport->h / 2;
         
-        zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z.toFp16x16(), invDist) -
+        zInverseOrigin = planeInViewSpace.normal.z * invDist -
             centerX * zInverseXStep -
             centerY * zInverseYStep;
     }
@@ -111,9 +115,9 @@ struct X_AE_Surface
     X_AE_Span spanHead;
     X_AE_Span* last;
     
-    x_fp16x16 zInverseXStep;
-    x_fp16x16 zInverseYStep;
-    x_fp16x16 zInverseOrigin;
+    fp zInverseXStep;
+    fp zInverseYStep;
+    fp zInverseOrigin;
     
     x_fp16x16 closestZ;
     
@@ -444,7 +448,7 @@ int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, B
 
 static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {
-    return x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin;
+    return (x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin).toFp16x16();
 }
 
 static inline void x_ae_context_set_current_model(X_AE_Context* context, BspModel* model)

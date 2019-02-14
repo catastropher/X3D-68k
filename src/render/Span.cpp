@@ -120,9 +120,9 @@ const fp recip_tab[32] =
 static inline void setup_inv_z_step(X_AE_SurfaceRenderContext* context)
 {
     X_AE_Surface* surface = context->surface;
-    context->invZStepX = surface->zInverseXStep;
-    context->invZStepY = surface->zInverseYStep;
-    context->invZOrigin = surface->zInverseOrigin;
+    context->invZStepX = surface->zInverseXStep.toFp16x16();
+    context->invZStepY = surface->zInverseYStep.toFp16x16();
+    context->invZOrigin = surface->zInverseOrigin.toFp16x16();
     
     context->invZStepXNeg = -context->invZStepX;
     context->uStepXNeg = -context->uStepX;
