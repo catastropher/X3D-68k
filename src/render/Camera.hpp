@@ -41,8 +41,6 @@ struct Camera
     
     Viewport viewport;
     Mat4x4 viewMatrix;
-    x_fp16x16 angleX;
-    x_fp16x16 angleY;
     struct X_BspLeaf* currentLeaf;
     struct X_BspLeaf* lastLeaf;
     DecompressedLeafVisibleSet pvsForCurrentLeaf;

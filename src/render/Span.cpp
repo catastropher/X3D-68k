@@ -148,8 +148,8 @@ static inline void setup_v_step(X_AE_SurfaceRenderContext* context)
 static inline void setup_surface(X_AE_SurfaceRenderContext* context)
 {
     Vec2 surfaceSize = context->surface->bspSurface->textureExtent;
-    context->surfaceW = mip_adjust(surfaceSize.x, context->mipLevel) - X_FP16x16_ONE;
-    context->surfaceH = mip_adjust(surfaceSize.y, context->mipLevel) - X_FP16x16_ONE;
+    context->surfaceW = fp(mip_adjust(surfaceSize.x, context->mipLevel) - X_FP16x16_ONE);
+    context->surfaceH = fp(mip_adjust(surfaceSize.y, context->mipLevel) - X_FP16x16_ONE);
     context->texW = context->surfaceTexture.getW();
     
     context->surfaceTexels = context->surfaceTexture.getTexels();

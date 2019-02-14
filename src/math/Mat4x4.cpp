@@ -39,8 +39,8 @@ void Mat4x4::loadIdentity()
 
 void Mat4x4::loadXRotation(fp angle) 
 {
-    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
-    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
+    fp cosAngle = x_cos(angle);
+    fp sinAngle = x_sin(angle);
     
     Mat4x4 xRotation = {
         {
@@ -56,8 +56,8 @@ void Mat4x4::loadXRotation(fp angle)
 
 void Mat4x4::loadYRotation(fp angle)
 {
-    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
-    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
+    fp cosAngle = x_cos(angle);
+    fp sinAngle = x_sin(angle);
     
     Mat4x4 yRotation = {
         {

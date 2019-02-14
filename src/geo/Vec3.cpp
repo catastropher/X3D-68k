@@ -21,19 +21,6 @@
 #include "util/Util.hpp"
 #include "math/FixedPoint.hpp"
 
-static inline void scale_components_to_less_than_one_half(Vec3* v)
-{
-    x_fp16x16 maxValue = X_MAX(abs(v->x), X_MAX(abs(v->y), abs(v->z)));
-    
-    while(maxValue >= X_FP16x16_HALF)
-    {
-        v->x >>= 1;
-        v->y >>= 1;
-        v->z >>= 1;
-        maxValue >>= 1;
-    }
-}
-
 void x_vec3_normalize(Vec3* v)
 {
     float x = fp(v->x).toFloat();
@@ -47,14 +34,4 @@ void x_vec3_normalize(Vec3* v)
     v->z = fp::fromFloat(z / length).toFp16x16();
 
     return;
-
-
-    scale_components_to_less_than_one_half(v);
-    int len = x_sqrt(v->x * v->x + v->y * v->z + v->z * v->z);
-
-    if(len == 0) len = 1;
-    
-    v->x = (v->x << 16) / len;
-    v->y = (v->y << 16) / len;
-    v->z = (v->z << 16) / len;
 }
