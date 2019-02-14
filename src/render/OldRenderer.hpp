@@ -74,13 +74,8 @@ struct OldRenderer
     
     bool scaleScreen;
     
-    int renderMode;
-    
     int totalSurfacesRendered;
 
-    int mipLevel;
-    x_fp16x16 mipDistances[X_BSPTEXTURE_MIP_LEVELS - 1];
-    
     bool wireframe;
 
     int totalRenderedPortals;

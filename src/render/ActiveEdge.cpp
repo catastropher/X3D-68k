@@ -853,18 +853,12 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     StopWatch::start("scan-active-edge");
     
-    if((context->renderContext->renderer->renderMode & 2) != 0)
+    for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
     {
-        for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
-        {
-            context->processEdges(i);
-        }
+        context->processEdges(i);
     }
 
     StopWatch::stop("scan-active-edge");
-
-    if((context->renderContext->renderer->renderMode & 1) == 0)
-        return;
 
     StopWatch::start("render-spans");
 
@@ -882,7 +876,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
             continue;
 
         X_AE_SurfaceRenderContext surfaceRenderContext;
-        x_ae_surfacerendercontext_init(&surfaceRenderContext, surface, context->renderContext, context->renderContext->renderer->mipLevel);
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, surface, context->renderContext);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
 

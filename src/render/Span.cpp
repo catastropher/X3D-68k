@@ -175,7 +175,7 @@ void x_ae_surfacerendercontext_setup_constants(X_AE_SurfaceRenderContext* contex
     setup_screen(context);
 }
 
-void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)
+void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext)
 {
     context->surface = surface;
     context->faceTexture = context->surface->bspSurface->faceTexture;
@@ -387,9 +387,6 @@ static void merge_adjacent_spans(X_AE_Span* head)
 
 void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context)
 {
-    if(((context->renderContext->renderer->renderMode) & 1) == 0)
-        return;
-    
     context->surface->last->next = NULL;
     
     if(context->surface->inSubmodel)
