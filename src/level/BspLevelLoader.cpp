@@ -279,8 +279,8 @@ static void x_bsplevel_init_vertices(BspLevel* level, const X_BspLevelLoader* lo
 static Vec2 x_bspsurface_calculate_texture_coordinate_of_vertex(BspSurface* surface, Vec3fp& v)
 {    
     return Vec2(
-        surface->faceTexture->uOrientation.dot(v).toFp16x16() + surface->faceTexture->uOffset,
-        surface->faceTexture->vOrientation.dot(v).toFp16x16() + surface->faceTexture->vOffset);
+        (surface->faceTexture->uOrientation.dot(v) + surface->faceTexture->uOffset).toFp16x16(),
+        (surface->faceTexture->vOrientation.dot(v) + surface->faceTexture->vOffset).toFp16x16());
 }
 
 static void x_bspsurface_calculate_texture_extents(BspSurface* surface, BspLevel* level)

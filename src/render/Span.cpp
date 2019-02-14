@@ -54,7 +54,7 @@ static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureV
         - centerY * var->vOrientationStep;
 }
 
-static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace, int minTexCoord, int texOffset)
+static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace, int minTexCoord, fp texOffset)
 {
     Vec3fp inverseModelPos = *context->surface->modelOrigin;
     
@@ -66,12 +66,12 @@ static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_Surfa
         inverseModelPosInEyeSpace.y >> mipLevel,
         inverseModelPosInEyeSpace.z >> mipLevel);
     
-    var->adjust = -orientationInEyeSpace->dot(inverseModelPosInEyeSpace).toFp16x16() -
-        mip_adjust(minTexCoord, mipLevel) +
+    var->adjust = -orientationInEyeSpace->dot(inverseModelPosInEyeSpace) -
+        mip_adjust(fp(minTexCoord), mipLevel) +
         mip_adjust(texOffset, mipLevel);
 }
 
-static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationAxis, int minTexCoord, int texOffset)
+static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationAxis, int minTexCoord, fp texOffset)
 {
     Vec3fp orientationInEyeSpace;
     rotate_vector_into_eye_space(context, orientationAxis, &orientationInEyeSpace);
