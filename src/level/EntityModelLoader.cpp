@@ -154,10 +154,8 @@ static void read_vertex(X_File* file, X_EntityVertex* vertex, Vec3 scale, Vec3 t
     vertex->v.x = x_fp16x16_from_int(x_file_read_char(file));
     vertex->v.y = x_fp16x16_from_int(x_file_read_char(file));
     vertex->v.z = x_fp16x16_from_int(x_file_read_char(file));
-    
-    vertex->v.x = x_fp16x16_mul(vertex->v.x, scale.x) + translation.x;
-    vertex->v.y = x_fp16x16_mul(vertex->v.y, scale.x) + translation.y;
-    vertex->v.z = x_fp16x16_mul(vertex->v.z, scale.x) + translation.z;
+
+    vertex->v = MakeVec3(MakeVec3fp(vertex->v).scale(MakeVec3fp(scale))) + translation;
     
     vertex->v = x_vec3_convert_quake_coord_to_x3d_coord(&vertex->v);
     

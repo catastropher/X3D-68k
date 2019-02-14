@@ -32,11 +32,11 @@ void Player::registerVars()
     EngineContext* engineContext = Engine::getInstance();
     Console* console = engineContext->console;
 
-    x_console_register_var(console, &moveSpeed, "player.speed", X_CONSOLEVAR_FP16X16, "200", false);
-    x_console_register_var(console, &gravity, "player.gravity", X_CONSOLEVAR_FP16X16, "320", false);
-    x_console_register_var(console, &friction, "player.friction", X_CONSOLEVAR_FP16X16, "20", false);
-    x_console_register_var(console, &jump, "player.jump", X_CONSOLEVAR_FP16X16, "160", false);
-    x_console_register_var(console, &maxSpeed, "player.maxspeed", X_CONSOLEVAR_FP16X16, "300", false);
+    x_console_register_var(console, &moveSpeed, "player.speed", X_CONSOLEVAR_FP, "200", false);
+    x_console_register_var(console, &gravity, "player.gravity", X_CONSOLEVAR_FP, "320", false);
+    x_console_register_var(console, &friction, "player.friction", X_CONSOLEVAR_FP, "20", false);
+    x_console_register_var(console, &jump, "player.jump", X_CONSOLEVAR_FP, "160", false);
+    x_console_register_var(console, &maxSpeed, "player.maxspeed", X_CONSOLEVAR_FP, "300", false);
 
     x_console_register_var(console, &playerPhysics, "player.physics", X_CONSOLEVAR_BOOL, "1", true);
 }
@@ -89,19 +89,13 @@ PlayerKeyFlags getPlayerKeys(KeyState* keyState)
     return keys;
 }
 
-void mouseLook(Player* player, Vec2_fp16x16 angleOffset)
+void mouseLook(Player* player, Vec2fp angleOffset)
 {
-    player->angleX += fp(angleOffset.x);
-    player->angleY += fp(angleOffset.y);
+    player->angleX += angleOffset.x;
+    player->angleY += angleOffset.y;
 
-    fp x(player->angleX);
-    adjustAngle(x);
-
-    fp y(player->angleY);
-    adjustAngle(y);
-
-    player->angleX = x.toFp16x16();
-    player->angleY = y.toFp16x16();
+    adjustAngle(player->angleX);
+    adjustAngle(player->angleY);
 }
 
 void handle_mouse(Player* player, MouseState* mouseState)

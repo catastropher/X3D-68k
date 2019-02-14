@@ -144,8 +144,8 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
             x_string_assign(var->stringPtr, varValue);
             break;
             
-        case X_CONSOLEVAR_FP16X16:
-            *var->fp16x16Ptr = x_fp16x16_from_float(atof(varValue));
+        case X_CONSOLEVAR_FP:
+            *var->fpPtr = fp::fromFloat(atof(varValue));
             break;
 
         case X_CONSOLEVAR_BOOL:
@@ -676,8 +676,8 @@ static void print_variable_value(Console* console, X_ConsoleVar* var)
             sprintf(varValue, "%s", var->stringPtr->data);
             break;
             
-        case X_CONSOLEVAR_FP16X16:
-            sprintf(varValue, "%f", x_fp16x16_to_float(*var->fp16x16Ptr));
+        case X_CONSOLEVAR_FP:
+            sprintf(varValue, "%f", var->fpPtr->toFloat());
             break;
         case X_CONSOLEVAR_BOOL:
             sprintf(varValue, "%s", *var->boolPtr ? "true" : "false");

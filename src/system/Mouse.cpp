@@ -45,8 +45,8 @@ static void register_cmds(Console* console)
 static void register_vars(MouseState* state, Console* console)
 {
     x_console_register_var(console, &state->invert, "mouse.invert", X_CONSOLEVAR_BOOL, "0'", 1);
-    x_console_register_var(console, &state->xSpeed, "mouse.xspeed", X_CONSOLEVAR_FP16X16, "1.0'", 1);
-    x_console_register_var(console, &state->ySpeed, "mouse.yspeed", X_CONSOLEVAR_FP16X16, "1.0'", 1);
+    x_console_register_var(console, &state->xSpeed, "mouse.xspeed", X_CONSOLEVAR_FP, "1.0'", 1);
+    x_console_register_var(console, &state->ySpeed, "mouse.yspeed", X_CONSOLEVAR_FP, "1.0'", 1);
 }
 
 MouseState::MouseState(Console* console, Screen* screen)
@@ -83,15 +83,17 @@ void x_mousestate_update_pos(MouseState* state, Vec2 pos)
     x_mousestate_set_pos(state, center);
 }
 
-Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(MouseState* state)
+Vec2fp x_mousestate_get_mouselook_angle_change(MouseState* state)
 {
-    x_fp16x16 baseSpeed = x_fp16x16_from_float(0.1);
-    x_fp16x16 dx = x_fp16x16_mul(baseSpeed, state->xSpeed) * state->offset.x;
-    x_fp16x16 dy = x_fp16x16_mul(baseSpeed, state->ySpeed) * state->offset.y;
+    fp baseSpeed = 0.1_fp;
+    fp dx = baseSpeed * state->xSpeed * state->offset.x;
+    fp dy = baseSpeed * state->ySpeed * state->offset.y;
     
     if(state->invert)
+    {
         dy = -dy;
+    }
     
-    return Vec2(dy, -dx);
+    return Vec2fp(dy, -dx);
 }
 

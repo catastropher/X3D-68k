@@ -71,6 +71,14 @@ struct Vec3Template
             x * v.y - v.x * y);
     }
 
+    Vec3Template scale(const Vec3Template& v) const
+    {
+        return Vec3Template(
+            x * v.x,
+            y * v.y,
+            z * v.z);
+    }
+
     bool operator==(const Vec3Template& v) const
     {
         return x == v.x && y == v.y && z == v.z;

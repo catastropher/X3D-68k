@@ -27,7 +27,6 @@ typedef int x_fp2x30;
 typedef short x_fp0x16;
 
 #define X_FP16x16_ONE 0x10000
-#define X_FP16x16_HALF (X_FP16x16_ONE / 2)
 
 struct fp
 {
@@ -257,11 +256,6 @@ static inline x_fp16x16 x_fp16x16_from_int(int val)
 static inline int x_fp16x16_to_int(x_fp16x16 val)
 {
     return val >> 16;
-}
-
-static inline x_fp16x16 x_fp16x16_mul(x_fp16x16 a, x_fp16x16 b)
-{
-    return ((x_fp32x32)a * b) >> 16;
 }
 
 static inline float x_fp16x16_to_float(x_fp16x16 val)

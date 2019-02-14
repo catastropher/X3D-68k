@@ -37,8 +37,8 @@ struct MouseState
     bool buttonPressed[2];
     
     bool mouseLook;
-    x_fp16x16 xSpeed;
-    x_fp16x16 ySpeed;
+    fp xSpeed;
+    fp ySpeed;
     
     bool invert;
 };
@@ -48,7 +48,7 @@ struct Console;
 void x_mousestate_set_pos(MouseState* state, Vec2 pos);
 void x_mousestate_show_cursor(MouseState* state, bool showCursor);
 void x_mousestate_update_pos(MouseState* state, Vec2 pos);
-Vec2_fp16x16 x_mousestate_get_mouselook_angle_change(MouseState* state);
+Vec2fp x_mousestate_get_mouselook_angle_change(MouseState* state);
 
 static inline void x_mousestate_send_button_press(MouseState* state, X_MouseButton button)
 {

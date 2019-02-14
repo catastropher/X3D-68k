@@ -29,7 +29,7 @@ typedef enum X_ConsoleVarType
 {
     X_CONSOLEVAR_INT,
     X_CONSOLEVAR_FLOAT,
-    X_CONSOLEVAR_FP16X16,
+    X_CONSOLEVAR_FP,
     X_CONSOLEVAR_STRING,
     X_CONSOLEVAR_BOOL,
     X_CONSOLEVAR_VEC3
@@ -49,7 +49,7 @@ typedef struct X_ConsoleVar
     {
         int* intPtr;
         float* floatPtr;
-        x_fp16x16* fp16x16Ptr;
+        fp* fpPtr;
         bool* boolPtr;
         X_XString* stringPtr;
         void* voidPtr;
