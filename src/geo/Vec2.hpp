@@ -55,3 +55,7 @@ using Vec2 = Vec2Generic<int>;
 using Vec2i = Vec2Generic<int>;
 using Vec2fp = Vec2Generic<fp>;
 
+static inline Vec2fp MakeVec2fp(const Vec2_fp16x16& v)
+{
+    return Vec2fp(fp(v.x), fp(v.y));
+}

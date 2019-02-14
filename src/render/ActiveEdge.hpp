@@ -138,8 +138,8 @@ typedef struct X_AE_Edge
     
     X_AE_Edge(Vec2_fp16x16* a, Vec2_fp16x16* b, X_AE_Surface* surface, BspEdge* bspEdge_, int currentFrame, X_AE_Edge* edgeStart)
     {
-        int aY = fp(a->y).ceil().toFp16x16() >> 16;
-        int bY = fp(b->y).ceil().toFp16x16() >> 16;
+        int aY = fp(a->y).ceil().toInt();
+        int bY = fp(b->y).ceil().toInt();
         
         int height = bY - aY;
         
@@ -165,20 +165,20 @@ typedef struct X_AE_Edge
         
         bspEdge->cachedEdgeOffset = (unsigned char*)this - (unsigned char*)edgeStart;
         
-        initDeltas(a, b);
+        initDeltas(MakeVec2fp(*a), MakeVec2fp(*b));
         
         startY = x_fp16x16_to_int(fp(a->y).ceil().toFp16x16());
         endY = x_fp16x16_to_int(fp(b->y).ceil().toFp16x16()) - 1;
     }
     
-    void initDeltas(Vec2_fp16x16* top, Vec2_fp16x16* bottom)
+    void initDeltas(const Vec2fp& top, const Vec2fp& bottom)
     {
-        xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
+        xSlope = (bottom.x - top.x) / (bottom.y - top.y);
         
-        x_fp16x16 topY = fp(top->y).ceil().toFp16x16();
-        x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, xSlope);
+        fp topY = top.y.ceil();
+        fp errorCorrection = (top.y - topY) * xSlope;
         
-        x = top->x - errorCorrection;
+        x = top.x - errorCorrection;
     }
     
     void emitCachedEdge(X_AE_Surface* surface)
@@ -195,13 +195,13 @@ typedef struct X_AE_Edge
     }
     
     // Attributes shared with X_AE_DummyEdge (do not reorder!)
-    x_fp16x16 x;
+    fp x;
     struct X_AE_Edge* next;
     
     // Unique to X_AE_Edge
     struct X_AE_Edge* prev;
     
-    x_fp16x16 xSlope;
+    fp xSlope;
     X_AE_Surface* surfaces[2];
     bool isLeadingEdge;
     bool isHorizontal;
@@ -392,10 +392,12 @@ private:
         newEdge->nextDelete = newEdges[newEdge->endY].deleteHead;
         newEdges[newEdge->endY].deleteHead = newEdge;
         
-        x_fp16x16 edgeX = newEdge->x;
+        fp edgeX = newEdge->x;
         
         if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
-            ++edgeX;
+        {
+            edgeX += fp(1);
+        }
         
         // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
         while(edge->next->x < edgeX)

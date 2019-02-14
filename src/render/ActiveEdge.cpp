@@ -654,7 +654,7 @@ void X_AE_Context::processEdge(X_AE_Edge* edge, int y)
         if(surfaceToDisable == topSurface)
         {
             // We were on top, so emit the span
-            int x = (edge->x) >> 16;
+            int x = (edge->x).toInt();
 
             emitSpan(surfaceToDisable->xStart, x, y, surfaceToDisable);
             
@@ -681,12 +681,12 @@ enable:
         else
             search = topSurface;
         
-        if(surfaceToEnable->isCloserThan(search, edge->x, y))
+        if(surfaceToEnable->isCloserThan(search, edge->x.toFp16x16(), y))
         {
             do
             {
                 search = search->prev;
-            } while(surfaceToEnable->isCloserThan(search, edge->x, y));
+            } while(surfaceToEnable->isCloserThan(search, edge->x.toFp16x16(), y));
             
             
             search = search->next;
@@ -696,7 +696,7 @@ enable:
             do
             {
                 search = search->next;
-            } while(!surfaceToEnable->isCloserThan(search, edge->x, y));            
+            } while(!surfaceToEnable->isCloserThan(search, edge->x.toFp16x16(), y));
         }
         
         surfaceToEnable->next = search;
@@ -708,7 +708,7 @@ enable:
         if(foreground.next == surfaceToEnable)
         {
             // Yes, emit span for the old top
-            int x = edge->x >> 16;
+            int x = edge->x.toInt();
 
             emitSpan(topSurface->xStart, x, y, topSurface);
 
