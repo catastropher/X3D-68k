@@ -18,7 +18,7 @@
 #include "dev/console/Console.hpp"
 #include "engine/Engine.hpp"
 
-void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
+void Screen::restartVideo(int newW, int newH, fp newFov)
 {
     canvas.resize(newW, newH);
     

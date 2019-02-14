@@ -68,7 +68,7 @@ public:
         return Vec2(getW() / 2, getH() / 2);
     }
     
-    void restartVideo(int newW, int newH, x_fp16x16 newFov);
+    void restartVideo(int newW, int newH, fp newFov);
     
     ~Screen()
     {

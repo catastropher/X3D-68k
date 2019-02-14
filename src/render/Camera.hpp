@@ -45,7 +45,7 @@ struct Camera
     struct X_BspLeaf* lastLeaf;
     DecompressedLeafVisibleSet pvsForCurrentLeaf;
     
-    void (*screenResizeCallback)(struct Camera* cam, struct Screen* screen, x_fp16x16 fov);
+    void (*screenResizeCallback)(struct Camera* cam, struct Screen* screen, fp fov);
 };
 
 void x_cameraobject_render(Camera* cam, struct X_RenderContext* renderContext);

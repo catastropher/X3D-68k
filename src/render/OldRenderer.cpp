@@ -77,7 +77,7 @@ static void cmd_fov(EngineContext* context, int argc, char* argv[])
         return;
     }
     
-    x_fp16x16 fov = x_fp16x16_from_float(atof(argv[1]) * 256.0 / 360.0);
+    fp fov = fp::fromFloat(atof(argv[1]) * 256.0 / 360.0);
     
     if(fov == 0)
     {

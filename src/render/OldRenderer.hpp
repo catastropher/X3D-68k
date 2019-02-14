@@ -66,7 +66,7 @@ struct OldRenderer
     
     int screenW;
     int screenH;
-    x_fp16x16 fov;
+    fp fov;
     bool fullscreen;
     bool videoInitialized;
     bool frustumClip;              // debug
