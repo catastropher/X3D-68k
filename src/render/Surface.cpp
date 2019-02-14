@@ -27,10 +27,10 @@ typedef struct X_SurfaceBuilderBlock
     int startY;
     int blockSize;
     
-    x_fp16x16 topLeftIntensity;
-    x_fp16x16 topRightIntensity;
-    x_fp16x16 dLeft;
-    x_fp16x16 dRight;
+    fp topLeftIntensity;
+    fp topRightIntensity;
+    fp dLeft;
+    fp dRight;
 } X_SurfaceBuilderBlock;
 
 typedef struct X_SurfaceBuilder
@@ -149,16 +149,16 @@ static void x_surfacebuilder_build_without_lighting(X_SurfaceBuilder* builder)
     }
 }
 
-static x_fp16x16 lightmap_get_lumel(int* lightmap, Vec2 lightmapSize, int x, int y)
+static fp lightmap_get_lumel(int* lightmap, Vec2 lightmapSize, int x, int y)
 {
-    return lightmap[y * lightmapSize.x + x] << 16;
+    return fp::fromInt(lightmap[y * lightmapSize.x + x]);
 }
 
-static x_fp16x16 x_surfacebuilderblock_get_intensity_at_offset(X_SurfaceBuilderBlock* block, int offsetX, int offsetY, int mipLevel)
+static fp x_surfacebuilderblock_get_intensity_at_offset(X_SurfaceBuilderBlock* block, int offsetX, int offsetY, int mipLevel)
 {
-    x_fp16x16 left = block->topLeftIntensity + offsetY * block->dLeft;
-    x_fp16x16 right = block->topRightIntensity + offsetY * block->dRight;
-    x_fp16x16 dRow = (right - left) >> (4 - mipLevel);
+    fp left = block->topLeftIntensity + offsetY * block->dLeft;
+    fp right = block->topRightIntensity + offsetY * block->dRight;
+    fp dRow = (right - left) >> (4 - mipLevel);
     
     return left + offsetX * dRow;
 }
@@ -177,19 +177,19 @@ static void x_surfacebuilder_build_16x16_block(X_SurfaceBuilder* builder)
             int y = block->startY + i;
             
             X_Color texel = x_surfacebuilder_get_texture_texel(builder, x, y);
-            x_fp16x16 intensity = x_surfacebuilderblock_get_intensity_at_offset(block, j, i, builder->mipLevel);
+            fp intensity = x_surfacebuilderblock_get_intensity_at_offset(block, j, i, builder->mipLevel);
             
-            builder->surface.getTexels()[y * builder->surface.getW() + x] = x_renderer_get_shaded_color(builder->renderer, texel, intensity >> (16 + 2));
+            builder->surface.getTexels()[y * builder->surface.getW() + x] = x_renderer_get_shaded_color(builder->renderer, texel, intensity.asRightShiftedInteger(16 + 2));
         }
     }
 }
 
 static void x_surfacebuilder_init_block(X_SurfaceBuilder* builder, int blockX, int blockY)
 {
-    int topLeft =       lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY);
-    int topRight =      lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY);
-    int bottomLeft =    lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY + 1);
-    int bottomRight =   lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY + 1);
+    fp topLeft =       lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY);
+    fp topRight =      lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY);
+    fp bottomLeft =    lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY + 1);
+    fp bottomRight =   lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY + 1);
     
     X_SurfaceBuilderBlock* block = &builder->block;
     block->topLeftIntensity = topLeft;
