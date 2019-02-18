@@ -15,32 +15,19 @@
 
 #pragma once
 
-#include "Texture.hpp"
-#include "geo/Vec3.hpp"
-#include "math/FixedPoint.hpp"
+#include "render/IRenderer.hpp"
 
-typedef enum X_LightFlags
+class X_AE_Context;
+class EngineContext;
+
+class SoftwareRenderer : public IRenderer
 {
-    X_LIGHT_FREE = 1,
-    X_LIGHT_ENABLED = 2
-} X_LightFlags;
+public:
+    SoftwareRenderer(X_AE_Context* activeEdgeContext, EngineContext* engineContext);
 
-typedef struct X_Light
-{
-    int id;
-    X_LightFlags flags;
-    Vec3fp position;
-    Vec3fp direction;
-    x_fp24x8 intensity;
-} X_Light;
+    void render();
 
-static inline bool x_light_is_free(X_Light* light)
-{
-    return light->flags & X_LIGHT_FREE;
-}
-
-static inline bool x_light_is_enabled(X_Light* light)
-{
-    return light->flags & X_LIGHT_ENABLED;
-}
-
+private:
+    X_AE_Context* activeEdgeContext;
+    EngineContext* engineContext;           // FIXME: remove hard dependency
+};

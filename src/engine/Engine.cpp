@@ -32,6 +32,7 @@
 #include "render/StatusBar.hpp"
 #include "entity/BrushModelComponent.hpp"
 #include "level/LevelManager.hpp"
+#include "render/software/SoftwareRenderer.hpp"
 
 EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -247,7 +248,9 @@ static void runFrame(EngineContext* engineContext)
 
     Console* console = engineContext->console;
 
-    x_renderer_render_frame(engineContext);
+    //x_renderer_render_frame(engineContext);
+    SoftwareRenderer softwareRenderer(&engineContext->renderer->activeEdgeContext, engineContext);
+    softwareRenderer.render();
 
     StatusBar::render(engineContext->screen->canvas, *engineContext->mainFont);
 

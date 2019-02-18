@@ -177,6 +177,16 @@ struct BspLevel
         }
     }
 
+    BspModel& getLevelModel() const
+    {
+        return models[0];
+    }
+
+    X_BspNode& getLevelRootNode() const
+    {
+        return getLevelModel().getRootNode();
+    }
+
     Portal* addPortal();
 
     void renderPortals(X_RenderContext& renderContext);
@@ -228,8 +238,6 @@ struct BspLevel
     unsigned char* lightmapData;
     
     char* entityDictionary;
-    
-    int nextBspKey;
 
     Portal* portalHead;     // Should be private
     
@@ -263,31 +271,6 @@ static inline X_BspLeaf* x_bsplevel_get_leaf(const BspLevel* level, X_BspLeafId 
     return level->leaves + leafId;
 }
 
-static inline BspModel* x_bsplevel_get_level_model(const BspLevel* level)
-{
-    return level->models + 0;
-}
-
-static inline X_BspNode* x_bsplevel_get_root_node(const BspLevel* level)
-{
-    return x_bsplevel_get_level_model(level)->rootBspNode;
-}
-
-static inline void x_bsplevel_reset_bspkeys(BspLevel* level)
-{
-    level->nextBspKey = 1;
-}
-
-static inline void x_bsplevel_next_bspkey(BspLevel* level)
-{
-    ++level->nextBspKey;
-}
-
-static inline int x_bsplevel_current_bspkey(const BspLevel* level)
-{
-    return level->nextBspKey;
-}
-
 static inline BspModel* x_bsplevel_get_model(const BspLevel* level, int modelId)
 {
     return level->models + modelId;
@@ -309,7 +292,7 @@ static inline bool x_bspsurface_plane_is_flipped(const BspSurface* surface)
 
 static inline int x_bspfile_node_pvs_size(const BspLevel* level)
 {
-    return (x_bsplevel_get_level_model(level)->totalBspLeaves + 7) / 8;
+    return (level->getLevelModel().totalBspLeaves + 7) / 8;
 }
 
 //======================== boundrect ========================

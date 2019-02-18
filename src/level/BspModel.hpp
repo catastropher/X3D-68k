@@ -29,6 +29,11 @@ struct BspEdge;
 
 struct BspModel
 {
+    X_BspNode& getRootNode() const
+    {
+        return *rootBspNode;
+    }
+
     BoundBox boundBox;
     X_BspNode* rootBspNode;
 

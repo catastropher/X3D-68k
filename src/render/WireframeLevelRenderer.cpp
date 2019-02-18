@@ -72,11 +72,11 @@ void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
     
     if(node.isLeaf())
     {
-        auto leaf = node.getLeaf();
+        auto& leaf = node.getLeaf();
         
-        for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
+        for(int i = 0; i < leaf.totalMarkSurfaces; ++i)
         {
-            BspSurface* s = leaf->firstMarkSurface[i];
+            BspSurface* s = leaf.firstMarkSurface[i];
             
             for(int j = 0; j < s->totalEdges; ++j)
             {

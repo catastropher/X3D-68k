@@ -43,9 +43,9 @@ typedef struct X_BspNode
         return contents < 0;
     }
 
-    X_BspLeaf* getLeaf()
+    X_BspLeaf& getLeaf()
     {
-        return (X_BspLeaf*)this;
+        return *(X_BspLeaf*)this;
     }
 
     bool isVisibleThisFrame(int currentFrame) const
@@ -54,15 +54,6 @@ typedef struct X_BspNode
     }
 
     void markAncestorsAsVisible(int currentFrame);
-    void renderRecursive(X_RenderContext& renderContext, BoundBoxFrustumFlags parentNodeFlags);
-    void renderSurfaces(X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags, fp distanceToPlane);
-
-    void renderWireframe(
-        X_RenderContext& renderContext,
-        X_Color color,
-        BspModel& model,
-        int parentFlags,
-        unsigned char* drawnEdges);
 
     // Common with X_BspLeaf - DO NOT REORDER
     X_BspLeafContents contents;

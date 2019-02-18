@@ -651,7 +651,7 @@ static void x_bsplevel_init_from_bsplevel_loader(BspLevel* level, X_BspLevelLoad
     
     x_bsplevel_init_collision_hulls(level, loader);
     
-    X_BspNode* levelRootNode = x_bsplevel_get_root_node(level);
+    X_BspNode* levelRootNode = &level->getLevelRootNode();
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
     
     level->pvs.updatePvsData();

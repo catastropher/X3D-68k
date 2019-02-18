@@ -578,7 +578,7 @@ void X_AE_Context::addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEd
     InternalPolygon3 poly;
     get_model_polygon_from_edges(currentModel, edgeIds, totalEdges, &poly, &currentModel->center);
     
-    addSubmodelRecursive(&poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
+    addSubmodelRecursive(&poly, &level->getLevelRootNode(), edgeIds, bspSurface, geoFlags, bspKey);
 }
 
 X_AE_Surface* X_AE_Context::addBrushPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey)
@@ -593,7 +593,7 @@ X_AE_Surface* X_AE_Context::addBrushPolygon(Polygon3& polygon, Plane& polygonPla
     BspSurface bspSurface;
     bspSurface.plane = &bspPlane;
 
-    addSubmodelRecursive(&polygon, x_bsplevel_get_root_node(renderContext->level), edgeIds, &bspSurface, geoFlags, bspKey);
+    addSubmodelRecursive(&polygon, &renderContext->level->getLevelRootNode(), edgeIds, &bspSurface, geoFlags, bspKey);
 
     return currentParent;
 }

@@ -44,12 +44,12 @@ void PotentiallyVisibleSet::setCompressedPvsData(unsigned char* compressedPvsDat
 
 void PotentiallyVisibleSet::updatePvsData()
 {
-    bytesPerEntry = (x_bsplevel_get_level_model(&level)->totalBspLeaves + 7) / 8;
+    bytesPerEntry = (level.getLevelModel().totalBspLeaves + 7) / 8;
 }
 
 void PotentiallyVisibleSet::markVisibleLeaves(DecompressedLeafVisibleSet& decompressedPvs, int currentFrame)
 {
-    int totalLeaves = x_bsplevel_get_level_model(&level)->totalBspLeaves;
+    int totalLeaves = level.getLevelModel().totalBspLeaves;
     
     // We skip leaf 0 because it represents outside the level and should never be potentially visible.
     // Note that the PVS excludes leaf 0 for this reason.
