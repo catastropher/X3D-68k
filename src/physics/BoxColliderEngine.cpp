@@ -121,12 +121,7 @@ void BoxColliderEngine::applyFriction()
 
     fp newSpeed = currentSpeed - currentSpeed * dt * collider.frictionCoefficient;
 
-    printf("Old speed: %f\n", currentSpeed.toFloat());
-    printf("New speed: %f\n", newSpeed.toFloat());
-    printf("dt: %f\n", dt.toFloat() );
-
     newSpeed = clamp(newSpeed, fp::fromInt(0), collider.maxSpeed);
-
     newSpeed = newSpeed / currentSpeed;
 
     collider.velocity = collider.velocity * newSpeed;

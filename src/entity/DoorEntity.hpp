@@ -13,12 +13,27 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
+#pragma once
 
-#include "GameObjectLoader.hpp"
-#include "error/Error.hpp"
-#include "PlatformObject.hpp"
-#include "entity/EntityManager.hpp"
+#include "Entity.hpp"
+#include "BrushModelComponent.hpp"
+
+class DoorEntity : public Entity
+{
+public:
+    DoorEntity(X_Edict& edict, BspLevel& level);
+
+    void update(const EntityUpdate& update);
+
+    static void linkDoors(Array<DoorEntity*>& doorsInLevel);
+
+private:
+    static void doorOpenCallback(Entity* entity);
+    static void doorCloseCallback(Entity* entity);
+
+    Vec3fp openDirection;
+    Vec3fp openPosition;
+    Time transitionTime;
+    bool closed = true;
+};
 

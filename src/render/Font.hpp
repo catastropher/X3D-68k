@@ -21,10 +21,10 @@
 
 #define X_FONT_TOTAL_CHARS 256
 
-class X_Font
+class Font
 {
 public:
-    X_Font() : charW(0), charH(0), pixels(nullptr) { }
+    Font() : charW(0), charH(0), pixels(nullptr) { }
 
     int getW() const { return charW; }
     int getH() const { return charH; }
@@ -37,7 +37,7 @@ public:
 
     bool loadFromFile(const char* fileName);
 
-    ~X_Font()
+    ~Font()
     {
         xfree(pixels);
     }

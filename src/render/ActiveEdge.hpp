@@ -39,20 +39,24 @@ enum SurfaceFlags
 
 struct X_AE_Surface
 {
-    x_fp16x16 inverseZAtScreenPoint(x_fp16x16 x, int y) const
+    fp inverseZAtScreenPoint(fp x, int y) const
     {
-        return x_fp16x16_mul(x, zInverseXStep) + y * zInverseYStep + zInverseOrigin;
+        return x * zInverseXStep + y * zInverseYStep + zInverseOrigin;
     }
     
-    bool isCloserThan(const X_AE_Surface* surface, x_fp16x16 x, int y) const
+    bool isCloserThan(const X_AE_Surface* surface, fp x, int y) const
     {
         if(bspKey != surface->bspKey)
+        {
             return bspKey < surface->bspKey;
+        }
         
         if(inSubmodel ^ surface->inSubmodel)
+        {
             return inSubmodel;
+        }
         
-        return inverseZAtScreenPoint(x + X_FP16x16_ONE * 7, y) >= surface->inverseZAtScreenPoint(x + X_FP16x16_ONE * 7 , y);
+        return inverseZAtScreenPoint(x + 7.0_fp, y) >= surface->inverseZAtScreenPoint(x + 7.0_fp, y);
     }
     
     void calculateInverseZGradient(Vec3fp& camPos, Viewport* viewport, Mat4x4* viewMatrix, Vec3fp& pointOnSurface)
@@ -67,18 +71,18 @@ struct X_AE_Surface
         
         //x_fp16x16 invDistTimesScale = //x_fp16x16_div(X_FP16x16_ONE << 10, distTimesScale) >> 6;
         
-        x_fp16x16 invDist = x_fp16x16_div(X_FP16x16_ONE << 10, dist);
-        x_fp16x16 invScale = (1 << 26) / scale;
+        fp invDist = 1024.0_fp / fp(dist);
+        fp invScale = fp((1 << 26) / scale);
         
-        x_fp16x16 invDistTimesScale = x_fp16x16_mul(invDist, invScale) >> 10;
+        fp invDistTimesScale = (invDist * invScale) >> 10;
         
-        zInverseXStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.x.toFp16x16());
-        zInverseYStep = x_fp16x16_mul(invDistTimesScale, planeInViewSpace.normal.y.toFp16x16());
+        zInverseXStep = invDistTimesScale * planeInViewSpace.normal.x;
+        zInverseYStep = invDistTimesScale * planeInViewSpace.normal.y;
         
         int centerX = viewport->screenPos.x + viewport->w / 2;
         int centerY = viewport->screenPos.y + viewport->h / 2;
         
-        zInverseOrigin = x_fp16x16_mul(planeInViewSpace.normal.z.toFp16x16(), invDist) -
+        zInverseOrigin = planeInViewSpace.normal.z * invDist -
             centerX * zInverseXStep -
             centerY * zInverseYStep;
     }
@@ -111,11 +115,11 @@ struct X_AE_Surface
     X_AE_Span spanHead;
     X_AE_Span* last;
     
-    x_fp16x16 zInverseXStep;
-    x_fp16x16 zInverseYStep;
-    x_fp16x16 zInverseOrigin;
+    fp zInverseXStep;
+    fp zInverseYStep;
+    fp zInverseOrigin;
     
-    x_fp16x16 closestZ;
+    fp closestZ;
     
     bool inSubmodel;
     
@@ -138,8 +142,8 @@ typedef struct X_AE_Edge
     
     X_AE_Edge(Vec2_fp16x16* a, Vec2_fp16x16* b, X_AE_Surface* surface, BspEdge* bspEdge_, int currentFrame, X_AE_Edge* edgeStart)
     {
-        int aY = x_fp16x16_ceil(a->y) >> 16;
-        int bY = x_fp16x16_ceil(b->y) >> 16;
+        int aY = fp(a->y).ceil().toInt();
+        int bY = fp(b->y).ceil().toInt();
         
         int height = bY - aY;
         
@@ -165,20 +169,20 @@ typedef struct X_AE_Edge
         
         bspEdge->cachedEdgeOffset = (unsigned char*)this - (unsigned char*)edgeStart;
         
-        initDeltas(a, b);
+        initDeltas(MakeVec2fp(*a), MakeVec2fp(*b));
         
-        startY = x_fp16x16_to_int(x_fp16x16_ceil(a->y));
-        endY = x_fp16x16_to_int(x_fp16x16_ceil(b->y)) - 1;
+        startY = x_fp16x16_to_int(fp(a->y).ceil().toFp16x16());
+        endY = x_fp16x16_to_int(fp(b->y).ceil().toFp16x16()) - 1;
     }
     
-    void initDeltas(Vec2_fp16x16* top, Vec2_fp16x16* bottom)
+    void initDeltas(const Vec2fp& top, const Vec2fp& bottom)
     {
-        xSlope = x_fp16x16_div(bottom->x - top->x, bottom->y - top->y);
+        xSlope = (bottom.x - top.x) / (bottom.y - top.y);
         
-        x_fp16x16 topY = x_fp16x16_ceil(top->y);
-        x_fp16x16 errorCorrection = x_fp16x16_mul(top->y - topY, xSlope);
+        fp topY = top.y.ceil();
+        fp errorCorrection = (top.y - topY) * xSlope;
         
-        x = top->x - errorCorrection;
+        x = top.x - errorCorrection;
     }
     
     void emitCachedEdge(X_AE_Surface* surface)
@@ -195,13 +199,13 @@ typedef struct X_AE_Edge
     }
     
     // Attributes shared with X_AE_DummyEdge (do not reorder!)
-    x_fp16x16 x;
+    fp x;
     struct X_AE_Edge* next;
     
     // Unique to X_AE_Edge
     struct X_AE_Edge* prev;
     
-    x_fp16x16 xSlope;
+    fp xSlope;
     X_AE_Surface* surfaces[2];
     bool isLeadingEdge;
     bool isHorizontal;
@@ -218,7 +222,7 @@ typedef struct X_AE_Edge
 typedef struct X_AE_DummyEdge
 {
     // Attributes shared with X_AE_Edge (do not reorder!)
-    x_fp16x16 x;
+    fp x;
     struct X_AE_Edge* next;
     
     struct X_AE_Edge* deleteHead;
@@ -273,7 +277,7 @@ struct X_AE_Context
     X_AE_Surface* createSurface(BspSurface* bspSurface, int bspKey);
     void emitEdges(X_AE_Surface* surface, Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
     void addPolygon(Polygon3* polygon, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel);
-    void addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addSubmodelRecursive(Polygon3* poly, BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
     void emitSpan(int left, int right, int y, X_AE_Surface* surface);
 
     void processEdge(X_AE_Edge* edge, int y);
@@ -392,10 +396,12 @@ private:
         newEdge->nextDelete = newEdges[newEdge->endY].deleteHead;
         newEdges[newEdge->endY].deleteHead = newEdge;
         
-        x_fp16x16 edgeX = newEdge->x;
+        fp edgeX = newEdge->x;
         
         if(newEdge->surfaces[X_AE_EDGE_RIGHT_SURFACE] != NULL)
-            ++edgeX;
+        {
+            edgeX += fp(1);
+        }
         
         // TODO: the edges should be moved into an array in sorted - doing it a linked list is O(n^2)
         while(edge->next->x < edgeX)
@@ -440,7 +446,7 @@ void x_ae_context_scan_edges(X_AE_Context* context);
 
 int x_ae_context_find_surface_point_is_in(X_AE_Context* context, int x, int y, BspLevel* level);
 
-static inline x_fp16x16 x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
+static inline fp x_ae_surface_calculate_inverse_z_at_screen_point(const X_AE_Surface* surface, int x, int y)
 {
     return x * surface->zInverseXStep + y * surface->zInverseYStep + surface->zInverseOrigin;
 }

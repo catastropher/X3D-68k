@@ -19,7 +19,7 @@
 #include "memory/OldLink.hpp"
 #include "render/Texture.hpp"
 
-struct X_BspNode;
+struct BspNode;
 struct X_BspClipNode;
 struct BspSurface;
 struct X_RenderContext;
@@ -29,8 +29,13 @@ struct BspEdge;
 
 struct BspModel
 {
+    BspNode& getRootNode() const
+    {
+        return *rootBspNode;
+    }
+
     BoundBox boundBox;
-    X_BspNode* rootBspNode;
+    BspNode* rootBspNode;
 
     X_BspClipNode* clipNodes;
     int clipNodeRoots[3];

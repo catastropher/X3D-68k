@@ -17,7 +17,7 @@
 
 #include "Plane.hpp"
 #include "math/FixedPoint.hpp"
-#include "object/CameraObject.hpp"
+#include "render/Camera.hpp"
 
 Plane::Plane(const Vec3fp& a, const Vec3fp& b, const Vec3fp& c)
 {
@@ -42,7 +42,7 @@ void Plane::print() const
     printf("%fX + %fY + %fZ + %f = 0\n", x, y, z, dd);
 }
 
-void Plane::getOrientation(CameraObject& cam, Mat4x4& dest) const
+void Plane::getOrientation(Camera& cam, Mat4x4& dest) const
 {
     Vec3fp temp(normal.x, 0, normal.z);
     Vec3fp camPos = cam.position;

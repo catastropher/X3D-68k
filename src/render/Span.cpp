@@ -20,7 +20,7 @@
 #include "ActiveEdge.hpp"
 #include "OldRenderer.hpp"
 #include "Surface.h"
-#include "object/CameraObject.hpp"
+#include "Camera.hpp"
 
 // Scales a value down based on the current mip map level
 static inline int mip_adjust(int val, int mipLevel)
@@ -40,8 +40,8 @@ static inline void rotate_vector_into_eye_space(X_AE_SurfaceRenderContext* conte
 
 static inline void calculate_uv_orientation_steps_in_screen_space(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace)
 {
-    var->uOrientationStep = mip_adjust(orientationInEyeSpace->x / context->viewport->distToNearPlane, context->mipLevel).toFp16x16();
-    var->vOrientationStep = mip_adjust(orientationInEyeSpace->y / context->viewport->distToNearPlane, context->mipLevel).toFp16x16();
+    var->uOrientationStep = mip_adjust(orientationInEyeSpace->x / context->viewport->distToNearPlane, context->mipLevel);
+    var->vOrientationStep = mip_adjust(orientationInEyeSpace->y / context->viewport->distToNearPlane, context->mipLevel);
 }
 
 static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace)
@@ -49,12 +49,12 @@ static inline void calculate_uv_origin_relative_to_screen_top_left(X_AE_TextureV
     int centerX = context->viewport->screenPos.x + context->viewport->w / 2;
     int centerY = context->viewport->screenPos.y + context->viewport->h / 2;
     
-    var->origin = mip_adjust(orientationInEyeSpace->z, context->mipLevel).toFp16x16() -
-        centerX * var->uOrientationStep -
-        centerY * var->vOrientationStep;
+    var->origin = mip_adjust(orientationInEyeSpace->z, context->mipLevel)
+        - centerX * var->uOrientationStep
+        - centerY * var->vOrientationStep;
 }
 
-static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace, int minTexCoord, int texOffset)
+static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationInEyeSpace, int minTexCoord, fp texOffset)
 {
     Vec3fp inverseModelPos = *context->surface->modelOrigin;
     
@@ -66,12 +66,12 @@ static inline void calculate_texture_adjustment(X_AE_TextureVar* var, X_AE_Surfa
         inverseModelPosInEyeSpace.y >> mipLevel,
         inverseModelPosInEyeSpace.z >> mipLevel);
     
-    var->adjust = -orientationInEyeSpace->dot(inverseModelPosInEyeSpace).toFp16x16() -
-        mip_adjust(minTexCoord, mipLevel) +
+    var->adjust = -orientationInEyeSpace->dot(inverseModelPosInEyeSpace) -
+        mip_adjust(fp(minTexCoord), mipLevel) +
         mip_adjust(texOffset, mipLevel);
 }
 
-static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationAxis, int minTexCoord, int texOffset)
+static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext* context, Vec3fp* orientationAxis, int minTexCoord, fp texOffset)
 {
     Vec3fp orientationInEyeSpace;
     rotate_vector_into_eye_space(context, orientationAxis, &orientationInEyeSpace);
@@ -81,48 +81,48 @@ static void x_ae_texturevar_init(X_AE_TextureVar* var, X_AE_SurfaceRenderContext
     calculate_texture_adjustment(var, context, &orientationInEyeSpace, minTexCoord, texOffset);
 }
 
-const x_fp16x16 recip_tab[32] = 
+const fp recip_tab[32] =
 {
-    0,
-    X_FP16x16_ONE / 1,
-    X_FP16x16_ONE / 2,
-    X_FP16x16_ONE / 3,
-    X_FP16x16_ONE / 4,
-    X_FP16x16_ONE / 5,
-    X_FP16x16_ONE / 6,
-    X_FP16x16_ONE / 7,
-    X_FP16x16_ONE / 8,
-    X_FP16x16_ONE / 9,
-    X_FP16x16_ONE / 10,
-    X_FP16x16_ONE / 11,
-    X_FP16x16_ONE / 12,
-    X_FP16x16_ONE / 13,
-    X_FP16x16_ONE / 14,
-    X_FP16x16_ONE / 15,
-    X_FP16x16_ONE / 16,
-    X_FP16x16_ONE / 17,
-    X_FP16x16_ONE / 18,
-    X_FP16x16_ONE / 19,
-    X_FP16x16_ONE / 20,
-    X_FP16x16_ONE / 21,
-    X_FP16x16_ONE / 22,
-    X_FP16x16_ONE / 23,
-    X_FP16x16_ONE / 24,
-    X_FP16x16_ONE / 25,
-    X_FP16x16_ONE / 26,
-    X_FP16x16_ONE / 27,
-    X_FP16x16_ONE / 28,
-    X_FP16x16_ONE / 29,
-    X_FP16x16_ONE / 30,
-    X_FP16x16_ONE / 31,
+    fp(0),
+    fp(X_FP16x16_ONE / 1),
+    fp(X_FP16x16_ONE / 2),
+    fp(X_FP16x16_ONE / 3),
+    fp(X_FP16x16_ONE / 4),
+    fp(X_FP16x16_ONE / 5),
+    fp(X_FP16x16_ONE / 6),
+    fp(X_FP16x16_ONE / 7),
+    fp(X_FP16x16_ONE / 8),
+    fp(X_FP16x16_ONE / 9),
+    fp(X_FP16x16_ONE / 10),
+    fp(X_FP16x16_ONE / 11),
+    fp(X_FP16x16_ONE / 12),
+    fp(X_FP16x16_ONE / 13),
+    fp(X_FP16x16_ONE / 14),
+    fp(X_FP16x16_ONE / 15),
+    fp(X_FP16x16_ONE / 16),
+    fp(X_FP16x16_ONE / 17),
+    fp(X_FP16x16_ONE / 18),
+    fp(X_FP16x16_ONE / 19),
+    fp(X_FP16x16_ONE / 20),
+    fp(X_FP16x16_ONE / 21),
+    fp(X_FP16x16_ONE / 22),
+    fp(X_FP16x16_ONE / 23),
+    fp(X_FP16x16_ONE / 24),
+    fp(X_FP16x16_ONE / 25),
+    fp(X_FP16x16_ONE / 26),
+    fp(X_FP16x16_ONE / 27),
+    fp(X_FP16x16_ONE / 28),
+    fp(X_FP16x16_ONE / 29),
+    fp(X_FP16x16_ONE / 30),
+    fp(X_FP16x16_ONE / 31),
 };
 
 static inline void setup_inv_z_step(X_AE_SurfaceRenderContext* context)
 {
     X_AE_Surface* surface = context->surface;
-    context->invZStepX = surface->zInverseXStep;
-    context->invZStepY = surface->zInverseYStep;
-    context->invZOrigin = surface->zInverseOrigin;
+    context->invZStepX = surface->zInverseXStep.toFp16x16();
+    context->invZStepY = surface->zInverseYStep.toFp16x16();
+    context->invZOrigin = surface->zInverseOrigin.toFp16x16();
     
     context->invZStepXNeg = -context->invZStepX;
     context->uStepXNeg = -context->uStepX;
@@ -131,25 +131,25 @@ static inline void setup_inv_z_step(X_AE_SurfaceRenderContext* context)
 
 static inline void setup_u_step(X_AE_SurfaceRenderContext* context)
 {
-    context->uStepX = context->sDivZ.uOrientationStep;
-    context->uStepY = context->sDivZ.vOrientationStep;
-    context->uOrigin = context->sDivZ.origin;
-    context->uAdjust = context->sDivZ.adjust;
+    context->uStepX = context->sDivZ.uOrientationStep.toFp16x16();
+    context->uStepY = context->sDivZ.vOrientationStep.toFp16x16();
+    context->uOrigin = context->sDivZ.origin.toFp16x16();
+    context->uAdjust = context->sDivZ.adjust.toFp16x16();
 }
 
 static inline void setup_v_step(X_AE_SurfaceRenderContext* context)
 {
-    context->vStepX = context->tDivZ.uOrientationStep;
-    context->vStepY = context->tDivZ.vOrientationStep;
-    context->vStepOrigin = context->tDivZ.origin;
-    context->vAdjust = context->tDivZ.adjust;
+    context->vStepX = context->tDivZ.uOrientationStep.toFp16x16();
+    context->vStepY = context->tDivZ.vOrientationStep.toFp16x16();
+    context->vStepOrigin = context->tDivZ.origin.toFp16x16();
+    context->vAdjust = context->tDivZ.adjust.toFp16x16();
 }
 
 static inline void setup_surface(X_AE_SurfaceRenderContext* context)
 {
     Vec2 surfaceSize = context->surface->bspSurface->textureExtent;
-    context->surfaceW = mip_adjust(surfaceSize.x, context->mipLevel) - X_FP16x16_ONE;
-    context->surfaceH = mip_adjust(surfaceSize.y, context->mipLevel) - X_FP16x16_ONE;
+    context->surfaceW = fp(mip_adjust(surfaceSize.x, context->mipLevel) - X_FP16x16_ONE);
+    context->surfaceH = fp(mip_adjust(surfaceSize.y, context->mipLevel) - X_FP16x16_ONE);
     context->texW = context->surfaceTexture.getW();
     
     context->surfaceTexels = context->surfaceTexture.getTexels();
@@ -175,12 +175,12 @@ void x_ae_surfacerendercontext_setup_constants(X_AE_SurfaceRenderContext* contex
     setup_screen(context);
 }
 
-void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext, int mipLevel)
+void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Surface* surface, X_RenderContext* renderContext)
 {
     context->surface = surface;
     context->faceTexture = context->surface->bspSurface->faceTexture;
     context->renderContext = renderContext;
-    context->mipLevel = renderContext->cam->viewport.closestMipLevelForZ(fp(surface->closestZ));
+    context->mipLevel = renderContext->cam->viewport.closestMipLevelForZ(surface->closestZ);
     context->viewport = &renderContext->cam->viewport;
 
     if(surface->flags.hasFlag(SURFACE_FILL_SOLID))
@@ -198,36 +198,48 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     x_ae_surfacerendercontext_setup_constants(context);
 }
 
-static inline x_fp16x16 calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
+static inline fp calculate_u_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin;
+    return (x * context->sDivZ.uOrientationStep + y * context->sDivZ.vOrientationStep + context->sDivZ.origin);
 }
 
-static inline x_fp16x16 calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
+static inline fp calculate_v_div_z(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    return x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin;
+    return (x * context->tDivZ.uOrientationStep + y * context->tDivZ.vOrientationStep + context->tDivZ.origin);
 }
 
-static inline void clamp_texture_coord(const X_AE_SurfaceRenderContext* context, x_fp16x16* u, x_fp16x16* v)
+static inline void clamp_texture_coord(const X_AE_SurfaceRenderContext* context, fp* u, fp* v)
 {
-    if(*u < 0) *u = 16;
-    else if(*u >= context->surfaceW) *u = context->surfaceW - X_FP16x16_ONE;
+    if(*u < 0)
+    {
+        *u = fp(16);
+    }
+    else if(*u >= fp(context->surfaceW))
+    {
+        *u = fp(context->surfaceW - X_FP16x16_ONE);
+    }
     
-    if(*v < 0)*v = 16;
-    else if(*v >= context->surfaceH) *v = context->surfaceH - X_FP16x16_ONE;
+    if(*v < 0)
+    {
+        *v = fp(16);
+    }
+    else if(*v >= fp(context->surfaceH))
+    {
+        *v = fp(context->surfaceH - X_FP16x16_ONE);
+    }
 }
 
 static int calculate_z_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y)
 {
-    x_fp2x30 invZ = (x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y));
+    x_fp2x30 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, x, y).internalValue();
     
     return x_fastrecip(invZ >> 10);
 }
 
-static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y, x_fp16x16* u, x_fp16x16* v)
+static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderContext* context, int x, int y, fp* u, fp* v)
 {
-    x_fp16x16 uDivZ = calculate_u_div_z(context, x, y);
-    x_fp16x16 vDivZ = calculate_v_div_z(context, x, y);
+    fp uDivZ = fp(calculate_u_div_z(context, x, y));
+    fp vDivZ = fp(calculate_v_div_z(context, x, y));
     
     int z = calculate_z_at_screen_point(context, x, y);
     
@@ -237,10 +249,10 @@ static inline void calculate_u_and_v_at_screen_point(const X_AE_SurfaceRenderCon
     clamp_texture_coord(context, u, v);
 }
 
-static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, x_fp16x16 u, x_fp16x16 v)
+static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, fp u, fp v)
 {
-    int uu = (u >> 16);
-    int vv = (v >> 16);
+    int uu = u.toInt();
+    int vv = v.toInt();
     
 #if 1
     uu = uu % context->surfaceTexture.getW();
@@ -273,20 +285,20 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     X_Color* scanline = screenTex->getRow(span->y);
     //x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
     
-    x_fp16x16 invZ = x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y) >> 10;
-    x_fp16x16 dInvZ = context->surface->zInverseXStep >> 10;
+    fp invZ = fp(x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y)) >> 10;
+    fp dInvZ = context->surface->zInverseXStep >> 10;
     
-    x_fp16x16 u, v;
+    fp u, v;
     calculate_u_and_v_at_screen_point(context, span->x1, y, &u, &v);
-    
+
     int x = span->x1;
     while(x < span->x2 - 16)
     {
-        x_fp16x16 nextU, nextV;
+        fp nextU, nextV;
         calculate_u_and_v_at_screen_point(context, x + 16, y, &nextU, &nextV);
         
-        x_fp16x16 dU = (nextU - u) >> 4;
-        x_fp16x16 dV = (nextV - v) >> 4;
+        fp dU = (nextU - u) >> 4;
+        fp dV = (nextV - v) >> 4;
         
         for(int i = 0; i < 16; ++i)
         {
@@ -313,12 +325,12 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     if(x == span->x2)
         return;
     
-    x_fp16x16 nextU, nextV;
+    fp nextU, nextV;
     calculate_u_and_v_at_screen_point(context, span->x2, y, &nextU, &nextV);
     
     int dX = span->x2 - x;
-    x_fp16x16 dU = (nextU - u) / dX;
-    x_fp16x16 dV = (nextV - v) / dX;
+    fp dU = (nextU - u) / dX;
+    fp dV = (nextV - v) / dX;
     
     while(x < span->x2)
     {
@@ -375,9 +387,6 @@ static void merge_adjacent_spans(X_AE_Span* head)
 
 void __attribute__((hot)) x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context)
 {
-    if(((context->renderContext->renderer->renderMode) & 1) == 0)
-        return;
-    
     context->surface->last->next = NULL;
     
     if(context->surface->inSubmodel)

@@ -13,42 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Crc32.hpp"
 
-#include "math/FixedPoint.hpp"
-#include "Vec3.hpp"
-
-template<typename T>
-struct Vec4Template
+unsigned int crc32(const char* str)
 {
-    Vec4Template() { }
-    constexpr Vec4Template(T x_, T y_, T z_, T w_)
-        : x(x_),
-        y(y_),
-        z(z_),
-        w(w_)
-    {
+    unsigned int crc = 0;
 
+    while(*str)
+    {
+        int byte = *str++;
+        int index = (crc ^ (byte << 24)) >> 24;
+
+        crc = (crc << 8) ^ crcTable[index];
     }
 
-    constexpr Vec4Template(const Vec3Template<T>& v)
-    {
-        x = v.x;
-        y = v.y;
-        z = v.z;
-        w = 0;
-    }
-
-    constexpr Vec3Template<T> toVec3() const
-    {
-        return Vec3Template<T>(x, y, z);
-    }
-
-    T x;
-    T y;
-    T z;
-    T w;
-};
-
-using Vec4 = Vec4Template<fp>;
+    return crc;
+}
 

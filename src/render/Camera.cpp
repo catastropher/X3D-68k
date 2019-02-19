@@ -13,7 +13,24 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "Camera.hpp"
+#include "engine/Engine.hpp"
+#include "render/RenderContext.hpp"
+#include "error/Error.hpp"
+#include "render/WireframeLevelRenderer.hpp"
 
-#include "geo/Vec3.hpp"
-#include "engine/EngineContext.hpp"
+void Camera::overrideBspLeaf(int leafId, BspLevel* level)
+{
+    currentLeaf = level->leaves + leafId;
+    lastLeaf = nullptr;
+    flags.set(CAMERA_OVERRIDE_PVS);
+}
+
+void Camera::updateFrustum()
+{
+    Vec3fp forward, up, right;
+    viewMatrix.extractViewVectors(forward, right, up);
+
+    viewport.updateFrustum(position, forward, right, up);
+}
+

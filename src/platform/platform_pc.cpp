@@ -16,23 +16,23 @@
 #include "Platform.hpp"
 #include "SDL.h"
 
-void x_platform_init(X_EngineContext* engineContext, X_Config* config)
+void x_platform_init(EngineContext* engineContext, X_Config* config)
 {
     x_sdl_init_keys(engineContext, 1);
 }
 
-void x_platform_cleanup(X_EngineContext* engineContext)
+void x_platform_cleanup(EngineContext* engineContext)
 {
     x_sdl_cleanup_keys(engineContext);
     x_sdl_mouse_show_cursor(1);
 }
 
-void x_platform_handle_keys(X_EngineContext* engineContext)
+void x_platform_handle_keys(EngineContext* engineContext)
 {
     x_sdl_handle_keys(engineContext);
 }
 
-void x_platform_handle_mouse(X_EngineContext* engineContext)
+void x_platform_handle_mouse(EngineContext* engineContext)
 {
     x_sdl_handle_mouse(engineContext);
 }

@@ -24,11 +24,11 @@
 class Engine
 {
 public:
-    static X_EngineContext* init(X_Config& config);
+    static EngineContext* init(X_Config& config);
     static void quit();
     static void run();
 
-    static X_EngineContext* getInstance()
+    static EngineContext* getInstance()
     {
         return &instance;
     }
@@ -36,7 +36,7 @@ public:
 private:
     static void shutdownEngine();
 
-    static X_EngineContext instance;
+    static EngineContext instance;
     static bool wasInitialized;
     static bool isDone;
 };

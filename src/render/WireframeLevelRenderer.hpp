@@ -19,7 +19,7 @@
 #include "Texture.hpp"
 
 struct BspModel;
-class X_BspNode;
+class BspNode;
 
 class WireframeLevelRenderer
 {
@@ -47,7 +47,7 @@ private:
     }
     
     void renderModel(BspModel& model, X_Color color);
-    void renderNode(X_BspNode& node, int parentFlags);
+    void renderNode(BspNode& node, int parentFlags);
     
     X_RenderContext& renderContext;
     X_Color levelColor;

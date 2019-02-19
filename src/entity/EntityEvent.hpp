@@ -13,19 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "DoorObject.h"
+#pragma once
 
-static X_GameObjectType g_doorObjectType = 
+#include "memory/StringId.hpp"
+
+struct EntityEvent
 {
-    .typeId = 1,
-    .name = "func_door",
-    .handlers = 
+    EntityEvent(StringId typeName)
+        : type(typeName)
     {
-        .update = x_platformobject_update,
-        .createNew = x_platformobject_new,
-        .trigger = x_platform_trigger
-    }
-};
 
-void 
+    }
+
+    template<typename T>
+    T* to()
+    {
+        static_assert(std::is_base_of<EntityEvent, T>::value);
+
+        return static_cast<T*>(this);
+    }
+
+    const StringId type;
+};
 

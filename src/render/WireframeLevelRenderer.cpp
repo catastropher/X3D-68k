@@ -58,7 +58,7 @@ void WireframeLevelRenderer::renderModel(BspModel& model, X_Color color)
     renderNode(*model.rootBspNode, flags);
 }
 
-void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
+void WireframeLevelRenderer::renderNode(BspNode& node, int parentFlags)
 {    
     BoundBoxFrustumFlags nodeFlags = node.nodeBoundBox
         .determineFrustumClipFlags(*renderContext.viewFrustum, (BoundBoxFrustumFlags)parentFlags);
@@ -72,11 +72,11 @@ void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
     
     if(node.isLeaf())
     {
-        auto leaf = node.getLeaf();
+        auto& leaf = node.getLeaf();
         
-        for(int i = 0; i < leaf->totalMarkSurfaces; ++i)
+        for(int i = 0; i < leaf.totalMarkSurfaces; ++i)
         {
-            BspSurface* s = leaf->firstMarkSurface[i];
+            BspSurface* s = leaf.firstMarkSurface[i];
             
             for(int j = 0; j < s->totalEdges; ++j)
             {

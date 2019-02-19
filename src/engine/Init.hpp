@@ -178,7 +178,7 @@ struct ScreenConfig
         return *this;
     }
 
-    ScreenConfig& restartVideoCallback(void (*callback)(struct X_EngineContext* context, void* userData))
+    ScreenConfig& restartVideoCallback(void (*callback)(struct EngineContext* context, void* userData))
     {
         screenHandlers.restartVideo = callback;
 
@@ -192,7 +192,7 @@ struct ScreenConfig
         return *this;
     }
 
-    ScreenConfig& cleanupVideoCallback(void (*callback)(struct X_EngineContext* context, void* userData))
+    ScreenConfig& cleanupVideoCallback(void (*callback)(struct EngineContext* context, void* userData))
     {
         screenHandlers.cleanupVideo = callback;
 

@@ -16,7 +16,6 @@
 #pragma once
 
 #include "engine/Config.hpp"
-#include "memory/Factory.h"
 #include "render/Screen.hpp"
 #include "dev/console/Console.hpp"
 #include "render/Font.hpp"
@@ -25,7 +24,6 @@
 #include "render/OldRenderer.hpp"
 #include "Init.hpp"
 #include "system/Mouse.hpp"
-#include "object/ObjectFactory.hpp"
 #include "EngineQueue.hpp"
 
 struct X_RenderContext;
@@ -35,33 +33,9 @@ class LevelManager;
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
 ////////////////////////////////////////////////////////////////////////////////
-typedef struct X_EngineContext
+struct EngineContext
 {
-    void init()
-    {
-        queue = new EngineQueue(this);
-        gameObjectFactory = new X_ObjectFactory;
-        console = new Console;
-        mainFont = new X_Font;
-        keystate = new KeyState;
-        mouseState = new X_MouseState;
-    }
-    
-    X_ObjectFactory* getGameObjectFactory() const { return gameObjectFactory; }
-    Screen* getScreen() const { return screen; }
-    Console* getConsole() const { return console; }
-    X_Font* getMainFont() const { return mainFont; }
-    KeyState* getKeyState() const { return keystate; }
-    X_MouseState* getMouseState() const { return mouseState; }
-    BspLevel* getCurrentLevel() const;
-    X_Renderer* getRenderer() const { return renderer; }
-    EngineQueue* getEngineQueue() const { return queue; }
-
-
     Platform* getPlatform() { return &platform; }
-
-    X_GameObject activeObjectHead;
-    X_GameObject activeObjectTail;
 
     int frameCount;     // TODO Where should this go?
     Time frameStart;
@@ -70,32 +44,27 @@ typedef struct X_EngineContext
     fp estimatedFramesPerSecond;
     fp timeDelta;
 
-    void* userData;
-
-    Screen* screen;   // FIXME: just exposing to set up DI
-    X_Renderer* renderer;
+    Screen* screen;
+    OldRenderer* renderer;
     EntityManager* entityManager;
     LevelManager* levelManager;
-    
-private:
-    X_ObjectFactory* gameObjectFactory;
+
     Console* console;
-    X_Font* mainFont;
-    KeyState* keystate;
-    X_MouseState* mouseState;
+    Font* mainFont;
+    KeyState* keyState;
+    MouseState* mouseState;
     EngineQueue* queue;
 
     Platform platform;
-} X_EngineContext;
+};
 
-void x_enginecontext_init(X_EngineContext* context, X_Config* config);
-void x_enginecontext_cleanup(X_EngineContext* context);
-Time x_enginecontext_get_time(const X_EngineContext* context);
-void x_enginecontext_get_rendercontext_for_camera(X_EngineContext* engineContext, CameraObject* cam, struct X_RenderContext* dest);
+void x_enginecontext_cleanup(EngineContext* context);
+Time x_enginecontext_get_time(const EngineContext* context);
+void x_enginecontext_get_rendercontext_for_camera(EngineContext* engineContext, Camera* cam, struct X_RenderContext* dest);
 
-void x_enginecontext_restart_video(X_EngineContext* context);
+void x_enginecontext_restart_video(EngineContext* context);
 
-static inline int x_enginecontext_get_frame(const X_EngineContext* context)
+static inline int x_enginecontext_get_frame(const EngineContext* context)
 {
     return context->frameCount;
 }

@@ -29,7 +29,7 @@ typedef enum X_ConsoleVarType
 {
     X_CONSOLEVAR_INT,
     X_CONSOLEVAR_FLOAT,
-    X_CONSOLEVAR_FP16X16,
+    X_CONSOLEVAR_FP,
     X_CONSOLEVAR_STRING,
     X_CONSOLEVAR_BOOL,
     X_CONSOLEVAR_VEC3
@@ -37,7 +37,7 @@ typedef enum X_ConsoleVarType
 
 #define X_CONSOLE_INPUT_BUF_SIZE 512
 
-struct X_EngineContext;
+struct EngineContext;
 
 typedef struct X_ConsoleVar
 {
@@ -49,7 +49,7 @@ typedef struct X_ConsoleVar
     {
         int* intPtr;
         float* floatPtr;
-        x_fp16x16* fp16x16Ptr;
+        fp* fpPtr;
         bool* boolPtr;
         X_XString* stringPtr;
         void* voidPtr;
@@ -58,7 +58,7 @@ typedef struct X_ConsoleVar
 } X_ConsoleVar;
 
 
-typedef void (*X_ConsoleCmdHandler)(struct X_EngineContext* context, int argc, char* argv[]);
+typedef void (*X_ConsoleCmdHandler)(struct EngineContext* context, int argc, char* argv[]);
 
 typedef struct X_ConsoleCmd
 {
@@ -72,6 +72,8 @@ struct ConsoleVariable;
 
 typedef struct Console
 {
+    Console(struct EngineContext* engineContext, Font* font);
+
     ConsoleRenderer* renderer;
     
     
@@ -83,8 +85,8 @@ typedef struct Console
     
     Vec2 cursor;
     Vec2 size;
-    const X_Font* font;
-    struct X_EngineContext* engineContext;
+    const Font* font;
+    struct EngineContext* engineContext;
     char* text;
     char input[X_CONSOLE_INPUT_BUF_SIZE + 2];
     int inputPos;
@@ -124,7 +126,6 @@ void x_console_register_cmd(Console* console, const char* name, X_ConsoleCmdHand
 void x_console_register_var(Console* console, void* var, const char* name, X_ConsoleVarType type, const char* initialValue, bool saveToConfig);
 void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue);
 
-void x_console_init(Console* console, struct X_EngineContext* engineContext, X_Font* font);
 void x_console_cleanup(Console* console);
 
 void x_console_clear(Console* console);

@@ -31,10 +31,28 @@
 #include "entity/InputComponent.hpp"
 #include "render/StatusBar.hpp"
 #include "entity/BrushModelComponent.hpp"
+#include "level/LevelManager.hpp"
+#include "render/software/SoftwareRenderer.hpp"
 
-X_EngineContext Engine::instance;
+EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
 bool Engine::isDone = false;
+
+void x_enginecontext_get_rendercontext_for_camera(EngineContext* engineContext, Camera* cam, X_RenderContext* dest)
+{
+    dest->cam = cam;
+    dest->camPos = x_cameraobject_get_position(cam);
+    dest->canvas = &engineContext->screen->canvas;
+    dest->zbuf = engineContext->screen->zbuf;
+    dest->currentFrame = x_enginecontext_get_frame(engineContext);
+    dest->engineContext = engineContext;
+    dest->level = engineContext->levelManager->getCurrentLevel();
+    dest->renderer = engineContext->renderer;
+    dest->screen = engineContext->screen;
+    dest->viewFrustum = &cam->viewport.viewFrustum;
+    dest->viewMatrix = &cam->viewMatrix;
+    dest->renderer = engineContext->renderer;
+}
 
 static void initSystem(SystemConfig& config)
 {
@@ -43,7 +61,39 @@ static void initSystem(SystemConfig& config)
     MemoryManager::init(config.hunkSize, config.zoneSize);
 }
 
-X_EngineContext* Engine::init(X_Config& config)
+void initEngineContext(EngineContext* context, X_Config& config)
+{
+    context->queue = new EngineQueue(context);
+    context->mainFont = new Font;
+    context->keyState = new KeyState;
+
+    context->frameCount = 1;    // TODO: belongs in the renderer
+    context->lastFrameStart = context->frameStart;
+
+    context->screen = new Screen(
+        config.screen->w,
+        config.screen->h,
+        config.screen->screenHandlers,
+        config.screen->palette);
+
+    if(!context->mainFont->loadFromFile(config.font))
+    {
+        x_system_error("Failed to load font");
+    }
+
+    context->console = new Console(context, context->mainFont);
+    context->renderer = new OldRenderer(
+        context->screen,
+        context->console,
+        config.screen->fov.toFp16x16());
+
+    context->entityManager = new EntityManager;
+    context->levelManager = new LevelManager(*context->queue, *context->entityManager);
+
+    context->mouseState = new MouseState(context->console, context->screen);
+}
+
+EngineContext* Engine::init(X_Config& config)
 {
     if(wasInitialized)
     {
@@ -52,14 +102,12 @@ X_EngineContext* Engine::init(X_Config& config)
 
     initSystem(config.systemConfig);
 
-    instance.init();
-
     x_memory_init();
     x_filesystem_init(config.path);
     x_filesystem_add_search_path("../assets");
 
     x_platform_init(&instance, &config);
-    x_enginecontext_init(&instance, &config);
+    initEngineContext(&instance, config);
 
     auto platform = instance.getPlatform();
     platform->init(config);
@@ -72,7 +120,6 @@ X_EngineContext* Engine::init(X_Config& config)
 void Engine::shutdownEngine()
 {
     x_platform_cleanup(&instance);
-    x_enginecontext_cleanup(&instance);
     x_filesystem_cleanup();
     x_memory_free_all();
     x_log_cleanup();
@@ -83,7 +130,7 @@ void Engine::quit()
     isDone = true;
 }
 
-static void lockToFrameRate(X_EngineContext* engineContext)
+static void lockToFrameRate(EngineContext* engineContext)
 {
     Duration frameDuration = Clock::getTicks() - engineContext->frameStart;
 
@@ -96,11 +143,11 @@ static void lockToFrameRate(X_EngineContext* engineContext)
 
     engineContext->estimatedFramesPerSecond = fp::fromInt(1) / frameDuration.toSeconds();
 
-    fp maxFramesPerSecond = fp::fromInt(engineContext->getRenderer()->maxFramesPerSecond);
+    fp maxFramesPerSecond = fp::fromInt(engineContext->renderer->maxFramesPerSecond);
 
     if(engineContext->estimatedFramesPerSecond > maxFramesPerSecond)
     {
-        Duration targetFrameLength =  Duration::fromSeconds(fp::fromInt(1) / engineContext->getRenderer()->maxFramesPerSecond);
+        Duration targetFrameLength =  Duration::fromSeconds(fp::fromInt(1) / engineContext->renderer->maxFramesPerSecond);
 
         Duration sleepMilliseconds = targetFrameLength - frameDuration;
 
@@ -111,40 +158,40 @@ static void lockToFrameRate(X_EngineContext* engineContext)
     }
 }
 
-void handle_console_keys(X_EngineContext* context)
+void handle_console_keys(EngineContext* context)
 {
-    x_keystate_handle_key_repeat(context->getKeyState(), context->frameStart);
+    x_keystate_handle_key_repeat(context->keyState, context->frameStart);
 
     KeyCode key;
-    while(x_keystate_dequeue(context->getKeyState(), &key))
+    while(x_keystate_dequeue(context->keyState, &key))
     {
         if(key == KeyCode::backtick)
         {
-            x_console_close(context->getConsole());
-            x_keystate_reset_keys(context->getKeyState());
-            x_keystate_disable_text_input(context->getKeyState());
+            x_console_close(context->console);
+            x_keystate_reset_keys(context->keyState);
+            x_keystate_disable_text_input(context->keyState);
 
             return;
         }
 
-        x_console_send_key(context->getConsole(), key);
+        x_console_send_key(context->console, key);
     }
 }
 
-bool handle_console(X_EngineContext* engineContext)
+bool handle_console(EngineContext* engineContext)
 {
-    if(engineContext->getConsole()->isOpen())
+    if(engineContext->console->isOpen())
     {
         handle_console_keys(engineContext);
 
         return true;
     }
 
-    if(x_keystate_key_down(engineContext->getKeyState(), KeyCode::backtick))
+    if(x_keystate_key_down(engineContext->keyState, KeyCode::backtick))
     {
-        x_console_open(engineContext->getConsole());
-        x_keystate_reset_keys(engineContext->getKeyState());
-        x_keystate_enable_text_input(engineContext->getKeyState());
+        x_console_open(engineContext->console);
+        x_keystate_reset_keys(engineContext->keyState);
+        x_keystate_enable_text_input(engineContext->keyState);
 
         return false;
     }
@@ -168,14 +215,14 @@ void sendInputUpdate(const InputUpdate& update)
     }
 }
 
-static void runFrame(X_EngineContext* engineContext)
+static void runFrame(EngineContext* engineContext)
 {
     // FIXME: why is this function responsible for this?
     x_platform_handle_keys(engineContext);
     x_platform_handle_mouse(engineContext);
 
     // FIXME: temp until we figure out where this should be done
-    if(x_keystate_key_down(engineContext->getKeyState(), KeyCode::escape))
+    if(x_keystate_key_down(engineContext->keyState, KeyCode::escape))
     {
         Engine::quit();
     }
@@ -184,7 +231,7 @@ static void runFrame(X_EngineContext* engineContext)
     engineContext->frameStart = Clock::getTicks();
     engineContext->timeDelta = (engineContext->frameStart - engineContext->lastFrameStart).toSeconds();
 
-    PhysicsEngine::update(*engineContext->getCurrentLevel(), engineContext->timeDelta);
+    PhysicsEngine::update(*engineContext->levelManager->getCurrentLevel(), engineContext->timeDelta);
     engineContext->entityManager->updateEntities(Clock::getTicks(), engineContext->timeDelta, engineContext);
 
     // Move the brush models to where their transform says they are
@@ -199,11 +246,13 @@ static void runFrame(X_EngineContext* engineContext)
 
     lockToFrameRate(engineContext);
 
-    Console* console = engineContext->getConsole();
+    Console* console = engineContext->console;
 
-    x_renderer_render_frame(engineContext);
+    //x_renderer_render_frame(engineContext);
+    SoftwareRenderer softwareRenderer(&engineContext->renderer->activeEdgeContext, engineContext);
+    softwareRenderer.render();
 
-    StatusBar::render(engineContext->getScreen()->canvas, *engineContext->getMainFont());
+    StatusBar::render(engineContext->screen->canvas, *engineContext->mainFont);
 
     if(console->isOpen())
     {
@@ -212,11 +261,11 @@ static void runFrame(X_EngineContext* engineContext)
 
     if(!handle_console(engineContext))
     {
-        InputUpdate update(engineContext->getKeyState(), engineContext->frameStart, engineContext->timeDelta);
+        InputUpdate update(engineContext->keyState, engineContext->frameStart, engineContext->timeDelta);
         sendInputUpdate(update);
     }
 
-    engineContext->getPlatform()->getScreenDriver().update(engineContext->getScreen());
+    engineContext->getPlatform()->getScreenDriver().update(engineContext->screen);
 }
 
 void Engine::run()

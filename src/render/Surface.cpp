@@ -27,10 +27,10 @@ typedef struct X_SurfaceBuilderBlock
     int startY;
     int blockSize;
     
-    x_fp16x16 topLeftIntensity;
-    x_fp16x16 topRightIntensity;
-    x_fp16x16 dLeft;
-    x_fp16x16 dRight;
+    fp topLeftIntensity;
+    fp topRightIntensity;
+    fp dLeft;
+    fp dRight;
 } X_SurfaceBuilderBlock;
 
 typedef struct X_SurfaceBuilder
@@ -46,7 +46,7 @@ typedef struct X_SurfaceBuilder
     Vec2 textureOffset;
     Vec2 textureMask;
     
-    X_Renderer* renderer;
+    OldRenderer* renderer;
     
     int mipLevel;
     
@@ -149,16 +149,16 @@ static void x_surfacebuilder_build_without_lighting(X_SurfaceBuilder* builder)
     }
 }
 
-static x_fp16x16 lightmap_get_lumel(int* lightmap, Vec2 lightmapSize, int x, int y)
+static fp lightmap_get_lumel(int* lightmap, Vec2 lightmapSize, int x, int y)
 {
-    return lightmap[y * lightmapSize.x + x] << 16;
+    return fp::fromInt(lightmap[y * lightmapSize.x + x]);
 }
 
-static x_fp16x16 x_surfacebuilderblock_get_intensity_at_offset(X_SurfaceBuilderBlock* block, int offsetX, int offsetY, int mipLevel)
+static fp x_surfacebuilderblock_get_intensity_at_offset(X_SurfaceBuilderBlock* block, int offsetX, int offsetY, int mipLevel)
 {
-    x_fp16x16 left = block->topLeftIntensity + offsetY * block->dLeft;
-    x_fp16x16 right = block->topRightIntensity + offsetY * block->dRight;
-    x_fp16x16 dRow = (right - left) >> (4 - mipLevel);
+    fp left = block->topLeftIntensity + offsetY * block->dLeft;
+    fp right = block->topRightIntensity + offsetY * block->dRight;
+    fp dRow = (right - left) >> (4 - mipLevel);
     
     return left + offsetX * dRow;
 }
@@ -177,19 +177,19 @@ static void x_surfacebuilder_build_16x16_block(X_SurfaceBuilder* builder)
             int y = block->startY + i;
             
             X_Color texel = x_surfacebuilder_get_texture_texel(builder, x, y);
-            x_fp16x16 intensity = x_surfacebuilderblock_get_intensity_at_offset(block, j, i, builder->mipLevel);
+            fp intensity = x_surfacebuilderblock_get_intensity_at_offset(block, j, i, builder->mipLevel);
             
-            builder->surface.getTexels()[y * builder->surface.getW() + x] = x_renderer_get_shaded_color(builder->renderer, texel, intensity >> (16 + 2));
+            builder->surface.getTexels()[y * builder->surface.getW() + x] = x_renderer_get_shaded_color(builder->renderer, texel, intensity.asRightShiftedInteger(16 + 2));
         }
     }
 }
 
 static void x_surfacebuilder_init_block(X_SurfaceBuilder* builder, int blockX, int blockY)
 {
-    int topLeft =       lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY);
-    int topRight =      lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY);
-    int bottomLeft =    lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY + 1);
-    int bottomRight =   lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY + 1);
+    fp topLeft =       lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY);
+    fp topRight =      lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY);
+    fp bottomLeft =    lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX, blockY + 1);
+    fp bottomRight =   lightmap_get_lumel(builder->combinedLightmap, builder->lightmapSize, blockX + 1, blockY + 1);
     
     X_SurfaceBuilderBlock* block = &builder->block;
     block->topLeftIntensity = topLeft;
@@ -215,7 +215,7 @@ static void x_surfacebuilder_build_from_combined_lightmap(X_SurfaceBuilder* buil
 
 static void x_surfacebuilder_surface_point_closest_to_light(X_SurfaceBuilder* builder, Vec3fp* dest, int* distDest)
 {
-    Vec3fp lightPos = MakeVec3fp(builder->currentLight->position);
+    Vec3fp& lightPos = builder->currentLight->position;
     Plane* plane = &builder->bspSurface->plane->plane;
 
     int dist = plane->distanceTo(lightPos).toInt();
@@ -238,8 +238,8 @@ static void x_surfacebuilder_apply_dynamic_light(X_SurfaceBuilder* builder)
     
     BspFaceTexture* faceTexture = builder->bspSurface->faceTexture;
     Vec2 closestIn2D = Vec2(
-        closestPoint.dot(faceTexture->uOrientation).toInt() + faceTexture->uOffset - builder->bspSurface->textureMinCoord.x,
-        closestPoint.dot(faceTexture->vOrientation).toInt() + faceTexture->vOffset - builder->bspSurface->textureMinCoord.y);
+        closestPoint.dot(faceTexture->uOrientation).toInt() + faceTexture->uOffset.internalValue() - builder->bspSurface->textureMinCoord.x,
+        closestPoint.dot(faceTexture->vOrientation).toInt() + faceTexture->vOffset.internalValue() - builder->bspSurface->textureMinCoord.y);
     
     for(int i = 0; i < builder->lightmapSize.y; ++i)
     {
@@ -286,7 +286,7 @@ static void x_surfacebuilder_build_with_lighting(X_SurfaceBuilder* builder)
     x_surfacebuilder_build_from_combined_lightmap(builder);
 }
 
-static void x_surfacebuilder_init(X_SurfaceBuilder* builder, BspSurface* surface, int mipLevel, X_Renderer* renderer)
+static void x_surfacebuilder_init(X_SurfaceBuilder* builder, BspSurface* surface, int mipLevel, OldRenderer* renderer)
 {
     builder->renderer = renderer;
     builder->mipLevel = mipLevel;
@@ -313,7 +313,7 @@ static void x_surfacebuilder_init(X_SurfaceBuilder* builder, BspSurface* surface
     x_surfacebuilder_calculate_texture_offset(builder);
 }
 
-static void __attribute__((hot)) x_bspsurface_rebuild(BspSurface* surface, int mipLevel, X_Renderer* renderer)
+static void __attribute__((hot)) x_bspsurface_rebuild(BspSurface* surface, int mipLevel, OldRenderer* renderer)
 {
     X_SurfaceBuilder builder;
     x_surfacebuilder_init(&builder, surface, mipLevel, renderer);
@@ -324,13 +324,13 @@ static void __attribute__((hot)) x_bspsurface_rebuild(BspSurface* surface, int m
         x_surfacebuilder_build_without_lighting(&builder);
 }
 
-static bool x_bspsurface_need_to_rebuild_because_lights_changed(BspSurface* surface, X_Renderer* renderer)
+static bool x_bspsurface_need_to_rebuild_because_lights_changed(BspSurface* surface, OldRenderer* renderer)
 {
     return surface->lastLightUpdateFrame == renderer->currentFrame &&
         (surface->lightsTouchingSurface & renderer->dynamicLightsNeedingUpdated) != 0;
 }
 
-void x_bspsurface_get_surface_texture_for_mip_level(BspSurface* surface, int mipLevel, X_Renderer* renderer, X_Texture* dest)
+void x_bspsurface_get_surface_texture_for_mip_level(BspSurface* surface, int mipLevel, OldRenderer* renderer, X_Texture* dest)
 {
     if(!x_cachentry_is_in_cache(surface->cachedSurfaces + mipLevel) || x_bspsurface_need_to_rebuild_because_lights_changed(surface, renderer))
         x_bspsurface_rebuild(surface, mipLevel, renderer);

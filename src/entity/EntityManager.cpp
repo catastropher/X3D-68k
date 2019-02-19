@@ -18,6 +18,7 @@
 #include "WorldEntity.hpp"
 #include "PlatformEntity.hpp"
 #include "EntityDictionaryParser.hpp"
+#include "DoorEntity.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 {
@@ -48,6 +49,11 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
     if(strcmp(classname->value, "func_plat") == 0)
     {
         return new PlatformEntity(edict, level);
+    }
+
+    if(strcmp(classname->value, "func_door") == 0)
+    {
+        return new DoorEntity(edict, level);
     }
 
     if(createEntityCallback != nullptr)
@@ -82,7 +88,7 @@ void EntityManager::createEntitesInLevel(BspLevel& level)
     }
 }
 
-void EntityManager::updateEntities(Time currentTime, fp deltaTime, X_EngineContext* engineContext)
+void EntityManager::updateEntities(Time currentTime, fp deltaTime, EngineContext* engineContext)
 {
     EntityUpdate update(currentTime, deltaTime, engineContext);
 

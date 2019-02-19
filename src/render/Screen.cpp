@@ -14,11 +14,11 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "Screen.hpp"
-#include "object/CameraObject.hpp"
+#include "Camera.hpp"
 #include "dev/console/Console.hpp"
 #include "engine/Engine.hpp"
 
-void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
+void Screen::restartVideo(int newW, int newH, fp newFov)
 {
     canvas.resize(newW, newH);
     
@@ -26,7 +26,7 @@ void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
     zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());
     
     // FIXME: Broadcast to cameras the change so they can update their viewports
-//    for(CameraObject* cam = cameraListHead; cam != NULL; cam = cam->nextInCameraList)
+//    for(Camera* cam = cameraListHead; cam != NULL; cam = cam->nextInCameraList)
 //    {
 //        if(cam->screenResizeCallback != nullptr)
 //        {
@@ -35,7 +35,8 @@ void Screen::restartVideo(int newW, int newH, x_fp16x16 newFov)
 //    }
 }
 
-Screen::Screen(int w, int h, ScreenEventHandlers& handlers)
+Screen::Screen(int w, int h, ScreenEventHandlers& handlers, const X_Palette* palette_)
+    : palette(palette_)
 {
     canvas.resize(w, h);
     zbuf = (x_fp0x16*)x_malloc(calculateZBufSize());

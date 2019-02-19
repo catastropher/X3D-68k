@@ -20,12 +20,12 @@
 
 #define X_PLATFORM_REQUIRED
 
-X_PLATFORM_REQUIRED void x_platform_init(X_EngineContext* engineContext, X_Config* config);
-X_PLATFORM_REQUIRED void x_platform_cleanup(X_EngineContext* engineContext);
+X_PLATFORM_REQUIRED void x_platform_init(EngineContext* engineContext, X_Config* config);
+X_PLATFORM_REQUIRED void x_platform_cleanup(EngineContext* engineContext);
 
-X_PLATFORM_REQUIRED void x_platform_handle_keys(X_EngineContext* engineContext);
+X_PLATFORM_REQUIRED void x_platform_handle_keys(EngineContext* engineContext);
 
-X_PLATFORM_REQUIRED void x_platform_handle_mouse(X_EngineContext* engineContext);
+X_PLATFORM_REQUIRED void x_platform_handle_mouse(EngineContext* engineContext);
 X_PLATFORM_REQUIRED void x_platform_mouse_set_position(Vec2 pos);
 X_PLATFORM_REQUIRED void x_platform_mouse_show_cursor(bool showCursor);
 

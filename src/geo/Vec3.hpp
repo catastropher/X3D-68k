@@ -71,6 +71,14 @@ struct Vec3Template
             x * v.y - v.x * y);
     }
 
+    Vec3Template scale(const Vec3Template& v) const
+    {
+        return Vec3Template(
+            x * v.x,
+            y * v.y,
+            z * v.z);
+    }
+
     bool operator==(const Vec3Template& v) const
     {
         return x == v.x && y == v.y && z == v.z;
@@ -175,107 +183,6 @@ typedef struct X_Vec3_short
 } X_Vec3_short;
 
 void x_vec3_normalize(Vec3* v);
-void x_vec3_fp16x16_print(const Vec3* v, const char* label);
-
-
-////////////////////////////////////////////////////////////////////////////////
-/// Returns the 3D origin.
-////////////////////////////////////////////////////////////////////////////////
-static inline Vec3 x_vec3_origin(void)
-{
-    return Vec3();
-}
-
-static inline Vec3 x_vec3_add_scaled(const Vec3* a, const Vec3* vecToScale, x_fp16x16 scale)
-{
-    return Vec3
-    (
-        a->x + x_fp16x16_mul(vecToScale->x, scale),
-        a->y + x_fp16x16_mul(vecToScale->y, scale),
-        a->z + x_fp16x16_mul(vecToScale->z, scale)
-    );
-}
-
-static inline Vec3 x_vec3_fp16x16_scale(const Vec3* v, x_fp16x16 scale)
-{
-    return Vec3
-    (
-        x_fp16x16_mul(v->x, scale),
-        x_fp16x16_mul(v->y, scale),
-        x_fp16x16_mul(v->z, scale)
-    );
-}
-
-static inline Vec3 x_vec3_shift_right(Vec3* v, int shift)
-{
-    return Vec3(v->x >> shift, v->y >> shift, v->z >> shift);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Adds three 3D vectors.
-/// @return a + b + c
-////////////////////////////////////////////////////////////////////////////////
-static inline Vec3 x_vec3_add_three(const Vec3* a, const Vec3* b, const Vec3* c)
-{
-    return Vec3
-    (
-        a->x + b->x + c->x,
-        a->y + b->y + c->y,
-        a->z + b->z + c->z
-    );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Subtracts two 3D vectors.
-/// @return a - b
-////////////////////////////////////////////////////////////////////////////////
-static inline Vec3 x_vec3_sub(const Vec3* a, const Vec3* b)
-{
-    return Vec3(a->x - b->x, a->y - b->y, a->z - b->z);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Scales a 3D vector by the integer @param scale.
-/// @return v * scale
-////////////////////////////////////////////////////////////////////////////////
-static inline Vec3 x_vec3_scale_int(const Vec3* v, int scale)
-{
-    return Vec3
-    (
-        v->x * scale,
-        v->y * scale,
-        v->z * scale
-    );
-}
-
-static inline Vec3 x_vec3_scale(const Vec3* v, x_fp16x16 scale)
-{
-    return Vec3
-    (
-        x_fp16x16_mul(v->x, scale),
-        x_fp16x16_mul(v->y, scale),
-        x_fp16x16_mul(v->z, scale)
-    );
-}
-
-////////////////////////////////////////////////////////////////////////////////
-/// Determines whether two 3D vectors are equal.
-/// @return a == b
-////////////////////////////////////////////////////////////////////////////////
-static inline bool x_vec3_equal(const Vec3* a, const Vec3* b)
-{
-    return a->x == b->y && a->y == b->y && a->z == b->z;
-}
-
-static inline x_fp16x16 x_vec3_dot(const Vec3* a, const Vec3* b)
-{
-    return x_fp16x16_mul(a->x, b->x) + x_fp16x16_mul(a->y, b->y) + x_fp16x16_mul(a->z, b->z);
-}
-
-static inline x_fp16x16 x_vec3_length(const Vec3* v)
-{
-    return x_sqrt(x_fp16x16_mul(v->x, v->x) + x_fp16x16_mul(v->y, v->y) + x_fp16x16_mul(v->z, v->z)) << 8;
-}
 
 static inline X_Vec3_int x_vec3_to_vec3_int(const Vec3* src)
 {

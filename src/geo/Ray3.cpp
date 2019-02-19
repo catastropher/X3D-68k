@@ -19,7 +19,7 @@
 #include "render/OldRenderer.hpp"
 #include "Frustum.hpp"
 #include "math/Mat4x4.hpp"
-#include "object/CameraObject.hpp"
+#include "render/Camera.hpp"
 
 int Ray3::clipToPlane(const Plane& plane, Ray3& dest)
 {

@@ -21,13 +21,13 @@ static void build_shift_keys(KeyState* state)
         state->keyshift[i] = i;
 }
 
-void x_keystate_init(KeyState* state)
+KeyState::KeyState()
 {
-    build_shift_keys(state);
-    x_keystate_reset_keys(state);
+    build_shift_keys(this);
+    x_keystate_reset_keys(this);
     
-    state->textInputMode = 0;
-    state->lastKeyPressed = KeyCode::invalid;
+    textInputMode = 0;
+    lastKeyPressed = KeyCode::invalid;
 }
 
 void x_keystate_reset_keys(KeyState* state)

@@ -47,12 +47,12 @@ struct EngineEvent
     };
 };
 
-struct X_EngineContext;
+struct EngineContext;
 
 class EngineEventHandler
 {
 public:
-    EngineEventHandler(const char* name_, bool (*handler)(EngineEvent& event, X_EngineContext* engineContext), int priority_)
+    EngineEventHandler(const char* name_, bool (*handler)(EngineEvent& event, EngineContext* engineContext), int priority_)
         : name(name_),
         handleEvent(handler),
         priority(priority_)
@@ -60,7 +60,7 @@ public:
 
     }
 
-    bool invoke(EngineEvent& event, X_EngineContext* engineContext)
+    bool invoke(EngineEvent& event, EngineContext* engineContext)
     {
         return handleEvent(event, engineContext);
     }
@@ -70,14 +70,14 @@ public:
     EngineEventHandler* next;
 
     const char* name;
-    bool (*handleEvent)(EngineEvent& event, X_EngineContext* engineContext);
+    bool (*handleEvent)(EngineEvent& event, EngineContext* engineContext);
     int priority;
 };
 
 class EngineQueue
 {
 public:
-    EngineQueue(X_EngineContext* engineContext_)
+    EngineQueue(EngineContext* engineContext_)
         : engineContext(engineContext_),
         handlerHead(nullptr)
     {
@@ -87,13 +87,13 @@ public:
     void addEvent(EngineEvent& event);
     void flush();
 
-    void addHandler(const char* name, bool (*handler)(EngineEvent& event, X_EngineContext* engineContext), int priority);
+    void addHandler(const char* name, bool (*handler)(EngineEvent& event, EngineContext* engineContext), int priority);
     void removeHandler(const char* name);
 
 private:
-    static bool systemHandler(EngineEvent& event, X_EngineContext* engineContext);
+    static bool systemHandler(EngineEvent& event, EngineContext* engineContext);
 
-    X_EngineContext* engineContext;
+    EngineContext* engineContext;
     CircularQueue<EngineEvent, X_ENGINEQUEUE_SIZE> queue;
     EngineEventHandler* handlerHead;
 };

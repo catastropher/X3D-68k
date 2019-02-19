@@ -15,32 +15,18 @@
 
 #pragma once
 
-#include "GameObjectLoader.hpp"
-#include "GameObject.hpp"
-#include "engine/EngineContext.hpp"
+#include "Array.hpp"
 
-#define X_BUTTONOBJECT_PUSH_UP -1
-#define X_BUTTONOBJECT_PUSH_DOWN -2
-
-typedef enum X_ButtonObjectState
+template<typename T, int Length>
+struct FixedLengthArray : Array<T>
 {
-    X_BUTTONOBJECT_DOWN,
-    X_BUTTONOBJECT_LOWERING,
-    X_BUTTONOBJECT_UP,
-    X_BUTTONOBJECT_RAISING
-} X_ButtonObjectState;
+public:
+    FixedLengthArray()
+        : Array<T>(data, Length)
+    {
 
-typedef struct X_ButtonObject
-{
-    X_GameObject base;
-    BspModel* model;
-    int pushAngle;
-    x_fp16x16 modelHeight;
-    x_fp16x16 speed;
-    X_ButtonObjectState state;
-    X_Time lastTransiitonTime;
-    char trigger[32];
-} X_ButtonObject;
+    }
 
-void x_buttonobject_register_type(X_ObjectFactory* factory);
-
+private:
+    T data[Length];
+};

@@ -17,8 +17,25 @@
 
 #include "system/Time.hpp"
 #include "math/FixedPoint.hpp"
+#include "geo/Vec3.hpp"
+#include "entity/EntityEvent.hpp"
 
+class Entity;
 class BspLevel;
+
+struct CollideEntityEvent : EntityEvent
+{
+    static constexpr StringId Name = StringId("onCollide");
+
+    CollideEntityEvent(Entity* collideWith_)
+        : EntityEvent(Name),
+        collideWith(collideWith_)
+    {
+
+    }
+
+    Entity* collideWith;
+};
 
 class PhysicsEngine
 {
@@ -26,6 +43,8 @@ public:
     static void update(BspLevel& level, fp timeDelta);
     
 private:
-    static void step(BspLevel& level, fp dt);    
+    static void step(BspLevel& level, fp dt);
+    static void moveBrushModels(BspLevel& level, fp dt);
+    static void pushBrushEntity(Entity* brushEntity, const Vec3fp& movement, BspLevel& level);
 };
 

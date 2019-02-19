@@ -25,6 +25,7 @@
 struct BrushModelId
 {
     BrushModelId()
+        : id(-1)
     {
 
     }
@@ -100,6 +101,8 @@ struct X_Edict
             return true;
         }
     }
+
+    void print();
 
     X_EdictAttribute* getAttribute(const char* name) const;
     bool hasAttribute(const char* name) const;

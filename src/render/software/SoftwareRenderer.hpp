@@ -15,23 +15,19 @@
 
 #pragma once
 
-#include "GameObjectLoader.hpp"
-#include "GameObject.hpp"
-#include "engine/EngineContext.hpp"
+#include "render/IRenderer.hpp"
 
-typedef enum X_DoorObjectState
+class X_AE_Context;
+class EngineContext;
+
+class SoftwareRenderer : public IRenderer
 {
-    X_DOOROBJECT_OPEN,
-    X_DOOROBJECT_CLOSING,
-    X_DOOROBJECT_CLOSED,
-    X_DOOROBJECT_OPENING
-} X_DoorObjectState;
+public:
+    SoftwareRenderer(X_AE_Context* activeEdgeContext, EngineContext* engineContext);
 
-typedef struct X_DoorObject
-{
-    X_GameObject base;
-    X_DoorObjectState state;
-    
-    X_Link doorPieces;
-} X_DoorObject;
+    void render();
 
+private:
+    X_AE_Context* activeEdgeContext;
+    EngineContext* engineContext;           // FIXME: remove hard dependency
+};

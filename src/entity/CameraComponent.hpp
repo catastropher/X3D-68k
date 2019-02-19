@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Component.hpp"
-#include "object/CameraObject.hpp"
+#include "render/Camera.hpp"
 
-using CameraComponent = Component<CameraObject>;
+using CameraComponent = Component<Camera>;
 

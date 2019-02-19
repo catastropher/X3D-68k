@@ -13,13 +13,8 @@
 
 #pragma once
 
-#include "memory/Array.hpp"
-
-class BrushModelComponent;
-
 struct IRenderer
 {
-    virtual void renderLevel(const BrushModelComponent& level) = 0;
-    virtual void renderBrushModels(const Array<const BrushModelComponent>& components) = 0;
+    virtual void render() = 0;
 };
 

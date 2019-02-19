@@ -118,11 +118,10 @@ set(X_SOURCES
         src/memory/Alloc.cpp
         src/memory/Cache.cpp
         src/memory/Memory.cpp
-        src/memory/Factory.cpp
         src/memory/String.cpp
 
     # object
-        src/object/CameraObject.cpp
+        src/render/Camera.cpp
 
     # physics
     src/physics/PhysicsEngine.cpp
@@ -140,7 +139,6 @@ set(X_SOURCES
         src/render/Surface.cpp
         src/render/StatusBar.cpp
         src/render/Texture.cpp
-        src/render/TriangleFiller.cpp
         src/render/Viewport.cpp
 
     # system
@@ -201,7 +199,7 @@ if(DEFINED X_WITH_SDL)
     set(X_SOURCES ${X_SOURCES}
             src/platform/SDL.cpp
             src/platform/SDL/SdlScreenDriver.cpp
-            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/entity/InputComponent.hpp)
+            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/entity/InputComponent.hpp src/entity/DoorEntity.cpp src/entity/DoorEntity.hpp src/memory/FixedSizeArray.hpp src/render/software/SoftwareRenderer.cpp src/render/software/SoftwareRenderer.hpp src/render/software/LevelRenderer.cpp src/render/software/LevelRenderer.hpp src/entity/EntityEvent.hpp src/memory/StringId.hpp src/memory/Crc32.hpp src/memory/Crc32.cpp)
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})

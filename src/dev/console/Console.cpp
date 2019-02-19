@@ -144,8 +144,8 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
             x_string_assign(var->stringPtr, varValue);
             break;
             
-        case X_CONSOLEVAR_FP16X16:
-            *var->fp16x16Ptr = x_fp16x16_from_float(atof(varValue));
+        case X_CONSOLEVAR_FP:
+            *var->fpPtr = fp::fromFloat(atof(varValue));
             break;
 
         case X_CONSOLEVAR_BOOL:
@@ -166,34 +166,34 @@ void x_consolevar_set_value(X_ConsoleVar* var, const char* varValue)
 
 void x_console_register_builtin_commands(Console* console);
 
-void x_console_init(Console* console, X_EngineContext* engineContext, X_Font* font)
+Console::Console(EngineContext* engineContext, Font* font)
 {
-    console->cursor = Vec2(0, 0);
+    cursor = Vec2(0, 0);
+
+    Screen* screen = engineContext->screen;
+    size.x = screen->getW() / font->getW();
+    size.y = screen->getH() / font->getH() / 2;
+    Console::font = font;
+    Console::engineContext = engineContext;
     
-    Screen* screen = engineContext->getScreen();
-    console->size.x = screen->getW() / font->getW();
-    console->size.y = screen->getH() / font->getH() / 2;
-    console->font = font;
-    console->engineContext = engineContext;
+    text = (char*)x_malloc(x_console_bytes_in_line(this) * size.y);
+    x_console_clear(this);
     
-    console->text = (char*)x_malloc(x_console_bytes_in_line(console) * console->size.y);
-    x_console_clear(console);
+    consoleCmds = NULL;
+    totalConsoleCmds = 0;
     
-    console->consoleCmds = NULL;
-    console->totalConsoleCmds = 0;
+    consoleVars = NULL;
+    totalConsoleVars = 0;
     
-    console->consoleVars = NULL;
-    console->totalConsoleVars = 0;
-    
-    console->commandHistorySize = 0;
-    console->commandHistoryPos = 0;
+    commandHistorySize = 0;
+    commandHistoryPos = 0;
     
     for(int i = 0; i < X_CONSOLE_COMMAND_HISTORY_SIZE; ++i)
-        x_string_init(console->commandHistory + i, "");
+        x_string_init(commandHistory + i, "");
     
-    x_console_register_builtin_commands(console);
-    
-    console->renderer = new ConsoleRenderer(*console, *console->engineContext->getScreen(), *console->engineContext->getMainFont());
+    x_console_register_builtin_commands(this);
+
+    renderer = new ConsoleRenderer(*this, *engineContext->screen, *engineContext->mainFont);
 }
 
 void x_console_clear(Console* console)
@@ -676,8 +676,8 @@ static void print_variable_value(Console* console, X_ConsoleVar* var)
             sprintf(varValue, "%s", var->stringPtr->data);
             break;
             
-        case X_CONSOLEVAR_FP16X16:
-            sprintf(varValue, "%f", x_fp16x16_to_float(*var->fp16x16Ptr));
+        case X_CONSOLEVAR_FP:
+            sprintf(varValue, "%f", var->fpPtr->toFloat());
             break;
         case X_CONSOLEVAR_BOOL:
             sprintf(varValue, "%s", *var->boolPtr ? "true" : "false");

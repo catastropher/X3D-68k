@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <cmath>
+#include <algorithm>
 
 #include "Palette.hpp"
 #include "Screen.hpp"
@@ -337,13 +338,13 @@ static void init_grayscale_table(X_Palette* palette)
         unsigned char r, g, b;
         x_palette_get_rgb(palette, i, &r, &g, &b);
         
-        x_fp16x16 rScale = x_fp16x16_from_float(0.2126);
-        x_fp16x16 gScale = x_fp16x16_from_float(0.7152);
-        x_fp16x16 bScale = x_fp16x16_from_float(0.0722);
+        fp rScale = 0.2126_fp;
+        fp gScale = 0.7152_fp;
+        fp bScale = 0.0722_fp;
         
-        x_fp16x16 grayscale = r * rScale + b * bScale + g * gScale;
+        fp grayscale = r * rScale + b * bScale + g * gScale;
         
-        palette->grayscaleTable[i] = X_MIN(x_fp16x16_to_int(grayscale / 16), 15);
+        palette->grayscaleTable[i] = std::min((grayscale / 16).toInt(), 15);
     }
 }
 

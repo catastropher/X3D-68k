@@ -23,7 +23,7 @@
 #include "Span.hpp"
 #include "render/OldRenderer.hpp"
 #include "engine/EngineContext.hpp"
-#include "object/CameraObject.hpp"
+#include "Camera.hpp"
 #include "util/StopWatch.hpp"
 #include "geo/Ray3.hpp"
 
@@ -541,7 +541,7 @@ void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges
     addPolygon(&polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
 
-void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addSubmodelRecursive(Polygon3* poly, BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     if(!node->isVisibleThisFrame(renderContext->currentFrame))
         return;
@@ -554,7 +554,7 @@ void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* ed
         if(node->contents == X_BSPLEAF_SOLID)
             return;
         
-        X_BspLeaf* leaf = (X_BspLeaf*)node;
+        BspLeaf* leaf = (BspLeaf*)node;
         addPolygon(poly, bspSurface, geoFlags, edgeIds, leaf->bspKey, true);
         return;
     }
@@ -578,7 +578,7 @@ void X_AE_Context::addSubmodelPolygon(BspLevel* level, int* edgeIds, int totalEd
     InternalPolygon3 poly;
     get_model_polygon_from_edges(currentModel, edgeIds, totalEdges, &poly, &currentModel->center);
     
-    addSubmodelRecursive(&poly, x_bsplevel_get_root_node(level), edgeIds, bspSurface, geoFlags, bspKey);
+    addSubmodelRecursive(&poly, &level->getLevelRootNode(), edgeIds, bspSurface, geoFlags, bspKey);
 }
 
 X_AE_Surface* X_AE_Context::addBrushPolygon(Polygon3& polygon, Plane& polygonPlane, BoundBoxFrustumFlags geoFlags, int bspKey)
@@ -593,7 +593,7 @@ X_AE_Surface* X_AE_Context::addBrushPolygon(Polygon3& polygon, Plane& polygonPla
     BspSurface bspSurface;
     bspSurface.plane = &bspPlane;
 
-    addSubmodelRecursive(&polygon, x_bsplevel_get_root_node(renderContext->level), edgeIds, &bspSurface, geoFlags, bspKey);
+    addSubmodelRecursive(&polygon, &renderContext->level->getLevelRootNode(), edgeIds, &bspSurface, geoFlags, bspKey);
 
     return currentParent;
 }
@@ -654,7 +654,7 @@ void X_AE_Context::processEdge(X_AE_Edge* edge, int y)
         if(surfaceToDisable == topSurface)
         {
             // We were on top, so emit the span
-            int x = (edge->x) >> 16;
+            int x = (edge->x).toInt();
 
             emitSpan(surfaceToDisable->xStart, x, y, surfaceToDisable);
             
@@ -681,12 +681,12 @@ enable:
         else
             search = topSurface;
         
-        if(surfaceToEnable->isCloserThan(search, edge->x, y))
+        if(surfaceToEnable->isCloserThan(search, edge->x.toFp16x16(), y))
         {
             do
             {
                 search = search->prev;
-            } while(surfaceToEnable->isCloserThan(search, edge->x, y));
+            } while(surfaceToEnable->isCloserThan(search, edge->x.toFp16x16(), y));
             
             
             search = search->next;
@@ -696,7 +696,7 @@ enable:
             do
             {
                 search = search->next;
-            } while(!surfaceToEnable->isCloserThan(search, edge->x, y));            
+            } while(!surfaceToEnable->isCloserThan(search, edge->x.toFp16x16(), y));
         }
         
         surfaceToEnable->next = search;
@@ -708,7 +708,7 @@ enable:
         if(foreground.next == surfaceToEnable)
         {
             // Yes, emit span for the old top
-            int x = edge->x >> 16;
+            int x = edge->x.toInt();
 
             emitSpan(topSurface->xStart, x, y, topSurface);
 
@@ -841,8 +841,8 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     if(!initialized)
     {
-        x_console_register_var(context->renderContext->engineContext->getConsole(), &g_sortCount, "sortCount", X_CONSOLEVAR_INT, "0", 0);
-        x_console_register_var(context->renderContext->engineContext->getConsole(), &g_stackCount, "stackCount", X_CONSOLEVAR_INT, "0", 0);
+        x_console_register_var(context->renderContext->engineContext->console, &g_sortCount, "sortCount", X_CONSOLEVAR_INT, "0", 0);
+        x_console_register_var(context->renderContext->engineContext->console, &g_stackCount, "stackCount", X_CONSOLEVAR_INT, "0", 0);
         initialized = 1;
     }
 
@@ -853,18 +853,12 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
 
     StopWatch::start("scan-active-edge");
     
-    if((context->renderContext->renderer->renderMode & 2) != 0)
+    for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
     {
-        for(int i = 0; i < context->renderContext->cam->viewport.h; ++i)
-        {
-            context->processEdges(i);
-        }
+        context->processEdges(i);
     }
 
     StopWatch::stop("scan-active-edge");
-
-    if((context->renderContext->renderer->renderMode & 1) == 0)
-        return;
 
     StopWatch::start("render-spans");
 
@@ -882,7 +876,7 @@ void __attribute__((hot)) x_ae_context_scan_edges(X_AE_Context* context)
             continue;
 
         X_AE_SurfaceRenderContext surfaceRenderContext;
-        x_ae_surfacerendercontext_init(&surfaceRenderContext, surface, context->renderContext, context->renderContext->renderer->mipLevel);
+        x_ae_surfacerendercontext_init(&surfaceRenderContext, surface, context->renderContext);
         x_ae_surfacerendercontext_render_spans(&surfaceRenderContext);
     }
 

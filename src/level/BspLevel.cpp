@@ -27,9 +27,9 @@
 #include "level/Portal.hpp"
 #include "entity/BrushModelComponent.hpp"
 
-X_BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
+BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
 {
-    X_BspNode* node = x_bsplevel_get_root_node(this);
+    BspNode* node = &getLevelRootNode();
  
     do
     {
@@ -38,7 +38,7 @@ X_BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
             : node->backChild;
     } while(!node->isLeaf());
     
-    return node->getLeaf();
+    return &node->getLeaf();
 }
 
 void BspLevel::initEmpty()
@@ -89,7 +89,7 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
     }
 }
 
-// static void x_bspnode_mark_surfaces_in_node_as_close_to_light(X_BspNode* node, const X_Light* light, int currentFrame)
+// static void x_bspnode_mark_surfaces_in_node_as_close_to_light(BspNode* node, const X_Light* light, int currentFrame)
 // {
 //     for(int i = 0; i < node->totalSurfaces; ++i)
 //     {
@@ -105,7 +105,7 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
 //     }
 // }
 
-// static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_Light* light, int currentFrame)
+// static void x_bspnode_mark_surfaces_light_is_close_to(BspNode* node, const X_Light* light, int currentFrame)
 // {
 //     if(node->isLeaf())
 //         return;
@@ -140,72 +140,6 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
 //     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 // }
 
-static void x_bsplevel_render_submodel(BspLevel* level, BspModel* submodel, X_RenderContext* renderContext, BoundBoxFrustumFlags geoFlags)
-{
-    x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, submodel);
-    
-    for(int i = 0; i < submodel->totalFaces; ++i)
-    {
-        BspSurface* surface = submodel->faces + i;
-     
-        
-        // FIXME: figure out how to do backface culling for submodels, since they can move
-        // This means their plane equations won't be correct
-        
-//         bool onNormalSide = x_plane_point_is_on_normal_facing_side(&surface->plane->plane, &renderContext->camPos);
-//         bool planeFlipped = (surface->flags & X_BSPSURFACE_FLIPPED) != 0;
-//         
-//         if((!onNormalSide) ^ planeFlipped)
-//            continue;
-        
-        renderContext->renderer->activeEdgeContext.addSubmodelPolygon(
-            renderContext->level,
-            submodel->surfaceEdgeIds + surface->firstEdgeId,
-            surface->totalEdges,
-            surface,
-            geoFlags,
-            x_bsplevel_current_bspkey(renderContext->level));        
-    }
-}
-
-void x_bsplevel_render_submodels(BspLevel* level, X_RenderContext* renderContext)
-{
-    BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
-    
-    auto allBrushModels = BrushModelComponent::getAll();
-    
-    for(auto& brushModel : allBrushModels)
-    {
-        if(brushModel.model != nullptr)
-        {
-            // FIXME: need a way to exclude the level model
-            if(brushModel.model == x_bsplevel_get_level_model(level))
-            {
-                continue;
-            }
-
-            x_bsplevel_render_submodel(level, brushModel.model, renderContext, enableAllPlanes);
-        }
-    }
-    
-    //for(int i = 1; i < level->totalModels; ++i)
-    //    x_bsplevel_render_submodel(level, level->models + i, renderContext, enableAllPlanes);
-}
-
-void x_bsplevel_render(BspLevel* level, X_RenderContext* renderContext)
-{
-    x_bsplevel_reset_bspkeys(level);
-    x_ae_context_set_current_model(&renderContext->renderer->activeEdgeContext, x_bsplevel_get_level_model(level));
-    
-    BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext->viewFrustum->totalPlanes) - 1);
-
-    x_bsplevel_get_level_model(level)->rootBspNode->renderRecursive(*renderContext, enableAllPlanes);
-    
-    x_bsplevel_render_submodels(level, renderContext);
-
-    level->renderPortals(*renderContext);
-}
-
 void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
 {
     x_assert(mipMapLevel >= 0 && mipMapLevel < 4, "Bad mip map request");
@@ -237,7 +171,7 @@ void x_bsplevel_cleanup(BspLevel* level)
     x_free(level->clipNodes);
 }
 
-X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node, BoundSphere* sphere, X_BspNode** nextNodeDest)
+BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(BspNode* node, BoundSphere* sphere, BspNode** nextNodeDest)
 {
     if(node->isLeaf())
     {
@@ -274,9 +208,9 @@ X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node,
     return nextNodeDest;
 }
 
-int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, BoundSphere* sphere, X_BspNode** dest)
+int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, BoundSphere* sphere, BspNode** dest)
 {
-    return x_bsplevel_find_nodes_intersecting_sphere_recursive(x_bsplevel_get_root_node(level), sphere, dest) - dest;
+    return x_bsplevel_find_nodes_intersecting_sphere_recursive(&level->getLevelModel().getRootNode(), sphere, dest) - dest;
 }
 
 Portal* BspLevel::addPortal()

@@ -18,7 +18,6 @@
 #include "Polygon3.hpp"
 #include "Plane.hpp"
 #include "Ray3.hpp"
-#include "render/TriangleFiller.h"
 #include "Frustum.hpp"
 #include "math/Mat4x4.hpp"
 
@@ -26,7 +25,7 @@ bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
+    fp dot = plane.normal.dot(vertices[0]);
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -34,17 +33,19 @@ bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
         int next = (i + 1 < totalVertices ? i + 1 : 0);
         
         if(in)
+        {
             dest.vertices[dest.totalVertices++] = vertices[i];
+        }
         
-        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
+        fp nextDot = plane.normal.dot(vertices[next]);
         bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+        fp dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
+            fp scale = (-plane.d - dot) / dotDiff;
             Ray3 ray(vertices[i], vertices[next]);
-            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
+            dest.vertices[dest.totalVertices] = ray.lerp(scale);
             
             ++dest.totalVertices;
         }
@@ -60,7 +61,7 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, in
 {
     dest.totalVertices = 0;
     
-    x_fp16x16 dot = plane.normal.dot(vertices[0]).toFp16x16();
+    fp dot = plane.normal.dot(vertices[0]);
     bool in = dot >= -plane.d;
     
     for(int i = 0; i < totalVertices; ++i)
@@ -73,20 +74,24 @@ bool Polygon3::clipToPlanePreserveEdgeIds(const Plane& plane, Polygon3& dest, in
             *edgeIdsDest++ = edgeIds[i];
         }
         
-        x_fp16x16 nextDot = plane.normal.dot(vertices[next]).toFp16x16();
+        fp nextDot = plane.normal.dot(vertices[next]);
         bool nextIn = nextDot >= -plane.d;
-        int dotDiff = nextDot - dot;
+        fp dotDiff = nextDot - dot;
         
         if(in != nextIn && dotDiff != 0)
         {
-            x_fp16x16 scale = x_fp16x16_div(-plane.d.toFp16x16() - dot, dotDiff);
+            fp scale = (-plane.d - dot) / dotDiff;
             Ray3 ray(vertices[i], vertices[next]);
-            dest.vertices[dest.totalVertices] = ray.lerp(fp(scale));
+            dest.vertices[dest.totalVertices] = ray.lerp(scale);
             
             if(in)
+            {
                 *edgeIdsDest++ = 0;    // Create a new edge
+            }
             else
+            {
                 *edgeIdsDest++ = edgeIds[i];
+            }
             
             ++dest.totalVertices;
         }
@@ -294,113 +299,4 @@ void Polygon3::calculatePlaneEquation(Plane& dest)
 {
     dest = Plane(vertices[0], vertices[1], vertices[2]);
 }
-
-
-void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color)
-{
-//     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
-//     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
-//    
-//     // FIXME: this is broken
-//     
-// //     if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
-// //         return;
-//     
-//     if(clipped.totalVertices != 3)
-//         return;
-//     
-//     X_TriangleFiller filler;
-//     x_trianglefiller_init(&filler, renderContext);
-//     
-//     for(int i = 0; i < 3; ++i)
-//     {
-//         X_Vec3 transformed;
-//         x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
-//         
-//         Vec2 projected;
-//         x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, &projected);
-//         
-//         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);
-//     }
-//     
-//     Plane plane;
-//     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
-//     
-//     //if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
-//     //    return;
-//     
-//     x_trianglefiller_fill_flat_shaded(&filler, color);
-}
-
-void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, Vec2 textureCoords[3])
-{
-//     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
-//     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
-//    
-//     // FIXME: this is broken
-// //     if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
-// //         return;
-//     
-//     if(clipped.totalVertices != 3)
-//         return;
-//     
-//     X_TriangleFiller filler;
-//     x_trianglefiller_init(&filler, renderContext);
-//     
-//     for(int i = 0; i < 3; ++i)
-//     {
-//         X_Vec3 transformed;
-//         x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
-//         
-//         Vec2 projected;
-//         x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, &projected);
-//         
-//         x_trianglefiller_set_textured_vertex(&filler, i, projected, transformed.z, textureCoords[i]);
-//     }
-//     
-// //     Plane plane;
-// //     x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
-// //     
-// //     if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
-// //         return;
-// //     
-//     x_trianglefiller_fill_textured(&filler, texture);
-}
-
-void x_polygon3_render_transparent(Polygon3* poly, X_RenderContext* renderContext, X_Color* transparentTable)
-{
-//     X_Vec3 clippedV[X_POLYGON3_MAX_VERTS];
-//     X_Polygon3 clipped = x_polygon3_make(clippedV, X_POLYGON3_MAX_VERTS);
-//     
-//     // FIXME this is broken
-//     
-// //     if(!x_polygon3_clip_to_frustum(poly, renderContext->viewFrustum, &clipped))
-// //         return;
-// //     
-//     if(clipped.totalVertices != 3)
-//         return;
-//     
-//     X_TriangleFiller filler;
-//     x_trianglefiller_init(&filler, renderContext);
-//     
-//     for(int i = 0; i < 3; ++i)
-//     {
-//         X_Vec3 transformed;
-//         x_mat4x4_transform_vec3(renderContext->viewMatrix, clipped.vertices + i, &transformed);
-//         
-//         Vec2 projected;
-//         x_viewport_project_vec3(&renderContext->cam->viewport, &transformed, &projected);
-//         
-//         x_trianglefiller_set_flat_shaded_vertex(&filler, i, projected, transformed.z);
-//     }
-//     
-//     Plane plane;
-//     //x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
-//     
-//    // if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
-//    //     return;
-//     
-//     x_trianglefiller_fill_transparent(&filler, transparentTable);
-}
-
 

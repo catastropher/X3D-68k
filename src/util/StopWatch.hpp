@@ -17,7 +17,7 @@
 
 #define X_STOPWATCH_MAX_ENTRIES 32
 
-struct X_EngineContext;
+struct EngineContext;
 
 struct StopWatchEntry
 {
@@ -43,7 +43,7 @@ public:
 
     static StopWatchEntry* getEntry(const char* name);
 
-    static void stopwatchCmd(X_EngineContext* engineContext, int argc, char* argv[]);
+    static void stopwatchCmd(EngineContext* engineContext, int argc, char* argv[]);
 
     static StopWatchEntry entries[X_STOPWATCH_MAX_ENTRIES];
     static int totalEntries;

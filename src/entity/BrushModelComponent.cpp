@@ -16,15 +16,24 @@
 #include "BrushModelComponent.hpp"
 #include "EntityDictionary.hpp"
 #include "level/BspLevel.hpp"
+#include "system/Clock.hpp"
 
 namespace internal
 {
     BrushModel::BrushModel(const X_Edict& edict, const BspLevel& level)
     {
         BrushModelId id;
-        edict.getValue("model", id);
-
+        edict.getRequiredValue("model", id);
+        
         model = x_bsplevel_get_model(&level, id.id);
     }
-}
 
+    void BrushModel::initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive)
+    {
+        movement.endTime = Clock::getTicks() + moveLength;
+        movement.finalPosition = destination;
+        movement.direction = (destination - model->center) / moveLength.toSeconds();
+        movement.onArriveHandler = onArrive;
+        movement.isMoving = true;
+    }
+}

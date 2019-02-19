@@ -17,7 +17,7 @@
 
 #include <cstdio>
 
-struct X_BspLeaf;
+struct BspLeaf;
 class DecompressedLeafVisibleSet;
 struct BspLevel;
 
@@ -38,7 +38,7 @@ public:
         return bytesPerEntry;
     }
     
-    void decompressPvsForLeaf(X_BspLeaf& leaf, DecompressedLeafVisibleSet& dest);
+    void decompressPvsForLeaf(BspLeaf& leaf, DecompressedLeafVisibleSet& dest);
     void markVisibleLeaves(DecompressedLeafVisibleSet& decompressedPvs, int currentFrame);
     
     void updatePvsData();

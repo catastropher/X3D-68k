@@ -19,7 +19,7 @@
 WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
     : Entity(level)
 {
-    BspModel* worldModel = x_bsplevel_get_level_model(&getLevel());
+    BspModel* worldModel = &getLevel().getLevelModel();
     addComponent<BrushModelComponent>(worldModel);
 }
 

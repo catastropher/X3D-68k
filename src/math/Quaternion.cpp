@@ -121,14 +121,3 @@ QuaternionTemplate<T> QuaternionTemplate<T>::fromEulerAngles(fp x, fp y, fp z)
     return xRotation * yRotation;
 }
 
-void x_quaternion_normalize(X_Quaternion* quat)
-{
-    /// @todo rewrite without floats
-    float len = sqrt((float)quat->x * quat->x + (float)quat->y * quat->y + (float)quat->z * quat->z + (float)quat->w * quat->w);
-    
-    quat->x = (quat->x / len) * 65536.0;
-    quat->y = (quat->y / len) * 65536.0;
-    quat->z = (quat->z / len) * 65536.0;
-    quat->w = (quat->w / len) * 65536.0;
-}
-

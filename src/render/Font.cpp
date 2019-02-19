@@ -18,7 +18,7 @@
 #include "error/Error.hpp"
 #include "memory/Alloc.h"
 
-void X_Font::loadCharacter(const X_Texture& fontTex, int charRow, int charCol, X_Color* characterPixelsDest)
+void Font::loadCharacter(const X_Texture& fontTex, int charRow, int charCol, X_Color* characterPixelsDest)
 {
     int startX = charCol * charW;
     int startY = charRow * charH;
@@ -32,7 +32,7 @@ void X_Font::loadCharacter(const X_Texture& fontTex, int charRow, int charCol, X
     }
 }
 
-void X_Font::loadCharacters(const X_Texture& fontTex)
+void Font::loadCharacters(const X_Texture& fontTex)
 {
     const int charsPerRow = 16;
     const int totalRows = 16;
@@ -56,7 +56,7 @@ void X_Font::loadCharacters(const X_Texture& fontTex)
     
 }
 
-bool X_Font::loadFromFile(const char* fileName)
+bool Font::loadFromFile(const char* fileName)
 {   
     X_Texture fontTex;
     if(!fontTex.loadFromFile(fileName))

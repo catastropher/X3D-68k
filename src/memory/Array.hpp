@@ -38,6 +38,11 @@ struct Array
     {
         
     }
+
+    T& operator[](int index)
+    {
+        return elem[index];
+    }
     
     T* begin()
     {

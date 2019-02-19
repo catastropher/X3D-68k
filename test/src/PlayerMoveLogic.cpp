@@ -50,7 +50,7 @@ Vec3fp PlayerMoveLogic::getMovementVector(PlayerKeyFlags keys)
 {
     Vec3fp movementVector = getMovementKeyVector(keys, enablePhysics) + getJumpVector(keys);
 
-    if(x_boxcollider_is_on_ground(&player.getCollider()) && enablePhysics)
+    if(x_boxcollider_is_on_ground(&player.getCollider()) || !enablePhysics)
     {
         return movementVector;
     }
@@ -162,7 +162,7 @@ void PlayerMoveLogic::handleAngleKeys(PlayerKeyFlags keys)
     }
 }
 
-bool handle_no_collision_keys(X_EngineContext* engineContext, CameraObject* cam, KeyState* keyState)
+bool handle_no_collision_keys(EngineContext* engineContext, Camera* cam, KeyState* keyState)
 {
     return false;
     

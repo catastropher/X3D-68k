@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 typedef unsigned char X_Color;
 
-struct X_Font;
+struct Font;
 
 enum TextureFlags
 {
@@ -103,8 +103,8 @@ public:
     void drawLine(Vec2i start, Vec2i end, X_Color color);
     void drawLineShaded(Vec2i start, Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable);
     void blit(const X_Texture& tex, Vec2i pos);
-    void drawChar(int c, const X_Font& font, Vec2i pos);
-    void drawStr(const char* str, const X_Font& font, Vec2i pos);
+    void drawChar(int c, const Font& font, Vec2i pos);
+    void drawStr(const char* str, const Font& font, Vec2i pos);
     void fillRect(Vec2i topLeft, Vec2i bottomRight, X_Color color);
     void fill(X_Color color);
     void drawDecal(X_Texture& decal, Vec2i pos, Vec2fp& uOrientation, Vec2fp& vOrientation, X_Color transparency);

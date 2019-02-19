@@ -33,10 +33,10 @@ typedef struct X_AE_Span
 
 typedef struct X_AE_TextureVar
 {
-    x_fp16x16 uOrientationStep;
-    x_fp16x16 vOrientationStep;
-    x_fp16x16 origin;
-    x_fp16x16 adjust;
+    fp uOrientationStep;
+    fp vOrientationStep;
+    fp origin;
+    fp adjust;
 } X_AE_TextureVar;
 
 typedef struct X_AE_SurfaceRenderContext
@@ -67,12 +67,12 @@ typedef struct X_AE_SurfaceRenderContext
     int uAdjust;            // 56 (20)
     int vAdjust;            // 60 (24)
     
-    x_fp16x16 surfaceW;     // 64 (28)
-    x_fp16x16 surfaceH;     // 68 (32)
+    fp surfaceW;     // 64 (28)
+    fp surfaceH;     // 68 (32)
     
     X_Color* surfaceTexels; // 72 (36)
     
-    const int* recipTab;    // 76 (40)
+    const fp* recipTab;    // 76 (40)
     
     
     X_AE_TextureVar sDivZ;
@@ -87,6 +87,6 @@ typedef struct X_AE_SurfaceRenderContext
     X_Texture surfaceTexture;
 } X_AE_SurfaceRenderContext;
 
-void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, struct X_AE_Surface* surface, struct X_RenderContext* renderContext, int mipLevel);
+void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, struct X_AE_Surface* surface, struct X_RenderContext* renderContext);
 void x_ae_surfacerendercontext_render_spans(X_AE_SurfaceRenderContext* context);
 

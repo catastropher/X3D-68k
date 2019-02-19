@@ -86,6 +86,8 @@ public:
     void handleMovement(const InputUpdate& update);
 
     static bool handleKeys(Entity* entity, const InputUpdate& update);
+
+    void handleEvent(EntityEvent& event);
     
     fp angleX;
     fp angleY;

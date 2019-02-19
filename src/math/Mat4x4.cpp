@@ -27,10 +27,10 @@ void Mat4x4::loadIdentity()
     static const Mat4x4 identity =
     {
         {
-            { X_FP16x16_ONE, 0, 0, 0 },
-            { 0, X_FP16x16_ONE, 0, 0 },
-            { 0, 0, X_FP16x16_ONE, 0 },
-            { 0, 0, 0, X_FP16x16_ONE }
+            { 1.0_fp, 0, 0, 0 },
+            { 0, 1.0_fp, 0, 0 },
+            { 0, 0, 1.0_fp, 0 },
+            { 0, 0, 0, 1.0_fp }
         }
     };
     
@@ -39,15 +39,15 @@ void Mat4x4::loadIdentity()
 
 void Mat4x4::loadXRotation(fp angle) 
 {
-    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
-    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
+    fp cosAngle = x_cos(angle);
+    fp sinAngle = x_sin(angle);
     
     Mat4x4 xRotation = {
         {
-            { X_FP16x16_ONE, 0, 0, 0 },
+            { 1.0_fp, 0, 0, 0 },
             { 0, cosAngle, -sinAngle, 0 },
             { 0, sinAngle, cosAngle, 0 },
-            { 0, 0, 0, X_FP16x16_ONE }
+            { 0, 0, 0, 1.0_fp }
         }
     };
     
@@ -56,15 +56,15 @@ void Mat4x4::loadXRotation(fp angle)
 
 void Mat4x4::loadYRotation(fp angle)
 {
-    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
-    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
+    fp cosAngle = x_cos(angle);
+    fp sinAngle = x_sin(angle);
     
     Mat4x4 yRotation = {
         {
             { cosAngle, 0, sinAngle, 0 },
-            { 0, X_FP16x16_ONE, 0, 0 },
+            { 0, 1.0_fp, 0, 0 },
             { -sinAngle, 0, cosAngle, 0 },
-            { 0, 0, 0, X_FP16x16_ONE }
+            { 0, 0, 0, 1.0_fp }
         }
     };
     
@@ -73,15 +73,15 @@ void Mat4x4::loadYRotation(fp angle)
 
 void Mat4x4::loadZRotation(fp angle)
 {
-    x_fp16x16 cosAngle = x_cos(angle).toFp16x16();
-    x_fp16x16 sinAngle = x_sin(angle).toFp16x16();
+    fp cosAngle = x_cos(angle);
+    fp sinAngle = x_sin(angle);
     
     Mat4x4 zRotation = {
         {
             { cosAngle, -sinAngle, 0, 0 },
             { sinAngle, cosAngle, 0, 0 },
-            { 0, 0, X_FP16x16_ONE, 0 },
-            { 0, 0, 0, X_FP16x16_ONE }
+            { 0, 0, 1.0_fp, 0 },
+            { 0, 0, 0, 1.0_fp }
         }
     };
     
@@ -93,10 +93,10 @@ void Mat4x4::loadTranslation(const Vec3fp& translation)
     Mat4x4 translationMatrix = 
     {
         {
-            { X_FP16x16_ONE, 0, 0, translation.x },
-            { 0, X_FP16x16_ONE, 0, translation.y },
-            { 0, 0, X_FP16x16_ONE, translation.z },
-            { 0, 0, 0, X_FP16x16_ONE }
+            { 1.0_fp, 0, 0, translation.x },
+            { 0, 1.0_fp, 0, translation.y },
+            { 0, 0, 1.0_fp, translation.z },
+            { 0, 0, 0, 1.0_fp }
         }
     };
     
@@ -168,7 +168,7 @@ Vec4 Mat4x4::transform(const Vec4& src) const
 
 Vec3fp Mat4x4::transform(const Vec3fp& src) const
 {
-    Vec4 v = Vec4(src.x, src.y, src.z, X_FP16x16_ONE);
+    Vec4 v = Vec4(src.x, src.y, src.z, 1.0_fp);
     Vec4 transformed = transform(v);
 
     return transformed.toVec3();

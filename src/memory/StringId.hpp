@@ -15,19 +15,38 @@
 
 #pragma once
 
-#include "GameObject.hpp"
-#include "level/BspLevel.hpp"
+#include <cstdio>
+#include "Crc32.hpp"
 
-typedef struct X_WorldObject
+struct StringId
 {
-    X_GameObject base;
-    BspModel* model;
-} X_WorldObject;
+    constexpr StringId(const char* str)
+        : key(crc32Constexpr(str))
+    {
 
-struct X_ObjectFactory;
-struct X_Edict;
-struct X_EngineContext;
+    }
 
-X_GameObject* x_worldobject_new(struct X_EngineContext* engineContext, struct X_Edict* edict);
-void x_worldobject_register_type(struct X_ObjectFactory* factory);
+    constexpr StringId(unsigned int key_)
+        : key(key_)
+    {
+
+    }
+
+    constexpr operator unsigned int() const
+    {
+        return key;
+    }
+
+    static StringId fromString(const char* str)
+    {
+        return StringId(crc32(str));
+    }
+
+    unsigned int key;
+};
+
+constexpr StringId operator ""_sid(const char* str, size_t len)
+{
+    return StringId(str);
+}
 

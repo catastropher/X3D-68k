@@ -4,7 +4,7 @@
 
 struct Console;
 struct Screen;
-struct X_Font;
+struct Font;
 
 typedef enum X_ConsoleOpenState
 {
@@ -17,7 +17,7 @@ typedef enum X_ConsoleOpenState
 class ConsoleRenderer
 {
 public:
-    ConsoleRenderer(Console& console_, Screen& screen_, X_Font& font_)
+    ConsoleRenderer(Console& console_, Screen& screen_, Font& font_)
         : console(console_),
         screen(screen_),
         font(font_)
@@ -67,5 +67,5 @@ private:
     int renderYOffset;
     Time consoleToggleTime;
 
-    X_Font& font;
+    Font& font;
 };
