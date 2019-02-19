@@ -21,7 +21,7 @@
 void LevelRenderer::render(const X_RenderContext& renderContext)
 {
     BspModel& levelModel = renderContext.level->getLevelModel();
-    X_BspNode& rootLevelNode = levelModel.getRootNode();
+    BspNode& rootLevelNode = levelModel.getRootNode();
 
     nextBspKey = 0;
 
@@ -30,11 +30,10 @@ void LevelRenderer::render(const X_RenderContext& renderContext)
     BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext.viewFrustum->totalPlanes) - 1);
 
     renderRecursive(rootLevelNode, renderContext, enableAllPlanes);
-
     renderBrushModels(renderContext);
 }
 
-void LevelRenderer::renderRecursive(X_BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags parentNodeFlags)
+void LevelRenderer::renderRecursive(BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags parentNodeFlags)
 {
     if(!node.isVisibleThisFrame(renderContext.currentFrame))
     {
@@ -51,13 +50,13 @@ void LevelRenderer::renderRecursive(X_BspNode& node, const X_RenderContext& rend
     {
         int leafBspKey = ++nextBspKey;
 
-        X_BspLeaf& leaf = node.getLeaf();
+        BspLeaf& leaf = node.getLeaf();
         markSurfacesAsVisible(leaf, renderContext.currentFrame, leafBspKey);
     }
     else
     {
-        X_BspNode* frontSideRelativeToCamera;
-        X_BspNode* backSideRelativeToCamera;
+        BspNode* frontSideRelativeToCamera;
+        BspNode* backSideRelativeToCamera;
 
         fp distanceToPlane = node.plane->plane.distanceTo(renderContext.camPos);
         bool onNormalSide = distanceToPlane > 0;
@@ -79,7 +78,7 @@ void LevelRenderer::renderRecursive(X_BspNode& node, const X_RenderContext& rend
     }
 }
 
-void LevelRenderer::renderSurfaces(const X_BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags, fp distanceToPlane)
+void LevelRenderer::renderSurfaces(const BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags, fp distanceToPlane)
 {
     // Stitch the frustum planes together
     X_Frustum* frustum = renderContext.viewFrustum;
@@ -122,7 +121,7 @@ void LevelRenderer::renderSurfaces(const X_BspNode& node, const X_RenderContext&
     }
 }
 
-void LevelRenderer::markSurfacesAsVisible(X_BspLeaf& leaf, int currentFrame, int leafBspKey)
+void LevelRenderer::markSurfacesAsVisible(BspLeaf& leaf, int currentFrame, int leafBspKey)
 {
     BspSurface** nextSurface = leaf.firstMarkSurface;
 

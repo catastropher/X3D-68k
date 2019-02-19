@@ -29,13 +29,13 @@ public:
     void render(const X_RenderContext& renderContext);
 
 private:
-    void renderRecursive(X_BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags parentNodeFlags);
-    void renderSurfaces(const X_BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags, fp distanceToPlane);
+    void renderRecursive(BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags parentNodeFlags);
+    void renderSurfaces(const BspNode& node, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags, fp distanceToPlane);
 
-    static void markAncestorsAsVisible(X_BspNode& startNode, int currentFrame);
+    static void markAncestorsAsVisible(BspNode& startNode, int currentFrame);
     void renderBrushModels(const X_RenderContext& renderContext);
     void renderBrushModel(BspModel& brushModel, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags);
-    static void markSurfacesAsVisible(X_BspLeaf& leaf, int currentFrame, int leafBspKey);
+    static void markSurfacesAsVisible(BspLeaf& leaf, int currentFrame, int leafBspKey);
 
     int nextBspKey;
 };

@@ -127,8 +127,8 @@ private:
     
     const int totalSurfaces;
     
-    X_BspLeaf* leaf;
-    X_BspNode* nodes;
+    BspLeaf* leaf;
+    BspNode* nodes;
     BspSurface** markSurfaces;
     Prism prism;
 };

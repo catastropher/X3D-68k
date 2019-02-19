@@ -23,7 +23,7 @@
 struct EngineContext;
 struct X_RenderContext;
 struct Screen;
-struct X_BspLeaf;
+struct BspLeaf;
 
 enum CameraobjectFlags
 {
@@ -41,8 +41,8 @@ struct Camera
     
     Viewport viewport;
     Mat4x4 viewMatrix;
-    struct X_BspLeaf* currentLeaf;
-    struct X_BspLeaf* lastLeaf;
+    struct BspLeaf* currentLeaf;
+    struct BspLeaf* lastLeaf;
     DecompressedLeafVisibleSet pvsForCurrentLeaf;
     
     void (*screenResizeCallback)(struct Camera* cam, struct Screen* screen, fp fov);

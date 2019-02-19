@@ -277,7 +277,7 @@ struct X_AE_Context
     X_AE_Surface* createSurface(BspSurface* bspSurface, int bspKey);
     void emitEdges(X_AE_Surface* surface, Vec2_fp16x16* v2d, int totalVertices, int* clippedEdgeIds);
     void addPolygon(Polygon3* polygon, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int* edgeIds, int bspKey, bool inSubmodel);
-    void addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
+    void addSubmodelRecursive(Polygon3* poly, BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey);
     void emitSpan(int left, int right, int y, X_AE_Surface* surface);
 
     void processEdge(X_AE_Edge* edge, int y);

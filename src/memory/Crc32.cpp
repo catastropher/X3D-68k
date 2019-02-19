@@ -13,22 +13,20 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "BspNode.hpp"
+#include "Crc32.hpp"
 
-void BspNode::markAncestorsAsVisible(int currentFrame)
+unsigned int crc32(const char* str)
 {
-    BspNode* node = this;
+    unsigned int crc = 0;
 
-    do
+    while(*str)
     {
-        // Don't bother walking all the way up the tree if we've already marked them as visible
-        if(node->lastVisibleFrame == currentFrame)
-        {
-            break;
-        }
+        int byte = *str++;
+        int index = (crc ^ (byte << 24)) >> 24;
 
-        node->lastVisibleFrame = currentFrame;
-        node = node->parent;
-    } while(node != nullptr);
+        crc = (crc << 8) ^ crcTable[index];
+    }
+
+    return crc;
 }
 

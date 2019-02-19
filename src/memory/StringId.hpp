@@ -13,22 +13,40 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "BspNode.hpp"
+#pragma once
 
-void BspNode::markAncestorsAsVisible(int currentFrame)
+#include <cstdio>
+#include "Crc32.hpp"
+
+struct StringId
 {
-    BspNode* node = this;
-
-    do
+    constexpr StringId(const char* str)
+        : key(crc32Constexpr(str))
     {
-        // Don't bother walking all the way up the tree if we've already marked them as visible
-        if(node->lastVisibleFrame == currentFrame)
-        {
-            break;
-        }
 
-        node->lastVisibleFrame = currentFrame;
-        node = node->parent;
-    } while(node != nullptr);
+    }
+
+    constexpr StringId(unsigned int key_)
+        : key(key_)
+    {
+
+    }
+
+    constexpr operator unsigned int() const
+    {
+        return key;
+    }
+
+    static StringId fromString(const char* str)
+    {
+        return StringId(crc32(str));
+    }
+
+    unsigned int key;
+};
+
+constexpr StringId operator ""_sid(const char* str, size_t len)
+{
+    return StringId(str);
 }
 

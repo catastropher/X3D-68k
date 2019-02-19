@@ -14,6 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <engine/EngineContext.hpp>
+#include <physics/PhysicsEngine.hpp>
 #include "Player.hpp"
 
 // FIXME: move into physics engine
@@ -162,4 +163,19 @@ bool Player::handleKeys(Entity* entity, const InputUpdate& update)
     return true;
 }
 
+void Player::handleEvent(EntityEvent& event)
+{
+    switch(event.type)
+    {
+        case CollideEntityEvent::Name:
+            CollideEntityEvent* collide = event.to<CollideEntityEvent>();
+
+            if(collide->collideWith->getId() == 5)
+            {
+                return;
+            }
+
+            break;
+    }
+}
 

@@ -13,22 +13,26 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "BspNode.hpp"
+#pragma once
 
-void BspNode::markAncestorsAsVisible(int currentFrame)
+#include "memory/StringId.hpp"
+
+struct EntityEvent
 {
-    BspNode* node = this;
-
-    do
+    EntityEvent(StringId typeName)
+        : type(typeName)
     {
-        // Don't bother walking all the way up the tree if we've already marked them as visible
-        if(node->lastVisibleFrame == currentFrame)
-        {
-            break;
-        }
 
-        node->lastVisibleFrame = currentFrame;
-        node = node->parent;
-    } while(node != nullptr);
-}
+    }
+
+    template<typename T>
+    T* to()
+    {
+        static_assert(std::is_base_of<EntityEvent, T>::value);
+
+        return static_cast<T*>(this);
+    }
+
+    const StringId type;
+};
 

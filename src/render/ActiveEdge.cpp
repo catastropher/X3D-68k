@@ -541,7 +541,7 @@ void X_AE_Context::addLevelPolygon(BspLevel* level, int* edgeIds, int totalEdges
     addPolygon(&polygon, bspSurface, geoFlags, edgeIds, bspKey, 0);
 }
 
-void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
+void X_AE_Context::addSubmodelRecursive(Polygon3* poly, BspNode* node, int* edgeIds, BspSurface* bspSurface, BoundBoxFrustumFlags geoFlags, int bspKey)
 {
     if(!node->isVisibleThisFrame(renderContext->currentFrame))
         return;
@@ -554,7 +554,7 @@ void X_AE_Context::addSubmodelRecursive(Polygon3* poly, X_BspNode* node, int* ed
         if(node->contents == X_BSPLEAF_SOLID)
             return;
         
-        X_BspLeaf* leaf = (X_BspLeaf*)node;
+        BspLeaf* leaf = (BspLeaf*)node;
         addPolygon(poly, bspSurface, geoFlags, edgeIds, leaf->bspKey, true);
         return;
     }

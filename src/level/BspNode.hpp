@@ -23,7 +23,7 @@ struct X_RenderContext;
 struct BspModel;
 struct BspPlane;
 struct BspSurface;
-struct X_BspLeaf;
+struct BspLeaf;
 
 typedef enum X_BspLeafContents
 {
@@ -36,16 +36,16 @@ typedef enum X_BspLeafContents
     X_BSPLEAF_SKY = -6
 } X_BspLeafContents;
 
-typedef struct X_BspNode
+struct BspNode
 {
     bool isLeaf() const
     {
         return contents < 0;
     }
 
-    X_BspLeaf& getLeaf()
+    BspLeaf& getLeaf()
     {
-        return *(X_BspLeaf*)this;
+        return *(BspLeaf*)this;
     }
 
     bool isVisibleThisFrame(int currentFrame) const
@@ -55,25 +55,24 @@ typedef struct X_BspNode
 
     void markAncestorsAsVisible(int currentFrame);
 
-    // Common with X_BspLeaf - DO NOT REORDER
+    // Common with BspLeaf - DO NOT REORDER
     X_BspLeafContents contents;
     int lastVisibleFrame;
     BoundBox nodeBoundBox;
     BoundBox geoBoundBox;
-    X_BspNode* parent;
+    BspNode* parent;
     
     // Unique elements for node
     BspPlane* plane;
     
-    X_BspNode* frontChild;
-    X_BspNode* backChild;
+    BspNode* frontChild;
+    BspNode* backChild;
     
     BspSurface* firstSurface;
     int totalSurfaces;
-private:
-} X_BspNode;
+};
 
-typedef struct X_BspLeaf
+struct BspLeaf
 {
     bool isOutsideLevel() const
     {
@@ -82,12 +81,12 @@ typedef struct X_BspLeaf
 
     void markSurfacesAsVisible(int currentFrame, int bspKey_);
 
-    // Common with X_BspNode - DO NOT REOREDER
+    // Common with BspNode - DO NOT REOREDER
     X_BspLeafContents contents;
     int lastVisibleFrame;
     BoundBox nodeBoundBox;
     BoundBox geoBoundBox;
-    struct X_BspNode* parent;
+    BspNode* parent;
     
     // Unique elements for leaf
     BspSurface** firstMarkSurface;
@@ -95,5 +94,5 @@ typedef struct X_BspLeaf
     int bspKey;
     
     CompressedLeafVisibleSet pvsFromLeaf;
-} X_BspLeaf;
+};
 

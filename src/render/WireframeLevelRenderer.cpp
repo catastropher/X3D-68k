@@ -58,7 +58,7 @@ void WireframeLevelRenderer::renderModel(BspModel& model, X_Color color)
     renderNode(*model.rootBspNode, flags);
 }
 
-void WireframeLevelRenderer::renderNode(X_BspNode& node, int parentFlags)
+void WireframeLevelRenderer::renderNode(BspNode& node, int parentFlags)
 {    
     BoundBoxFrustumFlags nodeFlags = node.nodeBoundBox
         .determineFrustumClipFlags(*renderContext.viewFrustum, (BoundBoxFrustumFlags)parentFlags);

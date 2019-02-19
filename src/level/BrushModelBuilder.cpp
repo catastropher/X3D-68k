@@ -64,8 +64,8 @@ void BrushModelBuilder::allocateMemory()
     dest.faces = Zone::alloc<BspSurface>(totalSurfaces);
     dest.planes = Zone::alloc<BspPlane>(totalSurfaces);
     
-    nodes = Zone::alloc<X_BspNode>(totalSurfaces);
-    leaf = Zone::alloc<X_BspLeaf>();
+    nodes = Zone::alloc<BspNode>(totalSurfaces);
+    leaf = Zone::alloc<BspLeaf>();
     
     markSurfaces = Zone::alloc<BspSurface*>(totalSurfaces);
 }
@@ -135,11 +135,11 @@ void BrushModelBuilder::buildBspTree()
     for(int i = 0; i < totalSurfaces; ++i)
     {
         nodes[i].frontChild = &nodes[i + 1];
-        nodes[i].backChild = (X_BspNode*)leaf;
+        nodes[i].backChild = (BspNode*)leaf;
         nodes[i].contents = X_BSPLEAF_NODE;
     }
     
-    nodes[totalSurfaces - 1].frontChild = (X_BspNode*)leaf;
+    nodes[totalSurfaces - 1].frontChild = (BspNode*)leaf;
     
     leaf->contents = X_BSPLEAF_SOLID;
     

@@ -33,7 +33,7 @@
 struct X_RenderContext;
 struct X_AE_Edge;
 struct Portal;
-struct X_BspLeaf;
+struct BspLeaf;
 struct BspModel;
 
 typedef int X_BspVertexId;
@@ -154,7 +154,7 @@ struct BspLevel
     
     void initEmpty();
 
-    X_BspLeaf* findLeafPointIsIn(Vec3fp& point);
+    BspLeaf* findLeafPointIsIn(Vec3fp& point);
 
     void getLevelPolygon(BspSurface* surface, Vec3fp* modelOrigin, LevelPolygon3* dest)
     {
@@ -182,7 +182,7 @@ struct BspLevel
         return models[0];
     }
 
-    X_BspNode& getLevelRootNode() const
+    BspNode& getLevelRootNode() const
     {
         return getLevelModel().getRootNode();
     }
@@ -206,10 +206,10 @@ struct BspLevel
     BspSurface** markSurfaces;
     int totalMarkSurfaces;
     
-    X_BspLeaf* leaves;
+    BspLeaf* leaves;
     int totalLeaves;
     
-    X_BspNode* nodes;
+    BspNode* nodes;
     int totalNodes;
     
     X_BspClipNode* clipNodes;
@@ -255,7 +255,7 @@ void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_T
 void x_bsplevel_mark_surfaces_light_is_close_to(BspLevel* level, const X_Light* light, int currentFrame);
 
 struct BoundSphere;
-int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, struct BoundSphere* sphere, X_BspNode** dest);
+int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, struct BoundSphere* sphere, BspNode** dest);
 
 void x_bsplevel_render_submodels(BspLevel* level, struct X_RenderContext* renderContext);
 
@@ -266,7 +266,7 @@ static inline bool x_bsplevel_file_is_loaded(const BspLevel* level)
     return (level->flags & X_BSPLEVEL_LOADED) != 0;
 }
 
-static inline X_BspLeaf* x_bsplevel_get_leaf(const BspLevel* level, X_BspLeafId leafId)
+static inline BspLeaf* x_bsplevel_get_leaf(const BspLevel* level, X_BspLeafId leafId)
 {
     return level->leaves + leafId;
 }

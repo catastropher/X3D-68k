@@ -18,9 +18,24 @@
 #include "system/Time.hpp"
 #include "math/FixedPoint.hpp"
 #include "geo/Vec3.hpp"
+#include "entity/EntityEvent.hpp"
 
 class Entity;
 class BspLevel;
+
+struct CollideEntityEvent : EntityEvent
+{
+    static constexpr StringId Name = StringId("onCollide");
+
+    CollideEntityEvent(Entity* collideWith_)
+        : EntityEvent(Name),
+        collideWith(collideWith_)
+    {
+
+    }
+
+    Entity* collideWith;
+};
 
 class PhysicsEngine
 {

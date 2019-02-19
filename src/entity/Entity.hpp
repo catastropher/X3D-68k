@@ -18,6 +18,7 @@
 #include "Component.hpp"
 #include "TransformComponent.hpp"
 #include "system/Time.hpp"
+#include "EntityEvent.hpp"
 
 struct BspLevel;
 class EngineContext;
@@ -64,6 +65,11 @@ public:
     virtual void update(const EntityUpdate& update)
     {
         
+    }
+
+    virtual void handleEvent(EntityEvent& event)
+    {
+
     }
 
     virtual ~Entity()

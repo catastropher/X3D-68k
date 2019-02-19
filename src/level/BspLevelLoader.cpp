@@ -244,13 +244,13 @@ static void x_bsplevel_allocate_memory(BspLevel* level, const X_BspLevelLoader* 
     level->surfaces = (BspSurface*)x_malloc(level->totalSurfaces * sizeof(BspSurface));
     
     level->totalLeaves = loader->leaves.count;
-    level->leaves = (X_BspLeaf*)x_malloc(level->totalLeaves * sizeof(X_BspLeaf));
+    level->leaves = (BspLeaf*)x_malloc(level->totalLeaves * sizeof(BspLeaf));
     
     level->totalModels = loader->models.count;
     level->models = (BspModel*)x_malloc(level->totalModels * sizeof(BspModel));
     
     level->totalNodes = loader->nodes.count;
-    level->nodes = (X_BspNode*)x_malloc(level->totalNodes * sizeof(X_BspNode));
+    level->nodes = (BspNode*)x_malloc(level->totalNodes * sizeof(BspNode));
     
     level->totalVertices = loader->vertices.count;
     level->vertices = (BspVertex*)x_malloc(level->totalVertices * sizeof(BspVertex));
@@ -370,7 +370,7 @@ static void x_bsplevel_init_leaves(BspLevel* level, const X_BspLevelLoader* load
 {
     for(int i = 0; i < level->totalLeaves; ++i)
     {
-        X_BspLeaf* leaf = level->leaves + i;
+        BspLeaf* leaf = level->leaves + i;
         X_BspLoaderLeaf* loadLeaf = loader->leaves.elem + i;
         
         leaf->pvsFromLeaf.setCompressedBytes(level->pvs.getCompressedPvsData() + loadLeaf->pvsOffset);
@@ -391,7 +391,7 @@ static void x_bsplevel_init_leaves(BspLevel* level, const X_BspLevelLoader* load
     }
 }
 
-static void x_bspnode_assign_parent(X_BspNode* node, X_BspNode* parent)
+static void x_bspnode_assign_parent(BspNode* node, BspNode* parent)
 {
     node->parent = parent;
     
@@ -402,12 +402,12 @@ static void x_bspnode_assign_parent(X_BspNode* node, X_BspNode* parent)
     x_bspnode_assign_parent(node->backChild, node);
 }
 
-static X_BspNode* x_bsplevel_get_node_from_id(BspLevel* level, short id)
+static BspNode* x_bsplevel_get_node_from_id(BspLevel* level, short id)
 {
     if(id >= 0)
         return level->nodes + id;
     
-    return (X_BspNode*)(level->leaves + (~id));
+    return (BspNode*)(level->leaves + (~id));
 }
 
 static void x_bsplevel_init_models(BspLevel* level, const X_BspLevelLoader* loader)
@@ -463,7 +463,7 @@ static void x_bsplevel_init_nodes(BspLevel* level, const X_BspLevelLoader* loade
 {
     for(int i = 0; i < level->totalNodes; ++i)
     {
-        X_BspNode* node = level->nodes + i;
+        BspNode* node = level->nodes + i;
         X_BspLoaderNode* loadNode = loader->nodes.elem + i;
         
         node->contents = X_BSPLEAF_NODE;
@@ -559,7 +559,7 @@ static void x_bsplevel_init_facetextures(BspLevel* level, X_BspLevelLoader* load
     }
 }
 
-static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, BspSurface* surface, BspLevel* level)
+static void x_bspnode_calculate_geo_boundbox_add_surface(BspNode* node, BspSurface* surface, BspLevel* level)
 {
     for(int i = 0; i < surface->totalEdges; ++i)
     {
@@ -577,7 +577,7 @@ static void x_bspnode_calculate_geo_boundbox_add_surface(X_BspNode* node, BspSur
     }
 }
 
-static void x_bspnode_calculate_geo_boundbox(X_BspNode* node, BspLevel* level)
+static void x_bspnode_calculate_geo_boundbox(BspNode* node, BspLevel* level)
 {
     if(node->isLeaf())
         return;
@@ -651,7 +651,7 @@ static void x_bsplevel_init_from_bsplevel_loader(BspLevel* level, X_BspLevelLoad
     
     x_bsplevel_init_collision_hulls(level, loader);
     
-    X_BspNode* levelRootNode = &level->getLevelRootNode();
+    BspNode* levelRootNode = &level->getLevelRootNode();
     x_bspnode_calculate_geo_boundbox(levelRootNode, level);
     
     level->pvs.updatePvsData();

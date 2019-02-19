@@ -27,9 +27,9 @@
 #include "level/Portal.hpp"
 #include "entity/BrushModelComponent.hpp"
 
-X_BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
+BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
 {
-    X_BspNode* node = &getLevelRootNode();
+    BspNode* node = &getLevelRootNode();
  
     do
     {
@@ -89,7 +89,7 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
     }
 }
 
-// static void x_bspnode_mark_surfaces_in_node_as_close_to_light(X_BspNode* node, const X_Light* light, int currentFrame)
+// static void x_bspnode_mark_surfaces_in_node_as_close_to_light(BspNode* node, const X_Light* light, int currentFrame)
 // {
 //     for(int i = 0; i < node->totalSurfaces; ++i)
 //     {
@@ -105,7 +105,7 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
 //     }
 // }
 
-// static void x_bspnode_mark_surfaces_light_is_close_to(X_BspNode* node, const X_Light* light, int currentFrame)
+// static void x_bspnode_mark_surfaces_light_is_close_to(BspNode* node, const X_Light* light, int currentFrame)
 // {
 //     if(node->isLeaf())
 //         return;
@@ -171,7 +171,7 @@ void x_bsplevel_cleanup(BspLevel* level)
     x_free(level->clipNodes);
 }
 
-X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node, BoundSphere* sphere, X_BspNode** nextNodeDest)
+BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(BspNode* node, BoundSphere* sphere, BspNode** nextNodeDest)
 {
     if(node->isLeaf())
     {
@@ -208,7 +208,7 @@ X_BspNode** x_bsplevel_find_nodes_intersecting_sphere_recursive(X_BspNode* node,
     return nextNodeDest;
 }
 
-int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, BoundSphere* sphere, X_BspNode** dest)
+int x_bsplevel_find_nodes_intersecting_sphere(BspLevel* level, BoundSphere* sphere, BspNode** dest)
 {
     return x_bsplevel_find_nodes_intersecting_sphere_recursive(&level->getLevelModel().getRootNode(), sphere, dest) - dest;
 }
