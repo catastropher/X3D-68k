@@ -15,8 +15,7 @@
 
 #pragma once
 
-#include <vector>
-#include <type_traits>
+#include <new>
 
 #include "Entity.hpp"
 #include "engine/Engine.hpp"
@@ -29,7 +28,7 @@ class EntityManager
 {
 public:
     EntityManager()
-        : createEntityCallback(nullptr)
+        : entityMetadataHead(nullptr)
     {
 
     }
@@ -79,11 +78,68 @@ public:
 
         outArray.count = count;
     }
-    
+
+    template<typename T>
+    void registerEntityType(StringId name, class Entity* (*buildCallback)(EntityBuilder& builder))
+    {
+        EntityMetadata& entityMetadata = EntityMetadataProvider<T>::entityMetadata;
+
+        entityMetadata.name = name;
+        entityMetadata.buildCallback = buildCallback;
+
+        // TODO: put in linked list class
+        if(entityMetadataHead == nullptr)
+        {
+            entityMetadataHead = &entityMetadata;
+        }
+        else
+        {
+            entityMetadata.insertAfterThis(entityMetadataHead);
+        }
+    }
+
 private:
     Entity* tryCreateEntity(X_Edict& edict, BspLevel& level);
 
+    template<typename TEntity>
+    struct EntityMetadataProvider
+    {
+        static EntityMetadata entityMetadata;
+    };
+
+    EntityMetadata* entityMetadataHead;
     std::vector<Entity*> entities;
     CreateEntityCallback createEntityCallback;
+};
+
+template<typename T>
+EntityMetadata EntityManager::EntityMetadataProvider<T>::entityMetadata;
+
+class EntityBuilder
+{
+public:
+    template<typename TComponent>
+    EntityBuilder& withComponent()
+    {
+        static_assert(isValidComponentType<TComponent>(), "Not a valid component type");
+
+        components.set(getComponentType<TComponent>());
+
+        return *this;
+    }
+
+    template<typename TEntity, typename ...TConstructorArgs>
+    TEntity* build(TConstructorArgs&&... args)
+    {
+        TEntity* entity = allocateEntity(sizeof(TEntity), components);
+
+        return new (entity) TEntity(std::forward<TConstructorArgs>(args)...);
+    }
+
+    void* allocateEntity(int entitySize, Flags<ComponentType> components);
+
+private:
+    Flags<ComponentType> components;
+    ComponentRecord componentRecord;
 };
 

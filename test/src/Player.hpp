@@ -39,6 +39,8 @@ public:
     Player(X_Edict& edict, BspLevel& level)
         : Entity(level)
     {
+// FIXME: 2-20-2019
+#if false
         auto collider = addComponent<BoxColliderComponent>();
         auto input = addComponent<InputComponent>(handleKeys);
 
@@ -71,6 +73,7 @@ public:
         transform.setBoundBox(BoundBoxTemplate<fp>(mins.toVec3<fp>(), maxs.toVec3<fp>()));
 
         flags.set(EntityFlags::canPickThingsUp);
+#endif
     }
 
     void registerVars();

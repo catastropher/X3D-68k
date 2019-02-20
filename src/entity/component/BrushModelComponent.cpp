@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BrushModelComponent.hpp"
-#include "EntityDictionary.hpp"
+#include "entity/EntityDictionary.hpp"
 #include "level/BspLevel.hpp"
 #include "system/Clock.hpp"
 

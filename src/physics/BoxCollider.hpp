@@ -19,7 +19,6 @@
 #include "level/BspLevel.hpp"
 #include "memory/OldLink.hpp"
 #include "memory/BitSet.hpp"
-#include "entity/Component.hpp"
 
 struct X_RayTracer;
 struct Entity;
@@ -75,7 +74,7 @@ struct X_BoxCollider
     fp frictionCoefficient;
     fp maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
-    int transformComponentId = COMPONENT_INVALID_ID;
+    int transformComponentId = -1;      // FIXME 2-20-2019
 
     Entity* standingOnEntity;
     

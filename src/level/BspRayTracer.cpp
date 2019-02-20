@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BspRayTracer.hpp"
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 
 static fp calculateIntersectionT(fp startDist, fp endDist)
 {
@@ -145,8 +145,11 @@ bool BspRayTracer::visitNode(int nodeId, RayPoint& start, RayPoint& end)
 
 bool BspRayTracer::traceModel(BrushModelComponent& brushModel)
 {
+// FIXME: 2-20-2019
+#if false
     currentModel = brushModel.model;
     currentModelOwner = brushModel.owner;
+#endif
 
     RayPoint start(ray.v[0] - brushModel.model->center, 0);
     RayPoint end(ray.v[1] - brushModel.model->center, fp::fromInt(1));
@@ -160,6 +163,8 @@ bool BspRayTracer::trace()
 {
     collision.location.t = maxValue<fp>();
 
+// FIXME: 2-20-2019
+#if false
     // FIXME: this could very easily be optimized
     
     auto brushModels = BrushModelComponent::getAll();
@@ -175,6 +180,9 @@ bool BspRayTracer::trace()
     }
     
     return hitSomething;
+#endif
+
+    return false;
 }
 
 

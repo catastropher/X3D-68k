@@ -13,46 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "GroupAllocator.hpp"
+#include "memory/Alloc.h"
 
-#include <cstdio>
-#include "Crc32.hpp"
-
-struct StringId
+void GroupAllocator::allocAll()
 {
-    constexpr StringId()
-        : key(0)
+    unsigned char* mem = (unsigned char*)x_malloc(totalSize);
+
+    for(int i = 0; i < totalAllocations; ++i)
     {
-
+        *allocations[i].dest = mem + allocations[i].offset;
     }
-
-    constexpr StringId(const char* str)
-        : key(crc32Constexpr(str))
-    {
-
-    }
-
-    constexpr StringId(unsigned int key_)
-        : key(key_)
-    {
-
-    }
-
-    constexpr operator unsigned int() const
-    {
-        return key;
-    }
-
-    static StringId fromString(const char* str)
-    {
-        return StringId(crc32(str));
-    }
-
-    unsigned int key;
-};
-
-constexpr StringId operator ""_sid(const char* str, size_t len)
-{
-    return StringId(str);
 }
 

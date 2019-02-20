@@ -15,8 +15,8 @@
 
 #include "PlatformEntity.hpp"
 #include "EntityManager.hpp"
-#include "BrushModelComponent.hpp"
-#include "BoxColliderComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
 #include "level/BspRayTracer.hpp"
 #include "physics/PhysicsEngine.hpp"
 

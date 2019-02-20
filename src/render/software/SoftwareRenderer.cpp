@@ -14,8 +14,8 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "SoftwareRenderer.hpp"
-#include "entity/TransformComponent.hpp"
-#include "entity/CameraComponent.hpp"
+#include "entity/component/TransformComponent.hpp"
+#include "entity/component/CameraComponent.hpp"
 #include "render/OldRenderer.hpp"
 #include "engine/EngineContext.hpp"
 #include "level/LevelManager.hpp"
@@ -279,6 +279,8 @@ void SoftwareRenderer::render()
         return;
     }
 
+// FIXME: 2-20-2019
+#if false
     Array<CameraComponent> cameras = CameraComponent::getAll();
 
     for(auto& camera : cameras)
@@ -306,6 +308,7 @@ void SoftwareRenderer::render()
         x_ae_context_scan_edges(activeEdgeContext);
 #endif
     }
+#endif
 }
 
 SoftwareRenderer::SoftwareRenderer(X_AE_Context* activeEdgeContext, EngineContext* engineContext)

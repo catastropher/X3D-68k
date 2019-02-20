@@ -13,10 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
-
+#include "entity/component/Component.hpp"
 #include "physics/BoxCollider.hpp"
-#include "Component.hpp"
-
-using BoxColliderComponent = Component<X_BoxCollider>;
 

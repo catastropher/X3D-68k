@@ -15,44 +15,7 @@
 
 #pragma once
 
-#include <cstdio>
-#include "Crc32.hpp"
+#include "render/Camera.hpp"
 
-struct StringId
-{
-    constexpr StringId()
-        : key(0)
-    {
-
-    }
-
-    constexpr StringId(const char* str)
-        : key(crc32Constexpr(str))
-    {
-
-    }
-
-    constexpr StringId(unsigned int key_)
-        : key(key_)
-    {
-
-    }
-
-    constexpr operator unsigned int() const
-    {
-        return key;
-    }
-
-    static StringId fromString(const char* str)
-    {
-        return StringId(crc32(str));
-    }
-
-    unsigned int key;
-};
-
-constexpr StringId operator ""_sid(const char* str, size_t len)
-{
-    return StringId(str);
-}
+using CameraComponent = Camera;
 

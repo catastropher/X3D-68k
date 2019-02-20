@@ -15,10 +15,11 @@
 
 #pragma once
 
-#include "Component.hpp"
-#include "TransformComponent.hpp"
+#include "entity/component/Component.hpp"
+#include "entity/component/TransformComponent.hpp"
 #include "system/Time.hpp"
 #include "EntityEvent.hpp"
+#include "memory/DLink.hpp"
 
 struct BspLevel;
 class EngineContext;
@@ -46,48 +47,32 @@ struct EntityUpdate
     EngineContext* engineContext;
 };
 
+class EntityBuilder;
+
+struct EntityMetadata : DLink<EntityMetadata>
+{
+    StringId name;
+    class Entity* (*buildCallback)(EntityBuilder& builder);
+};
+
 class Entity
 {
 public:
     Entity(const Entity&) = delete;
     
     void operator=(const Entity&) = delete;
-    
-    int getId() const
-    {
-        return id;
-    }
-
-    Flags<EntityFlags> getFlags() const
-    {
-        return flags;
-    }
-    
-    template<typename TComponent>
-    TComponent* getComponent()
-    {
-        return componentManager.getComponent<TComponent>();
-    }
-    
-    template<typename TComponent>
-    int getComponentId()
-    {
-        return componentManager.getComponentId<TComponent>();
-    }
-    
-    virtual void update(const EntityUpdate& update)
-    {
-        
-    }
-
-    virtual EntityEventResponse handleEvent(EntityEvent& event)
-    {
-        return EntityEventResponse::unhandled;
-    }
 
     virtual ~Entity()
     {
 
+    }
+
+    template<typename T>
+    T* getComponent()
+    {
+        static_assert(isValidComponentType<T>(), "Type is not a component");
+
+        return componentRecord.getComponent<T>();
     }
     
 protected:
@@ -95,17 +80,7 @@ protected:
         : id(-1),
         level(level_)
     {
-        addComponent<TransformComponent>();
-    }
-    
-    template<typename TComponent, typename ...Args>
-    TComponent* addComponent(Args&&... args)
-    {
-        TComponent* component =  componentManager.add<TComponent>(std::forward<Args>(args)...);
-        
-        component->owner = this;
-        
-        return component;
+
     }
     
     BspLevel& getLevel()
@@ -122,7 +97,9 @@ protected:
     
 private:    
     int id;
-    ComponentManager componentManager;
+    ComponentRecord componentRecord;
+    const EntityMetadata* entityMetadata;
+
     BspLevel& level;
     Time nextUpdate;
     

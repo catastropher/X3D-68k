@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Entity.hpp"
-#include "BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 
 struct X_Edict;
 

@@ -15,13 +15,13 @@
 
 #pragma once
 
-#include "Component.hpp"
 #include "geo/Vec3.hpp"
 #include "system/Time.hpp"
 
 class BspModel;
 struct BspLevel;
 struct X_Edict;
+class Entity;
 
 namespace internal
 {
@@ -40,10 +40,10 @@ namespace internal
     class BrushModel
     {
     public:
-        BrushModel(BspModel* model_)
-            : model(model_)
+        BrushModel()
+            : model(nullptr)
         {
-            
+
         }
 
         BrushModel(const X_Edict& edict, const BspLevel& level);
@@ -55,5 +55,5 @@ namespace internal
     };
 }
 
-using BrushModelComponent = Component<internal::BrushModel>;
+using BrushModelComponent = internal::BrushModel;
 

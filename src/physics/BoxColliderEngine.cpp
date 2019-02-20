@@ -19,6 +19,8 @@
 
 void BoxColliderEngine::runStep()
 {
+// FIXME: 2-20-2019
+#if false
     if(collider.flags.hasFlag(X_BOXCOLLIDER_ON_GROUND) && collider.velocity.y >= fp::fromInt(0))
     {
         applyFriction();
@@ -49,6 +51,7 @@ void BoxColliderEngine::runStep()
     resetCollisionState();
     applyGravity();
     tryMove();
+#endif
 }
 
 void BoxColliderEngine::tryMove()
@@ -83,6 +86,8 @@ void BoxColliderEngine::tryMove()
 
 void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
 {
+// FIXME: 2-20-2019
+#if false
     transformComponent->setPosition(moveLogic.getFinalPosition());
     collider.velocity = moveLogic.getFinalVelocity();
     
@@ -109,6 +114,7 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
             switch(response)
             {
                 case EntityEventResponse::allowDefault:
+                    entityManager.destroyEntity(hitEntity);
                     printf("Allow pickup!\n");
 
                     break;
@@ -136,6 +142,7 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
     {
         collider.flags.reset(X_BOXCOLLIDER_ON_GROUND);
     }
+#endif
 }
 
 void BoxColliderEngine::applyFriction()

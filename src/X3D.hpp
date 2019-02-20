@@ -36,13 +36,13 @@
 #include "engine/Init.hpp"
 
 // entity
-#include "entity/BoxColliderComponent.hpp"
-#include "entity/CameraComponent.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
+#include "entity/component/CameraComponent.hpp"
 #include "entity/Entity.hpp"
 #include "entity/EntityDictionary.hpp"
 #include "entity/EntityManager.hpp"
-#include "entity/InputComponent.hpp"
-#include "entity/TransformComponent.hpp"
+#include "entity/component/InputComponent.hpp"
+#include "entity/component/TransformComponent.hpp"
 
 // error
 #include "error/Error.hpp"

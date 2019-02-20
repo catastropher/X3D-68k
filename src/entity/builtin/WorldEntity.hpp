@@ -13,6 +13,14 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "Component.hpp"
-#include "physics/BoxCollider.hpp"
+#pragma once
+
+#include "Entity.hpp"
+#include "entity/component/BrushModelComponent.hpp"
+
+class WorldEntity : public Entity
+{
+public:
+    WorldEntity(X_Edict& edict, BspLevel& level);
+};
 

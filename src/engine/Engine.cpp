@@ -28,9 +28,9 @@
 #include "physics/PhysicsEngine.hpp"
 #include "system/Clock.hpp"
 #include "entity/EntityManager.hpp"
-#include "entity/InputComponent.hpp"
+#include "entity/component/InputComponent.hpp"
 #include "render/StatusBar.hpp"
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 #include "level/LevelManager.hpp"
 #include "render/software/SoftwareRenderer.hpp"
 
@@ -201,6 +201,8 @@ bool handle_console(EngineContext* engineContext)
 
 void sendInputUpdate(const InputUpdate& update)
 {
+// FIXME: 2-20-2019
+#if false
     auto inputComponents = InputComponent::getAll();
 
     for(auto& inputComponent : inputComponents)
@@ -213,6 +215,7 @@ void sendInputUpdate(const InputUpdate& update)
             }
         }
     }
+#endif
 }
 
 static void runFrame(EngineContext* engineContext)
@@ -236,12 +239,15 @@ static void runFrame(EngineContext* engineContext)
 
     // Move the brush models to where their transform says they are
     // Fixme: need way to broadcast moves to all components
+    // FIXME: 2-20-2019
+#if false
     auto brushModels = BrushModelComponent::getAll();
 
     for(auto& brushModel : brushModels)
     {
         brushModel.model->center = brushModel.owner->getComponent<TransformComponent>()->getPosition();
     }
+#endif
 
 
     lockToFrameRate(engineContext);

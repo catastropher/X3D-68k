@@ -15,7 +15,7 @@
 
 #include "LevelRenderer.hpp"
 #include "geo/Frustum.hpp"
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 #include "render/OldRenderer.hpp"
 
 void LevelRenderer::render(const X_RenderContext& renderContext)
@@ -139,6 +139,8 @@ void LevelRenderer::renderBrushModels(const X_RenderContext& renderContext)
 {
     BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext.viewFrustum->totalPlanes) - 1);
 
+// FIXME: 2-20-2019
+#if false
     auto allBrushModels = BrushModelComponent::getAll();
 
     for(auto& brushModel : allBrushModels)
@@ -154,6 +156,7 @@ void LevelRenderer::renderBrushModels(const X_RenderContext& renderContext)
             renderBrushModel(*brushModel.model, renderContext, enableAllPlanes);
         }
     }
+#endif
 }
 
 void LevelRenderer::renderBrushModel(BspModel& brushModel, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags)

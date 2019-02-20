@@ -16,7 +16,6 @@
 #include "LevelManager.hpp"
 #include "BspLevelLoader.hpp"
 #include "entity/EntityManager.hpp"
-#include "entity/DoorEntity.hpp"
 #include "memory/FixedSizeArray.hpp"
 
 void LevelManager::switchLevel(const char* fileName)
@@ -36,16 +35,20 @@ void LevelManager::unloadLevel(BspLevel* level)
 
 BspLevel *LevelManager::loadLevel(const char *fileName)
 {
+
     BspLevel* newLevel = new BspLevel;  // FIXME: better memory management
     x_bsplevel_load_from_bsp_file(newLevel, fileName, &engineQueue);
 
     entityManager.createEntitesInLevel(*newLevel);
 
+// FIXME: 2-20-2019
+#if false
     // Link all doors together
     FixedLengthArray<DoorEntity*, 100> doors;
 
     entityManager.getAllEntitiesOfType(doors);
     DoorEntity::linkDoors(doors);
+#endif
 
     return newLevel;
 }

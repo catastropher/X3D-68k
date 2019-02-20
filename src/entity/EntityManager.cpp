@@ -15,10 +15,8 @@
 
 #include "EntityManager.hpp"
 #include "EntityDictionary.hpp"
-#include "WorldEntity.hpp"
-#include "PlatformEntity.hpp"
 #include "EntityDictionaryParser.hpp"
-#include "DoorEntity.hpp"
+#include "memory/GroupAllocator.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 {
@@ -35,6 +33,8 @@ Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 
 Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 {
+// FIXME: 2-20-2019
+#if false
     X_EdictAttribute* classname = edict.getAttribute("classname");
     if(classname == nullptr)
     {
@@ -72,7 +72,7 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
     }
 
     Log::error("Failed to create entity of type %s", classname->value);
-
+#endif
     return nullptr;
 }
 
@@ -96,7 +96,10 @@ void EntityManager::updateEntities(Time currentTime, fp deltaTime, EngineContext
     {
         if(entity != nullptr && currentTime >= entity->nextUpdate)
         {
+// FIXME: 2-20-2019
+#if false
             entity->update(update);
+#endif
         }
     }
 }
@@ -126,5 +129,69 @@ void EntityManager::destroyAllEntities()
             destroyEntity(entities[i]);
         }
     }
+}
+
+void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> components)
+{
+    GroupAllocator allocator;
+    unsigned char* entityBytes;
+
+    allocator.scheduleAlloc(entityBytes, entitySize);
+
+    if(components.hasFlag(ComponentType::transform))
+    {
+        allocator.scheduleAlloc(componentRecord.transformComponent);
+    }
+
+    if(components.hasFlag(ComponentType::brushModel))
+    {
+        allocator.scheduleAlloc(componentRecord.brushModelComponent);
+    }
+
+    if(components.hasFlag(ComponentType::collider))
+    {
+        allocator.scheduleAlloc(componentRecord.boxColliderComponent);
+    }
+
+    if(components.hasFlag(ComponentType::input))
+    {
+        allocator.scheduleAlloc(componentRecord.inputComponent);
+    }
+
+    if(components.hasFlag(ComponentType::camera))
+    {
+        allocator.scheduleAlloc(componentRecord.cameraComponent);
+    }
+
+    allocator.allocAll();
+
+    // Construct the components
+    if(components.hasFlag(ComponentType::transform))
+    {
+        new (componentRecord.transformComponent) TransformComponent;
+    }
+
+    if(components.hasFlag(ComponentType::brushModel))
+    {
+        new (componentRecord.brushModelComponent) BrushModelComponent;
+    }
+
+    if(components.hasFlag(ComponentType::collider))
+    {
+        new (componentRecord.boxColliderComponent) BoxColliderComponent;
+    }
+
+    if(components.hasFlag(ComponentType::input))
+    {
+        new (componentRecord.inputComponent) InputComponent;
+    }
+
+    if(components.hasFlag(ComponentType::camera))
+    {
+        new (componentRecord.cameraComponent) CameraComponent;
+    }
+
+
+    return entityBytes;
 }
 

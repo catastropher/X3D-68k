@@ -15,44 +15,39 @@
 
 #pragma once
 
-#include <cstdio>
-#include "Crc32.hpp"
-
-struct StringId
+struct GroupAllocation
 {
-    constexpr StringId()
-        : key(0)
-    {
-
-    }
-
-    constexpr StringId(const char* str)
-        : key(crc32Constexpr(str))
-    {
-
-    }
-
-    constexpr StringId(unsigned int key_)
-        : key(key_)
-    {
-
-    }
-
-    constexpr operator unsigned int() const
-    {
-        return key;
-    }
-
-    static StringId fromString(const char* str)
-    {
-        return StringId(crc32(str));
-    }
-
-    unsigned int key;
+    int offset;
+    void** dest;
 };
 
-constexpr StringId operator ""_sid(const char* str, size_t len)
+// Performs several smaller allocations as one giant allocation to reduce fragmentation
+class GroupAllocator
 {
-    return StringId(str);
-}
+public:
+    GroupAllocator()
+        : totalAllocations(0),
+        totalSize(0)
+    {
+
+    }
+
+    static const int MAX_ALLOCATIONS = 128;
+
+    template<typename T>
+    void scheduleAlloc(T*& outPointer, int count = 1)
+    {
+        allocations[totalAllocations].offset = totalSize;
+        allocations[totalAllocations].dest = (void**)&outPointer;
+
+        totalSize += sizeof(T) * count;
+    }
+
+    void allocAll();
+
+private:
+    GroupAllocation allocations[MAX_ALLOCATIONS];
+    int totalAllocations;
+    int totalSize;
+};
 

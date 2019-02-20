@@ -21,7 +21,7 @@
 #include "level/BspRayTracer.hpp"
 #include "memory/BitSet.hpp"
 #include "PhysicsEngine.hpp"
-#include "entity/BoxColliderComponent.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
 
 typedef enum IterationFlags
 {
@@ -42,7 +42,7 @@ public:
         level(level_),
         startingPosition(startingPosition_),
         velocity(velocity_),
-        flags(0),
+        flags(),
         dt(dt_),
         standingOnEntity(nullptr)
     {

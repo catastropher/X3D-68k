@@ -19,7 +19,7 @@
 #include "geo/Frustum.hpp"
 #include "level/BspLevel.hpp"
 #include "geo/Ray3.hpp"
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 
 void WireframeLevelRenderer::render()
 {
@@ -32,7 +32,9 @@ void WireframeLevelRenderer::render()
     //renderContext.viewFrustum->totalPlanes = 6;
     
     //renderModel(level.models[0], levelColor);
-    
+
+// FIXME: 2-20-2019
+#if false
     auto brushModels = BrushModelComponent::getAll();
     
     for(auto& brushModel : brushModels)
@@ -43,6 +45,7 @@ void WireframeLevelRenderer::render()
             renderModel(*brushModel.model, modelColor);
         }
     }
+#endif
     
     renderContext.viewFrustum->totalPlanes = totalPlanes;
 }

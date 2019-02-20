@@ -19,8 +19,6 @@
 #include "math/Quaternion.hpp"
 #include "geo/BoundBox.hpp"
 
-#include "Component.hpp"
-
 namespace internal
 {
     class Transform
@@ -74,5 +72,5 @@ namespace internal
     };
 }
 
-using TransformComponent = Component<internal::Transform>;
+using TransformComponent = internal::Transform;
 

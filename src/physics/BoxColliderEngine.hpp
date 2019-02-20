@@ -18,8 +18,9 @@
 #include "level/BspRayTracer.hpp"
 #include "geo/Vec3.hpp"
 #include "BoxColliderMoveLogic.hpp"
-#include "entity/TransformComponent.hpp"
-#include "entity/BoxColliderComponent.hpp"
+#include "entity/component/TransformComponent.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
+#include "entity/EntityManager.hpp"
 
 class BoxColliderMoveLogic;
 
@@ -28,7 +29,7 @@ struct BoxColliderState
     BoxColliderState(Vec3fp& position_, Vec3fp& velocity_)
         : position(position_),
         velocity(velocity_),
-        flags(0)
+        flags()
     {
         newPosition = position + velocity;
     }
@@ -42,10 +43,11 @@ struct BoxColliderState
 class BoxColliderEngine
 {
 public:
-    BoxColliderEngine(BoxColliderComponent& collider_, BspLevel& level_, fp dt_)
+    BoxColliderEngine(BoxColliderComponent& collider_, BspLevel& level_, fp dt_, EntityManager& entityManager)
         : collider(collider_),
-        level(level_),
-        dt(dt_)
+          level(level_),
+          dt(dt_),
+          entityManager(entityManager)
     {
 
     }
@@ -67,6 +69,7 @@ private:
 
     BoxColliderComponent& collider;
     BspLevel& level;
+    EntityManager& entityManager;
 
     Vec3fp finalPosition;
     Vec3fp finalVelocity;

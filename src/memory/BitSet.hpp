@@ -15,120 +15,70 @@
 
 #pragma once
 
-class BitSet
-{
-public:
-    BitSet()
-        : flags(0)
-    {
-
-    }
-
-    BitSet(unsigned int flags_) : flags(flags_)
-    {
-
-    }
-
-    bool isSet(int bit) const
-    {
-        return flags & (1 << bit);
-    }
-
-    bool isSetFromMask(unsigned int mask)
-    {
-        return flags & mask;
-    }
-
-    void setFromMask(unsigned int mask)
-    {
-        flags |= mask;
-    }
-
-    void resetFromMask(unsigned int mask)
-    {
-        flags &= (~mask);
-    }
-
-    void set(int bit, bool value)
-    {
-        flags = (flags & ~(1 << bit)) | ((int)value << bit);
-    }
-
-    void set(int bit)
-    {
-        flags |= (1 << bit);
-    }
-
-    void reset(int bit)
-    {
-        flags = flags & ~(1 << bit);
-    }
-
-    void clear()
-    {
-        flags = 0;
-    }
-
-    unsigned int getMask() const
-    {
-        return flags;
-    }
-
-private:
-    unsigned int flags;
-};
-
 template<typename T>
 class Flags
 {
 public:
-    Flags()
+    constexpr Flags()
     {
         
     }
 
-    Flags(unsigned int flags)
-        : bitSet(flags)
+    template<typename ...InitialFlags>
+    explicit constexpr Flags(InitialFlags... initialFlags)
+        : mask(buildMask(std::forward<InitialFlags>(initialFlags)...))
     {
 
     }
 
-    void set(T flag)
+    constexpr Flags(unsigned int flags)
+        : mask(0)
     {
-        bitSet.setFromMask((unsigned int)flag);
+
     }
 
-    void reset(T flag)
+    constexpr void set(T flag)
     {
-        return bitSet.resetFromMask((unsigned int)flag);
+        mask |= (int)flag;
     }
 
-    void set(unsigned int flags)
+    constexpr void set(unsigned int mask)
     {
-        bitSet.setFromMask(flags);
+        this->mask = mask;
     }
 
-    void set(const Flags& set)
+    constexpr void reset(T flag)
     {
-        bitSet.setFromMask(set.getMask());
+        mask &= ~flag;
     }
 
-    bool hasFlag(T flag)
+    constexpr bool hasFlag(T flag) const
     {
-        return bitSet.isSetFromMask((int)flag);
+        return (mask & (int)flag) != 0;
     }
 
-    void clear()
+    constexpr void clear()
     {
-        bitSet.clear();
+        mask = 0;
     }
 
-    unsigned int getMask() const
+    constexpr unsigned int getMask() const
     {
-        return bitSet.getMask();
+        return mask;
     }
 
 private:
-    BitSet bitSet;
+    constexpr unsigned int buildMask(T value)
+    {
+        return (unsigned int)value;
+    }
+
+    template<typename ...Ts>
+    constexpr int buildMask(T value, Ts... rest)
+    {
+        return (unsigned int)value | buildMask(rest...);
+    }
+
+    unsigned int mask;
 };
 

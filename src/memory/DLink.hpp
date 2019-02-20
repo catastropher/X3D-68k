@@ -18,7 +18,12 @@
 template<typename T>
 struct DLink
 {
-    DLink() : next(nullptr), prev(nullptr) { }
+    DLink()
+        : next(nullptr),
+        prev(nullptr)
+    {
+
+    }
     
     void insertAfterThis(T* link)
     {

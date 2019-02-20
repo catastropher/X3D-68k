@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 #include "math/FixedPoint.hpp"
 #include "level/BspLevel.hpp"
 #include "geo/Ray3.hpp"

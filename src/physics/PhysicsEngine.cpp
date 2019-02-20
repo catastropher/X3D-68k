@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "PhysicsEngine.hpp"
-#include "entity/BoxColliderComponent.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
 #include "BoxColliderEngine.hpp"
 #include "entity/Entity.hpp"
 #include "system/Clock.hpp"
@@ -31,6 +31,8 @@ void PhysicsEngine::update(BspLevel& level, fp timeDelta)
 
 void PhysicsEngine::step(BspLevel& level, fp dt)
 {
+// FIXME: 2-20-2019
+#if false
     if(!physics)
     {
         return;
@@ -40,13 +42,19 @@ void PhysicsEngine::step(BspLevel& level, fp dt)
     
     for(auto& collider : boxColliders)
     {
-        BoxColliderEngine engine(collider, level, dt);
+        // FIXME: should be a dependency
+        EntityManager* entityManager = Engine::getInstance()->entityManager;
+
+        BoxColliderEngine engine(collider, level, dt, *entityManager);
         engine.runStep();
     }
+#endif
 }
 
 void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
 {
+// FIXME: 2-20-2019
+#if false
     auto brushModels = BrushModelComponent::getAll();
     Time currentTime = Clock::getTicks();
 
@@ -78,10 +86,13 @@ void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
 
         pushBrushEntity(brushModel.owner, pushVector, level);
     }
+#endif
 }
 
 void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement, BspLevel& level)
 {
+// FIXME: 2-20-2019
+#if false
     auto pos = brushEntity->getComponent<TransformComponent>();
 
     auto boxCollider = BoxColliderComponent::getAll();
@@ -116,14 +127,18 @@ void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement,
     pos->setPosition(pos->getPosition() + movement);
 
     brushEntity->getComponent<BrushModelComponent>()->model->center = pos->getPosition();
+#endif
 }
 
 void PhysicsEngine::sendCollideEvent(Entity* a, Entity* b)
 {
+// FIXME: 2-20-2019
+#if false
     CollideEntityEvent eventForA(b);
     CollideEntityEvent eventForB(a);
 
     a->handleEvent(eventForA);
     b->handleEvent(eventForB);
+#endif
 }
 

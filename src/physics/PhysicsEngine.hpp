@@ -51,6 +51,20 @@ struct PickupEntityEvent : EntityEvent
     Entity* pickedUp;
 };
 
+struct CrushEntityEvent : EntityEvent
+{
+    static constexpr StringId Name = StringId("onCrush");
+
+    CrushEntityEvent(Entity* crushedBy_)
+    : EntityEvent(Name),
+    crushedBy(crushedBy_)
+    {
+
+    }
+
+    Entity* crushedBy;
+};
+
 class PhysicsEngine
 {
 public:

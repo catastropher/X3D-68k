@@ -75,15 +75,13 @@ set(X_SOURCES
         src/engine/Init.cpp
     
     # entity
-    src/entity/BrushModelComponent.cpp
-    src/entity/Component.cpp
+        src/entity/component/BrushModelComponent.cpp
+        src/entity/component/Component.cpp
     src/entity/EntityDictionary.cpp
     src/entity/EntityDictionaryParser.cpp
     src/entity/EntityManager.cpp
-    src/entity/PlatformEntity.cpp
-    src/entity/WorldEntity.cpp
 
-    # error
+        # error
         src/error/Error.cpp
         src/error/Log.cpp
 
@@ -199,7 +197,7 @@ if(DEFINED X_WITH_SDL)
     set(X_SOURCES ${X_SOURCES}
             src/platform/SDL.cpp
             src/platform/SDL/SdlScreenDriver.cpp
-            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/entity/InputComponent.hpp src/entity/DoorEntity.cpp src/entity/DoorEntity.hpp src/memory/FixedSizeArray.hpp src/render/software/SoftwareRenderer.cpp src/render/software/SoftwareRenderer.hpp src/render/software/LevelRenderer.cpp src/render/software/LevelRenderer.hpp src/entity/EntityEvent.hpp src/memory/StringId.hpp src/memory/Crc32.hpp src/memory/Crc32.cpp)
+            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/entity/component/InputComponent.hpp src/memory/FixedSizeArray.hpp src/render/software/SoftwareRenderer.cpp src/render/software/SoftwareRenderer.hpp src/render/software/LevelRenderer.cpp src/render/software/LevelRenderer.hpp src/entity/EntityEvent.hpp src/memory/StringId.hpp src/memory/Crc32.hpp src/memory/Crc32.cpp src/entity/component/ComponentType.hpp src/memory/GroupAllocator.cpp src/memory/GroupAllocator.hpp)
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})
