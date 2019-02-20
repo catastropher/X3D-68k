@@ -93,9 +93,37 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
     auto lastHitWall = moveLogic.getLastHitWall();
 
     // FIXME: this a deceptive name because it's not necessarily a wall that we hit
-    if(lastHitWall.entity != nullptr)
+    auto hitEntity = lastHitWall.entity;
+
+    if(hitEntity != nullptr)
     {
-        PhysicsEngine::sendCollideEvent(lastHitWall.entity, lastHitWall.entity);
+        bool shouldPickUp = collider.owner->getFlags().hasFlag(EntityFlags::canPickThingsUp)
+            && hitEntity->getFlags().hasFlag(EntityFlags::canBePickedUp);
+
+        if(shouldPickUp)
+        {
+            PickupEntityEvent pickupEntityEvent(hitEntity);
+
+            EntityEventResponse response = collider.owner->handleEvent(pickupEntityEvent);
+
+            switch(response)
+            {
+                case EntityEventResponse::allowDefault:
+                    printf("Allow pickup!\n");
+
+                    break;
+
+                case EntityEventResponse::preventDefault:
+                case EntityEventResponse::unhandled:
+                    printf("Could not be picked up\n");
+
+                    break;
+            }
+        }
+        else
+        {
+            PhysicsEngine::sendCollideEvent(lastHitWall.entity, lastHitWall.entity);
+        }
     }
 
     if(moveFlags.hasFlag(IT_ON_FLOOR))
@@ -127,7 +155,7 @@ void BoxColliderEngine::applyFriction()
     collider.velocity = collider.velocity * newSpeed;
 }
 
-void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags)
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, Flags<X_BoxColliderFlags> flags)
 {
     static Vec3fp gravity = { 0, fp::fromFloat(320), 0 };
     

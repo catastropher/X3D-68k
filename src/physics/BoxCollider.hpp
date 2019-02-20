@@ -50,7 +50,7 @@ struct BoxColliderCollisionInfo
 
 struct X_BoxCollider;
 
-void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags);
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, Flags<X_BoxColliderFlags> flags);
 
 struct X_BoxCollider
 {
@@ -65,7 +65,7 @@ struct X_BoxCollider
     
     bool traceRay(X_RayTracer& tracer);
 
-    EnumBitSet<X_BoxColliderFlags> flags;
+    Flags<X_BoxColliderFlags> flags;
 
     BoundBox boundBox;
     int levelCollisionHull;

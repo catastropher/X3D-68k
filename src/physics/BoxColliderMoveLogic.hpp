@@ -52,7 +52,7 @@ public:
     bool tryMoveNormally();
     bool tryMoveUpStep();
 
-    EnumBitSet<IterationFlags> getMovementFlags()
+    Flags<IterationFlags> getMovementFlags()
     {
         return flags;
     }
@@ -107,7 +107,7 @@ private:
     Vec3fp startingPosition;
     Vec3fp newPosition;
     Vec3fp velocity;
-    EnumBitSet<IterationFlags> flags;
+    Flags<IterationFlags> flags;
     fp dt;
     Entity* standingOnEntity;
 };

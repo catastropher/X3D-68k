@@ -37,6 +37,20 @@ struct CollideEntityEvent : EntityEvent
     Entity* collideWith;
 };
 
+struct PickupEntityEvent : EntityEvent
+{
+    static constexpr StringId Name = StringId("onPickup");
+
+    PickupEntityEvent(Entity* pickedUp_)
+        : EntityEvent(Name),
+        pickedUp(pickedUp_)
+    {
+
+    }
+
+    Entity* pickedUp;
+};
+
 class PhysicsEngine
 {
 public:

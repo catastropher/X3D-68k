@@ -23,6 +23,14 @@
 struct BspLevel;
 class EngineContext;
 
+enum class EntityFlags
+{
+    canPickThingsUp = (1 << 0),
+    canBePickedUp = (1 << 1),
+    canPush = (1 << 2),
+    canBePushed = (1 << 3)
+};
+
 struct EntityUpdate
 {
     EntityUpdate(Time currentTime_, fp deltaTime_, EngineContext* engineContext_)
@@ -49,6 +57,11 @@ public:
     {
         return id;
     }
+
+    Flags<EntityFlags> getFlags() const
+    {
+        return flags;
+    }
     
     template<typename TComponent>
     TComponent* getComponent()
@@ -67,9 +80,9 @@ public:
         
     }
 
-    virtual void handleEvent(EntityEvent& event)
+    virtual EntityEventResponse handleEvent(EntityEvent& event)
     {
-
+        return EntityEventResponse::unhandled;
     }
 
     virtual ~Entity()
@@ -104,6 +117,8 @@ protected:
     {
         this->nextUpdate = nextUpdate;
     }
+
+    Flags<EntityFlags> flags;
     
 private:    
     int id;

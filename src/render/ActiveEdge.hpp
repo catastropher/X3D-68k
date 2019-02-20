@@ -130,7 +130,7 @@ struct X_AE_Surface
     
     struct X_AE_Surface* parent;    
 
-    EnumBitSet<SurfaceFlags> flags;
+    Flags<SurfaceFlags> flags;
 };
 
 #define X_AE_EDGE_LEFT_SURFACE 0

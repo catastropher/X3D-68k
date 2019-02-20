@@ -72,7 +72,7 @@ struct Portal
     Mat4x4 transformToOtherSide;
     X_AE_Surface* aeSurface;
     Portal* otherSide;
-    EnumBitSet<PortalFlags> flags;
+    Flags<PortalFlags> flags;
     X_Color outlineColor;
 
     fp transformAngleX;

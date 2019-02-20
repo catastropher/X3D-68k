@@ -163,19 +163,15 @@ bool Player::handleKeys(Entity* entity, const InputUpdate& update)
     return true;
 }
 
-void Player::handleEvent(EntityEvent& event)
+EntityEventResponse Player::handleEvent(EntityEvent& event)
 {
     switch(event.type)
     {
-        case CollideEntityEvent::Name:
-            CollideEntityEvent* collide = event.to<CollideEntityEvent>();
+        case PickupEntityEvent::Name:
+            return EntityEventResponse::preventDefault;
 
-            if(collide->collideWith->getId() == 5)
-            {
-                return;
-            }
-
-            break;
+        default:
+            return EntityEventResponse::unhandled;
     }
 }
 

@@ -36,7 +36,7 @@ struct Camera
     void updateFrustum();
     void overrideBspLeaf(int leafId, BspLevel* level);
 
-    EnumBitSet<CameraobjectFlags> flags;
+    Flags<CameraobjectFlags> flags;
     Vec3fp position;
     
     Viewport viewport;

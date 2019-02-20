@@ -36,7 +36,7 @@ struct BoxColliderState
     Vec3fp position;
     Vec3fp newPosition;
     Vec3fp velocity;
-    EnumBitSet<IterationFlags> flags;
+    Flags<IterationFlags> flags;
 };
 
 class BoxColliderEngine
@@ -70,7 +70,7 @@ private:
 
     Vec3fp finalPosition;
     Vec3fp finalVelocity;
-    EnumBitSet<IterationFlags> moveFlags;
+    Flags<IterationFlags> moveFlags;
     TransformComponent* transformComponent;
     fp dt;
 };

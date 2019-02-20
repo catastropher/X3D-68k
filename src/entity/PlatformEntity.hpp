@@ -27,7 +27,7 @@ public:
 
     void update(const EntityUpdate& update);
     void move(const Vec3fp& movement);
-    void handleEvent(EntityEvent& event);
+    EntityEventResponse handleEvent(EntityEvent& event);
     
 private:
 

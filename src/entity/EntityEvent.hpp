@@ -17,6 +17,13 @@
 
 #include "memory/StringId.hpp"
 
+enum class EntityEventResponse
+{
+    unhandled = 0,
+    allowDefault = 1,
+    preventDefault = 2
+};
+
 struct EntityEvent
 {
     EntityEvent(StringId typeName)

@@ -33,6 +33,8 @@ PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
     addComponent<BrushModelComponent>(edict, level);
     EngineContext* receiver = Engine::getInstance();
     x_console_register_cmd(receiver->console, "plat", plat);
+
+    flags.set(EntityFlags::canBePickedUp);
 }
 
 void PlatformEntity::move(const Vec3fp &movement)
@@ -40,7 +42,7 @@ void PlatformEntity::move(const Vec3fp &movement)
 
 }
 
-void PlatformEntity::handleEvent(EntityEvent& event)
+EntityEventResponse PlatformEntity::handleEvent(EntityEvent& event)
 {
     switch(event.type)
     {

@@ -31,7 +31,7 @@ enum class PlayerKeys
     lookRight = 256
 };
 
-using PlayerKeyFlags = EnumBitSet<PlayerKeys>;
+using PlayerKeyFlags = Flags<PlayerKeys>;
 
 class Player : public Entity
 {
@@ -69,6 +69,8 @@ public:
 
         auto transform = getTransform();
         transform.setBoundBox(BoundBoxTemplate<fp>(mins.toVec3<fp>(), maxs.toVec3<fp>()));
+
+        flags.set(EntityFlags::canPickThingsUp);
     }
 
     void registerVars();
@@ -87,7 +89,7 @@ public:
 
     static bool handleKeys(Entity* entity, const InputUpdate& update);
 
-    void handleEvent(EntityEvent& event);
+    EntityEventResponse handleEvent(EntityEvent& event);
     
     fp angleX;
     fp angleY;
