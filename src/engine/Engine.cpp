@@ -270,6 +270,8 @@ static void runFrame(EngineContext* engineContext)
 
 void Engine::run()
 {
+    x_console_execute_cmd(instance.console, "exec user.cfg");
+
     while(!isDone)
     {
         runFrame(&instance);

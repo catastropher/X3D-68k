@@ -118,3 +118,12 @@ void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement,
     brushEntity->getComponent<BrushModelComponent>()->model->center = pos->getPosition();
 }
 
+void PhysicsEngine::sendCollideEvent(Entity* a, Entity* b)
+{
+    CollideEntityEvent eventForA(b);
+    CollideEntityEvent eventForB(a);
+
+    a->handleEvent(eventForA);
+    b->handleEvent(eventForB);
+}
+

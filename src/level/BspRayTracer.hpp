@@ -33,6 +33,12 @@ struct RayPoint
 
 struct RayCollision
 {
+    RayCollision()
+        : entity(nullptr)
+    {
+
+    }
+
     bool isCloserThan(const RayCollision& collision) const
     {
         return location.t < collision.location.t;

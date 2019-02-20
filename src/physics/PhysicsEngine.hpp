@@ -41,6 +41,7 @@ class PhysicsEngine
 {
 public:
     static void update(BspLevel& level, fp timeDelta);
+    static void sendCollideEvent(Entity* a, Entity* b);
     
 private:
     static void step(BspLevel& level, fp dt);

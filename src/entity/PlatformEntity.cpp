@@ -18,8 +18,7 @@
 #include "BrushModelComponent.hpp"
 #include "BoxColliderComponent.hpp"
 #include "level/BspRayTracer.hpp"
-
-#include "level/BrushModelBuilder.hpp"
+#include "physics/PhysicsEngine.hpp"
 
 bool allowMove = false;
 
@@ -39,6 +38,17 @@ PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
 void PlatformEntity::move(const Vec3fp &movement)
 {
 
+}
+
+void PlatformEntity::handleEvent(EntityEvent& event)
+{
+    switch(event.type)
+    {
+        case CollideEntityEvent::Name:
+            printf("I've been hit!\n");
+
+            break;
+    }
 }
 
 void PlatformEntity::update(const EntityUpdate& update)

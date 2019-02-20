@@ -32,11 +32,7 @@ void BoxColliderEngine::runStep()
         fp t = clampedSpeed / currentSpeed;
 
         collider.velocity = collider.velocity * t;
-
-        currentSpeed = clampedSpeed;
     }
-
-    StatusBar::setItem("Current speed", "%f", currentSpeed.toFloat());
 
     if(collider.transformComponentId == COMPONENT_INVALID_ID)
     {
@@ -92,21 +88,25 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
     
     auto moveFlags = moveLogic.getMovementFlags();
 
+    collider.standingOnEntity = moveLogic.getStandingOnEntity();
+
+    auto lastHitWall = moveLogic.getLastHitWall();
+
+    // FIXME: this a deceptive name because it's not necessarily a wall that we hit
+    if(lastHitWall.entity != nullptr)
+    {
+        PhysicsEngine::sendCollideEvent(lastHitWall.entity, lastHitWall.entity);
+    }
+
     if(moveFlags.hasFlag(IT_ON_FLOOR))
     {
         collider.flags.set(X_BOXCOLLIDER_ON_GROUND);
 
-        auto lastHitWall = moveLogic.getLastHitWall();
-
         linkToModelStandingOn(lastHitWall.hitModel);
-
-        collider.standingOnEntity = lastHitWall.entity;
     }
     else
     {
         collider.flags.reset(X_BOXCOLLIDER_ON_GROUND);
-
-        collider.standingOnEntity = nullptr;
     }
 }
 
