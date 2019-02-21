@@ -17,6 +17,7 @@
 #include "EntityDictionary.hpp"
 #include "EntityDictionaryParser.hpp"
 #include "memory/GroupAllocator.hpp"
+#include "builtin/WorldEntity.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 {
@@ -34,12 +35,29 @@ Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 {
 // FIXME: 2-20-2019
-#if false
     X_EdictAttribute* classname = edict.getAttribute("classname");
     if(classname == nullptr)
     {
         x_system_error("Edict missing classname");
     }
+
+    StringId nameId = StringId::fromString(classname->value);
+
+    Log::info("search...");
+
+    for(EntityMetadata* metadata = entityMetadataHead; metadata != nullptr; metadata = metadata->next)
+    {
+        if(metadata->name == nameId)
+        {
+            EntityBuilder builder(&level, edict);
+
+            return metadata->buildCallback(builder);
+        }
+    }
+
+
+#if false
+
 
     if(strcmp(classname->value, "worldspawn") == 0)
     {
@@ -165,33 +183,17 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
 
     allocator.allocAll();
 
-    // Construct the components
-    if(components.hasFlag(ComponentType::transform))
-    {
-        new (componentRecord.transformComponent) TransformComponent;
-    }
-
-    if(components.hasFlag(ComponentType::brushModel))
-    {
-        new (componentRecord.brushModelComponent) BrushModelComponent;
-    }
-
-    if(components.hasFlag(ComponentType::collider))
-    {
-        new (componentRecord.boxColliderComponent) BoxColliderComponent;
-    }
-
-    if(components.hasFlag(ComponentType::input))
-    {
-        new (componentRecord.inputComponent) InputComponent;
-    }
-
-    if(components.hasFlag(ComponentType::camera))
-    {
-        new (componentRecord.cameraComponent) CameraComponent;
-    }
-
+    constructComponentIfPresent<TransformComponent>();
+    constructComponentIfPresent<BrushModelComponent>();
+    constructComponentIfPresent<BoxColliderComponent>();
+    constructComponentIfPresent<InputComponent>();
+    constructComponentIfPresent<CameraComponent>();
 
     return entityBytes;
+}
+
+void EntityManager::registerBuiltinTypes()
+{
+    registerEntityType<WorldEntity>("worldspawn"_sid, WorldEntity::build);
 }
 

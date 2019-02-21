@@ -30,7 +30,7 @@ public:
     EntityManager()
         : entityMetadataHead(nullptr)
     {
-
+        registerBuiltinTypes();
     }
 
     void registerEntity(Entity* entity)
@@ -82,6 +82,11 @@ public:
     template<typename T>
     void registerEntityType(StringId name, class Entity* (*buildCallback)(EntityBuilder& builder))
     {
+        if(buildCallback == nullptr)
+        {
+            x_system_error("Null entity builder callback");
+        }
+
         EntityMetadata& entityMetadata = EntityMetadataProvider<T>::entityMetadata;
 
         entityMetadata.name = name;
@@ -99,6 +104,8 @@ public:
     }
 
 private:
+    void registerBuiltinTypes();
+
     Entity* tryCreateEntity(X_Edict& edict, BspLevel& level);
 
     template<typename TEntity>
@@ -118,6 +125,13 @@ EntityMetadata EntityManager::EntityMetadataProvider<T>::entityMetadata;
 class EntityBuilder
 {
 public:
+    EntityBuilder(BspLevel* level_, X_Edict& edict_)
+        : edict(edict_),
+        level(level_)
+    {
+
+    }
+
     template<typename TComponent>
     EntityBuilder& withComponent()
     {
@@ -131,14 +145,30 @@ public:
     template<typename TEntity, typename ...TConstructorArgs>
     TEntity* build(TConstructorArgs&&... args)
     {
-        TEntity* entity = allocateEntity(sizeof(TEntity), components);
+        TEntity* entity = (TEntity*)allocateEntity(sizeof(TEntity), components);
 
-        return new (entity) TEntity(std::forward<TConstructorArgs>(args)...);
+        new (entity) TEntity(std::forward<TConstructorArgs>(args)...);
+
+        entity->level = level;
+
+        return entity;
     }
 
     void* allocateEntity(int entitySize, Flags<ComponentType> components);
 
+    X_Edict& edict;
+    BspLevel* level;
+
 private:
+    template<typename T>
+    void constructComponentIfPresent()
+    {
+        if(components.hasFlag(getComponentType<T>()))
+        {
+            new (componentRecord.getComponent<T>()) T(*this);
+        }
+    }
+
     Flags<ComponentType> components;
     ComponentRecord componentRecord;
 };

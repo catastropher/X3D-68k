@@ -37,10 +37,15 @@ public:
     template<typename T>
     void scheduleAlloc(T*& outPointer, int count = 1)
     {
+        int neededAlignment = alignof(T);
+        totalSize = (totalSize + (neededAlignment - 1)) & (-neededAlignment);
+
         allocations[totalAllocations].offset = totalSize;
         allocations[totalAllocations].dest = (void**)&outPointer;
 
         totalSize += sizeof(T) * count;
+
+        ++totalAllocations;
     }
 
     void allocAll();

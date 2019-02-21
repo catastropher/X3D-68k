@@ -36,8 +36,7 @@ using PlayerKeyFlags = Flags<PlayerKeys>;
 class Player : public Entity
 {
 public:
-    Player(X_Edict& edict, BspLevel& level)
-        : Entity(level)
+    Player()
     {
 // FIXME: 2-20-2019
 #if false

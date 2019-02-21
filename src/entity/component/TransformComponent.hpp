@@ -19,11 +19,15 @@
 #include "math/Quaternion.hpp"
 #include "geo/BoundBox.hpp"
 
+class EntityBuilder;
+
 namespace internal
 {
     class Transform
     {
     public:
+        Transform(const EntityBuilder& builder);
+
         void setPosition(const Vec3fp& position_)
         {
             position = position_;

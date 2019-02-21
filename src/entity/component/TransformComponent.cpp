@@ -13,13 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "TransformComponent.hpp"
+#include "entity/EntityManager.hpp"
+#include "entity/EntityDictionary.hpp"
 
-#include "entity/Entity.hpp"
-
-class WorldEntity : public Entity
+internal::Transform::Transform(const EntityBuilder& builder)
 {
-public:
-    static Entity* build(EntityBuilder& builder);
-};
+    builder.edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0));
+}
 

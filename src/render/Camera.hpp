@@ -30,14 +30,25 @@ enum CameraobjectFlags
     CAMERA_OVERRIDE_PVS = 1
 };
 
+class EntityBuilder;
 
 struct Camera
 {
+    Camera(const EntityBuilder& builder)
+    {
+
+    }
+
+    Camera()
+    {
+
+    }
+
     void updateFrustum();
     void overrideBspLeaf(int leafId, BspLevel* level);
 
     Flags<CameraobjectFlags> flags;
-    Vec3fp position;
+    Vec3fp position;        // TODO: this should be removed
     
     Viewport viewport;
     Mat4x4 viewMatrix;

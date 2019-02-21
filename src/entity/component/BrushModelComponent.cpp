@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <X3D.hpp>
 #include "BrushModelComponent.hpp"
 #include "entity/EntityDictionary.hpp"
 #include "level/BspLevel.hpp"
@@ -20,12 +21,16 @@
 
 namespace internal
 {
-    BrushModel::BrushModel(const X_Edict& edict, const BspLevel& level)
+    BrushModel::BrushModel(const EntityBuilder& builder)
     {
+        const BrushModelId MISSING_MODEL(-1);
+
         BrushModelId id;
-        edict.getRequiredValue("model", id);
-        
-        model = x_bsplevel_get_model(&level, id.id);
+        builder.edict.getValueOrDefault("model", id, MISSING_MODEL);
+
+        model = id.id != MISSING_MODEL.id
+            ? x_bsplevel_get_model(builder.level, id.id)
+            : nullptr;
     }
 
     void BrushModel::initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive)

@@ -51,15 +51,15 @@ struct X_BoxCollider;
 
 void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, Flags<X_BoxColliderFlags> flags);
 
+class EntityBuilder;
+
 struct X_BoxCollider
 {
-    X_BoxCollider()
+    X_BoxCollider(const EntityBuilder& builder)
         : standingOnEntity(nullptr)
     {
         static BoundBox box;
         x_boxcollider_init(this, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
-
-
     }
     
     bool traceRay(X_RayTracer& tracer);

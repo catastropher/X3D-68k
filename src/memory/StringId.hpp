@@ -43,6 +43,11 @@ struct StringId
         return key;
     }
 
+    constexpr bool operator==(const StringId& rhs) const
+    {
+        return key == rhs.key;
+    }
+
     static StringId fromString(const char* str)
     {
         return StringId(crc32(str));

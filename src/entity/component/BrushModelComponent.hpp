@@ -22,6 +22,7 @@ class BspModel;
 struct BspLevel;
 struct X_Edict;
 class Entity;
+class EntityBuilder;
 
 namespace internal
 {
@@ -40,13 +41,7 @@ namespace internal
     class BrushModel
     {
     public:
-        BrushModel()
-            : model(nullptr)
-        {
-
-        }
-
-        BrushModel(const X_Edict& edict, const BspLevel& level);
+        BrushModel(const EntityBuilder& builder);
 
         void initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive = nullptr);
 

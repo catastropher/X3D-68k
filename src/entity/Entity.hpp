@@ -76,16 +76,16 @@ public:
     }
     
 protected:
-    explicit Entity(BspLevel& level_)
+    explicit Entity()
         : id(-1),
-        level(level_)
+        level(nullptr)
     {
 
     }
     
     BspLevel& getLevel()
     {
-        return level;
+        return *level;
     }
     
     void setNextUpdateTime(Time nextUpdate)
@@ -100,9 +100,10 @@ private:
     ComponentRecord componentRecord;
     const EntityMetadata* entityMetadata;
 
-    BspLevel& level;
+    BspLevel* level;
     Time nextUpdate;
     
     friend class EntityManager;
+    friend class EntityBuilder;
 };
 

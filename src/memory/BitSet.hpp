@@ -20,6 +20,7 @@ class Flags
 {
 public:
     constexpr Flags()
+        : mask(0)
     {
         
     }

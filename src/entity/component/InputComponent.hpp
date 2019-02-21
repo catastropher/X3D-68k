@@ -35,6 +35,7 @@ struct InputUpdate
 };
 
 class Entity;
+class EntityBuilder;
 
 using InputUpdateHandler = bool (*)(Entity* entity, const InputUpdate& update);
 
@@ -42,14 +43,7 @@ namespace internal
 {
     struct InputComponent
     {
-        InputComponent()
-            : handler(nullptr)
-        {
-
-        }
-
-        InputComponent(InputUpdateHandler handler_)
-            : handler(handler_)
+        InputComponent(const EntityBuilder& builder)
         {
 
         }

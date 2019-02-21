@@ -14,13 +14,21 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "WorldEntity.hpp"
-#include "EntityManager.hpp"
+#include "entity/EntityManager.hpp"
 
-WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
-    : Entity(level)
+//WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
+//    : Entity(level)
+//{
+//    BspModel* worldModel = &getLevel().getLevelModel();
+//    addComponent<BrushModelComponent>(worldModel);
+//}
+//
+//
+
+Entity* WorldEntity::build(EntityBuilder& builder)
 {
-    BspModel* worldModel = &getLevel().getLevelModel();
-    addComponent<BrushModelComponent>(worldModel);
+    return builder
+        .withComponent<TransformComponent>()
+        .withComponent<BrushModelComponent>()
+        .build<WorldEntity>();
 }
-
-
