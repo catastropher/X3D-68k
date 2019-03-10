@@ -15,6 +15,7 @@
 
 #include "TransformComponent.hpp"
 #include "entity/EntityManager.hpp"
+#include "entity/EntityBuilder.hpp"
 #include "entity/EntityDictionary.hpp"
 
 internal::Transform::Transform(const EntityBuilder& builder)

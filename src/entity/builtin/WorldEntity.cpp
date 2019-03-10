@@ -15,6 +15,7 @@
 
 #include "WorldEntity.hpp"
 #include "entity/EntityManager.hpp"
+#include "entity/EntityBuilder.hpp"
 
 //WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
 //    : Entity(level)
@@ -27,8 +28,13 @@
 
 Entity* WorldEntity::build(EntityBuilder& builder)
 {
-    return builder
+    WorldEntity* world = builder
         .withComponent<TransformComponent>()
         .withComponent<BrushModelComponent>()
         .build<WorldEntity>();
+
+    BrushModelComponent* brushModelComponent = world->getComponent<BrushModelComponent>();
+    brushModelComponent->model = &builder.level->getLevelModel();
+
+    return world;
 }

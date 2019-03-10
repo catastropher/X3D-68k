@@ -23,8 +23,9 @@ template<typename T>
 using Vector = std::vector<T, XAllocator<T>>;
 
 template<typename T>
-struct Array
+class Array
 {
+public:
     Array(T* elem_, int count_)
         : elem(elem_),
         count(count_)
@@ -53,7 +54,7 @@ struct Array
     {
         return elem + count;
     }
-    
+
     T* elem;
     int count;
 };

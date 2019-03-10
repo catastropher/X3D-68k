@@ -66,7 +66,7 @@ int main(int argc, char* argv[])
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");
 
-    //engineContext->entityManager->setCreateEntityCallback(createEntityCallback);
+    engineContext->entityManager->registerEntityType<Player>("info_player_start"_sid, Player::build);
 
     x_console_execute_cmd(engineContext->console, "exec engine.cfg;exec ../engine.cfg");
 

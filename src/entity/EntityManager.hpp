@@ -15,10 +15,10 @@
 
 #pragma once
 
-#include <new>
-
 #include "Entity.hpp"
-#include "engine/Engine.hpp"
+#include "engine/GlobalConfiguration.hpp"
+#include "system/IEntitySystem.hpp"
+#include "memory/FixedSizeArray.hpp"
 
 struct X_Edict;
 
@@ -35,8 +35,11 @@ public:
 
     void registerEntity(Entity* entity)
     {
-        entities.push_back(entity);
+        entities.pushBack(entity);
+
         entity->id = entities.size() - 1;
+
+        //FIXME: entity->id = entities.size() - 1;
     }
 
     void unregisterEntity(Entity* entity)
@@ -50,9 +53,9 @@ public:
         entity->id = -1;
     }
 
-    void setCreateEntityCallback(CreateEntityCallback createEntityCallback)
+    void registerEntitySystem(IEntitySystem* entitySystem)
     {
-        this->createEntityCallback = createEntityCallback;
+        entitySystems.pushBack(entitySystem);
     }
     
     void updateEntities(Time currentTime, fp deltaTime, EngineContext* engineContext);
@@ -99,7 +102,8 @@ public:
         }
         else
         {
-            entityMetadata.insertAfterThis(entityMetadataHead);
+            entityMetadata.next = entityMetadataHead;
+            entityMetadataHead = &entityMetadata;
         }
     }
 
@@ -115,61 +119,10 @@ private:
     };
 
     EntityMetadata* entityMetadataHead;
-    std::vector<Entity*> entities;
-    CreateEntityCallback createEntityCallback;
+    FixedLengthArray<Entity*, Configuration::ENTITIES_MAX> entities;
+    FixedLengthArray<IEntitySystem*, Configuration::ENTITY_MAX_SYSTEMS> entitySystems;
 };
 
 template<typename T>
 EntityMetadata EntityManager::EntityMetadataProvider<T>::entityMetadata;
-
-class EntityBuilder
-{
-public:
-    EntityBuilder(BspLevel* level_, X_Edict& edict_)
-        : edict(edict_),
-        level(level_)
-    {
-
-    }
-
-    template<typename TComponent>
-    EntityBuilder& withComponent()
-    {
-        static_assert(isValidComponentType<TComponent>(), "Not a valid component type");
-
-        components.set(getComponentType<TComponent>());
-
-        return *this;
-    }
-
-    template<typename TEntity, typename ...TConstructorArgs>
-    TEntity* build(TConstructorArgs&&... args)
-    {
-        TEntity* entity = (TEntity*)allocateEntity(sizeof(TEntity), components);
-
-        new (entity) TEntity(std::forward<TConstructorArgs>(args)...);
-
-        entity->level = level;
-
-        return entity;
-    }
-
-    void* allocateEntity(int entitySize, Flags<ComponentType> components);
-
-    X_Edict& edict;
-    BspLevel* level;
-
-private:
-    template<typename T>
-    void constructComponentIfPresent()
-    {
-        if(components.hasFlag(getComponentType<T>()))
-        {
-            new (componentRecord.getComponent<T>()) T(*this);
-        }
-    }
-
-    Flags<ComponentType> components;
-    ComponentRecord componentRecord;
-};
 

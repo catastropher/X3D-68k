@@ -23,6 +23,8 @@
 #include "render/WireframeLevelRenderer.hpp"
 #include "util/StopWatch.hpp"
 #include "LevelRenderer.hpp"
+#include "entity/system/CameraSystem.hpp"
+#include "engine/Engine.hpp"
 
 #if 0
 
@@ -280,33 +282,31 @@ void SoftwareRenderer::render()
     }
 
 // FIXME: 2-20-2019
-#if false
-    Array<CameraComponent> cameras = CameraComponent::getAll();
+#if true
+    CameraSystem* cameraSystem = Engine::getInstance()->cameraSystem;   // FIXME: DI
 
-    for(auto& camera : cameras)
+    auto& entitiesWithCameras = cameraSystem->getAllCameras();
+
+    for(auto& entity : entitiesWithCameras)
     {
-        TransformComponent* transformComponent = camera.owner->getComponent<TransformComponent>();
+        CameraComponent* camera = entity->getComponent<CameraComponent>();
+        TransformComponent* transformComponent = entity->getComponent<TransformComponent>();
 
-        camera.position = transformComponent->getPosition();
+        camera->position = transformComponent->getPosition();
 
-        transformComponent->toMat4x4(camera.viewMatrix);
-        camera.updateFrustum();
+        transformComponent->toMat4x4(camera->viewMatrix);
+        camera->updateFrustum();
 
-        // FIXME
-        // engineContext->renderer->renderCamera(&camera, engineContext);
-
-#if 1
         X_RenderContext renderContext;
-        x_enginecontext_get_rendercontext_for_camera(engineContext, &camera, &renderContext);
+        x_enginecontext_get_rendercontext_for_camera(engineContext, camera, &renderContext);
 
         x_ae_context_begin_render(activeEdgeContext, &renderContext);
 
         StopWatch::start("traverse-level");
-        x_cameraobject_render(&camera, &renderContext);
+        x_cameraobject_render(camera, &renderContext);
         StopWatch::stop("traverse-level");
 
         x_ae_context_scan_edges(activeEdgeContext);
-#endif
     }
 #endif
 }

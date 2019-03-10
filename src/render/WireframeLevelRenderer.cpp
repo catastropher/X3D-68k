@@ -20,6 +20,9 @@
 #include "level/BspLevel.hpp"
 #include "geo/Ray3.hpp"
 #include "entity/component/BrushModelComponent.hpp"
+#include "entity/system/BrushModelSystem.hpp"
+
+#include "engine/Engine.hpp"        // TODO: remove
 
 void WireframeLevelRenderer::render()
 {
@@ -33,16 +36,22 @@ void WireframeLevelRenderer::render()
     
     //renderModel(level.models[0], levelColor);
 
+    BrushModelSystem* brushModelSystem = Engine::getInstance()->brushModelSystem;
+
 // FIXME: 2-20-2019
-#if false
-    auto brushModels = BrushModelComponent::getAll();
-    
-    for(auto& brushModel : brushModels)
+#if true
+    auto& entities = brushModelSystem->getAllBrushModels();
+
+    printf("Render wireframe!\n");
+
+    for(auto& entity : entities)
     {
-        if(brushModel.model != nullptr)
+        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+
+        if(brushModelComponent->model != nullptr)
         {
             memset(drawnEdges, 0, (totalEdges + 7) / 8);
-            renderModel(*brushModel.model, modelColor);
+            renderModel(*brushModelComponent->model, modelColor);
         }
     }
 #endif

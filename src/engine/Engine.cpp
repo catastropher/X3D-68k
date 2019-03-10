@@ -88,6 +88,13 @@ void initEngineContext(EngineContext* context, X_Config& config)
         config.screen->fov.toFp16x16());
 
     context->entityManager = new EntityManager;
+
+    context->brushModelSystem = new BrushModelSystem;
+    context->entityManager->registerEntitySystem(context->brushModelSystem);
+
+    context->cameraSystem = new CameraSystem;
+    context->entityManager->registerEntitySystem(context->cameraSystem);
+
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);

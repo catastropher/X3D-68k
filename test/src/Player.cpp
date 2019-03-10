@@ -13,8 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <engine/EngineContext.hpp>
-#include <physics/PhysicsEngine.hpp>
+#include "engine/EngineContext.hpp"
+#include "physics/PhysicsEngine.hpp"
+#include "entity/EntityBuilder.hpp"
 #include "Player.hpp"
 
 // FIXME: move into physics engine
@@ -27,6 +28,60 @@ fp jump;
 fp maxSpeed;
 
 bool playerPhysics = true;
+
+Entity* Player::build(EntityBuilder& builder)
+{
+    printf("Call player build\n");
+
+    // FIXME: 2-20-2019
+
+    Player* player = builder
+        .withComponent<TransformComponent>()
+        .withComponent<InputComponent>()
+        .withComponent<BoxColliderComponent>()
+        .withComponent<CameraComponent>()
+        .build<Player>();
+
+    CameraComponent* cam = player->getComponent<CameraComponent>();
+
+    cam->viewport.init(Vec2(0, 0), 640, 480, X_ANG_60);
+
+    player->angleX = 0;
+    player->angleY = 0;
+
+#if false
+    auto collider = addComponent<BoxColliderComponent>();
+    auto input = addComponent<InputComponent>(handleKeys);
+
+
+    Vec3fp position;
+    if(!edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0)))
+    {
+        x_system_error("No player start");
+    }
+
+    position.y -= fp::fromInt(30);
+
+    getTransform().setPosition(position);
+
+    CameraComponent* cam = addComponent<CameraComponent>();
+
+
+
+    registerVars();
+
+    //, {16,16,24} },
+    Vec3i mins(-16, -32, -16);
+    Vec3i maxs(16, 24, 16);
+
+    auto transform = getTransform();
+    transform.setBoundBox(BoundBoxTemplate<fp>(mins.toVec3<fp>(), maxs.toVec3<fp>()));
+
+    flags.set(EntityFlags::canPickThingsUp);
+#endif
+
+    return player;
+}
 
 void Player::registerVars()
 {

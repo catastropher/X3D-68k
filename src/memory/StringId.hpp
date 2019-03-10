@@ -18,22 +18,36 @@
 #include <cstdio>
 #include "Crc32.hpp"
 
-struct StringId
+#ifndef NDEBUG
+    #define DEBUG_STRINGID
+#endif
+
+class StringId
 {
+public:
     constexpr StringId()
-        : key(0)
+        : key(0),
+#ifdef DEBUG_STRINGID
+        originalString("<default>")
+#endif
     {
 
     }
 
     constexpr StringId(const char* str)
-        : key(crc32Constexpr(str))
+        : key(crc32Constexpr(str)),
+#ifdef DEBUG_STRINGID
+        originalString(str)
+#endif
     {
 
     }
 
     constexpr StringId(unsigned int key_)
-        : key(key_)
+        : key(key_),
+#ifdef DEBUG_STRINGID
+        originalString("<from key>")
+#endif
     {
 
     }
@@ -48,16 +62,43 @@ struct StringId
         return key == rhs.key;
     }
 
+    void print(const char* description) const
+    {
+#ifdef DEBUG_STRINGID
+        printf("%s: %s (%d)\n", description, originalString, key);
+#else
+        printf("%d: %d\n", description, key);
+#endif
+    }
+
     static StringId fromString(const char* str)
     {
+#ifdef DEBUG_STRINGID
+        return StringId(crc32(str), str);
+#else
         return StringId(crc32(str));
+#endif
     }
 
     unsigned int key;
+
+private:
+#ifdef DEBUG_STRINGID
+    constexpr StringId(unsigned int key_, const char* str)
+        : key(key_),
+        originalString(str)
+    {
+
+    }
+
+    const char* originalString;
+#endif
 };
 
 constexpr StringId operator ""_sid(const char* str, size_t len)
 {
     return StringId(str);
 }
+
+#undef DEBUG_STRINGID
 

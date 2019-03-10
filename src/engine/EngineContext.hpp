@@ -25,6 +25,8 @@
 #include "Init.hpp"
 #include "system/Mouse.hpp"
 #include "EngineQueue.hpp"
+#include "entity/system/BrushModelSystem.hpp"
+#include "entity/system/CameraSystem.hpp"
 
 struct X_RenderContext;
 class EntityManager;
@@ -56,6 +58,9 @@ struct EngineContext
     EngineQueue* queue;
 
     Platform platform;
+
+    BrushModelSystem* brushModelSystem;
+    CameraSystem* cameraSystem;
 };
 
 void x_enginecontext_cleanup(EngineContext* context);

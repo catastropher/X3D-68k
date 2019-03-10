@@ -16,8 +16,8 @@
 #include "EntityManager.hpp"
 #include "EntityDictionary.hpp"
 #include "EntityDictionaryParser.hpp"
-#include "memory/GroupAllocator.hpp"
 #include "builtin/WorldEntity.hpp"
+#include "EntityBuilder.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 {
@@ -47,50 +47,21 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 
     for(EntityMetadata* metadata = entityMetadataHead; metadata != nullptr; metadata = metadata->next)
     {
+        metadata->name.print("Check");
         if(metadata->name == nameId)
         {
             EntityBuilder builder(&level, edict);
+            Entity* entity = metadata->buildCallback(builder);
 
-            return metadata->buildCallback(builder);
-        }
-    }
+            for(int i = 0; i < entitySystems.size(); ++i)
+            {
+                entitySystems[i]->createEntity(*entity);
+            }
 
-
-#if false
-
-
-    if(strcmp(classname->value, "worldspawn") == 0)
-    {
-        return new WorldEntity(edict, level);
-    }
-
-    if(strcmp(classname->value, "func_plat") == 0)
-    {
-        return new PlatformEntity(edict, level);
-    }
-
-    if(strcmp(classname->value, "func_door") == 0)
-    {
-        return new DoorEntity(edict, level);
-    }
-
-    if(createEntityCallback != nullptr)
-    {
-        Entity* entity = createEntityCallback(classname->value, edict, level);
-
-        if(entity != nullptr)
-        {
             return entity;
         }
     }
 
-    if(strcmp(classname->value, "info_player_start") == 0)
-    {
-        x_system_error("Game does not implement entity info_player_start");
-    }
-
-    Log::error("Failed to create entity of type %s", classname->value);
-#endif
     return nullptr;
 }
 
@@ -131,7 +102,7 @@ void EntityManager::destroyEntity(Entity* entity)
 
         while(entities.size() != 0 && entities[entities.size() - 1] == nullptr)
         {
-            entities.pop_back();
+            entities.popBack();
         }
     }
 
@@ -147,49 +118,6 @@ void EntityManager::destroyAllEntities()
             destroyEntity(entities[i]);
         }
     }
-}
-
-void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> components)
-{
-    GroupAllocator allocator;
-    unsigned char* entityBytes;
-
-    allocator.scheduleAlloc(entityBytes, entitySize);
-
-    if(components.hasFlag(ComponentType::transform))
-    {
-        allocator.scheduleAlloc(componentRecord.transformComponent);
-    }
-
-    if(components.hasFlag(ComponentType::brushModel))
-    {
-        allocator.scheduleAlloc(componentRecord.brushModelComponent);
-    }
-
-    if(components.hasFlag(ComponentType::collider))
-    {
-        allocator.scheduleAlloc(componentRecord.boxColliderComponent);
-    }
-
-    if(components.hasFlag(ComponentType::input))
-    {
-        allocator.scheduleAlloc(componentRecord.inputComponent);
-    }
-
-    if(components.hasFlag(ComponentType::camera))
-    {
-        allocator.scheduleAlloc(componentRecord.cameraComponent);
-    }
-
-    allocator.allocAll();
-
-    constructComponentIfPresent<TransformComponent>();
-    constructComponentIfPresent<BrushModelComponent>();
-    constructComponentIfPresent<BoxColliderComponent>();
-    constructComponentIfPresent<InputComponent>();
-    constructComponentIfPresent<CameraComponent>();
-
-    return entityBytes;
 }
 
 void EntityManager::registerBuiltinTypes()

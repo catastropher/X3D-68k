@@ -49,10 +49,11 @@ struct EntityUpdate
 
 class EntityBuilder;
 
-struct EntityMetadata : DLink<EntityMetadata>
+struct EntityMetadata
 {
     StringId name;
     class Entity* (*buildCallback)(EntityBuilder& builder);
+    EntityMetadata* next;
 };
 
 class Entity
@@ -73,6 +74,19 @@ public:
         static_assert(isValidComponentType<T>(), "Type is not a component");
 
         return componentRecord.getComponent<T>();
+    }
+
+    template<typename T>
+    bool hasComponent() const
+    {
+        static_assert(isValidComponentType<T>(), "Type is not a component");
+
+        return componentRecord.types.hasFlag(getComponentType<T>());
+    }
+
+    Flags<ComponentType> getAvailableComponents() const
+    {
+        return componentRecord.types;
     }
     
 protected:

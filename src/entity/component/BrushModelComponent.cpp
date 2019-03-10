@@ -18,6 +18,7 @@
 #include "entity/EntityDictionary.hpp"
 #include "level/BspLevel.hpp"
 #include "system/Clock.hpp"
+#include "entity/EntityBuilder.hpp"
 
 namespace internal
 {

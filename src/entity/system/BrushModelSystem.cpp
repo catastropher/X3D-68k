@@ -13,17 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "BrushModelSystem.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
+void BrushModelSystem::createEntity(Entity& entity)
+{
+    if(entity.hasComponent<BrushModelComponent>())
+    {
+        entities.add(&entity);
+    }
+}
 
-#ifndef NDEBUG
-    #define x_assert(_cond, message...) x_assert_function(_cond, __FILE__, __LINE__, message)
-#else
-    #define x_assert(...)
-#endif
-
-void x_assert_function(bool condition, const char* file, int line, const char* messageFormat, ...);
-__attribute__((noreturn)) void x_system_error(const char* format, ...);
+void BrushModelSystem::destroyEntity(Entity& entity)
+{
+    if(entity.hasComponent<BrushModelComponent>())
+    {
+        entities.remove(&entity);
+    }
+}
 
