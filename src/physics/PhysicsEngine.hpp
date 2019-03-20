@@ -41,8 +41,8 @@ struct PickupEntityEvent : EntityEvent
 {
     static constexpr StringId Name = StringId("onPickup");
 
-    PickupEntityEvent(Entity* pickedUp_)
-        : EntityEvent(Name),
+    constexpr PickupEntityEvent(Entity* pickedUp_)
+        : EntityEvent(StringId("onPickup")),    // FIXME
         pickedUp(pickedUp_)
     {
 

@@ -68,6 +68,11 @@ public:
 
     }
 
+    virtual EntityEventResponse handleEvent(EntityEvent& event)
+    {
+        return EntityEventResponse::unhandled;
+    }
+
     template<typename T>
     T* getComponent()
     {

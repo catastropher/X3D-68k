@@ -15,31 +15,24 @@
 
 #pragma once
 
-#include "memory/StringId.hpp"
+#include "memory/Set.hpp"
+#include "IEntitySystem.hpp"
+#include "engine/GlobalConfiguration.hpp"
 
-enum class EntityEventResponse
+class BoxColliderSystem : public IEntitySystem
 {
-    unhandled = 0,
-    allowDefault = 1,
-    preventDefault = 2
-};
+public:
+    using EntitiesType = Set<Entity*, Configuration::ENTITIES_MAX>;
 
-struct EntityEvent
-{
-    constexpr EntityEvent(StringId typeName)
-        : type(typeName)
+    void createEntity(Entity& entity);
+    void destroyEntity(Entity& entity);
+
+    EntitiesType& getAllBoxColliders()
     {
-
+        return entities;
     }
 
-    template<typename T>
-    T* to()
-    {
-        static_assert(std::is_base_of<EntityEvent, T>::value);
-
-        return static_cast<T*>(this);
-    }
-
-    const StringId type;
+private:
+    EntitiesType entities;
 };
 

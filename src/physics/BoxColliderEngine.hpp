@@ -43,11 +43,13 @@ struct BoxColliderState
 class BoxColliderEngine
 {
 public:
-    BoxColliderEngine(BoxColliderComponent& collider_, BspLevel& level_, fp dt_, EntityManager& entityManager)
-        : collider(collider_),
-          level(level_),
-          dt(dt_),
-          entityManager(entityManager)
+    BoxColliderEngine(Entity* entity_, BspLevel& level_, fp dt_, EntityManager& entityManager)
+        : entity(entity_),
+        collider(*entity_->getComponent<BoxColliderComponent>()),
+        transformComponent(*entity_->getComponent<TransformComponent>()),
+        level(level_),
+        dt(dt_),
+        entityManager(entityManager)
     {
 
     }
@@ -67,14 +69,15 @@ private:
     void applyGravity();
     void applyFriction();
 
+    Entity* entity;
     BoxColliderComponent& collider;
+    TransformComponent& transformComponent;
     BspLevel& level;
     EntityManager& entityManager;
 
     Vec3fp finalPosition;
     Vec3fp finalVelocity;
     Flags<IterationFlags> moveFlags;
-    TransformComponent* transformComponent;
     fp dt;
 };
 

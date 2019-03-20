@@ -74,7 +74,6 @@ struct X_BoxCollider
     fp frictionCoefficient;
     fp maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
-    int transformComponentId = -1;      // FIXME 2-20-2019
 
     Entity* standingOnEntity;
     

@@ -13,33 +13,22 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "BoxColliderSystem.hpp"
+#include "entity/Entity.hpp"
 
-#include "memory/StringId.hpp"
-
-enum class EntityEventResponse
+void BoxColliderSystem::createEntity(Entity& entity)
 {
-    unhandled = 0,
-    allowDefault = 1,
-    preventDefault = 2
-};
+    if(entity.hasComponent<BoxColliderComponent>())
+    {
+        entities.add(&entity);
+    }
+}
 
-struct EntityEvent
+void BoxColliderSystem::destroyEntity(Entity& entity)
 {
-    constexpr EntityEvent(StringId typeName)
-        : type(typeName)
+    if(entity.hasComponent<BoxColliderComponent>())
     {
-
+        entities.remove(&entity);
     }
-
-    template<typename T>
-    T* to()
-    {
-        static_assert(std::is_base_of<EntityEvent, T>::value);
-
-        return static_cast<T*>(this);
-    }
-
-    const StringId type;
-};
+}
 

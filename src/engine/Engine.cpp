@@ -95,6 +95,9 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->cameraSystem = new CameraSystem;
     context->entityManager->registerEntitySystem(context->cameraSystem);
 
+    context->boxColliderSystem = new BoxColliderSystem;
+    context->entityManager->registerEntitySystem(context->boxColliderSystem);
+
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);

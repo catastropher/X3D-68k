@@ -13,11 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "entity/system/BoxColliderSystem.hpp"
 #include "PhysicsEngine.hpp"
 #include "entity/component/BoxColliderComponent.hpp"
 #include "BoxColliderEngine.hpp"
 #include "entity/Entity.hpp"
 #include "system/Clock.hpp"
+#include "engine/Engine.hpp"
 
 // FIXME
 extern bool physics;
@@ -31,24 +33,22 @@ void PhysicsEngine::update(BspLevel& level, fp timeDelta)
 
 void PhysicsEngine::step(BspLevel& level, fp dt)
 {
-// FIXME: 2-20-2019
-#if false
     if(!physics)
     {
         return;
     }
-    
-    auto boxColliders = BoxColliderComponent::getAll();
-    
-    for(auto& collider : boxColliders)
+
+    BoxColliderSystem* boxColliderSystem = Engine::getInstance()->boxColliderSystem;    // FIXME: should be a dependency
+    auto& boxColliders = boxColliderSystem->getAllBoxColliders();
+
+    for(auto& entity : boxColliders)
     {
         // FIXME: should be a dependency
         EntityManager* entityManager = Engine::getInstance()->entityManager;
 
-        BoxColliderEngine engine(collider, level, dt, *entityManager);
+        BoxColliderEngine engine(entity, level, dt, *entityManager);
         engine.runStep();
     }
-#endif
 }
 
 void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)

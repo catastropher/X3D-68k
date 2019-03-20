@@ -19,8 +19,6 @@
 
 void BoxColliderEngine::runStep()
 {
-// FIXME: 2-20-2019
-#if false
     if(collider.flags.hasFlag(X_BOXCOLLIDER_ON_GROUND) && collider.velocity.y >= fp::fromInt(0))
     {
         applyFriction();
@@ -35,23 +33,10 @@ void BoxColliderEngine::runStep()
 
         collider.velocity = collider.velocity * t;
     }
-
-    if(collider.transformComponentId == COMPONENT_INVALID_ID)
-    {
-        collider.transformComponentId = collider.owner->getComponentId<TransformComponent>();
-    }
-    
-    transformComponent = TransformComponent::getById(collider.transformComponentId);
-    
-    if(transformComponent == nullptr)
-    {
-        return;
-    }
     
     resetCollisionState();
     applyGravity();
     tryMove();
-#endif
 }
 
 void BoxColliderEngine::tryMove()
@@ -59,7 +44,7 @@ void BoxColliderEngine::tryMove()
     BoxColliderMoveLogic moveLogic(
         collider,
         level,
-        transformComponent->getPosition(),
+        transformComponent.getPosition(),
         collider.velocity,
         dt);
 
@@ -70,7 +55,7 @@ void BoxColliderEngine::tryMove()
         BoxColliderMoveLogic stepMoveLogic(
             collider,
             level,
-            transformComponent->getPosition(),
+            transformComponent.getPosition(),
             collider.velocity,
             dt);
 
@@ -86,9 +71,7 @@ void BoxColliderEngine::tryMove()
 
 void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
 {
-// FIXME: 2-20-2019
-#if false
-    transformComponent->setPosition(moveLogic.getFinalPosition());
+    transformComponent.setPosition(moveLogic.getFinalPosition());
     collider.velocity = moveLogic.getFinalVelocity();
     
     auto moveFlags = moveLogic.getMovementFlags();
@@ -102,14 +85,15 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
 
     if(hitEntity != nullptr)
     {
-        bool shouldPickUp = collider.owner->getFlags().hasFlag(EntityFlags::canPickThingsUp)
-            && hitEntity->getFlags().hasFlag(EntityFlags::canBePickedUp);
+        bool shouldPickUp = false;  // FIXME
+//        bool shouldPickUp = entity->getFlags().hasFlag(EntityFlags::canPickThingsUp)
+//            && hitEntity->getFlags().hasFlag(EntityFlags::canBePickedUp);
 
         if(shouldPickUp)
         {
             PickupEntityEvent pickupEntityEvent(hitEntity);
 
-            EntityEventResponse response = collider.owner->handleEvent(pickupEntityEvent);
+            EntityEventResponse response = entity->handleEvent(pickupEntityEvent);
 
             switch(response)
             {
@@ -142,7 +126,6 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
     {
         collider.flags.reset(X_BOXCOLLIDER_ON_GROUND);
     }
-#endif
 }
 
 void BoxColliderEngine::applyFriction()
