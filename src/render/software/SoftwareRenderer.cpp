@@ -255,6 +255,8 @@ void x_cameraobject_render(Camera* cam, X_RenderContext* renderContext)
     renderContext->camPos = x_cameraobject_get_position(cam);
     renderContext->currentFrame = currentFrame;
 
+    printf("Current leaf: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves));
+
     if(cam->currentLeaf != renderContext->level->leaves + 0 && !renderContext->renderer->wireframe)
     {
         LevelRenderer levelRenderer;
@@ -281,8 +283,6 @@ void SoftwareRenderer::render()
         return;
     }
 
-// FIXME: 2-20-2019
-#if true
     CameraSystem* cameraSystem = Engine::getInstance()->cameraSystem;   // FIXME: DI
 
     auto& entitiesWithCameras = cameraSystem->getAllCameras();
@@ -308,7 +308,6 @@ void SoftwareRenderer::render()
 
         x_ae_context_scan_edges(activeEdgeContext);
     }
-#endif
 }
 
 SoftwareRenderer::SoftwareRenderer(X_AE_Context* activeEdgeContext, EngineContext* engineContext)

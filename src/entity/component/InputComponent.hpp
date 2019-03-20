@@ -39,23 +39,13 @@ class EntityBuilder;
 
 using InputUpdateHandler = bool (*)(Entity* entity, const InputUpdate& update);
 
-namespace internal
+struct InputComponent
 {
-    struct InputComponent
+    InputComponent(InputUpdateHandler handler)
     {
-        InputComponent(const EntityBuilder& builder)
-        {
+        this->handler = handler;
+    }
 
-        }
-
-        void setHandler(InputUpdateHandler handler)
-        {
-            this->handler = handler;
-        }
-
-        InputUpdateHandler handler;
-    };
-}
-
-using InputComponent = internal::InputComponent;
+    InputUpdateHandler handler;
+};
 

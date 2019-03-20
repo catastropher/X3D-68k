@@ -19,62 +19,57 @@
 #include "math/Quaternion.hpp"
 #include "geo/BoundBox.hpp"
 
-class EntityBuilder;
+class X_Edict;
 
-namespace internal
+class TransformComponent
 {
-    class Transform
+public:
+    TransformComponent(const X_Edict& edict);
+
+    void setPosition(const Vec3fp& position_)
     {
-    public:
-        Transform(const EntityBuilder& builder);
+        position = position_;
+    }
 
-        void setPosition(const Vec3fp& position_)
-        {
-            position = position_;
-        }
-        
-        void setOrientation(const Quaternion& orientation_)
-        {
-            orientation = orientation_;
-        }
+    void setOrientation(const Quaternion& orientation_)
+    {
+        orientation = orientation_;
+    }
 
-        void getOrientation(Quaternion& outOrientation) const
-        {
-            outOrientation = orientation;
-        }
-        
-        void toMat4x4(Mat4x4& outMat4x4) const
-        {
-            Mat4x4 rotation;
-            orientation.toMat4x4(rotation);
-            
-            Mat4x4 translation;
-            translation.loadTranslation(-position);
-            
-            outMat4x4 = rotation * translation;
-        }
-        
-        Vec3fp getPosition()
-        {
-            return position;
-        }
+    void getOrientation(Quaternion& outOrientation) const
+    {
+        outOrientation = orientation;
+    }
 
-        const BoundBoxTemplate<fp>& getBoundBox() const
-        {
-            return boundBox;
-        }
+    void toMat4x4(Mat4x4& outMat4x4) const
+    {
+        Mat4x4 rotation;
+        orientation.toMat4x4(rotation);
 
-        void setBoundBox(const BoundBoxTemplate<fp>& newBoundBox)
-        {
-            boundBox = newBoundBox;
-        }
-        
-    private:
-        Vec3fp position;
-        Quaternion orientation;
-        BoundBoxTemplate<fp> boundBox;
-    };
-}
+        Mat4x4 translation;
+        translation.loadTranslation(-position);
 
-using TransformComponent = internal::Transform;
+        outMat4x4 = rotation * translation;
+    }
+
+    Vec3fp getPosition()
+    {
+        return position;
+    }
+
+    const BoundBoxTemplate<fp>& getBoundBox() const
+    {
+        return boundBox;
+    }
+
+    void setBoundBox(const BoundBoxTemplate<fp>& newBoundBox)
+    {
+        boundBox = newBoundBox;
+    }
+
+private:
+    Vec3fp position;
+    Quaternion orientation;
+    BoundBoxTemplate<fp> boundBox;
+};
 

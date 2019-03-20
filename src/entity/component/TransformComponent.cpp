@@ -18,8 +18,8 @@
 #include "entity/EntityBuilder.hpp"
 #include "entity/EntityDictionary.hpp"
 
-internal::Transform::Transform(const EntityBuilder& builder)
+TransformComponent::TransformComponent(const X_Edict& edict)
 {
-    builder.edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0));
+    edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0));
 }
 

@@ -55,7 +55,7 @@ class EntityBuilder;
 
 struct X_BoxCollider
 {
-    X_BoxCollider(const EntityBuilder& builder)
+    X_BoxCollider()
         : standingOnEntity(nullptr)
     {
         static BoundBox box;

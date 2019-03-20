@@ -40,11 +40,11 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
 
     allocator.allocAll();
 
-    constructComponentIfPresent<TransformComponent>();
-    constructComponentIfPresent<BrushModelComponent>();
-    constructComponentIfPresent<BoxColliderComponent>();
-    constructComponentIfPresent<InputComponent>();
-    constructComponentIfPresent<CameraComponent>();
+    setupComponentIfPresent<TransformComponent>(edict);
+    setupComponentIfPresent<BrushModelComponent>(*this);
+    setupComponentIfPresent<BoxColliderComponent>();
+    setupComponentIfPresent<InputComponent>(inputComponentOptions.inputUpdateHandler);
+    setupComponentIfPresent<CameraComponent>();
 
     componentRecord.types = components;
 

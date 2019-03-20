@@ -34,16 +34,6 @@ class EntityBuilder;
 
 struct Camera
 {
-    Camera(const EntityBuilder& builder)
-    {
-
-    }
-
-    Camera()
-    {
-
-    }
-
     void updateFrustum();
     void overrideBspLeaf(int leafId, BspLevel* level);
 

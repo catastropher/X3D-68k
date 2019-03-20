@@ -16,6 +16,7 @@
 #pragma once
 
 #include <new>
+
 #include "Entity.hpp"
 #include "engine/Engine.hpp"
 
@@ -39,6 +40,15 @@ public:
         return *this;
     }
 
+    EntityBuilder& withInputComponent(InputUpdateHandler inputUpdateHandler)
+    {
+        components.set(getComponentType<InputComponent>());
+
+        inputComponentOptions.inputUpdateHandler = inputUpdateHandler;
+
+        return *this;
+    }
+
     template<typename TEntity, typename ...TConstructorArgs>
     TEntity* build(TConstructorArgs&&... args)
     {
@@ -58,15 +68,22 @@ public:
     BspLevel* level;
 
 private:
-    template<typename T>
-    void constructComponentIfPresent()
+    struct InputComponentOptions
     {
-        if(components.hasFlag(getComponentType<T>()))
+        InputUpdateHandler inputUpdateHandler;
+    };
+
+    template<typename TComponent, typename ...TConstructorArgs>
+    void setupComponentIfPresent(TConstructorArgs&&... args)
+    {
+        if(components.hasFlag(getComponentType<TComponent>()))
         {
-            new (componentRecord.getComponent<T>()) T(*this);
+            new (componentRecord.getComponent<TComponent>()) TComponent(std::forward<TConstructorArgs>(args)...);
         }
     }
 
     Flags<ComponentType> components;
     ComponentRecord componentRecord;
+
+    InputComponentOptions inputComponentOptions;
 };
