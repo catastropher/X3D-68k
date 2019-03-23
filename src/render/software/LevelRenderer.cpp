@@ -13,10 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <entity/system/BrushModelSystem.hpp>
 #include "LevelRenderer.hpp"
 #include "geo/Frustum.hpp"
 #include "entity/component/BrushModelComponent.hpp"
 #include "render/OldRenderer.hpp"
+#include "engine/Engine.hpp"
 
 void LevelRenderer::render(const X_RenderContext& renderContext)
 {
@@ -139,28 +141,30 @@ void LevelRenderer::renderBrushModels(const X_RenderContext& renderContext)
 {
     BoundBoxFrustumFlags enableAllPlanes = (BoundBoxFrustumFlags)((1 << renderContext.viewFrustum->totalPlanes) - 1);
 
-// FIXME: 2-20-2019
-#if false
-    auto allBrushModels = BrushModelComponent::getAll();
+    BrushModelSystem* brushModelSystem = Engine::getInstance()->brushModelSystem;
 
-    for(auto& brushModel : allBrushModels)
+    auto& allBrushModels = brushModelSystem->getAllEntities();
+
+    for(Entity* entity : allBrushModels)
     {
-        if(brushModel.model != nullptr)
+        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+
+        if(brushModelComponent->model != nullptr)
         {
             // FIXME: need a way to exclude the level model
-            if(brushModel.model == &renderContext.level->getLevelModel())
+            if(brushModelComponent->model == &renderContext.level->getLevelModel())
             {
                 continue;
             }
 
-            renderBrushModel(*brushModel.model, renderContext, enableAllPlanes);
+            renderBrushModel(*brushModelComponent->model, renderContext, enableAllPlanes);
         }
     }
-#endif
 }
 
 void LevelRenderer::renderBrushModel(BspModel& brushModel, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags)
 {
+    printf("Render brush model\n");
     x_ae_context_set_current_model(&renderContext.renderer->activeEdgeContext, &brushModel);
 
     for(int i = 0; i < brushModel.totalFaces; ++i)
