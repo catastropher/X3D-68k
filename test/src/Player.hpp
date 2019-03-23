@@ -38,7 +38,7 @@ class Player : public Entity
 public:
     Player()
     {
-
+        registerVars();
     }
 
     void registerVars();

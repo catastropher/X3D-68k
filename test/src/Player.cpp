@@ -37,7 +37,7 @@ Entity* Player::build(EntityBuilder& builder)
 
     Player* player = builder
         .withComponent<TransformComponent>()
-        .withComponent<InputComponent>()
+        .withInputComponent(handleKeys)
         .withComponent<BoxColliderComponent>()
         .withComponent<CameraComponent>()
         .build<Player>();
@@ -66,9 +66,6 @@ Entity* Player::build(EntityBuilder& builder)
 
     CameraComponent* cam = addComponent<CameraComponent>();
 
-
-
-    registerVars();
 
     //, {16,16,24} },
     Vec3i mins(-16, -32, -16);

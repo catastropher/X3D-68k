@@ -255,8 +255,6 @@ void x_cameraobject_render(Camera* cam, X_RenderContext* renderContext)
     renderContext->camPos = x_cameraobject_get_position(cam);
     renderContext->currentFrame = currentFrame;
 
-    printf("Current leaf: %d\n", (int)(cam->currentLeaf - renderContext->level->leaves));
-
     if(cam->currentLeaf != renderContext->level->leaves + 0 && !renderContext->renderer->wireframe)
     {
         LevelRenderer levelRenderer;
@@ -285,7 +283,7 @@ void SoftwareRenderer::render()
 
     CameraSystem* cameraSystem = Engine::getInstance()->cameraSystem;   // FIXME: DI
 
-    auto& entitiesWithCameras = cameraSystem->getAllCameras();
+    auto& entitiesWithCameras = cameraSystem->getAllEntities();
 
     for(auto& entity : entitiesWithCameras)
     {

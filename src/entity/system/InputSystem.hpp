@@ -13,22 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "BrushModelSystem.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#pragma once
 
-void BrushModelSystem::createEntity(Entity& entity)
-{
-    if(entity.hasComponent<BrushModelComponent>())
-    {
-        entities.add(&entity);
-    }
-}
+#include "GenericComponentSystem.hpp"
 
-void BrushModelSystem::destroyEntity(Entity& entity)
-{
-    if(entity.hasComponent<BrushModelComponent>())
-    {
-        entities.remove(&entity);
-    }
-}
+// TODO: don't hardcode such an arbitrary size
+using InputSystem = GenericComponentSystem<InputComponent, 2>;
 

@@ -98,6 +98,9 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->boxColliderSystem = new BoxColliderSystem;
     context->entityManager->registerEntitySystem(context->boxColliderSystem);
 
+    context->inputSystem = new InputSystem;
+    context->entityManager->registerEntitySystem(context->inputSystem);
+
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);
@@ -211,21 +214,22 @@ bool handle_console(EngineContext* engineContext)
 
 void sendInputUpdate(const InputUpdate& update)
 {
-// FIXME: 2-20-2019
-#if false
-    auto inputComponents = InputComponent::getAll();
+    InputSystem* inputSystem = Engine::getInstance()->inputSystem;  // FIXME: DI
 
-    for(auto& inputComponent : inputComponents)
+    auto& inputComponents = inputSystem->getAllEntities();
+
+    for(auto& entity : inputComponents)
     {
-        if(inputComponent.handler != nullptr)
+        InputComponent* inputComponent = entity->getComponent<InputComponent>();
+
+        if(inputComponent->handler != nullptr)
         {
-            if(inputComponent.handler(inputComponent.owner, update))
+            if(inputComponent->handler(entity, update))
             {
                 break;
             }
         }
     }
-#endif
 }
 
 static void runFrame(EngineContext* engineContext)

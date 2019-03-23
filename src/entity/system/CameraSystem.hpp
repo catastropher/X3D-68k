@@ -15,25 +15,7 @@
 
 #pragma once
 
-#include "IEntitySystem.hpp"
-#include "engine/GlobalConfiguration.hpp"
-#include "memory/Set.hpp"
+#include "GenericComponentSystem.hpp"
 
-class CameraSystem : public IEntitySystem
-{
-public:
-    using EntitiesType = Set<Entity*, Configuration::CAMERAS_MAX>;
-
-    void createEntity(Entity& entity);
-    void destroyEntity(Entity& entity);
-
-    EntitiesType& getAllCameras()
-    {
-        return entities;
-    }
-
-private:
-
-    EntitiesType entities;
-};
+using CameraSystem = GenericComponentSystem<CameraComponent, Configuration::CAMERAS_MAX>;
 

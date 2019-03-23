@@ -38,9 +38,7 @@ void WireframeLevelRenderer::render()
 
     BrushModelSystem* brushModelSystem = Engine::getInstance()->brushModelSystem;
 
-// FIXME: 2-20-2019
-#if true
-    auto& entities = brushModelSystem->getAllBrushModels();
+    auto& entities = brushModelSystem->getAllEntities();
 
     printf("Render wireframe!\n");
 
@@ -54,7 +52,6 @@ void WireframeLevelRenderer::render()
             renderModel(*brushModelComponent->model, modelColor);
         }
     }
-#endif
     
     renderContext.viewFrustum->totalPlanes = totalPlanes;
 }

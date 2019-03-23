@@ -63,7 +63,7 @@ public:
     }
 
     bool trace();
-    bool traceModel(BrushModelComponent& brushModel);
+    bool traceModel(Entity* entityWithModel);
 
     RayCollision& getCollision()
     {

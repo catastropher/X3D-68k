@@ -13,22 +13,41 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "CameraSystem.hpp"
+#pragma once
+
+#include "IEntitySystem.hpp"
+#include "engine/GlobalConfiguration.hpp"
+#include "memory/Set.hpp"
 #include "entity/Entity.hpp"
 
-void CameraSystem::createEntity(Entity& entity)
+template<typename TComponent, int MaxEntities>
+class GenericComponentSystem : public IEntitySystem
 {
-    if(entity.hasComponent<CameraComponent>())
-    {
-        entities.add(&entity);
-    }
-}
+public:
+    using SetType = Set<Entity*, MaxEntities>;
 
-void CameraSystem::destroyEntity(Entity& entity)
-{
-    if(entity.hasComponent<CameraComponent>())
+    void createEntity(Entity& entity)
     {
-        entities.remove(&entity);
+        if(entity.hasComponent<TComponent>())
+        {
+            entities.add(&entity);
+        }
     }
-}
 
+    void destroyEntity(Entity& entity)
+    {
+        if(entity.hasComponent<TComponent>())
+        {
+            entities.remove(&entity);
+        }
+    }
+
+
+    SetType& getAllEntities()
+    {
+        return entities;
+    }
+
+private:
+    SetType entities;
+};

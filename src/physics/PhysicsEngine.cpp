@@ -39,7 +39,7 @@ void PhysicsEngine::step(BspLevel& level, fp dt)
     }
 
     BoxColliderSystem* boxColliderSystem = Engine::getInstance()->boxColliderSystem;    // FIXME: should be a dependency
-    auto& boxColliders = boxColliderSystem->getAllBoxColliders();
+    auto& boxColliders = boxColliderSystem->getAllEntities();
 
     for(auto& entity : boxColliders)
     {

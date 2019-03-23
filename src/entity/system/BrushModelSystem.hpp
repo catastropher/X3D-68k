@@ -15,25 +15,7 @@
 
 #pragma once
 
-#include "memory/Set.hpp"
-#include "engine/GlobalConfiguration.hpp"
-#include "entity/Entity.hpp"
-#include "IEntitySystem.hpp"
+#include "GenericComponentSystem.hpp"
 
-class BrushModelSystem : public IEntitySystem
-{
-public:
-    using EntitiesType = Set<Entity*, Configuration::ENTITIES_MAX>;
-
-    void createEntity(Entity& entity);
-    void destroyEntity(Entity& entity);
-
-    EntitiesType& getAllBrushModels()
-    {
-        return entities;
-    }
-
-private:
-    EntitiesType entities;
-};
+using BrushModelSystem = GenericComponentSystem<BrushModelComponent, Configuration::ENTITIES_MAX>;
 

@@ -15,24 +15,7 @@
 
 #pragma once
 
-#include "memory/Set.hpp"
-#include "IEntitySystem.hpp"
-#include "engine/GlobalConfiguration.hpp"
+#include "GenericComponentSystem.hpp"
 
-class BoxColliderSystem : public IEntitySystem
-{
-public:
-    using EntitiesType = Set<Entity*, Configuration::ENTITIES_MAX>;
-
-    void createEntity(Entity& entity);
-    void destroyEntity(Entity& entity);
-
-    EntitiesType& getAllBoxColliders()
-    {
-        return entities;
-    }
-
-private:
-    EntitiesType entities;
-};
+using BoxColliderSystem = GenericComponentSystem<BoxColliderComponent, Configuration::ENTITIES_MAX>;
 

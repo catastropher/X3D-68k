@@ -28,6 +28,7 @@
 #include "entity/system/BrushModelSystem.hpp"
 #include "entity/system/CameraSystem.hpp"
 #include "entity/system/BoxColliderSystem.hpp"
+#include "entity/system/InputSystem.hpp"
 
 struct X_RenderContext;
 class EntityManager;
@@ -63,6 +64,7 @@ struct EngineContext
     BrushModelSystem* brushModelSystem;
     CameraSystem* cameraSystem;
     BoxColliderSystem* boxColliderSystem;
+    InputSystem* inputSystem;
 };
 
 void x_enginecontext_cleanup(EngineContext* context);
