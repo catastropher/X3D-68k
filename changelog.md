@@ -1,3 +1,6 @@
+### 3-23-2019
+* Fixed crash on changing levels caused by not alerting the entity systems
+
 ### 3-21-2019
 * Genericized the various component systems into a single class
 * Fixed input handling by adding `InputSystem`

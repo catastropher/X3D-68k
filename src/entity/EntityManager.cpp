@@ -95,6 +95,11 @@ void EntityManager::updateEntities(Time currentTime, fp deltaTime, EngineContext
 
 void EntityManager::destroyEntity(Entity* entity)
 {
+    for(auto& entitySystem : entitySystems)
+    {
+        entitySystem->destroyEntity(*entity);
+    }
+
     // TODO: method to check if an entity is currently registered
     if(entity->id != -1)
     {
@@ -106,7 +111,9 @@ void EntityManager::destroyEntity(Entity* entity)
         }
     }
 
-    delete entity;
+    entity->~Entity();
+
+    x_free(entity);
 }
 
 void EntityManager::destroyAllEntities()

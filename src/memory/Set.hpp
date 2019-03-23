@@ -35,8 +35,10 @@ public:
 
     void remove(const T& val)
     {
+        printf("Old size: %d\n", elements.size());
         T* newEnd = std::remove(begin(), end(), val);
         elements.setEnd(newEnd);
+        printf("New size: %d\n", elements.size());
     }
 
     bool contains(const T& val) const

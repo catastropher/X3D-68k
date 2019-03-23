@@ -53,20 +53,22 @@ void PhysicsEngine::step(BspLevel& level, fp dt)
 
 void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
 {
-// FIXME: 2-20-2019
-#if false
-    auto brushModels = BrushModelComponent::getAll();
+    BrushModelSystem* brushModelSystem = Engine::getInstance()->brushModelSystem;    // FIXME: should be a dependency
+
+    auto& brushModels = brushModelSystem->getAllEntities();
     Time currentTime = Clock::getTicks();
 
-    for(auto& brushModel : brushModels)
+    for(Entity* entity : brushModels)
     {
-        auto& movement = brushModel.movement;
+        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+
+        auto& movement = brushModelComponent->movement;
         if(!movement.isMoving)
         {
             continue;
         }
 
-        auto transform = brushModel.owner->getComponent<TransformComponent>();
+        TransformComponent* transform = entity->getComponent<TransformComponent>();
         Vec3fp pushVector;
 
         if(currentTime >= movement.endTime)
@@ -76,7 +78,7 @@ void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
 
             if(movement.onArriveHandler != nullptr)
             {
-                movement.onArriveHandler(brushModel.owner);
+                movement.onArriveHandler(entity);
             }
         }
         else
@@ -84,23 +86,23 @@ void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
             pushVector = movement.direction * dt;
         }
 
-        pushBrushEntity(brushModel.owner, pushVector, level);
+        pushBrushEntity(entity, pushVector, level);
     }
-#endif
 }
 
 void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement, BspLevel& level)
 {
-// FIXME: 2-20-2019
-#if false
+    BoxColliderSystem* boxColliderSystem = Engine::getInstance()->boxColliderSystem;    // FIXME: should be a dependency
+
     auto pos = brushEntity->getComponent<TransformComponent>();
 
-    auto boxCollider = BoxColliderComponent::getAll();
-    for(auto& collider : boxCollider)
+    auto& boxColliders = boxColliderSystem->getAllEntities();
+    for(Entity* entity : boxColliders)
     {
-        auto transform = collider.owner->getComponent<TransformComponent>();
+        BoxColliderComponent* boxColliderComponent = entity->getComponent<BoxColliderComponent>();
+        TransformComponent* transform = entity->getComponent<TransformComponent>();
 
-        if(collider.standingOnEntity == brushEntity)
+        if(boxColliderComponent->standingOnEntity == brushEntity)
         {
             // Move the object along with us
             transform->setPosition(transform->getPosition() + movement);
@@ -119,7 +121,7 @@ void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement,
                 Vec3fp newPosition = tracer.getCollision().location.point + movement;
                 transform->setPosition(newPosition);
 
-                collider.standingOnEntity = brushEntity;
+                boxColliderComponent->standingOnEntity = brushEntity;
             }
         }
     }
@@ -127,7 +129,6 @@ void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement,
     pos->setPosition(pos->getPosition() + movement);
 
     brushEntity->getComponent<BrushModelComponent>()->model->center = pos->getPosition();
-#endif
 }
 
 void PhysicsEngine::sendCollideEvent(Entity* a, Entity* b)
