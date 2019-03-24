@@ -13,6 +13,18 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "entity/component/Component.hpp"
-#include "physics/BoxCollider.hpp"
+#pragma once
+
+#include "entity/EntityEvent.hpp"
+#include "system/Time.hpp"
+
+class Entity;
+
+class ScriptableComponent
+{
+public:
+    EntityEventResponse (*handleEvent)(Entity& entity, const EntityEvent& event);
+    void (*update)(Entity& entity, const EntityUpdate& update);
+    Time nextUpdateTime;
+};
 

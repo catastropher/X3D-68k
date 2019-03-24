@@ -77,22 +77,6 @@ void EntityManager::createEntitesInLevel(BspLevel& level)
     }
 }
 
-void EntityManager::updateEntities(Time currentTime, fp deltaTime, EngineContext* engineContext)
-{
-    EntityUpdate update(currentTime, deltaTime, engineContext);
-
-    for(Entity* entity : entities)
-    {
-        if(entity != nullptr && currentTime >= entity->nextUpdate)
-        {
-// FIXME: 2-20-2019
-#if false
-            entity->update(update);
-#endif
-        }
-    }
-}
-
 void EntityManager::destroyEntity(Entity* entity)
 {
     for(auto& entitySystem : entitySystems)

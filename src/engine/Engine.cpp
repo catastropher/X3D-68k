@@ -249,7 +249,6 @@ static void runFrame(EngineContext* engineContext)
     engineContext->timeDelta = (engineContext->frameStart - engineContext->lastFrameStart).toSeconds();
 
     PhysicsEngine::update(*engineContext->levelManager->getCurrentLevel(), engineContext->timeDelta);
-    engineContext->entityManager->updateEntities(Clock::getTicks(), engineContext->timeDelta, engineContext);
 
     // Move the brush models to where their transform says they are
     // Fixme: need way to broadcast moves to all components

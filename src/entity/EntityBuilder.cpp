@@ -38,6 +38,11 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
         allocator.scheduleAlloc(componentRecord.cameraComponent);
     }
 
+    if(components.hasFlag(ComponentType::scriptable))
+    {
+        allocator.scheduleAlloc(componentRecord.scriptableComponent);
+    }
+
     allocator.allocAll();
 
     setupComponentIfPresent<TransformComponent>(edict);
@@ -45,6 +50,7 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
     setupComponentIfPresent<BoxColliderComponent>();
     setupComponentIfPresent<InputComponent>(inputComponentOptions.inputUpdateHandler);
     setupComponentIfPresent<CameraComponent>();
+    setupComponentIfPresent<ScriptableComponent>();
 
     componentRecord.types = components;
 

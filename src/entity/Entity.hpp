@@ -32,21 +32,6 @@ enum class EntityFlags
     canBePushed = (1 << 3)
 };
 
-struct EntityUpdate
-{
-    EntityUpdate(Time currentTime_, fp deltaTime_, EngineContext* engineContext_)
-        : currentTime(currentTime_),
-        deltaTime(deltaTime_),
-        engineContext(engineContext_)
-    {
-
-    }
-
-    Time currentTime;
-    fp deltaTime;
-    EngineContext* engineContext;
-};
-
 class EntityBuilder;
 
 struct EntityMetadata
@@ -106,11 +91,6 @@ protected:
     {
         return *level;
     }
-    
-    void setNextUpdateTime(Time nextUpdate)
-    {
-        this->nextUpdate = nextUpdate;
-    }
 
     Flags<EntityFlags> flags;
     
@@ -120,7 +100,6 @@ private:
     const EntityMetadata* entityMetadata;
 
     BspLevel* level;
-    Time nextUpdate;
     
     friend class EntityManager;
     friend class EntityBuilder;

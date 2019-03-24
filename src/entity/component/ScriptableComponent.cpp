@@ -13,14 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "ScriptableComponent.hpp"
 
-enum class ComponentType
-{
-    brushModel = (1 << 0),
-    transform = (1 << 1),
-    camera = (1 << 2),
-    input = (1 << 3),
-    collider = (1 << 4),
-    scriptable = (1 << 5)
-};
+

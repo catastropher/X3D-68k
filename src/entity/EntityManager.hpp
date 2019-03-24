@@ -57,9 +57,7 @@ public:
     {
         entitySystems.pushBack(entitySystem);
     }
-    
-    void updateEntities(Time currentTime, fp deltaTime, EngineContext* engineContext);
-    
+
     Entity* createEntityFromEdict(X_Edict& edict, BspLevel& level);
     void createEntitesInLevel(BspLevel& level);
 
