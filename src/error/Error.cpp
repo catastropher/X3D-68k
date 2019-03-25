@@ -23,6 +23,7 @@
 
 #include "Log.hpp"
 #include "Error.hpp"
+#include "util/StackTrace.hpp"
 
 void x_assert_function(bool condition, const char* file, int line, const char* messageFormat, ...)
 {
@@ -50,6 +51,7 @@ void __attribute__((noreturn)) x_system_error(const char* format, ...)
 #endif
     
     va_end(list);
+    printStackTrace();
     exit(-1);
 }
 

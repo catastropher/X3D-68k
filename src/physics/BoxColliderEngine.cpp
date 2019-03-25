@@ -32,22 +32,6 @@ void BoxColliderEngine::runStep()
         fp t = clampedSpeed / currentSpeed;
 
         collider.velocity = collider.velocity * t;
-
-        currentSpeed = clampedSpeed;
-    }
-
-    StatusBar::setItem("Current speed", "%f", currentSpeed.toFloat());
-
-    if(collider.transformComponentId == COMPONENT_INVALID_ID)
-    {
-        collider.transformComponentId = collider.owner->getComponentId<TransformComponent>();
-    }
-    
-    transformComponent = TransformComponent::getById(collider.transformComponentId);
-    
-    if(transformComponent == nullptr)
-    {
-        return;
     }
     
     resetCollisionState();
@@ -60,7 +44,7 @@ void BoxColliderEngine::tryMove()
     BoxColliderMoveLogic moveLogic(
         collider,
         level,
-        transformComponent->getPosition(),
+        transformComponent.getPosition(),
         collider.velocity,
         dt);
 
@@ -71,7 +55,7 @@ void BoxColliderEngine::tryMove()
         BoxColliderMoveLogic stepMoveLogic(
             collider,
             level,
-            transformComponent->getPosition(),
+            transformComponent.getPosition(),
             collider.velocity,
             dt);
 
@@ -87,26 +71,60 @@ void BoxColliderEngine::tryMove()
 
 void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
 {
-    transformComponent->setPosition(moveLogic.getFinalPosition());
+    transformComponent.setPosition(moveLogic.getFinalPosition());
     collider.velocity = moveLogic.getFinalVelocity();
     
     auto moveFlags = moveLogic.getMovementFlags();
+
+    collider.standingOnEntity = moveLogic.getStandingOnEntity();
+
+    auto lastHitWall = moveLogic.getLastHitWall();
+
+    // FIXME: this a deceptive name because it's not necessarily a wall that we hit
+    auto hitEntity = lastHitWall.entity;
+
+    if(hitEntity != nullptr)
+    {
+        bool shouldPickUp = false;  // FIXME
+//        bool shouldPickUp = entity->getFlags().hasFlag(EntityFlags::canPickThingsUp)
+//            && hitEntity->getFlags().hasFlag(EntityFlags::canBePickedUp);
+
+        if(shouldPickUp)
+        {
+            PickupEntityEvent pickupEntityEvent(hitEntity);
+
+            EntityEventResponse response = entity->handleEvent(pickupEntityEvent);
+
+            switch(response)
+            {
+                case EntityEventResponse::allowDefault:
+                    entityManager.destroyEntity(hitEntity);
+                    printf("Allow pickup!\n");
+
+                    break;
+
+                case EntityEventResponse::preventDefault:
+                case EntityEventResponse::unhandled:
+                    printf("Could not be picked up\n");
+
+                    break;
+            }
+        }
+        else
+        {
+            PhysicsEngine::sendCollideEvent(lastHitWall.entity, lastHitWall.entity);
+        }
+    }
 
     if(moveFlags.hasFlag(IT_ON_FLOOR))
     {
         collider.flags.set(X_BOXCOLLIDER_ON_GROUND);
 
-        auto lastHitWall = moveLogic.getLastHitWall();
-
         linkToModelStandingOn(lastHitWall.hitModel);
-
-        collider.standingOnEntity = lastHitWall.entity;
     }
     else
     {
         collider.flags.reset(X_BOXCOLLIDER_ON_GROUND);
-
-        collider.standingOnEntity = nullptr;
     }
 }
 
@@ -127,7 +145,7 @@ void BoxColliderEngine::applyFriction()
     collider.velocity = collider.velocity * newSpeed;
 }
 
-void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags)
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, Flags<X_BoxColliderFlags> flags)
 {
     static Vec3fp gravity = { 0, fp::fromFloat(320), 0 };
     

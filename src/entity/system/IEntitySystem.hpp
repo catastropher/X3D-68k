@@ -15,8 +15,12 @@
 
 #pragma once
 
-#include "physics/BoxCollider.hpp"
-#include "Component.hpp"
+class Entity;
 
-using BoxColliderComponent = Component<X_BoxCollider>;
+class IEntitySystem
+{
+public:
+    virtual void createEntity(Entity& entity) = 0;
+    virtual void destroyEntity(Entity& entity) = 0;
+};
 

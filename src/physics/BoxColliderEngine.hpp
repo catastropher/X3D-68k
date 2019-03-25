@@ -18,8 +18,9 @@
 #include "level/BspRayTracer.hpp"
 #include "geo/Vec3.hpp"
 #include "BoxColliderMoveLogic.hpp"
-#include "entity/TransformComponent.hpp"
-#include "entity/BoxColliderComponent.hpp"
+#include "entity/component/TransformComponent.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
+#include "entity/EntityManager.hpp"
 
 class BoxColliderMoveLogic;
 
@@ -28,7 +29,7 @@ struct BoxColliderState
     BoxColliderState(Vec3fp& position_, Vec3fp& velocity_)
         : position(position_),
         velocity(velocity_),
-        flags(0)
+        flags()
     {
         newPosition = position + velocity;
     }
@@ -36,16 +37,19 @@ struct BoxColliderState
     Vec3fp position;
     Vec3fp newPosition;
     Vec3fp velocity;
-    EnumBitSet<IterationFlags> flags;
+    Flags<IterationFlags> flags;
 };
 
 class BoxColliderEngine
 {
 public:
-    BoxColliderEngine(BoxColliderComponent& collider_, BspLevel& level_, fp dt_)
-        : collider(collider_),
+    BoxColliderEngine(Entity* entity_, BspLevel& level_, fp dt_, EntityManager& entityManager)
+        : entity(entity_),
+        collider(*entity_->getComponent<BoxColliderComponent>()),
+        transformComponent(*entity_->getComponent<TransformComponent>()),
         level(level_),
-        dt(dt_)
+        dt(dt_),
+        entityManager(entityManager)
     {
 
     }
@@ -65,13 +69,15 @@ private:
     void applyGravity();
     void applyFriction();
 
+    Entity* entity;
     BoxColliderComponent& collider;
+    TransformComponent& transformComponent;
     BspLevel& level;
+    EntityManager& entityManager;
 
     Vec3fp finalPosition;
     Vec3fp finalVelocity;
-    EnumBitSet<IterationFlags> moveFlags;
-    TransformComponent* transformComponent;
+    Flags<IterationFlags> moveFlags;
     fp dt;
 };
 

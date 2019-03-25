@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 #include "math/FixedPoint.hpp"
 #include "level/BspLevel.hpp"
 #include "geo/Ray3.hpp"
@@ -33,6 +33,12 @@ struct RayPoint
 
 struct RayCollision
 {
+    RayCollision()
+        : entity(nullptr)
+    {
+
+    }
+
     bool isCloserThan(const RayCollision& collision) const
     {
         return location.t < collision.location.t;
@@ -57,7 +63,7 @@ public:
     }
 
     bool trace();
-    bool traceModel(BrushModelComponent& brushModel);
+    bool traceModel(Entity* entityWithModel);
 
     RayCollision& getCollision()
     {

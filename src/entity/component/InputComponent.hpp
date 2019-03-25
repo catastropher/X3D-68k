@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Component.hpp"
+#include "entity/component/Component.hpp"
 #include "system/Time.hpp"
 #include "math/FixedPoint.hpp"
 
@@ -34,32 +34,18 @@ struct InputUpdate
     fp deltaTime;
 };
 
+class Entity;
+class EntityBuilder;
+
 using InputUpdateHandler = bool (*)(Entity* entity, const InputUpdate& update);
 
-namespace internal
+struct InputComponent
 {
-    struct InputComponent
+    InputComponent(InputUpdateHandler handler)
     {
-        InputComponent()
-            : handler(nullptr)
-        {
+        this->handler = handler;
+    }
 
-        }
-
-        InputComponent(InputUpdateHandler handler_)
-            : handler(handler_)
-        {
-
-        }
-
-        void setHandler(InputUpdateHandler handler)
-        {
-            this->handler = handler;
-        }
-
-        InputUpdateHandler handler;
-    };
-}
-
-using InputComponent = Component<internal::InputComponent>;
+    InputUpdateHandler handler;
+};
 

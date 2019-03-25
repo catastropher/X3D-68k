@@ -15,13 +15,14 @@
 
 #pragma once
 
-#include "Component.hpp"
 #include "geo/Vec3.hpp"
 #include "system/Time.hpp"
 
 class BspModel;
 struct BspLevel;
 struct X_Edict;
+class Entity;
+class EntityBuilder;
 
 namespace internal
 {
@@ -40,13 +41,7 @@ namespace internal
     class BrushModel
     {
     public:
-        BrushModel(BspModel* model_)
-            : model(model_)
-        {
-            
-        }
-
-        BrushModel(const X_Edict& edict, const BspLevel& level);
+        BrushModel(const EntityBuilder& builder);
 
         void initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive = nullptr);
 
@@ -55,5 +50,5 @@ namespace internal
     };
 }
 
-using BrushModelComponent = Component<internal::BrushModel>;
+using BrushModelComponent = internal::BrushModel;
 

@@ -15,20 +15,7 @@
 
 #pragma once
 
-#include "Entity.hpp"
-#include "BrushModelComponent.hpp"
+#include "physics/BoxCollider.hpp"
 
-struct X_Edict;
-
-class PlatformEntity : public Entity
-{
-public:
-    PlatformEntity(X_Edict& edict, BspLevel& level);
-
-    void update(const EntityUpdate& update);
-    void move(const Vec3fp& movement);
-    
-private:
-    int height;
-};
+using BoxColliderComponent = X_BoxCollider;
 

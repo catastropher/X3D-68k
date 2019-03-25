@@ -39,16 +39,6 @@ void cmdGamma(EngineContext* engineContext, int argc, char* argv[])
     Engine::getInstance()->screen->palette = newPalette;
 }
 
-static Entity* createEntityCallback(const char* entityType, X_Edict& edict, BspLevel& level)
-{
-    if(strcmp(entityType, "info_player_start") == 0)
-    {
-        return new Player(edict, level);
-    }
-
-    return nullptr;
-}
-
 int main(int argc, char* argv[])
 {
 #ifdef __nspire__
@@ -76,7 +66,7 @@ int main(int argc, char* argv[])
     FileSystem::addSearchPath("../assets");
     FileSystem::addSearchPath("../maps");
 
-    engineContext->entityManager->setCreateEntityCallback(createEntityCallback);
+    engineContext->entityManager->registerEntityType<Player>("info_player_start"_sid, Player::build);
 
     x_console_execute_cmd(engineContext->console, "exec engine.cfg;exec ../engine.cfg");
 

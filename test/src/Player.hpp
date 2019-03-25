@@ -31,44 +31,14 @@ enum class PlayerKeys
     lookRight = 256
 };
 
-using PlayerKeyFlags = EnumBitSet<PlayerKeys>;
+using PlayerKeyFlags = Flags<PlayerKeys>;
 
 class Player : public Entity
 {
 public:
-    Player(X_Edict& edict, BspLevel& level)
-        : Entity(level)
+    Player()
     {
-        auto collider = addComponent<BoxColliderComponent>();
-        auto input = addComponent<InputComponent>(handleKeys);
-
-
-
-        Vec3fp position;
-        if(!edict.getValueOrDefault("origin", position, Vec3fp(0, 0, 0)))
-        {
-            x_system_error("No player start");
-        }
-
-        position.y -= fp::fromInt(30);
-
-        getTransform().setPosition(position);
-
-        CameraComponent* cam = addComponent<CameraComponent>();
-
-        cam->viewport.init(Vec2(0, 0), 640, 480, X_ANG_60);
-
-        angleX = 0;
-        angleY = 0;
-
         registerVars();
-
-        //, {16,16,24} },
-        Vec3i mins(-16, -32, -16);
-        Vec3i maxs(16, 24, 16);
-
-        auto transform = getTransform();
-        transform.setBoundBox(BoundBoxTemplate<fp>(mins.toVec3<fp>(), maxs.toVec3<fp>()));
     }
 
     void registerVars();
@@ -85,9 +55,10 @@ public:
 
     void handleMovement(const InputUpdate& update);
 
+    static Entity* build(EntityBuilder& builder);
     static bool handleKeys(Entity* entity, const InputUpdate& update);
 
-    void handleEvent(EntityEvent& event);
+    EntityEventResponse handleEvent(EntityEvent& event);
     
     fp angleX;
     fp angleY;

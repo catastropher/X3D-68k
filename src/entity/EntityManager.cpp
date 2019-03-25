@@ -13,12 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "entity/builtin/DoorEntity.hpp"
 #include "EntityManager.hpp"
 #include "EntityDictionary.hpp"
-#include "WorldEntity.hpp"
-#include "PlatformEntity.hpp"
 #include "EntityDictionaryParser.hpp"
-#include "DoorEntity.hpp"
+#include "builtin/WorldEntity.hpp"
+#include "EntityBuilder.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 {
@@ -35,43 +35,33 @@ Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 
 Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 {
+// FIXME: 2-20-2019
     X_EdictAttribute* classname = edict.getAttribute("classname");
     if(classname == nullptr)
     {
         x_system_error("Edict missing classname");
     }
 
-    if(strcmp(classname->value, "worldspawn") == 0)
-    {
-        return new WorldEntity(edict, level);
-    }
+    StringId nameId = StringId::fromString(classname->value);
 
-    if(strcmp(classname->value, "func_plat") == 0)
-    {
-        return new PlatformEntity(edict, level);
-    }
+    Log::info("search...");
 
-    if(strcmp(classname->value, "func_door") == 0)
+    for(EntityMetadata* metadata = entityMetadataHead; metadata != nullptr; metadata = metadata->next)
     {
-        return new DoorEntity(edict, level);
-    }
-
-    if(createEntityCallback != nullptr)
-    {
-        Entity* entity = createEntityCallback(classname->value, edict, level);
-
-        if(entity != nullptr)
+        metadata->name.print("Check");
+        if(metadata->name == nameId)
         {
+            EntityBuilder builder(&level, edict);
+            Entity* entity = metadata->buildCallback(builder);
+
+            for(int i = 0; i < entitySystems.size(); ++i)
+            {
+                entitySystems[i]->createEntity(*entity);
+            }
+
             return entity;
         }
     }
-
-    if(strcmp(classname->value, "info_player_start") == 0)
-    {
-        x_system_error("Game does not implement entity info_player_start");
-    }
-
-    Log::error("Failed to create entity of type %s", classname->value);
 
     return nullptr;
 }
@@ -88,21 +78,13 @@ void EntityManager::createEntitesInLevel(BspLevel& level)
     }
 }
 
-void EntityManager::updateEntities(Time currentTime, fp deltaTime, EngineContext* engineContext)
-{
-    EntityUpdate update(currentTime, deltaTime, engineContext);
-
-    for(Entity* entity : entities)
-    {
-        if(entity != nullptr && currentTime >= entity->nextUpdate)
-        {
-            entity->update(update);
-        }
-    }
-}
-
 void EntityManager::destroyEntity(Entity* entity)
 {
+    for(auto& entitySystem : entitySystems)
+    {
+        entitySystem->destroyEntity(*entity);
+    }
+
     // TODO: method to check if an entity is currently registered
     if(entity->id != -1)
     {
@@ -110,11 +92,13 @@ void EntityManager::destroyEntity(Entity* entity)
 
         while(entities.size() != 0 && entities[entities.size() - 1] == nullptr)
         {
-            entities.pop_back();
+            entities.popBack();
         }
     }
 
-    delete entity;
+    entity->~Entity();
+
+    x_free(entity);
 }
 
 void EntityManager::destroyAllEntities()
@@ -126,5 +110,11 @@ void EntityManager::destroyAllEntities()
             destroyEntity(entities[i]);
         }
     }
+}
+
+void EntityManager::registerBuiltinTypes()
+{
+    registerEntityType<WorldEntity>("worldspawn"_sid, WorldEntity::build);
+    registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
 }
 

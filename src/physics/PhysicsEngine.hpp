@@ -37,10 +37,39 @@ struct CollideEntityEvent : EntityEvent
     Entity* collideWith;
 };
 
+struct PickupEntityEvent : EntityEvent
+{
+    static constexpr StringId Name = StringId("onPickup");
+
+    constexpr PickupEntityEvent(Entity* pickedUp_)
+        : EntityEvent(StringId("onPickup")),    // FIXME
+        pickedUp(pickedUp_)
+    {
+
+    }
+
+    Entity* pickedUp;
+};
+
+struct CrushEntityEvent : EntityEvent
+{
+    static constexpr StringId Name = StringId("onCrush");
+
+    CrushEntityEvent(Entity* crushedBy_)
+    : EntityEvent(Name),
+    crushedBy(crushedBy_)
+    {
+
+    }
+
+    Entity* crushedBy;
+};
+
 class PhysicsEngine
 {
 public:
     static void update(BspLevel& level, fp timeDelta);
+    static void sendCollideEvent(Entity* a, Entity* b);
     
 private:
     static void step(BspLevel& level, fp dt);

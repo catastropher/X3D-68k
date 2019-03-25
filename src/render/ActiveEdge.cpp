@@ -99,7 +99,7 @@ X_AE_Surface* X_AE_Context::createSurface(BspSurface* bspSurface, int bspKey)
     surface->crossCount = 0;
     surface->closestZ = 0x7FFFFFFF;
     surface->modelOrigin = &currentModel->center;
-    surface->flags = EnumBitSet<SurfaceFlags>(currentModel->flags);
+    surface->flags = Flags<SurfaceFlags>(currentModel->flags);
     
     if(currentParent == NULL)
     {

@@ -13,6 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "Component.hpp"
-#include "physics/BoxCollider.hpp"
+#pragma once
+
+#include "entity/Entity.hpp"
+
+class WorldEntity : public Entity
+{
+public:
+    static Entity* build(EntityBuilder& builder);
+};
 

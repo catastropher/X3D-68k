@@ -15,11 +15,10 @@
 
 #pragma once
 
-#include <vector>
-#include <type_traits>
-
 #include "Entity.hpp"
-#include "engine/Engine.hpp"
+#include "engine/GlobalConfiguration.hpp"
+#include "system/IEntitySystem.hpp"
+#include "memory/FixedSizeArray.hpp"
 
 struct X_Edict;
 
@@ -29,15 +28,18 @@ class EntityManager
 {
 public:
     EntityManager()
-        : createEntityCallback(nullptr)
+        : entityMetadataHead(nullptr)
     {
-
+        registerBuiltinTypes();
     }
 
     void registerEntity(Entity* entity)
     {
-        entities.push_back(entity);
+        entities.pushBack(entity);
+
         entity->id = entities.size() - 1;
+
+        //FIXME: entity->id = entities.size() - 1;
     }
 
     void unregisterEntity(Entity* entity)
@@ -51,13 +53,11 @@ public:
         entity->id = -1;
     }
 
-    void setCreateEntityCallback(CreateEntityCallback createEntityCallback)
+    void registerEntitySystem(IEntitySystem* entitySystem)
     {
-        this->createEntityCallback = createEntityCallback;
+        entitySystems.pushBack(entitySystem);
     }
-    
-    void updateEntities(Time currentTime, fp deltaTime, EngineContext* engineContext);
-    
+
     Entity* createEntityFromEdict(X_Edict& edict, BspLevel& level);
     void createEntitesInLevel(BspLevel& level);
 
@@ -79,11 +79,48 @@ public:
 
         outArray.count = count;
     }
-    
+
+    template<typename T>
+    void registerEntityType(StringId name, class Entity* (*buildCallback)(EntityBuilder& builder))
+    {
+        if(buildCallback == nullptr)
+        {
+            x_system_error("Null entity builder callback");
+        }
+
+        EntityMetadata& entityMetadata = EntityMetadataProvider<T>::entityMetadata;
+
+        entityMetadata.name = name;
+        entityMetadata.buildCallback = buildCallback;
+
+        // TODO: put in linked list class
+        if(entityMetadataHead == nullptr)
+        {
+            entityMetadataHead = &entityMetadata;
+        }
+        else
+        {
+            entityMetadata.next = entityMetadataHead;
+            entityMetadataHead = &entityMetadata;
+        }
+    }
+
 private:
+    void registerBuiltinTypes();
+
     Entity* tryCreateEntity(X_Edict& edict, BspLevel& level);
 
-    std::vector<Entity*> entities;
-    CreateEntityCallback createEntityCallback;
+    template<typename TEntity>
+    struct EntityMetadataProvider
+    {
+        static EntityMetadata entityMetadata;
+    };
+
+    EntityMetadata* entityMetadataHead;
+    FixedLengthArray<Entity*, Configuration::ENTITIES_MAX> entities;
+    FixedLengthArray<IEntitySystem*, Configuration::ENTITY_MAX_SYSTEMS> entitySystems;
 };
+
+template<typename T>
+EntityMetadata EntityManager::EntityMetadataProvider<T>::entityMetadata;
 

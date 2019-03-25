@@ -19,7 +19,6 @@
 #include "level/BspLevel.hpp"
 #include "memory/OldLink.hpp"
 #include "memory/BitSet.hpp"
-#include "entity/Component.hpp"
 
 struct X_RayTracer;
 struct Entity;
@@ -50,7 +49,9 @@ struct BoxColliderCollisionInfo
 
 struct X_BoxCollider;
 
-void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, EnumBitSet<X_BoxColliderFlags> flags);
+void x_boxcollider_init(X_BoxCollider* collider, BoundBox* boundBox, Flags<X_BoxColliderFlags> flags);
+
+class EntityBuilder;
 
 struct X_BoxCollider
 {
@@ -59,13 +60,11 @@ struct X_BoxCollider
     {
         static BoundBox box;
         x_boxcollider_init(this, &box, X_BOXCOLLIDER_APPLY_GRAVITY);
-
-
     }
     
     bool traceRay(X_RayTracer& tracer);
 
-    EnumBitSet<X_BoxColliderFlags> flags;
+    Flags<X_BoxColliderFlags> flags;
 
     BoundBox boundBox;
     int levelCollisionHull;
@@ -75,7 +74,6 @@ struct X_BoxCollider
     fp frictionCoefficient;
     fp maxSpeed;
     BoxColliderCollisionInfo collisionInfo;
-    int transformComponentId = COMPONENT_INVALID_ID;
 
     Entity* standingOnEntity;
     

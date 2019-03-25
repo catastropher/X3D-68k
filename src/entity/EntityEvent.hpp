@@ -15,11 +15,23 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "memory/StringId.hpp"
+#include "system/Time.hpp"
+
+class EngineContext;
+
+enum class EntityEventResponse
+{
+    unhandled = 0,
+    allowDefault = 1,
+    preventDefault = 2
+};
 
 struct EntityEvent
 {
-    EntityEvent(StringId typeName)
+    constexpr EntityEvent(StringId typeName)
         : type(typeName)
     {
 
@@ -34,5 +46,20 @@ struct EntityEvent
     }
 
     const StringId type;
+};
+
+struct EntityUpdate
+{
+    EntityUpdate(Time currentTime_, fp deltaTime_, EngineContext* engineContext_)
+        : currentTime(currentTime_),
+          deltaTime(deltaTime_),
+          engineContext(engineContext_)
+    {
+
+    }
+
+    Time currentTime;
+    fp deltaTime;
+    EngineContext* engineContext;
 };
 

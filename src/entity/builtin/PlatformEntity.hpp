@@ -15,8 +15,22 @@
 
 #pragma once
 
-#include "Component.hpp"
-#include "render/Camera.hpp"
+#include "Entity.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 
-using CameraComponent = Component<Camera>;
+struct X_Edict;
+
+class PlatformEntity : public Entity
+{
+public:
+    PlatformEntity(X_Edict& edict, BspLevel& level);
+
+    void update(const EntityUpdate& update);
+    void move(const Vec3fp& movement);
+    EntityEventResponse handleEvent(EntityEvent& event);
+    
+private:
+
+    int height;
+};
 

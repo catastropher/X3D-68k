@@ -13,14 +13,10 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include "WorldEntity.hpp"
-#include "EntityManager.hpp"
+#pragma once
 
-WorldEntity::WorldEntity(X_Edict& edict, BspLevel& level)
-    : Entity(level)
-{
-    BspModel* worldModel = &getLevel().getLevelModel();
-    addComponent<BrushModelComponent>(worldModel);
-}
+#include "GenericComponentSystem.hpp"
 
+// TODO: don't hardcode such an arbitrary size
+using InputSystem = GenericComponentSystem<InputComponent, 2>;
 

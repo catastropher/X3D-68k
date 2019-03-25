@@ -15,12 +15,12 @@
 
 #pragma once
 
-#include "Entity.hpp"
-#include "BrushModelComponent.hpp"
-
-class WorldEntity : public Entity
+enum class ComponentType
 {
-public:
-    WorldEntity(X_Edict& edict, BspLevel& level);
+    brushModel = (1 << 0),
+    transform = (1 << 1),
+    camera = (1 << 2),
+    input = (1 << 3),
+    collider = (1 << 4),
+    scriptable = (1 << 5)
 };
-

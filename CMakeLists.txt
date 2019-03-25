@@ -41,7 +41,7 @@ if(NOT DEFINED USE_TILIBS)
 endif()
 
 if(${XTARGET} STREQUAL "pc")
-    set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result")
+    set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC -Wall -g -fsanitize=address -fsanitize=undefined -O2 -Wno-unused-result -rdynamic")
     #set(CMAKE_CXX_FLAGS "-std=gnu99 -fPIC -Wall -O3 -g")
     
     set(X_WITH_SDL "1")
@@ -75,15 +75,17 @@ set(X_SOURCES
         src/engine/Init.cpp
     
     # entity
-    src/entity/BrushModelComponent.cpp
-    src/entity/Component.cpp
-    src/entity/EntityDictionary.cpp
-    src/entity/EntityDictionaryParser.cpp
-    src/entity/EntityManager.cpp
-    src/entity/PlatformEntity.cpp
-    src/entity/WorldEntity.cpp
+        # builtin
+            src/entity/builtin/WorldEntity.cpp
+            src/entity/builtin/DoorEntity.cpp
 
-    # error
+        src/entity/component/BrushModelComponent.cpp
+        src/entity/EntityDictionary.cpp
+        src/entity/EntityDictionaryParser.cpp
+        src/entity/EntityManager.cpp
+        src/entity/EntityBuilder.cpp
+
+        # error
         src/error/Error.cpp
         src/error/Log.cpp
 
@@ -199,7 +201,7 @@ if(DEFINED X_WITH_SDL)
     set(X_SOURCES ${X_SOURCES}
             src/platform/SDL.cpp
             src/platform/SDL/SdlScreenDriver.cpp
-            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/entity/InputComponent.hpp src/entity/DoorEntity.cpp src/entity/DoorEntity.hpp src/memory/FixedSizeArray.hpp src/render/software/SoftwareRenderer.cpp src/render/software/SoftwareRenderer.hpp src/render/software/LevelRenderer.cpp src/render/software/LevelRenderer.hpp src/entity/EntityEvent.hpp src/memory/StringId.hpp src/memory/Crc32.hpp src/memory/Crc32.cpp)
+            src/entity/EntityDictionary.hpp src/entity/EntityDictionaryParser.cpp src/entity/EntityDictionaryParser.hpp src/entity/EntityDictionary.cpp src/level/LevelManager.hpp src/level/LevelManager.cpp src/entity/component/InputComponent.hpp src/memory/FixedSizeArray.hpp src/render/software/SoftwareRenderer.cpp src/render/software/SoftwareRenderer.hpp src/render/software/LevelRenderer.cpp src/render/software/LevelRenderer.hpp src/entity/EntityEvent.hpp src/memory/StringId.hpp src/memory/Crc32.hpp src/memory/Crc32.cpp src/entity/component/ComponentType.hpp src/memory/GroupAllocator.cpp src/memory/GroupAllocator.hpp src/entity/component/TransformComponent.cpp src/entity/system/IEntitySystem.hpp src/engine/GlobalConfiguration.hpp src/memory/Set.hpp src/entity/system/BrushModelSystem.hpp src/entity/system/CameraSystem.hpp src/entity/system/BoxColliderSystem.hpp src/entity/system/GenericComponentSystem.hpp src/util/StackTrace.cpp src/util/StackTrace.hpp src/entity/component/ScriptableComponent.cpp src/entity/component/ScriptableComponent.hpp)
 endif()
 
 add_library(X3D STATIC ${X_SOURCES})

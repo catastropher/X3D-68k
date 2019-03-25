@@ -25,8 +25,8 @@
 #include "Camera.hpp"
 #include "util/StopWatch.hpp"
 #include "level/Portal.hpp"
-#include "entity/CameraComponent.hpp"
-#include "entity/TransformComponent.hpp"
+#include "entity/component/CameraComponent.hpp"
+#include "entity/component/TransformComponent.hpp"
 #include "entity/Entity.hpp"
 #include "level/LevelManager.hpp"
 

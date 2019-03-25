@@ -14,7 +14,10 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BspRayTracer.hpp"
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
+#include "entity/Entity.hpp"
+#include "entity/system/BrushModelSystem.hpp"
+#include "engine/Engine.hpp"
 
 static fp calculateIntersectionT(fp startDist, fp endDist)
 {
@@ -143,15 +146,22 @@ bool BspRayTracer::visitNode(int nodeId, RayPoint& start, RayPoint& end)
     return exploreBothSidesOfNode(nodeId, start, end, intersectionT, startDist);
 }
 
-bool BspRayTracer::traceModel(BrushModelComponent& brushModel)
+bool BspRayTracer::traceModel(Entity* entityWithModel)
 {
-    currentModel = brushModel.model;
-    currentModelOwner = brushModel.owner;
+    BrushModelComponent* brushModelComponent = entityWithModel->getComponent<BrushModelComponent>();
 
-    RayPoint start(ray.v[0] - brushModel.model->center, 0);
-    RayPoint end(ray.v[1] - brushModel.model->center, fp::fromInt(1));
+    if(brushModelComponent == nullptr)
+    {
+        x_system_error("Null brush model component\n");
+    }
 
-    bool hitSomething = !visitNode(getRootNode(*brushModel.model), start, end);
+    currentModel = brushModelComponent->model;
+    currentModelOwner = entityWithModel;
+
+    RayPoint start(ray.v[0] - currentModel->center, 0);
+    RayPoint end(ray.v[1] - currentModel->center, fp::fromInt(1));
+
+    bool hitSomething = !visitNode(getRootNode(*currentModel), start, end);
     
     return hitSomething;
 }
@@ -160,18 +170,18 @@ bool BspRayTracer::trace()
 {
     collision.location.t = maxValue<fp>();
 
+
     // FIXME: this could very easily be optimized
-    
-    auto brushModels = BrushModelComponent::getAll();
+
+    BrushModelSystem* brushModelSystem = Engine::getInstance()->brushModelSystem;
+
+    auto& brushModels = brushModelSystem->getAllEntities();
     
     bool hitSomething = false;
     
-    for(auto& brushModel : brushModels)
+    for(Entity* entity : brushModels)
     {
-        if(brushModel.model != nullptr)
-        {
-            hitSomething |= traceModel(brushModel);
-        }
+        hitSomething |= traceModel(entity);
     }
     
     return hitSomething;

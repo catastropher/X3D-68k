@@ -15,27 +15,30 @@
 
 #pragma once
 
-#include "Component.hpp"
-#include "TransformComponent.hpp"
+#include "entity/component/Component.hpp"
+#include "entity/component/TransformComponent.hpp"
 #include "system/Time.hpp"
 #include "EntityEvent.hpp"
+#include "memory/DLink.hpp"
 
 struct BspLevel;
 class EngineContext;
 
-struct EntityUpdate
+enum class EntityFlags
 {
-    EntityUpdate(Time currentTime_, fp deltaTime_, EngineContext* engineContext_)
-        : currentTime(currentTime_),
-        deltaTime(deltaTime_),
-        engineContext(engineContext_)
-    {
+    canPickThingsUp = (1 << 0),
+    canBePickedUp = (1 << 1),
+    canPush = (1 << 2),
+    canBePushed = (1 << 3)
+};
 
-    }
+class EntityBuilder;
 
-    Time currentTime;
-    fp deltaTime;
-    EngineContext* engineContext;
+struct EntityMetadata
+{
+    StringId name;
+    class Entity* (*buildCallback)(EntityBuilder& builder);
+    EntityMetadata* next;
 };
 
 class Entity
@@ -44,73 +47,61 @@ public:
     Entity(const Entity&) = delete;
     
     void operator=(const Entity&) = delete;
-    
-    int getId() const
-    {
-        return id;
-    }
-    
-    template<typename TComponent>
-    TComponent* getComponent()
-    {
-        return componentManager.getComponent<TComponent>();
-    }
-    
-    template<typename TComponent>
-    int getComponentId()
-    {
-        return componentManager.getComponentId<TComponent>();
-    }
-    
-    virtual void update(const EntityUpdate& update)
-    {
-        
-    }
-
-    virtual void handleEvent(EntityEvent& event)
-    {
-
-    }
 
     virtual ~Entity()
     {
 
     }
-    
-protected:
-    explicit Entity(BspLevel& level_)
-        : id(-1),
-        level(level_)
+
+    virtual EntityEventResponse handleEvent(EntityEvent& event)
     {
-        addComponent<TransformComponent>();
+        return EntityEventResponse::unhandled;
+    }
+
+    template<typename T>
+    T* getComponent()
+    {
+        static_assert(isValidComponentType<T>(), "Type is not a component");
+
+        return componentRecord.getComponent<T>();
+    }
+
+    template<typename T>
+    bool hasComponent() const
+    {
+        static_assert(isValidComponentType<T>(), "Type is not a component");
+
+        return componentRecord.types.hasFlag(getComponentType<T>());
+    }
+
+    Flags<ComponentType> getAvailableComponents() const
+    {
+        return componentRecord.types;
     }
     
-    template<typename TComponent, typename ...Args>
-    TComponent* addComponent(Args&&... args)
+protected:
+    explicit Entity()
+        : id(-1),
+        level(nullptr)
     {
-        TComponent* component =  componentManager.add<TComponent>(std::forward<Args>(args)...);
-        
-        component->owner = this;
-        
-        return component;
+
     }
     
     BspLevel& getLevel()
     {
-        return level;
+        return *level;
     }
-    
-    void setNextUpdateTime(Time nextUpdate)
-    {
-        this->nextUpdate = nextUpdate;
-    }
+
+    Flags<EntityFlags> flags;
     
 private:    
     int id;
-    ComponentManager componentManager;
-    BspLevel& level;
-    Time nextUpdate;
+    ComponentRecord componentRecord;
+    const EntityMetadata* entityMetadata;
+
+    BspLevel* level;
     
     friend class EntityManager;
+    friend class EntityBuilder;
 };
 

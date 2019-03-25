@@ -13,17 +13,16 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "GroupAllocator.hpp"
+#include "memory/Alloc.h"
 
-#include <stdio.h>
-#include <stdlib.h>
+void GroupAllocator::allocAll()
+{
+    unsigned char* mem = (unsigned char*)x_malloc(totalSize);
 
-#ifndef NDEBUG
-    #define x_assert(_cond, message...) x_assert_function(_cond, __FILE__, __LINE__, message)
-#else
-    #define x_assert(...)
-#endif
-
-void x_assert_function(bool condition, const char* file, int line, const char* messageFormat, ...);
-__attribute__((noreturn)) void x_system_error(const char* format, ...);
+    for(int i = 0; i < totalAllocations; ++i)
+    {
+        *allocations[i].dest = mem + allocations[i].offset;
+    }
+}
 

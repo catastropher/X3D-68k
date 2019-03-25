@@ -151,7 +151,13 @@ bool BoxColliderMoveLogic::tryPushIntoGround(fp distance)
         newPosition,
         newPosition + Vec3fp(0, distance, 0));
 
-    return traceRay(movementRay, lastHitWall);
+    bool isOnGround = traceRay(movementRay, lastHitWall);
+
+    standingOnEntity = isOnGround
+        ? lastHitWall.entity
+        : nullptr;
+
+    return isOnGround;
 }
 
 bool BoxColliderMoveLogic::traceRay(const Ray3& ray, RayCollision& collision)

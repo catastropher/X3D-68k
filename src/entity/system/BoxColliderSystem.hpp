@@ -15,15 +15,7 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "GenericComponentSystem.hpp"
 
-#ifndef NDEBUG
-    #define x_assert(_cond, message...) x_assert_function(_cond, __FILE__, __LINE__, message)
-#else
-    #define x_assert(...)
-#endif
-
-void x_assert_function(bool condition, const char* file, int line, const char* messageFormat, ...);
-__attribute__((noreturn)) void x_system_error(const char* format, ...);
+using BoxColliderSystem = GenericComponentSystem<BoxColliderComponent, Configuration::ENTITIES_MAX>;
 

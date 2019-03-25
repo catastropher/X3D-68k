@@ -15,11 +15,10 @@
 
 #include "PlatformEntity.hpp"
 #include "EntityManager.hpp"
-#include "BrushModelComponent.hpp"
-#include "BoxColliderComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
 #include "level/BspRayTracer.hpp"
-
-#include "level/BrushModelBuilder.hpp"
+#include "physics/PhysicsEngine.hpp"
 
 bool allowMove = false;
 
@@ -34,11 +33,24 @@ PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
     addComponent<BrushModelComponent>(edict, level);
     EngineContext* receiver = Engine::getInstance();
     x_console_register_cmd(receiver->console, "plat", plat);
+
+    flags.set(EntityFlags::canBePickedUp);
 }
 
 void PlatformEntity::move(const Vec3fp &movement)
 {
 
+}
+
+EntityEventResponse PlatformEntity::handleEvent(EntityEvent& event)
+{
+    switch(event.type)
+    {
+        case CollideEntityEvent::Name:
+            printf("I've been hit!\n");
+
+            break;
+    }
 }
 
 void PlatformEntity::update(const EntityUpdate& update)

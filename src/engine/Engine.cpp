@@ -28,9 +28,9 @@
 #include "physics/PhysicsEngine.hpp"
 #include "system/Clock.hpp"
 #include "entity/EntityManager.hpp"
-#include "entity/InputComponent.hpp"
+#include "entity/component/InputComponent.hpp"
 #include "render/StatusBar.hpp"
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 #include "level/LevelManager.hpp"
 #include "render/software/SoftwareRenderer.hpp"
 
@@ -88,6 +88,19 @@ void initEngineContext(EngineContext* context, X_Config& config)
         config.screen->fov.toFp16x16());
 
     context->entityManager = new EntityManager;
+
+    context->brushModelSystem = new BrushModelSystem;
+    context->entityManager->registerEntitySystem(context->brushModelSystem);
+
+    context->cameraSystem = new CameraSystem;
+    context->entityManager->registerEntitySystem(context->cameraSystem);
+
+    context->boxColliderSystem = new BoxColliderSystem;
+    context->entityManager->registerEntitySystem(context->boxColliderSystem);
+
+    context->inputSystem = new InputSystem;
+    context->entityManager->registerEntitySystem(context->inputSystem);
+
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);
@@ -201,13 +214,17 @@ bool handle_console(EngineContext* engineContext)
 
 void sendInputUpdate(const InputUpdate& update)
 {
-    auto inputComponents = InputComponent::getAll();
+    InputSystem* inputSystem = Engine::getInstance()->inputSystem;  // FIXME: DI
 
-    for(auto& inputComponent : inputComponents)
+    auto& inputComponents = inputSystem->getAllEntities();
+
+    for(auto& entity : inputComponents)
     {
-        if(inputComponent.handler != nullptr)
+        InputComponent* inputComponent = entity->getComponent<InputComponent>();
+
+        if(inputComponent->handler != nullptr)
         {
-            if(inputComponent.handler(inputComponent.owner, update))
+            if(inputComponent->handler(entity, update))
             {
                 break;
             }
@@ -232,16 +249,18 @@ static void runFrame(EngineContext* engineContext)
     engineContext->timeDelta = (engineContext->frameStart - engineContext->lastFrameStart).toSeconds();
 
     PhysicsEngine::update(*engineContext->levelManager->getCurrentLevel(), engineContext->timeDelta);
-    engineContext->entityManager->updateEntities(Clock::getTicks(), engineContext->timeDelta, engineContext);
 
     // Move the brush models to where their transform says they are
     // Fixme: need way to broadcast moves to all components
+    // FIXME: 2-20-2019
+#if false
     auto brushModels = BrushModelComponent::getAll();
 
     for(auto& brushModel : brushModels)
     {
         brushModel.model->center = brushModel.owner->getComponent<TransformComponent>()->getPosition();
     }
+#endif
 
 
     lockToFrameRate(engineContext);
@@ -270,6 +289,8 @@ static void runFrame(EngineContext* engineContext)
 
 void Engine::run()
 {
+    x_console_execute_cmd(instance.console, "exec user.cfg");
+
     while(!isDone)
     {
         runFrame(&instance);

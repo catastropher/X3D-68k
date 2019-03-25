@@ -25,7 +25,7 @@
 #include "geo/BoundSphere.hpp"
 #include "engine/EngineContext.hpp"
 #include "level/Portal.hpp"
-#include "entity/BrushModelComponent.hpp"
+#include "entity/component/BrushModelComponent.hpp"
 
 BspLeaf* BspLevel::findLeafPointIsIn(Vec3fp& point)
 {

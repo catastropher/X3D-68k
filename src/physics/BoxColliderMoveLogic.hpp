@@ -21,6 +21,7 @@
 #include "level/BspRayTracer.hpp"
 #include "memory/BitSet.hpp"
 #include "PhysicsEngine.hpp"
+#include "entity/component/BoxColliderComponent.hpp"
 
 typedef enum IterationFlags
 {
@@ -36,12 +37,12 @@ typedef enum IterationFlags
 class BoxColliderMoveLogic
 {
 public:
-    BoxColliderMoveLogic(X_BoxCollider& collider_, BspLevel& level_, const Vec3fp& startingPosition_, const Vec3fp& velocity_, fp dt_)
+    BoxColliderMoveLogic(BoxColliderComponent& collider_, BspLevel& level_, const Vec3fp& startingPosition_, const Vec3fp& velocity_, fp dt_)
         : collider(collider_),
         level(level_),
         startingPosition(startingPosition_),
         velocity(velocity_),
-        flags(0),
+        flags(),
         dt(dt_),
         standingOnEntity(nullptr)
     {
@@ -51,7 +52,7 @@ public:
     bool tryMoveNormally();
     bool tryMoveUpStep();
 
-    EnumBitSet<IterationFlags> getMovementFlags()
+    Flags<IterationFlags> getMovementFlags()
     {
         return flags;
     }
@@ -106,7 +107,7 @@ private:
     Vec3fp startingPosition;
     Vec3fp newPosition;
     Vec3fp velocity;
-    EnumBitSet<IterationFlags> flags;
+    Flags<IterationFlags> flags;
     fp dt;
     Entity* standingOnEntity;
 };

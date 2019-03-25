@@ -14,9 +14,10 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "DoorEntity.hpp"
-#include "EntityDictionary.hpp"
+#include "entity/EntityDictionary.hpp"
 #include "level/BspModel.hpp"
 #include "engine/Engine.hpp"
+#include "entity/EntityBuilder.hpp"
 
 static bool allowOpen = false;
 
@@ -26,43 +27,9 @@ static void door(EngineContext* engineContext, int argc, char* argv[])
 }
 
 
-DoorEntity::DoorEntity(X_Edict &edict, BspLevel &level)
-    : Entity(level)
+DoorEntity::DoorEntity(X_Edict &edict)
 {
-    auto brushModel = addComponent<BrushModelComponent>(edict, level);
-    EngineContext* receiver = Engine::getInstance();
-    x_console_register_cmd(receiver->console, "door", door);
 
-    int angle;
-    edict.getValueOrDefault("angle", angle, -1);
-
-    edict.print();
-
-    if(angle == -1)
-    {
-        openDirection = Vec3fp(0, fp::fromInt(-1), 0);
-    }
-    else if(angle == -2)
-    {
-        openDirection = Vec3fp(0, fp::fromInt(1), 0);
-    }
-    else
-    {
-        fp openAngle = fp::fromInt(angle * 256 / 360) - fp(X_ANG_90);
-
-        openDirection.x = x_cos(openAngle);
-        openDirection.y = 0;
-        openDirection.z = x_sin(openAngle);
-    }
-
-    BoundBox& box = brushModel->model->boundBox;
-    Vec3 size = box.v[1] - box.v[0];
-
-    Vec3fp bounds = Vec3fp(fp(size.x), fp(size.y), fp(size.z));
-
-    openPosition = openDirection * abs(openDirection.dot(bounds));
-
-    doorCloseCallback(this);
 }
 
 
@@ -128,5 +95,58 @@ void DoorEntity::update(const EntityUpdate& update)
         }
     }
 
+#if false
     setNextUpdateTime(update.currentTime + Duration::fromMilliseconds(10));
+#endif
 }
+
+Entity* DoorEntity::build(EntityBuilder& builder)
+{
+    DoorEntity* doorEntity = builder
+        .withComponent<TransformComponent>()
+        .withComponent<BrushModelComponent>()
+        .withComponent<ScriptableComponent>()
+        .build<DoorEntity>(builder.edict);
+
+    EngineContext* receiver = Engine::getInstance();
+    x_console_register_cmd(receiver->console, "door", door);
+
+    int angle;
+    builder.edict.getValueOrDefault("angle", angle, -1);
+
+    builder.edict.print();
+
+    if(angle == -1)
+    {
+        doorEntity->openDirection = Vec3fp(0, fp::fromInt(-1), 0);
+    }
+    else if(angle == -2)
+    {
+        doorEntity->openDirection = Vec3fp(0, fp::fromInt(1), 0);
+    }
+    else
+    {
+        fp openAngle = fp::fromInt(angle * 256 / 360) - fp(X_ANG_90);
+
+        doorEntity->openDirection.x = x_cos(openAngle);
+        doorEntity->openDirection.y = 0;
+        doorEntity->openDirection.z = x_sin(openAngle);
+    }
+
+    auto brushModelComponent = doorEntity->getComponent<BrushModelComponent>();
+
+    printf("Has model: %d\n", brushModelComponent->model != nullptr);
+
+    BoundBox& box = brushModelComponent->model->boundBox;
+    Vec3 size = box.v[1] - box.v[0];
+
+    Vec3fp bounds = Vec3fp(fp(size.x), fp(size.y), fp(size.z));
+
+    doorEntity->openPosition = doorEntity->openDirection * abs(doorEntity->openDirection.dot(bounds));
+
+    doorCloseCallback(doorEntity);
+
+    return doorEntity;
+}
+
+

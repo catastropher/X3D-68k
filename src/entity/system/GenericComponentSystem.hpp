@@ -13,49 +13,41 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <vector>
-
 #pragma once
 
-#include "StdAllocator.hpp"
+#include "IEntitySystem.hpp"
+#include "engine/GlobalConfiguration.hpp"
+#include "memory/Set.hpp"
+#include "entity/Entity.hpp"
 
-template<typename T>
-using Vector = std::vector<T, XAllocator<T>>;
-
-template<typename T>
-class Array
+template<typename TComponent, int MaxEntities>
+class GenericComponentSystem : public IEntitySystem
 {
 public:
-    Array(T* elem_, int count_)
-        : elem(elem_),
-        count(count_)
+    using SetType = Set<Entity*, MaxEntities>;
+
+    void createEntity(Entity& entity)
     {
-        
-    }
-    
-    Array()
-        : elem(nullptr),
-        count(0)
-    {
-        
+        if(entity.hasComponent<TComponent>())
+        {
+            entities.add(&entity);
+        }
     }
 
-    T& operator[](int index)
+    void destroyEntity(Entity& entity)
     {
-        return elem[index];
-    }
-    
-    T* begin()
-    {
-        return elem;
-    }
-    
-    T* end()
-    {
-        return elem + count;
+        if(entity.hasComponent<TComponent>())
+        {
+            entities.remove(&entity);
+        }
     }
 
-    T* elem;
-    int count;
+
+    SetType& getAllEntities()
+    {
+        return entities;
+    }
+
+private:
+    SetType entities;
 };
-
