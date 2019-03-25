@@ -15,17 +15,19 @@
 
 #pragma once
 
-#include "Entity.hpp"
+#include "entity/Entity.hpp"
 #include "entity/component/BrushModelComponent.hpp"
+#include "memory/Array.hpp"
 
 class DoorEntity : public Entity
 {
 public:
-    DoorEntity(X_Edict& edict, BspLevel& level);
+    DoorEntity(X_Edict& edict);
 
     void update(const EntityUpdate& update);
 
     static void linkDoors(Array<DoorEntity*>& doorsInLevel);
+    static Entity* build(EntityBuilder& entityBuilder);
 
 private:
     static void doorOpenCallback(Entity* entity);

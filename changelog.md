@@ -1,3 +1,7 @@
+### 3-24-2019
+* Added scriptable component
+* Converted door entity over to new component system
+
 ### 3-23-2019
 * Fixed crash on changing levels caused by not alerting the entity systems
 * Re-enabled rendering brush models

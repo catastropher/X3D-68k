@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include "entity/builtin/DoorEntity.hpp"
 #include "EntityManager.hpp"
 #include "EntityDictionary.hpp"
 #include "EntityDictionaryParser.hpp"
@@ -114,5 +115,6 @@ void EntityManager::destroyAllEntities()
 void EntityManager::registerBuiltinTypes()
 {
     registerEntityType<WorldEntity>("worldspawn"_sid, WorldEntity::build);
+    registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
 }
 

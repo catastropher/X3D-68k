@@ -77,6 +77,7 @@ set(X_SOURCES
     # entity
         # builtin
             src/entity/builtin/WorldEntity.cpp
+            src/entity/builtin/DoorEntity.cpp
 
         src/entity/component/BrushModelComponent.cpp
         src/entity/EntityDictionary.cpp
