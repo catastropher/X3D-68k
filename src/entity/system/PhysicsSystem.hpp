@@ -15,39 +15,21 @@
 
 #pragma once
 
-#include "memory/BitSet.hpp"
+#include "IEntitySystem.hpp"
+#include "engine/GlobalConfiguration.hpp"
+#include "memory/Set.hpp"
+#include "entity/Entity.hpp"
 
-enum class PhysicsComponentType
-{
-    axisAlignedBoundingBox,
-    brushModel
-};
-
-enum class PhysicsComponentFlags
-{
-    isTrigger
-};
-
-class PhysicsComponent
+class PhysicsSystem : IEntitySystem
 {
 public:
-    PhysicsComponent(PhysicsComponentType type_)
-        : type(type_)
-    {
+    using SetType = Set<Entity*, Configuration::ENTITIES_MAX>;
 
-    }
+    void createEntity(Entity& entity);
+    void destroyEntity(Entity& entity);
 
-    PhysicsComponentType type;
-    Flags<PhysicsComponentFlags> flags;
-};
-
-class AxisAlignedBoundingBoxPhysicsComponent : public PhysicsComponent
-{
-public:
-    AxisAlignedBoundingBoxPhysicsComponent()
-        : PhysicsComponent(PhysicsComponentType::axisAlignedBoundingBox)
-    {
-
-    }
+private:
+    SetType axisAlignedBoundingBoxes;
+    SetType brushModels;
 };
 
