@@ -46,8 +46,8 @@ private:
     int pixelsPerCharacter() const
         { return charSize; }
 
-    void loadCharacter(const X_Texture& fontTex, int charRow, int charCol, X_Color* characterPixelsDest);
-    void loadCharacters(const X_Texture& fontTex);
+    void loadCharacter(const Texture& fontTex, int charRow, int charCol, X_Color* characterPixelsDest);
+    void loadCharacters(const Texture& fontTex);
 
     int charW;
     int charH;

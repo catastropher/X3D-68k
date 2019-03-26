@@ -140,14 +140,14 @@ void BspLevel::renderPortals(X_RenderContext& renderContext)
 //     x_bspnode_mark_surfaces_light_is_close_to(x_bsplevel_get_level_model(level)->rootBspNode, light, currentFrame);
 // }
 
-void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest)
+void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, Texture* dest)
 {
     x_assert(mipMapLevel >= 0 && mipMapLevel < 4, "Bad mip map request");
     x_assert(textureId >= 0 && textureId < level->totalTextures, "Requested invalid texture");
     
     BspTexture* bspTex = level->textures + textureId;
     
-    new (dest) X_Texture(bspTex->w >> mipMapLevel,  bspTex->h >> mipMapLevel, bspTex->mipTexels[mipMapLevel]);
+    new (dest) Texture(bspTex->w >> mipMapLevel,  bspTex->h >> mipMapLevel, bspTex->mipTexels[mipMapLevel]);
 }
 
 void x_bsplevel_cleanup(BspLevel* level)

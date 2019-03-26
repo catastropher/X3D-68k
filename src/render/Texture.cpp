@@ -23,7 +23,7 @@
 #include "system/File.hpp"
 #include "render/OldRenderer.hpp"
 
-bool X_Texture::saveToFile(const char* fileName)
+bool Texture::saveToFile(const char* fileName)
 {
     X_File file;
     if(!x_file_open_writing(&file, fileName))
@@ -39,7 +39,7 @@ bool X_Texture::saveToFile(const char* fileName)
     return 1;
 }
 
-bool X_Texture::loadFromFile(const char* fileName)
+bool Texture::loadFromFile(const char* fileName)
 {
     FileReader reader;
     if(!reader.open(fileName))
@@ -65,7 +65,7 @@ bool X_Texture::loadFromFile(const char* fileName)
     return 1;
 }
 
-void X_Texture::clampVec2i(Vec2i& v)
+void Texture::clampVec2i(Vec2i& v)
 {
     v.x = std::max(v.x, 0);
     v.x = std::min(v.x, w - 1);
@@ -79,7 +79,7 @@ static int signof(int x)
     return x < 0 ? -1 : 1;
 }
 
-void X_Texture::drawLine(Vec2i start, Vec2i end, X_Color color)
+void Texture::drawLine(Vec2i start, Vec2i end, X_Color color)
 {
     clampVec2i(start);
     clampVec2i(end);
@@ -115,7 +115,7 @@ void X_Texture::drawLine(Vec2i start, Vec2i end, X_Color color)
     }
 }
 
-void X_Texture::drawLineShaded(Vec2i start, Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable)
+void Texture::drawLineShaded(Vec2i start, Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable)
 {
     clampVec2i(start);
     clampVec2i(end);
@@ -159,7 +159,7 @@ void X_Texture::drawLineShaded(Vec2i start, Vec2i end, X_Color color, fp startIn
     }
 }
 
-void X_Texture::blit(const X_Texture& tex, Vec2i pos)
+void Texture::blit(const Texture& tex, Vec2i pos)
 {
     int endX = std::min(pos.x + tex.w, w);
     int endY = std::min(pos.y + tex.h, h);
@@ -173,7 +173,7 @@ void X_Texture::blit(const X_Texture& tex, Vec2i pos)
     }
 }
 
-void X_Texture::drawChar(int c, const Font& font, Vec2i pos)
+void Texture::drawChar(int c, const Font& font, Vec2i pos)
 {
     const X_Color* charPixels = font.getCharacterPixels(c);
     int endY = std::min(pos.y + font.getH(), h);
@@ -200,7 +200,7 @@ void X_Texture::drawChar(int c, const Font& font, Vec2i pos)
     }
 }
 
-void X_Texture::drawStr(const char* str, const Font& font, Vec2i pos)
+void Texture::drawStr(const char* str, const Font& font, Vec2i pos)
 {
     Vec2 currentPos = pos;
     
@@ -221,7 +221,7 @@ void X_Texture::drawStr(const char* str, const Font& font, Vec2i pos)
     }
 }
 
-void X_Texture::fillRect(Vec2i topLeft, Vec2i bottomRight, X_Color color)
+void Texture::fillRect(Vec2i topLeft, Vec2i bottomRight, X_Color color)
 {
     clampVec2i(topLeft);
     clampVec2i(bottomRight);
@@ -235,12 +235,12 @@ void X_Texture::fillRect(Vec2i topLeft, Vec2i bottomRight, X_Color color)
     }
 }
 
-void X_Texture::fill(X_Color fillColor)
+void Texture::fill(X_Color fillColor)
 {
     memset(texels, fillColor, totalTexels());
 }
 
-// static void construct_vertices_of_decal_polygon(Vec2_fp16x16* dest, X_Texture* decal, Vec2 pos, Vec2_fp16x16* uOrientation, Vec2_fp16x16* vOrientation)
+// static void construct_vertices_of_decal_polygon(Vec2_fp16x16* dest, Texture* decal, Vec2 pos, Vec2_fp16x16* uOrientation, Vec2_fp16x16* vOrientation)
 // {
 //     int w = decal.w / 2;
 //     int h = decal.h / 2;
@@ -259,7 +259,7 @@ void X_Texture::fill(X_Color fillColor)
 //     }
 // }
 
-// static void calculate_texture_coordinates(Vec2_fp16x16* dest, X_Texture* decal)
+// static void calculate_texture_coordinates(Vec2_fp16x16* dest, Texture* decal)
 // {
 //     x_fp16x16 w = x_fp16x16_from_int(decal.w - 1);
 //     x_fp16x16 h = x_fp16x16_from_int(decal.h - 1);
@@ -377,7 +377,7 @@ void X_Texture::fill(X_Color fillColor)
 //     }
 // }
 
-// static void draw_span(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_DecalEdge* right, int y, X_Color transparency)
+// static void draw_span(Texture* canvas, Texture* decal, X_DecalEdge* left, X_DecalEdge* right, int y, X_Color transparency)
 // {
 //     int xLeft = x_fp16x16_to_int(left.x);
 //     int xRight = x_fp16x16_to_int(right.x);
@@ -418,7 +418,7 @@ void X_Texture::fill(X_Color fillColor)
 //     edge.v += edge.vSlope;
 // }
 
-// static void scan_edges(X_Texture* canvas, X_Texture* decal, X_DecalEdge* left, X_DecalEdge* right, X_Color transparency)
+// static void scan_edges(Texture* canvas, Texture* decal, X_DecalEdge* left, X_DecalEdge* right, X_Color transparency)
 // {
 //     int y = left.startY;
 //     X_DecalEdge** nextAdvance;
@@ -440,7 +440,7 @@ void X_Texture::fill(X_Color fillColor)
 //     } while((*nextAdvance).next != NULL);   
 // }
 
-// void x_texture_draw_decal(X_Texture* canvas, X_Texture* decal, Vec2 pos, Vec2_fp16x16* uOrientation, Vec2_fp16x16* vOrientation, X_Color transparency)
+// void x_texture_draw_decal(Texture* canvas, Texture* decal, Vec2 pos, Vec2_fp16x16* uOrientation, Vec2_fp16x16* vOrientation, X_Color transparency)
 // {
 //     X_DecalEdge leftHead, leftTail;
 //     init_sentinel_edges(&leftHead, &leftTail);

@@ -250,7 +250,7 @@ void x_bsplevel_cleanup(BspLevel* level);
 
 void x_bsplevel_render(BspLevel* level, struct X_RenderContext* renderContext);
 
-void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, X_Texture* dest);
+void x_bsplevel_get_texture(BspLevel* level, int textureId, int mipMapLevel, Texture* dest);
 
 void x_bsplevel_mark_surfaces_light_is_close_to(BspLevel* level, const X_Light* light, int currentFrame);
 

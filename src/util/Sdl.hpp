@@ -85,7 +85,7 @@ static inline void x_sdl_putpixel(SDL_Surface *surface, int x, int y, Uint32 pix
     }
 }
 
-static inline void x_texture_to_sdl_surface(const X_Texture* src, const X_Palette* palette, SDL_Surface* dest)
+static inline void x_texture_to_sdl_surface(const Texture* src, const X_Palette* palette, SDL_Surface* dest)
 {
     x_assert(dest->w >= src->getW() && dest->h >= src->getH(), "SDL surface dimensions too small");
     
