@@ -1,5 +1,8 @@
 ### 3-25-2019
-I'm looking for a way to implement triggers. 
+I'm looking for a way to implement triggers.
+
+* Add `PhysicsComponent`
+* Add `TriggerEntity`
 
 ### 3-24-2019
 * Added scriptable component

@@ -18,6 +18,7 @@
 #include "EntityDictionary.hpp"
 #include "EntityDictionaryParser.hpp"
 #include "builtin/WorldEntity.hpp"
+#include "builtin/TriggerEntity.hpp"
 #include "EntityBuilder.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
@@ -114,5 +115,6 @@ void EntityManager::registerBuiltinTypes()
 {
     registerEntityType<WorldEntity>("worldspawn"_sid, WorldEntity::build);
     registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
+    registerEntityType<TriggerEntity>("trigger_once"_sid, TriggerEntity::build);
 }
 
