@@ -44,11 +44,9 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 
     StringId nameId = StringId::fromString(classname->value);
 
-    Log::info("search...");
-
     for(EntityMetadata* metadata = entityMetadataHead; metadata != nullptr; metadata = metadata->next)
     {
-        metadata->name.print("Check");
+        edict.print();
         if(metadata->name == nameId)
         {
             EntityBuilder builder(&level, edict);

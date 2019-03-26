@@ -15,13 +15,38 @@
 
 #pragma once
 
-enum class ComponentType
+#include "memory/BitSet.hpp"
+
+enum class PhysicsComponentType
 {
-    brushModel = (1 << 0),
-    transform = (1 << 1),
-    camera = (1 << 2),
-    input = (1 << 3),
-    collider = (1 << 4),
-    scriptable = (1 << 5),
-    physics = (1 << 6)
+    axisAlignedBoundingBox
 };
+
+enum class PhysicsComponentFlags
+{
+    isTrigger
+};
+
+class PhysicsComponent
+{
+public:
+    PhysicsComponent(PhysicsComponentType type_)
+        : type(type_)
+    {
+
+    }
+
+    PhysicsComponentType type;
+    Flags<PhysicsComponentFlags> flags;
+};
+
+class AxisAlignedBoundingBoxPhysicsComponent : public PhysicsComponent
+{
+public:
+    AxisAlignedBoundingBoxPhysicsComponent()
+        : PhysicsComponent(PhysicsComponentType::axisAlignedBoundingBox)
+    {
+
+    }
+};
+

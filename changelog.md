@@ -1,3 +1,6 @@
+### 3-25-2019
+I'm looking for a way to implement triggers. 
+
 ### 3-24-2019
 * Added scriptable component
 * Converted door entity over to new component system

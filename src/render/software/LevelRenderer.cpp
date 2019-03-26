@@ -164,7 +164,6 @@ void LevelRenderer::renderBrushModels(const X_RenderContext& renderContext)
 
 void LevelRenderer::renderBrushModel(BspModel& brushModel, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags)
 {
-    printf("Render brush model\n");
     x_ae_context_set_current_model(&renderContext.renderer->activeEdgeContext, &brushModel);
 
     for(int i = 0; i < brushModel.totalFaces; ++i)

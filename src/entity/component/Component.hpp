@@ -22,6 +22,7 @@
 #include "BoxColliderComponent.hpp"
 #include "TransformComponent.hpp"
 #include "ScriptableComponent.hpp"
+#include "PhysicsComponent.hpp"
 
 struct ComponentRecord
 {
@@ -37,6 +38,7 @@ struct ComponentRecord
     BoxColliderComponent* boxColliderComponent = nullptr;
     TransformComponent* transformComponent = nullptr;
     ScriptableComponent* scriptableComponent = nullptr;
+    PhysicsComponent* physicsComponent = nullptr;
 };
 
 template<> inline BrushModelComponent* ComponentRecord::getComponent() { return brushModelComponent; }
@@ -45,6 +47,7 @@ template<> inline InputComponent* ComponentRecord::getComponent() { return input
 template<> inline BoxColliderComponent* ComponentRecord::getComponent() { return boxColliderComponent; }
 template<> inline TransformComponent* ComponentRecord::getComponent() { return transformComponent; }
 template<> inline ScriptableComponent* ComponentRecord::getComponent() { return scriptableComponent; }
+template<> inline PhysicsComponent* ComponentRecord::getComponent() { return physicsComponent; }
 
 template<typename T> constexpr inline bool isValidComponentType() { return false; }
 template<> constexpr bool inline isValidComponentType<BrushModelComponent>() { return true; }
@@ -61,4 +64,5 @@ template<> constexpr inline ComponentType getComponentType<InputComponent>() { r
 template<> constexpr inline ComponentType getComponentType<BoxColliderComponent>() { return ComponentType::collider; }
 template<> constexpr inline ComponentType getComponentType<TransformComponent>() { return ComponentType::transform; }
 template<> constexpr inline ComponentType getComponentType<ScriptableComponent>() { return ComponentType::scriptable; }
+template<> constexpr inline ComponentType getComponentType<PhysicsComponent>() { return ComponentType::physics; }
 
