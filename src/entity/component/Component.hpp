@@ -56,6 +56,7 @@ template<> constexpr bool inline isValidComponentType<InputComponent>() { return
 template<> constexpr bool inline isValidComponentType<BoxColliderComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<TransformComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<ScriptableComponent>() { return true; }
+template<> constexpr bool inline isValidComponentType<PhysicsComponent>() { return true; }
 
 template<typename T> constexpr inline ComponentType getComponentType();
 template<> constexpr inline ComponentType getComponentType<BrushModelComponent>() { return ComponentType::brushModel; }

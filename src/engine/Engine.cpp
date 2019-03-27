@@ -34,6 +34,7 @@
 #include "level/LevelManager.hpp"
 #include "render/software/SoftwareRenderer.hpp"
 #include "hud/MessageQueue.hpp"
+#include "hud/OverlayRenderer.hpp"
 
 EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -107,6 +108,8 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->mouseState = new MouseState(context->console, context->screen);
 
     context->messageQueue = new MessageQueue(Duration::fromSeconds(5.0_fp), context->screen, context->mainFont);
+
+    context->overlayRenderer = new OverlayRenderer(*context->console);
 }
 
 EngineContext* Engine::init(X_Config& config)
@@ -273,6 +276,8 @@ static void runFrame(EngineContext* engineContext)
     //x_renderer_render_frame(engineContext);
     SoftwareRenderer softwareRenderer(&engineContext->renderer->activeEdgeContext, engineContext);
     softwareRenderer.render();
+
+    engineContext->overlayRenderer->render();
 
     // Commented out for implementing message queue.
     //StatusBar::render(engineContext->screen->canvas, *engineContext->mainFont);

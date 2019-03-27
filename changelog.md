@@ -1,3 +1,11 @@
+### 3-27-2019
+Plan:
+* Add function to draw 3D box
+* Add function to render bound box
+* Create debug overlay renderer
+* Add cmd to enable/disable overlay
+* Add overlay for drawing entities?
+
 ### 3-25-2019
 I'm looking for a way to implement triggers.
 
