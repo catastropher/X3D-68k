@@ -15,8 +15,11 @@
 
 #pragma once
 
+#include <cstdarg>
+
 #include "memory/CircularQueue.hpp"
 #include "memory/FixedLengthString.hpp"
+#include "system/Clock.hpp"
 #include "system/Time.hpp"
 #include "render/Screen.hpp"
 #include "render/Font.hpp"
@@ -24,6 +27,11 @@
 
 struct Message
 {
+    Message()
+    {
+        expirationTime = Clock::getTicks();
+    }
+
     static const int maxMessageLength = 128;
 
     FixedLengthString<maxMessageLength> message;
@@ -33,33 +41,53 @@ struct Message
 class MessageQueue
 {
 public:
-    MessageQueue(Screen* screen_, Font* font_)
-        : screen(screen_),
+    MessageQueue(Duration messageLifetime_, Screen* screen_, Font* font_)
+        : messageLifetime(messageLifetime_),
+        screen(screen_),
         font(font_)
     {
-        Message testMessage;
-        Message testMessage2;
 
-        testMessage.message = "First Message";
-        testMessage2.message = "Second Message";
-        messages.enqueue(testMessage);
-        messages.enqueue(testMessage2);
+    }
 
+    void addMessage(const char* format, ...)
+    {
+
+        va_list list;
+        va_start(list, format);
+
+        Message* message = messages.allocate();
+        message->expirationTime = Clock::getTicks() + messageLifetime;
+        message->message.format(format, list);
+
+        va_end(list);
     }
 
     void render()
     {
+        removeExpiredMessages();
+
         int yOffset = 0;
         for(auto& message : messages)
         {
             screen->canvas.drawStr(message.message.c_str(), *font, {0, yOffset});
             yOffset += 8;
         }
+
     }
 
 private:
     static const int maxMessages = 8;
 
+    void removeExpiredMessages()
+    {
+        Time currentTime = Clock::getTicks();
+        while(!messages.isEmpty() && currentTime >= messages.peek().expirationTime)
+        {
+            messages.dequeue();
+        }
+    }
+
+    Duration messageLifetime;
     CircularQueue<Message, maxMessages> messages;
 
     Screen* screen;

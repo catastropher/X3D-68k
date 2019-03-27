@@ -106,7 +106,7 @@ void initEngineContext(EngineContext* context, X_Config& config)
 
     context->mouseState = new MouseState(context->console, context->screen);
 
-    context->messageQueue = new MessageQueue(context->screen, context->mainFont);
+    context->messageQueue = new MessageQueue(Duration::fromSeconds(5.0_fp), context->screen, context->mainFont);
 }
 
 EngineContext* Engine::init(X_Config& config)

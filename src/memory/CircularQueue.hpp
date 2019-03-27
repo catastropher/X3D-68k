@@ -95,6 +95,11 @@ public:
         return ptr;
     }
 
+    const T& peek() const
+    {
+        return *head;
+    }
+
     CircularQueueIterator<T, size> begin() const
     {
         return CircularQueueIterator<T, size>(items, head);
