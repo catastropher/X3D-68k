@@ -39,11 +39,11 @@ bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
     return 1;
 }
 
-void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest)
+void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, Texture* dest)
 {
     x_assert(skinId < model->totalSkins && textureId < model->skins[skinId].totalTextures, "Bad skin/texture id");
 
-    new (dest) X_Texture(model->skinWidth, model->skinHeight, model->skins[skinId].textures[textureId].texels);
+    new (dest) Texture(model->skinWidth, model->skinHeight, model->skins[skinId].textures[textureId].texels);
 }
 
 void x_entitymodel_cleanup(X_EntityModel* model)
@@ -139,7 +139,7 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
                 textureCoords[j].x += model->skinWidth / 2;
         }
         
-        X_Texture skin;
+        Texture skin;
         x_entitymodel_get_skin_texture(model, 0, 0, &skin);
         
         x_polygon3_render_textured(&poly, renderContext, &skin, textureCoords);

@@ -36,13 +36,13 @@ typedef struct X_SurfaceBuilderBlock
 typedef struct X_SurfaceBuilder
 {
     BspSurface* bspSurface;
-    X_Texture surface;
+    Texture surface;
     
     int combinedLightmap[X_LIGHTMAP_MAX_SIZE * X_LIGHTMAP_MAX_SIZE];
     Vec2 lightmapSize;
     int lightmapTotalLumels;
     
-    X_Texture texture;
+    Texture texture;
     Vec2 textureOffset;
     Vec2 textureMask;
     
@@ -95,7 +95,7 @@ static void x_surfacebuilder_calculate_texture_offset(X_SurfaceBuilder* builder)
     );
 }
 
-static Vec2 x_texture_get_repeat_mask(X_Texture* texture)
+static Vec2 x_texture_get_repeat_mask(Texture* texture)
 {
     return Vec2
     (
@@ -306,7 +306,7 @@ static void x_surfacebuilder_init(X_SurfaceBuilder* builder, BspSurface* surface
 
     BspTexture* faceTex = surface->faceTexture->texture;
 
-    new (&builder->texture) X_Texture(faceTex->w >> mipLevel, faceTex->h >> mipLevel, faceTex->mipTexels[mipLevel]);
+    new (&builder->texture) Texture(faceTex->w >> mipLevel, faceTex->h >> mipLevel, faceTex->mipTexels[mipLevel]);
 
     builder->textureMask = x_texture_get_repeat_mask(&builder->texture);
     
@@ -330,12 +330,12 @@ static bool x_bspsurface_need_to_rebuild_because_lights_changed(BspSurface* surf
         (surface->lightsTouchingSurface & renderer->dynamicLightsNeedingUpdated) != 0;
 }
 
-void x_bspsurface_get_surface_texture_for_mip_level(BspSurface* surface, int mipLevel, OldRenderer* renderer, X_Texture* dest)
+void x_bspsurface_get_surface_texture_for_mip_level(BspSurface* surface, int mipLevel, OldRenderer* renderer, Texture* dest)
 {
     if(!x_cachentry_is_in_cache(surface->cachedSurfaces + mipLevel) || x_bspsurface_need_to_rebuild_because_lights_changed(surface, renderer))
         x_bspsurface_rebuild(surface, mipLevel, renderer);
     
-    new (dest) X_Texture(surface->textureExtent.x >> (mipLevel + 16),
+    new (dest) Texture(surface->textureExtent.x >> (mipLevel + 16),
         surface->textureExtent.y >> (mipLevel + 16),
         (X_Color*)x_cache_get_cached_data(&renderer->surfaceCache, surface->cachedSurfaces + mipLevel));
 }

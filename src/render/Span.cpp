@@ -264,7 +264,7 @@ static inline X_Color get_texel(const X_AE_SurfaceRenderContext* context, fp u, 
 
 static inline void __attribute__((hot)) fill_solid_span(X_AE_SurfaceRenderContext* context, X_AE_Span* span, X_Color color)
 {
-    X_Texture* screenTex = context->renderContext->canvas;
+    Texture* screenTex = context->renderContext->canvas;
     X_Color* scanline = screenTex->getRow(span->y);
 
     for(int x = span->x1; x < span->x2; ++x)
@@ -281,7 +281,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     
     //span->y *= 2;
     
-    X_Texture* screenTex = context->renderContext->canvas;
+    Texture* screenTex = context->renderContext->canvas;
     X_Color* scanline = screenTex->getRow(span->y);
     //x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
     

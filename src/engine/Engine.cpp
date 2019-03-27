@@ -33,6 +33,7 @@
 #include "entity/component/BrushModelComponent.hpp"
 #include "level/LevelManager.hpp"
 #include "render/software/SoftwareRenderer.hpp"
+#include "hud/MessageQueue.hpp"
 
 EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -104,6 +105,8 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);
+
+    context->messageQueue = new MessageQueue(Duration::fromSeconds(5.0_fp), context->screen, context->mainFont);
 }
 
 EngineContext* Engine::init(X_Config& config)
@@ -271,7 +274,9 @@ static void runFrame(EngineContext* engineContext)
     SoftwareRenderer softwareRenderer(&engineContext->renderer->activeEdgeContext, engineContext);
     softwareRenderer.render();
 
-    StatusBar::render(engineContext->screen->canvas, *engineContext->mainFont);
+    // Commented out for implementing message queue.
+    //StatusBar::render(engineContext->screen->canvas, *engineContext->mainFont);
+    engineContext->messageQueue->render();
 
     if(console->isOpen())
     {

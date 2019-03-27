@@ -15,6 +15,46 @@
 
 #pragma once
 
+template<typename T, int Size>
+class CircularQueueIterator
+{
+public:
+    CircularQueueIterator(const T* begin_, const T* current_)
+        : begin(begin_),
+        current(current_)
+    {
+
+    }
+
+    bool operator==(const CircularQueueIterator& rhs) const
+    {
+       return current == rhs.current;
+    }
+
+    bool operator!=(const CircularQueueIterator& rhs) const
+    {
+        return !(*this == rhs);
+    }
+
+    const T& operator*() const
+    {
+        return *current;
+    }
+
+    CircularQueueIterator operator++()
+    {
+       current = current + 1 == begin + Size
+           ? begin
+           : current + 1;
+
+       return CircularQueueIterator(begin, current);
+    }
+
+private:
+    const T* const begin;
+    const T* current;
+};
+
 template<typename T, int size>
 class CircularQueue
 {
@@ -53,6 +93,21 @@ public:
         head = next(head);
 
         return ptr;
+    }
+
+    const T& peek() const
+    {
+        return *head;
+    }
+
+    CircularQueueIterator<T, size> begin() const
+    {
+        return CircularQueueIterator<T, size>(items, head);
+    }
+
+    CircularQueueIterator<T, size> end() const
+    {
+        return CircularQueueIterator<T, size>(items, tail);
     }
 
 private:

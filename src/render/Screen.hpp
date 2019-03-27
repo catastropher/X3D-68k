@@ -75,7 +75,7 @@ public:
         x_free(zbuf);
     }
     
-    X_Texture canvas;
+    Texture canvas;
     x_fp0x16* zbuf;
     
     const X_Palette* palette;

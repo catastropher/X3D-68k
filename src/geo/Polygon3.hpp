@@ -77,6 +77,6 @@ struct LevelPolygon3 : Polygon3
 
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color);
 void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color);
-void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, X_Texture* texture, Vec2 textureCoords[3]);
+void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, Texture* texture, Vec2 textureCoords[3]);
 void x_polygon3_render_transparent(Polygon3* poly, X_RenderContext* renderContext, X_Color* transparentTable);
 

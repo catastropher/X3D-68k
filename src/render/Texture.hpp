@@ -35,20 +35,20 @@ enum TextureFlags
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A texture, which is basically a 2D array of texels ("texture elements")
-class X_Texture
+class Texture
 {
 public:
-    X_Texture()
+    Texture()
         : w(0), h(0), texels(nullptr), flags(0)
     { }
 
-    X_Texture(int w_, int h_)
+    Texture(int w_, int h_)
         : w(w_), h(h_), flags(TEXTURE_ALLOCED)
     {
         texels = xalloc<X_Color>(w * h);
     }
 
-    X_Texture(int w_, int h_, X_Color* texels_)
+    Texture(int w_, int h_, X_Color* texels_)
         : w(w_), h(h_), texels(texels_), flags(0)
     { }
 
@@ -102,14 +102,14 @@ public:
     void clampVec2i(Vec2i& v);
     void drawLine(Vec2i start, Vec2i end, X_Color color);
     void drawLineShaded(Vec2i start, Vec2i end, X_Color color, fp startIntensity, fp endIntensity, X_Color* colorTable);
-    void blit(const X_Texture& tex, Vec2i pos);
+    void blit(const Texture& tex, Vec2i pos);
     void drawChar(int c, const Font& font, Vec2i pos);
     void drawStr(const char* str, const Font& font, Vec2i pos);
     void fillRect(Vec2i topLeft, Vec2i bottomRight, X_Color color);
     void fill(X_Color color);
-    void drawDecal(X_Texture& decal, Vec2i pos, Vec2fp& uOrientation, Vec2fp& vOrientation, X_Color transparency);
+    void drawDecal(Texture& decal, Vec2i pos, Vec2fp& uOrientation, Vec2fp& vOrientation, X_Color transparency);
 
-    ~X_Texture()
+    ~Texture()
     {
         if(flags & TEXTURE_ALLOCED)
             xfree(texels);

@@ -90,7 +90,7 @@ typedef struct X_EntityModel
 } X_EntityModel;
 
 bool x_entitymodel_load_from_file(struct X_EntityModel* model, const char* fileName);
-void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, X_Texture* dest);
+void x_entitymodel_get_skin_texture(X_EntityModel* model, int skinId, int textureId, Texture* dest);
 void x_entitymodel_cleanup(X_EntityModel* model);
 
 X_EntityFrame* x_entitymodel_get_frame(X_EntityModel* model, const char* frameName);

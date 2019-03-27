@@ -33,6 +33,7 @@
 struct X_RenderContext;
 class EntityManager;
 class LevelManager;
+class MessageQueue;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
@@ -58,6 +59,8 @@ struct EngineContext
     KeyState* keyState;
     MouseState* mouseState;
     EngineQueue* queue;
+
+    MessageQueue* messageQueue;
 
     Platform platform;
 

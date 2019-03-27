@@ -19,7 +19,7 @@
 #include "memory/List.hpp"
 
 struct Font;
-struct X_Texture;
+struct Texture;
 
 struct StatusBarItem
 {
@@ -35,7 +35,7 @@ public:
     static void setItem(const char* name, const char* format, ...);
     static void removeItem(const char* name);
 
-    static void render(X_Texture& texture, const Font& font);
+    static void render(Texture& texture, const Font& font);
 
 private:
     static List<StatusBarItem> items;

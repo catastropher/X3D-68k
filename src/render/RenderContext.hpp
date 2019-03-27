@@ -22,7 +22,7 @@ struct EngineContext;
 struct OldRenderer;
 struct Camera;
 struct X_Frustum;
-struct X_Texture;
+struct Texture;
 struct Mat4x4;
 struct BspLevel;
 struct BspModel;
@@ -33,7 +33,7 @@ typedef struct X_RenderContext
     OldRenderer* renderer;
     Camera* cam;
     Screen* screen;
-    X_Texture* canvas;
+    Texture* canvas;
     x_fp0x16* zbuf;
     X_Frustum* viewFrustum;
     Mat4x4* viewMatrix;
