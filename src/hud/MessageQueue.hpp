@@ -49,50 +49,18 @@ public:
 
     }
 
-    void addMessage(const char* format, ...)
-    {
-
-        va_list list;
-        va_start(list, format);
-
-        Message* message = messages.allocate();
-        message->expirationTime = Clock::getTicks() + messageLifetime;
-        message->message.format(format, list);
-
-        va_end(list);
-    }
-
-    void render()
-    {
-        removeExpiredMessages();
-
-        int yOffset = 0;
-        for(auto& message : messages)
-        {
-            screen->canvas.drawStr(message.message.c_str(), *font, {0, yOffset});
-            yOffset += 8;
-        }
-
-    }
+    void addMessage(const char* format, ...);
+    void render();
 
 private:
     static const int maxMessages = 8;
 
-    void removeExpiredMessages()
-    {
-        Time currentTime = Clock::getTicks();
-        while(!messages.isEmpty() && currentTime >= messages.peek().expirationTime)
-        {
-            messages.dequeue();
-        }
-    }
-
+    void removeExpiredMessages();
+    
     Duration messageLifetime;
     CircularQueue<Message, maxMessages> messages;
 
     Screen* screen;
     Font* font;
-
 };
-
 

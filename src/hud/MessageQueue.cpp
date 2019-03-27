@@ -15,3 +15,36 @@
 
 #include "MessageQueue.hpp"
 
+void MessageQueue::addMessage(const char* format, ...)
+{
+
+    va_list list;
+    va_start(list, format);
+
+    Message* message = messages.allocate();
+    message->expirationTime = Clock::getTicks() + messageLifetime;
+    message->message.format(format, list);
+
+    va_end(list);
+}
+
+void MessageQueue::removeExpiredMessages()
+{
+    Time currentTime = Clock::getTicks();
+    while(!messages.isEmpty() && currentTime >= messages.peek().expirationTime)
+    {
+        messages.dequeue();
+    }
+}
+
+void MessageQueue::render()
+{
+    removeExpiredMessages();
+
+    int yOffset = 0;
+    for(auto& message : messages)
+    {
+        screen->canvas.drawStr(message.message.c_str(), *font, { 0, yOffset });
+        yOffset += 8;
+    }
+}
