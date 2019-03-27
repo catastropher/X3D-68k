@@ -36,13 +36,18 @@ void OverlayRenderer::render()
     }
 }
 
-bool OverlayRenderer::setOverlayIsEnabled(const char* overlayName, bool isEnabled)
+bool OverlayRenderer::setOverlayIsEnabled(const char* overlayName, bool isEnabled, int argc, char* argv[])
 {
     for(Overlay* overlay : overlays)
     {
         if(strcmp(overlayName, overlay->name) == 0)
         {
             overlay->isEnabled = isEnabled;
+
+            if(isEnabled)
+            {
+                overlay->enable(argc, argv);
+            }
 
             return true;
         }
@@ -76,7 +81,7 @@ void OverlayRenderer::cmdOverlay(EngineContext* engineContext, int argc, char** 
         const char* overlayName = argv[1];
         bool overlayIsEnabled = atoi(argv[2]);
 
-        if(overlayRenderer->setOverlayIsEnabled(overlayName, overlayIsEnabled))
+        if(overlayRenderer->setOverlayIsEnabled(overlayName, overlayIsEnabled, argc - 3, argv + 3))
         {
             x_console_printf(
                 console,

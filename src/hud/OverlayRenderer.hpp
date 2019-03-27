@@ -33,6 +33,11 @@ struct Overlay
 
     virtual void render() = 0;
 
+    virtual void enable(int argc, char* argv[])
+    {
+
+    }
+
     const char* name;
     Screen* const screen;
     bool isEnabled;
@@ -54,9 +59,9 @@ public:
     }
 
     void render();
-    bool setOverlayIsEnabled(const char* overlayName, bool isEnabled);
+    bool setOverlayIsEnabled(const char* overlayName, bool isEnabled, int argc, char* argv[]);
 
-    static void cmdOverlay(EngineContext* engineContext, int argc, char** argv);
+    static void cmdOverlay(EngineContext* engineContext, int argc, char* argv[]);
 
 private:
     bool isEnabled;
