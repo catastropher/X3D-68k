@@ -20,6 +20,7 @@
 #include "system/Time.hpp"
 #include "render/Screen.hpp"
 #include "render/Font.hpp"
+#include "render/Texture.hpp"
 
 struct Message
 {
@@ -37,15 +38,22 @@ public:
         font(font_)
     {
         Message testMessage;
-        testMessage.message = "Debugging Waffles";
+        Message testMessage2;
+
+        testMessage.message = "First Message";
+        testMessage2.message = "Second Message";
         messages.enqueue(testMessage);
+        messages.enqueue(testMessage2);
+
     }
 
     void render()
     {
+        int yOffset = 0;
         for(auto& message : messages)
         {
-            printf("%s\n", message.message.c_str());
+            screen->canvas.drawStr(message.message.c_str(), *font, {0, yOffset});
+            yOffset += 8;
         }
     }
 
