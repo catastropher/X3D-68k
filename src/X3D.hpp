@@ -48,6 +48,9 @@
 #include "error/Error.hpp"
 #include "error/Log.hpp"
 
+// hud
+#include "hud/MessageQueue.hpp"
+
 // level
 #include "level/BspLevel.hpp"
 #include "level/BspLevelLoader.hpp"

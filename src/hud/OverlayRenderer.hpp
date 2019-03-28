@@ -23,10 +23,10 @@ class Console;
 
 struct Overlay
 {
-    Overlay(const char* name_, Screen* screen_, bool isEnabled_)
+    Overlay(const char* name_, Screen* screen_)
         : name(name_),
         screen(screen_),
-        isEnabled(isEnabled_)
+        isEnabled(false)
     {
 
     }

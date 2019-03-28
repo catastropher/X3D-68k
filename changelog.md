@@ -1,3 +1,6 @@
+### 3-28-2019
+* Add entity overlay (but for now only render triggers)
+
 ### 3-27-2019
 Plan:
 * Add function to draw 3D box

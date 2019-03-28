@@ -80,6 +80,11 @@ public:
         outArray.count = count;
     }
 
+    const FixedLengthArray<Entity*, Configuration::ENTITIES_MAX>& getAllEntities()
+    {
+        return entities;
+    }
+
     template<typename T>
     void registerEntityType(StringId name, class Entity* (*buildCallback)(EntityBuilder& builder))
     {

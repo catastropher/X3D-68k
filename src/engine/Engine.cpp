@@ -35,6 +35,7 @@
 #include "render/software/SoftwareRenderer.hpp"
 #include "hud/MessageQueue.hpp"
 #include "hud/OverlayRenderer.hpp"
+#include "hud/EntityOverlay.hpp"
 
 EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -110,6 +111,9 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->messageQueue = new MessageQueue(Duration::fromSeconds(5.0_fp), context->screen, context->mainFont);
 
     context->overlayRenderer = new OverlayRenderer(*context->console);
+    context->entityOverlay = new EntityOverlay("entity", context->screen);
+
+    context->overlayRenderer->addOverlay(context->entityOverlay);
 }
 
 EngineContext* Engine::init(X_Config& config)

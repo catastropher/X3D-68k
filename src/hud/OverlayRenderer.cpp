@@ -32,7 +32,10 @@ void OverlayRenderer::render()
 
     for(Overlay* overlay : overlays)
     {
-        overlay->render();
+        if(overlay->isEnabled)
+        {
+            overlay->render();
+        }
     }
 }
 
