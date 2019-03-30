@@ -37,13 +37,13 @@ DoorEntity::DoorEntity(X_Edict &edict)
 void DoorEntity::doorOpenCallback(Entity* entity)
 {
     DoorEntity* door = static_cast<DoorEntity*>(entity);
-    door->getComponent<BrushModelComponent>()->initiateMoveTo(Vec3fp(0, 0, 0), Duration::fromSeconds(fp::fromInt(5)), doorCloseCallback);
+    door->getComponent<BrushModelPhysicsComponent>()->initiateMoveTo(Vec3fp(0, 0, 0), Duration::fromSeconds(fp::fromInt(5)), doorCloseCallback);
 }
 
 void DoorEntity::doorCloseCallback(Entity* entity)
 {
     DoorEntity* door = static_cast<DoorEntity*>(entity);
-    door->getComponent<BrushModelComponent>()->initiateMoveTo(door->openPosition, Duration::fromSeconds(fp::fromInt(5)), doorOpenCallback);
+    door->getComponent<BrushModelPhysicsComponent>()->initiateMoveTo(door->openPosition, Duration::fromSeconds(fp::fromInt(5)), doorOpenCallback);
 }
 
 void DoorEntity::linkDoors(Array<DoorEntity*>& doorsInLevel)
@@ -56,8 +56,8 @@ void DoorEntity::linkDoors(Array<DoorEntity*>& doorsInLevel)
     {
         for(int j = i + 1; j < doorsInLevel.count; ++j)
         {
-            auto a = doorsInLevel[i]->getComponent<BrushModelComponent>();
-            auto b = doorsInLevel[j]->getComponent<BrushModelComponent>();
+            auto a = doorsInLevel[i]->getComponent<BrushModelPhysicsComponent>();
+            auto b = doorsInLevel[j]->getComponent<BrushModelPhysicsComponent>();
 
             if(a->model->boundBox.overlapsWith(b->model->boundBox))
             {
@@ -104,7 +104,6 @@ Entity* DoorEntity::build(EntityBuilder& builder)
 {
     DoorEntity* doorEntity = builder
         .withComponent<TransformComponent>()
-        .withComponent<BrushModelComponent>()
         .withComponent<ScriptableComponent>()
         .build<DoorEntity>(builder.edict);
 
@@ -133,7 +132,7 @@ Entity* DoorEntity::build(EntityBuilder& builder)
         doorEntity->openDirection.z = x_sin(openAngle);
     }
 
-    auto brushModelComponent = doorEntity->getComponent<BrushModelComponent>();
+    auto brushModelComponent = doorEntity->getComponent<BrushModelPhysicsComponent>();
 
     printf("Has model: %d\n", brushModelComponent->model != nullptr);
 

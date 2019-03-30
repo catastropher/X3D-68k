@@ -16,7 +16,7 @@
 #include <entity/system/BrushModelSystem.hpp>
 #include "LevelRenderer.hpp"
 #include "geo/Frustum.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/PhysicsComponent.hpp"
 #include "render/OldRenderer.hpp"
 #include "engine/Engine.hpp"
 
@@ -147,7 +147,7 @@ void LevelRenderer::renderBrushModels(const X_RenderContext& renderContext)
 
     for(Entity* entity : allBrushModels)
     {
-        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+        BrushModelPhysicsComponent* brushModelComponent = entity->getComponent<BrushModelPhysicsComponent>();
 
         if(brushModelComponent->model != nullptr)
         {

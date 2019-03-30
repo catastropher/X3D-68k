@@ -114,7 +114,7 @@ void EntityManager::destroyAllEntities()
 void EntityManager::registerBuiltinTypes()
 {
     registerEntityType<WorldEntity>("worldspawn"_sid, WorldEntity::build);
-    registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
+    //registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
     registerEntityType<TriggerEntity>("trigger_once"_sid, TriggerEntity::build);
 }
 

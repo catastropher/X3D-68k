@@ -16,7 +16,6 @@
 #pragma once
 
 #include "entity/Entity.hpp"
-#include "entity/component/BrushModelComponent.hpp"
 #include "memory/Array.hpp"
 
 class DoorEntity : public Entity

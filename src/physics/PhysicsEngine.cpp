@@ -60,7 +60,7 @@ void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
 
     for(Entity* entity : brushModels)
     {
-        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+        BrushModelPhysicsComponent* brushModelComponent = entity->getComponent<BrushModelPhysicsComponent>();
 
         auto& movement = brushModelComponent->movement;
         if(!movement.isMoving)
@@ -128,7 +128,7 @@ void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement,
 
     pos->setPosition(pos->getPosition() + movement);
 
-    brushEntity->getComponent<BrushModelComponent>()->model->center = pos->getPosition();
+    brushEntity->getComponent<BrushModelPhysicsComponent>()->model->center = pos->getPosition();
 }
 
 void PhysicsEngine::sendCollideEvent(Entity* a, Entity* b)

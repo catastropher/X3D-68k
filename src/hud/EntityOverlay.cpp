@@ -62,7 +62,7 @@ void EntityOverlay::render()
             continue;
         }
 
-        BspModel* model = entity->getComponent<BrushModelComponent>()->model;
+        BspModel* model = entity->getComponent<BrushModelPhysicsComponent>()->model;
 
         Vec3fp a = Vec3fp(fp(model->boundBox.v[0].x), fp(model->boundBox.v[0].y), fp(model->boundBox.v[0].z));
         Vec3fp b = Vec3fp(fp(model->boundBox.v[1].x), fp(model->boundBox.v[1].y), fp(model->boundBox.v[1].z));

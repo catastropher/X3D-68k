@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BspRayTracer.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/Component.hpp"
 #include "entity/Entity.hpp"
 #include "entity/system/BrushModelSystem.hpp"
 #include "engine/Engine.hpp"
@@ -148,7 +148,7 @@ bool BspRayTracer::visitNode(int nodeId, RayPoint& start, RayPoint& end)
 
 bool BspRayTracer::traceModel(Entity* entityWithModel)
 {
-    BrushModelComponent* brushModelComponent = entityWithModel->getComponent<BrushModelComponent>();
+    BrushModelPhysicsComponent* brushModelComponent = entityWithModel->getComponent<BrushModelPhysicsComponent>();
 
     if(brushModelComponent == nullptr)
     {

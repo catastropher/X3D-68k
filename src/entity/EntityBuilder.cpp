@@ -32,11 +32,6 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
         allocator.scheduleAlloc(componentRecord.transformComponent);
     }
 
-    if(components.hasFlag(ComponentType::brushModel))
-    {
-        allocator.scheduleAlloc(componentRecord.brushModelComponent);
-    }
-
     if(components.hasFlag(ComponentType::collider))
     {
         allocator.scheduleAlloc(componentRecord.boxColliderComponent);
@@ -58,6 +53,7 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
     }
 
     AxisAlignedBoundingBoxPhysicsComponent* axisAlignedBoundingBoxPhysicsComponent = nullptr;
+    BrushModelPhysicsComponent* brushModelPhysicsComponent = nullptr;
 
     if(components.hasFlag(ComponentType::physics))
     {
@@ -65,6 +61,10 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
         {
             case PhysicsComponentType::axisAlignedBoundingBox:
                 allocator.scheduleAlloc(axisAlignedBoundingBoxPhysicsComponent);
+                break;
+
+            case PhysicsComponentType::brushModel:
+                allocator.scheduleAlloc(brushModelPhysicsComponent);
                 break;
 
             default:
@@ -75,7 +75,6 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
     allocator.allocAll();
 
     setupComponentIfPresent<TransformComponent>(edict);
-    setupComponentIfPresent<BrushModelComponent>(*this);
     setupComponentIfPresent<BoxColliderComponent>();
     setupComponentIfPresent<InputComponent>(inputComponentOptions.inputUpdateHandler);
     setupComponentIfPresent<CameraComponent>();
@@ -88,6 +87,11 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
             case PhysicsComponentType::axisAlignedBoundingBox:
                 new (axisAlignedBoundingBoxPhysicsComponent) AxisAlignedBoundingBoxPhysicsComponent();
                 componentRecord.physicsComponent = axisAlignedBoundingBoxPhysicsComponent;
+                break;
+
+            case PhysicsComponentType::brushModel:
+                new (brushModelPhysicsComponent) BrushModelPhysicsComponent(*this);
+                componentRecord.physicsComponent = brushModelPhysicsComponent;
                 break;
 
             default:

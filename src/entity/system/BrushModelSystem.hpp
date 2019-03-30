@@ -15,7 +15,47 @@
 
 #pragma once
 
-#include "GenericComponentSystem.hpp"
+#include <memory/Set.hpp>
+#include <engine/GlobalConfiguration.hpp>
+#include "entity/system/IEntitySystem.hpp"
+#include "entity/component/Component.hpp"
+#include "entity/Entity.hpp"
 
-using BrushModelSystem = GenericComponentSystem<BrushModelComponent, Configuration::ENTITIES_MAX>;
+// TODO: deprecate
+class BrushModelSystem : public IEntitySystem
+{
+public:
+    using SetType = Set<Entity*, Configuration::ENTITIES_MAX>;
 
+    void createEntity(Entity& entity)
+    {
+        if(entityHasBrushModel(entity))
+        {
+            entities.add(&entity);
+        }
+    }
+
+    void destroyEntity(Entity& entity)
+    {
+        if(entityHasBrushModel(entity))
+        {
+            entities.remove(&entity);
+        }
+    }
+
+
+    SetType& getAllEntities()
+    {
+        return entities;
+    }
+
+private:
+    bool entityHasBrushModel(Entity& entity)
+    {
+        PhysicsComponent* physicsComponent = entity.getComponent<PhysicsComponent>();
+
+        return physicsComponent != nullptr && physicsComponent->type == PhysicsComponentType::brushModel;
+    }
+
+    SetType entities;
+};

@@ -30,7 +30,7 @@ static void plat(EngineContext* engineContext, int argc, char* argv[])
 PlatformEntity::PlatformEntity(X_Edict& edict, BspLevel& level)
     : Entity(level)
 {
-    addComponent<BrushModelComponent>(edict, level);
+    addComponent<BrushModelPhysicsComponent>(edict, level);
     EngineContext* receiver = Engine::getInstance();
     x_console_register_cmd(receiver->console, "plat", plat);
 

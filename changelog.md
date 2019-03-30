@@ -33,4 +33,4 @@ I'm looking for a way to implement triggers.
 #### Goals
 * Restore player movement
     * Add input component functionality
-    * Add physics engine functionality
+    * Add physics engi  ne functionality

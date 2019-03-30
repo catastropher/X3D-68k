@@ -30,7 +30,7 @@
 #include "entity/EntityManager.hpp"
 #include "entity/component/InputComponent.hpp"
 #include "render/StatusBar.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/PhysicsComponent.hpp"
 #include "level/LevelManager.hpp"
 #include "render/software/SoftwareRenderer.hpp"
 #include "hud/MessageQueue.hpp"
@@ -264,7 +264,7 @@ static void runFrame(EngineContext* engineContext)
     // Fixme: need way to broadcast moves to all components
     // FIXME: 2-20-2019
 #if false
-    auto brushModels = BrushModelComponent::getAll();
+    auto brushModels = BrushModelPhysicsComponent::getAll();
 
     for(auto& brushModel : brushModels)
     {

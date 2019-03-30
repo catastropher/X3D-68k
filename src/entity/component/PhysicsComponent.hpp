@@ -15,7 +15,13 @@
 
 #pragma once
 
+#include <geo/Vec3.hpp>
+#include <system/Time.hpp>
 #include "memory/BitSet.hpp"
+
+class Entity;
+class EntityBuilder;
+class BspModel;
 
 enum class PhysicsComponentType
 {
@@ -49,5 +55,28 @@ public:
     {
 
     }
+};
+
+using BrushModelReachedDestinationHandler = void (*)(Entity* entity);
+
+struct BrushModelMovement
+{
+    Vec3fp direction;
+    Vec3fp finalPosition;
+    Time endTime;
+    bool isMoving = false;
+
+    BrushModelReachedDestinationHandler onArriveHandler;
+};
+
+class BrushModelPhysicsComponent : public PhysicsComponent
+{
+public:
+    BrushModelPhysicsComponent(const EntityBuilder& entityBuilder);
+
+    void initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive = nullptr);
+
+    BspModel* model;
+    BrushModelMovement movement;
 };
 

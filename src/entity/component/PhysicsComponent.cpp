@@ -13,33 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#include <X3D.hpp>
-#include "BrushModelComponent.hpp"
+#include <system/Clock.hpp>
+#include "PhysicsComponent.hpp"
 #include "entity/EntityDictionary.hpp"
-#include "level/BspLevel.hpp"
-#include "system/Clock.hpp"
 #include "entity/EntityBuilder.hpp"
 
-namespace internal
+BrushModelPhysicsComponent::BrushModelPhysicsComponent(const EntityBuilder& builder)
+    : PhysicsComponent(PhysicsComponentType::brushModel)
 {
-    BrushModel::BrushModel(const EntityBuilder& builder)
-    {
-        const BrushModelId MISSING_MODEL(-1);
+    const BrushModelId MISSING_MODEL(-1);
 
-        BrushModelId id;
-        builder.edict.getValueOrDefault("model", id, MISSING_MODEL);
+    BrushModelId id;
+    builder.edict.getValueOrDefault("model", id, MISSING_MODEL);
 
-        model = id.id != MISSING_MODEL.id
+    model = id.id != MISSING_MODEL.id
             ? x_bsplevel_get_model(builder.level, id.id)
             : nullptr;
-    }
+}
 
-    void BrushModel::initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive)
-    {
-        movement.endTime = Clock::getTicks() + moveLength;
-        movement.finalPosition = destination;
-        movement.direction = (destination - model->center) / moveLength.toSeconds();
-        movement.onArriveHandler = onArrive;
-        movement.isMoving = true;
-    }
+void BrushModelPhysicsComponent::initiateMoveTo(const Vec3fp &destination, Duration moveLength, BrushModelReachedDestinationHandler onArrive)
+{
+    movement.endTime = Clock::getTicks() + moveLength;
+    movement.finalPosition = destination;
+    movement.direction = (destination - model->center) / moveLength.toSeconds();
+    movement.onArriveHandler = onArrive;
+    movement.isMoving = true;
 }
