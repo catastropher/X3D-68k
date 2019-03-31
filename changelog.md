@@ -1,3 +1,6 @@
+### 3-31-2019
+* Got triggers working :D
+
 ### 3-28-2019
 * Add entity overlay (but for now only render triggers)
 
@@ -33,4 +36,4 @@ I'm looking for a way to implement triggers.
 #### Goals
 * Restore player movement
     * Add input component functionality
-    * Add physics engi  ne functionality
+    * Add physics engine functionality
