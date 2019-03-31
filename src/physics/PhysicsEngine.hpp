@@ -70,10 +70,21 @@ class PhysicsEngine
 public:
     static void update(BspLevel& level, fp timeDelta);
     static void sendCollideEvent(Entity* a, Entity* b);
+    static void sendTriggerEvent(Entity* trigger, Entity* entityThatHitTrigger);
     
 private:
     static void step(BspLevel& level, fp dt);
     static void moveBrushModels(BspLevel& level, fp dt);
     static void pushBrushEntity(Entity* brushEntity, const Vec3fp& movement, BspLevel& level);
+
+    template<typename TEvent, typename ...TConstructorArgs>
+    static EntityEventResponse sendEventToEntity(Entity* receivingEntity, TConstructorArgs&&... args)
+    {
+        TEvent event(std::forward<TConstructorArgs>(args)...);
+
+        return sendEventToEntityImplementation(receivingEntity, event);
+    }
+
+    static EntityEventResponse sendEventToEntityImplementation(Entity* receivingEntity, const EntityEvent& event);
 };
 

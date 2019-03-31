@@ -38,8 +38,7 @@ public:
         entities.pushBack(entity);
 
         entity->id = entities.size() - 1;
-
-        //FIXME: entity->id = entities.size() - 1;
+        printf("New id: %d\n", entity->id);
     }
 
     void unregisterEntity(Entity* entity)

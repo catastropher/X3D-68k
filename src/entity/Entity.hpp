@@ -78,6 +78,11 @@ public:
     {
         return componentRecord.types;
     }
+
+    int getId() const
+    {
+        return id;
+    }
     
 protected:
     explicit Entity()

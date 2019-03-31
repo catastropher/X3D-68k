@@ -47,7 +47,6 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 
     for(EntityMetadata* metadata = entityMetadataHead; metadata != nullptr; metadata = metadata->next)
     {
-        edict.print();
         if(metadata->name == nameId)
         {
             EntityBuilder builder(&level, edict);

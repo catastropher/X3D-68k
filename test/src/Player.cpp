@@ -40,6 +40,7 @@ Entity* Player::build(EntityBuilder& builder)
         .withInputComponent(handleKeys)
         .withComponent<BoxColliderComponent>()
         .withComponent<CameraComponent>()
+        .withComponent<ScriptableComponent>()
         .build<Player>();
 
     CameraComponent* cam = player->getComponent<CameraComponent>();
@@ -48,6 +49,8 @@ Entity* Player::build(EntityBuilder& builder)
 
     player->angleX = 0;
     player->angleY = 0;
+
+    player->getComponent<ScriptableComponent>()->handleEvent = handleEvent;
 
 #if false
     auto collider = addComponent<BoxColliderComponent>();
@@ -215,12 +218,14 @@ bool Player::handleKeys(Entity* entity, const InputUpdate& update)
     return true;
 }
 
-EntityEventResponse Player::handleEvent(EntityEvent& event)
+EntityEventResponse Player::handleEvent(Entity& entity, const EntityEvent& event)
 {
     switch(event.type)
     {
-        case PickupEntityEvent::Name:
-            return EntityEventResponse::preventDefault;
+        case TriggerEntityEvent::Name:
+            Engine::getInstance()->messageQueue->addMessage("Player hit trigger %d", event.to<const TriggerEntityEvent>()->hitEntity->getId());
+
+            return EntityEventResponse::accepted;
 
         default:
             return EntityEventResponse::unhandled;

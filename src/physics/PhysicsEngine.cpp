@@ -143,3 +143,25 @@ void PhysicsEngine::sendCollideEvent(Entity* a, Entity* b)
 #endif
 }
 
+void PhysicsEngine::sendTriggerEvent(Entity* trigger, Entity* entityThatHitTrigger)
+{
+    // Don't send a trigger event to the entity that hit the trigger if the trigger rejects it
+    if(sendEventToEntity<TriggerEntityEvent>(trigger, entityThatHitTrigger) == EntityEventResponse::rejected)
+    {
+        return;
+    }
+
+    sendEventToEntity<TriggerEntityEvent>(entityThatHitTrigger, trigger);
+}
+
+EntityEventResponse PhysicsEngine::sendEventToEntityImplementation(Entity* receivingEntity, const EntityEvent& event)
+{
+    ScriptableComponent* scriptableComponent = receivingEntity->getComponent<ScriptableComponent>();
+
+    if(scriptableComponent == nullptr || scriptableComponent->handleEvent == nullptr)
+    {
+        return EntityEventResponse::unhandled;
+    }
+
+    return scriptableComponent->handleEvent(*receivingEntity, event);
+}

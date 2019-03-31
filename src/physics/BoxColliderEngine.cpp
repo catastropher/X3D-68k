@@ -83,6 +83,11 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
     // FIXME: this a deceptive name because it's not necessarily a wall that we hit
     auto hitEntity = lastHitWall.entity;
 
+    if(lastHitWall.triggerCollision.hitTrigger)
+    {
+        PhysicsEngine::sendTriggerEvent(lastHitWall.triggerCollision.entity, entity);
+    }
+
     if(hitEntity != nullptr)
     {
         bool shouldPickUp = false;  // FIXME
@@ -97,13 +102,13 @@ void BoxColliderEngine::useResultsFromMoveLogic(BoxColliderMoveLogic& moveLogic)
 
             switch(response)
             {
-                case EntityEventResponse::allowDefault:
+                case EntityEventResponse::accepted:
                     entityManager.destroyEntity(hitEntity);
                     printf("Allow pickup!\n");
 
                     break;
 
-                case EntityEventResponse::preventDefault:
+                case EntityEventResponse::rejected:
                 case EntityEventResponse::unhandled:
                     printf("Could not be picked up\n");
 

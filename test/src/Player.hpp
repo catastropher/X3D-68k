@@ -58,7 +58,7 @@ public:
     static Entity* build(EntityBuilder& builder);
     static bool handleKeys(Entity* entity, const InputUpdate& update);
 
-    EntityEventResponse handleEvent(EntityEvent& event);
+    static EntityEventResponse handleEvent(Entity& entity, const EntityEvent& event);
     
     fp angleX;
     fp angleY;

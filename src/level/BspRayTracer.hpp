@@ -50,8 +50,7 @@ struct TriggerCollision
 struct RayCollision
 {
     RayCollision()
-        : entity(nullptr),
-        totalTriggerCollisions(0)
+        : entity(nullptr)
     {
 
     }
@@ -67,8 +66,7 @@ struct RayCollision
     int hitNode;
     Entity* entity;
 
-    TriggerCollision triggerCollisions[MAX_TRIGGER_COLLISIONS];
-    int totalTriggerCollisions;
+    TriggerCollision triggerCollision;
 };
 
 class BspRayTracer

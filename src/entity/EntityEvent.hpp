@@ -25,8 +25,8 @@ class EngineContext;
 enum class EntityEventResponse
 {
     unhandled = 0,
-    allowDefault = 1,
-    preventDefault = 2
+    accepted = 1,
+    rejected = 2
 };
 
 struct EntityEvent
@@ -38,7 +38,7 @@ struct EntityEvent
     }
 
     template<typename T>
-    T* to()
+    T* to() const
     {
         static_assert(std::is_base_of<EntityEvent, T>::value);
 

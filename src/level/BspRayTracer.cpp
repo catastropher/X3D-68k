@@ -206,7 +206,9 @@ bool BspRayTracer::trace()
     {
         triggerCollision.hitTrigger = false;
     }
-    
+
+    collision.triggerCollision = triggerCollision;
+
     return hitSomething;
 }
 

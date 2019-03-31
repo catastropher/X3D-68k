@@ -165,10 +165,16 @@ bool BoxColliderMoveLogic::traceRay(const Ray3& ray, RayCollision& collision)
     BoxRayTracer tracer(ray, &level, 0);
 
     bool hitSomething = tracer.trace();
+    auto& tracerCollision = tracer.getCollision();
+
+    if(tracerCollision.triggerCollision.hitTrigger)
+    {
+        triggerCollision = tracerCollision.triggerCollision;
+    }
 
     if(hitSomething)
     {
-        collision = tracer.getCollision();
+        collision = tracerCollision;
     }
 
     return hitSomething;

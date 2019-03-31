@@ -17,6 +17,7 @@
 
 #include <geo/Vec3.hpp>
 #include <system/Time.hpp>
+#include <entity/EntityEvent.hpp>
 #include "memory/BitSet.hpp"
 
 class Entity;
@@ -78,5 +79,20 @@ public:
 
     BspModel* model;
     BrushModelMovement movement;
+};
+
+class TriggerEntityEvent : public EntityEvent
+{
+public:
+    static constexpr StringId Name = StringId("trigger");
+
+    TriggerEntityEvent(Entity* hitEntity_)
+        : EntityEvent(Name),
+        hitEntity(hitEntity_)
+    {
+
+    }
+
+    Entity* hitEntity;
 };
 
