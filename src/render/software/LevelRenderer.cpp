@@ -16,7 +16,7 @@
 #include <entity/system/BrushModelSystem.hpp>
 #include "LevelRenderer.hpp"
 #include "geo/Frustum.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/PhysicsComponent.hpp"
 #include "render/OldRenderer.hpp"
 #include "engine/Engine.hpp"
 
@@ -147,7 +147,7 @@ void LevelRenderer::renderBrushModels(const X_RenderContext& renderContext)
 
     for(Entity* entity : allBrushModels)
     {
-        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+        BrushModelPhysicsComponent* brushModelComponent = entity->getComponent<BrushModelPhysicsComponent>();
 
         if(brushModelComponent->model != nullptr)
         {
@@ -164,7 +164,6 @@ void LevelRenderer::renderBrushModels(const X_RenderContext& renderContext)
 
 void LevelRenderer::renderBrushModel(BspModel& brushModel, const X_RenderContext& renderContext, BoundBoxFrustumFlags geoFlags)
 {
-    printf("Render brush model\n");
     x_ae_context_set_current_model(&renderContext.renderer->activeEdgeContext, &brushModel);
 
     for(int i = 0; i < brushModel.totalFaces; ++i)

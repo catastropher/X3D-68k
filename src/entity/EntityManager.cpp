@@ -18,6 +18,7 @@
 #include "EntityDictionary.hpp"
 #include "EntityDictionaryParser.hpp"
 #include "builtin/WorldEntity.hpp"
+#include "builtin/TriggerEntity.hpp"
 #include "EntityBuilder.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
@@ -44,11 +45,8 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 
     StringId nameId = StringId::fromString(classname->value);
 
-    Log::info("search...");
-
     for(EntityMetadata* metadata = entityMetadataHead; metadata != nullptr; metadata = metadata->next)
     {
-        metadata->name.print("Check");
         if(metadata->name == nameId)
         {
             EntityBuilder builder(&level, edict);
@@ -115,6 +113,7 @@ void EntityManager::destroyAllEntities()
 void EntityManager::registerBuiltinTypes()
 {
     registerEntityType<WorldEntity>("worldspawn"_sid, WorldEntity::build);
-    registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
+    //registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
+    registerEntityType<TriggerEntity>("trigger_once"_sid, TriggerEntity::build);
 }
 

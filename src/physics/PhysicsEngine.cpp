@@ -60,7 +60,7 @@ void PhysicsEngine::moveBrushModels(BspLevel& level, fp dt)
 
     for(Entity* entity : brushModels)
     {
-        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+        BrushModelPhysicsComponent* brushModelComponent = entity->getComponent<BrushModelPhysicsComponent>();
 
         auto& movement = brushModelComponent->movement;
         if(!movement.isMoving)
@@ -128,7 +128,7 @@ void PhysicsEngine::pushBrushEntity(Entity* brushEntity, const Vec3fp& movement,
 
     pos->setPosition(pos->getPosition() + movement);
 
-    brushEntity->getComponent<BrushModelComponent>()->model->center = pos->getPosition();
+    brushEntity->getComponent<BrushModelPhysicsComponent>()->model->center = pos->getPosition();
 }
 
 void PhysicsEngine::sendCollideEvent(Entity* a, Entity* b)
@@ -143,3 +143,25 @@ void PhysicsEngine::sendCollideEvent(Entity* a, Entity* b)
 #endif
 }
 
+void PhysicsEngine::sendTriggerEvent(Entity* trigger, Entity* entityThatHitTrigger)
+{
+    // Don't send a trigger event to the entity that hit the trigger if the trigger rejects it
+    if(sendEventToEntity<TriggerEntityEvent>(trigger, entityThatHitTrigger) == EntityEventResponse::rejected)
+    {
+        return;
+    }
+
+    sendEventToEntity<TriggerEntityEvent>(entityThatHitTrigger, trigger);
+}
+
+EntityEventResponse PhysicsEngine::sendEventToEntityImplementation(Entity* receivingEntity, const EntityEvent& event)
+{
+    ScriptableComponent* scriptableComponent = receivingEntity->getComponent<ScriptableComponent>();
+
+    if(scriptableComponent == nullptr || scriptableComponent->handleEvent == nullptr)
+    {
+        return EntityEventResponse::unhandled;
+    }
+
+    return scriptableComponent->handleEvent(*receivingEntity, event);
+}

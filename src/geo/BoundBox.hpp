@@ -99,4 +99,5 @@ struct BoundBoxTemplate
 };
 
 using BoundBox = BoundBoxTemplate<int>;
+using BoundBoxfp = BoundBoxTemplate<fp>;
 

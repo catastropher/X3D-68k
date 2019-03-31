@@ -72,6 +72,8 @@ int main(int argc, char* argv[])
 
     x_console_register_cmd(engineContext->console, "screen.gamma", cmdGamma);
 
+    engineContext->messageQueue->addMessage("Welcome to X3D!");
+
     Engine::run();
 }
 

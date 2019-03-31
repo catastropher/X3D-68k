@@ -34,6 +34,8 @@ struct X_RenderContext;
 class EntityManager;
 class LevelManager;
 class MessageQueue;
+class OverlayRenderer;
+class EntityOverlay;
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A context object that holds the state for the entire engine.
@@ -68,6 +70,9 @@ struct EngineContext
     CameraSystem* cameraSystem;
     BoxColliderSystem* boxColliderSystem;
     InputSystem* inputSystem;
+
+    OverlayRenderer* overlayRenderer;
+    EntityOverlay* entityOverlay;
 };
 
 void x_enginecontext_cleanup(EngineContext* context);

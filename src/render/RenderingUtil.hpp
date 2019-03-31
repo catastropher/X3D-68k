@@ -15,26 +15,7 @@
 
 #pragma once
 
-#include "entity/Entity.hpp"
-#include "memory/Array.hpp"
+#include "geo/BoundBox.hpp"
+#include "geo/Ray3.hpp"
 
-class DoorEntity : public Entity
-{
-public:
-    DoorEntity(X_Edict& edict);
-
-    void update(const EntityUpdate& update);
-
-    static void linkDoors(Array<DoorEntity*>& doorsInLevel);
-    static Entity* build(EntityBuilder& entityBuilder);
-
-private:
-    static void doorOpenCallback(Entity* entity);
-    static void doorCloseCallback(Entity* entity);
-
-    Vec3fp openDirection;
-    Vec3fp openPosition;
-    Time transitionTime;
-    bool closed = true;
-};
-
+void renderBoundBox(BoundBoxfp& boundBox, X_RenderContext& renderContext, X_Color color);

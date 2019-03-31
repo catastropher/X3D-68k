@@ -15,26 +15,19 @@
 
 #pragma once
 
-#include "entity/Entity.hpp"
-#include "memory/Array.hpp"
+#include "OverlayRenderer.hpp"
 
-class DoorEntity : public Entity
+class EntityOverlay : public Overlay
 {
 public:
-    DoorEntity(X_Edict& edict);
+    EntityOverlay(const char* name, Screen* screen)
+        : Overlay(name, screen)
+    {
 
-    void update(const EntityUpdate& update);
+    }
 
-    static void linkDoors(Array<DoorEntity*>& doorsInLevel);
-    static Entity* build(EntityBuilder& entityBuilder);
+    void render();
 
 private:
-    static void doorOpenCallback(Entity* entity);
-    static void doorCloseCallback(Entity* entity);
-
-    Vec3fp openDirection;
-    Vec3fp openPosition;
-    Time transitionTime;
-    bool closed = true;
 };
 

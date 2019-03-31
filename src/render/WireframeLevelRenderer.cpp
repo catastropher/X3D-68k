@@ -19,7 +19,7 @@
 #include "geo/Frustum.hpp"
 #include "level/BspLevel.hpp"
 #include "geo/Ray3.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/PhysicsComponent.hpp"
 #include "entity/system/BrushModelSystem.hpp"
 
 #include "engine/Engine.hpp"        // TODO: remove
@@ -44,7 +44,7 @@ void WireframeLevelRenderer::render()
 
     for(auto& entity : entities)
     {
-        BrushModelComponent* brushModelComponent = entity->getComponent<BrushModelComponent>();
+        BrushModelPhysicsComponent* brushModelComponent = entity->getComponent<BrushModelPhysicsComponent>();
 
         if(brushModelComponent->model != nullptr)
         {

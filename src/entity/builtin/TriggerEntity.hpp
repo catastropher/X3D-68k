@@ -16,25 +16,13 @@
 #pragma once
 
 #include "entity/Entity.hpp"
-#include "memory/Array.hpp"
+#include "entity/EntityBuilder.hpp"
 
-class DoorEntity : public Entity
+class TriggerEntity : public Entity
 {
 public:
-    DoorEntity(X_Edict& edict);
-
-    void update(const EntityUpdate& update);
-
-    static void linkDoors(Array<DoorEntity*>& doorsInLevel);
     static Entity* build(EntityBuilder& entityBuilder);
 
 private:
-    static void doorOpenCallback(Entity* entity);
-    static void doorCloseCallback(Entity* entity);
-
-    Vec3fp openDirection;
-    Vec3fp openPosition;
-    Time transitionTime;
-    bool closed = true;
 };
 

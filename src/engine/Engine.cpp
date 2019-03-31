@@ -30,10 +30,12 @@
 #include "entity/EntityManager.hpp"
 #include "entity/component/InputComponent.hpp"
 #include "render/StatusBar.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/PhysicsComponent.hpp"
 #include "level/LevelManager.hpp"
 #include "render/software/SoftwareRenderer.hpp"
 #include "hud/MessageQueue.hpp"
+#include "hud/OverlayRenderer.hpp"
+#include "hud/EntityOverlay.hpp"
 
 EngineContext Engine::instance;
 bool Engine::wasInitialized = false;
@@ -107,6 +109,11 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->mouseState = new MouseState(context->console, context->screen);
 
     context->messageQueue = new MessageQueue(Duration::fromSeconds(5.0_fp), context->screen, context->mainFont);
+
+    context->overlayRenderer = new OverlayRenderer(*context->console);
+    context->entityOverlay = new EntityOverlay("entity", context->screen);
+
+    context->overlayRenderer->addOverlay(context->entityOverlay);
 }
 
 EngineContext* Engine::init(X_Config& config)
@@ -257,7 +264,7 @@ static void runFrame(EngineContext* engineContext)
     // Fixme: need way to broadcast moves to all components
     // FIXME: 2-20-2019
 #if false
-    auto brushModels = BrushModelComponent::getAll();
+    auto brushModels = BrushModelPhysicsComponent::getAll();
 
     for(auto& brushModel : brushModels)
     {
@@ -273,6 +280,8 @@ static void runFrame(EngineContext* engineContext)
     //x_renderer_render_frame(engineContext);
     SoftwareRenderer softwareRenderer(&engineContext->renderer->activeEdgeContext, engineContext);
     softwareRenderer.render();
+
+    engineContext->overlayRenderer->render();
 
     // Commented out for implementing message queue.
     //StatusBar::render(engineContext->screen->canvas, *engineContext->mainFont);

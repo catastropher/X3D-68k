@@ -21,7 +21,7 @@
 //    : Entity(level)
 //{
 //    BspModel* worldModel = &getLevel().getLevelModel();
-//    addComponent<BrushModelComponent>(worldModel);
+//    addComponent<BrushModelPhysicsComponent>(worldModel);
 //}
 //
 //
@@ -30,11 +30,11 @@ Entity* WorldEntity::build(EntityBuilder& builder)
 {
     WorldEntity* world = builder
         .withComponent<TransformComponent>()
-        .withComponent<BrushModelComponent>()
+        .withPhysicsComponent(PhysicsComponentType::brushModel)
         .build<WorldEntity>();
 
-    BrushModelComponent* brushModelComponent = world->getComponent<BrushModelComponent>();
-    brushModelComponent->model = &builder.level->getLevelModel();
+    BrushModelPhysicsComponent* brushModelPhysicsComponent = world->getComponent<BrushModelPhysicsComponent>();
+    brushModelPhysicsComponent->model = &builder.level->getLevelModel();
 
     return world;
 }

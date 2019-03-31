@@ -22,5 +22,6 @@ enum class ComponentType
     camera = (1 << 2),
     input = (1 << 3),
     collider = (1 << 4),
-    scriptable = (1 << 5)
+    scriptable = (1 << 5),
+    physics = (1 << 6)
 };

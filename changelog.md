@@ -1,3 +1,24 @@
+### 3-31-2019
+* Got triggers working :D
+
+### 3-28-2019
+* Add entity overlay (but for now only render triggers)
+
+### 3-27-2019
+Plan:
+* Add function to draw 3D box
+* Add function to render bound box
+* Create debug overlay renderer
+* Add cmd to enable/disable overlay
+* Add overlay for drawing entities?
+
+### 3-25-2019
+I'm looking for a way to implement triggers.
+
+* Add `PhysicsComponent`
+* Add `TriggerEntity`
+* Add `PhysicsSystem`
+
 ### 3-24-2019
 * Added scriptable component
 * Converted door entity over to new component system

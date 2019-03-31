@@ -14,7 +14,7 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include "BspRayTracer.hpp"
-#include "entity/component/BrushModelComponent.hpp"
+#include "entity/component/Component.hpp"
 #include "entity/Entity.hpp"
 #include "entity/system/BrushModelSystem.hpp"
 #include "engine/Engine.hpp"
@@ -81,31 +81,48 @@ bool BspRayTracer::exploreBothSidesOfNode(int nodeId, RayPoint& start, RayPoint&
     
     bool intersectionInSolidLeaf = getNodeContents(endChildNode, intersection.point) == X_BSPLEAF_SOLID;
     if(!intersectionInSolidLeaf)
+    {
         return visitNode(endChildNode, intersection, end);
+    }
 
     if(intersection.t > collision.location.t)
     {
         return false;
     }
-    
-    collision.plane = getNodePlane(node);
-    
-    if(startDist < 0)
-    {
-        // Flip the direction of the plane because we're colliding on the wrong side
-        collision.plane.flip();
-    }
-    
-    collision.location = intersection;
-    collision.hitModel = currentModel;
-    collision.hitNode = nodeId;
-    collision.entity = currentModelOwner;
 
-    // Move the plane relative to the origin of the object
-    collision.location.point = collision.location.point + currentModel->center;
-    collision.plane.d = -collision.plane.normal.dot(collision.location.point);
-    
-    return 0;
+    BrushModelPhysicsComponent* brushModelPhysicsComponent = currentModelOwner->getComponent<BrushModelPhysicsComponent>();
+    bool isTrigger = brushModelPhysicsComponent != nullptr
+        && brushModelPhysicsComponent->flags.hasFlag(PhysicsComponentFlags::isTrigger);
+
+    if(isTrigger)
+    {
+        triggerCollision.entity = currentModelOwner;
+        triggerCollision.t = intersection.t;
+        triggerCollision.hitTrigger = true;
+
+        return true;
+    }
+    else
+    {
+        collision.plane = getNodePlane(node);
+
+        if(startDist < 0)
+        {
+            // Flip the direction of the plane because we're colliding on the wrong side
+            collision.plane.flip();
+        }
+
+        collision.location = intersection;
+        collision.hitModel = currentModel;
+        collision.hitNode = nodeId;
+        collision.entity = currentModelOwner;
+
+        // Move the plane relative to the origin of the object
+        collision.location.point = collision.location.point + currentModel->center;
+        collision.plane.d = -collision.plane.normal.dot(collision.location.point);
+
+        return false;
+    }
 }
 
 static bool both_points_on_front_side(fp startDist, fp endDist)
@@ -148,7 +165,7 @@ bool BspRayTracer::visitNode(int nodeId, RayPoint& start, RayPoint& end)
 
 bool BspRayTracer::traceModel(Entity* entityWithModel)
 {
-    BrushModelComponent* brushModelComponent = entityWithModel->getComponent<BrushModelComponent>();
+    BrushModelPhysicsComponent* brushModelComponent = entityWithModel->getComponent<BrushModelPhysicsComponent>();
 
     if(brushModelComponent == nullptr)
     {
@@ -183,7 +200,15 @@ bool BspRayTracer::trace()
     {
         hitSomething |= traceModel(entity);
     }
-    
+
+    // Don't allow hitting a trigger that's behind something solid
+    if(triggerCollision.hitTrigger && triggerCollision.t >= collision.location.t)
+    {
+        triggerCollision.hitTrigger = false;
+    }
+
+    collision.triggerCollision = triggerCollision;
+
     return hitSomething;
 }
 

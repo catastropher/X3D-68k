@@ -15,26 +15,21 @@
 
 #pragma once
 
+#include "IEntitySystem.hpp"
+#include "engine/GlobalConfiguration.hpp"
+#include "memory/Set.hpp"
 #include "entity/Entity.hpp"
-#include "memory/Array.hpp"
 
-class DoorEntity : public Entity
+class PhysicsSystem : IEntitySystem
 {
 public:
-    DoorEntity(X_Edict& edict);
+    using SetType = Set<Entity*, Configuration::ENTITIES_MAX>;
 
-    void update(const EntityUpdate& update);
-
-    static void linkDoors(Array<DoorEntity*>& doorsInLevel);
-    static Entity* build(EntityBuilder& entityBuilder);
+    void createEntity(Entity& entity);
+    void destroyEntity(Entity& entity);
 
 private:
-    static void doorOpenCallback(Entity* entity);
-    static void doorCloseCallback(Entity* entity);
-
-    Vec3fp openDirection;
-    Vec3fp openPosition;
-    Time transitionTime;
-    bool closed = true;
+    SetType axisAlignedBoundingBoxes;
+    SetType brushModels;
 };
 

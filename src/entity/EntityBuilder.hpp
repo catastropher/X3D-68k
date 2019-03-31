@@ -49,6 +49,15 @@ public:
         return *this;
     }
 
+    EntityBuilder& withPhysicsComponent(PhysicsComponentType type)
+    {
+        components.set(ComponentType::physics);
+
+        physicsComponentOptions.type = type;
+
+        return *this;
+    }
+
     template<typename TEntity, typename ...TConstructorArgs>
     TEntity* build(TConstructorArgs&&... args)
     {
@@ -73,6 +82,11 @@ private:
         InputUpdateHandler inputUpdateHandler;
     };
 
+    struct PhysicsComponentOptions
+    {
+        PhysicsComponentType type;
+    };
+
     template<typename TComponent, typename ...TConstructorArgs>
     void setupComponentIfPresent(TConstructorArgs&&... args)
     {
@@ -86,4 +100,5 @@ private:
     ComponentRecord componentRecord;
 
     InputComponentOptions inputComponentOptions;
+    PhysicsComponentOptions physicsComponentOptions;
 };

@@ -69,6 +69,8 @@ public:
 
     RayCollision getLastHitWall()
     {
+        lastHitWall.triggerCollision = triggerCollision;
+
         return lastHitWall;
     }
 
@@ -110,4 +112,6 @@ private:
     Flags<IterationFlags> flags;
     fp dt;
     Entity* standingOnEntity;
+
+    TriggerCollision triggerCollision;
 };

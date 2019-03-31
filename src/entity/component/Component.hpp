@@ -16,12 +16,12 @@
 #pragma once
 
 #include "ComponentType.hpp"
-#include "BrushModelComponent.hpp"
 #include "CameraComponent.hpp"
 #include "InputComponent.hpp"
 #include "BoxColliderComponent.hpp"
 #include "TransformComponent.hpp"
 #include "ScriptableComponent.hpp"
+#include "PhysicsComponent.hpp"
 
 struct ComponentRecord
 {
@@ -31,34 +31,42 @@ struct ComponentRecord
     Flags<ComponentType> types;
 
     // TODO: do these need to be initialized?
-    BrushModelComponent* brushModelComponent = nullptr;
     CameraComponent* cameraComponent = nullptr;
     InputComponent* inputComponent = nullptr;
     BoxColliderComponent* boxColliderComponent = nullptr;
     TransformComponent* transformComponent = nullptr;
     ScriptableComponent* scriptableComponent = nullptr;
+    PhysicsComponent* physicsComponent = nullptr;
 };
 
-template<> inline BrushModelComponent* ComponentRecord::getComponent() { return brushModelComponent; }
 template<> inline CameraComponent* ComponentRecord::getComponent() { return cameraComponent; }
 template<> inline InputComponent* ComponentRecord::getComponent() { return inputComponent; }
 template<> inline BoxColliderComponent* ComponentRecord::getComponent() { return boxColliderComponent; }
 template<> inline TransformComponent* ComponentRecord::getComponent() { return transformComponent; }
 template<> inline ScriptableComponent* ComponentRecord::getComponent() { return scriptableComponent; }
+template<> inline PhysicsComponent* ComponentRecord::getComponent() { return physicsComponent; }
+
+template<> inline BrushModelPhysicsComponent* ComponentRecord::getComponent()
+{
+    return static_cast<BrushModelPhysicsComponent*>(physicsComponent);
+}
+
+
 
 template<typename T> constexpr inline bool isValidComponentType() { return false; }
-template<> constexpr bool inline isValidComponentType<BrushModelComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<CameraComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<InputComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<BoxColliderComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<TransformComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<ScriptableComponent>() { return true; }
+template<> constexpr bool inline isValidComponentType<PhysicsComponent>() { return true; }
+template<> constexpr bool inline isValidComponentType<BrushModelPhysicsComponent>() { return true; }
 
 template<typename T> constexpr inline ComponentType getComponentType();
-template<> constexpr inline ComponentType getComponentType<BrushModelComponent>() { return ComponentType::brushModel; }
 template<> constexpr inline ComponentType getComponentType<CameraComponent>() { return ComponentType::camera; }
 template<> constexpr inline ComponentType getComponentType<InputComponent>() { return ComponentType::input; }
 template<> constexpr inline ComponentType getComponentType<BoxColliderComponent>() { return ComponentType::collider; }
 template<> constexpr inline ComponentType getComponentType<TransformComponent>() { return ComponentType::transform; }
 template<> constexpr inline ComponentType getComponentType<ScriptableComponent>() { return ComponentType::scriptable; }
+template<> constexpr inline ComponentType getComponentType<PhysicsComponent>() { return ComponentType::physics; }
 

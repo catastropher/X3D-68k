@@ -15,12 +15,14 @@
 
 #pragma once
 
-#include "entity/component/BrushModelComponent.hpp"
 #include "math/FixedPoint.hpp"
 #include "level/BspLevel.hpp"
 #include "geo/Ray3.hpp"
+#include "memory/Set.hpp"
 
 class Entity;
+
+const int MAX_TRIGGER_COLLISIONS = 5;
 
 struct RayPoint
 {
@@ -30,6 +32,20 @@ struct RayPoint
     Vec3fp point;
     fp t;
 };
+
+struct TriggerCollision
+{
+    TriggerCollision()
+        : hitTrigger(false)
+    {
+
+    }
+
+    bool hitTrigger;
+    Entity* entity;
+    fp t;
+};
+
 
 struct RayCollision
 {
@@ -49,6 +65,8 @@ struct RayCollision
     BspModel* hitModel;
     int hitNode;
     Entity* entity;
+
+    TriggerCollision triggerCollision;
 };
 
 class BspRayTracer
@@ -106,5 +124,6 @@ private:
     int collisionHullId;
     BspModel* currentModel;
     Entity* currentModelOwner;
+    TriggerCollision triggerCollision;
 };
 
