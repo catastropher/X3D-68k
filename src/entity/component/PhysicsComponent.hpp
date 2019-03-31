@@ -31,7 +31,7 @@ enum class PhysicsComponentType
 
 enum class PhysicsComponentFlags
 {
-    isTrigger
+    isTrigger = 1
 };
 
 class PhysicsComponent

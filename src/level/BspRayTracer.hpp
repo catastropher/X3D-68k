@@ -18,8 +18,11 @@
 #include "math/FixedPoint.hpp"
 #include "level/BspLevel.hpp"
 #include "geo/Ray3.hpp"
+#include "memory/Set.hpp"
 
 class Entity;
+
+const int MAX_TRIGGER_COLLISIONS = 5;
 
 struct RayPoint
 {
@@ -30,10 +33,25 @@ struct RayPoint
     fp t;
 };
 
+struct TriggerCollision
+{
+    TriggerCollision()
+        : hitTrigger(false)
+    {
+
+    }
+
+    bool hitTrigger;
+    Entity* entity;
+    fp t;
+};
+
+
 struct RayCollision
 {
     RayCollision()
-        : entity(nullptr)
+        : entity(nullptr),
+        totalTriggerCollisions(0)
     {
 
     }
@@ -48,6 +66,9 @@ struct RayCollision
     BspModel* hitModel;
     int hitNode;
     Entity* entity;
+
+    TriggerCollision triggerCollisions[MAX_TRIGGER_COLLISIONS];
+    int totalTriggerCollisions;
 };
 
 class BspRayTracer
@@ -105,5 +126,6 @@ private:
     int collisionHullId;
     BspModel* currentModel;
     Entity* currentModelOwner;
+    TriggerCollision triggerCollision;
 };
 

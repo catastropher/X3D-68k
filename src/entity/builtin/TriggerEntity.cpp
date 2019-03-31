@@ -19,8 +19,10 @@ Entity* TriggerEntity::build(EntityBuilder& entityBuilder)
 {
     TriggerEntity* triggerEntity = entityBuilder
         .withComponent<TransformComponent>()
-        .withPhysicsComponent(PhysicsComponentType::axisAlignedBoundingBox)
+        .withPhysicsComponent(PhysicsComponentType::brushModel)
         .build<TriggerEntity>();
+
+    triggerEntity->getComponent<BrushModelPhysicsComponent>()->flags.set(PhysicsComponentFlags::isTrigger);
 
     return triggerEntity;
 }
