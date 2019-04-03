@@ -175,6 +175,12 @@ bool BspRayTracer::traceModel(Entity* entityWithModel)
     currentModel = brushModelComponent->model;
     currentModelOwner = entityWithModel;
 
+    // FIXME: don't allow models without collision info
+    if(currentModel->clipNodes == nullptr)
+    {
+        return false;
+    }
+
     RayPoint start(ray.v[0] - currentModel->center, 0);
     RayPoint end(ray.v[1] - currentModel->center, fp::fromInt(1));
 
@@ -186,7 +192,6 @@ bool BspRayTracer::traceModel(Entity* entityWithModel)
 bool BspRayTracer::trace()
 {
     collision.location.t = maxValue<fp>();
-
 
     // FIXME: this could very easily be optimized
 

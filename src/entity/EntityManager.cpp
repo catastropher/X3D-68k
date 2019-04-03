@@ -20,6 +20,9 @@
 #include "builtin/WorldEntity.hpp"
 #include "builtin/TriggerEntity.hpp"
 #include "EntityBuilder.hpp"
+#include "memory/FixedLengthString.hpp"
+#include "level/LevelManager.hpp"
+#include "entity/builtin/BoxEntity.hpp"
 
 Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 {
@@ -36,7 +39,6 @@ Entity* EntityManager::createEntityFromEdict(X_Edict& edict, BspLevel& level)
 
 Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
 {
-// FIXME: 2-20-2019
     X_EdictAttribute* classname = edict.getAttribute("classname");
     if(classname == nullptr)
     {
@@ -60,6 +62,8 @@ Entity* EntityManager::tryCreateEntity(X_Edict &edict, BspLevel &level)
             return entity;
         }
     }
+
+    Log::error("No such entity type: %s", classname->value);
 
     return nullptr;
 }
@@ -115,5 +119,56 @@ void EntityManager::registerBuiltinTypes()
     registerEntityType<WorldEntity>("worldspawn"_sid, WorldEntity::build);
     //registerEntityType<DoorEntity>("func_door"_sid, DoorEntity::build);
     registerEntityType<TriggerEntity>("trigger_once"_sid, TriggerEntity::build);
+
+    registerEntityType<BoxEntity>("box"_sid, BoxEntity::build);
 }
 
+static bool splitKeyValuePair(const char* str, XString& outKey, XString& outValue)
+{
+    while(*str != ':' && *str != '\0')
+    {
+        outKey += *str++;
+    }
+
+    if(*str == '\0')
+    {
+        return false;
+    }
+
+    ++str;
+
+    while(*str != '\0')
+    {
+        outValue += *str++;
+    }
+
+    return true;
+}
+
+void EntityManager::cmdEntitySpawn(EngineContext* engineContext, int argc, char** argv)
+{
+    X_Edict edict;
+    edict.totalAttributes = argc - 1;
+
+    XString keys[16];
+    XString values[16];
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if(!splitKeyValuePair(argv[i], keys[i - 1], values[i - 1]))
+        {
+            x_console_printf(engineContext->console, "Invalid key value pair\n");
+        }
+
+        X_EdictAttribute* attribute = &edict.attributes[i - 1];
+
+        strcpy(attribute->name, keys[i - 1].c_str());
+        attribute->value = (char *)values[i - 1].c_str();
+    }
+
+    BspLevel* level = engineContext->levelManager->getCurrentLevel();
+
+    engineContext->entityManager->createEntityFromEdict(edict, *level);
+
+    edict.print();
+}

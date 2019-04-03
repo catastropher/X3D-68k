@@ -15,14 +15,19 @@
 
 #pragma once
 
-#include "Entity.hpp"
+#include "entity/Entity.hpp"
 #include "level/BspModel.hpp"
+
+class EntityBuilder;
 
 class BoxEntity : public Entity
 {
 public:
+    static Entity* build(EntityBuilder& builder);
+
+    static EntityEventResponse handleEvent(Entity& entity, const EntityEvent& event);
     
 private:
-    BspModel model;
+    BspLevel boxLevel;
 };
 

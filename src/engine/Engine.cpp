@@ -261,16 +261,15 @@ static void runFrame(EngineContext* engineContext)
     PhysicsEngine::update(*engineContext->levelManager->getCurrentLevel(), engineContext->timeDelta);
 
     // Move the brush models to where their transform says they are
-    // Fixme: need way to broadcast moves to all components
-    // FIXME: 2-20-2019
-#if false
-    auto brushModels = BrushModelPhysicsComponent::getAll();
 
-    for(auto& brushModel : brushModels)
+    auto& brushModels = engineContext->brushModelSystem->getAllEntities();
+
+    for(auto& entity : brushModels)
     {
-        brushModel.model->center = brushModel.owner->getComponent<TransformComponent>()->getPosition();
+        BrushModelPhysicsComponent* brushModelPhysicsComponent = entity->getComponent<BrushModelPhysicsComponent>();
+
+        brushModelPhysicsComponent->model->center = entity->getComponent<TransformComponent>()->getPosition();
     }
-#endif
 
 
     lockToFrameRate(engineContext);

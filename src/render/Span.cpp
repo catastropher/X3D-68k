@@ -190,7 +190,7 @@ void x_ae_surfacerendercontext_init(X_AE_SurfaceRenderContext* context, X_AE_Sur
     
     BspFaceTexture* tex = context->faceTexture;
     BspSurface* bspSurface = context->surface->bspSurface;
-    
+
     x_ae_texturevar_init(&context->sDivZ, context, &tex->uOrientation, bspSurface->textureMinCoord.x, tex->uOffset);
     x_ae_texturevar_init(&context->tDivZ, context, &tex->vOrientation, bspSurface->textureMinCoord.y, tex->vOffset);
     
