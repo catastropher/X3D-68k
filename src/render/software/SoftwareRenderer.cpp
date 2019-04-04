@@ -305,6 +305,21 @@ void SoftwareRenderer::render()
         StopWatch::stop("traverse-level");
 
         x_ae_context_scan_edges(activeEdgeContext);
+
+        // Draw the entity models in wireframe
+        auto& quakeModels = engineContext->renderSystem->getAllQuakeModels();
+
+        for(Entity* entity : quakeModels)
+        {
+            QuakeModelRenderComponent* renderComponent = entity->getComponent<QuakeModelRenderComponent>();
+            TransformComponent* transformComponent = entity->getComponent<TransformComponent>();
+
+            Vec3 position = MakeVec3(transformComponent->getPosition());
+
+            X_EntityFrame* frame = &renderComponent->model->frameGroups[0].frames[0];
+
+            x_entitymodel_render_flat_shaded(renderComponent->model, frame, position, &renderContext);
+        }
     }
 }
 

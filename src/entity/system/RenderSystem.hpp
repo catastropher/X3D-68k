@@ -15,10 +15,26 @@
 
 #pragma once
 
-namespace Configuration
-{
-    const int ENTITY_MAX_SYSTEMS = 10;
-    const int ENTITIES_MAX = 200;
 
-    const int CAMERAS_MAX = 10;
-}
+#include <engine/GlobalConfiguration.hpp>
+#include <memory/Set.hpp>
+#include "IEntitySystem.hpp"
+
+class RenderSystem : public IEntitySystem
+{
+public:
+    using SetType = Set<Entity*, Configuration::ENTITIES_MAX>;
+
+    void createEntity(Entity& entity);
+    void destroyEntity(Entity& entity);
+
+    SetType& getAllQuakeModels()
+    {
+        return quakeModels;
+    }
+
+private:
+    SetType quakeModels;
+    SetType brushModels;
+};
+

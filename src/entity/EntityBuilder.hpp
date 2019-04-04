@@ -16,6 +16,7 @@
 #pragma once
 
 #include <new>
+#include <entity/component/RenderComponent.hpp>
 
 #include "Entity.hpp"
 #include "engine/Engine.hpp"
@@ -58,6 +59,15 @@ public:
         return *this;
     }
 
+    EntityBuilder& withRenderComponent(RenderComponentType type)
+    {
+        components.set(ComponentType::render);
+
+        renderComponentOptions.type = type;
+
+        return *this;
+    }
+
     template<typename TEntity, typename ...TConstructorArgs>
     TEntity* build(TConstructorArgs&&... args)
     {
@@ -87,6 +97,11 @@ private:
         PhysicsComponentType type;
     };
 
+    struct RenderComponentOptions
+    {
+        RenderComponentType type;
+    };
+
     template<typename TComponent, typename ...TConstructorArgs>
     void setupComponentIfPresent(TConstructorArgs&&... args)
     {
@@ -101,4 +116,5 @@ private:
 
     InputComponentOptions inputComponentOptions;
     PhysicsComponentOptions physicsComponentOptions;
+    RenderComponentOptions renderComponentOptions;
 };

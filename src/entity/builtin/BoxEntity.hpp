@@ -29,5 +29,7 @@ public:
     
 private:
     BspLevel boxLevel;
+
+    X_EntityModel entityModel;
 };
 

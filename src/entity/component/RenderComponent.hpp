@@ -15,10 +15,35 @@
 
 #pragma once
 
-namespace Configuration
-{
-    const int ENTITY_MAX_SYSTEMS = 10;
-    const int ENTITIES_MAX = 200;
+#include "level/EntityModel.hpp"
 
-    const int CAMERAS_MAX = 10;
-}
+enum class RenderComponentType
+{
+    quake,
+    brush
+};
+
+class RenderComponent
+{
+public:
+    RenderComponent(RenderComponentType type_)
+        : type(type_)
+    {
+
+    }
+
+    RenderComponentType type;
+};
+
+class QuakeModelRenderComponent : public RenderComponent
+{
+public:
+    QuakeModelRenderComponent()
+        : RenderComponent(RenderComponentType::quake)
+    {
+
+    }
+
+    X_EntityModel* model;
+};
+

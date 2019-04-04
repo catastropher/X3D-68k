@@ -23,6 +23,8 @@
 #include "render/RenderContext.hpp"
 #include "geo/Ray3.hpp"
 #include "geo/Polygon3.hpp"
+#include "math/Mat4x4.hpp"
+#include "render/Camera.hpp"
 
 bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
 {
@@ -101,49 +103,182 @@ void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* fra
 {
     for(X_EntityTriangle* triangle = model->triangles; triangle < model->triangles + model->totalTriangles; ++triangle)
     {
-        Vec3 v[3];
+        Vec3fp v[3];
         X_EntityVertex* vertices[3];
         
         for(int i = 0; i < 3; ++i)
         {
             vertices[i] = frame->vertices + triangle->vertexIds[i];
-            v[i] = vertices[i]->v + pos;
+            v[i] = MakeVec3fp(vertices[i]->v) + MakeVec3fp(pos);
         }
         
         for(int i = 0; i < 3; ++i)
         {
-            // FIXME: this is broken
-            //Ray3_fp16x16 ray = x_ray3_make(x_vec3_fp16x16_to_vec3(&v[i]), x_vec3_fp16x16_to_vec3(&v[(i + 1) % 3]));
-            //x_ray3_render(&ray, renderContext, color);
+            Ray3 ray(v[i], v[(i + 1) % 3]);
+            ray.render(*renderContext, color);
         }
     }
 }
 
-void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, X_RenderContext* renderContext)
+struct ModelVertex
 {
+    int x;
+    int y;
+    int s;
+    int t;
+    int z;
+
+    void print(const char* name) const
+    {
+        printf("%s: x=%d, y=%d, z=%d, s=%d, t=%d\n", name, x, y, z, s, t);
+    }
+};
+
+void drawTriangleRecursive(
+    const ModelVertex* a,
+    const ModelVertex* b,
+    const ModelVertex* c,
+    const Texture& skin,
+    X_RenderContext& renderContext);
+
+void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, Vec3 pos, X_RenderContext* renderContext)
+{
+    Texture skin;
+    x_entitymodel_get_skin_texture(model, 0, 0, &skin);
+
     for(int i = 0; i < model->totalTriangles; ++i)
     {
-        X_Vec3_int v[3];
-        Polygon3 poly((Vec3fp*)v, 3);
+        Vec3fp v[3];
         X_EntityTriangle* tri = model->triangles + i;
         Vec2 textureCoords[3];
+        ModelVertex modelVertex[3];
+
+        Vec2_fp16x16 projected[3];
         
         for(int j = 0; j < 3; ++j)
         {
-            v[j] = x_vec3_to_vec3_int(&frame->vertices[tri->vertexIds[j]].v);
-            
+            v[j] = MakeVec3fp(frame->vertices[tri->vertexIds[j]].v) + MakeVec3fp(pos);
+
+            Vec3fp transformed = renderContext->viewMatrix->transform(v[j]);
+
+            if(transformed.z < .01_fp)
+            {
+                continue;
+            }
+
+            renderContext->cam->viewport.project(transformed, projected[j]);
+
+            renderContext->cam->viewport.clampfp(projected[j]);
+
+            Vec2i pos(projected[j].x >> 16, projected[j].y >> 16);
+
             X_EntityTextureCoord* coord = model->textureCoords + tri->vertexIds[j];
             
             textureCoords[j] = coord->coord;
             if(!tri->facesFront && coord->onSeam)
+            {
                 textureCoords[j].x += model->skinWidth / 2;
+            }
+
+            X_Color texel = skin.getTexel(textureCoords[j]);
+
+            renderContext->canvas->setTexel(pos, texel);
+
+            modelVertex[j].x = pos.x;
+            modelVertex[j].y = pos.y;
+            modelVertex[j].z = (1.0_fp / transformed.z).internalValue();
+            modelVertex[j].s = textureCoords[j].x;
+            modelVertex[j].t = textureCoords[j].y;
         }
         
-        Texture skin;
-        x_entitymodel_get_skin_texture(model, 0, 0, &skin);
-        
-        x_polygon3_render_textured(&poly, renderContext, &skin, textureCoords);
+        //x_polygon3_render_textured(&poly, renderContext, &skin, textureCoords);
+
+        drawTriangleRecursive(&modelVertex[0], &modelVertex[1], &modelVertex[2], skin, *renderContext);
     }
 }
 
+static void splitEdge(const ModelVertex& a, const ModelVertex& b, ModelVertex& outVertex)
+{
+    outVertex.x = (a.x + b.x) / 2;
+    outVertex.y = (a.y + b.y) / 2;
+    outVertex.s = (a.s + b.s) / 2;
+    outVertex.t = (a.t + b.t) / 2;
+    outVertex.z = (a.z + b.z) / 2;
+}
 
+static bool edgeHasAtLeastOnePixel(const ModelVertex& a, const ModelVertex& b)
+{
+    int xLength = a.x - b.x;
+    if(xLength < -1 || xLength > 1)
+    {
+        return true;
+    }
+
+    int yLength = a.y - b.y;
+    if(yLength < -1 || yLength > 1)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+void drawTriangleRecursive(
+    const ModelVertex* a,
+    const ModelVertex* b,
+    const ModelVertex* c,
+    const Texture& skin,
+    X_RenderContext& renderContext)
+{
+    ModelVertex newVertex;
+
+    const ModelVertex* splitStart;
+    const ModelVertex* splitEnd;
+    const ModelVertex* other;
+
+    if(edgeHasAtLeastOnePixel(*a, *b))
+    {
+        splitStart = a;
+        splitEnd = b;
+        other = c;
+    }
+    else if(edgeHasAtLeastOnePixel(*b, *c))
+    {
+        splitStart = b;
+        splitEnd = c;
+        other = a;
+    }
+    else if(edgeHasAtLeastOnePixel(*c, *a))
+    {
+        splitStart = c;
+        splitEnd = a;
+        other = b;
+    }
+    else
+    {
+        return;
+    }
+
+    splitEdge(*splitStart, *splitEnd, newVertex);
+
+
+    if(splitEnd->y - splitStart->y > 0)
+    {
+        int texelIndex = a->y * renderContext.screen->getW() + a->x;
+        x_fp0x16& zbuf = renderContext.zbuf[texelIndex];
+
+        //if(a.z < zbuf)
+        //{
+        zbuf = a->z;
+
+        int s = clamp(a->s, 0, 639);
+        int t = clamp(a->t, 0, 379);
+
+        X_Color color = skin.getTexel({s, t});
+        renderContext.screen->canvas.setTexel({a->x, a->y}, color);
+        //}
+    }
+
+    drawTriangleRecursive(splitStart, other, &newVertex, skin, renderContext);
+    drawTriangleRecursive(other, &newVertex, splitEnd, skin, renderContext);
+}

@@ -13,12 +13,5 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
-#pragma once
+#include "RenderComponent.hpp"
 
-namespace Configuration
-{
-    const int ENTITY_MAX_SYSTEMS = 10;
-    const int ENTITIES_MAX = 200;
-
-    const int CAMERAS_MAX = 10;
-}

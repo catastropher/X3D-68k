@@ -22,10 +22,10 @@
 Entity* BoxEntity::build(EntityBuilder& builder)
 {
     BoxEntity* entity = builder
-        .withPhysicsComponent(PhysicsComponentType::brushModel)
         .withComponent<TransformComponent>()
         .withComponent<ScriptableComponent>()
         .withComponent<BoxColliderComponent>()
+        .withRenderComponent(RenderComponentType::quake)
         .build<BoxEntity>();
 
     TransformComponent* transformComponent = entity->getComponent<TransformComponent>();
@@ -35,18 +35,9 @@ Entity* BoxEntity::build(EntityBuilder& builder)
     entity->getComponent<BoxColliderComponent>()->bounceCoefficient = 1.0_fp;
     entity->getComponent<BoxColliderComponent>()->flags.set(X_BOXCOLLIDER_APPLY_GRAVITY);
 
+    x_entitymodel_load_from_file(&entity->entityModel, "ogre.mdl");
 
-    EngineQueue* engineQueue = Engine::getInstance()->queue;
-
-    x_bsplevel_load_from_bsp_file(&entity->boxLevel, "b_rock0.bsp", engineQueue);
-
-
-
-    BrushModelPhysicsComponent* brushModelPhysicsComponent = entity->getComponent<BrushModelPhysicsComponent>();
-    brushModelPhysicsComponent->model = entity->boxLevel.models + 0;
-    //brushModelPhysicsComponent->flags.set(PhysicsComponentFlags::isTrigger);
-
-    entity->getComponent<ScriptableComponent>()->handleEvent = handleEvent;
+    entity->getComponent<QuakeModelRenderComponent>()->model = &entity->entityModel;
 
     return entity;
 }

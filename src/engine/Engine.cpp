@@ -104,6 +104,9 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->inputSystem = new InputSystem;
     context->entityManager->registerEntitySystem(context->inputSystem);
 
+    context->renderSystem = new RenderSystem;
+    context->entityManager->registerEntitySystem(context->renderSystem);
+
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);
