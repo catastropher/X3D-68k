@@ -26,7 +26,9 @@ public:
     static Entity* build(EntityBuilder& builder);
 
     static EntityEventResponse handleEvent(Entity& entity, const EntityEvent& event);
-    
+
+    static void update(Entity& entity, const EntityUpdate& entityUpdate);
+
 private:
     BspLevel boxLevel;
 

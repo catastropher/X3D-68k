@@ -18,6 +18,7 @@
 #include "level/BrushModelBuilder.hpp"
 #include "level/BspLevelLoader.hpp"
 #include "hud/MessageQueue.hpp"
+#include "entity/EntityManager.hpp"
 
 Entity* BoxEntity::build(EntityBuilder& builder)
 {
@@ -40,6 +41,8 @@ Entity* BoxEntity::build(EntityBuilder& builder)
     entity->getComponent<QuakeModelRenderComponent>()->model = &entity->entityModel;
     entity->getComponent<QuakeModelRenderComponent>()->playAnimation("walk", true);
 
+    entity->getComponent<ScriptableComponent>()->update = update;
+
     return entity;
 }
 
@@ -57,3 +60,48 @@ EntityEventResponse BoxEntity::handleEvent(Entity& entity, const EntityEvent& ev
     }
 }
 
+void BoxEntity::update(Entity& entity, const EntityUpdate& entityUpdate)
+{
+    Entity* thingWithCamera = nullptr;
+
+    auto& entities = entityUpdate.engineContext->entityManager->getAllEntities();
+
+    for(Entity* entity : entities)
+    {
+        if(entity->hasComponent<CameraComponent>())
+        {
+            thingWithCamera = entity;
+            break;
+        }
+    }
+
+    if(thingWithCamera == nullptr)
+    {
+        return;
+    }
+
+    Vec3fp direction = thingWithCamera->getComponent<TransformComponent>()->getPosition()
+        - entity.getComponent<TransformComponent>()->getPosition();
+
+    direction.y = 0;
+    direction.normalize();
+
+    fp angle = x_atan2(direction.x, direction.z) + fp(X_ANG_180);
+
+    printf("Angle: %f\n", angle.toFloat());
+
+    Vec3fp axis(0, 1.0_fp, 0);
+
+    Quaternion quat = Quaternion::fromAxisAngle(axis, angle);
+
+    entity.getComponent<TransformComponent>()->setOrientation(quat);
+
+    direction = direction * 60;
+
+    auto collider = entity.getComponent<BoxColliderComponent>();
+
+    if(collider->flags.hasFlag(X_BOXCOLLIDER_ON_GROUND))
+    {
+        collider->velocity = direction;
+    }
+}

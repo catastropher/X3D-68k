@@ -182,7 +182,7 @@ void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, 
      x_trianglefiller_fill_textured(&filler, texture);
 }
 
-void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, Vec3 pos, X_RenderContext* renderContext)
+void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, Mat4x4& transformMatrix, X_RenderContext* renderContext)
 {
     Texture skin;
     x_entitymodel_get_skin_texture(model, 0, 0, &skin);
@@ -198,14 +198,12 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
         
         for(int j = 0; j < 3; ++j)
         {
-            v[j] = MakeVec3fp(frame->vertices[tri->vertexIds[j]].v) + MakeVec3fp(pos);
+            v[j] = MakeVec3fp(frame->vertices[tri->vertexIds[j]].v);
 
-            Vec3fp transformed = renderContext->viewMatrix->transform(v[j]);
+            Vec3fp transformed = transformMatrix.transform(v[j]);
 
-            if(transformed.z < .01_fp)
-            {
-                continue;
-            }
+            v[j] = transformed;
+
 
             renderContext->cam->viewport.project(transformed, projected[j]);
 

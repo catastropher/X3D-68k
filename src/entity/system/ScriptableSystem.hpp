@@ -15,16 +15,7 @@
 
 #pragma once
 
-#include "entity/EntityEvent.hpp"
-#include "system/Time.hpp"
+#include "GenericComponentSystem.hpp"
 
-class Entity;
-
-class ScriptableComponent
-{
-public:
-    EntityEventResponse (*handleEvent)(Entity& entity, const EntityEvent& event) = nullptr;
-    void (*update)(Entity& entity, const EntityUpdate& update) = nullptr;
-    Time nextUpdateTime;
-};
+using ScriptableSystem = GenericComponentSystem<ScriptableComponent, Configuration::ENTITIES_MAX>;
 

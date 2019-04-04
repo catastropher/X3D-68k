@@ -316,7 +316,18 @@ void SoftwareRenderer::render()
             QuakeModelRenderComponent* renderComponent = entity->getComponent<QuakeModelRenderComponent>();
             TransformComponent* transformComponent = entity->getComponent<TransformComponent>();
 
-            Vec3 position = MakeVec3(transformComponent->getPosition());
+            Mat4x4 transform;
+            transformComponent->toMat4x4(transform);
+
+            transform.print();
+
+
+            Vec3fp pos = transformComponent->getPosition();
+
+
+            transform.elem[0][3] = pos.x;
+            transform.elem[1][3] = pos.y;
+            transform.elem[2][3] = pos.z;
 
             X_EntityFrame* frame = renderComponent->currentFrame;
 
@@ -340,7 +351,7 @@ void SoftwareRenderer::render()
 
             if(frame != nullptr)
             {
-                x_entitymodel_render_flat_shaded(renderComponent->model, frame, position, &renderContext);
+                x_entitymodel_render_flat_shaded(renderComponent->model, frame, transform, &renderContext);
             }
         }
     }

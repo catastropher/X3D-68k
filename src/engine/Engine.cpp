@@ -107,6 +107,9 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->renderSystem = new RenderSystem;
     context->entityManager->registerEntitySystem(context->renderSystem);
 
+    context->scriptableSystem = new ScriptableSystem;
+    context->entityManager->registerEntitySystem(context->scriptableSystem);
+
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);
@@ -264,7 +267,6 @@ static void runFrame(EngineContext* engineContext)
     PhysicsEngine::update(*engineContext->levelManager->getCurrentLevel(), engineContext->timeDelta);
 
     // Move the brush models to where their transform says they are
-
     auto& brushModels = engineContext->brushModelSystem->getAllEntities();
 
     for(auto& entity : brushModels)
@@ -272,6 +274,23 @@ static void runFrame(EngineContext* engineContext)
         BrushModelPhysicsComponent* brushModelPhysicsComponent = entity->getComponent<BrushModelPhysicsComponent>();
 
         brushModelPhysicsComponent->model->center = entity->getComponent<TransformComponent>()->getPosition();
+    }
+
+    // Send time updates to scritable components
+    auto& scriptableEntities = engineContext->scriptableSystem->getAllEntities();
+
+    Time currentTime = Clock::getTicks();
+    EntityUpdate entityUpdate(currentTime, engineContext->timeDelta, engineContext);
+
+
+    for(Entity* entity : scriptableEntities)
+    {
+        ScriptableComponent* scriptableComponent = entity->getComponent<ScriptableComponent>();
+
+        if(scriptableComponent->update != nullptr && currentTime >= scriptableComponent->nextUpdateTime)
+        {
+            scriptableComponent->update(*entity, entityUpdate);
+        }
     }
 
 
