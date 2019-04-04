@@ -38,6 +38,7 @@ Entity* BoxEntity::build(EntityBuilder& builder)
     x_entitymodel_load_from_file(&entity->entityModel, "ogre.mdl");
 
     entity->getComponent<QuakeModelRenderComponent>()->model = &entity->entityModel;
+    entity->getComponent<QuakeModelRenderComponent>()->playAnimation("walk", true);
 
     return entity;
 }

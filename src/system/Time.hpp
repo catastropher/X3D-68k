@@ -192,9 +192,15 @@ public:
         return ticksFromProgramStart != rhs.ticksFromProgramStart;
     }
 
+    constexpr int toTicks() const
+    {
+        return ticksFromProgramStart;
+    }
+
+
 private:
-    constexpr Time(int ticksFromProgramStart)
-        : ticksFromProgramStart(ticksFromProgramStart)
+    constexpr Time(int ticksFromProgramStart_)
+        : ticksFromProgramStart(ticksFromProgramStart_)
     {
 
     }

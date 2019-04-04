@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <system/Time.hpp>
 #include "level/EntityModel.hpp"
 
 enum class RenderComponentType
@@ -39,11 +40,20 @@ class QuakeModelRenderComponent : public RenderComponent
 {
 public:
     QuakeModelRenderComponent()
-        : RenderComponent(RenderComponentType::quake)
+        : RenderComponent(RenderComponentType::quake),
+        currentFrame(nullptr),
+        playingAnimation(false)
     {
 
     }
 
+    void playAnimation(const char* animationName, bool loop = false);
+
     X_EntityModel* model;
+    X_EntityFrame* currentFrame;
+    X_EntityFrame* animationStartFrame;
+    Time frameStart;
+    bool playingAnimation;
+    bool loopAnimation;
 };
 

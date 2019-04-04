@@ -309,6 +309,8 @@ void SoftwareRenderer::render()
         // Draw the entity models in wireframe
         auto& quakeModels = engineContext->renderSystem->getAllQuakeModels();
 
+        Time currentTime = Clock::getTicks();
+
         for(Entity* entity : quakeModels)
         {
             QuakeModelRenderComponent* renderComponent = entity->getComponent<QuakeModelRenderComponent>();
@@ -316,9 +318,30 @@ void SoftwareRenderer::render()
 
             Vec3 position = MakeVec3(transformComponent->getPosition());
 
-            X_EntityFrame* frame = &renderComponent->model->frameGroups[0].frames[0];
+            X_EntityFrame* frame = renderComponent->currentFrame;
 
-            x_entitymodel_render_flat_shaded(renderComponent->model, frame, position, &renderContext);
+
+            if(renderComponent->playingAnimation && currentTime >= renderComponent->frameStart + Duration::fromSeconds(0.1_fp))
+            {
+                if(frame->nextInSequence != nullptr)
+                {
+                    frame = frame->nextInSequence;
+                    renderComponent->currentFrame = frame;
+                    renderComponent->frameStart = currentTime + Duration::fromSeconds(2);
+                }
+                else
+                {
+                    if(renderComponent->loopAnimation)
+                    {
+                        renderComponent->currentFrame = renderComponent->animationStartFrame;
+                    }
+                }
+            }
+
+            if(frame != nullptr)
+            {
+                x_entitymodel_render_flat_shaded(renderComponent->model, frame, position, &renderContext);
+            }
         }
     }
 }
