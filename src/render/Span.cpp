@@ -283,7 +283,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     
     Texture* screenTex = context->renderContext->canvas;
     X_Color* scanline = screenTex->getRow(span->y);
-    //x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
+    x_fp0x16* zbuf = context->renderContext->zbuf + span->y * screenTex->getW();
     
     fp invZ = fp(x_ae_surface_calculate_inverse_z_at_screen_point(context->surface, span->x1, y)) >> 10;
     fp dInvZ = context->surface->zInverseXStep >> 10;
@@ -312,9 +312,9 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
 //             scanline[x * 2 + screenTex->w] = texel;
 //             scanline[x * 2 + screenTex->w + 1] = texel;
             
-            //zbuf[x] = invZ;
+            zbuf[x] = invZ.internalValue();
             
-            //invZ += dInvZ;
+            invZ += dInvZ;
             u += dU;
             v += dV;
             
@@ -335,7 +335,7 @@ static inline void __attribute__((hot)) x_ae_surfacerendercontext_render_span(X_
     while(x < span->x2)
     {
         //scanline[x] = get_texel(context, u, v);
-        //zbuf[x] = invZ;
+        zbuf[x] = invZ.internalValue();
         
         X_Color texel = get_texel(context, u, v);
    

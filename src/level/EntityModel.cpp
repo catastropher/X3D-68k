@@ -25,6 +25,7 @@
 #include "geo/Polygon3.hpp"
 #include "math/Mat4x4.hpp"
 #include "render/Camera.hpp"
+#include "render/AffineTriangleFiller.hpp"
 
 bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
 {
@@ -141,6 +142,46 @@ void drawTriangleRecursive(
     const Texture& skin,
     X_RenderContext& renderContext);
 
+void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, Texture* texture, Vec2i textureCoords[3])
+{
+     Vec3fp clippedV[X_POLYGON3_MAX_VERTS];
+     Polygon3 clipped(clippedV, X_POLYGON3_MAX_VERTS);
+
+     if(!poly->clipToFrustum(*renderContext->viewFrustum, clipped, (1 << 4) - 1))
+     {
+         return;
+     }
+
+     if(clipped.totalVertices != 3)
+     {
+         return;
+     }
+
+     X_TriangleFiller filler;
+     x_trianglefiller_init(&filler, renderContext);
+
+     for(int i = 0; i < 3; ++i)
+     {
+         Vec3fp transformed;
+         transformed = renderContext->viewMatrix->transform(clipped.vertices[i]);
+
+         Vec2_fp16x16 projected;
+         renderContext->cam->viewport.project(transformed, projected);
+
+         Vec2i coord(projected.x >> 16, projected.y >> 16);
+
+         x_trianglefiller_set_textured_vertex(&filler, i, coord, transformed.z.toInt(), textureCoords[i]);
+     }
+
+ //     Plane plane;
+ //     x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
+ //
+ //     if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
+ //         return;
+ //
+     x_trianglefiller_fill_textured(&filler, texture);
+}
+
 void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, Vec3 pos, X_RenderContext* renderContext)
 {
     Texture skin;
@@ -182,7 +223,7 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
 
             X_Color texel = skin.getTexel(textureCoords[j]);
 
-            renderContext->canvas->setTexel(pos, texel);
+            //renderContext->canvas->setTexel(pos, texel);
 
             modelVertex[j].x = pos.x;
             modelVertex[j].y = pos.y;
@@ -190,10 +231,12 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
             modelVertex[j].s = textureCoords[j].x;
             modelVertex[j].t = textureCoords[j].y;
         }
-        
-        //x_polygon3_render_textured(&poly, renderContext, &skin, textureCoords);
 
-        drawTriangleRecursive(&modelVertex[0], &modelVertex[1], &modelVertex[2], skin, *renderContext);
+        Polygon3 poly(v, 3);
+
+        x_polygon3_render_textured(&poly, renderContext, &skin, textureCoords);
+
+        //drawTriangleRecursive(&modelVertex[0], &modelVertex[1], &modelVertex[2], skin, *renderContext);
     }
 }
 
