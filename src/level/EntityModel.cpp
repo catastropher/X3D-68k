@@ -86,7 +86,9 @@ X_EntityFrame* x_entitymodel_get_frame(X_EntityModel* model, const char* frameNa
         for(int frameId = 0; frameId < group->totalFrames; ++frameId)
         {
             if(strcmp(group->frames[frameId].name, frameName) == 0)
+            {
                 return group->frames + frameId;
+            }
         }
     }
     

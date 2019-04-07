@@ -319,9 +319,6 @@ void SoftwareRenderer::render()
             Mat4x4 transform;
             transformComponent->toMat4x4(transform);
 
-            transform.print();
-
-
             Vec3fp pos = transformComponent->getPosition();
 
 

@@ -36,10 +36,10 @@ Entity* BoxEntity::build(EntityBuilder& builder)
     entity->getComponent<BoxColliderComponent>()->bounceCoefficient = 1.0_fp;
     entity->getComponent<BoxColliderComponent>()->flags.set(X_BOXCOLLIDER_APPLY_GRAVITY);
 
-    x_entitymodel_load_from_file(&entity->entityModel, "ogre.mdl");
+    x_entitymodel_load_from_file(&entity->entityModel, "dog.mdl");
 
     entity->getComponent<QuakeModelRenderComponent>()->model = &entity->entityModel;
-    entity->getComponent<QuakeModelRenderComponent>()->playAnimation("walk", true);
+    entity->getComponent<QuakeModelRenderComponent>()->playAnimation("run", true);
 
     entity->getComponent<ScriptableComponent>()->update = update;
 
@@ -88,15 +88,13 @@ void BoxEntity::update(Entity& entity, const EntityUpdate& entityUpdate)
 
     fp angle = x_atan2(direction.x, direction.z) + fp(X_ANG_180);
 
-    printf("Angle: %f\n", angle.toFloat());
-
     Vec3fp axis(0, 1.0_fp, 0);
 
     Quaternion quat = Quaternion::fromAxisAngle(axis, angle);
 
     entity.getComponent<TransformComponent>()->setOrientation(quat);
 
-    direction = direction * 60;
+    direction = direction * 200;
 
     auto collider = entity.getComponent<BoxColliderComponent>();
 
