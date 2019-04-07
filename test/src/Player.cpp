@@ -31,10 +31,6 @@ bool playerPhysics = true;
 
 Entity* Player::build(EntityBuilder& builder)
 {
-    printf("Call player build\n");
-
-    // FIXME: 2-20-2019
-
     Player* player = builder
         .withComponent<TransformComponent>()
         .withInputComponent(handleKeys)

@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <entity/system/RenderSystem.hpp>
 #include "engine/Config.hpp"
 #include "render/Screen.hpp"
 #include "dev/console/Console.hpp"
@@ -29,6 +30,7 @@
 #include "entity/system/CameraSystem.hpp"
 #include "entity/system/BoxColliderSystem.hpp"
 #include "entity/system/InputSystem.hpp"
+#include "entity/system/ScriptableSystem.hpp"
 
 struct X_RenderContext;
 class EntityManager;
@@ -70,6 +72,8 @@ struct EngineContext
     CameraSystem* cameraSystem;
     BoxColliderSystem* boxColliderSystem;
     InputSystem* inputSystem;
+    RenderSystem* renderSystem;
+    ScriptableSystem* scriptableSystem;
 
     OverlayRenderer* overlayRenderer;
     EntityOverlay* entityOverlay;

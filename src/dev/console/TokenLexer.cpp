@@ -35,7 +35,9 @@ static void x_tokenlexer_skip_whitespace(X_TokenLexer* lexer)
 
 static bool x_tokenlexer_at_end_of_token(const X_TokenLexer* lexer)
 {
-    return *lexer->inputStr == '\0' || *lexer->inputStr == ' ' || *lexer->inputStr == ';';
+    return *lexer->inputStr == '\0'
+        || *lexer->inputStr == ' '
+        || *lexer->inputStr == ';';
 }
 
 bool x_tokenlexer_lex_token(X_TokenLexer* lexer)
@@ -44,7 +46,27 @@ bool x_tokenlexer_lex_token(X_TokenLexer* lexer)
     {
         *lexer->tokenBuf++ = *lexer->inputStr++;
         *lexer->tokenBuf++ = '\0';
-        return 1;
+
+        return true;
+    }
+
+    if(*lexer->inputStr == '"')
+    {
+        ++lexer->inputStr;
+
+        while(*lexer->inputStr != '\0' && *lexer->inputStr != '"')
+        {
+            *lexer->tokenBuf++ = *lexer->inputStr++;
+        }
+
+        *lexer->tokenBuf++ = '\0';
+
+        if(*lexer->inputStr == '"')
+        {
+            ++lexer->inputStr;
+        }
+
+        return true;
     }
     
     while(!x_tokenlexer_at_end_of_token(lexer))
@@ -53,7 +75,8 @@ bool x_tokenlexer_lex_token(X_TokenLexer* lexer)
         {
             x_console_print(lexer->console, "Can't execute command (command too long)\n");
             lexer->errorOccured = 1;
-            return 0;
+
+            return false;
         }
         
         *lexer->tokenBuf++ = *lexer->inputStr++;
@@ -61,7 +84,7 @@ bool x_tokenlexer_lex_token(X_TokenLexer* lexer)
     
     *lexer->tokenBuf++ = '\0';
     
-    return 1;
+    return true;
 }
 
 static bool x_tokenlexer_grab_next_token(X_TokenLexer* lexer)

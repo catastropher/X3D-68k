@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <engine/Engine.hpp>
 #include "Entity.hpp"
 #include "engine/GlobalConfiguration.hpp"
 #include "system/IEntitySystem.hpp"
@@ -31,6 +32,11 @@ public:
         : entityMetadataHead(nullptr)
     {
         registerBuiltinTypes();
+
+        // FIXME: DI
+        Console* console = Engine::getInstance()->console;
+
+        x_console_register_cmd(console, "entity.spawn", cmdEntitySpawn);
     }
 
     void registerEntity(Entity* entity)
@@ -119,6 +125,8 @@ private:
     {
         static EntityMetadata entityMetadata;
     };
+
+    static void cmdEntitySpawn(EngineContext* engineContext, int argc, char* argv[]);
 
     EntityMetadata* entityMetadataHead;
     FixedLengthArray<Entity*, Configuration::ENTITIES_MAX> entities;

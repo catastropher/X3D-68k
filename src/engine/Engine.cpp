@@ -104,6 +104,12 @@ void initEngineContext(EngineContext* context, X_Config& config)
     context->inputSystem = new InputSystem;
     context->entityManager->registerEntitySystem(context->inputSystem);
 
+    context->renderSystem = new RenderSystem;
+    context->entityManager->registerEntitySystem(context->renderSystem);
+
+    context->scriptableSystem = new ScriptableSystem;
+    context->entityManager->registerEntitySystem(context->scriptableSystem);
+
     context->levelManager = new LevelManager(*context->queue, *context->entityManager);
 
     context->mouseState = new MouseState(context->console, context->screen);
@@ -261,16 +267,31 @@ static void runFrame(EngineContext* engineContext)
     PhysicsEngine::update(*engineContext->levelManager->getCurrentLevel(), engineContext->timeDelta);
 
     // Move the brush models to where their transform says they are
-    // Fixme: need way to broadcast moves to all components
-    // FIXME: 2-20-2019
-#if false
-    auto brushModels = BrushModelPhysicsComponent::getAll();
+    auto& brushModels = engineContext->brushModelSystem->getAllEntities();
 
-    for(auto& brushModel : brushModels)
+    for(auto& entity : brushModels)
     {
-        brushModel.model->center = brushModel.owner->getComponent<TransformComponent>()->getPosition();
+        BrushModelPhysicsComponent* brushModelPhysicsComponent = entity->getComponent<BrushModelPhysicsComponent>();
+
+        brushModelPhysicsComponent->model->center = entity->getComponent<TransformComponent>()->getPosition();
     }
-#endif
+
+    // Send time updates to scritable components
+    auto& scriptableEntities = engineContext->scriptableSystem->getAllEntities();
+
+    Time currentTime = Clock::getTicks();
+    EntityUpdate entityUpdate(currentTime, engineContext->timeDelta, engineContext);
+
+
+    for(Entity* entity : scriptableEntities)
+    {
+        ScriptableComponent* scriptableComponent = entity->getComponent<ScriptableComponent>();
+
+        if(scriptableComponent->update != nullptr && currentTime >= scriptableComponent->nextUpdateTime)
+        {
+            scriptableComponent->update(*entity, entityUpdate);
+        }
+    }
 
 
     lockToFrameRate(engineContext);

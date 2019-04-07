@@ -22,6 +22,7 @@
 #include "TransformComponent.hpp"
 #include "ScriptableComponent.hpp"
 #include "PhysicsComponent.hpp"
+#include "RenderComponent.hpp"
 
 struct ComponentRecord
 {
@@ -37,6 +38,7 @@ struct ComponentRecord
     TransformComponent* transformComponent = nullptr;
     ScriptableComponent* scriptableComponent = nullptr;
     PhysicsComponent* physicsComponent = nullptr;
+    RenderComponent* renderComponent = nullptr;
 };
 
 template<> inline CameraComponent* ComponentRecord::getComponent() { return cameraComponent; }
@@ -45,12 +47,17 @@ template<> inline BoxColliderComponent* ComponentRecord::getComponent() { return
 template<> inline TransformComponent* ComponentRecord::getComponent() { return transformComponent; }
 template<> inline ScriptableComponent* ComponentRecord::getComponent() { return scriptableComponent; }
 template<> inline PhysicsComponent* ComponentRecord::getComponent() { return physicsComponent; }
+template<> inline RenderComponent* ComponentRecord::getComponent() { return renderComponent; }
 
 template<> inline BrushModelPhysicsComponent* ComponentRecord::getComponent()
 {
     return static_cast<BrushModelPhysicsComponent*>(physicsComponent);
 }
 
+template<> inline QuakeModelRenderComponent* ComponentRecord::getComponent()
+{
+    return static_cast<QuakeModelRenderComponent*>(renderComponent);
+}
 
 
 template<typename T> constexpr inline bool isValidComponentType() { return false; }
@@ -61,6 +68,8 @@ template<> constexpr bool inline isValidComponentType<TransformComponent>() { re
 template<> constexpr bool inline isValidComponentType<ScriptableComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<PhysicsComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<BrushModelPhysicsComponent>() { return true; }
+template<> constexpr bool inline isValidComponentType<RenderComponent>() { return true; }
+template<> constexpr bool inline isValidComponentType<QuakeModelRenderComponent>() { return true; }
 
 template<typename T> constexpr inline ComponentType getComponentType();
 template<> constexpr inline ComponentType getComponentType<CameraComponent>() { return ComponentType::camera; }
@@ -69,4 +78,5 @@ template<> constexpr inline ComponentType getComponentType<BoxColliderComponent>
 template<> constexpr inline ComponentType getComponentType<TransformComponent>() { return ComponentType::transform; }
 template<> constexpr inline ComponentType getComponentType<ScriptableComponent>() { return ComponentType::scriptable; }
 template<> constexpr inline ComponentType getComponentType<PhysicsComponent>() { return ComponentType::physics; }
+template<> constexpr inline ComponentType getComponentType<QuakeModelRenderComponent>() { return ComponentType::render; }
 

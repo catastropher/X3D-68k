@@ -72,6 +72,21 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
         }
     }
 
+    QuakeModelRenderComponent* quakeModelRenderComponent = nullptr;
+
+    if(components.hasFlag(ComponentType::render))
+    {
+        switch(renderComponentOptions.type)
+        {
+            case RenderComponentType::quake:
+                allocator.scheduleAlloc(quakeModelRenderComponent);
+                break;
+
+            default:
+                x_system_error("Invalid render component type");
+        }
+    }
+
     allocator.allocAll();
 
     setupComponentIfPresent<TransformComponent>(edict);
@@ -96,6 +111,17 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
 
             default:
                 x_system_error("Invalid physics component type");
+        }
+    }
+
+    if(components.hasFlag(ComponentType::render))
+    {
+        switch(renderComponentOptions.type)
+        {
+            case RenderComponentType::quake:
+                new (quakeModelRenderComponent) QuakeModelRenderComponent();
+                componentRecord.renderComponent = quakeModelRenderComponent;
+                break;
         }
     }
 

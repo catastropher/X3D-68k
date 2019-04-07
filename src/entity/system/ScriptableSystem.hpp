@@ -15,10 +15,7 @@
 
 #pragma once
 
-namespace Configuration
-{
-    const int ENTITY_MAX_SYSTEMS = 10;
-    const int ENTITIES_MAX = 200;
+#include "GenericComponentSystem.hpp"
 
-    const int CAMERAS_MAX = 10;
-}
+using ScriptableSystem = GenericComponentSystem<ScriptableComponent, Configuration::ENTITIES_MAX>;
+

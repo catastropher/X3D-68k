@@ -229,7 +229,9 @@ static void stitch_frames_into_animations(X_EntityModel* model)
 {
     char baseName[16];
     char frameNumber[16];
-    
+
+    model->frameGroups[0].frames[0].nextInSequence = nullptr;
+
     for(int i = 1; i < model->totalFrameGroups; ++i)
     {
         X_EntityFrame* frame = model->frameGroups[i].frames + 0;

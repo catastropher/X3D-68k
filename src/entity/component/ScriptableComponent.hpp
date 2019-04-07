@@ -23,8 +23,8 @@ class Entity;
 class ScriptableComponent
 {
 public:
-    EntityEventResponse (*handleEvent)(Entity& entity, const EntityEvent& event);
-    void (*update)(Entity& entity, const EntityUpdate& update);
+    EntityEventResponse (*handleEvent)(Entity& entity, const EntityEvent& event) = nullptr;
+    void (*update)(Entity& entity, const EntityUpdate& update) = nullptr;
     Time nextUpdateTime;
 };
 

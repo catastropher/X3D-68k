@@ -23,5 +23,6 @@ enum class ComponentType
     input = (1 << 3),
     collider = (1 << 4),
     scriptable = (1 << 5),
-    physics = (1 << 6)
+    physics = (1 << 6),
+    render = (1 << 7)
 };

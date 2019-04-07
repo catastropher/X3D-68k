@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <math/Mat4x4.hpp>
 #include "render/Texture.hpp"
 #include "geo/Vec3.hpp"
 
@@ -99,5 +100,4 @@ X_EntityFrame* x_entitymodel_get_animation_start_frame(X_EntityModel* model, con
 struct X_RenderContext;
 
 void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* frame, Vec3 pos, X_Color color, struct X_RenderContext* renderContext);
-void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, struct X_RenderContext* renderContext);
-
+void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, Mat4x4& transformMatrix, X_RenderContext* renderContext);
