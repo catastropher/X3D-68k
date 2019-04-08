@@ -125,6 +125,7 @@ void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* fra
 
 struct ModelVertex
 {
+    Vec3fp v;
     int x;
     int y;
     int s;

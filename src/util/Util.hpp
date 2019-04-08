@@ -91,6 +91,12 @@ T clamp(T val, T min, T max)
 }
 
 template<typename T>
+T lerp(const T& x0, const T& x1, fp t)
+{
+    return x0 + (x1 - x0) * t;
+}
+
+template<typename T>
 bool inRange(T val, T minValue, T maxValue)
 {
     return val >= minValue && val <= maxValue;

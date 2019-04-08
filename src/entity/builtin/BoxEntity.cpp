@@ -92,7 +92,7 @@ void BoxEntity::update(Entity& entity, const EntityUpdate& entityUpdate)
 
     Quaternion quat = Quaternion::fromAxisAngle(axis, angle);
 
-    entity.getComponent<TransformComponent>()->setOrientation(quat);
+    //entity.getComponent<TransformComponent>()->setOrientation(quat);
 
     direction = direction * 200;
 
