@@ -26,7 +26,7 @@ Entity* BoxEntity::build(EntityBuilder& builder)
         .withComponent<TransformComponent>()
         .withComponent<ScriptableComponent>()
         .withComponent<BoxColliderComponent>()
-        .withRenderComponent(RenderComponentType::quake)
+        .withRenderComponent(RenderComponentType::billboard)
         .build<BoxEntity>();
 
     TransformComponent* transformComponent = entity->getComponent<TransformComponent>();
@@ -38,8 +38,8 @@ Entity* BoxEntity::build(EntityBuilder& builder)
 
     x_entitymodel_load_from_file(&entity->entityModel, "dog.mdl");
 
-    entity->getComponent<QuakeModelRenderComponent>()->model = &entity->entityModel;
-    entity->getComponent<QuakeModelRenderComponent>()->playAnimation("run", true);
+    entity->billboard.loadFromFile("font.xtex");
+    entity->getComponent<BillboardRenderComponent>()->texture = &entity->billboard;
 
     entity->getComponent<ScriptableComponent>()->update = update;
 
@@ -92,7 +92,7 @@ void BoxEntity::update(Entity& entity, const EntityUpdate& entityUpdate)
 
     Quaternion quat = Quaternion::fromAxisAngle(axis, angle);
 
-    entity.getComponent<TransformComponent>()->setOrientation(quat);
+    //entity.getComponent<TransformComponent>()->setOrientation(quat);
 
     direction = direction * 200;
 
@@ -100,6 +100,6 @@ void BoxEntity::update(Entity& entity, const EntityUpdate& entityUpdate)
 
     if(collider->flags.hasFlag(X_BOXCOLLIDER_ON_GROUND))
     {
-        collider->velocity = direction;
+        //collider->velocity = direction;
     }
 }

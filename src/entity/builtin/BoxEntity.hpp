@@ -31,7 +31,7 @@ public:
 
 private:
     BspLevel boxLevel;
-
+    Texture billboard;
     X_EntityModel entityModel;
 };
 

@@ -97,3 +97,21 @@ static inline void x_trianglefiller_set_textured_vertex(X_TriangleFiller* filler
     filler->vertices[vertexId].textureCoord = textureCoord;
 }
 
+// TODO: find a better place for this
+struct ModelVertex
+{
+    Vec3fp v;
+    int x;
+    int y;
+    int s;
+    int t;
+    int z;
+
+    void print(const char* name) const
+    {
+        printf("%s: x=%d, y=%d, z=%d, s=%d, t=%d\n", name, x, y, z, s, t);
+    }
+};
+
+// TODO: find a better place for this
+void x_polygon3_render_textured(ModelVertex* vertices, int totalVertices, X_RenderContext* renderContext, Texture* texture);

@@ -14,45 +14,18 @@
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
 #include <algorithm>
+#include <util/Util.hpp>
 
 #include "Polygon3.hpp"
 #include "Plane.hpp"
 #include "Ray3.hpp"
 #include "Frustum.hpp"
 #include "math/Mat4x4.hpp"
+#include "PolygonClipper.hpp"
 
 bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
 {
-    dest.totalVertices = 0;
-    
-    fp dot = plane.normal.dot(vertices[0]);
-    bool in = dot >= -plane.d;
-    
-    for(int i = 0; i < totalVertices; ++i)
-    {
-        int next = (i + 1 < totalVertices ? i + 1 : 0);
-        
-        if(in)
-        {
-            dest.vertices[dest.totalVertices++] = vertices[i];
-        }
-        
-        fp nextDot = plane.normal.dot(vertices[next]);
-        bool nextIn = nextDot >= -plane.d;
-        fp dotDiff = nextDot - dot;
-        
-        if(in != nextIn && dotDiff != 0)
-        {
-            fp scale = (-plane.d - dot) / dotDiff;
-            Ray3 ray(vertices[i], vertices[next]);
-            dest.vertices[dest.totalVertices] = ray.lerp(scale);
-            
-            ++dest.totalVertices;
-        }
-        
-        dot = nextDot;
-        in = nextIn;
-    }
+    dest.totalVertices = ::clipToPlane(vertices, totalVertices, plane, dest.vertices);
     
     return dest.totalVertices > 2;
 }
@@ -194,27 +167,9 @@ void Polygon3::clone(Polygon3& dest) const
 
 bool Polygon3::clipToFrustum(const X_Frustum& frustum, Polygon3& dest, unsigned int clipFlags) const
 {
-    InternalPolygon3 temp[2];
-    
-    int currentTemp = 0;
-    const Polygon3* polyToClip = this;
-    
-    int lastClipPlane = 31 - __builtin_clz(clipFlags);
-    
-    for(int plane = 0; plane < lastClipPlane; ++plane)
-    {
-        bool clipToPlane = (clipFlags & (1 << plane)) != 0;
-        if(!clipToPlane)
-            continue;
-        
-        if(!polyToClip->clipToPlane(frustum.planes[plane], temp[currentTemp]))
-            return 0;
-        
-        polyToClip = &temp[currentTemp];
-        currentTemp ^= 1;
-    }
-    
-    return polyToClip->clipToPlane(frustum.planes[lastClipPlane], dest);
+    dest.totalVertices = ::clipToFrustum(vertices, totalVertices, frustum, dest.vertices, clipFlags);
+
+    return dest.totalVertices >= 3;
 }
 
 // Clips a polygon to a frustum and keeps track of the id's of the edges
@@ -299,4 +254,3 @@ void Polygon3::calculatePlaneEquation(Plane& dest)
 {
     dest = Plane(vertices[0], vertices[1], vertices[2]);
 }
-

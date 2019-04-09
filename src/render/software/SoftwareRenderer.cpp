@@ -13,6 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <render/AffineTriangleFiller.hpp>
 #include "SoftwareRenderer.hpp"
 #include "entity/component/TransformComponent.hpp"
 #include "entity/component/CameraComponent.hpp"
@@ -306,7 +307,7 @@ void SoftwareRenderer::render()
 
         x_ae_context_scan_edges(activeEdgeContext);
 
-        // Draw the entity models in wireframe
+        // Draw the quake models
         auto& quakeModels = engineContext->renderSystem->getAllQuakeModels();
 
         Time currentTime = Clock::getTicks();
@@ -329,11 +330,12 @@ void SoftwareRenderer::render()
             X_EntityFrame* frame = renderComponent->currentFrame;
 
 
-            if(renderComponent->playingAnimation && currentTime >= renderComponent->frameStart + Duration::fromSeconds(0.1_fp))
+            if(renderComponent->playingAnimation &&
+               currentTime >= renderComponent->frameStart + Duration::fromSeconds(0.1_fp))
             {
                 if(frame->nextInSequence != nullptr)
                 {
-                    frame = frame->nextInSequence;
+                    //frame = frame->nextInSequence;
                     renderComponent->currentFrame = frame;
                     renderComponent->frameStart = currentTime + Duration::fromSeconds(2);
                 }
@@ -350,6 +352,72 @@ void SoftwareRenderer::render()
             {
                 x_entitymodel_render_flat_shaded(renderComponent->model, frame, transform, &renderContext);
             }
+        }
+
+        // Draw the billboards
+        auto& billboards = engineContext->renderSystem->getAllBillboards();
+
+        Vec3fp up, right, forward;
+        camera->viewMatrix.extractViewVectors(forward, right, up);
+
+        for(Entity* entity : billboards)
+        {
+            BillboardRenderComponent* renderComponent = entity->getComponent<BillboardRenderComponent>();
+            TransformComponent* transformComponent = entity->getComponent<TransformComponent>();
+
+            Vec3fp position = transformComponent->getPosition();
+
+            int xsize = 20;
+            int ysize = 20;
+
+            Vec3fp x = right * xsize;
+            Vec3fp y = up * ysize;
+
+            Vec3fp vertices[4] =
+            {
+                position + x + y,
+                position - x + y,
+                position - x - y,
+                position + x - y
+            };
+
+            int texW = renderComponent->texture->getW();
+            int texH = renderComponent->texture->getH();
+
+            Vec2i textureCoords[4] = {
+                { texW - 1, 0 },
+                { 0, 0 },
+                { 0, texH - 1 },
+                { texW - 1, texH - 1 }
+            };
+
+            ModelVertex modelVertex[4];
+
+            for(int i = 0; i < 4; ++i)
+            {
+                modelVertex[i].v = vertices[i];
+                modelVertex[i].s = textureCoords[i].x;
+                modelVertex[i].t = textureCoords[i].y;
+            }
+
+            ModelVertex triA[3] =
+            {
+                modelVertex[0],
+                modelVertex[2],
+                modelVertex[1],
+            };
+
+            ModelVertex triB[3] =
+            {
+                modelVertex[0],
+                modelVertex[3],
+                modelVertex[2],
+            };
+
+
+
+            x_polygon3_render_textured(triA, 3, &renderContext, renderComponent->texture);
+            x_polygon3_render_textured(triB, 3, &renderContext, renderComponent->texture);
         }
     }
 }

@@ -32,6 +32,10 @@ void RenderSystem::createEntity(Entity& entity)
             quakeModels.add(&entity);
             break;
 
+        case RenderComponentType::billboard:
+            billboards.add(&entity);
+            break;
+
         default:
             break;
     }
@@ -50,6 +54,10 @@ void RenderSystem::destroyEntity(Entity& entity)
     {
         case RenderComponentType::quake:
             quakeModels.remove(&entity);
+            break;
+
+        case RenderComponentType::billboard:
+            billboards.remove(&entity);
             break;
 
         default:

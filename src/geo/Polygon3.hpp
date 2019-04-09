@@ -18,6 +18,7 @@
 #include "Vec3.hpp"
 #include "render/RenderContext.hpp"
 #include "render/Screen.hpp"
+#include "Frustum.hpp"
 
 struct Plane;
 
@@ -74,6 +75,12 @@ struct LevelPolygon3 : Polygon3
 
     int* edgeIds;
 };
+
+template<typename TVertex>
+int clipToFrustum(TVertex* vertices, int totalVertices, const X_Frustum& frustum, TVertex* outVertices, unsigned int clipFlags);
+
+template<typename TVertex>
+int clipToPlane(TVertex* vertices, int totalVertices, const Plane& plane, TVertex* outVertices);
 
 void x_polygon3_render_wireframe(const Polygon3* poly, X_RenderContext* rcontext, X_Color color);
 void x_polygon3_render_flat_shaded(Polygon3* poly, X_RenderContext* renderContext, X_Color color);

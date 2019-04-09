@@ -26,6 +26,7 @@ public:
     using SetType = Set<Entity*, Configuration::ENTITIES_MAX>;
 
     void createEntity(Entity& entity);
+
     void destroyEntity(Entity& entity);
 
     SetType& getAllQuakeModels()
@@ -33,8 +34,14 @@ public:
         return quakeModels;
     }
 
+    SetType& getAllBillboards()
+    {
+        return billboards;
+    }
+
 private:
     SetType quakeModels;
     SetType brushModels;
+    SetType billboards;
 };
 
