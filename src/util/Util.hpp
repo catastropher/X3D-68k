@@ -91,7 +91,7 @@ T clamp(T val, T min, T max)
 }
 
 template<typename T>
-T lerp(const T& x0, const T& x1, fp t)
+auto lerp(const T& x0, const T& x1, fp t)
 {
     return x0 + (x1 - x0) * t;
 }

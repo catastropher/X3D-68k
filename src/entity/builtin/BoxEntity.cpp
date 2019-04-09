@@ -100,6 +100,6 @@ void BoxEntity::update(Entity& entity, const EntityUpdate& entityUpdate)
 
     if(collider->flags.hasFlag(X_BOXCOLLIDER_ON_GROUND))
     {
-        collider->velocity = direction;
+        //collider->velocity = direction;
     }
 }

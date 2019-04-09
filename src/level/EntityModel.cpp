@@ -26,6 +26,7 @@
 #include "math/Mat4x4.hpp"
 #include "render/Camera.hpp"
 #include "render/AffineTriangleFiller.hpp"
+#include "geo/PolygonClipper.hpp"
 
 bool x_entitymodel_load_from_file(X_EntityModel* model, const char* fileName)
 {
@@ -145,44 +146,98 @@ void drawTriangleRecursive(
     const Texture& skin,
     X_RenderContext& renderContext);
 
-void x_polygon3_render_textured(Polygon3* poly, X_RenderContext* renderContext, Texture* texture, Vec2i textureCoords[3])
+inline const Vec3fp& clipperGetVertex(const ModelVertex& vertex)
 {
-     Vec3fp clippedV[X_POLYGON3_MAX_VERTS];
-     Polygon3 clipped(clippedV, X_POLYGON3_MAX_VERTS);
+    return vertex.v;
+}
 
-     if(!poly->clipToFrustum(*renderContext->viewFrustum, clipped, (1 << 4) - 1))
+void clipperClipVertex(const ModelVertex& start, const ModelVertex& end, fp t, ModelVertex& outVertex)
+{
+    outVertex.v = lerp(start.v, end.v, t);
+    outVertex.s = lerp(start.s, end.s, t).toInt();
+    outVertex.t = lerp(start.t, end.t, t).toInt();
+}
+
+void drawTriangle(ModelVertex* vertices[3], X_RenderContext* renderContext, Texture& texture)
+{
+    X_TriangleFiller filler;
+    x_trianglefiller_init(&filler, renderContext);
+
+#if 1
+    for(int i = 0; i < 3; ++i)
+    {
+        x_trianglefiller_set_textured_vertex(
+            &filler,
+            i,
+            { vertices[i]->x, vertices[i]->y },
+            vertices[i]->v.z.toInt(),
+            { vertices[i]->s, vertices[i]->t });
+    }
+#else
+
+    for(int i = 0; i < 3; ++i)
+    {
+        int next = (i + 1) % 3;
+
+        renderContext->renderer->d
+    }
+
+#endif
+
+    x_trianglefiller_fill_textured(&filler, &texture);
+}
+
+void x_polygon3_render_textured(ModelVertex* vertices, int totalVertices, X_RenderContext* renderContext, Texture* texture)
+{
+    ModelVertex clippedVertices[X_POLYGON3_MAX_VERTS];
+    int totalClippedVertices = clipToFrustum(vertices, totalVertices, *renderContext->viewFrustum, clippedVertices, (1 << 4) - 1);
+
+     if(totalClippedVertices < 3)
      {
          return;
      }
 
-     if(clipped.totalVertices != 3)
-     {
-         return;
-     }
-
-     X_TriangleFiller filler;
-     x_trianglefiller_init(&filler, renderContext);
-
-     for(int i = 0; i < 3; ++i)
+     for(int i = 0; i < totalClippedVertices; ++i)
      {
          Vec3fp transformed;
-         transformed = renderContext->viewMatrix->transform(clipped.vertices[i]);
+         transformed = renderContext->viewMatrix->transform(clippedVertices[i].v);
+
+         if(transformed.z < 0.5_fp)
+         {
+             transformed.z = 0.5_fp;
+         }
 
          Vec2_fp16x16 projected;
          renderContext->cam->viewport.project(transformed, projected);
 
-         Vec2i coord(projected.x >> 16, projected.y >> 16);
+         renderContext->cam->viewport.clampfp(projected);
 
-         x_trianglefiller_set_textured_vertex(&filler, i, coord, transformed.z.toInt(), textureCoords[i]);
+         clippedVertices[i].x = projected.x >> 16;
+         clippedVertices[i].y = projected.y >> 16;
+
+         clippedVertices[i].v = transformed;
      }
 
- //     Plane plane;
- //     x_plane_init_from_three_points(&plane, poly->vertices + 0, poly->vertices + 1, poly->vertices + 2);
- //
- //     if(!x_plane_point_is_on_normal_facing_side(&plane, &renderContext->camPos))
- //         return;
- //
-     x_trianglefiller_fill_textured(&filler, texture);
+     ModelVertex* firstTriangle[3] =
+     {
+         &clippedVertices[0],
+         &clippedVertices[1],
+         &clippedVertices[2],
+     };
+
+     drawTriangle(firstTriangle, renderContext, *texture);
+
+     if(totalClippedVertices == 4)
+     {
+         ModelVertex* secondTriangle[3] =
+         {
+             &clippedVertices[3],
+             &clippedVertices[0],
+             &clippedVertices[2],
+         };
+
+         drawTriangle(secondTriangle, renderContext, *texture);
+     }
 }
 
 void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame, Mat4x4& transformMatrix, X_RenderContext* renderContext)
@@ -194,11 +249,8 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
     {
         Vec3fp v[3];
         X_EntityTriangle* tri = model->triangles + i;
-        Vec2 textureCoords[3];
         ModelVertex modelVertex[3];
 
-        Vec2_fp16x16 projected[3];
-        
         for(int j = 0; j < 3; ++j)
         {
             v[j] = MakeVec3fp(frame->vertices[tri->vertexIds[j]].v);
@@ -207,35 +259,22 @@ void x_entitymodel_render_flat_shaded(X_EntityModel* model, X_EntityFrame* frame
 
             v[j] = transformed;
 
-
-            renderContext->cam->viewport.project(transformed, projected[j]);
-
-            renderContext->cam->viewport.clampfp(projected[j]);
-
-            Vec2i pos(projected[j].x >> 16, projected[j].y >> 16);
+            modelVertex[j].v = v[j];
 
             X_EntityTextureCoord* coord = model->textureCoords + tri->vertexIds[j];
-            
-            textureCoords[j] = coord->coord;
+
+            modelVertex[j].s = coord->coord.x;
+            modelVertex[j].t = coord->coord.y;
+
             if(!tri->facesFront && coord->onSeam)
             {
-                textureCoords[j].x += model->skinWidth / 2;
+                modelVertex[j].s += model->skinWidth / 2;
             }
 
-            X_Color texel = skin.getTexel(textureCoords[j]);
-
-            //renderContext->canvas->setTexel(pos, texel);
-
-            modelVertex[j].x = pos.x;
-            modelVertex[j].y = pos.y;
             modelVertex[j].z = (1.0_fp / transformed.z).internalValue();
-            modelVertex[j].s = textureCoords[j].x;
-            modelVertex[j].t = textureCoords[j].y;
         }
 
-        Polygon3 poly(v, 3);
-
-        x_polygon3_render_textured(&poly, renderContext, &skin, textureCoords);
+        x_polygon3_render_textured(modelVertex, 3, renderContext, &skin);
 
         //drawTriangleRecursive(&modelVertex[0], &modelVertex[1], &modelVertex[2], skin, *renderContext);
     }

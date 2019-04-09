@@ -333,7 +333,7 @@ void SoftwareRenderer::render()
             {
                 if(frame->nextInSequence != nullptr)
                 {
-                    frame = frame->nextInSequence;
+                    //frame = frame->nextInSequence;
                     renderComponent->currentFrame = frame;
                     renderComponent->frameStart = currentTime + Duration::fromSeconds(2);
                 }

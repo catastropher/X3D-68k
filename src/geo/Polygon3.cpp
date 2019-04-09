@@ -21,6 +21,7 @@
 #include "Ray3.hpp"
 #include "Frustum.hpp"
 #include "math/Mat4x4.hpp"
+#include "PolygonClipper.hpp"
 
 bool Polygon3::clipToPlane(const Plane& plane, Polygon3& dest) const
 {
@@ -252,93 +253,4 @@ void Polygon3::rotateRelateToCenter(Mat4x4& transform)
 void Polygon3::calculatePlaneEquation(Plane& dest)
 {
     dest = Plane(vertices[0], vertices[1], vertices[2]);
-}
-
-
-inline const Vec3fp& cliperGetVertex(const Vec3fp& vertex)
-{
-    return vertex;
-}
-
-inline void clipperClipVertex(const Vec3fp& start, const Vec3fp& end, fp t, Vec3fp& outVertex)
-{
-    outVertex = lerp(start, end, t);
-}
-
-template<typename TVertex>
-int clipToPlane(TVertex* vertices, int totalVertices, const Plane& plane, TVertex* outVertices)
-{
-    int totalClipperVertices = 0;
-
-    fp dot = plane.normal.dot(cliperGetVertex(vertices[0]));
-    bool in = dot >= -plane.d;
-
-    for(int i = 0; i < totalVertices; ++i)
-    {
-        int next = (i + 1 < totalClipperVertices ? i + 1 : 0);
-
-        if(in)
-        {
-            outVertices[totalClipperVertices++] = vertices[i];
-        }
-
-        fp nextDot = plane.normal.dot(cliperGetVertex(vertices[next]));
-        bool nextIn = nextDot >= -plane.d;
-        fp dotDiff = nextDot - dot;
-
-        if(in != nextIn && dotDiff != 0)
-        {
-            fp scale = (-plane.d - dot) / dotDiff;
-
-            clipperClipVertex(vertices[i], vertices[next], scale, outVertices[totalClipperVertices]);
-
-            ++totalClipperVertices;
-        }
-
-        dot = nextDot;
-        in = nextIn;
-    }
-
-    return totalClipperVertices;
-}
-
-template<typename TVertex>
-int clipToFrustum(TVertex* vertices, int totalVertices, const X_Frustum& frustum, TVertex* outVertices, unsigned int clipFlags)
-{
-    TVertex clippedVertices[2][50];
-    int clippedVerticesIndex = 0;
-    int lastClipTotalVertices = totalVertices;
-
-    TVertex* verticesToClip = vertices;
-
-    int lastClipPlane = 31 - __builtin_clz(clipFlags);
-
-    for(int plane = 0; plane < lastClipPlane; ++plane)
-    {
-        bool shouldClipToPlane = (clipFlags & (1 << plane)) != 0;
-        if(!shouldClipToPlane)
-        {
-            continue;
-        }
-
-        lastClipTotalVertices = clipToPlane(
-            verticesToClip,
-            lastClipTotalVertices,
-            frustum.planes[plane],
-            clippedVertices[clippedVerticesIndex]);
-
-        if(lastClipTotalVertices < 3)
-        {
-            return 0;
-        }
-
-        verticesToClip = clippedVertices[clippedVerticesIndex];
-        clippedVerticesIndex ^= 1;
-    }
-
-    return clipToPlane(
-        verticesToClip,
-        lastClipTotalVertices,
-        frustum.planes[lastClipPlane],
-        outVertices);
 }

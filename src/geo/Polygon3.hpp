@@ -77,12 +77,6 @@ struct LevelPolygon3 : Polygon3
 };
 
 template<typename TVertex>
-const Vec3fp& cliperGetVertex(const TVertex& vertex);
-
-template<typename TVertex>
-void clipperClipVertex(const TVertex& start, const TVertex& end, fp t, TVertex& outVertex);
-
-template<typename TVertex>
 int clipToFrustum(TVertex* vertices, int totalVertices, const X_Frustum& frustum, TVertex* outVertices, unsigned int clipFlags);
 
 template<typename TVertex>
