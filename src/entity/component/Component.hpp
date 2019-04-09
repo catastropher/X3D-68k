@@ -59,6 +59,11 @@ template<> inline QuakeModelRenderComponent* ComponentRecord::getComponent()
     return static_cast<QuakeModelRenderComponent*>(renderComponent);
 }
 
+template<> inline BillboardRenderComponent* ComponentRecord::getComponent()
+{
+    return static_cast<BillboardRenderComponent*>(renderComponent);
+}
+
 
 template<typename T> constexpr inline bool isValidComponentType() { return false; }
 template<> constexpr bool inline isValidComponentType<CameraComponent>() { return true; }
@@ -70,6 +75,7 @@ template<> constexpr bool inline isValidComponentType<PhysicsComponent>() { retu
 template<> constexpr bool inline isValidComponentType<BrushModelPhysicsComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<RenderComponent>() { return true; }
 template<> constexpr bool inline isValidComponentType<QuakeModelRenderComponent>() { return true; }
+template<> constexpr bool inline isValidComponentType<BillboardRenderComponent>() { return true; }
 
 template<typename T> constexpr inline ComponentType getComponentType();
 template<> constexpr inline ComponentType getComponentType<CameraComponent>() { return ComponentType::camera; }
@@ -79,4 +85,5 @@ template<> constexpr inline ComponentType getComponentType<TransformComponent>()
 template<> constexpr inline ComponentType getComponentType<ScriptableComponent>() { return ComponentType::scriptable; }
 template<> constexpr inline ComponentType getComponentType<PhysicsComponent>() { return ComponentType::physics; }
 template<> constexpr inline ComponentType getComponentType<QuakeModelRenderComponent>() { return ComponentType::render; }
+template<> constexpr inline ComponentType getComponentType<BillboardRenderComponent>() { return ComponentType::render; }
 

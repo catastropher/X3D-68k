@@ -21,7 +21,8 @@
 enum class RenderComponentType
 {
     quake,
-    brush
+    brush,
+    billboard
 };
 
 class RenderComponent
@@ -55,5 +56,17 @@ public:
     Time frameStart;
     bool playingAnimation;
     bool loopAnimation;
+};
+
+class BillboardRenderComponent : public RenderComponent
+{
+public:
+    BillboardRenderComponent()
+        : RenderComponent(RenderComponentType::billboard)
+    {
+
+    }
+
+    Texture* texture;
 };
 

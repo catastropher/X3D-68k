@@ -124,21 +124,6 @@ void x_entitymodel_draw_frame_wireframe(X_EntityModel* model, X_EntityFrame* fra
     }
 }
 
-struct ModelVertex
-{
-    Vec3fp v;
-    int x;
-    int y;
-    int s;
-    int t;
-    int z;
-
-    void print(const char* name) const
-    {
-        printf("%s: x=%d, y=%d, z=%d, s=%d, t=%d\n", name, x, y, z, s, t);
-    }
-};
-
 void drawTriangleRecursive(
     const ModelVertex* a,
     const ModelVertex* b,
@@ -218,25 +203,16 @@ void x_polygon3_render_textured(ModelVertex* vertices, int totalVertices, X_Rend
          clippedVertices[i].v = transformed;
      }
 
-     ModelVertex* firstTriangle[3] =
+     ModelVertex* triangle[3];
+
+
+     for(int i = 1; i < totalClippedVertices - 1; ++i)
      {
-         &clippedVertices[0],
-         &clippedVertices[1],
-         &clippedVertices[2],
-     };
+         triangle[0] = &clippedVertices[0];
+         triangle[1] = &clippedVertices[i];
+         triangle[2] = &clippedVertices[i + 1];
 
-     drawTriangle(firstTriangle, renderContext, *texture);
-
-     if(totalClippedVertices == 4)
-     {
-         ModelVertex* secondTriangle[3] =
-         {
-             &clippedVertices[3],
-             &clippedVertices[0],
-             &clippedVertices[2],
-         };
-
-         drawTriangle(secondTriangle, renderContext, *texture);
+         drawTriangle(triangle, renderContext, *texture);
      }
 }
 

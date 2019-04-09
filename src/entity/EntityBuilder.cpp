@@ -73,6 +73,7 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
     }
 
     QuakeModelRenderComponent* quakeModelRenderComponent = nullptr;
+    BillboardRenderComponent* billboardRenderComponent = nullptr;
 
     if(components.hasFlag(ComponentType::render))
     {
@@ -80,6 +81,10 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
         {
             case RenderComponentType::quake:
                 allocator.scheduleAlloc(quakeModelRenderComponent);
+                break;
+
+            case RenderComponentType::billboard:
+                allocator.scheduleAlloc(billboardRenderComponent);
                 break;
 
             default:
@@ -121,6 +126,11 @@ void* EntityBuilder::allocateEntity(int entitySize, Flags<ComponentType> compone
             case RenderComponentType::quake:
                 new (quakeModelRenderComponent) QuakeModelRenderComponent();
                 componentRecord.renderComponent = quakeModelRenderComponent;
+                break;
+
+            case RenderComponentType::billboard:
+                new (billboardRenderComponent) BillboardRenderComponent();
+                componentRecord.renderComponent = billboardRenderComponent;
                 break;
         }
     }

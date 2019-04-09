@@ -26,7 +26,7 @@ Entity* BoxEntity::build(EntityBuilder& builder)
         .withComponent<TransformComponent>()
         .withComponent<ScriptableComponent>()
         .withComponent<BoxColliderComponent>()
-        .withRenderComponent(RenderComponentType::quake)
+        .withRenderComponent(RenderComponentType::billboard)
         .build<BoxEntity>();
 
     TransformComponent* transformComponent = entity->getComponent<TransformComponent>();
@@ -38,8 +38,8 @@ Entity* BoxEntity::build(EntityBuilder& builder)
 
     x_entitymodel_load_from_file(&entity->entityModel, "dog.mdl");
 
-    entity->getComponent<QuakeModelRenderComponent>()->model = &entity->entityModel;
-    entity->getComponent<QuakeModelRenderComponent>()->playAnimation("run", true);
+    entity->billboard.loadFromFile("font.xtex");
+    entity->getComponent<BillboardRenderComponent>()->texture = &entity->billboard;
 
     entity->getComponent<ScriptableComponent>()->update = update;
 
