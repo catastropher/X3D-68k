@@ -13,6 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <algorithm>
+
 #include <render/AffineTriangleFiller.hpp>
 #include "SoftwareRenderer.hpp"
 #include "entity/component/TransformComponent.hpp"
@@ -400,24 +402,9 @@ void SoftwareRenderer::render()
                 modelVertex[i].t = textureCoords[i].y;
             }
 
-            ModelVertex triA[3] =
-            {
-                modelVertex[0],
-                modelVertex[2],
-                modelVertex[1],
-            };
+            std::reverse(modelVertex, modelVertex + 4);
 
-            ModelVertex triB[3] =
-            {
-                modelVertex[0],
-                modelVertex[3],
-                modelVertex[2],
-            };
-
-
-
-            x_polygon3_render_textured(triA, 3, &renderContext, renderComponent->texture);
-            x_polygon3_render_textured(triB, 3, &renderContext, renderComponent->texture);
+            x_polygon3_render_textured(modelVertex, 4, &renderContext, renderComponent->texture);
         }
     }
 }
