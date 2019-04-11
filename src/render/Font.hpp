@@ -18,19 +18,35 @@
 #include <string.h>
 
 #include "Texture.hpp"
+#include "memory/ResourceHandle.hpp"
 
 #define X_FONT_TOTAL_CHARS 256
 
 class Font
 {
 public:
-    Font() : charW(0), charH(0), pixels(nullptr) { }
+    Font()
+        : charW(0),
+        charH(0),
+        pixels(nullptr)
+    {
 
-    int getW() const { return charW; }
-    int getH() const { return charH; }
+    }
+
+    int getW() const
+    {
+        return charW;
+    }
+
+    int getH() const
+    {
+        return charH;
+    }
 
     int calcWidthOfStr(const char* str) const
-        { return strlen(str) * charW; }
+    {
+        return strlen(str) * charW;
+    }
 
     X_Color* getCharacterPixels(int c) const
         { return pixels + c * pixelsPerCharacter(); }
@@ -54,4 +70,6 @@ private:
     int charSize;
     X_Color* pixels;
 };
+
+using FontResource = ResourceHandle<Font>;
 

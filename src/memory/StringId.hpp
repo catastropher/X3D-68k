@@ -62,6 +62,15 @@ public:
         return key == rhs.key;
     }
 
+    void toString(char* dest)
+    {
+#ifdef DEBUG_STRINGID
+        sprintf(dest, "%s (%d)\n", originalString, key);
+#else
+        sprintf(dest, "%d\n", key);
+#endif
+    }
+
     void print(const char* description) const
     {
 #ifdef DEBUG_STRINGID

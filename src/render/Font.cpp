@@ -77,3 +77,11 @@ bool Font::loadFromFile(const char* fileName)
     return 1;
 }
 
+template<typename>
+void* loadResource(const FilePath& filePath)
+{
+    Font* font = new Font;
+    font->loadFromFile(filePath.c_str());
+
+    return font;
+}

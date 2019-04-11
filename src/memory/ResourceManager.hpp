@@ -13,31 +13,70 @@
 // You should have received a copy of the GNU General Public License
 // along with X3D. If not, see <http://www.gnu.org/licenses/>.
 
+#include <unordered_map>
+#include <system/FilePath.hpp>
+
 #include "system/File.hpp"
+#include "StringId.hpp"
+#include "ResourceHandle.hpp"
 
-struct Resource;
-
-struct ResourceType
+class Resource
 {
-    unsigned int id;
+public:
+    Resource()
+        : referenceCount(0),
+        mem(nullptr)
+    {
 
-    bool (*load)(Resource* resource);
-    bool (*unload)(Resource* resource);
+    }
 
-    ResourceType* next;
-};
-
-struct Resource
-{
-    char name[32];
-    char filename[X_FILENAME_MAX_LENGTH];
+    int referenceCount;
     void* mem;
-
-    Resource* next;
+    FilePath path;
 };
 
 class ResourceManager
 {
-    Resource* getResource(const char* name);
-};
+public:
+    template<typename TResource>
+    ResourceHandle<TResource> getResource(StringId resourceName)
+    {
+        Resource* resource = getResourceInternal(resourceName);
 
+        if(!resourceIsLoaded(resource))
+        {
+            resource->mem = loadResource<TResource>(resource->path);
+        }
+
+        ++resource->referenceCount;
+
+        return ResourceHandle<TResource>();
+    }
+
+    template<typename TResource>
+    void releaseResource(ResourceHandle<TResource> handle)
+    {
+        Resource* resource = handle.resource;
+
+        if(--resource->referenceCount < 0)
+        {
+            x_system_error("Too many releases for resource");
+        }
+
+        if(resource->referenceCount == 0)
+        {
+            releaseResource<TResource>(resource->mem);
+            resource->mem = nullptr;
+        }
+    }
+
+private:
+    Resource* getResourceInternal(StringId resourceName);
+
+    static bool resourceIsLoaded(Resource* resource)
+    {
+        return resource->mem != nullptr;
+    }
+
+    std::unordered_map<int, Resource*> resources;
+};
